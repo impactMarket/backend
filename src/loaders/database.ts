@@ -1,7 +1,7 @@
 import { Sequelize } from 'sequelize';
 import config from '../config';
-import { initializeCommunity, Community } from '../models/community';
-import IDatabase from '../types';
+import { initializeCommunity } from '../models/community';
+import { initializeTransactions } from '../models/transactions';
 
 
 export default async (): Promise<Sequelize> => {
@@ -18,5 +18,6 @@ export default async (): Promise<Sequelize> => {
     });
     await sequelize.authenticate();
     initializeCommunity(sequelize);
+    initializeTransactions(sequelize);
     return sequelize;
 };

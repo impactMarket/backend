@@ -27,6 +27,11 @@ export default {
     },
 
     /**
+     * json rpc url
+     */
+    jsonRpcUrl: process.env.CHAIN_JSON_RPC_URL,
+
+    /**
      * Your secret sauce
      */
     jwtSecret: process.env.JWT_SECRET,

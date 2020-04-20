@@ -11,4 +11,10 @@ export default (app: Router) => {
         async (req: Request, res: Response) => {
             return res.send(await TransactionsService.getAll());
         });
+
+    route.get(
+        '/:account',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.get(req.params.account));
+        });
 };

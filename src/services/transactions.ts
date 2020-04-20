@@ -4,17 +4,15 @@ import { Transactions } from '../models/transactions';
 export default class TransactionsService {
     public static async add(
         tx: string,
-        type: number,
         from: string,
-        to: string,
-        amount: string,
+        event: string,
+        values: any,
     ) {
         return Transactions.create({
             tx,
-            type,
             from,
-            to,
-            amount,
+            event,
+            values,
         });
     }
 
@@ -22,7 +20,7 @@ export default class TransactionsService {
         return Transactions.findAll();
     }
 
-    public static async get(tx: string) {
-        return Transactions.findOne({ where: { tx } });
+    public static async get(account: string) {
+        return Transactions.findAll({ where: { values: { _account: account } } });
     }
 }

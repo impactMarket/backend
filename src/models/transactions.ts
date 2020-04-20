@@ -3,38 +3,32 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class Transactions extends Model {
     public tx!: string; // Note that the `null assertion` `!` is required in strict mode.
-    public type!: number;
     public from!: string;
-    public to!: string;
-    public amount!: string;
+    public event!: string;
+    public values!: any;
 
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
 
-
 export function initializeTransactions(sequelize: Sequelize)  {
     return Transactions.init({
         tx: {
             type: new DataTypes.STRING(68),
-            // primaryKey: true,
+            primaryKey: true,
             unique: true
-        },
-        type: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
         },
         from: {
             type: new DataTypes.STRING(44),
             allowNull: false
         },
-        to: {
-            type: new DataTypes.STRING(44),
+        event: {
+            type: new DataTypes.STRING(64),
             allowNull: false
         },
-        amount: {
-            type: new DataTypes.STRING(64),
+        values: {
+            type: DataTypes.JSONB,
             allowNull: false
         }
     }, {
