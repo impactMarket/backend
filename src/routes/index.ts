@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import auth from './auth';
+import community from './community';
 
-// guaranteed to get dependencies
+
 export default () => {
     const app = Router();
-    auth(app);
+    community(app);
 
     return app
 }

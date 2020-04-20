@@ -1,13 +1,16 @@
 import express from 'express';
 import expressLoader from './express';
-// import mongooseLoader from './mongoose';
-// import jobsLoader from './jobs';
+import databaseLoader from './database';
 import Logger from './logger';
-//We have to import at least all the events once so they can be triggered
-import './events';
+import TransactionCacheSubscriber from '../subscribers';
 
-export default async (props: { expressApp: express.Application }) => {
+export default async ({ expressApp }: { expressApp: express.Application }) => {
+    await databaseLoader();
+    Logger.info('✌️ DB loaded and connected');
+    
+    await TransactionCacheSubscriber();
+    Logger.info('✌️ Transaction cache loaded');
 
-    await expressLoader({ app: props.expressApp });
+    await expressLoader({ app: expressApp });
     Logger.info('✌️ Express loaded');
 };

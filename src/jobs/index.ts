@@ -1,1 +1,0 @@
-// TODO: listen to events from chain

@@ -17,9 +17,14 @@ export default {
     port: parseInt(process.env.PORT!, 10),
 
     /**
-     * That long string from mlab
+     * Database access config
      */
-    databaseURL: process.env.POSTGRES_URI,
+    db: {
+        user: process.env.POSTGRES_USER!,
+        pass: process.env.POSTGRES_PASS!,
+        host: process.env.POSTGRES_HOST!,
+        dbName: process.env.POSTGRES_DBNAME!,
+    },
 
     /**
      * Your secret sauce
