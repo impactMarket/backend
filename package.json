@@ -3,9 +3,12 @@
     "version": "0.0.0",
     "scripts": {
         "start": "ts-node src/app.ts",
-        "serve": "ts-node dist/app.js",
+        "serve": "node dist/app.js",
         "build": "tsc -p .",
-        "test": "echo \"Error: no test specified\" && exit 0"
+        "postinstall": "yarn build"
+    },
+    "engines": {
+        "node": "10.20.1"
     },
     "dependencies": {
         "body-parser": "1.19.0",
