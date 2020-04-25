@@ -9,16 +9,20 @@ export default (app: Router) => {
     app.use('/community', route);
 
     route.get(
-        '/:walletAddress',
+        '/:publicId',
         async (req: Request, res: Response, next: NextFunction) => {
-            res.send(await CommunityService.get(req.params.walletAddress));
+            res.send(await CommunityService.findById(req.params.publicId));
         },
     );
 
     route.get(
-        '/',
+        '/all/:status',
         async (req: Request, res: Response, next: NextFunction) => {
-            res.send(await CommunityService.getAll());
+            if (req.params.status === undefined) {
+                res.send(await CommunityService.getAll());
+            } else {
+                res.send(await CommunityService.getAll(req.params.status));
+            }
         },
     );
 
@@ -27,12 +31,51 @@ export default (app: Router) => {
         celebrate({
             body: Joi.object({
                 walletAddress: Joi.string().required(),
-                name: Joi.string().required()
+                name: Joi.string().required(),
+                description: Joi.string().required(),
+                location: {
+                    title: Joi.string().required(),
+                    latitude: Joi.number().required(),
+                    longitude: Joi.number().required(),
+                },
+                coverImage: Joi.string().required(),
             }),
         }),
         async (req: Request, res: Response, next: NextFunction) => {
-            const { walletAddress, name } = req.body;
-            await CommunityService.add(walletAddress, name);
+            const {
+                walletAddress,
+                name,
+                description,
+                location,
+                coverImage,
+            } = req.body;
+            await CommunityService.add(
+                walletAddress,
+                name,
+                description,
+                location,
+                coverImage,
+                'pending'
+            );
+            res.sendStatus(200);
+        },
+    );
+
+    route.post(
+        '/accept',
+        celebrate({
+            body: Joi.object({
+                publicId: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response, next: NextFunction) => {
+            const {
+                publicId,
+            } = req.body;
+            await CommunityService.accept(
+                publicId,
+            );
+            // TODO: send transaction to chain!
             res.sendStatus(200);
         },
     );
