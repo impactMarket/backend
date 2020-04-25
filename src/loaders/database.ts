@@ -1,19 +1,16 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize, Options } from 'sequelize';
 import config from '../config';
 import { initializeCommunity } from '../models/community';
 import { initializeTransactions } from '../models/transactions';
 
 
 export default async (): Promise<Sequelize> => {
-    const sequelize = new Sequelize(config.dbUrl, {
+    const dbConfig: Options = {
         dialect: 'postgres',
         protocol: 'postgres',
-        native: true,
-        ssl: true,
-        dialectOptions: {
-            ssl: true,
-        },
-    });
+        native: true
+    };
+    const sequelize = new Sequelize(config.dbUrl, dbConfig);
     await sequelize.authenticate();
     initializeCommunity(sequelize);
     initializeTransactions(sequelize);
