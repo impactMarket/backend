@@ -30,7 +30,9 @@ export function initializeCommunity(sequelize: Sequelize) {
         },
         publicId: {
             type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV1,
+            defaultValue: DataTypes.UUIDV4,
+            unique: true,
+            allowNull: false,
         },
         walletAddress: {
             type: DataTypes.STRING(44),
@@ -54,6 +56,14 @@ export function initializeCommunity(sequelize: Sequelize) {
         },
         status: {
             type: DataTypes.ENUM('pending', 'valid', 'removed'),
+            allowNull: false
+        },
+        createdAt: {
+            type: DataTypes.DATE,
+            allowNull: false
+        },
+        updatedAt: {
+            type: DataTypes.DATE,
             allowNull: false
         }
     }, {

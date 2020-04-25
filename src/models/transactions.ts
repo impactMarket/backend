@@ -12,24 +12,32 @@ export class Transactions extends Model {
     public readonly updatedAt!: Date;
 }
 
-export function initializeTransactions(sequelize: Sequelize)  {
+export function initializeTransactions(sequelize: Sequelize) {
     return Transactions.init({
         tx: {
-            type: new DataTypes.STRING(68),
+            type: DataTypes.STRING(68),
             primaryKey: true,
-            unique: true
+            unique: true,
         },
         from: {
-            type: new DataTypes.STRING(44),
-            allowNull: false
+            type: DataTypes.STRING(44),
+            allowNull: false,
         },
         event: {
-            type: new DataTypes.STRING(64),
-            allowNull: false
+            type: DataTypes.STRING(64),
+            allowNull: false,
         },
         values: {
             type: DataTypes.JSONB,
-            allowNull: false
+            allowNull: false,
+        },
+        createdAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
+        },
+        updatedAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
         }
     }, {
         tableName: 'transactions',

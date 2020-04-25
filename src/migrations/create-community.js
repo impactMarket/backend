@@ -1,0 +1,57 @@
+'use strict';
+module.exports = {
+    up: (queryInterface, Sequelize) => {
+        return queryInterface.createTable('community', {
+            id: {
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+            },
+            publicId: {
+                type: Sequelize.UUID,
+                defaultValue: Sequelize.UUIDV4,
+                unique: true,
+                allowNull: false,
+            },
+            walletAddress: {
+                type: Sequelize.STRING(44),
+                allowNull: false,
+            },
+            name: {
+                type: Sequelize.STRING(64),
+                allowNull: false
+            },
+            timing: {
+                type: Sequelize.STRING(64),
+                allowNull: false
+            },
+            description: {
+                type: Sequelize.STRING(512),
+                allowNull: false
+            },
+            location: {
+                type: Sequelize.JSON,
+                allowNull: false
+            },
+            coverImage: {
+                type: Sequelize.STRING(128),
+                allowNull: false
+            },
+            status: {
+                type: Sequelize.ENUM('pending', 'valid', 'removed'),
+                allowNull: false
+            },
+            createdAt: {
+                allowNull: false,
+                type: Sequelize.DATE
+            },
+            updatedAt: {
+                allowNull: false,
+                type: Sequelize.DATE
+            }
+        });
+    },
+    down: (queryInterface, Sequelize) => {
+        return queryInterface.dropTable('community');
+    }
+};
