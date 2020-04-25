@@ -19,12 +19,7 @@ export default {
     /**
      * Database access config
      */
-    db: {
-        user: process.env.POSTGRES_USER!,
-        pass: process.env.POSTGRES_PASS!,
-        host: process.env.POSTGRES_HOST!,
-        dbName: process.env.POSTGRES_DBNAME!,
-    },
+    dbUrl: process.env.DATABASE_URL!,
 
     /**
      * json rpc url

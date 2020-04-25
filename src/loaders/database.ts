@@ -5,15 +5,13 @@ import { initializeTransactions } from '../models/transactions';
 
 
 export default async (): Promise<Sequelize> => {
-    const sequelize = new Sequelize(config.db.dbName, config.db.user, config.db.pass, {
-        host: config.db.host,
+    const sequelize = new Sequelize(config.dbUrl, {
         dialect: 'postgres',
-
-        pool: {
-            max: 5,
-            min: 0,
-            acquire: 30000,
-            idle: 10000
+        protocol: 'postgres',
+        native: true,
+        ssl: config.dbUrl.indexOf('localhost') === -1,
+        dialectOptions: {
+            ssl: config.dbUrl.indexOf('localhost') === -1,
         },
     });
     await sequelize.authenticate();
