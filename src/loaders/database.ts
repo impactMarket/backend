@@ -9,9 +9,9 @@ export default async (): Promise<Sequelize> => {
         dialect: 'postgres',
         protocol: 'postgres',
         native: true,
-        ssl: config.dbUrl.indexOf('localhost') === -1,
+        ssl: true,
         dialectOptions: {
-            ssl: config.dbUrl.indexOf('localhost') === -1,
+            ssl: true,
         },
     });
     await sequelize.authenticate();
