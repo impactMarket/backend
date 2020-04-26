@@ -26,7 +26,7 @@ module.exports = {
         dialectOptions: {
             bigNumberStrings: true,
             ssl: {
-                // ca: fs.readFileSync(__dirname + '/postgres-ca-master.crt')
+                require: true
             }
         }
     }

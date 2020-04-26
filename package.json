@@ -5,7 +5,8 @@
         "start": "ts-node src/app.ts",
         "serve": "node dist/app.js",
         "build": "tsc -p .",
-        "postinstall": "yarn build"
+        "postinstall": "yarn build",
+        "db:migrate:production": "sequelize db:migrate --env production"
     },
     "engines": {
         "node": "10.20.1"
@@ -19,9 +20,8 @@
         "express": "4.17.1",
         "pg": "8.0.2",
         "pg-hstore": "2.3.3",
-        "pg-native": "^3.0.0",
+        "pg-native": "3.0.0",
         "sequelize": "5.21.6",
-        "ts-node": "8.8.2",
         "winston": "3.2.1"
     },
     "devDependencies": {
@@ -32,6 +32,7 @@
         "@types/node": "13.11.1",
         "@types/pg": "7.14.3",
         "@types/validator": "13.0.0",
+        "ts-node": "8.8.2",
         "chai": "4.2.0",
         "sequelize-cli": "5.5.1",
         "typescript": "3.8.3"
