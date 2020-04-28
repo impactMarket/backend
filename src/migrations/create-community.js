@@ -13,15 +13,14 @@ module.exports = {
                 unique: true,
                 allowNull: false,
             },
-            walletAddress: {
+            requestByAddress: {
                 type: Sequelize.STRING(44),
                 allowNull: false,
             },
-            name: {
-                type: Sequelize.STRING(64),
-                allowNull: false
+            contractAddress: {
+                type: Sequelize.STRING(44),
             },
-            timing: {
+            name: {
                 type: Sequelize.STRING(64),
                 allowNull: false
             },

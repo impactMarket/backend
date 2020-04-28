@@ -4,7 +4,8 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export class Community extends Model {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public publicId!: string;
-    public walletAddress!: string;
+    public requestByAddress!: string;
+    public contractAddress!: string;
     public name!: string;
     public description!: string;
     public location!: any;
@@ -34,9 +35,12 @@ export function initializeCommunity(sequelize: Sequelize) {
             unique: true,
             allowNull: false,
         },
-        walletAddress: {
+        requestByAddress: {
             type: DataTypes.STRING(44),
             allowNull: false,
+        },
+        contractAddress: {
+            type: DataTypes.STRING(44),
         },
         name: {
             type: DataTypes.STRING(64),

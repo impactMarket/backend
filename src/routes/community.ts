@@ -9,28 +9,24 @@ export default (app: Router) => {
     app.use('/community', route);
 
     route.get(
-        '/:publicId',
+        '/id/:publicId',
         async (req: Request, res: Response, next: NextFunction) => {
             res.send(await CommunityService.findById(req.params.publicId));
         },
     );
 
     route.get(
-        '/all/:status',
+        '/all/:status?',
         async (req: Request, res: Response, next: NextFunction) => {
-            if (req.params.status === undefined) {
-                res.send(await CommunityService.getAll());
-            } else {
-                res.send(await CommunityService.getAll(req.params.status));
-            }
+            res.send(await CommunityService.getAll(req.params.status));
         },
     );
 
     route.post(
-        '/add',
+        '/request',
         celebrate({
             body: Joi.object({
-                walletAddress: Joi.string().required(),
+                requestByAddress: Joi.string().required(),
                 name: Joi.string().required(),
                 description: Joi.string().required(),
                 location: {
@@ -43,14 +39,14 @@ export default (app: Router) => {
         }),
         async (req: Request, res: Response, next: NextFunction) => {
             const {
-                walletAddress,
+                requestByAddress, // the address making the request (will be community coordinator)
                 name,
                 description,
                 location,
                 coverImage,
             } = req.body;
-            await CommunityService.add(
-                walletAddress,
+            await CommunityService.request(
+                requestByAddress,
                 name,
                 description,
                 location,
@@ -65,18 +61,20 @@ export default (app: Router) => {
         '/accept',
         celebrate({
             body: Joi.object({
+                walletAddress: Joi.string().required(),
                 publicId: Joi.string().required(),
             }),
         }),
         async (req: Request, res: Response, next: NextFunction) => {
             const {
+                walletAddress, // the address accepting the request (must be admin)
                 publicId,
             } = req.body;
-            await CommunityService.accept(
+            const accpeted: boolean = await CommunityService.accept(
+                walletAddress,
                 publicId,
             );
-            // TODO: send transaction to chain!
-            res.sendStatus(200);
+            res.sendStatus(accpeted ? 200 : 503);
         },
     );
 };

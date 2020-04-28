@@ -1,6 +1,3 @@
-
-const fs = require('fs');
-
 module.exports = {
     development: {
         username: 'postgres',
@@ -8,7 +5,6 @@ module.exports = {
         database: 'impactmarket',
         host: 'localhost',
         port: 5432,
-        ssl: false,
         dialect: 'postgres',
         dialectOptions: {
             bigNumberStrings: true

@@ -23,6 +23,11 @@ export default ({ app }: { app: express.Application }) => {
     // Alternate description:
     // Enable Cross Origin Resource Sharing to all origins by default
     app.use(cors());
+    app.use((req, res, next) => {
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+        next();
+    });
 
     // Middleware that transforms the raw string of req.body into json
     app.use(bodyParser.json());

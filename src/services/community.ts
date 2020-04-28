@@ -2,8 +2,8 @@ import { Community } from '../models/community';
 
 
 export default class CommunityService {
-    public static async add(
-        walletAddress: string,
+    public static async request(
+        requestByAddress: string,
         name: string,
         description: string,
         location: {
@@ -15,7 +15,7 @@ export default class CommunityService {
         status: string,
     ) {
         return Community.create({
-            walletAddress,
+            requestByAddress,
             name,
             description,
             location,
@@ -24,13 +24,16 @@ export default class CommunityService {
         });
     }
 
-    public static async accept(id: string) {
-        // TODO: only admins
-        return undefined;
+    public static async accept(acceptedByAddress: string, id: string) {
+        // TODO: 
+        // * submit transaction.
+        // * If successful run changes on db
+        // * get contract address and set it in database
+        return true;
     }
 
-    public static async getAll(status: string = 'all') {
-        if (status === 'all') {
+    public static async getAll(status?: string) {
+        if (status === undefined) {
             return Community.findAll();
         }
         return Community.findAll({ where: { status } });
