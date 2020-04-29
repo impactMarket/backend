@@ -9,9 +9,9 @@ export default (app: Router) => {
     app.use('/beneficiary', route);
 
     route.get(
-        '/:walletAddress',
+        '/:publicId',
         async (req: Request, res: Response, next: NextFunction) => {
-            res.send(await BeneficiaryService.findByWallet(req.params.walletAddress));
+            res.send(await BeneficiaryService.findByCommunityId(req.params.publicId));
         },
     );
 
@@ -40,17 +40,17 @@ export default (app: Router) => {
         '/accept',
         celebrate({
             body: Joi.object({
-                walletAddress: Joi.string().required(),
+                acceptanceTransaction: Joi.string().required(),
                 communityPublicId: Joi.string().required(),
             }),
         }),
         async (req: Request, res: Response, next: NextFunction) => {
             const {
-                walletAddress,
+                acceptanceTransaction,
                 communityPublicId,
             } = req.body;
             await BeneficiaryService.accept(
-                walletAddress,
+                acceptanceTransaction,
                 communityPublicId,
             );
             res.sendStatus(200);
