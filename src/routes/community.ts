@@ -61,17 +61,17 @@ export default (app: Router) => {
         '/accept',
         celebrate({
             body: Joi.object({
-                walletAddress: Joi.string().required(),
+                acceptanceTransaction: Joi.string().required(),
                 publicId: Joi.string().required(),
             }),
         }),
         async (req: Request, res: Response, next: NextFunction) => {
             const {
-                walletAddress, // the address accepting the request (must be admin)
+                acceptanceTransaction, // the address accepting the request (must be admin)
                 publicId,
             } = req.body;
             const accpeted: boolean = await CommunityService.accept(
-                walletAddress,
+                acceptanceTransaction,
                 publicId,
             );
             res.sendStatus(accpeted ? 200 : 503);
