@@ -1,0 +1,170 @@
+{
+	"info": {
+		"_postman_id": "9365d8ab-c5dc-4b13-a489-7425a32a35a6",
+		"name": "impactMarket",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "community",
+			"item": [
+				{
+					"name": "request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"requestByAddress\": \"0xccBd10F45DaAd2eD949Cfd0E60fF36c3c941A556\",\n    \"name\": \"ComCOm\",\n    \"description\": \"A comunidade!\",\n    \"location\": {\n        \"title\": \"Lisbon!\",\n        \"latitude\": 5,\n        \"longitude\": 4\n    },\n    \"coverImage\": \"image!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_base_url}}/api/community/request",
+							"host": [
+								"{{api_base_url}}"
+							],
+							"path": [
+								"api",
+								"community",
+								"request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "all",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "46d6ad6c-e30f-4a87-a926-7fca8f1664e7",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_base_url}}/api/community/all/:state",
+							"host": [
+								"{{api_base_url}}"
+							],
+							"path": [
+								"api",
+								"community",
+								"all",
+								":state"
+							],
+							"variable": [
+								{
+									"key": "state",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "accept",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"acceptanceTransaction\": \"0xc633b2d335a251649ec33c612a5a17b4e57d3b10f03d25e6f530abe2e5f5b893\",\n\t\"publicId\": \"d60209b9-b8b0-4dd8-a182-d130ed0448d3\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_base_url}}/api/community/accept",
+							"host": [
+								"{{api_base_url}}"
+							],
+							"path": [
+								"api",
+								"community",
+								"accept"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "transactions",
+			"item": [
+				{
+					"name": "transactions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_base_url}}/api/transactions/:address",
+							"host": [
+								"{{api_base_url}}"
+							],
+							"path": [
+								"api",
+								"transactions",
+								":address"
+							],
+							"variable": [
+								{
+									"key": "address",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "transactions",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api_base_url}}/api/transactions/:address",
+									"host": [
+										"{{api_base_url}}"
+									],
+									"path": [
+										"api",
+										"transactions",
+										":address"
+									],
+									"variable": [
+										{
+											"key": "address",
+											"value": "0x169f85425E704fBfcF97d452a6414DD551a69E58"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
