@@ -1,2 +1,2 @@
-release:yarn db:migrate:production
+release: yarn db:migrate:production
 web: yarn serve
