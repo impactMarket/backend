@@ -5,8 +5,7 @@
         "start": "ts-node src/app.ts",
         "serve": "node dist/app.js",
         "build": "tsc -p .",
-        "postinstall": "yarn build",
-        "db:migrate:production": "sequelize db:migrate --env production"
+        "postinstall": "yarn build"
     },
     "engines": {
         "node": "10.20.1"

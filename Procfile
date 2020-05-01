@@ -1,2 +1,2 @@
-release: yarn db:migrate:production
+release: npx sequelize db:migrate --url hello
 web: yarn serve
