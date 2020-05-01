@@ -9,7 +9,6 @@ module.exports = {
             },
             publicId: {
                 type: Sequelize.UUID,
-                defaultValue: Sequelize.UUIDV4,
                 unique: true,
                 allowNull: false,
             },

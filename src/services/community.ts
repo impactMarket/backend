@@ -1,5 +1,7 @@
 import { Community } from '../models/community';
+import { CommunityCreation } from '../models/communityCreation';
 import { ethers } from 'ethers';
+import { uuid } from 'uuidv4';
 import config from '../config';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 
@@ -15,15 +17,28 @@ export default class CommunityService {
             longitude: number,
         },
         coverImage: string,
-        status: string,
+        amountByClaim: number,
+        baseInterval: number,
+        incrementalInterval: number,
+        claimHardcap: number,
     ) {
+        const publicId = uuid();
+        // TODO: fix
+        // await CommunityCreation.create({
+        //     publicId,
+        //     amountByClaim,
+        //     baseInterval,
+        //     incrementalInterval,
+        //     claimHardcap,
+        // });
         return Community.create({
+            publicId,
             requestByAddress,
             name,
             description,
             location,
             coverImage,
-            status,
+            status: 'pending',
         });
     }
 

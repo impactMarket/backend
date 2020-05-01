@@ -31,7 +31,6 @@ export function initializeCommunity(sequelize: Sequelize) {
         },
         publicId: {
             type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
             unique: true,
             allowNull: false,
         },
