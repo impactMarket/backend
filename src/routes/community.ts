@@ -35,10 +35,7 @@ export default (app: Router) => {
                     longitude: Joi.number().required(),
                 },
                 coverImage: Joi.string().required(),
-                amountByClaim: Joi.number().required(),
-                baseInterval: Joi.number().required(),
-                incrementalInterval: Joi.number().required(),
-                claimHardcap: Joi.number().required(),
+                txCreationObj: Joi.object().required(),
             }),
         }),
         async (req: Request, res: Response, next: NextFunction) => {
@@ -48,22 +45,15 @@ export default (app: Router) => {
                 description,
                 location,
                 coverImage,
-                amountByClaim,
-                baseInterval,
-                incrementalInterval,
-                claimHardcap,
+                txCreationObj,
             } = req.body;
-            console.log(req.body);
             await CommunityService.request(
                 requestByAddress,
                 name,
                 description,
                 location,
                 coverImage,
-                amountByClaim,
-                baseInterval,
-                incrementalInterval,
-                claimHardcap,
+                txCreationObj,
             );
             res.sendStatus(200);
         },

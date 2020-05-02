@@ -10,11 +10,14 @@ export class Community extends Model {
     public description!: string;
     public location!: any;
     public coverImage!: string;
-    // *claim amount* is on contract
-    // *frequency* is on contract
-    // *time increment* is on contract
-    // *full amount* per beneficiary is on contract
     public status!: string; // pending / valid / removed
+    // the community create variables are in txCreationObj
+    // *_firstCoordinator*
+    // *_amountByClaim*
+    // *_baseIntervalTime*
+    // *_incIntervalTime*
+    // *_claimHardCap*
+    public txCreationObj!: any;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -23,7 +26,7 @@ export class Community extends Model {
 
 
 export function initializeCommunity(sequelize: Sequelize) {
-    return Community.init({
+    Community.init({
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -31,6 +34,7 @@ export function initializeCommunity(sequelize: Sequelize) {
         },
         publicId: {
             type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             unique: true,
             allowNull: false,
         },
@@ -61,6 +65,9 @@ export function initializeCommunity(sequelize: Sequelize) {
             type: DataTypes.ENUM('pending', 'valid', 'removed'),
             allowNull: false
         },
+        txCreationObj: {
+            type: DataTypes.JSON
+        },
         createdAt: {
             type: DataTypes.DATE,
             allowNull: false
@@ -73,4 +80,5 @@ export function initializeCommunity(sequelize: Sequelize) {
         tableName: 'community',
         sequelize: sequelize, // this bit is important
     });
+    return;
 }

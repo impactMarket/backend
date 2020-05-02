@@ -9,6 +9,7 @@ module.exports = {
             },
             publicId: {
                 type: Sequelize.UUID,
+                defaultValue: Sequelize.UUIDV4,
                 unique: true,
                 allowNull: false,
             },
@@ -38,6 +39,9 @@ module.exports = {
             status: {
                 type: Sequelize.ENUM('pending', 'valid', 'removed'),
                 allowNull: false
+            },
+            txCreationObj: {
+                type: Sequelize.JSON
             },
             createdAt: {
                 allowNull: false,

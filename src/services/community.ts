@@ -1,7 +1,5 @@
 import { Community } from '../models/community';
-import { CommunityCreation } from '../models/communityCreation';
 import { ethers } from 'ethers';
-import { uuid } from 'uuidv4';
 import config from '../config';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 
@@ -17,28 +15,16 @@ export default class CommunityService {
             longitude: number,
         },
         coverImage: string,
-        amountByClaim: number,
-        baseInterval: number,
-        incrementalInterval: number,
-        claimHardcap: number,
+        txCreationObj: any,
     ) {
-        const publicId = uuid();
-        // TODO: fix
-        // await CommunityCreation.create({
-        //     publicId,
-        //     amountByClaim,
-        //     baseInterval,
-        //     incrementalInterval,
-        //     claimHardcap,
-        // });
         return Community.create({
-            publicId,
             requestByAddress,
             name,
             description,
             location,
             coverImage,
             status: 'pending',
+            txCreationObj,
         });
     }
 
@@ -53,7 +39,7 @@ export default class CommunityService {
         const index = eventsImpactMarket.findIndex((event) => event !== null && event.name === 'CommunityAdded');
         const communityContractAddress = eventsImpactMarket[index].values._addr;
         const dbUpdate: [number, Community[]] = await Community.update(
-            { contractAddress: communityContractAddress, status: 'valid' },
+            { contractAddress: communityContractAddress, status: 'valid', txCreationObj: null },
             { returning: true, where: { publicId } },
         );
         if (dbUpdate[0] === 1) {

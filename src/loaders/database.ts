@@ -1,8 +1,6 @@
 import { Sequelize, Options } from 'sequelize';
 import config from '../config';
-import { initializeCommunity } from '../models/community';
-import { initializeTransactions } from '../models/transactions';
-import { initializeBeneficiary } from '../models/beneficiary';
+import initModels from '../models';
 
 
 export default async (): Promise<Sequelize> => {
@@ -13,8 +11,6 @@ export default async (): Promise<Sequelize> => {
     };
     const sequelize = new Sequelize(config.dbUrl, dbConfig);
     await sequelize.authenticate();
-    initializeCommunity(sequelize);
-    initializeBeneficiary(sequelize);
-    initializeTransactions(sequelize);
+    initModels(sequelize);
     return sequelize;
 };
