@@ -40,6 +40,6 @@ export default class BeneficiaryService {
     }
 
     public static async findByCommunityId(id: string) {
-        return Beneficiary.findOne({ where: { communityPublicId: id } });
+        return Beneficiary.findAll({ where: { communityPublicId: id } });
     }
 }
