@@ -9,9 +9,18 @@ export default (app: Router) => {
     app.use('/community', route);
 
     route.get(
+        '/address/:contractAddress',
+        async (req: Request, res: Response, next: NextFunction) => {
+            const result = await CommunityService.findByContractAddress(req.params.contractAddress);
+            console.log(result, req.params);
+            res.send(result);
+        },
+    );
+
+    route.get(
         '/id/:publicId',
         async (req: Request, res: Response, next: NextFunction) => {
-            res.send(await CommunityService.findById(req.params.publicId));
+            res.send(await CommunityService.findByPublicId(req.params.publicId));
         },
     );
 

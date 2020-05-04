@@ -59,7 +59,11 @@ export default class CommunityService {
         return Community.findOne({ where: { walletAddress } });
     }
 
-    public static async findById(publicId: string) {
+    public static async findByPublicId(publicId: string) {
         return Community.findOne({ where: { publicId } });
+    }
+
+    public static async findByContractAddress(contractAddress: string) {
+        return Community.findOne({ where: { contractAddress } });
     }
 }
