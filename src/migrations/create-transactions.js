@@ -11,6 +11,10 @@ module.exports = {
                 type: Sequelize.STRING(44),
                 allowNull: false,
             },
+            contractAddress: {
+                type: Sequelize.STRING(44),
+                allowNull: false,
+            },
             event: {
                 type: Sequelize.STRING(64),
                 allowNull: false,

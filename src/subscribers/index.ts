@@ -39,22 +39,12 @@ export default async function TransactionCacheSubscriber() {
                 const eventsCommunity = logsCommunity.map((log) => ifaceCommunity.parseLog(log));
                 // save community events
                 for (let ec = 0; ec < eventsCommunity.length; ec += 1) {
-                    let values;
-                    if (eventsCommunity[ec].name === 'BeneficiaryClaim') {
-                        values = {
-                            _account: eventsCommunity[ec].values._account,
-                            _amount: eventsCommunity[ec].values._amount,
-                        }
-                    } else {
-                        values = {
-                            _account: eventsCommunity[ec].values._account,
-                        }
-                    }
                     TransactionsService.add(
                         logsCommunity[ec].transactionHash!,
                         (await provider.getTransactionReceipt(logsCommunity[ec].transactionHash!)).from!,
+                        logsCommunity[ec].address,
                         eventsCommunity[ec].name,
-                        values,
+                        eventsCommunity[ec].values,
                     ).catch((error) => {
                         // that's fine if it is a SequelizeUniqueConstraintError
                         // it's already there 👌

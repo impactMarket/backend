@@ -17,4 +17,10 @@ export default (app: Router) => {
         async (req: Request, res: Response) => {
             return res.send(await TransactionsService.get(req.params.account));
         });
+
+    route.get(
+        '/beneficioariesof/:communityPublicId',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.getCommunityBeneficicaries(req.params.communityPublicId));
+        });
 };

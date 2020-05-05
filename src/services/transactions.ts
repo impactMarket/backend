@@ -5,12 +5,14 @@ export default class TransactionsService {
     public static async add(
         tx: string,
         from: string,
+        contractAddress: string,
         event: string,
         values: any,
     ) {
         return Transactions.create({
             tx,
             from,
+            contractAddress,
             event,
             values,
         });
@@ -22,5 +24,15 @@ export default class TransactionsService {
 
     public static async get(account: string) {
         return Transactions.findAll({ where: { values: { _account: account } } });
+    }
+
+    public static async getCommunityBeneficicaries(communityContractAddress: string) {
+        // TODO: get only if it was added and not removed yet
+        return Transactions.findAll({
+            where: {
+                event: 'BeneficiaryAdded',
+                contractAddress: communityContractAddress
+            },
+        });
     }
 }
