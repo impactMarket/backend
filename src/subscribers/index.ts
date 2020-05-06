@@ -7,6 +7,32 @@ import ContractAddresses from '../contracts/network.json';
 import TransactionsService from '../services/transactions';
 
 
+async function SubscribeChainEvents(
+    communityAddresses: string[],
+) {
+    const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
+    const impactMarketInstance = new ethers.Contract(
+        ContractAddresses.alfajores.ImpactMarket,
+        ImpactMarketContractABI,
+        provider,
+    );
+    impactMarketInstance.on('CommunityAdded', (newCommunityAddress, event) => {
+        console.log(newCommunityAddress, event);
+    });
+    // TODO: add CommunityRemoved
+    communityAddresses.forEach((communityAddress) => {
+        const communityInstance = new ethers.Contract(
+            communityAddress,
+            CommunityContractABI,
+            provider,
+        );
+        communityInstance.on('BeneficiaryAdded', (beneficiaryAddress, event) => {
+            console.log(beneficiaryAddress, event);
+        });
+        // TODO: add BeneficiaryRemoved, BeneficiaryClaim
+    });
+}
+
 async function UpdateImpactMarketCache(): Promise<string[]> {
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     const ifaceImpactMarket = new ethers.utils.Interface(ImpactMarketContractABI);
@@ -16,8 +42,8 @@ async function UpdateImpactMarketCache(): Promise<string[]> {
         fromBlock: 0, // TODO: get block number where it gets deployed
         toBlock: 'latest',
         topics: [
-            ethers.utils.id("CommunityAdded(address)"),
-            // ethers.utils.id("CommunityRemoved(address)"),
+            ethers.utils.id('CommunityAdded(address)'),
+            // ethers.utils.id('CommunityRemoved(address)'),
         ]
     });
     const eventsImpactMarket = logsImpactMarket.map((log) => ifaceImpactMarket.parseLog(log));
@@ -55,9 +81,9 @@ async function UpdateCommunityCache(
         fromBlock: 0, // TODO: get block number where it gets deployed
         toBlock: 'latest',
         topics: [
-            ethers.utils.id("BeneficiaryAdded(address)"),
-            // ethers.utils.id("BeneficiaryRemoved(address)"),
-            // ethers.utils.id("BeneficiaryClaim(address,uint256)"),
+            ethers.utils.id('BeneficiaryAdded(address)'),
+            // ethers.utils.id('BeneficiaryRemoved(address)'),
+            // ethers.utils.id('BeneficiaryClaim(address,uint256)'),
         ]
     }).then(async (logsCommunity) => {
         const eventsCommunity = logsCommunity.map((log) => ifaceCommunity.parseLog(log));
@@ -81,6 +107,7 @@ async function UpdateCommunityCache(
 }
 
 export {
+    SubscribeChainEvents,
     UpdateImpactMarketCache,
     UpdateCommunityCache,
 }
