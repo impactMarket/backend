@@ -42,7 +42,7 @@ async function UpdateImpactMarketCache(): Promise<string[]> {
         fromBlock: 0, // TODO: get block number where it gets deployed
         toBlock: 'latest',
         topics: [
-            ethers.utils.id('CommunityAdded(address)'),
+            ethers.utils.id('CommunityAdded(address,address,uint256,uint256,uint256,uint256)'),
             // ethers.utils.id('CommunityRemoved(address)'),
         ]
     });

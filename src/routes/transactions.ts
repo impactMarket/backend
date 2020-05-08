@@ -19,8 +19,8 @@ export default (app: Router) => {
         });
 
     route.get(
-        '/beneficioariesof/:communityPublicId',
+        '/beneficiariesof/:communityContractAddress',
         async (req: Request, res: Response) => {
-            return res.send(await TransactionsService.getCommunityBeneficicaries(req.params.communityPublicId));
+            return res.send(await TransactionsService.getCommunityBeneficicaries(req.params.communityContractAddress));
         });
 };
