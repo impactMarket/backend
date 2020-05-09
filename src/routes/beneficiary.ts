@@ -49,11 +49,11 @@ export default (app: Router) => {
                 acceptanceTransaction,
                 communityPublicId,
             } = req.body;
-            await BeneficiaryService.accept(
+            const success = await BeneficiaryService.accept(
                 acceptanceTransaction,
                 communityPublicId,
             );
-            res.sendStatus(200);
+            res.sendStatus(success ? 200 : 500);
         },
     );
 

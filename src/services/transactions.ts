@@ -35,4 +35,24 @@ export default class TransactionsService {
             },
         });
     }
+
+    public static async findComunityToBeneficicary(beneficiaryAddress: string) {
+        // TODO: get only if it was added and not removed yet
+        return Transactions.findOne({
+            where: {
+                event: 'BeneficiaryAdded',
+                values: { _account: beneficiaryAddress }
+            },
+        });
+    }
+
+    public static async findComunityToManager(managerAddress: string) {
+        // TODO: get only if it was added and not removed yet
+        return Transactions.findOne({
+            where: {
+                event: 'CoordinatorAdded',
+                values: { _account: managerAddress }
+            },
+        });
+    }
 }

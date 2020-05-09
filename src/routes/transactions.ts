@@ -23,4 +23,16 @@ export default (app: Router) => {
         async (req: Request, res: Response) => {
             return res.send(await TransactionsService.getCommunityBeneficicaries(req.params.communityContractAddress));
         });
+
+    route.get(
+        '/beneficiaryin/:beneficiaryAddress',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.findComunityToBeneficicary(req.params.beneficiaryAddress));
+        });
+
+    route.get(
+        '/managerin/:managerAddress',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.findComunityToManager(req.params.managerAddress));
+        });
 };
