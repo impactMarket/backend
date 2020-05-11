@@ -1,5 +1,5 @@
 <div align="center">
-    <img style="max-height: 408px" src="preview.jpeg">
+    <img style="max-height: 408px" src="logo.png">
 </div>
 
 
