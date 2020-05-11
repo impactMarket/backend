@@ -1,3 +1,4 @@
+import { SHA3 } from 'sha3';
 import { Transactions } from '../models/transactions';
 
 
@@ -7,9 +8,12 @@ export default class TransactionsService {
         from: string,
         contractAddress: string,
         event: string,
-        values: any,
+        values: any, // values from events can have multiple forms
     ) {
+        const hash = new SHA3(256);
+        hash.update(tx).update(JSON.stringify(values));
         return Transactions.create({
+            uid: hash.digest('hex'),
             tx,
             from,
             contractAddress,
@@ -54,5 +58,19 @@ export default class TransactionsService {
                 values: { _account: managerAddress }
             },
         });
+    }
+
+    public static async getLastEntry() {
+        const entries = await Transactions.findAll({
+            limit: 1,
+            where: {
+                //your where conditions, or without them if you need ANY entry
+            },
+            order: [['createdAt', 'DESC']]
+        });
+        if (entries.length === 0) {
+            return undefined;
+        }
+        return entries[0];
     }
 }

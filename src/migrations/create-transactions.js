@@ -2,10 +2,14 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable('transactions', {
-            tx: {
-                type: Sequelize.STRING(68),
+            uid: {
+                type: Sequelize.STRING(64),
                 primaryKey: true,
                 unique: true,
+            },
+            tx: {
+                type: Sequelize.STRING(68),
+                allowNull: false,
             },
             from: {
                 type: Sequelize.STRING(44),

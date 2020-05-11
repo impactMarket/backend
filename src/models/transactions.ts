@@ -15,10 +15,14 @@ export class Transactions extends Model {
 
 export function initializeTransactions(sequelize: Sequelize) {
     return Transactions.init({
-        tx: {
-            type: DataTypes.STRING(68),
+        uid: {
+            type: DataTypes.STRING(64),
             primaryKey: true,
             unique: true,
+        },
+        tx: {
+            type: DataTypes.STRING(68),
+            allowNull: false,
         },
         from: {
             type: DataTypes.STRING(44),
