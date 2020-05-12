@@ -24,7 +24,7 @@ export default {
     /**
      * json rpc url
      */
-    jsonRpcUrl: process.env.CHAIN_JSON_RPC_URL,
+    jsonRpcUrl: process.env.CHAIN_JSON_RPC_URL!,
 
     /**
      * Your secret sauce
@@ -43,5 +43,15 @@ export default {
      */
     api: {
         prefix: '/api',
-    }
+    },
+
+    /**
+     * Contract Address to use in dev
+     */
+    impactMarketContractAddress: process.env.IMPACT_MARKET_CONTRACT_ADDRESS!,
+
+    /**
+     * Contract Address to use in dev
+     */
+    impactMarketContractBlockNumber: parseInt(process.env.IMPACT_MARKET_CONTRACT_BLOCK!, 10),
 };

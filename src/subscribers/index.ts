@@ -1,9 +1,9 @@
 import { ethers } from 'ethers';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 import CommunityContractABI from '../contracts/CommunityABI.json'
-import Network from '../contracts/network.json';
 import TransactionsService from '../services/transactions';
 import { BigNumber } from 'ethers/utils';
+import config from '../config';
 
 
 interface IFilterCommunityTmpData {
@@ -78,7 +78,7 @@ async function subscribeChainEvents(
     communities: IFilterCommunityTmpData[],
 ) {
     const impactMarketInstance = new ethers.Contract(
-        Network.alfajores.ImpactMarket,
+        config.impactMarketContractAddress,
         ImpactMarketContractABI,
         provider,
     );
@@ -112,7 +112,7 @@ async function updateImpactMarketCache(
     const ifaceImpactMarket = new ethers.utils.Interface(ImpactMarketContractABI);
 
     const logsImpactMarket = await provider.getLogs({
-        address: Network.alfajores.ImpactMarket,
+        address: config.impactMarketContractAddress,
         fromBlock: startFromBlock,
         toBlock: 'latest',
         topics: [[
