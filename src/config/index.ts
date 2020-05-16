@@ -48,6 +48,11 @@ export default {
     /**
      * Contract Address to use in dev
      */
+    cUSDContractAddress: process.env.CUSD_CONTRACT_ADDRESS!,
+
+    /**
+     * Contract Address to use in dev
+     */
     impactMarketContractAddress: process.env.IMPACT_MARKET_CONTRACT_ADDRESS!,
 
     /**

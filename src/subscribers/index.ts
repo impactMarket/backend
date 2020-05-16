@@ -1,9 +1,11 @@
 import { ethers } from 'ethers';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 import CommunityContractABI from '../contracts/CommunityABI.json'
+import ERC20ABI from '../contracts/ERC20ABI.json'
 import TransactionsService from '../services/transactions';
 import { BigNumber } from 'ethers/utils';
 import config from '../config';
+import { Community } from '../models/community';
 
 
 interface IFilterCommunityTmpData {
@@ -15,7 +17,7 @@ function catchHandlerTransactionsService(error: any) {
     // that's fine if it is a SequelizeUniqueConstraintError
     // it's already there 👌
     if (error.name !== 'SequelizeUniqueConstraintError') {
-        console.log(typeof error, error);
+        console.log(typeof error, error, ':18');
     }
 }
 
@@ -44,19 +46,32 @@ interface IBeneficiaryClaimEventValues {
     _account: string,
     _amount: BigNumber,
 }
+interface ITransferEventValues {
+    from: string,
+    to: string,
+    value: BigNumber,
+}
 
 function translateEvent(
-    rawValues: ICommunityAddedEventValues | IBeneficiaryClaimEventValues | { _account: string },
+    rawValues: ICommunityAddedEventValues | IBeneficiaryClaimEventValues | ITransferEventValues | { _account: string },
 ) {
     if ((rawValues as ICommunityAddedEventValues)._baseIntervalTime) {
         const values = rawValues as ICommunityAddedEventValues;
         return {
             _communityAddress: values._addr,
             _firstCoordinator: values._firstCoordinator,
-            _amountByClaim: values._amountByClaim,
+            _amountByClaim: values._amountByClaim.toString(),
             _baseIntervalTime: values._baseIntervalTime.toString(),
             _incIntervalTime: values._incIntervalTime.toString(),
             _claimHardCap: values._claimHardCap.toString(),
+        }
+    }
+    else if ((rawValues as ITransferEventValues).from) {
+        const values = rawValues as ITransferEventValues;
+        return {
+            from: values.from,
+            to: values.to,
+            value: values.value.toString(),
         }
     }
     else if ((rawValues as IBeneficiaryClaimEventValues)._amount) {
@@ -75,33 +90,55 @@ function translateEvent(
 
 async function subscribeChainEvents(
     provider: ethers.providers.JsonRpcProvider,
-    communities: IFilterCommunityTmpData[],
+    communities: Community[],
 ) {
     const impactMarketInstance = new ethers.Contract(
         config.impactMarketContractAddress,
         ImpactMarketContractABI,
         provider,
     );
-    impactMarketInstance.on('CommunityAdded', async (event) => {
-        TransactionsService.add(
-            event.transactionHash,
-            (await provider.getTransactionReceipt(event.transactionHash!)).from!,
-            event.address,
-            event.event,
-            translateEvent(event.args),
-        ).catch(catchHandlerTransactionsService)
-    });
-    // TODO: add CommunityRemoved
+    /**
+     * here, the event has the following structure
+     * https://docs.ethers.io/ethers.js/html/api-contract.html#event-object
+     * the parameters are necessary
+     */
+    const addToTransactionCache = async (event: any) => TransactionsService.add(
+        event.transactionHash,
+        (await provider.getTransactionReceipt(event.transactionHash!)).from!,
+        event.address,
+        event.event,
+        translateEvent(event.args),
+    ).catch(catchHandlerTransactionsService);
+    // listen to impact market events
+    impactMarketInstance.on('CommunityAdded', async (
+        _addr, _firstCoordinator, _amountByClaim, _baseIntervalTime, _incIntervalTime, _claimHardCap, event
+    ) => addToTransactionCache(event));
+    impactMarketInstance.on('CommunityRemoved', async (_addr, event) => addToTransactionCache(event));
+
+    const cUSDMockInstance = new ethers.Contract(
+        config.cUSDContractAddress,
+        ERC20ABI,
+        provider,
+    );
+    // listen to community events individually
     communities.forEach((community) => {
         const communityInstance = new ethers.Contract(
-            community.address,
+            community.contractAddress,
             CommunityContractABI,
             provider,
         );
-        communityInstance.on('BeneficiaryAdded', (beneficiaryAddress, event) => {
-            console.log(beneficiaryAddress, event);
-        });
-        // TODO: add BeneficiaryRemoved, BeneficiaryClaim
+        communityInstance.on('CoordinatorAdded', (_account, event) => addToTransactionCache(event));
+        communityInstance.on('CoordinatorRemoved', (_account, event) => addToTransactionCache(event));
+        communityInstance.on('BeneficiaryAdded', (_account, event) => addToTransactionCache(event));
+        communityInstance.on('BeneficiaryLocked', (_account, event) => addToTransactionCache(event));
+        communityInstance.on('BeneficiaryRemoved', (_account, event) => addToTransactionCache(event));
+        communityInstance.on('BeneficiaryClaim', (_account, _amount, event) => addToTransactionCache(event));
+        // also listen to donations
+        cUSDMockInstance.on(
+            cUSDMockInstance.filters.Transfer(null, community.contractAddress),
+            (from, to, value, event) => {
+                addToTransactionCache(event)
+            });
     });
 }
 
@@ -143,13 +180,14 @@ async function updateImpactMarketCache(
 async function updateCommunityCache(
     startFromBlock: number,
     provider: ethers.providers.JsonRpcProvider,
-    community: IFilterCommunityTmpData,
+    community: Community | { contractAddress: string },
 ) {
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
-
+    const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
+    // get past community events
     provider.getLogs({
-        address: community.address,
-        fromBlock: community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
+        address: community.contractAddress,
+        fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
         toBlock: 'latest',
         topics: [[
             ethers.utils.id('CoordinatorAdded(address)'),
@@ -170,6 +208,27 @@ async function updateCommunityCache(
                 eventsCommunity[ec].name,
                 translateEvent(eventsCommunity[ec].values),
             ).catch(catchHandlerTransactionsService)
+        }
+    });
+    // get past donations
+    provider.getLogs({
+        fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
+        toBlock: 'latest',
+        topics: [[
+            ethers.utils.id('Transfer(address,address,uint256)'),
+        ]]
+    }).then(async (logsCUSD) => {
+        const eventsCUSD = logsCUSD.map((log) => ifaceERC20.parseLog(log));
+        for (let ec = 0; ec < eventsCUSD.length; ec += 1) {
+            if (eventsCUSD[ec].values.to === community.contractAddress) {
+                TransactionsService.add(
+                    logsCUSD[ec].transactionHash!,
+                    (await provider.getTransactionReceipt(logsCUSD[ec].transactionHash!)).from!,
+                    logsCUSD[ec].address,
+                    eventsCUSD[ec].name,
+                    translateEvent(eventsCUSD[ec].values),
+                ).catch(catchHandlerTransactionsService)
+            }
         }
     });
 }
