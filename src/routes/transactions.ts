@@ -19,12 +19,6 @@ export default (app: Router) => {
         });
 
     route.get(
-        '/beneficiariesof/:communityContractAddress',
-        async (req: Request, res: Response) => {
-            return res.send(await TransactionsService.getCommunityBeneficicaries(req.params.communityContractAddress));
-        });
-
-    route.get(
         '/beneficiaryin/:beneficiaryAddress',
         async (req: Request, res: Response) => {
             return res.send(await TransactionsService.findComunityToBeneficicary(req.params.beneficiaryAddress));
@@ -34,5 +28,41 @@ export default (app: Router) => {
         '/managerin/:managerAddress',
         async (req: Request, res: Response) => {
             return res.send(await TransactionsService.findComunityToManager(req.params.managerAddress));
+        });
+
+    route.get(
+        '/community/beneficiaries/:communityContractAddress',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.getBeneficiariesInCommunity(req.params.communityContractAddress));
+        });
+
+    route.get(
+        '/community/managers/:communityContractAddress',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.getCommunityManagersInCommunity(req.params.communityContractAddress));
+        });
+
+    route.get(
+        '/community/backers/:communityContractAddress',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.getBackersInCommunity(req.params.communityContractAddress));
+        });
+
+    route.get(
+        '/community/vars/:communityContractAddress',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.getCommunityVars(req.params.communityContractAddress));
+        });
+
+    route.get(
+        '/community/raised/:communityContractAddress',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.getCommunityRaisedAmount(req.params.communityContractAddress));
+        });
+
+    route.get(
+        '/community/claimed/:communityContractAddress',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.getCommunityClaimedAmount(req.params.communityContractAddress));
         });
 };

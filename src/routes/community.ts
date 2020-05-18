@@ -12,7 +12,6 @@ export default (app: Router) => {
         '/address/:contractAddress',
         async (req: Request, res: Response, next: NextFunction) => {
             const result = await CommunityService.findByContractAddress(req.params.contractAddress);
-            console.log(result, req.params);
             res.send(result);
         },
     );

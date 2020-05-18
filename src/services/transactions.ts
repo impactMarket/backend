@@ -1,5 +1,7 @@
 import { SHA3 } from 'sha3';
 import { Transactions } from '../models/transactions';
+import { utils } from 'ethers';
+// import { Op } from 'sequelize';
 
 
 export default class TransactionsService {
@@ -30,19 +32,19 @@ export default class TransactionsService {
         return Transactions.findAll({ where: { values: { _account: account } } });
     }
 
-    public static async getCommunityBeneficicaries(communityContractAddress: string) {
-        // TODO: get only if it was added and not removed yet
-        return Transactions.findAll({
-            where: {
-                event: 'BeneficiaryAdded',
-                contractAddress: communityContractAddress
-            },
-        });
-    }
-
     public static async findComunityToBeneficicary(beneficiaryAddress: string) {
         // TODO: get only if it was added and not removed yet
         return Transactions.findOne({
+            // where: {
+            //     event: {
+            //         [Op.or]: [
+            //             'BeneficiaryAdded',
+            //             'BeneficiaryRemoved'
+            //         ],
+            //     },
+            //     values: { _account: beneficiaryAddress },
+            //     group: '_account',
+            // },
             where: {
                 event: 'BeneficiaryAdded',
                 values: { _account: beneficiaryAddress }
@@ -58,6 +60,85 @@ export default class TransactionsService {
                 values: { _account: managerAddress }
             },
         });
+    }
+
+    public static async getBeneficiariesInCommunity(communityAddress: string) {
+        const dbRequest = Transactions.findAll({
+            where: {
+                contractAddress: communityAddress,
+                event: 'BeneficiaryAdded',
+            }
+        });
+        const beneficiaries = (await dbRequest)
+            .map((beneficiary) => beneficiary.values._account as string);
+        return beneficiaries;
+    }
+
+    public static async getCommunityManagersInCommunity(communityAddress: string): Promise<string[]> {
+        const dbRequest = Transactions.findAll({
+            where: {
+                contractAddress: communityAddress,
+                event: 'CoordinatorAdded',
+            }
+        });
+        const managers = (await dbRequest)
+            .map((manager) => manager.values._account as string);
+        return managers;
+    }
+
+    public static async getBackersInCommunity(communityAddress: string) {
+        const dbRequest = Transactions.findAll({
+            where: {
+                event: 'Transfer',
+                values: { to: communityAddress }
+            }
+        });
+        const backers = (await dbRequest)
+            .map((backer) => backer.values.from as string);
+        // Because Set only lets you store unique values.
+        return [...new Set(backers)];
+    }
+
+    public static async getCommunityVars(communityAddress: string): Promise<any> {
+        const vars = await Transactions.findOne({
+            where: {
+                event: 'CommunityAdded',
+                values: { _addr: communityAddress }
+            }
+        });
+        if (vars === null) {
+            return {} as any;
+        }
+        return {
+            _amountByClaim: vars.values._amountByClaim,
+            _baseIntervalTime: vars.values._amountByClaim,
+            _incIntervalTime: vars.values._amountByClaim,
+            _claimHardCap: vars.values._amountByClaim
+        };
+    }
+
+    public static async getCommunityRaisedAmount(communityAddress: string): Promise<string> {
+        const donations = await Transactions.findAll({
+            where: {
+                event: 'Transfer',
+                values: { to: communityAddress }
+            }
+        });
+        let raised = new utils.BigNumber(0);
+        donations.forEach((donation) => raised = raised.add(donation.values.value));
+        return raised.toString();
+    }
+
+    public static async getCommunityClaimedAmount(communityAddress: string): Promise<string> {
+        const claims = await Transactions.findAll({
+            where: {
+                contractAddress: communityAddress,
+                event: 'BeneficiaryClaim',
+            }
+        });
+        let claimed = new utils.BigNumber(0);
+        claims.forEach((claim) => claimed = claimed.add(claim.values._amount));
+        return claimed.toString();
     }
 
     public static async getLastEntry() {
