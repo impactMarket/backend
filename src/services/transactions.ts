@@ -103,7 +103,7 @@ export default class TransactionsService {
         const vars = await Transactions.findOne({
             where: {
                 event: 'CommunityAdded',
-                values: { _addr: communityAddress }
+                values: { _communityAddress: communityAddress }
             }
         });
         if (vars === null) {
@@ -111,9 +111,9 @@ export default class TransactionsService {
         }
         return {
             _amountByClaim: vars.values._amountByClaim,
-            _baseIntervalTime: vars.values._amountByClaim,
-            _incIntervalTime: vars.values._amountByClaim,
-            _claimHardCap: vars.values._amountByClaim
+            _baseIntervalTime: vars.values._baseIntervalTime,
+            _incIntervalTime: vars.values._incIntervalTime,
+            _claimHardCap: vars.values._claimHardCap
         };
     }
 
