@@ -109,21 +109,16 @@ async function subscribeChainEvents(
         event.event,
         translateEvent(event.args),
     ).catch(catchHandlerTransactionsService);
-    // listen to impact market events
-    impactMarketInstance.on('CommunityAdded', async (
-        _addr, _firstCoordinator, _amountByClaim, _baseIntervalTime, _incIntervalTime, _claimHardCap, event
-    ) => addToTransactionCache(event));
-    impactMarketInstance.on('CommunityRemoved', async (_addr, event) => addToTransactionCache(event));
-
-    const cUSDMockInstance = new ethers.Contract(
-        config.cUSDContractAddress,
-        ERC20ABI,
-        provider,
-    );
-    // listen to community events individually
-    communities.forEach((community) => {
+    // callback function
+    const communitiesCallbackFn = (community: Community | string) => {
+        let communityAddress = '';
+        if (typeof community === 'string') {
+            communityAddress = community;
+        } else {
+            communityAddress = community.contractAddress;
+        }
         const communityInstance = new ethers.Contract(
-            community.contractAddress,
+            communityAddress,
             CommunityContractABI,
             provider,
         );
@@ -135,11 +130,25 @@ async function subscribeChainEvents(
         communityInstance.on('BeneficiaryClaim', (_account, _amount, event) => addToTransactionCache(event));
         // also listen to donations
         cUSDMockInstance.on(
-            cUSDMockInstance.filters.Transfer(null, community.contractAddress),
-            (from, to, value, event) => {
-                addToTransactionCache(event)
-            });
+            cUSDMockInstance.filters.Transfer(null, communityAddress),
+            (from, to, value, event) => addToTransactionCache(event));
+    }
+    // listen to impact market events
+    impactMarketInstance.on('CommunityAdded', async (
+        _addr, _firstCoordinator, _amountByClaim, _baseIntervalTime, _incIntervalTime, _claimHardCap, event
+    ) => {
+        addToTransactionCache(event);
+        communitiesCallbackFn(_addr);
     });
+    impactMarketInstance.on('CommunityRemoved', async (_addr, event) => addToTransactionCache(event));
+
+    const cUSDMockInstance = new ethers.Contract(
+        config.cUSDContractAddress,
+        ERC20ABI,
+        provider,
+    );
+    // listen to community events individually
+    communities.forEach(communitiesCallbackFn);
 }
 
 async function updateImpactMarketCache(
