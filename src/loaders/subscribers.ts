@@ -18,8 +18,8 @@ export default async (): Promise<void> => {
     // is actually added by impactmarket in an internal transaction.
     // This means that it's necessary to filter CoordinatorAdded with
     // impactmarket address.
-    updateCommunityCache(startFrom, provider, { contractAddress: config.impactMarketContractAddress });
+    updateCommunityCache(startFrom, provider, config.impactMarketContractAddress);
     const availableCommunities = await CommunityService.getAll('valid');
-    availableCommunities.forEach((community) => updateCommunityCache(startFrom, provider, community));
-    subscribeChainEvents(provider, availableCommunities);
+    availableCommunities.forEach((community) => updateCommunityCache(startFrom, provider, community.contractAddress));
+    subscribeChainEvents(provider, availableCommunities.map((community) => community.contractAddress));
 };

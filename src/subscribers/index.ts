@@ -90,7 +90,7 @@ function translateEvent(
 
 async function subscribeChainEvents(
     provider: ethers.providers.JsonRpcProvider,
-    communities: Community[],
+    communitiesAddress: string[],
 ) {
     const impactMarketInstance = new ethers.Contract(
         config.impactMarketContractAddress,
@@ -110,13 +110,7 @@ async function subscribeChainEvents(
         translateEvent(event.args),
     ).catch(catchHandlerTransactionsService);
     // callback function
-    const communitiesCallbackFn = (community: Community | string) => {
-        let communityAddress = '';
-        if (typeof community === 'string') {
-            communityAddress = community;
-        } else {
-            communityAddress = community.contractAddress;
-        }
+    const communitiesCallbackFn = (communityAddress: string) => {
         const communityInstance = new ethers.Contract(
             communityAddress,
             CommunityContractABI,
@@ -148,7 +142,7 @@ async function subscribeChainEvents(
         provider,
     );
     // listen to community events individually
-    communities.forEach(communitiesCallbackFn);
+    communitiesAddress.forEach(communitiesCallbackFn);
 }
 
 async function updateImpactMarketCache(
@@ -189,13 +183,13 @@ async function updateImpactMarketCache(
 async function updateCommunityCache(
     startFromBlock: number,
     provider: ethers.providers.JsonRpcProvider,
-    community: Community | { contractAddress: string },
+    contractAddress: string,
 ) {
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
     // get past community events
     provider.getLogs({
-        address: community.contractAddress,
+        address: contractAddress,
         fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
         toBlock: 'latest',
         topics: [[
@@ -229,7 +223,7 @@ async function updateCommunityCache(
     }).then(async (logsCUSD) => {
         const eventsCUSD = logsCUSD.map((log) => ifaceERC20.parseLog(log));
         for (let ec = 0; ec < eventsCUSD.length; ec += 1) {
-            if (eventsCUSD[ec].values.to === community.contractAddress) {
+            if (eventsCUSD[ec].values.to === contractAddress) {
                 TransactionsService.add(
                     logsCUSD[ec].transactionHash!,
                     (await provider.getTransactionReceipt(logsCUSD[ec].transactionHash!)).from!,
