@@ -2,6 +2,8 @@ import { Community } from '../models/community';
 import { ethers } from 'ethers';
 import config from '../config';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
+import TransactionsService from './transactions';
+import { ICommunityInfo } from '../types';
 
 
 export default class CommunityService {
@@ -48,11 +50,43 @@ export default class CommunityService {
         return false;
     }
 
-    public static async getAll(status?: string) {
+    public static async getAll(status?: string): Promise<ICommunityInfo[]> {
+        let result: ICommunityInfo[] = [];
+        let communities: Community[];
         if (status === undefined) {
-            return Community.findAll();
+            const communities = await Community.findAll();
+            result = communities.map((community) => ({
+                publicId: community.publicId,
+                requestByAddress: community.requestByAddress,
+                contractAddress: community.contractAddress,
+                name: community.name,
+                description: community.description,
+                location: community.location,
+                coverImage: community.coverImage,
+                status: community.status,
+                txCreationObj: community.txCreationObj,
+                createdAt: community.createdAt.toString(),
+                updatedAt: community.updatedAt.toString(),
+                backers: [],
+                beneficiaries: [],
+                managers: [],
+                ubiRate: 0,
+                totalClaimed: '0',
+                totalRaised: '0',
+                vars: {
+                    _amountByClaim: '0',
+                    _baseIntervalTime: '0',
+                    _claimHardCap: '0',
+                    _incIntervalTime: '0',
+                },
+            }))
+            return result;
         }
-        return Community.findAll({ where: { status } });
+        communities = await Community.findAll({ where: { status } });
+        for (let index = 0; index < communities.length; index++) {
+            result.push(await this.getCachedInfoToCommunity(communities[index]));
+        }
+        return result;
     }
 
     public static async findByWallet(walletAddress: string) {
@@ -63,7 +97,42 @@ export default class CommunityService {
         return Community.findOne({ where: { publicId } });
     }
 
-    public static async findByContractAddress(contractAddress: string) {
-        return Community.findOne({ where: { contractAddress } });
+    public static async findByContractAddress(contractAddress: string): Promise<ICommunityInfo | null> {
+        const community = await Community.findOne({ where: { contractAddress } });
+        if (community === null) {
+            return null;
+        }
+        return await this.getCachedInfoToCommunity(community);
+    }
+
+    private static async getCachedInfoToCommunity(community: Community): Promise<ICommunityInfo> {
+        const beneficiaries = await TransactionsService.getBeneficiariesInCommunity(community.contractAddress);
+        const managers = await TransactionsService.getCommunityManagersInCommunity(community.contractAddress);
+        const backers = await TransactionsService.getBackersInCommunity(community.contractAddress);
+        const vars = await TransactionsService.getCommunityVars(community.contractAddress);
+
+        const claimed = await TransactionsService.getCommunityClaimedAmount(community.contractAddress);
+        const raised = await TransactionsService.getCommunityRaisedAmount(community.contractAddress);
+
+        return {
+            publicId: community.publicId,
+            requestByAddress: community.requestByAddress,
+            contractAddress: community.contractAddress,
+            name: community.name,
+            description: community.description,
+            location: community.location,
+            coverImage: community.coverImage,
+            status: community.status,
+            txCreationObj: community.txCreationObj,
+            createdAt: community.createdAt.toString(),
+            updatedAt: community.updatedAt.toString(),
+            backers,
+            beneficiaries,
+            managers,
+            ubiRate: 1, // TODO: get real value
+            totalClaimed: claimed.toString(),
+            totalRaised: raised.toString(),
+            vars,
+        };
     }
 }

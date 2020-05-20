@@ -1,6 +1,7 @@
 import { SHA3 } from 'sha3';
 import { Transactions } from '../models/transactions';
 import { utils } from 'ethers';
+import { ICommunityVars } from '../types';
 // import { Op } from 'sequelize';
 
 
@@ -99,7 +100,7 @@ export default class TransactionsService {
         return [...new Set(backers)];
     }
 
-    public static async getCommunityVars(communityAddress: string): Promise<any> {
+    public static async getCommunityVars(communityAddress: string): Promise<ICommunityVars> {
         const vars = await Transactions.findOne({
             where: {
                 event: 'CommunityAdded',
