@@ -70,7 +70,6 @@ export default class CommunityService {
                 backers: [],
                 beneficiaries: [],
                 managers: [],
-                ubiRate: 0,
                 totalClaimed: '0',
                 totalRaised: '0',
                 vars: {
@@ -129,7 +128,6 @@ export default class CommunityService {
             backers,
             beneficiaries,
             managers,
-            ubiRate: 1, // TODO: get real value
             totalClaimed: claimed.toString(),
             totalRaised: raised.toString(),
             vars,

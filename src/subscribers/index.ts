@@ -132,6 +132,8 @@ async function subscribeChainEvents(
         _addr, _firstCoordinator, _amountByClaim, _baseIntervalTime, _incIntervalTime, _claimHardCap, event
     ) => {
         addToTransactionCache(event);
+        // it's necessary to get CoordinatorAdded here!
+        updateCommunityCache(event.blockNumber - 1, provider, config.impactMarketContractAddress);
         communitiesCallbackFn(_addr);
     });
     impactMarketInstance.on('CommunityRemoved', async (_addr, event) => addToTransactionCache(event));

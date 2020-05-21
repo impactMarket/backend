@@ -20,7 +20,6 @@ export interface ICommunityInfo extends ICommunity {
     backers: string[];
     beneficiaries: string[];
     managers: string[];
-    ubiRate: number;
     totalClaimed: string;
     totalRaised: string;
     vars: ICommunityVars;
