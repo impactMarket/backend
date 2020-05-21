@@ -12,7 +12,14 @@ import CommunityService from '../services/community';
 export default async (): Promise<void> => {
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     const startFrom = await startFromBlock(provider, config.impactMarketContractBlockNumber);
-    await updateImpactMarketCache(provider, startFrom);
+    const fromLogs = await updateImpactMarketCache(provider, startFrom);
+    fromLogs.forEach((community) => updateCommunityCache(
+        community.block === undefined
+            ? startFrom
+            : community.block,
+        provider,
+        community.address
+    ));
     // Because we are filtering events by address
     // when the community is created, the first coordinator
     // is actually added by impactmarket in an internal transaction.

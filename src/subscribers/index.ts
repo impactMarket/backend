@@ -133,7 +133,7 @@ async function subscribeChainEvents(
     ) => {
         addToTransactionCache(event);
         // it's necessary to get CoordinatorAdded here!
-        updateCommunityCache(event.blockNumber - 1, provider, config.impactMarketContractAddress);
+        updateCommunityCache(event.blockNumber - 1, provider, _addr);
         communitiesCallbackFn(_addr);
     });
     impactMarketInstance.on('CommunityRemoved', async (_addr, event) => addToTransactionCache(event));
@@ -182,7 +182,7 @@ async function updateImpactMarketCache(
     return communitiesAdded;
 }
 
-async function updateCommunityCache(
+function updateCommunityCache(
     startFromBlock: number,
     provider: ethers.providers.JsonRpcProvider,
     contractAddress: string,
