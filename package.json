@@ -1,6 +1,6 @@
 {
     "name": "api",
-    "version": "0.0.1-alpha.10",
+    "version": "0.0.1-alpha.11",
     "scripts": {
         "start": "nodemon src/app.ts",
         "serve": "node dist/app.js",
