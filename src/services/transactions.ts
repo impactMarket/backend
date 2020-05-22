@@ -1,6 +1,6 @@
 import { SHA3 } from 'sha3';
 import { Transactions } from '../models/transactions';
-import { utils } from 'ethers';
+import BigNumber from 'bignumber.js';
 import { ICommunityVars } from '../types';
 // import { Op } from 'sequelize';
 
@@ -125,8 +125,8 @@ export default class TransactionsService {
                 values: { to: communityAddress }
             }
         });
-        let raised = new utils.BigNumber(0);
-        donations.forEach((donation) => raised = raised.add(donation.values.value));
+        let raised = new BigNumber(0);
+        donations.forEach((donation) => raised = raised.plus(donation.values.value));
         return raised.toString();
     }
 
@@ -137,8 +137,8 @@ export default class TransactionsService {
                 event: 'BeneficiaryClaim',
             }
         });
-        let claimed = new utils.BigNumber(0);
-        claims.forEach((claim) => claimed = claimed.add(claim.values._amount));
+        let claimed = new BigNumber(0);
+        claims.forEach((claim) => claimed = claimed.plus(claim.values._amount));
         return claimed.toString();
     }
 

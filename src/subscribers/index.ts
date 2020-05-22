@@ -3,9 +3,8 @@ import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 import CommunityContractABI from '../contracts/CommunityABI.json'
 import ERC20ABI from '../contracts/ERC20ABI.json'
 import TransactionsService from '../services/transactions';
-import { BigNumber } from 'ethers/utils';
+import BigNumber from 'bignumber.js';
 import config from '../config';
-import { Community } from '../models/community';
 
 
 interface IFilterCommunityTmpData {
