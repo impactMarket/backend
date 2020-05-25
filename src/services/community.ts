@@ -88,8 +88,8 @@ export default class CommunityService {
         return result;
     }
 
-    public static async findByWallet(walletAddress: string) {
-        return Community.findOne({ where: { walletAddress } });
+    public static async findByFirstManager(requestByAddress: string) {
+        return Community.findOne({ where: { requestByAddress } });
     }
 
     public static async findByPublicId(publicId: string) {

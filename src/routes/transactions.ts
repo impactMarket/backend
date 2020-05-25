@@ -1,5 +1,8 @@
 import { Router, Request, Response } from 'express';
 import TransactionsService from '../services/transactions';
+import CommunityService from '../services/community';
+import { Transactions } from '../models/transactions';
+import { Community } from '../models/community';
 // import middlewares from '../middlewares';
 const route = Router();
 
@@ -27,7 +30,13 @@ export default (app: Router) => {
     route.get(
         '/managerin/:managerAddress',
         async (req: Request, res: Response) => {
-            return res.send(await TransactionsService.findComunityToManager(req.params.managerAddress));
+            let community: Transactions | Community | null;
+            community = await TransactionsService.findComunityToManager(req.params.managerAddress);
+            if (community === null) {
+                // TODO: look for pending community to this user
+                community = await CommunityService.findByFirstManager(req.params.managerAddress);
+            }
+            return res.send(community);
         });
 
     route.get(
