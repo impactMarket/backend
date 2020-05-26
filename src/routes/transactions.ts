@@ -28,6 +28,12 @@ export default (app: Router) => {
         });
 
     route.get(
+        '/tokentx/:accountAddress',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.tokenTx(req.params.accountAddress));
+        });
+
+    route.get(
         '/managerin/:managerAddress',
         async (req: Request, res: Response) => {
             let community: Transactions | Community | null;

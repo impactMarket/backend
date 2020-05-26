@@ -1,7 +1,9 @@
 import { SHA3 } from 'sha3';
 import { Transactions } from '../models/transactions';
 import BigNumber from 'bignumber.js';
-import { ICommunityVars } from '../types';
+import { ICommunityVars, IRecentTxListItem } from '../types';
+import config from '../config';
+import axios from 'axios';
 // import { Op } from 'sequelize';
 
 
@@ -154,5 +156,38 @@ export default class TransactionsService {
             return undefined;
         }
         return entries[0];
+    }
+
+    public static async tokenTx(userAddress: string) {
+        const results = await axios.get(
+            `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`);
+        // filter necessary
+        const rawTxs: { from: string, to: string, timestamp: number }[] = results
+            .data.result.map((result: any) => (
+                { from: result.from, to: result.to, timestamp: parseInt(result.timeStamp, 10) }
+            )).slice(0, 20);
+        let txs: { timestamp: number, address: string }[] = rawTxs.map((tx) => {
+            if (tx.from.toLowerCase() === userAddress.toLowerCase()) {
+                return { timestamp: tx.timestamp, address: tx.to }
+            }
+            return { timestamp: tx.timestamp, address: tx.from }
+        })
+        // sort
+        txs = txs.sort((a, b) => a.timestamp - b.timestamp);
+        // group
+        const result: IRecentTxListItem[] = [];
+        const groupedTxs = txs.reduce((r, a) => {
+            r[a.address] = r[a.address] || [];
+            r[a.address].push(a);
+            return r;
+        }, Object.create(null));
+        const gTxs = Object.keys(groupedTxs);
+        for (let index = 0; index < gTxs.length; index++) {
+            const element = gTxs[index];
+            result.push(
+                { from: element, txs: groupedTxs[element].length, timestamp: groupedTxs[element][0].timestamp }
+            );
+        }
+        return result.slice(0, Math.min(5, result.length));
     }
 }

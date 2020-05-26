@@ -59,4 +59,9 @@ export default {
      * Contract Address to use in dev
      */
     impactMarketContractBlockNumber: parseInt(process.env.IMPACT_MARKET_CONTRACT_BLOCK!, 10),
+
+    /**
+     * Used to query
+     */
+    baseBlockScoutApiUrl: 'https://alfajores-blockscout.celo-testnet.org/api',
 };

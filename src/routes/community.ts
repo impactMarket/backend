@@ -30,6 +30,13 @@ export default (app: Router) => {
         },
     );
 
+    route.get(
+        '/getnames/:addresses',
+        async (req: Request, res: Response, next: NextFunction) => {
+            res.send(await CommunityService.getNamesAndFromAddresses(req.params.addresses.split(';')));
+        },
+    );
+
     route.post(
         '/request',
         celebrate({

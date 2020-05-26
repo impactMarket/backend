@@ -4,6 +4,7 @@ import config from '../config';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 import TransactionsService from './transactions';
 import { ICommunityInfo } from '../types';
+import { Op } from 'sequelize';
 
 
 export default class CommunityService {
@@ -102,6 +103,17 @@ export default class CommunityService {
             return null;
         }
         return await this.getCachedInfoToCommunity(community);
+    }
+
+    public static async getNamesAndFromAddresses(addresses: string[]) {
+        return Community.findAll({
+            attributes: ['contractAddress', 'name'],
+            where: {
+                contractAddress: {
+                    [Op.in]: addresses
+                }
+            }
+        });
     }
 
     private static async getCachedInfoToCommunity(community: Community): Promise<ICommunityInfo> {

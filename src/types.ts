@@ -31,3 +31,9 @@ export interface ICommunityVars {
     _incIntervalTime: string;
     _claimHardCap: string;
 }
+
+export interface IRecentTxListItem {
+    from: string;
+    txs: number;
+    timestamp: number;
+}
