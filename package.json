@@ -1,18 +1,29 @@
 {
-    "name": "api",
+    "name": "@impact-market/api",
     "version": "0.0.1-alpha.13",
+    "description": "Decentralized impact-driven 2-sided marketplace to provide financial services to charities and vulnerable beneficiaries.",
     "scripts": {
         "start": "nodemon src/app.ts",
         "serve": "node dist/app.js",
         "build": "tsc -p .",
         "postinstall": "yarn build"
     },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/impactMarket/api.git"
+    },
+    "author": "impact-market",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/impactMarket/api/issues"
+    },
+    "homepage": "https://github.com/impactMarket/api#readme",
     "engines": {
         "node": "10.20.1"
     },
     "dependencies": {
-        "axios": "^0.19.2",
-        "bignumber.js": "^9.0.0",
+        "axios": "0.19.2",
+        "bignumber.js": "9.0.0",
         "body-parser": "1.19.0",
         "celebrate": "11.0.2",
         "cors": "2.8.5",
