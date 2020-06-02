@@ -17,6 +17,8 @@ yarn
 
 ## Usage
 
+Before moving any further, fill the `.env`. Write the correct postgres url. Use `npx sequelize db:migrate` to generate the tables.
+
 Start with `yarn start` for dev demo with hot-reload.
 
 If you prefer a production version instead, build with `yarn build` and then start with `yarn serve`.
