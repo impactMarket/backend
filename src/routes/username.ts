@@ -11,7 +11,7 @@ export default (app: Router) => {
     route.get(
         '/:address',
         async (req: Request, res: Response, next: NextFunction) => {
-            res.send(await UsernameService.get(req.params.publicId));
+            res.send(await UsernameService.get(req.params.address));
         },
     );
 
