@@ -1,6 +1,6 @@
 {
     "name": "@impact-market/api",
-    "version": "0.0.1-alpha.13",
+    "version": "0.0.1-alpha.14",
     "description": "Decentralized impact-driven 2-sided marketplace to provide financial services to charities and vulnerable beneficiaries.",
     "scripts": {
         "start": "nodemon src/app.ts",
