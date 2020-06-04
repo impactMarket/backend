@@ -75,6 +75,40 @@ export default (app: Router) => {
     );
 
     route.post(
+        '/edit',
+        celebrate({
+            body: Joi.object({
+                publicId: Joi.string().required(),
+                name: Joi.string().required(),
+                description: Joi.string().required(),
+                location: {
+                    title: Joi.string().required(),
+                    latitude: Joi.number().required(),
+                    longitude: Joi.number().required(),
+                },
+                coverImage: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response, next: NextFunction) => {
+            const {
+                publicId,
+                name,
+                description,
+                location,
+                coverImage,
+            } = req.body;
+            await CommunityService.edit(
+                publicId,
+                name,
+                description,
+                location,
+                coverImage,
+            );
+            res.sendStatus(200);
+        },
+    );
+
+    route.post(
         '/accept',
         celebrate({
             body: Joi.object({

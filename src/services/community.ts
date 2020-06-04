@@ -31,6 +31,25 @@ export default class CommunityService {
         });
     }
 
+    public static async edit(
+        publicId: string,
+        name: string,
+        description: string,
+        location: {
+            title: string,
+            latitude: number,
+            longitude: number,
+        },
+        coverImage: string,
+    ) {
+        return Community.update({
+            name,
+            description,
+            location,
+            coverImage,
+        }, { returning: true, where: { publicId } });
+    }
+
     public static async accept(acceptanceTransaction: string, publicId: string): Promise<boolean> {
         const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
         const receipt = await provider.waitForTransaction(acceptanceTransaction);
