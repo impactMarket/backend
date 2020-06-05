@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import { ICommunityVars, IRecentTxListItem } from '../types';
 import config from '../config';
 import axios from 'axios';
-// import { Op } from 'sequelize';
+import { Op } from 'sequelize';
 
 
 export default class TransactionsService {
@@ -103,20 +103,30 @@ export default class TransactionsService {
     }
 
     public static async getCommunityVars(communityAddress: string): Promise<ICommunityVars> {
-        const vars = await Transactions.findOne({
+        const vars = await Transactions.findAll({
+            limit: 1,
             where: {
-                event: 'CommunityAdded',
-                values: { _communityAddress: communityAddress }
-            }
+                [Op.or]: [
+                    {
+                        event: 'CommunityAdded',
+                        values: { _communityAddress: communityAddress }
+                    },
+                    {
+                        event: 'CommunityEdited',
+                        contractAddress: communityAddress
+                    },
+                ]
+            },
+            order: [['createdAt', 'DESC']]
         });
         if (vars === null) {
             return {} as any;
         }
         return {
-            _amountByClaim: vars.values._amountByClaim,
-            _baseIntervalTime: vars.values._baseIntervalTime,
-            _incIntervalTime: vars.values._incIntervalTime,
-            _claimHardCap: vars.values._claimHardCap
+            _amountByClaim: vars[0].values._amountByClaim,
+            _baseIntervalTime: vars[0].values._baseIntervalTime,
+            _incIntervalTime: vars[0].values._incIntervalTime,
+            _claimHardCap: vars[0].values._claimHardCap
         };
     }
 
