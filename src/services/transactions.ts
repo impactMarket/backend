@@ -36,23 +36,26 @@ export default class TransactionsService {
     }
 
     public static async findComunityToBeneficicary(beneficiaryAddress: string) {
-        // TODO: get only if it was added and not removed yet
-        return Transactions.findOne({
-            // where: {
-            //     event: {
-            //         [Op.or]: [
-            //             'BeneficiaryAdded',
-            //             'BeneficiaryRemoved'
-            //         ],
-            //     },
-            //     values: { _account: beneficiaryAddress },
-            //     group: '_account',
-            // },
+        const reqResult = await Transactions.findAll({
+            limit: 1,
             where: {
-                event: 'BeneficiaryAdded',
-                values: { _account: beneficiaryAddress }
+                event: {
+                    [Op.or]: [
+                        'BeneficiaryAdded',
+                        'BeneficiaryRemoved'
+                    ],
+                },
+                values: { _account: beneficiaryAddress },
             },
+            order: [['createdAt', 'DESC']]
         });
+        if (reqResult === null) {
+            return null;
+        }
+        if (reqResult[0].event === 'BeneficiaryRemoved') {
+            return null;
+        }
+        return reqResult[0];
     }
 
     public static async findComunityToManager(managerAddress: string) {
