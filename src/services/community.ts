@@ -88,7 +88,10 @@ export default class CommunityService {
                 createdAt: community.createdAt.toString(),
                 updatedAt: community.updatedAt.toString(),
                 backers: [],
-                beneficiaries: [],
+                beneficiaries: {
+                    added: [],
+                    removed: [],
+                },
                 managers: [],
                 totalClaimed: '0',
                 totalRaised: '0',

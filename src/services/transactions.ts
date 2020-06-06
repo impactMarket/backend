@@ -49,11 +49,11 @@ export default class TransactionsService {
             },
             order: [['createdAt', 'DESC']]
         });
-        if (reqResult === null) {
-            return null;
+        if (reqResult.length === 0) {
+            return undefined;
         }
         if (reqResult[0].event === 'BeneficiaryRemoved') {
-            return null;
+            return undefined;
         }
         return reqResult[0];
     }
@@ -69,15 +69,53 @@ export default class TransactionsService {
     }
 
     public static async getBeneficiariesInCommunity(communityAddress: string) {
-        const dbRequest = Transactions.findAll({
+        const dbRequestResult = await Transactions.findAll({
             where: {
                 contractAddress: communityAddress,
-                event: 'BeneficiaryAdded',
+                event: {
+                    [Op.or]: [
+                        'BeneficiaryAdded',
+                        'BeneficiaryRemoved',
+                    ]
+                },
             }
         });
-        const beneficiaries = (await dbRequest)
-            .map((beneficiary) => beneficiary.values._account as string);
-        return beneficiaries;
+        // Accepts the array and key
+        const groupBy = (array: any[], key: string) => {
+            // Return the end result
+            return array.reduce((result, currentValue) => {
+                // If an array already present for key, push it to the array. Else create an array and push the object
+                (result[currentValue[key]] = result[currentValue[key]] || []).push(
+                    currentValue
+                );
+                // Return the current iteration `result` value, this will be taken as next iteration `result` value and accumulate
+                return result;
+            }, {}); // empty object is the initial value for result object
+        };
+        const beneficiaries = dbRequestResult.map((beneficiary) => ({
+            account: beneficiary.values._account,
+            event: beneficiary.event,
+            timestamp: beneficiary.createdAt.getTime(),
+        }));
+        // Group by color as key to the person array
+        const groupedBeneficiaries = groupBy(beneficiaries, 'account');
+
+        const resultAdded = [];
+        const resultRemoved = [];
+        const keys = Object.keys(groupedBeneficiaries);
+        for (let index = 0; index < keys.length; index++) {
+            const key = keys[index];
+            const eventToList = groupedBeneficiaries[key].sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
+            if(eventToList.event === 'BeneficiaryAdded') {
+                resultAdded.push(eventToList.account);
+            } else {
+                resultRemoved.push(eventToList.account);
+            }
+        }
+        return {
+            added: resultAdded,
+            removed: resultRemoved
+        }
     }
 
     public static async getCommunityManagersInCommunity(communityAddress: string): Promise<string[]> {
@@ -122,7 +160,7 @@ export default class TransactionsService {
             },
             order: [['createdAt', 'DESC']]
         });
-        if (vars === null) {
+        if (vars.length === 0) {
             return {} as any;
         }
         return {
