@@ -5,6 +5,8 @@ import { ICommunityVars, IRecentTxListItem } from '../types';
 import config from '../config';
 import axios from 'axios';
 import { Op } from 'sequelize';
+import CommunityService from './community';
+import { ethers } from 'ethers';
 
 
 export default class TransactionsService {
@@ -80,42 +82,25 @@ export default class TransactionsService {
                 },
             }
         });
-        // Accepts the array and key
-        const groupBy = (array: any[], key: string) => {
-            // Return the end result
-            return array.reduce((result, currentValue) => {
-                // If an array already present for key, push it to the array. Else create an array and push the object
-                (result[currentValue[key]] = result[currentValue[key]] || []).push(
-                    currentValue
-                );
-                // Return the current iteration `result` value, this will be taken as next iteration `result` value and accumulate
-                return result;
-            }, {}); // empty object is the initial value for result object
-        };
         const beneficiaries = dbRequestResult.map((beneficiary) => ({
             account: beneficiary.values._account,
             event: beneficiary.event,
             timestamp: beneficiary.createdAt.getTime(),
         }));
-        // Group by color as key to the person array
-        const groupedBeneficiaries = groupBy(beneficiaries, 'account');
-
-        const resultAdded = [];
-        const resultRemoved = [];
-        const keys = Object.keys(groupedBeneficiaries);
-        for (let index = 0; index < keys.length; index++) {
-            const key = keys[index];
-            const eventToList = groupedBeneficiaries[key].sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
-            if(eventToList.event === 'BeneficiaryAdded') {
-                resultAdded.push(eventToList.account);
+        // group
+        const result = {
+            added: [],
+            removed: [],
+        } as { added: string[], removed: string[] };
+        for (let [k, v] of this.groupBy(beneficiaries, 'account')) {
+            const event = v.sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
+            if (event.event === 'BeneficiaryAdded') {
+                result.added.push(event.account);
             } else {
-                resultRemoved.push(eventToList.account);
+                result.removed.push(event.account);
             }
         }
-        return {
-            added: resultAdded,
-            removed: resultRemoved
-        }
+        return result;
     }
 
     public static async getCommunityManagersInCommunity(communityAddress: string): Promise<string[]> {
@@ -210,35 +195,71 @@ export default class TransactionsService {
     }
 
     public static async tokenTx(userAddress: string) {
+        /**
+         { value: '0',
+        txreceipt_status: '1',
+        transactionIndex: '0',
+        to: '0xedee42319ebf455ed42f8c42a7ddc6febdb752ea',
+        timeStamp: '1591465626',
+        nonce: '37',
+        isError: '0',
+        input:
+        '0x5926651d000000000000000000000000382ae9478dbdc7afc7bb786729c617f38bc94319',
+        hash:
+        '0x08bf33d2d91065e9e0e3cf36644191faba7c532dbfa6cb2ddca7f58cbf2be1a8',
+        gasUsed: '90552',
+        gasPrice: '50000000000',
+        gas: '135828',
+        from: '0x60f2b1ee6322b3aa2c88f497d87f65a15593f452',
+        cumulativeGasUsed: '90552',
+        contractAddress: '',
+        confirmations: '2790',
+        blockNumber: '938981',
+        blockHash:
+        '0xdb5344fb76467c23b6d6c2e5c36258a0c43cad7281e756060b8b81501843e6e5' }
+         */
         const results = await axios.get(
-            `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`);
+            `${config.baseBlockScoutApiUrl}?module=account&action=txlist&address=${userAddress}`
+        );
+
         // filter necessary
-        const rawTxs: { from: string, to: string, timestamp: number }[] = results
-            .data.result.map((result: any) => (
-                { from: result.from, to: result.to, timestamp: parseInt(result.timeStamp, 10) }
-            )).slice(0, 20);
-        let txs: { timestamp: number, address: string }[] = rawTxs.map((tx) => {
-            if (tx.from.toLowerCase() === userAddress.toLowerCase()) {
-                return { timestamp: tx.timestamp, address: tx.to }
-            }
-            return { timestamp: tx.timestamp, address: tx.from }
-        })
-        // sort
-        txs = txs.sort((a, b) => a.timestamp - b.timestamp);
+        const rawTxs = results.data.result
+            .map((result: { from: string, to: string, timeStamp: string }) => ({
+                from: ethers.utils.getAddress(result.from),
+                to: ethers.utils.getAddress(result.to),
+                timestamp: parseInt(result.timeStamp, 10)
+            })) as { from: string, to: string, timestamp: number }[];
+
+        const txs = rawTxs.map((tx) => ({
+            timestamp: tx.timestamp,
+            address: (tx.from.toLowerCase() === userAddress.toLowerCase()) ? tx.to : tx.from
+        })).sort((a, b) => b.timestamp - a.timestamp) as { timestamp: number, address: string }[];
+
         // group
         const result: IRecentTxListItem[] = [];
-        const groupedTxs = txs.reduce((r, a) => {
-            r[a.address] = r[a.address] || [];
-            r[a.address].push(a);
-            return r;
-        }, Object.create(null));
-        const gTxs = Object.keys(groupedTxs);
-        for (let index = 0; index < gTxs.length; index++) {
-            const element = gTxs[index];
-            result.push(
-                { from: element, txs: groupedTxs[element].length, timestamp: groupedTxs[element][0].timestamp }
-            );
+        const communities = await CommunityService.getNamesAndFromAddresses(txs.map((e) => e.address));
+        const hasCommunities = communities !== undefined && communities.length > 0;
+        //
+        for (let [k, v] of this.groupBy(txs, 'address')) {
+            let community = communities.find((e) => e.contractAddress === k)
+            result.push({
+                from: (hasCommunities && community !== undefined) ? community.name : k,
+                txs: v.length,
+                timestamp: v[0].timestamp
+            });
         }
-        return result.slice(0, Math.min(5, result.length));
+        return result.slice(0, Math.min(10, result.length));
     }
+
+    // Accepts the array and key
+    private static groupBy(array: any[], key: string): Map<string, any[]> {
+        // Return the end result
+        return array.reduce((result, currentValue) => {
+            let content = result.get(currentValue[key]);
+            // If an array already present for key, push it to the array. Else create an array and push the object
+            (content === undefined) ? content = [currentValue] : content.push(currentValue);
+            // Return the current iteration `result` value, this will be taken as next iteration `result` value and accumulate
+            return result.set(currentValue[key], content);
+        }, new Map<string, any[]>()); // empty map is the initial value for result object
+    };
 }
