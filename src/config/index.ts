@@ -64,4 +64,9 @@ export default {
      * Used to query
      */
     baseBlockScoutApiUrl: 'https://alfajores-blockscout.celo-testnet.org/api',
+
+    /**
+     * Decimals in cUSD token
+     */
+    cUSDDecimal: 18
 };

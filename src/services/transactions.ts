@@ -7,6 +7,8 @@ import axios from 'axios';
 import { Op } from 'sequelize';
 import CommunityService from './community';
 import { ethers } from 'ethers';
+import { Username } from '../models/username';
+import UsernameService from './username';
 
 
 export default class TransactionsService {
@@ -194,6 +196,19 @@ export default class TransactionsService {
         return entries[0];
     }
 
+    public static async paymentsTx(userAddress: string) {
+        const query = await axios.get(
+            `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`
+        );
+        const decimals = new BigNumber(10).pow(config.cUSDDecimal);
+
+        const result = query.data.result
+            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0' && r.from.toLowerCase() === userAddress.toLowerCase())
+            .map((r: { to: string; value: string; tokenDecimal: string; timeStamp: string; }) => ({ to: ethers.utils.getAddress(r.to), value: new BigNumber(r.value).div(decimals).toFixed(2), timestamp: parseInt(r.timeStamp, 10) }));
+        // https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
+        return Array.from(new Set(result.map((a: { to: string; }) => a.to))).map(to => result.find((a: { to: string; }) => a.to === to));
+    }
+
     public static async tokenTx(userAddress: string) {
         /**
          { value: '0',
@@ -222,17 +237,23 @@ export default class TransactionsService {
             `${config.baseBlockScoutApiUrl}?module=account&action=txlist&address=${userAddress}`
         );
 
+        const chooseAddress = (tx: { to: string, from: string, input: string }) => {
+            if (tx.to.toLowerCase() === config.cUSDContractAddress.toLowerCase()) return '0x' + tx.input.substr(34, 40)
+            return (tx.from.toLowerCase() === userAddress.toLowerCase()) ? tx.to : tx.from;
+        }
+
         // filter necessary
         const rawTxs = results.data.result
-            .map((result: { from: string, to: string, timeStamp: string }) => ({
+            .map((result: { from: string, to: string, input: string, timeStamp: string }) => ({
                 from: ethers.utils.getAddress(result.from),
                 to: ethers.utils.getAddress(result.to),
+                input: result.input,
                 timestamp: parseInt(result.timeStamp, 10)
-            })) as { from: string, to: string, timestamp: number }[];
+            })) as { from: string, to: string, input: string, timestamp: number }[];
 
         const txs = rawTxs.map((tx) => ({
             timestamp: tx.timestamp,
-            address: (tx.from.toLowerCase() === userAddress.toLowerCase()) ? tx.to : tx.from
+            address: chooseAddress(tx),
         })).sort((a, b) => b.timestamp - a.timestamp) as { timestamp: number, address: string }[];
 
         // group
@@ -249,6 +270,18 @@ export default class TransactionsService {
             });
         }
         return result.slice(0, Math.min(10, result.length));
+    }
+
+    private static async addressesByNames(addresses: string[]) {
+        const communities = await CommunityService.getNamesAndFromAddresses(addresses);
+        const usernames = await UsernameService.getAll();
+        // const hasCommunities = communities !== undefined && communities.length > 0;
+
+        return addresses.map((a) => {
+            let community = communities.find((e) => e.contractAddress === a);
+            let user = usernames.find((e) => e.address === a);
+            return community !== undefined ? community.name : (user !== undefined ? user.username : a);
+        });
     }
 
     // Accepts the array and key

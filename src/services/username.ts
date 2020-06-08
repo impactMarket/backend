@@ -20,7 +20,10 @@ export default class UsernameService {
     }
 
     public static async get(address: string) {
-        console.log('address', address);
         return Username.findOne({ where: { address } });
+    }
+
+    public static async getAll() {
+        return Username.findAll();
     }
 }
