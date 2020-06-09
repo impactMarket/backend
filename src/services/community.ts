@@ -167,4 +167,16 @@ export default class CommunityService {
             vars,
         };
     }
+
+    public static async mappedNames(): Promise<Map<string, string>> {
+        const mapped = new Map<string, string>();
+        const query = await Community.findAll({
+            attributes: ['contractAddress', 'name'],
+        });
+        for (let index = 0; index < query.length; index++) {
+            const element = query[index];
+            mapped.set(element.contractAddress, element.name);
+        }
+        return mapped;
+    }
 }

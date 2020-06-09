@@ -26,4 +26,14 @@ export default class UsernameService {
     public static async getAll() {
         return Username.findAll();
     }
+
+    public static async mappedNames(): Promise<Map<string, string>> {
+        const mapped = new Map<string, string>();
+        const query = await Username.findAll();
+        for (let index = 0; index < query.length; index++) {
+            const element = query[index];
+            mapped.set(element.address, element.username);
+        }
+        return mapped;
+    }
 }

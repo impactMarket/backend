@@ -201,10 +201,18 @@ export default class TransactionsService {
             `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`
         );
         const decimals = new BigNumber(10).pow(config.cUSDDecimal);
+        const registry = await this.addressesByNames();
 
         const result = query.data.result
             .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0' && r.from.toLowerCase() === userAddress.toLowerCase())
-            .map((r: { to: string; value: string; tokenDecimal: string; timeStamp: string; }) => ({ to: ethers.utils.getAddress(r.to), value: new BigNumber(r.value).div(decimals).toFixed(2), timestamp: parseInt(r.timeStamp, 10) }));
+            .map((r: { to: string; value: string; tokenDecimal: string; timeStamp: string; }) => {
+                const k = ethers.utils.getAddress(r.to);
+                return {
+                    to: registry.has(k) ? registry.get(k)! : k,
+                    value: new BigNumber(r.value).div(decimals).toFixed(2),
+                    timestamp: parseInt(r.timeStamp, 10)
+                };
+            });
         // https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
         return Array.from(new Set(result.map((a: { to: string; }) => a.to))).map(to => result.find((a: { to: string; }) => a.to === to));
     }
@@ -238,7 +246,7 @@ export default class TransactionsService {
         );
 
         const chooseAddress = (tx: { to: string, from: string, input: string }) => {
-            if (tx.to.toLowerCase() === config.cUSDContractAddress.toLowerCase()) return '0x' + tx.input.substr(34, 40)
+            if (tx.to.toLowerCase() === config.cUSDContractAddress.toLowerCase()) return ethers.utils.getAddress('0x' + tx.input.substr(34, 40))
             return (tx.from.toLowerCase() === userAddress.toLowerCase()) ? tx.to : tx.from;
         }
 
@@ -258,13 +266,11 @@ export default class TransactionsService {
 
         // group
         const result: IRecentTxListItem[] = [];
-        const communities = await CommunityService.getNamesAndFromAddresses(txs.map((e) => e.address));
-        const hasCommunities = communities !== undefined && communities.length > 0;
+        const registry = await this.addressesByNames();
         //
         for (let [k, v] of this.groupBy(txs, 'address')) {
-            let community = communities.find((e) => e.contractAddress === k)
             result.push({
-                from: (hasCommunities && community !== undefined) ? community.name : k,
+                from: registry.has(k) ? registry.get(k)! : k,
                 txs: v.length,
                 timestamp: v[0].timestamp
             });
@@ -272,16 +278,10 @@ export default class TransactionsService {
         return result.slice(0, Math.min(10, result.length));
     }
 
-    private static async addressesByNames(addresses: string[]) {
-        const communities = await CommunityService.getNamesAndFromAddresses(addresses);
-        const usernames = await UsernameService.getAll();
-        // const hasCommunities = communities !== undefined && communities.length > 0;
-
-        return addresses.map((a) => {
-            let community = communities.find((e) => e.contractAddress === a);
-            let user = usernames.find((e) => e.address === a);
-            return community !== undefined ? community.name : (user !== undefined ? user.username : a);
-        });
+    private static async addressesByNames() {
+        const communities = await CommunityService.mappedNames();
+        const usernames = await UsernameService.mappedNames();
+        return new Map([...communities, ...usernames]); // addresses.map((a) => registry.has(a) !== undefined ? registry.get(a) : a);
     }
 
     // Accepts the array and key
