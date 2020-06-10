@@ -62,15 +62,27 @@ export default (app: Router) => {
                 coverImage,
                 txCreationObj,
             } = req.body;
-            await CommunityService.request(
-                requestByAddress,
-                name,
-                description,
-                location,
-                coverImage,
-                txCreationObj,
-            );
-            res.sendStatus(200);
+            let returningStatus = 200;
+            // TODO: make requestByAddress unique in the database, instead
+            try {
+                const exists = await CommunityService.findByFirstManager(requestByAddress);
+                if (exists === null) {
+                    await CommunityService.request(
+                        requestByAddress,
+                        name,
+                        description,
+                        location,
+                        coverImage,
+                        txCreationObj,
+                    );
+                } else {
+                    returningStatus = 500;
+                }
+            } catch (e) {
+                returningStatus = 500;
+            } finally {
+                res.sendStatus(returningStatus);
+            }
         },
     );
 
