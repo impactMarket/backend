@@ -1,3 +1,6 @@
+
+// API to app
+
 export interface ICommunity {
     publicId: string;
     requestByAddress: string;
@@ -19,8 +22,8 @@ export interface ICommunity {
 export interface ICommunityInfo extends ICommunity {
     backers: string[];
     beneficiaries: {
-        added: string[];
-        removed: string[];
+        added: IAddressAndName[];
+        removed: IAddressAndName[];
     };
     managers: string[];
     totalClaimed: string;
@@ -35,8 +38,19 @@ export interface ICommunityVars {
     _claimHardCap: string;
 }
 
-export interface IRecentTxListItem {
-    from: string;
+export interface IAddressAndName {
+    address: string;
+    name: string;
+}
+
+export interface IRecentTxAPI {
+    from: IAddressAndName;
     txs: number;
+    timestamp: number;
+}
+
+export interface IPaymentsTxAPI {
+    to: IAddressAndName;
+    value: string;
     timestamp: number;
 }

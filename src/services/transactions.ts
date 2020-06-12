@@ -1,7 +1,7 @@
 import { SHA3 } from 'sha3';
 import { Transactions } from '../models/transactions';
 import BigNumber from 'bignumber.js';
-import { ICommunityVars, IRecentTxListItem } from '../types';
+import { ICommunityVars, IRecentTxAPI, IPaymentsTxAPI, IAddressAndName } from '../types';
 import config from '../config';
 import axios from 'axios';
 import { Op } from 'sequelize';
@@ -90,16 +90,14 @@ export default class TransactionsService {
             timestamp: beneficiary.createdAt.getTime(),
         }));
         // group
-        const result = {
-            added: [],
-            removed: [],
-        } as { added: string[], removed: string[] };
+        const result = { added: [], removed: [] } as { added: IAddressAndName[], removed: IAddressAndName[] };
+        const registry = await this.addressesByNames();
         for (let [k, v] of this.groupBy(beneficiaries, 'account')) {
             const event = v.sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
             if (event.event === 'BeneficiaryAdded') {
-                result.added.push(event.account);
+                result.added.push(this.addressToAddressAndName(event.account, registry));
             } else {
-                result.removed.push(event.account);
+                result.removed.push(this.addressToAddressAndName(event.account, registry));
             }
         }
         return result;
@@ -208,13 +206,13 @@ export default class TransactionsService {
             .map((r: { to: string; value: string; tokenDecimal: string; timeStamp: string; }) => {
                 const k = ethers.utils.getAddress(r.to);
                 return {
-                    to: registry.has(k) ? registry.get(k)! : k,
+                    to: this.addressToAddressAndName(k, registry),
                     value: new BigNumber(r.value).div(decimals).toFixed(2),
                     timestamp: parseInt(r.timeStamp, 10)
                 };
-            });
+            }) as IPaymentsTxAPI[];
         // https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
-        return Array.from(new Set(result.map((a: { to: string; }) => a.to))).map(to => result.find((a: { to: string; }) => a.to === to));
+        return Array.from(new Set(result.map((a) => a.to.address))).map(address => result.find((a) => a.to.address === address));
     }
 
     public static async tokenTx(userAddress: string) {
@@ -265,12 +263,12 @@ export default class TransactionsService {
         })).sort((a, b) => b.timestamp - a.timestamp) as { timestamp: number, address: string }[];
 
         // group
-        const result: IRecentTxListItem[] = [];
+        const result: IRecentTxAPI[] = [];
         const registry = await this.addressesByNames();
         //
         for (let [k, v] of this.groupBy(txs, 'address')) {
             result.push({
-                from: registry.has(k) ? registry.get(k)! : k,
+                from: this.addressToAddressAndName(k, registry),
                 txs: v.length,
                 timestamp: v[0].timestamp
             });
@@ -295,4 +293,8 @@ export default class TransactionsService {
             return result.set(currentValue[key], content);
         }, new Map<string, any[]>()); // empty map is the initial value for result object
     };
+
+    private static addressToAddressAndName(address: string, registry: Map<string, string>) {
+        return { address, name: registry.has(address) ? registry.get(address)! : address }
+    }
 }
