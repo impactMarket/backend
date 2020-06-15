@@ -1,14 +1,18 @@
 import { SHA3 } from 'sha3';
 import { Transactions } from '../models/transactions';
 import BigNumber from 'bignumber.js';
-import { ICommunityVars, IRecentTxAPI, IPaymentsTxAPI, IAddressAndName } from '../types';
+import {
+    ICommunityVars,
+    IRecentTxAPI,
+    IPaymentsTxAPI,
+    IAddressAndName
+} from '../types';
 import config from '../config';
 import axios from 'axios';
 import { Op } from 'sequelize';
 import CommunityService from './community';
 import { ethers } from 'ethers';
-import { Username } from '../models/username';
-import UsernameService from './username';
+import UserService from './user';
 
 
 export default class TransactionsService {
@@ -207,7 +211,7 @@ export default class TransactionsService {
                 const k = ethers.utils.getAddress(r.to);
                 return {
                     to: this.addressToAddressAndName(k, registry),
-                    value: new BigNumber(r.value).div(decimals).toFixed(2),
+                    value: r.value.toString(),
                     timestamp: parseInt(r.timeStamp, 10)
                 };
             }) as IPaymentsTxAPI[];
@@ -278,7 +282,7 @@ export default class TransactionsService {
 
     private static async addressesByNames() {
         const communities = await CommunityService.mappedNames();
-        const usernames = await UsernameService.mappedNames();
+        const usernames = await UserService.mappedNames();
         return new Map([...communities, ...usernames]); // addresses.map((a) => registry.has(a) !== undefined ? registry.get(a) : a);
     }
 

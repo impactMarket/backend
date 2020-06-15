@@ -1,18 +1,19 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 
-export class Username extends Model {
+export class User extends Model {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public address!: string;
     public username!: string;
+    public currency!: string;
 
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
 
-export function initializeUsername(sequelize: Sequelize) {
-    return Username.init({
+export function initializeUser(sequelize: Sequelize) {
+    return User.init({
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -24,7 +25,11 @@ export function initializeUsername(sequelize: Sequelize) {
         },
         username: {
             type: DataTypes.STRING(64),
-            allowNull: false,
+            // allowNull: false,
+        },
+        currency: {
+            type: DataTypes.STRING(4),
+            // allowNull: false,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -35,7 +40,7 @@ export function initializeUsername(sequelize: Sequelize) {
             allowNull: false,
         }
     }, {
-        tableName: 'username',
+        tableName: 'user',
         sequelize: sequelize, // this bit is important
     });
 }

@@ -43,6 +43,12 @@ export interface IAddressAndName {
     name: string;
 }
 
+export interface IUser {
+    address: string;
+    username: string | null;
+    currency: string | null;
+}
+
 export interface IRecentTxAPI {
     from: IAddressAndName;
     txs: number;

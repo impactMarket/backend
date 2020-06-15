@@ -2,7 +2,7 @@ import { Router } from 'express';
 import community from './community';
 import transactions from './transactions';
 import beneficiary from './beneficiary';
-import username from './username';
+import user from './user';
 
 
 export default () => {
@@ -10,7 +10,7 @@ export default () => {
     community(app);
     transactions(app);
     beneficiary(app);
-    username(app);
+    user(app);
 
     return app;
 }
