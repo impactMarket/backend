@@ -48,6 +48,10 @@ module.exports = {
                 type: Sequelize.ENUM('public', 'private'),
                 allowNull: false
             },
+            coverImage: {
+                type: Sequelize.STRING(128),
+                allowNull: false
+            },
             status: {
                 type: Sequelize.ENUM('pending', 'valid', 'removed'),
                 allowNull: false
