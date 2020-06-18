@@ -8,15 +8,13 @@ export class Community extends Model {
     public contractAddress!: string;
     public name!: string;
     public description!: string;
-    public location!: any;
+    public city!: string;
+    public country!: string;
+    public gps!: any;
+    public email!: string;
+    public visibility!: string;
     public coverImage!: string;
     public status!: string; // pending / valid / removed
-    // the community create variables are in txCreationObj
-    // *_firstCoordinator*
-    // *_amountByClaim*
-    // *_baseIntervalTime*
-    // *_incIntervalTime*
-    // *_claimHardCap*
     public txCreationObj!: any;
 
     // timestamps!
@@ -53,8 +51,24 @@ export function initializeCommunity(sequelize: Sequelize) {
             type: DataTypes.STRING(512),
             allowNull: false
         },
-        location: {
+        city: {
+            type: DataTypes.STRING(64),
+            allowNull: false
+        },
+        country: {
+            type: DataTypes.STRING(64),
+            allowNull: false
+        },
+        gps: {
             type: DataTypes.JSON,
+            allowNull: false
+        },
+        email: {
+            type: DataTypes.STRING(64),
+            allowNull: false
+        },
+        visibility: {
+            type: DataTypes.ENUM('public', 'private'),
             allowNull: false
         },
         coverImage: {

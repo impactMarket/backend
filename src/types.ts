@@ -7,11 +7,14 @@ export interface ICommunity {
     contractAddress: string;
     name: string;
     description: string;
-    location: {
-        title: string;
+    country: string;
+    city: string;
+    gps: {
         latitude: number;
         longitude: number;
     };
+    visibility: string;
+    email: string;
     coverImage: string;
     status: string;
     txCreationObj: any;

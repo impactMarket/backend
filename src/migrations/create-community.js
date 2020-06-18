@@ -28,12 +28,24 @@ module.exports = {
                 type: Sequelize.STRING(512),
                 allowNull: false
             },
-            location: {
+            city: {
+                type: Sequelize.STRING(64),
+                allowNull: false
+            },
+            country: {
+                type: Sequelize.STRING(64),
+                allowNull: false
+            },
+            gps: {
                 type: Sequelize.JSON,
                 allowNull: false
             },
-            coverImage: {
-                type: Sequelize.STRING(128),
+            email: {
+                type: Sequelize.STRING(64),
+                allowNull: false
+            },
+            visibility: {
+                type: Sequelize.ENUM('public', 'private'),
                 allowNull: false
             },
             status: {

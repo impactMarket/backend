@@ -12,11 +12,14 @@ export default class CommunityService {
         requestByAddress: string,
         name: string,
         description: string,
-        location: {
-            title: string,
+        city: string,
+        country: string,
+        gps: {
             latitude: number,
             longitude: number,
         },
+        email: string,
+        visibility: string,
         coverImage: string,
         txCreationObj: any,
     ) {
@@ -24,7 +27,11 @@ export default class CommunityService {
             requestByAddress,
             name,
             description,
-            location,
+            city,
+            country,
+            gps,
+            email,
+            visibility,
             coverImage,
             status: 'pending',
             txCreationObj,
@@ -35,17 +42,24 @@ export default class CommunityService {
         publicId: string,
         name: string,
         description: string,
-        location: {
-            title: string,
+        city: string,
+        country: string,
+        gps: {
             latitude: number,
             longitude: number,
         },
+        email: string,
+        visibility: string,
         coverImage: string,
     ) {
         return Community.update({
             name,
             description,
-            location,
+            city,
+            country,
+            gps,
+            email,
+            visibility,
             coverImage,
         }, { returning: true, where: { publicId } });
     }
@@ -71,20 +85,11 @@ export default class CommunityService {
     }
 
     public static async getAll(status?: string): Promise<ICommunityInfo[]> {
-        let result: ICommunityInfo[] = [];
         let communities: Community[];
         if (status === undefined) {
             const communities = await Community.findAll();
-            result = communities.map((community) => ({
-                publicId: community.publicId,
-                requestByAddress: community.requestByAddress,
-                contractAddress: community.contractAddress,
-                name: community.name,
-                description: community.description,
-                location: community.location,
-                coverImage: community.coverImage,
-                status: community.status,
-                txCreationObj: community.txCreationObj,
+            return communities.map((community) => ({
+                ...community,
                 createdAt: community.createdAt.toString(),
                 updatedAt: community.updatedAt.toString(),
                 backers: [],
@@ -102,8 +107,8 @@ export default class CommunityService {
                     _incIntervalTime: '0',
                 },
             }))
-            return result;
         }
+        let result: ICommunityInfo[] = [];
         communities = await Community.findAll({ where: { status } });
         for (let index = 0; index < communities.length; index++) {
             result.push(await this.getCachedInfoToCommunity(communities[index]));
@@ -148,15 +153,7 @@ export default class CommunityService {
         const raised = await TransactionsService.getCommunityRaisedAmount(community.contractAddress);
 
         return {
-            publicId: community.publicId,
-            requestByAddress: community.requestByAddress,
-            contractAddress: community.contractAddress,
-            name: community.name,
-            description: community.description,
-            location: community.location,
-            coverImage: community.coverImage,
-            status: community.status,
-            txCreationObj: community.txCreationObj,
+            ...community,
             createdAt: community.createdAt.toString(),
             updatedAt: community.updatedAt.toString(),
             backers,
