@@ -87,7 +87,7 @@ export default class CommunityService {
     public static async getAll(status?: string): Promise<ICommunityInfo[]> {
         let communities: Community[];
         if (status === undefined) {
-            const communities = await Community.findAll();
+            const communities = await Community.findAll({ raw: true });
             return communities.map((community) => ({
                 ...community,
                 createdAt: community.createdAt.toString(),
@@ -109,7 +109,7 @@ export default class CommunityService {
             }))
         }
         let result: ICommunityInfo[] = [];
-        communities = await Community.findAll({ where: { status } });
+        communities = await Community.findAll({ where: { status }, raw: true });
         for (let index = 0; index < communities.length; index++) {
             result.push(await this.getCachedInfoToCommunity(communities[index]));
         }
