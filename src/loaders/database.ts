@@ -8,6 +8,7 @@ export default async (): Promise<Sequelize> => {
         dialect: 'postgres',
         protocol: 'postgres',
         native: true,
+        // query: { raw: true },
     };
     const sequelize = new Sequelize(config.dbUrl, dbConfig);
     await sequelize.authenticate();

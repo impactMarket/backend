@@ -24,7 +24,12 @@ export default (app: Router) => {
     route.get(
         '/beneficiaryin/:beneficiaryAddress',
         async (req: Request, res: Response) => {
-            return res.send(await TransactionsService.findComunityToBeneficicary(req.params.beneficiaryAddress));
+            const community = await TransactionsService.findComunityToBeneficicary(req.params.beneficiaryAddress);
+            if (community !== undefined) {
+                const communityInfo = await CommunityService.findByContractAddress(community.contractAddress);
+                return res.send(communityInfo);
+            }
+            return res.send(community);
         });
 
     route.get(
@@ -47,6 +52,10 @@ export default (app: Router) => {
             if (community === null) {
                 // TODO: look for pending community to this user
                 community = await CommunityService.findByFirstManager(req.params.managerAddress);
+            }
+            if (community !== null) {
+                const communityInfo = await CommunityService.findByContractAddress(community.contractAddress);
+                return res.send(communityInfo);
             }
             return res.send(community);
         });

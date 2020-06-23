@@ -125,7 +125,7 @@ export default class CommunityService {
     }
 
     public static async findByContractAddress(contractAddress: string): Promise<ICommunityInfo | null> {
-        const community = await Community.findOne({ where: { contractAddress } });
+        const community = await Community.findOne({ where: { contractAddress }, raw: true });
         if (community === null) {
             return null;
         }
