@@ -58,7 +58,7 @@ export default (app: Router) => {
         }),
         async (req: Request, res: Response, next: NextFunction) => {
             const {
-                requestByAddress, // the address making the request (will be community coordinator)
+                requestByAddress, // the address making the request (will be community manager)
                 name,
                 description,
                 city,

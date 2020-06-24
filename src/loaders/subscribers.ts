@@ -21,9 +21,9 @@ export default async (): Promise<void> => {
         community.address
     ));
     // Because we are filtering events by address
-    // when the community is created, the first coordinator
+    // when the community is created, the first manager
     // is actually added by impactmarket in an internal transaction.
-    // This means that it's necessary to filter CoordinatorAdded with
+    // This means that it's necessary to filter ManagerAdded with
     // impactmarket address.
     updateCommunityCache(startFrom, provider, config.impactMarketContractAddress);
     const availableCommunities = await CommunityService.getAll('valid');

@@ -35,7 +35,7 @@ async function startFromBlock(
 
 interface ICommunityAddedEventValues {
     _addr: string,
-    _firstCoordinator: string,
+    _firstManager: string,
     _amountByClaim: BigNumber,
     _baseIntervalTime: BigNumber,
     _incIntervalTime: BigNumber,
@@ -61,11 +61,11 @@ interface ITransferEventValues {
 function translateEvent(
     rawValues: ICommunityAddedEventValues | ICommunityEditedEventValues | IBeneficiaryClaimEventValues | ITransferEventValues | { _account: string },
 ) {
-    if ((rawValues as ICommunityAddedEventValues)._firstCoordinator) {
+    if ((rawValues as ICommunityAddedEventValues)._firstManager) {
         const values = rawValues as ICommunityAddedEventValues;
         return {
             _communityAddress: values._addr,
-            _firstCoordinator: values._firstCoordinator,
+            _firstManager: values._firstManager,
             _amountByClaim: values._amountByClaim.toString(),
             _baseIntervalTime: values._baseIntervalTime.toString(),
             _incIntervalTime: values._incIntervalTime.toString(),
@@ -132,8 +132,8 @@ async function subscribeChainEvents(
             CommunityContractABI,
             provider,
         );
-        communityInstance.on('CoordinatorAdded', (_account, event) => addToTransactionCache(event));
-        communityInstance.on('CoordinatorRemoved', (_account, event) => addToTransactionCache(event));
+        communityInstance.on('ManagerAdded', (_account, event) => addToTransactionCache(event));
+        communityInstance.on('ManagerRemoved', (_account, event) => addToTransactionCache(event));
         communityInstance.on('BeneficiaryAdded', (_account, event) => addToTransactionCache(event));
         communityInstance.on('BeneficiaryLocked', (_account, event) => addToTransactionCache(event));
         communityInstance.on('BeneficiaryRemoved', (_account, event) => addToTransactionCache(event));
@@ -147,10 +147,10 @@ async function subscribeChainEvents(
     }
     // listen to impact market events
     impactMarketInstance.on('CommunityAdded', async (
-        _addr, _firstCoordinator, _amountByClaim, _baseIntervalTime, _incIntervalTime, _claimHardCap, event
+        _addr, _firstManager, _amountByClaim, _baseIntervalTime, _incIntervalTime, _claimHardCap, event
     ) => {
         addToTransactionCache(event);
-        // it's necessary to get CoordinatorAdded here!
+        // it's necessary to get ManagerAdded here!
         updateCommunityCache(event.blockNumber - 1, provider, _addr);
         communitiesCallbackFn(_addr);
     });
@@ -213,8 +213,8 @@ function updateCommunityCache(
         fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
         toBlock: 'latest',
         topics: [[
-            ethers.utils.id('CoordinatorAdded(address)'),
-            ethers.utils.id('CoordinatorRemoved(address)'),
+            ethers.utils.id('ManagerAdded(address)'),
+            ethers.utils.id('ManagerRemoved(address)'),
             ethers.utils.id('BeneficiaryAdded(address)'),
             ethers.utils.id('BeneficiaryLocked(address)'),
             ethers.utils.id('BeneficiaryRemoved(address)'),

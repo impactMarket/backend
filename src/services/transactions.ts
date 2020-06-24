@@ -70,7 +70,7 @@ export default class TransactionsService {
         // TODO: get only if it was added and not removed yet
         return Transactions.findOne({
             where: {
-                event: 'CoordinatorAdded',
+                event: 'ManagerAdded',
                 values: { _account: managerAddress }
             },
         });
@@ -111,7 +111,7 @@ export default class TransactionsService {
         const dbRequest = Transactions.findAll({
             where: {
                 contractAddress: communityAddress,
-                event: 'CoordinatorAdded',
+                event: 'ManagerAdded',
             }
         });
         const managers = (await dbRequest)
