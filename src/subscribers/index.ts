@@ -34,19 +34,18 @@ async function startFromBlock(
 }
 
 interface ICommunityAddedEventValues {
-    _addr: string,
+    _communityAddress: string,
     _firstManager: string,
-    _amountByClaim: BigNumber,
-    _baseIntervalTime: BigNumber,
-    _incIntervalTime: BigNumber,
-    _claimHardCap: BigNumber,
+    _claimAmount: BigNumber,
+    _maxClaim: BigNumber,
+    _baseInterval: BigNumber,
+    _incrementInterval: BigNumber,
 }
 interface ICommunityEditedEventValues {
-    _cUSD: string,
-    _amountByClaim: BigNumber,
-    _baseIntervalTime: BigNumber,
-    _incIntervalTime: BigNumber,
-    _claimHardCap: BigNumber
+    _claimAmount: BigNumber,
+    _maxClaim: BigNumber
+    _baseInterval: BigNumber,
+    _incrementInterval: BigNumber,
 }
 interface IBeneficiaryClaimEventValues {
     _account: string,
@@ -64,12 +63,12 @@ function translateEvent(
     if ((rawValues as ICommunityAddedEventValues)._firstManager) {
         const values = rawValues as ICommunityAddedEventValues;
         return {
-            _communityAddress: values._addr,
+            _communityAddress: values._communityAddress,
             _firstManager: values._firstManager,
-            _amountByClaim: values._amountByClaim.toString(),
-            _baseIntervalTime: values._baseIntervalTime.toString(),
-            _incIntervalTime: values._incIntervalTime.toString(),
-            _claimHardCap: values._claimHardCap.toString(),
+            _claimAmount: values._claimAmount.toString(),
+            _maxClaim: values._maxClaim.toString(),
+            _baseInterval: values._baseInterval.toString(),
+            _incrementInterval: values._incrementInterval.toString(),
         }
     }
     else if ((rawValues as ITransferEventValues).from) {
@@ -87,14 +86,13 @@ function translateEvent(
             _amount: values._amount.toString(),
         }
     }
-    else if ((rawValues as ICommunityEditedEventValues)._cUSD) {
+    else if ((rawValues as ICommunityEditedEventValues)._claimAmount) {
         const values = rawValues as ICommunityEditedEventValues;
         return {
-            _cUSD: values._cUSD,
-            _amountByClaim: values._amountByClaim.toString(),
-            _baseIntervalTime: values._baseIntervalTime.toString(),
-            _incIntervalTime: values._incIntervalTime.toString(),
-            _claimHardCap: values._claimHardCap.toString()
+            _claimAmount: values._claimAmount.toString(),
+            _maxClaim: values._maxClaim.toString(),
+            _baseInterval: values._baseInterval.toString(),
+            _incrementInterval: values._incrementInterval.toString(),
         }
     }
     // everything else
@@ -139,7 +137,7 @@ async function subscribeChainEvents(
         communityInstance.on('BeneficiaryRemoved', (_account, event) => addToTransactionCache(event));
         communityInstance.on('BeneficiaryClaim', (_account, _amount, event) => addToTransactionCache(event));
         communityInstance.on('CommunityEdited',
-            (_cUSD, _amountByClaim, _baseIntervalTime, _incIntervalTime, _claimHardCap, event) => addToTransactionCache(event));
+            (_claimAmount, _maxClaim, _baseInterval, _incrementInterval, event) => addToTransactionCache(event));
         // also listen to donations
         cUSDMockInstance.on(
             cUSDMockInstance.filters.Transfer(null, communityAddress),
@@ -147,14 +145,14 @@ async function subscribeChainEvents(
     }
     // listen to impact market events
     impactMarketInstance.on('CommunityAdded', async (
-        _addr, _firstManager, _amountByClaim, _baseIntervalTime, _incIntervalTime, _claimHardCap, event
+        _communityAddress, _firstManager, _claimAmount, _maxClaim, _baseInterval, _incrementInterval, event
     ) => {
         addToTransactionCache(event);
         // it's necessary to get ManagerAdded here!
-        updateCommunityCache(event.blockNumber - 1, provider, _addr);
-        communitiesCallbackFn(_addr);
+        updateCommunityCache(event.blockNumber - 1, provider, _communityAddress);
+        communitiesCallbackFn(_communityAddress);
     });
-    impactMarketInstance.on('CommunityRemoved', async (_addr, event) => addToTransactionCache(event));
+    impactMarketInstance.on('CommunityRemoved', async (_communityAddress, event) => addToTransactionCache(event));
 
     const cUSDMockInstance = new ethers.Contract(
         config.cUSDContractAddress,
@@ -185,7 +183,7 @@ async function updateImpactMarketCache(
     for (let eim = 0; eim < eventsImpactMarket.length; eim += 1) {
         if (eventsImpactMarket[eim].name === 'CommunityAdded') {
             communitiesAdded.push({
-                address: eventsImpactMarket[eim].values._addr,
+                address: eventsImpactMarket[eim].values._communityAddress,
                 block: logsImpactMarket[eim].blockNumber,
             });
         }
@@ -219,7 +217,7 @@ function updateCommunityCache(
             ethers.utils.id('BeneficiaryLocked(address)'),
             ethers.utils.id('BeneficiaryRemoved(address)'),
             ethers.utils.id('BeneficiaryClaim(address,uint256)'),
-            ethers.utils.id('CommunityEdited(address,uint256,uint256,uint256,uint256)'),
+            ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
         ]]
     }).then(async (logsCommunity) => {
         const eventsCommunity = logsCommunity.map((log) => ifaceCommunity.parseLog(log));

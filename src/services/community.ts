@@ -101,10 +101,10 @@ export default class CommunityService {
                 totalClaimed: '0',
                 totalRaised: '0',
                 vars: {
-                    _amountByClaim: '0',
-                    _baseIntervalTime: '0',
-                    _claimHardCap: '0',
-                    _incIntervalTime: '0',
+                    _claimAmount: '0',
+                    _baseInterval: '0',
+                    _maxClaim: '0',
+                    _incrementInterval: '0',
                 },
             }))
         }

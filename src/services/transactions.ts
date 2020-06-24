@@ -153,10 +153,10 @@ export default class TransactionsService {
             return {} as any;
         }
         return {
-            _amountByClaim: vars[0].values._amountByClaim,
-            _baseIntervalTime: vars[0].values._baseIntervalTime,
-            _incIntervalTime: vars[0].values._incIntervalTime,
-            _claimHardCap: vars[0].values._claimHardCap
+            _claimAmount: vars[0].values._claimAmount,
+            _maxClaim: vars[0].values._maxClaim,
+            _baseInterval: vars[0].values._baseInterval,
+            _incrementInterval: vars[0].values._incrementInterval
         };
     }
 
