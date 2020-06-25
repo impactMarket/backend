@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 import CommunityContractABI from '../contracts/CommunityABI.json'
 import ERC20ABI from '../contracts/ERC20ABI.json'
-import TransactionsService from '../services/transactions';
+import TransactionsService from '../db/services/transactions';
 import BigNumber from 'bignumber.js';
 import config from '../config';
 

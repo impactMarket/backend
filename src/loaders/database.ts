@@ -1,6 +1,6 @@
 import { Sequelize, Options } from 'sequelize';
 import config from '../config';
-import initModels from '../models';
+import initModels from '../db/models';
 
 
 export default async (): Promise<Sequelize> => {

@@ -6,8 +6,8 @@ import {
     IRecentTxAPI,
     IPaymentsTxAPI,
     IAddressAndName
-} from '../types';
-import config from '../config';
+} from '../../types';
+import config from '../../config';
 import axios from 'axios';
 import { Op } from 'sequelize';
 import CommunityService from './community';

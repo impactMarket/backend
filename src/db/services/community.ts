@@ -1,9 +1,9 @@
 import { Community } from '../models/community';
 import { ethers } from 'ethers';
-import config from '../config';
-import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
+import config from '../../config';
+import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json'
 import TransactionsService from './transactions';
-import { ICommunityInfo } from '../types';
+import { ICommunityInfo } from '../../types';
 import { Op } from 'sequelize';
 
 

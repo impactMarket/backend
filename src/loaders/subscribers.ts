@@ -6,7 +6,7 @@ import {
 } from '../subscribers';
 import config from '../config';
 import { ethers } from 'ethers';
-import CommunityService from '../services/community';
+import CommunityService from '../db/services/community';
 
 
 export default async (): Promise<void> => {

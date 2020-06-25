@@ -1,6 +1,6 @@
 import { Beneficiary } from '../models/beneficiary';
-import CommunityContractABI from '../contracts/CommunityABI.json'
-import config from '../config';
+import CommunityContractABI from '../../contracts/CommunityABI.json'
+import config from '../../config';
 import { ethers } from 'ethers';
 
 

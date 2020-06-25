@@ -1,7 +1,7 @@
 import {
     Router,
 } from 'express';
-import { upload } from '../storage/s3';
+import { upload } from '../../storage/s3';
 
 const route = Router();
 
