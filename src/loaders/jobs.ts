@@ -3,13 +3,20 @@ import {
     updateCommunityCache,
     subscribeChainEvents,
     startFromBlock,
-} from '../subscribers';
+} from '../jobs/chainSubscribers';
 import config from '../config';
 import { ethers } from 'ethers';
 import CommunityService from '../db/services/community';
+import { CronJob } from 'cron';
+import { calcuateSSI } from '../jobs/calculateSSI';
 
 
 export default async (): Promise<void> => {
+    cron();
+    await subscribers();
+};
+
+async function subscribers(): Promise<void> {
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     const startFrom = await startFromBlock(provider, config.impactMarketContractBlockNumber);
     const fromLogs = await updateImpactMarketCache(provider, startFrom);
@@ -30,3 +37,11 @@ export default async (): Promise<void> => {
     availableCommunities.forEach((community) => updateCommunityCache(startFrom, provider, community.contractAddress));
     subscribeChainEvents(provider, availableCommunities.map((community) => community.contractAddress));
 };
+
+function cron() {
+    // everyday at midnight (Europe/Paris time)
+    const job = new CronJob('0 0 * * *', () => {
+        calcuateSSI();
+    }, null, false, 'Europe/Paris');
+    job.start();
+}
