@@ -1,4 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
+import { SSI } from './ssi';
 
 
 export class Community extends Model {
