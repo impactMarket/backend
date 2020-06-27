@@ -73,7 +73,7 @@ export default class CommunityService {
         }
         const eventsImpactMarket = receipt.logs.map((log) => ifaceImpactMarket.parseLog(log));
         const index = eventsImpactMarket.findIndex((event) => event !== null && event.name === 'CommunityAdded');
-        const communityContractAddress = eventsImpactMarket[index].values._addr;
+        const communityContractAddress = eventsImpactMarket[index].values._communityAddress;
         const dbUpdate: [number, Community[]] = await Community.update(
             { contractAddress: communityContractAddress, status: 'valid', txCreationObj: null },
             { returning: true, where: { publicId } },
