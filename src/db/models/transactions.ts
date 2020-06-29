@@ -13,7 +13,7 @@ export class Transactions extends Model {
     public readonly updatedAt!: Date;
 }
 
-export function initializeTransactions(sequelize: Sequelize) {
+export function initializeTransactions(sequelize: Sequelize): void {
     return Transactions.init({
         uid: {
             type: DataTypes.STRING(64),

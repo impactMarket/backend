@@ -1,6 +1,6 @@
 
 
-function calcuateSSI() {
+function calcuateSSI(): void {
     console.log('Calculating SSI...');
     // TODO:
 }

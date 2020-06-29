@@ -6,7 +6,7 @@ import { Community } from '../models/community';
 // import middlewares from '../middlewares';
 const route = Router();
 
-export default (app: Router) => {
+export default (app: Router): void => {
     app.use('/transactions', route);
 
     route.get(

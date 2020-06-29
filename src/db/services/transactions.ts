@@ -21,8 +21,8 @@ export default class TransactionsService {
         from: string,
         contractAddress: string,
         event: string,
-        values: any, // values from events can have multiple forms
-    ) {
+        values: unknown, // values from events can have multiple forms
+    ): Promise<Transactions> {
         const hash = new SHA3(256);
         hash.update(tx).update(JSON.stringify(values));
         return Transactions.create({
@@ -35,15 +35,15 @@ export default class TransactionsService {
         });
     }
 
-    public static async getAll() {
+    public static async getAll(): Promise<Transactions[]> {
         return Transactions.findAll();
     }
 
-    public static async get(account: string) {
+    public static async get(account: string): Promise<Transactions[]> {
         return Transactions.findAll({ where: { values: { _account: account } } });
     }
 
-    public static async findComunityToBeneficicary(beneficiaryAddress: string) {
+    public static async findComunityToBeneficicary(beneficiaryAddress: string): Promise<Transactions | undefined> {
         const reqResult = await Transactions.findAll({
             limit: 1,
             where: {
@@ -66,7 +66,7 @@ export default class TransactionsService {
         return reqResult[0];
     }
 
-    public static async findComunityToManager(managerAddress: string) {
+    public static async findComunityToManager(managerAddress: string): Promise<Transactions | null> {
         // TODO: get only if it was added and not removed yet
         return Transactions.findOne({
             where: {
@@ -76,7 +76,10 @@ export default class TransactionsService {
         });
     }
 
-    public static async getBeneficiariesInCommunity(communityAddress: string) {
+    public static async getBeneficiariesInCommunity(communityAddress: string): Promise<{
+        added: IAddressAndName[];
+        removed: IAddressAndName[];
+    }> {
         const dbRequestResult = await Transactions.findAll({
             where: {
                 contractAddress: communityAddress,
@@ -96,7 +99,7 @@ export default class TransactionsService {
         // group
         const result = { added: [], removed: [] } as { added: IAddressAndName[], removed: IAddressAndName[] };
         const registry = await this.addressesByNames();
-        for (let [k, v] of this.groupBy(beneficiaries, 'account')) {
+        for (const [, v] of this.groupBy(beneficiaries, 'account')) {
             const event = v.sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
             if (event.event === 'BeneficiaryAdded') {
                 result.added.push(this.addressToAddressAndName(event.account, registry));
@@ -119,7 +122,7 @@ export default class TransactionsService {
         return managers;
     }
 
-    public static async getBackersInCommunity(communityAddress: string) {
+    public static async getBackersInCommunity(communityAddress: string): Promise<string[]> {
         const dbRequest = Transactions.findAll({
             where: {
                 event: 'Transfer',
@@ -184,7 +187,7 @@ export default class TransactionsService {
         return claimed.toString();
     }
 
-    public static async getLastEntry() {
+    public static async getLastEntry(): Promise<Transactions | undefined> {
         const entries = await Transactions.findAll({
             limit: 1,
             where: {
@@ -198,11 +201,10 @@ export default class TransactionsService {
         return entries[0];
     }
 
-    public static async paymentsTx(userAddress: string) {
+    public static async paymentsTx(userAddress: string): Promise<IPaymentsTxAPI[]> {
         const query = await axios.get(
             `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`
         );
-        const decimals = new BigNumber(10).pow(config.cUSDDecimal);
         const registry = await this.addressesByNames();
 
         const result = query.data.result
@@ -216,10 +218,10 @@ export default class TransactionsService {
                 };
             }) as IPaymentsTxAPI[];
         // https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
-        return Array.from(new Set(result.map((a) => a.to.address))).map(address => result.find((a) => a.to.address === address));
+        return Array.from(new Set(result.map((a) => a.to.address))).map(address => result.find((a) => a.to.address === address)!);
     }
 
-    public static async tokenTx(userAddress: string) {
+    public static async tokenTx(userAddress: string): Promise<IRecentTxAPI[]> {
         /**
          { value: '0',
         txreceipt_status: '1',
@@ -270,7 +272,7 @@ export default class TransactionsService {
         const result: IRecentTxAPI[] = [];
         const registry = await this.addressesByNames();
         //
-        for (let [k, v] of this.groupBy(txs, 'address')) {
+        for (const [k, v] of this.groupBy(txs, 'address')) {
             result.push({
                 from: this.addressToAddressAndName(k, registry),
                 txs: v.length,
@@ -296,7 +298,7 @@ export default class TransactionsService {
             // Return the current iteration `result` value, this will be taken as next iteration `result` value and accumulate
             return result.set(currentValue[key], content);
         }, new Map<string, any[]>()); // empty map is the initial value for result object
-    };
+    }
 
     private static addressToAddressAndName(address: string, registry: Map<string, string>) {
         return { address, name: registry.has(address) ? registry.get(address)! : address }

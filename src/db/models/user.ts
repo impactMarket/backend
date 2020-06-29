@@ -12,7 +12,7 @@ export class User extends Model {
     public readonly updatedAt!: Date;
 }
 
-export function initializeUser(sequelize: Sequelize) {
+export function initializeUser(sequelize: Sequelize): void {
     return User.init({
         id: {
             type: DataTypes.INTEGER,

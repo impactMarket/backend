@@ -6,10 +6,10 @@ import { upload } from '../../storage/s3';
 const route = Router();
 
 
-export default (app: Router) => {
+export default (app: Router): void => {
     app.use('/s3', route);
 
-    route.post('/upload', upload.single('photo'), (req, res, next) => {
+    route.post('/upload', upload.single('photo'), (req, res) => {
         res.json(req.file)
     })
 };

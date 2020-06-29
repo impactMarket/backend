@@ -1,5 +1,4 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import { Community } from './community';
 
 
 export class SSI extends Model {
@@ -13,7 +12,7 @@ export class SSI extends Model {
     public readonly updatedAt!: Date;
 }
 
-export function initializeSSI(sequelize: Sequelize) {
+export function initializeSSI(sequelize: Sequelize): void {
     SSI.init({
         id: {
             type: DataTypes.INTEGER,

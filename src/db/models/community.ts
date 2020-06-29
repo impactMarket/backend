@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import { SSI } from './ssi';
+import { ICommunityVars } from '../../types';
 
 
 export class Community extends Model {
@@ -11,12 +11,15 @@ export class Community extends Model {
     public description!: string;
     public city!: string;
     public country!: string;
-    public gps!: any;
+    public gps!: {
+        latitude: number;
+        longitude: number;
+    };
     public email!: string;
     public visibility!: string;
     public coverImage!: string;
     public status!: string; // pending / valid / removed
-    public txCreationObj!: any;
+    public txCreationObj!: ICommunityVars;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -24,7 +27,7 @@ export class Community extends Model {
 }
 
 
-export function initializeCommunity(sequelize: Sequelize) {
+export function initializeCommunity(sequelize: Sequelize): void {
     Community.init({
         id: {
             type: DataTypes.INTEGER,

@@ -4,7 +4,7 @@ import databaseLoader from './database';
 import Logger from './logger';
 import jobsLoader from './jobs';
 
-export default async ({ expressApp }: { expressApp: express.Application }) => {
+export default async ({ expressApp }: { expressApp: express.Application }): Promise<void> => {
     await databaseLoader();
     Logger.info('🗺️  DB loaded and connected');
     

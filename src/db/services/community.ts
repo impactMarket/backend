@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import config from '../../config';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json'
 import TransactionsService from './transactions';
-import { ICommunityInfo } from '../../types';
+import { ICommunityInfo, ICommunityVars } from '../../types';
 import { Op } from 'sequelize';
 
 
@@ -21,8 +21,8 @@ export default class CommunityService {
         email: string,
         visibility: string,
         coverImage: string,
-        txCreationObj: any,
-    ) {
+        txCreationObj: ICommunityVars,
+    ): Promise<Community> {
         return Community.create({
             requestByAddress,
             name,
@@ -51,7 +51,7 @@ export default class CommunityService {
         email: string,
         visibility: string,
         coverImage: string,
-    ) {
+    ): Promise<[number, Community[]]> {
         return Community.update({
             name,
             description,
@@ -85,7 +85,6 @@ export default class CommunityService {
     }
 
     public static async getAll(status?: string): Promise<ICommunityInfo[]> {
-        let communities: Community[];
         if (status === undefined) {
             const communities = await Community.findAll({ raw: true });
             return communities.map((community) => ({
@@ -108,19 +107,19 @@ export default class CommunityService {
                 },
             }))
         }
-        let result: ICommunityInfo[] = [];
-        communities = await Community.findAll({ where: { status }, raw: true });
+        const result: ICommunityInfo[] = [];
+        const communities = await Community.findAll({ where: { status }, raw: true });
         for (let index = 0; index < communities.length; index++) {
             result.push(await this.getCachedInfoToCommunity(communities[index]));
         }
         return result;
     }
 
-    public static async findByFirstManager(requestByAddress: string) {
+    public static async findByFirstManager(requestByAddress: string): Promise<Community | null> {
         return Community.findOne({ where: { requestByAddress } });
     }
 
-    public static async findByPublicId(publicId: string) {
+    public static async findByPublicId(publicId: string): Promise<Community | null> {
         return Community.findOne({ where: { publicId } });
     }
 
@@ -132,7 +131,7 @@ export default class CommunityService {
         return await this.getCachedInfoToCommunity(community);
     }
 
-    public static async getNamesAndFromAddresses(addresses: string[]) {
+    public static async getNamesAndFromAddresses(addresses: string[]): Promise<Community[]> {
         return Community.findAll({
             attributes: ['contractAddress', 'name'],
             where: {

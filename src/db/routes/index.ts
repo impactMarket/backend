@@ -5,7 +5,7 @@ import user from './user';
 import s3 from './s3';
 
 
-export default () => {
+export default (): Router => {
     const app = Router();
     community(app);
     transactions(app);

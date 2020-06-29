@@ -36,7 +36,7 @@ async function subscribers(): Promise<void> {
     const availableCommunities = await CommunityService.getAll('valid');
     availableCommunities.forEach((community) => updateCommunityCache(startFrom, provider, community.contractAddress));
     subscribeChainEvents(provider, availableCommunities.map((community) => community.contractAddress));
-};
+}
 
 function cron() {
     // everyday at midnight (Europe/Paris time)

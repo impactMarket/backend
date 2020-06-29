@@ -1,16 +1,16 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import CommunityService from '../services/community';
 import { celebrate, Joi } from 'celebrate';
 
 const route = Router();
 
 
-export default (app: Router) => {
+export default (app: Router): void => {
     app.use('/community', route);
 
     route.get(
         '/address/:contractAddress',
-        async (req: Request, res: Response, next: NextFunction) => {
+        async (req: Request, res: Response) => {
             const result = await CommunityService.findByContractAddress(req.params.contractAddress);
             res.send(result);
         },
@@ -18,21 +18,21 @@ export default (app: Router) => {
 
     route.get(
         '/id/:publicId',
-        async (req: Request, res: Response, next: NextFunction) => {
+        async (req: Request, res: Response) => {
             res.send(await CommunityService.findByPublicId(req.params.publicId));
         },
     );
 
     route.get(
         '/all/:status?',
-        async (req: Request, res: Response, next: NextFunction) => {
+        async (req: Request, res: Response) => {
             res.send(await CommunityService.getAll(req.params.status));
         },
     );
 
     route.get(
         '/getnames/:addresses',
-        async (req: Request, res: Response, next: NextFunction) => {
+        async (req: Request, res: Response) => {
             res.send(await CommunityService.getNamesAndFromAddresses(req.params.addresses.split(';')));
         },
     );
@@ -56,7 +56,7 @@ export default (app: Router) => {
                 txCreationObj: Joi.object().required(),
             }),
         }),
-        async (req: Request, res: Response, next: NextFunction) => {
+        async (req: Request, res: Response) => {
             const {
                 requestByAddress, // the address making the request (will be community manager)
                 name,
@@ -115,7 +115,7 @@ export default (app: Router) => {
                 coverImage: Joi.string().required(),
             }),
         }),
-        async (req: Request, res: Response, next: NextFunction) => {
+        async (req: Request, res: Response) => {
             const {
                 publicId,
                 name,
@@ -150,7 +150,7 @@ export default (app: Router) => {
                 publicId: Joi.string().required(),
             }),
         }),
-        async (req: Request, res: Response, next: NextFunction) => {
+        async (req: Request, res: Response) => {
             const {
                 acceptanceTransaction, // the address accepting the request (must be admin)
                 publicId,

@@ -17,7 +17,7 @@ export interface ICommunity {
     email: string;
     coverImage: string;
     status: string;
-    txCreationObj: any;
+    txCreationObj: ICommunityVars;
     createdAt: string;
     updatedAt: string;
 }

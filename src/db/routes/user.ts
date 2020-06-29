@@ -2,7 +2,6 @@ import {
     Router,
     Request,
     Response,
-    NextFunction
 } from 'express';
 import UserService from '../services/user';
 import {
@@ -13,12 +12,12 @@ import {
 const route = Router();
 
 
-export default (app: Router) => {
+export default (app: Router): void => {
     app.use('/user', route);
 
     route.get(
         '/:address',
-        async (req: Request, res: Response, next: NextFunction) => {
+        async (req: Request, res: Response) => {
             res.send(await UserService.get(req.params.address));
         },
     );
@@ -31,7 +30,7 @@ export default (app: Router) => {
                 username: Joi.string().required(),
             }),
         }),
-        async (req: Request, res: Response, next: NextFunction) => {
+        async (req: Request, res: Response) => {
             const {
                 address,
                 username,
@@ -52,7 +51,7 @@ export default (app: Router) => {
                 currency: Joi.string().required(),
             }),
         }),
-        async (req: Request, res: Response, next: NextFunction) => {
+        async (req: Request, res: Response) => {
             const {
                 address,
                 currency,

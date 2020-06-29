@@ -23,7 +23,7 @@ function catchHandlerTransactionsService(error: any) {
 async function startFromBlock(
     provider: ethers.providers.JsonRpcProvider,
     defaultStart: number,
-) {
+): Promise<number> {
     // get the last transaction cached
     const lastEntry = await TransactionsService.getLastEntry();
     if (lastEntry === undefined) {
@@ -105,7 +105,7 @@ function translateEvent(
 async function subscribeChainEvents(
     provider: ethers.providers.JsonRpcProvider,
     communitiesAddress: string[],
-) {
+): Promise<void> {
     const impactMarketInstance = new ethers.Contract(
         config.impactMarketContractAddress,
         ImpactMarketContractABI,
@@ -202,7 +202,7 @@ function updateCommunityCache(
     startFromBlock: number,
     provider: ethers.providers.JsonRpcProvider,
     contractAddress: string,
-) {
+): void {
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
     // get past community events

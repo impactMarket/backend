@@ -5,7 +5,7 @@ import { initializeUser } from './user';
 import { initializeSSI, SSI } from './ssi';
 
 
-export default function initModels(sequelize: Sequelize) {
+export default function initModels(sequelize: Sequelize): void {
     initializeCommunity(sequelize);
     initializeSSI(sequelize);
     initializeTransactions(sequelize);

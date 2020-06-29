@@ -5,7 +5,7 @@ export default class UserService {
     public static async setUsername(
         address: string,
         username: string
-    ) {
+    ): Promise<User | [number, User[]]> {
         const userExists = await User.findOne({ where: { address } });
         if (userExists !== null) {
             return User.update(
@@ -22,7 +22,7 @@ export default class UserService {
     public static async setCurrency(
         address: string,
         currency: string
-    ) {
+    ): Promise<User | [number, User[]]> {
         const userExists = await User.findOne({ where: { address } });
         if (userExists !== null) {
             return User.update(
@@ -36,7 +36,7 @@ export default class UserService {
         });
     }
 
-    public static async get(address: string) {
+    public static async get(address: string): Promise<User | null> {
         return User.findOne({ where: { address } });
     }
 
