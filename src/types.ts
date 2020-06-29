@@ -25,10 +25,11 @@ export interface ICommunity {
 export interface ICommunityInfo extends ICommunity {
     backers: string[];
     beneficiaries: {
-        added: IAddressAndName[];
-        removed: IAddressAndName[];
+        added: ICommunityInfoBeneficiary[];
+        removed: ICommunityInfoBeneficiary[];
     };
     managers: string[];
+    ssi: number[];
     totalClaimed: string;
     totalRaised: string;
     vars: ICommunityVars;
@@ -39,6 +40,12 @@ export interface ICommunityVars {
     _baseInterval: string;
     _incrementInterval: string;
     _maxClaim: string;
+}
+
+export interface ICommunityInfoBeneficiary {
+    address: string;
+    name: string;
+    claimed: string;
 }
 
 export interface IAddressAndName {

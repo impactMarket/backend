@@ -5,11 +5,12 @@ import {
     ICommunityVars,
     IRecentTxAPI,
     IPaymentsTxAPI,
-    IAddressAndName
+    IAddressAndName,
+    ICommunityInfoBeneficiary
 } from '../../types';
 import config from '../../config';
 import axios from 'axios';
-import { Op } from 'sequelize';
+import { Op, fn, literal } from 'sequelize';
 import CommunityService from './community';
 import { ethers } from 'ethers';
 import UserService from './user';
@@ -77,8 +78,8 @@ export default class TransactionsService {
     }
 
     public static async getBeneficiariesInCommunity(communityAddress: string): Promise<{
-        added: IAddressAndName[];
-        removed: IAddressAndName[];
+        added: ICommunityInfoBeneficiary[];
+        removed: ICommunityInfoBeneficiary[];
     }> {
         const dbRequestResult = await Transactions.findAll({
             where: {
@@ -97,14 +98,21 @@ export default class TransactionsService {
             timestamp: beneficiary.createdAt.getTime(),
         }));
         // group
-        const result = { added: [], removed: [] } as { added: IAddressAndName[], removed: IAddressAndName[] };
+        const result = { added: [], removed: [] } as { added: ICommunityInfoBeneficiary[], removed: ICommunityInfoBeneficiary[] };
+        const claimed = await TransactionsService.getBeneficiariesCommunityClaimedAmount(communityAddress);
         const registry = await this.addressesByNames();
         for (const [, v] of this.groupBy(beneficiaries, 'account')) {
             const event = v.sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
             if (event.event === 'BeneficiaryAdded') {
-                result.added.push(this.addressToAddressAndName(event.account, registry));
+                result.added.push({
+                    ...this.addressToAddressAndName(event.account, registry),
+                    claimed: claimed.get(event.account)!,
+                });
             } else {
-                result.removed.push(this.addressToAddressAndName(event.account, registry));
+                result.removed.push({
+                    ...this.addressToAddressAndName(event.account, registry),
+                    claimed: claimed.get(event.account)!,
+                });
             }
         }
         return result;
@@ -185,6 +193,26 @@ export default class TransactionsService {
         let claimed = new BigNumber(0);
         claims.forEach((claim) => claimed = claimed.plus(claim.values._amount));
         return claimed.toString();
+    }
+
+    public static async getBeneficiariesCommunityClaimedAmount(communityAddress: string): Promise<Map<string, string>> {
+        const claims = await Transactions.findAll({
+            // attributes: ['from', [fn('sum', literal("values->>'_amount'")), 'claimed']], // cant be used because _amount is a string
+            where: {
+                contractAddress: communityAddress,
+                event: 'BeneficiaryClaim',
+            },
+            // group: 'from'
+            raw: true,
+        })
+        const result: Map<string, string> = new Map();
+
+        for (const [k, v] of this.groupBy(claims, 'from')) {
+            const sumResult = v.map((vv) => vv._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
+            result.set(k, sumResult.toString());
+        }
+
+        return result;
     }
 
     public static async getLastEntry(): Promise<Transactions | undefined> {

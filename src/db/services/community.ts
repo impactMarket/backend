@@ -97,6 +97,7 @@ export default class CommunityService {
                     removed: [],
                 },
                 managers: [],
+                ssi: [],
                 totalClaimed: '0',
                 totalRaised: '0',
                 vars: {
@@ -148,8 +149,8 @@ export default class CommunityService {
         const backers = await TransactionsService.getBackersInCommunity(community.contractAddress);
         const vars = await TransactionsService.getCommunityVars(community.contractAddress);
 
-        const claimed = await TransactionsService.getCommunityClaimedAmount(community.contractAddress);
-        const raised = await TransactionsService.getCommunityRaisedAmount(community.contractAddress);
+        const totalClaimed = await TransactionsService.getCommunityClaimedAmount(community.contractAddress);
+        const totalRaised = await TransactionsService.getCommunityRaisedAmount(community.contractAddress);
 
         return {
             ...community,
@@ -158,8 +159,9 @@ export default class CommunityService {
             backers,
             beneficiaries,
             managers,
-            totalClaimed: claimed.toString(),
-            totalRaised: raised.toString(),
+            ssi: [],
+            totalClaimed: totalClaimed.toString(),
+            totalRaised: totalRaised.toString(),
             vars,
         };
     }
