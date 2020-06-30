@@ -14,11 +14,109 @@ import { Op, fn, literal } from 'sequelize';
 import CommunityService from './community';
 import { ethers } from 'ethers';
 import UserService from './user';
+import { LogDescription } from 'ethers/utils';
+import { groupBy } from '../../utils';
 
+
+interface ICommunityAddedEventValues {
+    _communityAddress: string,
+    _firstManager: string,
+    _claimAmount: BigNumber,
+    _maxClaim: BigNumber,
+    _baseInterval: BigNumber,
+    _incrementInterval: BigNumber,
+}
+interface ICommunityEditedEventValues {
+    _claimAmount: BigNumber,
+    _maxClaim: BigNumber
+    _baseInterval: BigNumber,
+    _incrementInterval: BigNumber,
+}
+interface IBeneficiaryClaimEventValues {
+    _account: string,
+    _amount: BigNumber,
+}
+interface ITransferEventValues {
+    from: string,
+    to: string,
+    value: BigNumber,
+}
+
+export function translateEvent(
+    rawValues: ICommunityAddedEventValues | ICommunityEditedEventValues | IBeneficiaryClaimEventValues | ITransferEventValues | { _account: string },
+): any {
+    if ((rawValues as ICommunityAddedEventValues)._firstManager) {
+        const values = rawValues as ICommunityAddedEventValues;
+        return {
+            _communityAddress: values._communityAddress,
+            _firstManager: values._firstManager,
+            _claimAmount: values._claimAmount.toString(),
+            _maxClaim: values._maxClaim.toString(),
+            _baseInterval: values._baseInterval.toString(),
+            _incrementInterval: values._incrementInterval.toString(),
+        }
+    }
+    else if ((rawValues as ITransferEventValues).from) {
+        const values = rawValues as ITransferEventValues;
+        return {
+            from: values.from,
+            to: values.to,
+            value: values.value.toString(),
+        }
+    }
+    else if ((rawValues as IBeneficiaryClaimEventValues)._amount) {
+        const values = rawValues as IBeneficiaryClaimEventValues;
+        return {
+            _account: values._account,
+            _amount: values._amount.toString(),
+        }
+    }
+    else if ((rawValues as ICommunityEditedEventValues)._claimAmount) {
+        const values = rawValues as ICommunityEditedEventValues;
+        return {
+            _claimAmount: values._claimAmount.toString(),
+            _maxClaim: values._maxClaim.toString(),
+            _baseInterval: values._baseInterval.toString(),
+            _incrementInterval: values._incrementInterval.toString(),
+        }
+    }
+    // everything else
+    const values = rawValues as { _account: string };
+    return {
+        _account: values._account,
+    }
+}
 
 export default class TransactionsService {
     public static async add(
+        provider: ethers.providers.JsonRpcProvider,
+        logs: ethers.providers.Log,
+        events: LogDescription
+    ): Promise<Transactions> {
+
+        const tx = logs.transactionHash!;
+        const txReceipt = await provider.getTransactionReceipt(tx)
+        const from = txReceipt.from!;
+        // const block = await provider.getBlock(txReceipt.blockHash!);
+        const contractAddress = logs.address;
+        const event = events.name;
+        const values = translateEvent(events.values);
+
+        const hash = new SHA3(256);
+        hash.update(tx).update(JSON.stringify(values));
+        return this.addRaw(
+            tx,
+            new Date(),
+            from,
+            contractAddress,
+            event,
+            values,
+        );
+    }
+
+    public static async addRaw(
         tx: string,
+        txAt: Date,
         from: string,
         contractAddress: string,
         event: string,
@@ -29,6 +127,7 @@ export default class TransactionsService {
         return Transactions.create({
             uid: hash.digest('hex'),
             tx,
+            txAt,
             from,
             contractAddress,
             event,
@@ -101,7 +200,7 @@ export default class TransactionsService {
         const result = { added: [], removed: [] } as { added: ICommunityInfoBeneficiary[], removed: ICommunityInfoBeneficiary[] };
         const claimed = await TransactionsService.getBeneficiariesCommunityClaimedAmount(communityAddress);
         const registry = await this.addressesByNames();
-        for (const [, v] of this.groupBy(beneficiaries, 'account')) {
+        for (const [, v] of groupBy<any>(beneficiaries, 'account')) {
             const event = v.sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
             if (event.event === 'BeneficiaryAdded') {
                 result.added.push({
@@ -207,12 +306,22 @@ export default class TransactionsService {
         })
         const result: Map<string, string> = new Map();
 
-        for (const [k, v] of this.groupBy(claims, 'from')) {
+        for (const [k, v] of groupBy<any>(claims, 'from')) {
             const sumResult = v.map((vv) => vv._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
             result.set(k, sumResult.toString());
         }
 
         return result;
+    }
+
+    public static async getBeneficiariesCommunityClaims(communityAddress: string): Promise<Transactions[]> {
+        return Transactions.findAll({
+            where: {
+                contractAddress: communityAddress,
+                event: 'BeneficiaryClaim',
+            },
+            raw: true,
+        });
     }
 
     public static async getLastEntry(): Promise<Transactions | undefined> {
@@ -300,7 +409,7 @@ export default class TransactionsService {
         const result: IRecentTxAPI[] = [];
         const registry = await this.addressesByNames();
         //
-        for (const [k, v] of this.groupBy(txs, 'address')) {
+        for (const [k, v] of groupBy<any>(txs, 'address')) {
             result.push({
                 from: this.addressToAddressAndName(k, registry),
                 txs: v.length,
@@ -314,18 +423,6 @@ export default class TransactionsService {
         const communities = await CommunityService.mappedNames();
         const usernames = await UserService.mappedNames();
         return new Map([...communities, ...usernames]); // addresses.map((a) => registry.has(a) !== undefined ? registry.get(a) : a);
-    }
-
-    // Accepts the array and key
-    private static groupBy(array: any[], key: string): Map<string, any[]> {
-        // Return the end result
-        return array.reduce((result, currentValue) => {
-            let content = result.get(currentValue[key]);
-            // If an array already present for key, push it to the array. Else create an array and push the object
-            (content === undefined) ? content = [currentValue] : content.push(currentValue);
-            // Return the current iteration `result` value, this will be taken as next iteration `result` value and accumulate
-            return result.set(currentValue[key], content);
-        }, new Map<string, any[]>()); // empty map is the initial value for result object
     }
 
     private static addressToAddressAndName(address: string, registry: Map<string, string>) {

@@ -1,4 +1,5 @@
 'use strict';
+// eslint-disable-next-line no-undef
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable('transactions', {
@@ -9,6 +10,10 @@ module.exports = {
             },
             tx: {
                 type: Sequelize.STRING(68),
+                allowNull: false,
+            },
+            txAt: {
+                type: Sequelize.DATE,
                 allowNull: false,
             },
             from: {
@@ -37,7 +42,7 @@ module.exports = {
             }
         });
     },
-    down: (queryInterface, Sequelize) => {
+    down: (queryInterface) => {
         return queryInterface.dropTable('transactions');
     }
 };

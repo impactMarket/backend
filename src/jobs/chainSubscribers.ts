@@ -2,8 +2,7 @@ import { ethers } from 'ethers';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 import CommunityContractABI from '../contracts/CommunityABI.json'
 import ERC20ABI from '../contracts/ERC20ABI.json'
-import TransactionsService from '../db/services/transactions';
-import BigNumber from 'bignumber.js';
+import TransactionsService, { translateEvent } from '../db/services/transactions';
 import config from '../config';
 
 
@@ -33,75 +32,6 @@ async function startFromBlock(
     return block.blockNumber !== undefined ? block.blockNumber : defaultStart;
 }
 
-interface ICommunityAddedEventValues {
-    _communityAddress: string,
-    _firstManager: string,
-    _claimAmount: BigNumber,
-    _maxClaim: BigNumber,
-    _baseInterval: BigNumber,
-    _incrementInterval: BigNumber,
-}
-interface ICommunityEditedEventValues {
-    _claimAmount: BigNumber,
-    _maxClaim: BigNumber
-    _baseInterval: BigNumber,
-    _incrementInterval: BigNumber,
-}
-interface IBeneficiaryClaimEventValues {
-    _account: string,
-    _amount: BigNumber,
-}
-interface ITransferEventValues {
-    from: string,
-    to: string,
-    value: BigNumber,
-}
-
-function translateEvent(
-    rawValues: ICommunityAddedEventValues | ICommunityEditedEventValues | IBeneficiaryClaimEventValues | ITransferEventValues | { _account: string },
-) {
-    if ((rawValues as ICommunityAddedEventValues)._firstManager) {
-        const values = rawValues as ICommunityAddedEventValues;
-        return {
-            _communityAddress: values._communityAddress,
-            _firstManager: values._firstManager,
-            _claimAmount: values._claimAmount.toString(),
-            _maxClaim: values._maxClaim.toString(),
-            _baseInterval: values._baseInterval.toString(),
-            _incrementInterval: values._incrementInterval.toString(),
-        }
-    }
-    else if ((rawValues as ITransferEventValues).from) {
-        const values = rawValues as ITransferEventValues;
-        return {
-            from: values.from,
-            to: values.to,
-            value: values.value.toString(),
-        }
-    }
-    else if ((rawValues as IBeneficiaryClaimEventValues)._amount) {
-        const values = rawValues as IBeneficiaryClaimEventValues;
-        return {
-            _account: values._account,
-            _amount: values._amount.toString(),
-        }
-    }
-    else if ((rawValues as ICommunityEditedEventValues)._claimAmount) {
-        const values = rawValues as ICommunityEditedEventValues;
-        return {
-            _claimAmount: values._claimAmount.toString(),
-            _maxClaim: values._maxClaim.toString(),
-            _baseInterval: values._baseInterval.toString(),
-            _incrementInterval: values._incrementInterval.toString(),
-        }
-    }
-    // everything else
-    const values = rawValues as { _account: string };
-    return {
-        _account: values._account,
-    }
-}
-
 async function subscribeChainEvents(
     provider: ethers.providers.JsonRpcProvider,
     communitiesAddress: string[],
@@ -116,8 +46,9 @@ async function subscribeChainEvents(
      * https://docs.ethers.io/ethers.js/html/api-contract.html#event-object
      * the parameters are necessary
      */
-    const addToTransactionCache = async (event: any) => TransactionsService.add(
+    const addToTransactionCache = async (event: any) => TransactionsService.addRaw(
         event.transactionHash,
+        new Date(),
         (await provider.getTransactionReceipt(event.transactionHash!)).from!,
         event.address,
         event.event,
@@ -188,11 +119,9 @@ async function updateImpactMarketCache(
             });
         }
         TransactionsService.add(
-            logsImpactMarket[eim].transactionHash!,
-            (await provider.getTransactionReceipt(logsImpactMarket[eim].transactionHash!)).from!,
-            logsImpactMarket[eim].address,
-            eventsImpactMarket[eim].name,
-            translateEvent(eventsImpactMarket[eim].values),
+            provider,
+            logsImpactMarket[eim],
+            eventsImpactMarket[eim],
         ).catch(catchHandlerTransactionsService)
     }
     return communitiesAdded;
@@ -224,11 +153,9 @@ function updateCommunityCache(
         // save community events
         for (let ec = 0; ec < eventsCommunity.length; ec += 1) {
             TransactionsService.add(
-                logsCommunity[ec].transactionHash!,
-                (await provider.getTransactionReceipt(logsCommunity[ec].transactionHash!)).from!,
-                logsCommunity[ec].address,
-                eventsCommunity[ec].name,
-                translateEvent(eventsCommunity[ec].values),
+                provider,
+                logsCommunity[ec],
+                eventsCommunity[ec],
             ).catch(catchHandlerTransactionsService)
         }
     });
@@ -244,11 +171,9 @@ function updateCommunityCache(
         for (let ec = 0; ec < eventsCUSD.length; ec += 1) {
             if (eventsCUSD[ec].values.to === contractAddress) {
                 TransactionsService.add(
-                    logsCUSD[ec].transactionHash!,
-                    (await provider.getTransactionReceipt(logsCUSD[ec].transactionHash!)).from!,
-                    logsCUSD[ec].address,
-                    eventsCUSD[ec].name,
-                    translateEvent(eventsCUSD[ec].values),
+                    provider,
+                    logsCUSD[ec],
+                    eventsCUSD[ec],
                 ).catch(catchHandlerTransactionsService)
             }
         }

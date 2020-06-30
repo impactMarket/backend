@@ -12,12 +12,12 @@ import { calcuateSSI } from '../jobs/calculateSSI';
 
 
 export default async (): Promise<void> => {
-    cron();
-    await subscribers();
+    const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
+    cron(provider);
+    await subscribers(provider);
 };
 
-async function subscribers(): Promise<void> {
-    const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
+async function subscribers(provider: ethers.providers.JsonRpcProvider): Promise<void> {
     const startFrom = await startFromBlock(provider, config.impactMarketContractBlockNumber);
     const fromLogs = await updateImpactMarketCache(provider, startFrom);
     fromLogs.forEach((community) => updateCommunityCache(
@@ -38,10 +38,10 @@ async function subscribers(): Promise<void> {
     subscribeChainEvents(provider, availableCommunities.map((community) => community.contractAddress));
 }
 
-function cron() {
+function cron(provider: ethers.providers.JsonRpcProvider) {
     // everyday at midnight (Europe/Paris time)
     const job = new CronJob('0 0 * * *', () => {
-        calcuateSSI();
+        calcuateSSI(provider);
     }, null, false, 'Europe/Paris');
     job.start();
 }

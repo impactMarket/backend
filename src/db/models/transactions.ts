@@ -3,6 +3,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class Transactions extends Model {
     public tx!: string; // Note that the `null assertion` `!` is required in strict mode.
+    public txAt!: Date;
     public from!: string;
     public contractAddress!: string;
     public event!: string;
@@ -22,6 +23,10 @@ export function initializeTransactions(sequelize: Sequelize): void {
         },
         tx: {
             type: DataTypes.STRING(68),
+            allowNull: false,
+        },
+        txAt: {
+            type: DataTypes.DATE,
             allowNull: false,
         },
         from: {
