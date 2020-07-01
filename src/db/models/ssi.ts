@@ -19,8 +19,8 @@ export function initializeSSI(sequelize: Sequelize): void {
             autoIncrement: true,
             primaryKey: true,
         },
-        communityId: {
-            type: DataTypes.INTEGER,
+        communityPublicId: {
+            type: DataTypes.UUID,
             allowNull: false
         },
         date: {

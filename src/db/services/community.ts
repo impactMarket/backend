@@ -5,6 +5,7 @@ import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json'
 import TransactionsService from './transactions';
 import { ICommunityInfo, ICommunityVars } from '../../types';
 import { Op } from 'sequelize';
+import SSIService from './ssi';
 
 
 export default class CommunityService {
@@ -97,7 +98,10 @@ export default class CommunityService {
                     removed: [],
                 },
                 managers: [],
-                ssi: [],
+                ssi: {
+                    dates: [],
+                    values: [],
+                },
                 totalClaimed: '0',
                 totalRaised: '0',
                 vars: {
@@ -151,6 +155,7 @@ export default class CommunityService {
 
         const totalClaimed = await TransactionsService.getCommunityClaimedAmount(community.contractAddress);
         const totalRaised = await TransactionsService.getCommunityRaisedAmount(community.contractAddress);
+        const ssi = await SSIService.get(community.publicId);
 
         return {
             ...community,
@@ -159,7 +164,7 @@ export default class CommunityService {
             backers,
             beneficiaries,
             managers,
-            ssi: [],
+            ssi,
             totalClaimed: totalClaimed.toString(),
             totalRaised: totalRaised.toString(),
             vars,

@@ -7,11 +7,11 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            communityId: {
-                type: Sequelize.INTEGER,
+            communityPublicId: {
+                type: Sequelize.UUID,
                 references: {
                     model: 'community', // name of Target model
-                    key: 'id', // key in Target model that we're referencing
+                    key: 'publicId', // key in Target model that we're referencing
                 },
                 onUpdate: 'CASCADE',
                 onDelete: 'SET NULL',

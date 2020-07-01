@@ -5,6 +5,7 @@ import { Transactions } from "../db/models/transactions";
 import CommunityContractABI from '../contracts/CommunityABI.json'
 import { ethers } from "ethers";
 import { CommunityInstance } from "../contracts/types";
+import SSIService from "../db/services/ssi";
 
 
 async function calcuateSSI(provider: ethers.providers.JsonRpcProvider): Promise<void> {
@@ -43,8 +44,9 @@ async function calcuateSSI(provider: ethers.providers.JsonRpcProvider): Promise<
             const meanIntervals = lastIntervals.reduce((a, b) => a + b, 0) / lastIntervals.length
             const meanCooldowns = cooldowns.reduce((a, b) => a + b, 0) / cooldowns.length
             const mean = meanIntervals / meanCooldowns - 1;
+            // 1a media / 2a media - 1
+            SSIService.add(community.publicId, new Date(), mean);
         }
-        // 1a media / 2a media - 1
     });
     // TODO:
 }

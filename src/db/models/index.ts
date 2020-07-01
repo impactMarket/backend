@@ -11,6 +11,6 @@ export default function initModels(sequelize: Sequelize): void {
     initializeTransactions(sequelize);
     initializeUser(sequelize);
 
-    Community.hasMany(SSI, { foreignKey: 'communityId' });
-    SSI.belongsTo(Community);
+    Community.hasMany(SSI, { foreignKey: 'communityPublicId' });
+    SSI.belongsTo(Community, { foreignKey: 'communityPublicId' });
 }
