@@ -13,11 +13,15 @@ module.exports = {
             },
             username: {
                 type: Sequelize.STRING(64),
-                // allowNull: false
             },
             currency: {
                 type: Sequelize.STRING(4),
-                // allowNull: false
+            },
+            authToken: {
+                type: Sequelize.STRING(128),
+            },
+            pushNotificationToken: {
+                type: Sequelize.STRING(64),
             },
             createdAt: {
                 allowNull: false,

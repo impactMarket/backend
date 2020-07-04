@@ -29,7 +29,7 @@ export default {
     /**
      * Your secret sauce
      */
-    jwtSecret: process.env.JWT_SECRET,
+    jwtSecret: process.env.JWT_SECRET!,
 
     /**
      * Used by winston logger
@@ -68,5 +68,10 @@ export default {
     /**
      * Decimals in cUSD token
      */
-    cUSDDecimal: 18
+    cUSDDecimal: 18,
+
+    /**
+     * When the user first logs in, he needs to sign a message.
+     */
+    messageSigned: 'I accept the terms and conditions.'
 };

@@ -1,39 +1,57 @@
 import { User } from '../models/user';
+import { ethers } from 'ethers';
+import config from '../../config';
+import { generateAccessToken } from '../../middlewares';
 
 
 export default class UserService {
+    public static async auth(
+        address: string,
+        signature: string
+    ): Promise<string | undefined> {
+        const addressFromSignature = ethers.utils.verifyMessage(config.messageSigned, signature);
+        if (addressFromSignature.toLowerCase() === address.toLowerCase()) {
+            const token = generateAccessToken(address);
+            await User.create({
+                address,
+                authToken: token,
+            });
+            return token;
+        }
+        return undefined;
+    }
+
     public static async setUsername(
         address: string,
         username: string
-    ): Promise<User | [number, User[]]> {
-        const userExists = await User.findOne({ where: { address } });
-        if (userExists !== null) {
-            return User.update(
-                { username },
-                { returning: true, where: { address } },
-            );
-        }
-        return User.create({
-            address,
-            username,
-        });
+    ): Promise<boolean> {
+        const updated = await User.update(
+            { username },
+            { returning: true, where: { address } },
+        );
+        return updated[0] > 0;
     }
 
     public static async setCurrency(
         address: string,
         currency: string
-    ): Promise<User | [number, User[]]> {
-        const userExists = await User.findOne({ where: { address } });
-        if (userExists !== null) {
-            return User.update(
-                { currency },
-                { returning: true, where: { address } },
-            );
-        }
-        return User.create({
-            address,
-            currency,
-        });
+    ): Promise<boolean> {
+        const updated = await User.update(
+            { currency },
+            { returning: true, where: { address } },
+        );
+        return updated[0] > 0;
+    }
+
+    public static async setPushNotificationsToken(
+        address: string,
+        pushNotificationToken: string
+    ): Promise<boolean> {
+        const updated = await User.update(
+            { pushNotificationToken },
+            { returning: true, where: { address } },
+        );
+        return updated[0] > 0;
     }
 
     public static async get(address: string): Promise<User | null> {

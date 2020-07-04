@@ -6,6 +6,8 @@ export class User extends Model {
     public address!: string;
     public username!: string;
     public currency!: string;
+    public authToken!: string;
+    public pushNotificationToken!: string;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -25,11 +27,15 @@ export function initializeUser(sequelize: Sequelize): void {
         },
         username: {
             type: DataTypes.STRING(64),
-            // allowNull: false,
         },
         currency: {
             type: DataTypes.STRING(4),
-            // allowNull: false,
+        },
+        authToken: {
+            type: DataTypes.STRING(128),
+        },
+        pushNotificationToken: {
+            type: DataTypes.STRING(64),
         },
         createdAt: {
             type: DataTypes.DATE,

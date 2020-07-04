@@ -8,6 +8,7 @@ import {
     celebrate,
     Joi
 } from 'celebrate';
+import { authenticateToken } from '../../middlewares';
 
 const route = Router();
 
@@ -23,7 +24,33 @@ export default (app: Router): void => {
     );
 
     route.post(
+        '/auth',
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                signature: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                address,
+                signature,
+            } = req.body;
+            const result = await UserService.auth(
+                address,
+                signature
+            );
+            if (result === undefined) {
+                res.sendStatus(403);
+                return;
+            }
+            res.send(result);
+        },
+    );
+
+    route.post(
         '/username',
+        authenticateToken,
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
@@ -35,16 +62,16 @@ export default (app: Router): void => {
                 address,
                 username,
             } = req.body;
-            await UserService.setUsername(
+            res.sendStatus(await UserService.setUsername(
                 address,
                 username
-            );
-            res.sendStatus(200);
+            ) ? 200 : 404);
         },
     );
 
     route.post(
         '/currency',
+        authenticateToken,
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
@@ -56,11 +83,31 @@ export default (app: Router): void => {
                 address,
                 currency,
             } = req.body;
-            await UserService.setCurrency(
+            res.sendStatus(await UserService.setCurrency(
                 address,
                 currency
-            );
-            res.sendStatus(200);
+            ) ? 200 : 404);
+        },
+    );
+
+    route.post(
+        '/push-notifications',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                token: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                address,
+                token,
+            } = req.body;
+            res.sendStatus(await UserService.setPushNotificationsToken(
+                address,
+                token
+            ) ? 200 : 404);
         },
     );
 };
