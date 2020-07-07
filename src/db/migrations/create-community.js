@@ -15,6 +15,7 @@ module.exports = {
             },
             requestByAddress: {
                 type: Sequelize.STRING(44),
+                unique: true,
                 allowNull: false,
             },
             contractAddress: {

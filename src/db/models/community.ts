@@ -42,6 +42,7 @@ export function initializeCommunity(sequelize: Sequelize): void {
         },
         requestByAddress: {
             type: DataTypes.STRING(44),
+            unique: true,
             allowNull: false,
         },
         contractAddress: {
