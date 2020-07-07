@@ -6,6 +6,7 @@ import TransactionsService from './transactions';
 import { ICommunityInfo, ICommunityVars } from '../../types';
 import { Op } from 'sequelize';
 import SSIService from './ssi';
+import { sendPushNotification } from '../../utils';
 
 
 export default class CommunityService {
@@ -80,6 +81,7 @@ export default class CommunityService {
             { returning: true, where: { publicId } },
         );
         if (dbUpdate[0] === 1) {
+            sendPushNotification(dbUpdate[1][0].requestByAddress, 'Community Accepted', 'Your community was accepted!');
             return true;
         }
         return false;

@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import CommunityService from '../services/community';
 import { celebrate, Joi } from 'celebrate';
+import { authenticateToken } from '../../middlewares';
+import TransactionsService from '../services/transactions';
 
 const route = Router();
 
@@ -39,6 +41,7 @@ export default (app: Router): void => {
 
     route.post(
         '/request',
+        authenticateToken,
         celebrate({
             body: Joi.object({
                 requestByAddress: Joi.string().required(),
@@ -70,26 +73,21 @@ export default (app: Router): void => {
                 txCreationObj,
             } = req.body;
             let returningStatus = 200;
-            // TODO: make requestByAddress unique in the database, instead
             try {
-                const exists = await CommunityService.findByFirstManager(requestByAddress);
-                if (exists === null) {
-                    await CommunityService.request(
-                        requestByAddress,
-                        name,
-                        description,
-                        city,
-                        country,
-                        gps,
-                        email,
-                        visibility,
-                        coverImage,
-                        txCreationObj,
-                    );
-                } else {
-                    returningStatus = 500;
-                }
+                await CommunityService.request(
+                    requestByAddress,
+                    name,
+                    description,
+                    city,
+                    country,
+                    gps,
+                    email,
+                    visibility,
+                    coverImage,
+                    txCreationObj,
+                );
             } catch (e) {
+                // TODO: log
                 returningStatus = 500;
             } finally {
                 res.sendStatus(returningStatus);
@@ -99,6 +97,7 @@ export default (app: Router): void => {
 
     route.post(
         '/edit',
+        authenticateToken,
         celebrate({
             body: Joi.object({
                 publicId: Joi.string().required(),
@@ -127,21 +126,37 @@ export default (app: Router): void => {
                 location,
                 coverImage,
             } = req.body;
-            await CommunityService.edit(
-                publicId,
-                name,
-                city,
-                country,
-                gps,
-                email,
-                visibility,
-                location,
-                coverImage,
-            );
-            res.sendStatus(200);
+            // verify if the current user is manager in this community
+            let returningStatus = 500;
+            try {
+                // the sender must be a manager
+                const communityToManager = await TransactionsService.findComunityToManager((req as any).user);
+                if (communityToManager !== null) {
+                    const community = await CommunityService.findByPublicId(publicId);
+                    if (community !== null && community.contractAddress === communityToManager.contractAddress) {
+                        await CommunityService.edit(
+                            publicId,
+                            name,
+                            city,
+                            country,
+                            gps,
+                            email,
+                            visibility,
+                            location,
+                            coverImage,
+                        );
+                    }
+                    returningStatus = 200;
+                }
+            } catch (e) {
+                // TODO: log
+            } finally {
+                res.sendStatus(returningStatus);
+            }
         },
     );
 
+    // TODO: add verification (not urgent, as it highly depends on the contract transaction)
     route.post(
         '/accept',
         celebrate({
