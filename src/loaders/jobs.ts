@@ -9,12 +9,16 @@ import { ethers } from 'ethers';
 import CommunityService from '../db/services/community';
 import { CronJob } from 'cron';
 import { calcuateSSI } from '../jobs/calculateSSI';
+import { prepareAgenda } from '../jobs/agenda';
 
 
 export default async (): Promise<void> => {
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     cron(provider);
-    await subscribers(provider);
+    await Promise.all([
+        prepareAgenda(),
+        subscribers(provider)
+    ]);
 };
 
 async function subscribers(provider: ethers.providers.JsonRpcProvider): Promise<void> {

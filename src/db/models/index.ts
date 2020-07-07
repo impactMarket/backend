@@ -3,6 +3,7 @@ import { initializeCommunity, Community } from './community';
 import { initializeTransactions } from './transactions';
 import { initializeUser } from './user';
 import { initializeSSI, SSI } from './ssi';
+import { initializeAgenda } from './agenda';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -10,6 +11,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeSSI(sequelize);
     initializeTransactions(sequelize);
     initializeUser(sequelize);
+    initializeAgenda(sequelize);
 
     Community.hasMany(SSI, { foreignKey: 'communityPublicId' });
     SSI.belongsTo(Community, { foreignKey: 'communityPublicId' });
