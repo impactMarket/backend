@@ -61,6 +61,7 @@ async function subscribeChainEvents(
             CommunityContractABI,
             provider,
         );
+        // TODO: add notifications to all events
         communityInstance.on('ManagerAdded', (_account, event) => addToTransactionCache(event));
         communityInstance.on('ManagerRemoved', (_account, event) => addToTransactionCache(event));
         communityInstance.on('BeneficiaryAdded', (_account, event) => addToTransactionCache(event));

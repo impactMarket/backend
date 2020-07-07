@@ -1,4 +1,6 @@
+import schedule from 'node-schedule';
 import AgendaService from "../db/services/agenda";
+import { AgendaAction } from '../types';
 
 export async function prepareAgenda(): Promise<void> {
     const agenda = await AgendaService.get();
@@ -7,6 +9,11 @@ export async function prepareAgenda(): Promise<void> {
             AgendaService.remove(element.id);
             return;
         }
-        // TODO: start a schedule
+        if (element.action === AgendaAction.notification) {
+            const j = schedule.scheduleJob(element.when, () => {
+                // console.log('The world is going to end today.');
+                // TODO: throw user notification
+            });
+        }
     });
 }

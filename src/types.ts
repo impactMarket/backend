@@ -73,3 +73,7 @@ export interface IPaymentsTxAPI {
     value: string;
     timestamp: number;
 }
+
+export enum AgendaAction {
+    notification = 'notification'
+}
