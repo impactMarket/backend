@@ -5,20 +5,22 @@ import {
     NextFunction,
 } from 'express';
 import config from "../config";
+import Logger from '../loaders/logger';
+
 
 export function authenticateToken(req: Request, res: Response, next: NextFunction): void {
     // Gather the jwt access token from the request header
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
     if (token == null) {
-        // TODO: log
+        Logger.error('User auth token is not valid!');
         res.sendStatus(401) // if there isn't any token
         return;
     }
 
     jwt.verify(token, config.jwtSecret, (err, user) => {
         if (err) {
-            // TODO: log
+            Logger.error(err);
             res.sendStatus(403)
             return;
         }

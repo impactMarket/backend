@@ -1,8 +1,10 @@
 import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import morgan from 'morgan';
 import routes from '../db/routes';
 import config from '../config';
+import { LoggerStream } from '../loaders/logger';
 
 
 export default ({ app }: { app: express.Application }): void => {
@@ -20,6 +22,8 @@ export default ({ app }: { app: express.Application }): void => {
     // Useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
     // It shows the real origin IP in the heroku or Cloudwatch logs
     app.enable('trust proxy');
+
+    app.use(morgan('combined', {  stream: new LoggerStream() }));
 
     // The magic package that prevents frontend developers going nuts
     // Alternate description:

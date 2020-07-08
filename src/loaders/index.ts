@@ -1,7 +1,7 @@
 import express from 'express';
+import Logger from './logger';
 import expressLoader from './express';
 import databaseLoader from './database';
-import Logger from './logger';
 import jobsLoader from './jobs';
 
 export default async ({ expressApp }: { expressApp: express.Application }): Promise<void> => {

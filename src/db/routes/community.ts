@@ -3,6 +3,8 @@ import CommunityService from '../services/community';
 import { celebrate, Joi } from 'celebrate';
 import { authenticateToken } from '../../middlewares';
 import TransactionsService from '../services/transactions';
+import Logger from '../../loaders/logger';
+
 
 const route = Router();
 
@@ -87,7 +89,7 @@ export default (app: Router): void => {
                     txCreationObj,
                 );
             } catch (e) {
-                // TODO: log
+                Logger.error(e);
                 returningStatus = 500;
             } finally {
                 res.sendStatus(returningStatus);

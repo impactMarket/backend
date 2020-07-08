@@ -1,12 +1,11 @@
 import winston from 'winston';
 import config from '../config';
 
-const transports = [];
-if (process.env.NODE_ENV !== 'development') {
-    transports.push(
-        new winston.transports.Console()
-    )
-} else {
+const transports: (winston.transports.FileTransportInstance | winston.transports.ConsoleTransportInstance)[] = [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' }),
+];
+if (process.env.NODE_ENV === 'development') {
     transports.push(
         new winston.transports.Console({
             format: winston.format.combine(
@@ -22,7 +21,7 @@ const LoggerInstance = winston.createLogger({
     levels: winston.config.npm.levels,
     format: winston.format.combine(
         winston.format.timestamp({
-            format: 'YYYY-MM-DD HH:mm:ss'
+            format: 'DD-MM-YYYY HH:mm:ss'
         }),
         winston.format.errors({ stack: true }),
         winston.format.splat(),
@@ -30,5 +29,11 @@ const LoggerInstance = winston.createLogger({
     ),
     transports
 });
+
+export class LoggerStream {
+    write(message: string): void {
+        LoggerInstance.info(message.substring(0, message.lastIndexOf('\n')));
+    }
+}
 
 export default LoggerInstance;
