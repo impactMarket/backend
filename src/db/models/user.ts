@@ -25,6 +25,13 @@ export function initializeUser(sequelize: Sequelize): void {
             type: DataTypes.STRING(44),
             allowNull: false,
         },
+        pin: {
+            type: DataTypes.STRING(129),
+            allowNull: false,
+            get() {
+                return undefined;
+            }
+        },
         username: {
             type: DataTypes.STRING(64),
         },
@@ -32,7 +39,7 @@ export function initializeUser(sequelize: Sequelize): void {
             type: DataTypes.STRING(4),
         },
         authToken: {
-            type: DataTypes.STRING(128),
+            type: DataTypes.STRING(180),
         },
         pushNotificationToken: {
             type: DataTypes.STRING(64),
