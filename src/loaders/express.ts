@@ -6,9 +6,10 @@ import helmet from 'helmet';
 import routes from '../db/routes';
 import config from '../config';
 import { LoggerStream } from '../loaders/logger';
+import { Sequelize } from 'sequelize/types';
 
 
-export default ({ app }: { app: express.Application }): void => {
+export default ({ app, sequelize }: { app: express.Application, sequelize: Sequelize }): void => {
     /**
      * Health Check endpoints
      * @TODO Explain why they are here
@@ -40,7 +41,7 @@ export default ({ app }: { app: express.Application }): void => {
     // Middleware that transforms the raw string of req.body into json
     app.use(bodyParser.json());
     // Load API routes
-    app.use(config.api.prefix, routes());
+    app.use(config.api.prefix, routes(sequelize));
 
     /// catch 404 and forward to error handler
     app.use((req, res, next) => {

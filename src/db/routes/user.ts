@@ -9,42 +9,50 @@ import {
     Joi
 } from 'celebrate';
 import { authenticateToken } from '../../middlewares';
+import { Sequelize } from 'sequelize/types';
+import ExpressBrute from 'express-brute';
+import SequelizeStore from 'express-brute-sequelize';
+
 
 const route = Router();
+let bruteforce: any;
 
-
-export default (app: Router): void => {
+export default (app: Router, sequelize: Sequelize): void => {
     app.use('/user', route);
+
+    new SequelizeStore(sequelize, 'bruteStore', {}, (store: any) => {
+        bruteforce = new ExpressBrute(store);
+        route.post(
+            '/auth',
+            bruteforce.prevent, // error 403 if too many requests for this route in short time
+            celebrate({
+                body: Joi.object({
+                    address: Joi.string().required(),
+                    pin: Joi.string().required(),
+                }),
+            }),
+            async (req: Request, res: Response) => {
+                const {
+                    address,
+                    pin,
+                } = req.body;
+                const result = await UserService.auth(
+                    address,
+                    pin
+                );
+                if (result === undefined) {
+                    res.sendStatus(403);
+                    return;
+                }
+                res.send(result);
+            },
+        );
+    });
 
     route.get(
         '/:address',
         async (req: Request, res: Response) => {
             res.send(await UserService.get(req.params.address));
-        },
-    );
-
-    route.post(
-        '/auth',
-        celebrate({
-            body: Joi.object({
-                address: Joi.string().required(),
-                signature: Joi.string().required(),
-            }),
-        }),
-        async (req: Request, res: Response) => {
-            const {
-                address,
-                signature,
-            } = req.body;
-            const result = await UserService.auth(
-                address,
-                signature
-            );
-            if (result === undefined) {
-                res.sendStatus(403);
-                return;
-            }
-            res.send(result);
         },
     );
 

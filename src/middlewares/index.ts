@@ -31,5 +31,5 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
 }
 
 export function generateAccessToken(userAddress: string): string {
-    return jwt.sign(userAddress, config.jwtSecret);
+    return jwt.sign({ address: userAddress }, config.jwtSecret);
 }

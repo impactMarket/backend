@@ -102,8 +102,6 @@ export default class TransactionsService {
         const event = events.name;
         const values = translateEvent(events.values);
 
-        const hash = new SHA3(256);
-        hash.update(tx).update(JSON.stringify(values));
         return this.addRaw(
             tx,
             new Date(),

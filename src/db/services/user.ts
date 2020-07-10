@@ -1,24 +1,36 @@
+import { SHA3 } from 'sha3';
 import { User } from '../models/user';
-import { ethers } from 'ethers';
-import config from '../../config';
 import { generateAccessToken } from '../../middlewares';
 
 
 export default class UserService {
     public static async auth(
         address: string,
-        signature: string
+        pin: string
     ): Promise<string | undefined> {
-        const addressFromSignature = ethers.utils.verifyMessage(config.messageSigned, signature);
-        if (addressFromSignature.toLowerCase() === address.toLowerCase()) {
-            const token = generateAccessToken(address);
+        const hash = new SHA3(512);
+        hash.update(pin);
+        const token = generateAccessToken(address);
+        const user = await User.findOne({ where: { address } });
+        const hashed = hash.digest('hex');
+        console.log(token);
+        const userWithPin = await User.findOne({ where: { address, pin: hashed } });
+        if (userWithPin === null) {
+            if (user !== null) {
+                return undefined;
+            }
             await User.create({
                 address,
+                pin: hash.digest('hex'),
                 authToken: token,
             });
-            return token;
+        } else {
+            await User.update(
+                { authToken: token },
+                { returning: true, where: { address } },
+            );
         }
-        return undefined;
+        return token;
     }
 
     public static async setUsername(
