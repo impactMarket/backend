@@ -13,6 +13,7 @@
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "outDir": "./dist",
+        "noImplicitAny": false,
     },
     "include": [
         "src"
