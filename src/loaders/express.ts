@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import morgan from 'morgan';
+import helmet from 'helmet';
 import routes from '../db/routes';
 import config from '../config';
 import { LoggerStream } from '../loaders/logger';
@@ -25,6 +26,7 @@ export default ({ app }: { app: express.Application }): void => {
 
     app.use(morgan('combined', {  stream: new LoggerStream() }));
 
+    app.use(helmet());
     // The magic package that prevents frontend developers going nuts
     // Alternate description:
     // Enable Cross Origin Resource Sharing to all origins by default
