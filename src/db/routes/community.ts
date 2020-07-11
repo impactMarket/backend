@@ -15,15 +15,22 @@ export default (app: Router): void => {
     route.get(
         '/address/:contractAddress',
         async (req: Request, res: Response) => {
-            const result = await CommunityService.findByContractAddress(req.params.contractAddress);
-            res.send(result);
+            const community = await CommunityService.findByContractAddress(req.params.contractAddress);
+            if (community === null) {
+                res.sendStatus(404);
+            }
+            res.send(community);
         },
     );
 
     route.get(
         '/id/:publicId',
         async (req: Request, res: Response) => {
-            res.send(await CommunityService.findByPublicId(req.params.publicId));
+            const community = await CommunityService.findByPublicId(req.params.publicId)
+            if (community === null) {
+                res.sendStatus(404);
+            }
+            res.send(community);
         },
     );
 
@@ -74,7 +81,7 @@ export default (app: Router): void => {
                 coverImage,
                 txCreationObj,
             } = req.body;
-            let returningStatus = 200;
+            let returningStatus = 201;
             try {
                 await CommunityService.request(
                     requestByAddress,
@@ -90,7 +97,7 @@ export default (app: Router): void => {
                 );
             } catch (e) {
                 Logger.error(e);
-                returningStatus = 500;
+                returningStatus = 403;
             } finally {
                 res.sendStatus(returningStatus);
             }
@@ -129,7 +136,7 @@ export default (app: Router): void => {
                 coverImage,
             } = req.body;
             // verify if the current user is manager in this community
-            let returningStatus = 500;
+            let returningStatus = 404;
             try {
                 // the sender must be a manager
                 const communityToManager = await TransactionsService.findComunityToManager((req as any).user);
@@ -147,11 +154,12 @@ export default (app: Router): void => {
                             location,
                             coverImage,
                         );
+                        returningStatus = 200;
                     }
-                    returningStatus = 200;
                 }
             } catch (e) {
-                // TODO: log
+                Logger.error(e);
+                returningStatus = 403;
             } finally {
                 res.sendStatus(returningStatus);
             }
@@ -172,11 +180,10 @@ export default (app: Router): void => {
                 acceptanceTransaction, // the address accepting the request (must be admin)
                 publicId,
             } = req.body;
-            const accpeted: boolean = await CommunityService.accept(
+            res.sendStatus(await CommunityService.accept(
                 acceptanceTransaction,
                 publicId,
-            );
-            res.sendStatus(accpeted ? 200 : 503);
+            ) ? 202 : 403);
         },
     );
 };

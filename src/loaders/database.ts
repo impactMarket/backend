@@ -7,7 +7,7 @@ import Logger from '../loaders/logger';
 export default async (): Promise<Sequelize> => {
     let logging: boolean | ((sql: string, timing?: number | undefined) => void) | undefined;
     if (process.env.NODE_ENV === 'development') {
-        logging = console.log;
+        logging = false;
     } else {
         logging = (msg) => Logger.debug(msg);
     }

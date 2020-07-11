@@ -1,5 +1,6 @@
 import axios from 'axios';
 import UserService from "./db/services/user";
+import Logger from './loaders/logger';
 
 // Accepts the array and key
 export function groupBy<T>(array: any[], key: string): Map<string, T[]> {
@@ -35,7 +36,7 @@ export async function sendPushNotification(userAddress: string, title: string, b
             const result = await axios.post('https://exp.host/--/api/v2/push/send', JSON.stringify(message), requestHeaders);
             return result.status === 200 ? true : false;
         } catch (error) {
-            // TODO: handle error
+            Logger.error(error);
             return false;
         }
     }
