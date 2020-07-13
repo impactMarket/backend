@@ -10,17 +10,18 @@ module.exports = {
             bigNumberStrings: true
         }
     },
-    test: {
-    },
-    production: {
-        username: process.env.PROD_DB_USERNAME,
-        password: process.env.PROD_DB_PASSWORD,
-        database: process.env.PROD_DB_NAME,
-        host: process.env.PROD_DB_HOSTNAME,
-        port: process.env.PROD_DB_PORT,
+    staging: {
         dialect: 'postgres',
         dialectOptions: {
             bigNumberStrings: true,
-        }
+        },
+        migrationStorageTableName: 'sequelize_meta_staging',
+    },
+    production: {
+        dialect: 'postgres',
+        dialectOptions: {
+            bigNumberStrings: true,
+        },
+        migrationStorageTableName: 'sequelize_meta_production',
     }
 };
