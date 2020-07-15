@@ -29,11 +29,5 @@ If you prefer a production version instead, build with `yarn build` and then sta
 Disable SSL locally
 psql "sslmode=disable host=localhost dbname=impactmarket" --username postgres --host localhost --port 5432
 
-## Step by step...
-
-- [x] Basic API functionality to save community creation requests and beneficiary requests
-- [ ] Transaction cache server for faster loading (WIP)
-- [ ] ...
-
 ## License
 [Apache-2.0](LICENSE)
