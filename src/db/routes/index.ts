@@ -4,6 +4,7 @@ import transactions from './transactions';
 import user from './user';
 import s3 from './s3';
 import { Sequelize } from 'sequelize/types';
+import claimLocation from './claimLocation';
 
 
 export default (sequelize: Sequelize): Router => {
@@ -12,6 +13,7 @@ export default (sequelize: Sequelize): Router => {
     transactions(app);
     user(app, sequelize);
     s3(app);
+    claimLocation(app);
 
     return app;
 }
