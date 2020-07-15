@@ -27,7 +27,7 @@ If you prefer a production version instead, build with `yarn build` and then sta
 
 #### To Disable local SSL requirement
 Disable SSL locally
-psql "sslmode=disable host=localhost dbname=impactmarket" --username postgres --host localhost --port 5432
+`psql "sslmode=disable host=localhost dbname=impactmarket" --username postgres --host localhost --port 5432`
 
 ## License
 [Apache-2.0](LICENSE)
