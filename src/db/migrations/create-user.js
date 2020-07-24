@@ -18,6 +18,9 @@ module.exports = {
             username: {
                 type: Sequelize.STRING(64),
             },
+            avatar: {
+                type: Sequelize.STRING(128),
+            },
             currency: {
                 type: Sequelize.STRING(4),
             },

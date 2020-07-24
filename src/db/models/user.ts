@@ -5,6 +5,7 @@ export class User extends Model {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public address!: string;
     public username!: string;
+    public avatar!: string;
     public currency!: string;
     public authToken!: string;
     public pushNotificationToken!: string;
@@ -34,6 +35,9 @@ export function initializeUser(sequelize: Sequelize): void {
         },
         username: {
             type: DataTypes.STRING(64),
+        },
+        avatar: {
+            type: DataTypes.STRING(128),
         },
         currency: {
             type: DataTypes.STRING(4),
