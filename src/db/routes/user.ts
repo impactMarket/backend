@@ -118,4 +118,25 @@ export default (app: Router, sequelize: Sequelize): void => {
             ) ? 200 : 404);
         },
     );
+
+    route.post(
+        '/language',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                language: Joi.number().required(),
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                address,
+                language,
+            } = req.body;
+            res.sendStatus(await UserService.setLanguage(
+                address,
+                language
+            ) ? 200 : 404);
+        },
+    );
 };

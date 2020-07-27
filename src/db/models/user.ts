@@ -6,6 +6,7 @@ export class User extends Model {
     public address!: string;
     public username!: string;
     public avatar!: string;
+    public language!: string;
     public currency!: string;
     public authToken!: string;
     public pushNotificationToken!: string;
@@ -38,6 +39,9 @@ export function initializeUser(sequelize: Sequelize): void {
         },
         avatar: {
             type: DataTypes.STRING(128),
+        },
+        language: {
+            type: DataTypes.INTEGER,
         },
         currency: {
             type: DataTypes.STRING(4),

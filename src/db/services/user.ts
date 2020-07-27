@@ -66,6 +66,17 @@ export default class UserService {
         return updated[0] > 0;
     }
 
+    public static async setLanguage(
+        address: string,
+        language: number
+    ): Promise<boolean> {
+        const updated = await User.update(
+            { language },
+            { returning: true, where: { address } },
+        );
+        return updated[0] > 0;
+    }
+
     public static async get(address: string): Promise<User | null> {
         return User.findOne({ where: { address } });
     }

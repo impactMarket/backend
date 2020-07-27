@@ -21,6 +21,9 @@ module.exports = {
             avatar: {
                 type: Sequelize.STRING(128),
             },
+            language: {
+                type: Sequelize.INTEGER,
+            },
             currency: {
                 type: Sequelize.STRING(4),
             },
