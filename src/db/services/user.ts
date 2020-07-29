@@ -13,7 +13,6 @@ export default class UserService {
         const token = generateAccessToken(address);
         const user = await User.findOne({ where: { address } });
         const hashed = hash.digest('hex');
-        console.log(token);
         const userWithPin = await User.findOne({ where: { address, pin: hashed } });
         if (userWithPin === null) {
             if (user !== null) {
@@ -23,6 +22,7 @@ export default class UserService {
                 address,
                 pin: hash.digest('hex'),
                 authToken: token,
+                avatar: Math.floor(Math.random() * 8) + 1,
             });
         } else {
             await User.update(
