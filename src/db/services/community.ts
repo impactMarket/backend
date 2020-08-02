@@ -126,8 +126,12 @@ export default class CommunityService {
         return Community.findOne({ where: { requestByAddress } });
     }
 
-    public static async findByPublicId(publicId: string): Promise<Community | null> {
-        return Community.findOne({ where: { publicId } });
+    public static async findByPublicId(publicId: string): Promise<ICommunityInfo | null> {
+        const community = await Community.findOne({ where: { publicId }, raw: true });
+        if (community === null) {
+            return null;
+        }
+        return await this.getCachedInfoToCommunity(community);
     }
 
     public static async findByContractAddress(contractAddress: string): Promise<ICommunityInfo | null> {

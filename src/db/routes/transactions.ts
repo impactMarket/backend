@@ -3,6 +3,7 @@ import TransactionsService from '../services/transactions';
 import CommunityService from '../services/community';
 import { Transactions } from '../models/transactions';
 import { Community } from '../models/community';
+import { ICommunityInfo } from '../../types';
 // import middlewares from '../middlewares';
 const route = Router();
 
@@ -48,16 +49,18 @@ export default (app: Router): void => {
         '/managerin/:managerAddress',
         async (req: Request, res: Response) => {
             let community: Transactions | Community | null;
+            let communityInfo: ICommunityInfo | null = null;
             community = await TransactionsService.findComunityToManager(req.params.managerAddress);
             if (community === null) {
-                // TODO: look for pending community to this user
+                // look for pending community to this user
                 community = await CommunityService.findByFirstManager(req.params.managerAddress);
+                if (community !== null) {
+                    communityInfo = await CommunityService.findByPublicId(community.publicId);
+                }
+            } else {
+                communityInfo = await CommunityService.findByContractAddress(community.contractAddress);
             }
-            if (community !== null) {
-                const communityInfo = await CommunityService.findByContractAddress(community.contractAddress);
-                return res.send(communityInfo);
-            }
-            return res.send(community);
+            return res.send(communityInfo);
         });
 
     route.get(
