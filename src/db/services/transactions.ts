@@ -305,7 +305,7 @@ export default class TransactionsService {
         const result: Map<string, string> = new Map();
 
         for (const [k, v] of groupBy<any>(claims, 'from')) {
-            const sumResult = v.map((vv) => vv._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
+            const sumResult = v.map((vv) => vv.values._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
             result.set(k, sumResult.toString());
         }
 
