@@ -20,7 +20,7 @@
     },
     "homepage": "https://github.com/impactMarket/api#readme",
     "engines": {
-        "node": "10.20.1"
+        "node": "10.22.0"
     },
     "dependencies": {
         "aws-sdk": "2.701.0",
