@@ -73,18 +73,27 @@ export default class CommunityService {
         if (receipt.logs === undefined) {
             return true;
         }
-        const eventsImpactMarket = receipt.logs.map((log) => ifaceImpactMarket.parseLog(log));
-        const index = eventsImpactMarket.findIndex((event) => event !== null && event.name === 'CommunityAdded');
-        const communityContractAddress = eventsImpactMarket[index].values._communityAddress;
-        const dbUpdate: [number, Community[]] = await Community.update(
-            { contractAddress: communityContractAddress, status: 'valid', txCreationObj: null },
-            { returning: true, where: { publicId } },
-        );
-        if (dbUpdate[0] === 1) {
-            sendPushNotification(dbUpdate[1][0].requestByAddress, 'Community Accepted', 'Your community was accepted!');
-            return true;
+        const eventsImpactMarket: ethers.utils.LogDescription[] = [];
+        for (let index = 0; index < receipt.logs.length; index++) {
+            try {
+                const parsedLog = ifaceImpactMarket.parseLog(receipt.logs[index]);
+                eventsImpactMarket.push(parsedLog);
+            } catch (e) { }
         }
-        return false;
+        const index = eventsImpactMarket.findIndex((event) => event !== null && event.name === 'CommunityAdded');
+        if (index !== -1) {
+            const communityContractAddress = eventsImpactMarket[index].args._communityAddress;
+            const dbUpdate: [number, Community[]] = await Community.update(
+                { contractAddress: communityContractAddress, status: 'valid', txCreationObj: null },
+                { returning: true, where: { publicId } },
+            );
+            if (dbUpdate[0] === 1) {
+                sendPushNotification(dbUpdate[1][0].requestByAddress, 'Community Accepted', 'Your community was accepted!');
+                return true;
+            }
+            return false;
+        }
+        return true;
     }
 
     public static async getAll(status?: string): Promise<ICommunityInfo[]> {
