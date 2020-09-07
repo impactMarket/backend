@@ -63,7 +63,7 @@ export default {
     /**
      * Used to query
      */
-    baseBlockScoutApiUrl: 'https://alfajores-blockscout.celo-testnet.org/api',
+    baseBlockScoutApiUrl: process.env.BLOCKSCOUT_API_URL,
 
     /**
      * Decimals in cUSD token

@@ -14,8 +14,8 @@ import { Op, fn, literal } from 'sequelize';
 import CommunityService from './community';
 import { ethers } from 'ethers';
 import UserService from './user';
-import { LogDescription } from 'ethers/utils';
 import { groupBy } from '../../utils';
+import { LogDescription } from 'ethers/lib/utils';
 
 
 interface ICommunityAddedEventValues {
@@ -100,7 +100,7 @@ export default class TransactionsService {
         // const block = await provider.getBlock(txReceipt.blockHash!);
         const contractAddress = logs.address;
         const event = events.name;
-        const values = translateEvent(events.values);
+        const values = translateEvent(events.args as any);
 
         return this.addRaw(
             tx,

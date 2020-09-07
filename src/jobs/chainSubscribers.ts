@@ -110,12 +110,19 @@ async function updateImpactMarketCache(
             ethers.utils.id('CommunityRemoved(address)'),
         ]]
     });
-    const eventsImpactMarket = logsImpactMarket.map((log) => ifaceImpactMarket.parseLog(log));
+
+    const eventsImpactMarket: ethers.utils.LogDescription[] = [];
+        for (let index = 0; index < logsImpactMarket.length; index++) {
+            try {
+                const parsedLog = ifaceImpactMarket.parseLog(logsImpactMarket[index]);
+                eventsImpactMarket.push(parsedLog);
+            } catch (e) { }
+        }
     const communitiesAdded = [] as IFilterCommunityTmpData[];
     for (let eim = 0; eim < eventsImpactMarket.length; eim += 1) {
         if (eventsImpactMarket[eim].name === 'CommunityAdded') {
             communitiesAdded.push({
-                address: eventsImpactMarket[eim].values._communityAddress,
+                address: eventsImpactMarket[eim].args._communityAddress,
                 block: logsImpactMarket[eim].blockNumber,
             });
         }
@@ -170,7 +177,7 @@ function updateCommunityCache(
     }).then(async (logsCUSD) => {
         const eventsCUSD = logsCUSD.map((log) => ifaceERC20.parseLog(log));
         for (let ec = 0; ec < eventsCUSD.length; ec += 1) {
-            if (eventsCUSD[ec].values.to === contractAddress) {
+            if (eventsCUSD[ec].args.to === contractAddress) {
                 TransactionsService.add(
                     provider,
                     logsCUSD[ec],
