@@ -342,16 +342,20 @@ export default class TransactionsService {
         );
         const registry = await this.addressesByNames();
 
-        const result = query.data.result
-            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0' && r.from.toLowerCase() === userAddress.toLowerCase())
-            .map((r: { to: string; value: string; tokenDecimal: string; timeStamp: string; }) => {
-                const k = ethers.utils.getAddress(r.to);
-                return {
-                    to: this.addressToAddressAndName(k, registry),
-                    value: r.value.toString(),
-                    timestamp: parseInt(r.timeStamp, 10)
-                };
-            }) as IPaymentsTxAPI[];
+        const rawResult: { to: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
+            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0' && r.from.toLowerCase() === userAddress.toLowerCase());
+
+        const result: IPaymentsTxAPI[] = [];
+        for (let index = 0; index < rawResult.length; index++) {
+            const r = rawResult[index];
+            const k = ethers.utils.getAddress(r.to);
+            result.push({
+                picture: await this.findPicture(k),
+                to: this.addressToAddressAndName(k, registry),
+                value: r.value.toString(),
+                timestamp: parseInt(r.timeStamp, 10)
+            });
+        }
         // https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
         return Array.from(new Set(result.map((a) => a.to.address))).map(address => result.find((a) => a.to.address === address)!);
     }
@@ -398,23 +402,30 @@ export default class TransactionsService {
                 timestamp: parseInt(result.timeStamp, 10)
             })) as { from: string, to: string, input: string, timestamp: number }[];
 
-        const txs = rawTxs.map((tx) => ({
-            timestamp: tx.timestamp,
-            address: chooseAddress(tx),
-        })).sort((a, b) => b.timestamp - a.timestamp) as { timestamp: number, address: string }[];
-
-        // group
-        const result: IRecentTxAPI[] = [];
         const registry = await this.addressesByNames();
-        //
-        for (const [k, v] of groupBy<any>(txs, 'address')) {
-            result.push({
-                from: this.addressToAddressAndName(k, registry),
-                txs: v.length,
-                timestamp: v[0].timestamp
+        const txs: { picture: string, timestamp: number, from: { address: string; name: string; } }[] = [];
+        for (let index = 0; index < rawTxs.length; index++) {
+            const tx = rawTxs[index];
+            const address = chooseAddress(tx);
+            txs.push({
+                picture: await this.findPicture(address),
+                timestamp: tx.timestamp,
+                from: this.addressToAddressAndName(address, registry),
             });
         }
-        return result.slice(0, Math.min(10, result.length));
+
+        // // group
+        // const result: IRecentTxAPI[] = [];
+        // const registry = await this.addressesByNames();
+        // //
+        // for (const [k, v] of groupBy<any>(txs, 'address')) {
+        //     result.push({
+        //         from: this.addressToAddressAndName(k, registry),
+        //         txs: v.length,
+        //         timestamp: v[0].timestamp
+        //     });
+        // }
+        return txs.sort((a, b) => b.timestamp - a.timestamp).slice(0, Math.min(10, txs.length));
     }
 
     private static async addressesByNames() {
@@ -424,6 +435,20 @@ export default class TransactionsService {
     }
 
     private static addressToAddressAndName(address: string, registry: Map<string, string>) {
-        return { address, name: registry.has(address) ? registry.get(address)! : address }
+        return { address, name: registry.has(address) ? registry.get(address)! : '' }
+    }
+
+    private static async findPicture(address: string) {
+        const user = await UserService.get(address);
+        let picture;
+        if (user !== null) {
+            picture = user.avatar;
+        } else {
+            const community = await CommunityService.findByContractAddress(address);
+            if (community !== null) {
+                picture = community.coverImage;
+            }
+        }
+        return picture;
     }
 }
