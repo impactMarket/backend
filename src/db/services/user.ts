@@ -12,12 +12,7 @@ export default class UserService {
         hash.update(pin);
         const token = generateAccessToken(address);
         const user = await User.findOne({ where: { address } });
-        const hashed = hash.digest('hex');
-        const userWithPin = await User.findOne({ where: { address, pin: hashed } });
-        if (userWithPin === null) {
-            if (user !== null) {
-                return undefined;
-            }
+        if (user === null) {
             await User.create({
                 address,
                 pin: hash.digest('hex'),
