@@ -435,7 +435,8 @@ export default class TransactionsService {
     }
 
     private static addressToAddressAndName(address: string, registry: Map<string, string>) {
-        return { address, name: registry.has(address) ? registry.get(address)! : '' }
+        const addressFromRegistry = registry.get(address);
+        return { address, name: (addressFromRegistry === null || addressFromRegistry === undefined) ? '' : addressFromRegistry }
     }
 
     private static async findPicture(address: string) {
