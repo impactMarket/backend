@@ -88,7 +88,7 @@ export default class CommunityService {
                 { returning: true, where: { publicId } },
             );
             if (dbUpdate[0] === 1) {
-                sendPushNotification(dbUpdate[1][0].requestByAddress, 'Community Accepted', 'Your community was accepted!');
+                sendPushNotification(dbUpdate[1][0].requestByAddress, 'Community Accepted', 'Your community was accepted!', { action: "community-accepted" });
                 return true;
             }
             return false;

@@ -14,7 +14,7 @@ export function groupBy<T>(array: any[], key: string): Map<string, T[]> {
     }, new Map<string, T[]>()); // empty map is the initial value for result object
 }
 
-export async function sendPushNotification(userAddress: string, title: string, body: string): Promise<boolean> {
+export async function sendPushNotification(userAddress: string, title: string, body: string, data: any): Promise<boolean> {
     const user = await UserService.get(userAddress);
     if (user !== null) {
         try {
@@ -23,7 +23,8 @@ export async function sendPushNotification(userAddress: string, title: string, b
                 sound: 'default',
                 title,
                 body,
-                data: { data: 'goes here' },
+                color: "#2400ff",
+                data,
             };
             // handle success
             const requestHeaders = {
