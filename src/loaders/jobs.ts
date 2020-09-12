@@ -14,7 +14,7 @@ import { prepareAgenda } from '../jobs/agenda';
 
 export default async (): Promise<void> => {
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
-    cron(provider);
+    // cron(provider);
     await Promise.all([
         prepareAgenda(),
         subscribers(provider)
