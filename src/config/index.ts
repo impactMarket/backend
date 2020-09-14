@@ -71,7 +71,7 @@ export default {
     cUSDDecimal: 18,
 
     /**
-     * When the user first logs in, he needs to sign a message.
+     * Fixer API to get currency rates.
      */
-    messageSigned: 'I accept the terms and conditions.'
+    fixerApiKey: process.env.FIXER_API_KEY,
 };
