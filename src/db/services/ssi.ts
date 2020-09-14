@@ -22,4 +22,14 @@ export default class SSIService {
         const values = ssis.map((ssi) => ssi.ssi).slice(Math.max(0, ssis.length - 15), ssis.length);
         return { dates, values };
     }
+
+    public static async last(
+        communityPublicId: string,
+    ): Promise<{ date: Date, value: number } | undefined> {
+        const ssi = await SSI.findAll({ where: { communityPublicId }, attributes: ['date', 'ssi'], limit: 1, order: [['date', 'DESC']], raw: true });
+        if (ssi.length === 0) {
+            return undefined;
+        }
+        return { date: ssi[0].date, value: ssi[0].ssi };
+    }
 }

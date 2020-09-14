@@ -1,54 +1,61 @@
+import { ICommunityInfo } from "../types";
 import CommunityService from "../db/services/community";
 import TransactionsService from "../db/services/transactions";
-import { groupBy } from "../utils";
-import { Transactions } from "../db/models/transactions";
-import CommunityContractABI from '../contracts/CommunityABI.json'
 import { ethers } from "ethers";
-import { CommunityInstance } from "../contracts/types";
 import SSIService from "../db/services/ssi";
 
 
 async function calcuateSSI(provider: ethers.providers.JsonRpcProvider): Promise<void> {
     console.log('Calculating SSI...');
     const communities = await CommunityService.getAll('valid');
+    const calculateNewSSI = async (community: ICommunityInfo) => {
+        const beneficiariesTimeToWait: number[] = [];
+        const beneficiariesTimeWaited: number[] = [];
 
-    communities.forEach(async (community) => {
-        //
-        const communityInstance = new ethers.Contract(
-            community.contractAddress,
-            CommunityContractABI,
-            provider,
-        ) as ethers.Contract & CommunityInstance;
-        //
-        const lastIntervals: number[] = [];
-        const cooldowns: number[] = [];
-        // get all claims
-        const claims = await TransactionsService.getBeneficiariesCommunityClaims(community.contractAddress);
-        // filter from those who happened in the last 24h
-        // const claims = allClaims.filter((claim) => claim.txAt.getDate() - new Date().getDate() <= 24 * 60 * 60);
-        // group by beneficiary ('from')
-        for (const [k, v] of groupBy<Transactions>(claims, 'from')) {
-            // filter by beneficiaries with at least 2 claims
-            if (v.length > 1) {
-                // calculate the difference
-                const lastClaim = v[v.length - 1];
-                const preLastClaim = v[v.length - 2];
-                lastIntervals.push(preLastClaim.values._amount - lastClaim.values._amount);
-                // get the needed time of each k to the next claim
-                cooldowns.push((await communityInstance.cooldown(k)).toNumber());
+        const communityClaims = await TransactionsService.getBeneficiariesCommunityClaims(community.contractAddress);
+        const beneficiaries = (await TransactionsService.getBeneficiariesInCommunity(community.contractAddress)).added;
+        for (let b = 0; b < beneficiaries.length; b += 1) {
+            const beneficiryAdddress = beneficiaries[b].address;
+            const lastBeneficiaryClaim = await TransactionsService.getBeneficiariesLastClaim(beneficiryAdddress);
+            if (lastBeneficiaryClaim === undefined) {
+                continue;
             }
+            // the first time you don't wait a single second, the second time, only base interval
+            const timeToWait = parseInt(community.vars._baseInterval, 10) + (communityClaims.get(beneficiryAdddress)! - 2) * parseInt(community.vars._incrementInterval, 10);
+            const timeWaited = Math.floor((lastBeneficiaryClaim[0].txAt.getTime() - lastBeneficiaryClaim[1].txAt.getTime()) / 1000) - timeToWait;
+            console.log('timeWaited', timeWaited);
+            beneficiariesTimeToWait.push(timeToWait);
+            beneficiariesTimeWaited.push(timeWaited);
         }
         // calculate mean
-        if (cooldowns.length > 1 && lastIntervals.length > 1) {
-            //
-            const meanIntervals = lastIntervals.reduce((a, b) => a + b, 0) / lastIntervals.length
-            const meanCooldowns = cooldowns.reduce((a, b) => a + b, 0) / cooldowns.length
-            const mean = meanIntervals / meanCooldowns - 1;
-            // 1a media / 2a media - 1
-            SSIService.add(community.publicId, new Date(), mean);
+        console.log(beneficiariesTimeToWait, beneficiariesTimeWaited);
+        if (beneficiariesTimeToWait.length > 1 && beneficiariesTimeWaited.length > 1) {
+            const meanTimeToWait = beneficiariesTimeToWait.reduce((a, b) => a + b, 0) / beneficiariesTimeToWait.length;
+            const meanTimeWaited = beneficiariesTimeWaited.reduce((a, b) => a + b, 0) / beneficiariesTimeWaited.length;
+            SSIService.add(community.publicId, new Date(), parseFloat(((meanTimeWaited / meanTimeToWait) * 100).toFixed(2)));
         }
+    }
+    // for each community
+    communities.forEach((community) => {
+        // // get date of the last ssi
+        // const lastSSI = await SSIService.last(community.publicId);
+        // // if there's no ssi, get the oldest claim
+        // if (lastSSI === undefined) {
+        //     // TODO: add option to calculate past ssi
+        //     const lastClaim = await TransactionsService.getLastClaim(community.contractAddress);
+        //     if (lastClaim === undefined) {
+        //         return;
+        //     }
+        //     // if older than 24h, it's necessary to calculate historical data. Get midnight that day, calculate and interate until the end
+        //     if (lastClaim.txAt.getTime() < new Date().getTime() - 86400000) {
+        //         // TODO: complete
+        //     }
+        //     // if not, don't do anything
+        // } else {
+
+        // }
+        calculateNewSSI(community);
     });
-    // TODO:
 }
 
 

@@ -22,7 +22,7 @@ module.exports = {
                 allowNull: false
             },
             ssi: {
-                type: Sequelize.INTEGER,
+                type: Sequelize.FLOAT,
                 allowNull: false,
             },
             createdAt: {

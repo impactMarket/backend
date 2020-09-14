@@ -312,14 +312,56 @@ export default class TransactionsService {
         return result;
     }
 
-    public static async getBeneficiariesCommunityClaims(communityAddress: string): Promise<Transactions[]> {
-        return Transactions.findAll({
+    public static async getBeneficiariesCommunityClaims(communityAddress: string): Promise<Map<string, number>> {
+        const claims = await Transactions.findAll({
             where: {
                 contractAddress: communityAddress,
                 event: 'BeneficiaryClaim',
             },
             raw: true,
         });
+        const result: Map<string, number> = new Map();
+
+        for (const [k, v] of groupBy<any>(claims, 'from')) {
+            result.set(k, v.length);
+        }
+
+        return result;
+    }
+
+    public static async getBeneficiariesLastClaim(beneficiaryAddress: string): Promise<Transactions[] | undefined> {
+        const claim = await Transactions.findAll({
+            where: {
+                from: beneficiaryAddress,
+                event: 'BeneficiaryClaim',
+            },
+            order: [['txAt', 'DESC']],
+            limit: 2,
+            raw: true,
+        });
+        if (claim.length < 2) {
+            return undefined;
+        }
+        return claim;
+    }
+
+    public static async getLastClaim(communityAddress: string/*, startDate: Date = new Date(new Date().getTime() - 86400000), endDate: Date = new Date() */): Promise<Transactions | undefined> {
+        const tx = await Transactions.findAll({
+            where: {
+                contractAddress: communityAddress,
+                event: 'BeneficiaryClaim',
+                // txAt: {
+                //     [Op.between]: [startDate.getTime(), endDate.getTime()]
+                // },
+            },
+            order: [['txAt', 'DESC']],
+            limit: 1,
+            raw: true,
+        });
+        if (tx.length === 0) {
+            return undefined;
+        }
+        return tx[0];
     }
 
     public static async getLastEntry(): Promise<Transactions | undefined> {

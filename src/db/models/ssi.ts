@@ -28,7 +28,7 @@ export function initializeSSI(sequelize: Sequelize): void {
             allowNull: false
         },
         ssi: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.FLOAT,
             allowNull: false,
         },
         createdAt: {
