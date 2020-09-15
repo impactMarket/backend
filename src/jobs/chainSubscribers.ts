@@ -4,6 +4,7 @@ import CommunityContractABI from '../contracts/CommunityABI.json'
 import ERC20ABI from '../contracts/ERC20ABI.json'
 import TransactionsService, { translateEvent } from '../db/services/transactions';
 import config from '../config';
+import { sendPushNotification } from '../utils';
 
 
 interface IFilterCommunityTmpData {
@@ -64,7 +65,10 @@ async function subscribeChainEvents(
         // TODO: add notifications to all events
         communityInstance.on('ManagerAdded', (_account, event) => addToTransactionCache(event));
         communityInstance.on('ManagerRemoved', (_account, event) => addToTransactionCache(event));
-        communityInstance.on('BeneficiaryAdded', (_account, event) => addToTransactionCache(event));
+        communityInstance.on('BeneficiaryAdded', (_account, event) => {
+            sendPushNotification(_account, 'Welcome', 'You\'ve been added as a beneficiary!', { action: "beneficiary-added" });
+            addToTransactionCache(event)
+        });
         communityInstance.on('BeneficiaryLocked', (_account, event) => addToTransactionCache(event));
         communityInstance.on('BeneficiaryRemoved', (_account, event) => addToTransactionCache(event));
         communityInstance.on('BeneficiaryClaim', (_account, _amount, event) => addToTransactionCache(event));
@@ -112,12 +116,12 @@ async function updateImpactMarketCache(
     });
 
     const eventsImpactMarket: ethers.utils.LogDescription[] = [];
-        for (let index = 0; index < logsImpactMarket.length; index++) {
-            try {
-                const parsedLog = ifaceImpactMarket.parseLog(logsImpactMarket[index]);
-                eventsImpactMarket.push(parsedLog);
-            } catch (e) { }
-        }
+    for (let index = 0; index < logsImpactMarket.length; index++) {
+        try {
+            const parsedLog = ifaceImpactMarket.parseLog(logsImpactMarket[index]);
+            eventsImpactMarket.push(parsedLog);
+        } catch (e) { }
+    }
     const communitiesAdded = [] as IFilterCommunityTmpData[];
     for (let eim = 0; eim < eventsImpactMarket.length; eim += 1) {
         if (eventsImpactMarket[eim].name === 'CommunityAdded') {
