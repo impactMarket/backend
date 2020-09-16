@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 import CommunityContractABI from '../contracts/CommunityABI.json'
 import ERC20ABI from '../contracts/ERC20ABI.json'
-import TransactionsService, { translateEvent } from '../db/services/transactions';
+import TransactionsService from '../db/services/transactions';
 import config from '../config';
 import { sendPushNotification } from '../utils';
 
@@ -37,66 +37,53 @@ async function subscribeChainEvents(
     provider: ethers.providers.JsonRpcProvider,
     communitiesAddress: string[],
 ): Promise<void> {
-    const impactMarketInstance = new ethers.Contract(
-        config.impactMarketContractAddress,
-        ImpactMarketContractABI,
-        provider,
-    );
-    /**
-     * here, the event has the following structure
-     * https://docs.ethers.io/ethers.js/html/api-contract.html#event-object
-     * the parameters are necessary
-     */
-    const addToTransactionCache = async (event: any) => TransactionsService.addRaw(
-        event.transactionHash,
-        new Date(),
-        (await provider.getTransactionReceipt(event.transactionHash!)).from!,
-        event.address,
-        event.event,
-        translateEvent(event.args),
-    ).catch(catchHandlerTransactionsService);
-    // callback function
-    const communitiesCallbackFn = (communityAddress: string) => {
-        const communityInstance = new ethers.Contract(
-            communityAddress,
-            CommunityContractABI,
-            provider,
-        );
-        // TODO: add notifications to all events
-        communityInstance.on('ManagerAdded', (_account, event) => addToTransactionCache(event));
-        communityInstance.on('ManagerRemoved', (_account, event) => addToTransactionCache(event));
-        communityInstance.on('BeneficiaryAdded', (_account, event) => {
-            sendPushNotification(_account, 'Welcome', 'You\'ve been added as a beneficiary!', { action: "beneficiary-added" });
-            addToTransactionCache(event)
-        });
-        communityInstance.on('BeneficiaryLocked', (_account, event) => addToTransactionCache(event));
-        communityInstance.on('BeneficiaryRemoved', (_account, event) => addToTransactionCache(event));
-        communityInstance.on('BeneficiaryClaim', (_account, _amount, event) => addToTransactionCache(event));
-        communityInstance.on('CommunityEdited',
-            (_claimAmount, _maxClaim, _baseInterval, _incrementInterval, event) => addToTransactionCache(event));
-        // also listen to donations
-        cUSDMockInstance.on(
-            cUSDMockInstance.filters.Transfer(null, communityAddress),
-            (from, to, value, event) => addToTransactionCache(event));
-    }
-    // listen to impact market events
-    impactMarketInstance.on('CommunityAdded', async (
-        _communityAddress, _firstManager, _claimAmount, _maxClaim, _baseInterval, _incrementInterval, event
-    ) => {
-        addToTransactionCache(event);
-        // it's necessary to get ManagerAdded here!
-        updateCommunityCache(event.blockNumber - 1, provider, _communityAddress);
-        communitiesCallbackFn(_communityAddress);
+    const filter = {
+        topics: [[
+            ethers.utils.id('CommunityAdded(address,address,uint256,uint256,uint256,uint256)'),
+            ethers.utils.id('CommunityRemoved(address)'),
+            ethers.utils.id('ManagerAdded(address)'),
+            ethers.utils.id('ManagerRemoved(address)'),
+            ethers.utils.id('BeneficiaryAdded(address)'),
+            ethers.utils.id('BeneficiaryLocked(address)'),
+            ethers.utils.id('BeneficiaryRemoved(address)'),
+            ethers.utils.id('BeneficiaryClaim(address,uint256)'),
+            ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
+            ethers.utils.id('Transfer(address,address,uint256)'),
+        ]]
+    };
+    const ifaceImpactMarket = new ethers.utils.Interface(ImpactMarketContractABI);
+    const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
+    const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
+    provider.on(filter, (log: ethers.providers.Log) => {
+        let parsedLog: ethers.utils.LogDescription | undefined;
+        if (log.address === config.impactMarketContractAddress) {
+            parsedLog = ifaceImpactMarket.parseLog(log);
+            if (parsedLog.name === 'CommunityAdded') {
+                // it's necessary to get ManagerAdded here!
+                updateCommunityCache(log.blockNumber - 1, provider, parsedLog.args[0]);
+            }
+            //
+        } else if (log.address === config.cUSDContractAddress) {
+            const preParsedLog = ifaceERC20.parseLog(log);
+            // only donations
+            if (communitiesAddress.includes(preParsedLog.args[1])) {
+                parsedLog = preParsedLog;
+            }
+            //
+        } else if (communitiesAddress.includes(log.address)) {
+            parsedLog = ifaceCommunity.parseLog(log);
+            if (parsedLog.name === 'BeneficiaryAdded') {
+                sendPushNotification(parsedLog.args[0], 'Welcome', 'You\'ve been added as a beneficiary!', { action: "beneficiary-added" });
+            }
+        }
+        if (parsedLog !== undefined) {
+            TransactionsService.add(
+                provider,
+                log,
+                parsedLog,
+            ).catch(catchHandlerTransactionsService)
+        }
     });
-    impactMarketInstance.on('CommunityRemoved', async (_communityAddress, event) => addToTransactionCache(event));
-
-    const cUSDMockInstance = new ethers.Contract(
-        config.cUSDContractAddress,
-        ERC20ABI,
-        provider,
-    );
-    // listen to community events individually
-    communitiesAddress.forEach(communitiesCallbackFn);
 }
 
 async function updateImpactMarketCache(
