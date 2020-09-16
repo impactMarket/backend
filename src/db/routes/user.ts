@@ -9,45 +9,35 @@ import {
     Joi
 } from 'celebrate';
 import { authenticateToken } from '../../middlewares';
-import { Sequelize } from 'sequelize/types';
-import ExpressBrute from 'express-brute';
-import SequelizeStore from 'express-brute-sequelize';
 
 
 const route = Router();
-let bruteforce: any;
 
-export default (app: Router, sequelize: Sequelize): void => {
+export default (app: Router): void => {
     app.use('/user', route);
 
-    new SequelizeStore(sequelize, 'bruteStore', {}, (store: any) => {
-        bruteforce = new ExpressBrute(store);
-        route.post(
-            '/auth',
-            bruteforce.prevent, // error 403 if too many requests for this route in short time
-            celebrate({
-                body: Joi.object({
-                    address: Joi.string().required(),
-                    pin: Joi.string().required(),
-                }),
+    route.post(
+        '/auth',
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                pin: Joi.string(),
             }),
-            async (req: Request, res: Response) => {
-                const {
-                    address,
-                    pin,
-                } = req.body;
-                const result = await UserService.auth(
-                    address,
-                    pin
-                );
-                if (result === undefined) {
-                    res.sendStatus(403);
-                    return;
-                }
-                res.send(result);
-            },
-        );
-    });
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                address,
+            } = req.body;
+            const result = await UserService.auth(
+                address,
+            );
+            if (result === undefined) {
+                res.sendStatus(403);
+                return;
+            }
+            res.send(result);
+        },
+    );
 
     route.get(
         '/:address',

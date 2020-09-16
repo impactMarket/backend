@@ -1,4 +1,3 @@
-import { SHA3 } from 'sha3';
 import { User } from '../models/user';
 import { generateAccessToken } from '../../middlewares';
 
@@ -6,16 +5,13 @@ import { generateAccessToken } from '../../middlewares';
 export default class UserService {
     public static async auth(
         address: string,
-        pin: string
     ): Promise<string | undefined> {
-        const hash = new SHA3(512);
-        hash.update(pin);
         const token = generateAccessToken(address);
         const user = await User.findOne({ where: { address } });
         if (user === null) {
             await User.create({
                 address,
-                pin: hash.digest('hex'),
+                pin: '123', // not used anymore
                 authToken: token,
                 avatar: Math.floor(Math.random() * 8) + 1,
             });
