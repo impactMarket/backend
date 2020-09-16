@@ -32,6 +32,7 @@ async function calcuateSSI(provider: ethers.providers.JsonRpcProvider): Promise<
         if (beneficiariesTimeToWait.length > 1 && beneficiariesTimeWaited.length > 1) {
             const meanTimeToWait = beneficiariesTimeToWait.reduce((a, b) => a + b, 0) / beneficiariesTimeToWait.length;
             const meanTimeWaited = beneficiariesTimeWaited.reduce((a, b) => a + b, 0) / beneficiariesTimeWaited.length;
+            console.log(parseFloat(((meanTimeWaited / meanTimeToWait) * 100).toFixed(2)))
             SSIService.add(community.publicId, new Date(), parseFloat(((meanTimeWaited / meanTimeToWait) * 100).toFixed(2)));
         }
     }
