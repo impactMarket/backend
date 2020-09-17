@@ -37,7 +37,7 @@ module.exports = {
                 type: Sequelize.STRING(64),
                 allowNull: false
             },
-            gps: {
+            location: {
                 type: Sequelize.JSON,
                 allowNull: false
             },

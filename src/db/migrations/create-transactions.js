@@ -3,7 +3,7 @@
 module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable('transactions', {
-            uid: {
+            uid: { // the uid is the hash of the tx values
                 type: Sequelize.STRING(64),
                 primaryKey: true,
                 unique: true,

@@ -11,10 +11,6 @@ module.exports = {
                 type: Sequelize.STRING(44),
                 allowNull: false
             },
-            pin: {
-                type: Sequelize.STRING(129),
-                allowNull: false
-            },
             username: {
                 type: Sequelize.STRING(64),
             },
@@ -26,9 +22,6 @@ module.exports = {
             },
             currency: {
                 type: Sequelize.STRING(4),
-            },
-            authToken: {
-                type: Sequelize.STRING(180),
             },
             pushNotificationToken: {
                 type: Sequelize.STRING(64),
