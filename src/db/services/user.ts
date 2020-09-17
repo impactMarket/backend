@@ -98,7 +98,7 @@ export default class UserService {
 
     public static async setLanguage(
         address: string,
-        language: number
+        language: string
     ): Promise<boolean> {
         const updated = await User.update(
             { language },

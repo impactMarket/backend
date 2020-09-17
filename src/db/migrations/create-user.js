@@ -18,7 +18,8 @@ module.exports = {
                 type: Sequelize.STRING(128),
             },
             language: {
-                type: Sequelize.INTEGER,
+                type: Sequelize.INTEGER, // TODO:  Sequelize.STRING(8),
+                // TODO: add default value
             },
             currency: {
                 type: Sequelize.STRING(4),

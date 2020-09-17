@@ -41,7 +41,7 @@ export function initializeUser(sequelize: Sequelize): void {
             type: DataTypes.STRING(128),
         },
         language: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING(8),
         },
         currency: {
             type: DataTypes.STRING(4),

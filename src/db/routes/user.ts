@@ -141,7 +141,7 @@ export default (app: Router): void => {
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
-                language: Joi.number().required(),
+                language: Joi.string().required(),
             }),
         }),
         async (req: Request, res: Response) => {
