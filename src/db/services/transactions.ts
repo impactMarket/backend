@@ -427,7 +427,7 @@ export default class TransactionsService {
         '0xdb5344fb76467c23b6d6c2e5c36258a0c43cad7281e756060b8b81501843e6e5' }
          */
         const results = await axios.get(
-            `${config.baseBlockScoutApiUrl}?module=account&action=txlist&address=${userAddress}`
+            `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`
         );
 
         const chooseAddress = (tx: { to: string, from: string, input: string }) => {
@@ -437,22 +437,24 @@ export default class TransactionsService {
 
         // filter necessary
         const rawTxs = results.data.result
-            .map((result: { from: string, to: string, input: string, timeStamp: string }) => ({
+            .map((result: { from: string, value: string, to: string, input: string, timeStamp: string }) => ({
                 from: ethers.utils.getAddress(result.from),
                 to: ethers.utils.getAddress(result.to),
                 input: result.input,
-                timestamp: parseInt(result.timeStamp, 10)
-            })) as { from: string, to: string, input: string, timestamp: number }[];
+                timestamp: parseInt(result.timeStamp, 10),
+                value: result.value.toString(),
+            })) as { from: string, value: string, to: string, input: string, timestamp: number }[];
 
         const registry = await this.addressesByNames();
-        const txs: { picture: string, timestamp: number, from: { address: string; name: string; } }[] = [];
+        const txs: { picture: string, value: string; timestamp: number, from: { address: string; name: string; } }[] = [];
         for (let index = 0; index < rawTxs.length; index++) {
             const tx = rawTxs[index];
-            const address = chooseAddress(tx);
+            const address = tx.to; //chooseAddress(tx);
             txs.push({
                 picture: await this.findPicture(address),
                 timestamp: tx.timestamp,
                 from: this.addressToAddressAndName(address, registry),
+                value: tx.value,
             });
         }
 
