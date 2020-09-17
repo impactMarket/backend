@@ -47,6 +47,32 @@ export default (app: Router): void => {
     );
 
     route.post(
+        '/welcome',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                token: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                address,
+                token,
+            } = req.body;
+            const isTokenSet = await UserService.setPushNotificationsToken(
+                address,
+                token
+            );
+            if (!isTokenSet) {
+                res.sendStatus(404);
+            } else {
+                res.send(await UserService.welcome(address));
+            }
+        },
+    );
+
+    route.post(
         '/username',
         authenticateToken,
         celebrate({

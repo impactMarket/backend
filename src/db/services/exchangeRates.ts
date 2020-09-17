@@ -1,9 +1,7 @@
-import { Router, Request, Response } from 'express';
 import { Cashify } from 'cashify';
 import axios from 'axios';
 import config from '../../config';
 
-const route = Router();
 const originalRates = {
     "AED": 4.357335,
     "AFN": 91.05097,
@@ -175,47 +173,41 @@ const originalRates = {
     "ZWL": 381.999005
 }
 let rates;
+export default class ExchangeRatesService {
 
-export default (app: Router): void => {
-    app.use('/exchange-rates', route);
-
-    route.get(
-        '/',
-        async (req: Request, res: Response) => {
-            if (rates === undefined) {
-                let latestRates = originalRates;
-                if (process.env.NODE_ENV !== 'development') {
-                    const query = await axios.get(
-                        `http://data.fixer.io/api/latest?access_key=${config.fixerApiKey}`
-                    );
-                    latestRates = query.data.rates;
-                }
-                const cashify = new Cashify({ base: 'EUR', rates: latestRates });
-                rates = {
-                    "EUR": {
-                        name: 'Euro',
-                        rate: cashify.convert(1, { from: 'USD', to: 'EUR' })
-                    },
-                    "USD": {
-                        name: 'American Dollar',
-                        rate: 1,
-                    },
-                    "BRL": {
-                        name: 'Brazillian Real',
-                        rate: cashify.convert(1, { from: 'USD', to: 'BRL' }),
-                    },
-                    "GHS": {
-                        name: 'Ghanaian Cedi',
-                        rate: cashify.convert(1, { from: 'USD', to: 'GHS' }),
-                    },
-                    "CVE": {
-                        name: 'Cape Verde Escudo',
-                        rate: cashify.convert(1, { from: 'USD', to: 'CVE' }),
-                    },
-                };
+    public static async get(): Promise<any> {
+        if (rates === undefined) {
+            let latestRates = originalRates;
+            if (process.env.NODE_ENV !== 'development') {
+                const query = await axios.get(
+                    `http://data.fixer.io/api/latest?access_key=${config.fixerApiKey}`
+                );
+                latestRates = query.data.rates;
             }
-
-            return res.send(rates);
-        });
-
-};
+            const cashify = new Cashify({ base: 'EUR', rates: latestRates });
+            rates = {
+                "EUR": {
+                    name: 'Euro',
+                    rate: cashify.convert(1, { from: 'USD', to: 'EUR' })
+                },
+                "USD": {
+                    name: 'American Dollar',
+                    rate: 1,
+                },
+                "BRL": {
+                    name: 'Brazillian Real',
+                    rate: cashify.convert(1, { from: 'USD', to: 'BRL' }),
+                },
+                "GHS": {
+                    name: 'Ghanaian Cedi',
+                    rate: cashify.convert(1, { from: 'USD', to: 'GHS' }),
+                },
+                "CVE": {
+                    name: 'Cape Verde Escudo',
+                    rate: cashify.convert(1, { from: 'USD', to: 'CVE' }),
+                },
+            };
+        }
+        return rates;
+    }
+}

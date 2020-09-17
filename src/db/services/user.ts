@@ -1,5 +1,10 @@
 import { User } from '../models/user';
 import { generateAccessToken } from '../../middlewares';
+import { ICommunityInfo, IUserWelcome } from '../../types';
+import ExchangeRatesService from './exchangeRates';
+import TransactionsService from './transactions';
+import { Transactions } from '../models/transactions';
+import CommunityService from './community';
 
 
 export default class UserService {
@@ -22,6 +27,40 @@ export default class UserService {
             );
         }
         return token;
+    }
+
+    public static async welcome(
+        address: string
+    ): Promise<IUserWelcome | undefined> {
+        const user = await User.findOne({ where: { address } });
+        if (user === null) {
+            return undefined;
+        }
+        let community: Transactions | undefined | null;
+        let communityInfo: ICommunityInfo | null;
+        let isBeneficiary = false;
+        let isManager = false;
+        community = await TransactionsService.findComunityToBeneficicary(address);
+        if (community === undefined) {
+            community = await TransactionsService.findComunityToManager(address);
+            if (community === null) {
+                community = undefined;
+            } else {
+                isManager = true;
+            }
+        } else {
+            isBeneficiary = true;
+        }
+        if (community !== undefined) {
+            communityInfo = await CommunityService.findByContractAddress(community.contractAddress);
+        }
+        return {
+            user: user as any,
+            exchangeRates: await ExchangeRatesService.get(),
+            community: community ? communityInfo! : undefined,
+            isBeneficiary,
+            isManager,
+        };
     }
 
     public static async setUsername(

@@ -4,7 +4,7 @@ import transactions from './transactions';
 import user from './user';
 import s3 from './s3';
 import claimLocation from './claimLocation';
-import exchange from './exchange';
+import exchange from './exchangeRates';
 
 
 export default (): Router => {
