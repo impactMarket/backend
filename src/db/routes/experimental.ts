@@ -17,11 +17,11 @@ export default (app: Router): void => {
             }),
         }),
         async (req, res) => {
-            res.json(await ExperimentalService.add(req.body.amount))
+            res.json(await ExperimentalService.counterAdd('totalraised', req.body.amount))
         });
 
     route.get('/',
         async (req, res) => {
-            res.json(await ExperimentalService.get())
+            res.json(await ExperimentalService.counterGet('totalraised'))
         });
 };
