@@ -5,6 +5,7 @@ import user from './user';
 import s3 from './s3';
 import claimLocation from './claimLocation';
 import exchange from './exchangeRates';
+import experimental from './experimental';
 
 
 export default (): Router => {
@@ -15,6 +16,7 @@ export default (): Router => {
     s3(app);
     claimLocation(app);
     exchange(app);
+    experimental(app);
 
     return app;
 }
