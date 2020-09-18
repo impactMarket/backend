@@ -1,12 +1,13 @@
 import IPFS from 'ipfs';
 import OrbitDB from 'orbit-db';
+import { ExperimentalDbGlobalData, IGlobalStatus } from '../../types';
 
 
 let dbGlobalCounter = [
-    'totalraised',
-    'totaldistributed',
-    'totalbeneficiaries',
-    'totalclaims',
+    ExperimentalDbGlobalData.totalRaised,
+    ExperimentalDbGlobalData.totalDistributed,
+    ExperimentalDbGlobalData.totalBeneficiaries,
+    ExperimentalDbGlobalData.totalClaims,
 ]
 let db = {};
 const initOrbitDb = async () => {
@@ -25,7 +26,17 @@ export default class ExperimentalService {
     public static async counterAdd(type: string, amount: number): Promise<void> {
         await db[type].inc(amount);
     }
-    public static async counterGet(type: string): Promise<number> {
+
+    public static counterGet(type: string): number {
         return db[type].value;
+    }
+
+    public static get(): IGlobalStatus {
+        return {
+            totalRaised: ExperimentalService.counterGet(ExperimentalDbGlobalData.totalRaised),
+            totalDistributed: ExperimentalService.counterGet(ExperimentalDbGlobalData.totalDistributed),
+            totalBeneficiaries: ExperimentalService.counterGet(ExperimentalDbGlobalData.totalBeneficiaries),
+            totalClaims: ExperimentalService.counterGet(ExperimentalDbGlobalData.totalClaims),
+        };
     }
 }

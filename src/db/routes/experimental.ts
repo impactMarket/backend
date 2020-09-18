@@ -13,15 +13,17 @@ export default (app: Router): void => {
     route.post('/',
         celebrate({
             body: Joi.object({
+                db: Joi.string().required(),
                 amount: Joi.number().required(),
             }),
         }),
         async (req, res) => {
-            res.json(await ExperimentalService.counterAdd('totalraised', req.body.amount))
+            await ExperimentalService.counterAdd(req.body.db, req.body.amount);
+            res.send(200);
         });
 
     route.get('/',
-        async (req, res) => {
-            res.json(await ExperimentalService.counterGet('totalraised'))
+        (req, res) => {
+            res.send(ExperimentalService.get())
         });
 };
