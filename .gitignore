@@ -118,3 +118,6 @@ build/
 types/
 .secret
 coverage.json
+
+orbitdb/
+path-for-js-ipfs-repo/
