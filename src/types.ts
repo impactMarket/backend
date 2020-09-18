@@ -99,6 +99,20 @@ export interface IUserTxAPI {
     timestamp: number;
 }
 
+export interface IGlobalStatus {
+    totalRaised: number,
+    totalDistributed: number,
+    totalBeneficiaries: number,
+    totalClaims: number,
+}
+
 export enum AgendaAction {
     notification = 'notification'
+}
+
+export enum ExperimentalDbGlobalData {
+    totalRaised = 'totalraised',
+    totalDistributed= 'totaldistributed',
+    totalBeneficiaries = 'totalbeneficiaries',
+    totalClaims = 'totalclaims'
 }
