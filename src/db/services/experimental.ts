@@ -1,22 +1,31 @@
-const IPFS = require('ipfs')
-const OrbitDB = require('orbit-db')
+import IPFS from 'ipfs';
+import OrbitDB from 'orbit-db';
 
 
-let db;
+let dbGlobalCounter = [
+    'totalraised',
+    'totaldistributed',
+    'totalbeneficiaries',
+    'totalclaims',
+]
+let db = {};
 const initOrbitDb = async () => {
-    const ipfs = await IPFS.create({ repo: "./path-for-js-ipfs-repo" });
+    const ipfs = await IPFS.create({ repo: './path-for-js-ipfs-repo' });
     const orbitdb = await OrbitDB.createInstance(ipfs);
     // Create / Open a database
-    db = await orbitdb.counter("impactmarket.global.totalraised");
-    await db.load();
+    dbGlobalCounter.forEach((dbName) => {
+        orbitdb.counter(`impactmarket.global.${dbName}`).then((dbInstance) => {
+            dbInstance.load().then(() => db[dbName] = dbInstance);
+        });
+    });
 };
 initOrbitDb();
 
 export default class ExperimentalService {
-    public static async add(amount: number): Promise<void> {
-        await db.inc(amount);
+    public static async counterAdd(type: string, amount: number): Promise<void> {
+        await db[type].inc(amount);
     }
-    public static async get(): Promise<number> {
-        return db.value;
+    public static async counterGet(type: string): Promise<number> {
+        return db[type].value;
     }
 }
