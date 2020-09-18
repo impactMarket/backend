@@ -72,6 +72,9 @@ export interface IUserWelcome {
     community?: ICommunityInfo;
 }
 
+/**
+ * @deprecated
+ */
 export interface IRecentTxAPI {
     picture: string;
     from: IAddressAndName;
@@ -79,7 +82,17 @@ export interface IRecentTxAPI {
     timestamp: number;
 }
 
+/**
+ * @deprecated
+ */
 export interface IPaymentsTxAPI {
+    picture: string;
+    to: IAddressAndName;
+    value: string;
+    timestamp: number;
+}
+
+export interface IUserTxAPI {
     picture: string;
     to: IAddressAndName;
     value: string;

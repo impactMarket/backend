@@ -378,10 +378,45 @@ export default class TransactionsService {
         return entries[0];
     }
 
+    public static async userTx(userAddress: string): Promise<IPaymentsTxAPI[]> {
+        const query = await axios.get(
+            `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`
+        );
+        // if there's an empty request
+        if (query.data.result.length === 0) {
+            return [];
+        }
+        const registry = await this.addressesByNames();
+
+        const rawResult: { to: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
+            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0' && r.from.toLowerCase() === userAddress.toLowerCase());
+
+        const result: IPaymentsTxAPI[] = [];
+        for (let index = 0; index < rawResult.length; index++) {
+            const r = rawResult[index];
+            const k = ethers.utils.getAddress(r.to);
+            result.push({
+                picture: await this.findPicture(k),
+                to: this.addressToAddressAndName(k, registry),
+                value: r.value.toString(),
+                timestamp: parseInt(r.timeStamp, 10)
+            });
+        }
+        // https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
+        return result; // Array.from(new Set(result.map((a) => a.to.address))).map(address => result.find((a) => a.to.address === address)!);
+    }
+
+    /**
+     * @deprecated
+     */
     public static async paymentsTx(userAddress: string): Promise<IPaymentsTxAPI[]> {
         const query = await axios.get(
             `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`
         );
+        // if there's an empty request
+        if (query.data.result.length === 0) {
+            return [];
+        }
         const registry = await this.addressesByNames();
 
         const rawResult: { to: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
@@ -402,6 +437,9 @@ export default class TransactionsService {
         return Array.from(new Set(result.map((a) => a.to.address))).map(address => result.find((a) => a.to.address === address)!);
     }
 
+    /**
+     * @deprecated
+     */
     public static async tokenTx(userAddress: string): Promise<IRecentTxAPI[]> {
         /**
          { value: '0',
@@ -426,35 +464,27 @@ export default class TransactionsService {
         blockHash:
         '0xdb5344fb76467c23b6d6c2e5c36258a0c43cad7281e756060b8b81501843e6e5' }
          */
-        const results = await axios.get(
+        const query = await axios.get(
             `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`
         );
-
-        const chooseAddress = (tx: { to: string, from: string, input: string }) => {
-            if (tx.to.toLowerCase() === config.cUSDContractAddress.toLowerCase()) return ethers.utils.getAddress('0x' + tx.input.substr(34, 40))
-            return (tx.from.toLowerCase() === userAddress.toLowerCase()) ? tx.to : tx.from;
+        // if there's an empty request
+        if (query.data.result.length === 0) {
+            return [];
         }
-
-        // filter necessary
-        const rawTxs = results.data.result
-            .map((result: { from: string, value: string, to: string, input: string, timeStamp: string }) => ({
-                from: ethers.utils.getAddress(result.from),
-                to: ethers.utils.getAddress(result.to),
-                input: result.input,
-                timestamp: parseInt(result.timeStamp, 10),
-                value: result.value.toString(),
-            })) as { from: string, value: string, to: string, input: string, timestamp: number }[];
-
         const registry = await this.addressesByNames();
-        const txs: { picture: string, value: string; timestamp: number, from: { address: string; name: string; } }[] = [];
-        for (let index = 0; index < rawTxs.length; index++) {
-            const tx = rawTxs[index];
-            const address = tx.to; //chooseAddress(tx);
-            txs.push({
-                picture: await this.findPicture(address),
-                timestamp: tx.timestamp,
-                from: this.addressToAddressAndName(address, registry),
-                value: tx.value,
+
+        const rawResult: { to: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
+            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0' && r.from.toLowerCase() === userAddress.toLowerCase());
+
+        const result: IRecentTxAPI[] = [];
+        for (let index = 0; index < rawResult.length; index++) {
+            const r = rawResult[index];
+            const k = ethers.utils.getAddress(r.to);
+            result.push({
+                picture: await this.findPicture(k),
+                from: this.addressToAddressAndName(k, registry),
+                value: r.value.toString(),
+                timestamp: parseInt(r.timeStamp, 10)
             });
         }
 
@@ -469,7 +499,7 @@ export default class TransactionsService {
         //         timestamp: v[0].timestamp
         //     });
         // }
-        return txs.sort((a, b) => b.timestamp - a.timestamp).slice(0, Math.min(10, txs.length));
+        return result;
     }
 
     private static async addressesByNames() {

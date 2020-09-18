@@ -34,11 +34,19 @@ export default (app: Router): void => {
         });
 
     route.get(
+        '/usertx/:accountAddress',
+        async (req: Request, res: Response) => {
+            return res.send(await TransactionsService.userTx(req.params.accountAddress));
+        });
+
+    // TODO: remove
+    route.get(
         '/tokentx/:accountAddress',
         async (req: Request, res: Response) => {
             return res.send(await TransactionsService.tokenTx(req.params.accountAddress));
         });
 
+    // TODO: remove
     route.get(
         '/paymentstx/:accountAddress',
         async (req: Request, res: Response) => {
