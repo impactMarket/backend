@@ -6,6 +6,7 @@ import s3 from './s3';
 import claimLocation from './claimLocation';
 import exchange from './exchangeRates';
 import experimental from './experimental';
+import globalStatus from './globalStatus';
 
 
 export default (): Router => {
@@ -17,6 +18,7 @@ export default (): Router => {
     claimLocation(app);
     exchange(app);
     experimental(app);
+    globalStatus(app);
 
     return app;
 }
