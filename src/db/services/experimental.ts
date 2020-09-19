@@ -1,13 +1,13 @@
 import IPFS from 'ipfs';
 import OrbitDB from 'orbit-db';
-import { ExperimentalDbGlobalData, IGlobalStatus } from '../../types';
+import { GlobalDataTypeEnum, IGlobalStatus } from '../../types';
 
 
 let dbGlobalCounter = [
-    ExperimentalDbGlobalData.totalRaised,
-    ExperimentalDbGlobalData.totalDistributed,
-    ExperimentalDbGlobalData.totalBeneficiaries,
-    ExperimentalDbGlobalData.totalClaims,
+    GlobalDataTypeEnum.totalRaised,
+    GlobalDataTypeEnum.totalDistributed,
+    GlobalDataTypeEnum.totalBeneficiaries,
+    GlobalDataTypeEnum.totalClaims,
 ]
 let db = {};
 const initOrbitDb = async () => {
@@ -33,10 +33,10 @@ export default class ExperimentalService {
 
     public static get(): IGlobalStatus {
         return {
-            totalRaised: ExperimentalService.counterGet(ExperimentalDbGlobalData.totalRaised),
-            totalDistributed: ExperimentalService.counterGet(ExperimentalDbGlobalData.totalDistributed),
-            totalBeneficiaries: ExperimentalService.counterGet(ExperimentalDbGlobalData.totalBeneficiaries),
-            totalClaims: ExperimentalService.counterGet(ExperimentalDbGlobalData.totalClaims),
+            totalRaised: ExperimentalService.counterGet(GlobalDataTypeEnum.totalRaised).toString(),
+            totalDistributed: ExperimentalService.counterGet(GlobalDataTypeEnum.totalDistributed).toString(),
+            totalBeneficiaries: ExperimentalService.counterGet(GlobalDataTypeEnum.totalBeneficiaries).toString(),
+            totalClaims: ExperimentalService.counterGet(GlobalDataTypeEnum.totalClaims).toString(),
         };
     }
 }
