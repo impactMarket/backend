@@ -1,24 +1,29 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 
-export class ClaimLocation extends Model {
+export class GlobalStatus extends Model {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
-    public gps!: any;
+    public key!: string;
+    public value!: string;
 
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
 
-export function initializeClaimLocation(sequelize: Sequelize): void {
-    return ClaimLocation.init({
+export function initializeGlobalStatus(sequelize: Sequelize): void {
+    return GlobalStatus.init({
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
         },
-        gps: {
-            type: DataTypes.JSON,
+        key: {
+            type: DataTypes.STRING(32),
+            allowNull: false
+        },
+        value: {
+            type: DataTypes.STRING(64),
             allowNull: false
         },
         createdAt: {
@@ -30,7 +35,7 @@ export function initializeClaimLocation(sequelize: Sequelize): void {
             allowNull: false,
         }
     }, {
-        tableName: 'claimlocation',
+        tableName: 'globalstatus',
         sequelize: sequelize, // this bit is important
     });
 }

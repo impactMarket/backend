@@ -5,6 +5,8 @@ import ERC20ABI from '../contracts/ERC20ABI.json'
 import TransactionsService from '../db/services/transactions';
 import config from '../config';
 import { sendPushNotification } from '../utils';
+import GlobalStatusService from '../db/services/globalStatus';
+import { GlobalDataTypeEnum } from '../types';
 
 
 interface IFilterCommunityTmpData {
@@ -68,12 +70,17 @@ async function subscribeChainEvents(
             // only donations
             if (communitiesAddress.includes(preParsedLog.args[1])) {
                 parsedLog = preParsedLog;
+                GlobalStatusService.counterAdd(GlobalDataTypeEnum.totalRaised, preParsedLog.args[1].toString());
             }
             //
         } else if (communitiesAddress.includes(log.address)) {
             parsedLog = ifaceCommunity.parseLog(log);
             if (parsedLog.name === 'BeneficiaryAdded') {
                 sendPushNotification(parsedLog.args[0], 'Welcome', 'You\'ve been added as a beneficiary!', { action: "beneficiary-added" });
+                GlobalStatusService.counterAdd(GlobalDataTypeEnum.totalBeneficiaries, '1');
+            } else if (parsedLog.name === 'BeneficiaryClaim') {
+                GlobalStatusService.counterAdd(GlobalDataTypeEnum.totalClaims, '1');
+                GlobalStatusService.counterAdd(GlobalDataTypeEnum.totalDistributed, parsedLog.args[1].toString());
             }
         }
         if (parsedLog !== undefined) {
