@@ -178,7 +178,7 @@ export default class ExchangeRatesService {
     public static async get(): Promise<any> {
         if (rates === undefined) {
             let latestRates = originalRates;
-            if (process.env.NODE_ENV !== 'development') {
+            if (process.env.QUERY_EXCHANGE_RATES_FROM_FIXER) {
                 const query = await axios.get(
                     `http://data.fixer.io/api/latest?access_key=${config.fixerApiKey}`
                 );
@@ -195,7 +195,7 @@ export default class ExchangeRatesService {
                     rate: 1,
                 },
                 "BRL": {
-                    name: 'Brazillian Real',
+                    name: 'Real Brasileiro',
                     rate: cashify.convert(1, { from: 'USD', to: 'BRL' }),
                 },
                 "GHS": {
@@ -203,7 +203,7 @@ export default class ExchangeRatesService {
                     rate: cashify.convert(1, { from: 'USD', to: 'GHS' }),
                 },
                 "CVE": {
-                    name: 'Cape Verde Escudo',
+                    name: 'Escudo Cabo Verde',
                     rate: cashify.convert(1, { from: 'USD', to: 'CVE' }),
                 },
             };

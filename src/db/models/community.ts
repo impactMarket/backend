@@ -53,7 +53,7 @@ export function initializeCommunity(sequelize: Sequelize): void {
             allowNull: false
         },
         description: {
-            type: DataTypes.STRING(512),
+            type: DataTypes.STRING(1024),
             allowNull: false
         },
         city: {

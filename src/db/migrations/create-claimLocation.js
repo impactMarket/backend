@@ -7,17 +7,17 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            communityAddress: {
-                type: Sequelize.STRING(44),
+            communityPublicId: {
+                type: Sequelize.UUID,
                 references: {
                     model: 'community', // name of Target model
-                    key: 'contractAddress', // key in Target model that we're referencing
+                    key: 'publicId', // key in Target model that we're referencing
                 },
                 onUpdate: 'CASCADE',
                 onDelete: 'SET NULL',
                 allowNull: false
             },
-            location: {
+            gps: {
                 type: Sequelize.JSON,
                 allowNull: false
             },

@@ -3,6 +3,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class ClaimLocation extends Model {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
+    public communityPublicId!: string;
     public gps!: any;
 
     // timestamps!
@@ -16,6 +17,10 @@ export function initializeClaimLocation(sequelize: Sequelize): void {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
+        },
+        communityPublicId: {
+            type: DataTypes.UUID,
+            allowNull: false
         },
         gps: {
             type: DataTypes.JSON,

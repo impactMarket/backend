@@ -26,7 +26,7 @@ module.exports = {
                 allowNull: false
             },
             description: {
-                type: Sequelize.STRING(512),
+                type: Sequelize.STRING(1024),
                 allowNull: false
             },
             city: {
@@ -37,7 +37,7 @@ module.exports = {
                 type: Sequelize.STRING(64),
                 allowNull: false
             },
-            location: {
+            gps: {
                 type: Sequelize.JSON,
                 allowNull: false
             },
