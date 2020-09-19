@@ -5,6 +5,7 @@ import { initializeUser } from './user';
 import { initializeSSI, SSI } from './ssi';
 import { initializeAgenda } from './agenda';
 import { initializeClaimLocation } from './claimLocation';
+import { initializeGlobalStatus } from './globalStatus';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -14,6 +15,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeUser(sequelize);
     initializeAgenda(sequelize);
     initializeClaimLocation(sequelize);
+    initializeGlobalStatus(sequelize);
 
     Community.hasMany(SSI, { foreignKey: 'communityPublicId' });
     SSI.belongsTo(Community, { foreignKey: 'communityPublicId' });
