@@ -100,17 +100,17 @@ export interface IUserTxAPI {
 }
 
 export interface IGlobalStatus {
-    totalRaised: number,
-    totalDistributed: number,
-    totalBeneficiaries: number,
-    totalClaims: number,
+    totalRaised: string,
+    totalDistributed: string,
+    totalBeneficiaries: string,
+    totalClaims: string,
 }
 
 export enum AgendaAction {
     notification = 'notification'
 }
 
-export enum ExperimentalDbGlobalData {
+export enum GlobalDataTypeEnum {
     totalRaised = 'totalraised',
     totalDistributed= 'totaldistributed',
     totalBeneficiaries = 'totalbeneficiaries',
