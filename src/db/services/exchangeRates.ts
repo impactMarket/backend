@@ -178,7 +178,7 @@ export default class ExchangeRatesService {
     public static async get(): Promise<any> {
         if (rates === undefined) {
             let latestRates = originalRates;
-            if (process.env.QUERY_EXCHANGE_RATES_FROM_FIXER) {
+            if (config.fixerApiKey !== undefined && config.fixerApiKey.length > 0) {
                 const query = await axios.get(
                     `http://data.fixer.io/api/latest?access_key=${config.fixerApiKey}`
                 );
