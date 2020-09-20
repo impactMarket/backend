@@ -56,6 +56,7 @@ async function subscribeChainEvents(
     const ifaceImpactMarket = new ethers.utils.Interface(ImpactMarketContractABI);
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
+    const allCommunitiesAddresses = communitiesAddress;
     provider.on(filter, (log: ethers.providers.Log) => {
         let parsedLog: ethers.utils.LogDescription | undefined;
         if (log.address === config.impactMarketContractAddress) {
@@ -63,17 +64,18 @@ async function subscribeChainEvents(
             if (parsedLog.name === 'CommunityAdded') {
                 // it's necessary to get ManagerAdded here!
                 updateCommunityCache(log.blockNumber - 1, provider, parsedLog.args[0]);
+                allCommunitiesAddresses.push(parsedLog.args[0]);
             }
             //
         } else if (log.address === config.cUSDContractAddress) {
             const preParsedLog = ifaceERC20.parseLog(log);
             // only donations
-            if (communitiesAddress.includes(preParsedLog.args[1])) {
+            if (allCommunitiesAddresses.includes(preParsedLog.args[1])) {
                 parsedLog = preParsedLog;
-                GlobalStatusService.counterAdd(GlobalDataTypeEnum.totalRaised, preParsedLog.args[1].toString());
+                GlobalStatusService.counterAdd(GlobalDataTypeEnum.totalRaised, preParsedLog.args[2].toString());
             }
             //
-        } else if (communitiesAddress.includes(log.address)) {
+        } else if (allCommunitiesAddresses.includes(log.address)) {
             parsedLog = ifaceCommunity.parseLog(log);
             if (parsedLog.name === 'BeneficiaryAdded') {
                 sendPushNotification(parsedLog.args[0], 'Welcome', 'You\'ve been added as a beneficiary!', { action: "beneficiary-added" });
