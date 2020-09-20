@@ -72,6 +72,10 @@ export interface IUserWelcome {
     community?: ICommunityInfo;
 }
 
+export interface IUserWelcomeAuth extends IUserWelcome {
+    token: string;
+}
+
 /**
  * @deprecated
  */

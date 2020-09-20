@@ -9,7 +9,7 @@ module.exports = {
             },
             address: {
                 type: Sequelize.STRING(44),
-                allowNull: false
+                allowNull: false,
             },
             username: {
                 type: Sequelize.STRING(64),
@@ -18,22 +18,23 @@ module.exports = {
                 type: Sequelize.STRING(128),
             },
             language: {
-                type: Sequelize.INTEGER, // TODO:  Sequelize.STRING(8),
-                // TODO: add default value
+                type:Sequelize.STRING(8),
+                allowNull: false,
             },
             currency: {
                 type: Sequelize.STRING(4),
+                defaultValue: 'USD',
             },
             pushNotificationToken: {
                 type: Sequelize.STRING(64),
             },
             createdAt: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
             },
             updatedAt: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
             }
         });
     },

@@ -1,6 +1,6 @@
 import { User } from '../models/user';
 import { generateAccessToken } from '../../middlewares';
-import { ICommunityInfo, IUserWelcome } from '../../types';
+import { ICommunityInfo, IUserWelcomeAuth, IUserWelcome } from '../../types';
 import ExchangeRatesService from './exchangeRates';
 import TransactionsService from './transactions';
 import { Transactions } from '../models/transactions';
@@ -10,15 +10,17 @@ import CommunityService from './community';
 export default class UserService {
     public static async auth(
         address: string,
-    ): Promise<string | undefined> {
+        language: string,
+        pushNotificationsToken: string,
+    ): Promise<IUserWelcomeAuth | undefined> {
         const token = generateAccessToken(address);
         const user = await User.findOne({ where: { address } });
         if (user === null) {
             await User.create({
                 address,
-                pin: '123', // not used anymore
-                authToken: token,
                 avatar: Math.floor(Math.random() * 8) + 1,
+                language,
+                pushNotificationsToken,
             });
         } else {
             await User.update(
@@ -26,7 +28,14 @@ export default class UserService {
                 { returning: true, where: { address } },
             );
         }
-        return token;
+        const welcomeUser = await UserService.welcome(address);
+        if (welcomeUser === undefined) {
+            return undefined;
+        }
+        return {
+            token,
+            ...welcomeUser
+        };
     }
 
     public static async welcome(

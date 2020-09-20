@@ -8,7 +8,6 @@ export class User extends Model {
     public avatar!: string;
     public language!: string;
     public currency!: string;
-    public authToken!: string;
     public pushNotificationToken!: string;
 
     // timestamps!
@@ -27,13 +26,6 @@ export function initializeUser(sequelize: Sequelize): void {
             type: DataTypes.STRING(44),
             allowNull: false,
         },
-        pin: {
-            type: DataTypes.STRING(129),
-            allowNull: false,
-            get() {
-                return undefined;
-            }
-        },
         username: {
             type: DataTypes.STRING(64),
         },
@@ -42,12 +34,10 @@ export function initializeUser(sequelize: Sequelize): void {
         },
         language: {
             type: DataTypes.STRING(8),
+            allowNull: false,
         },
         currency: {
             type: DataTypes.STRING(4),
-        },
-        authToken: {
-            type: DataTypes.STRING(180),
         },
         pushNotificationToken: {
             type: DataTypes.STRING(64),

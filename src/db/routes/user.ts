@@ -21,15 +21,20 @@ export default (app: Router): void => {
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
-                pin: Joi.string(),
+                language: Joi.string().required(),
+                pushNotificationsToken: Joi.string().required(),
             }),
         }),
         async (req: Request, res: Response) => {
             const {
                 address,
+                language,
+                pushNotificationsToken,
             } = req.body;
             const result = await UserService.auth(
                 address,
+                language,
+                pushNotificationsToken,
             );
             if (result === undefined) {
                 res.sendStatus(403);
