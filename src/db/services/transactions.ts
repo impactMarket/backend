@@ -6,7 +6,7 @@ import {
     IRecentTxAPI,
     IPaymentsTxAPI,
     IAddressAndName,
-    ICommunityInfoBeneficiary
+    ICommunityInfoBeneficiary, IUserTxAPI
 } from '../../types';
 import config from '../../config';
 import axios from 'axios';
@@ -378,7 +378,7 @@ export default class TransactionsService {
         return entries[0];
     }
 
-    public static async userTx(userAddress: string): Promise<IPaymentsTxAPI[]> {
+    public static async userTx(userAddress: string): Promise<IUserTxAPI[]> {
         const query = await axios.get(
             `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`
         );
@@ -388,18 +388,20 @@ export default class TransactionsService {
         }
         const registry = await this.addressesByNames();
 
-        const rawResult: { to: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
-            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0' && r.from.toLowerCase() === userAddress.toLowerCase());
+        const rawResult: { to: string; from: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
+            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0');
 
-        const result: IPaymentsTxAPI[] = [];
+        const result: IUserTxAPI[] = [];
         for (let index = 0; index < rawResult.length; index++) {
             const r = rawResult[index];
-            const k = ethers.utils.getAddress(r.to);
+            const fromUser = ethers.utils.getAddress(r.from) === userAddress;
+            const k = fromUser ? ethers.utils.getAddress(r.to) : ethers.utils.getAddress(r.from);
             result.push({
                 picture: await this.findPicture(k),
-                to: this.addressToAddressAndName(k, registry),
+                counterParty: this.addressToAddressAndName(k, registry),
                 value: r.value.toString(),
-                timestamp: parseInt(r.timeStamp, 10)
+                timestamp: parseInt(r.timeStamp, 10),
+                fromUser,
             });
         }
         // https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
@@ -473,13 +475,13 @@ export default class TransactionsService {
         }
         const registry = await this.addressesByNames();
 
-        const rawResult: { to: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
-            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0' && r.from.toLowerCase() === userAddress.toLowerCase());
+        const rawResult: { to: string; from: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
+            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0');
 
         const result: IRecentTxAPI[] = [];
         for (let index = 0; index < rawResult.length; index++) {
             const r = rawResult[index];
-            const k = ethers.utils.getAddress(r.to);
+            const k = ethers.utils.getAddress(r.to) === userAddress ? ethers.utils.getAddress(r.from) : ethers.utils.getAddress(r.to);
             result.push({
                 picture: await this.findPicture(k),
                 from: this.addressToAddressAndName(k, registry),

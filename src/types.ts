@@ -98,9 +98,10 @@ export interface IPaymentsTxAPI {
 
 export interface IUserTxAPI {
     picture: string;
-    to: IAddressAndName;
+    counterParty: IAddressAndName;
     value: string;
     timestamp: number;
+    fromUser: boolean;
 }
 
 export interface IGlobalStatus {
