@@ -6,7 +6,7 @@ import {
     IRecentTxAPI,
     IPaymentsTxAPI,
     IAddressAndName,
-    ICommunityInfoBeneficiary, IUserTxAPI
+    ICommunityInfoBeneficiary, IUserTxAPI, IGlobalStatus
 } from '../../types';
 import config from '../../config';
 import axios from 'axios';
@@ -502,6 +502,29 @@ export default class TransactionsService {
         //     });
         // }
         return result;
+    }
+
+    public static async getGlobalStatus(): Promise<IGlobalStatus> {
+        const raised = await Transactions.findAll({
+            where: { event: 'Transfer' },
+            raw: true,
+        })
+        const totalRaised = raised.map((donation) => donation.values.value).reduce((a, b) => a.plus(b), new BigNumber(0));
+        const distributed = await Transactions.findAll({
+            where: { event: 'BeneficiaryClaim' },
+            raw: true,
+        })
+        const totalDistributed = distributed.map((claim) => claim.values._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
+        const beneficiaries = await Transactions.findAll({
+            where: { event: 'BeneficiaryAdded' },
+            raw: true,
+        })
+        return {
+            totalRaised: totalRaised.toString(),
+            totalDistributed: totalDistributed.toString(),
+            totalBeneficiaries: beneficiaries.length.toString(),
+            totalClaims: distributed.length.toString(),
+        }
     }
 
     private static async addressesByNames() {
