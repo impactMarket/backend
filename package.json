@@ -37,6 +37,8 @@
         "helmet": "3.23.3",
         "ipfs": "0.50.2",
         "jsonwebtoken": "8.5.1",
+        "lodash": "4.17.20",
+        "moment": "2.29.0",
         "morgan": "1.10.0",
         "multer": "1.4.2",
         "multer-s3": "2.9.0",
