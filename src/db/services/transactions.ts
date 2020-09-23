@@ -555,7 +555,6 @@ export default class TransactionsService {
             raw: true,
         });
         const uniqueBeneficiaries = _.uniqBy(_.concat(beneficiaries, nonBeneficiaries), 'values._account');
-        console.log(uniqueBeneficiaries)
         const dayNumber = (item: Transactions) => moment(item.txAt, 'YYYY-MM-DD').format('DD-MMM');
         return {
             claimed: _.groupBy(distributed, dayNumber),

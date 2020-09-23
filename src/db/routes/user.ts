@@ -22,15 +22,19 @@ export default (app: Router): void => {
             body: Joi.object({
                 address: Joi.string().required(),
                 language: Joi.string().required(),
-                pushNotificationsToken: Joi.string().required(),
+                pushNotificationsToken: Joi.string(), // TODO: must be required
             }),
         }),
         async (req: Request, res: Response) => {
-            const {
+            let {
                 address,
                 language,
                 pushNotificationsToken,
             } = req.body;
+            console.log('pushNotificationsToken', pushNotificationsToken);
+            if (pushNotificationsToken === null || pushNotificationsToken === undefined) { // TODO: replace, should never be invalid
+                pushNotificationsToken = '';
+            }
             const result = await UserService.auth(
                 address,
                 language,
