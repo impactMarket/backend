@@ -6,7 +6,7 @@ import {
     IRecentTxAPI,
     IPaymentsTxAPI,
     IAddressAndName,
-    ICommunityInfoBeneficiary, IUserTxAPI, IGlobalStatus
+    ICommunityInfoBeneficiary, IUserTxAPI, IGlobalStatus, IGlobalOutflowStatus
 } from '../../types';
 import config from '../../config';
 import axios from 'axios';
@@ -16,6 +16,8 @@ import { ethers } from 'ethers';
 import UserService from './user';
 import { groupBy } from '../../utils';
 import { LogDescription } from 'ethers/lib/utils';
+import moment from 'moment';
+import _ from 'lodash';
 
 
 interface ICommunityAddedEventValues {
@@ -515,15 +517,50 @@ export default class TransactionsService {
             raw: true,
         })
         const totalDistributed = distributed.map((claim) => claim.values._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
-        const beneficiaries = await Transactions.findAll({
+        const beneficiaries = Array.from(new Set((await Transactions.findAll({
             where: { event: 'BeneficiaryAdded' },
             raw: true,
-        })
+        })).map((b) => b.values._account)));
+        const nonBeneficiaries = Array.from(new Set((await Transactions.findAll({
+            where: { event: 'BeneficiaryRemoved' },
+            raw: true,
+        })).map((b) => b.values._account)));
         return {
             totalRaised: totalRaised.toString(),
             totalDistributed: totalDistributed.toString(),
-            totalBeneficiaries: beneficiaries.length.toString(),
+            totalBeneficiaries: (beneficiaries.length - nonBeneficiaries.length).toString(),
             totalClaims: distributed.length.toString(),
+        }
+    }
+
+    public static async getOutflowStatus(): Promise<IGlobalOutflowStatus> {
+        const distributed = await Transactions.findAll({
+            where: { event: 'BeneficiaryClaim' },
+            attributes: ['txAt', 'values'],
+            raw: true,
+        })
+        const beneficiaries = await Transactions.findAll({
+            where: { event: 'BeneficiaryAdded' },
+            attributes: ['txAt', 'values'],
+            raw: true,
+        });
+        const nonBeneficiaries = await Transactions.findAll({
+            where: { event: 'BeneficiaryRemoved' },
+            attributes: ['txAt', 'values'],
+            raw: true,
+        });
+        const communities = await Transactions.findAll({
+            where: { event: 'CommunityAdded' },
+            attributes: ['txAt'],
+            raw: true,
+        });
+        const uniqueBeneficiaries = _.uniqBy(_.concat(beneficiaries, nonBeneficiaries), 'values._account');
+        console.log(uniqueBeneficiaries)
+        const dayNumber = (item: Transactions) => moment(item.txAt, 'YYYY-MM-DD').format('DD-MMM');
+        return {
+            claimed: _.groupBy(distributed, dayNumber),
+            beneficiaries: _.groupBy(uniqueBeneficiaries, dayNumber),
+            communities: _.groupBy(communities, dayNumber),
         }
     }
 

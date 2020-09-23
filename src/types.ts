@@ -111,6 +111,12 @@ export interface IGlobalStatus {
     totalClaims: string,
 }
 
+export interface IGlobalOutflowStatus {
+    claimed: any,
+    communities: any,
+    beneficiaries: any,
+}
+
 export enum AgendaAction {
     notification = 'notification'
 }

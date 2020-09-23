@@ -11,6 +11,9 @@ export default (app: Router): void => {
 
     route.get('/',
         async (req, res) => {
-            res.send(await GlobalStatusService.get());
+            res.send({
+                global: await GlobalStatusService.get(),
+                outflow: await GlobalStatusService.outflow(),
+            });
         });
 };
