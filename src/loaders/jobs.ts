@@ -10,6 +10,7 @@ import CommunityService from '../db/services/community';
 import { CronJob } from 'cron';
 import { calcuateSSI } from '../jobs/calculateSSI';
 import { prepareAgenda } from '../jobs/agenda';
+import { updateExchangeRates } from '../jobs/updateExchangeRates';
 
 
 export default async (): Promise<void> => {
@@ -44,8 +45,16 @@ async function subscribers(provider: ethers.providers.JsonRpcProvider): Promise<
 
 function cron(provider: ethers.providers.JsonRpcProvider) {
     // everyday at midnight (Europe/Paris time)
-    const job = new CronJob('0 0 * * *', () => {
+    const jobCalculateSSI = new CronJob('0 0 * * *', () => {
         calcuateSSI(provider);
     }, null, false, 'Europe/Paris');
-    job.start();
+    jobCalculateSSI.start();
+    if (config.fixerApiKey !== undefined && config.fixerApiKey.length > 0) {
+        updateExchangeRates();
+        // every three ours, update exchange rates
+        const jobUpdateExchangeRates = new CronJob('0 */3 * * *', () => {
+            updateExchangeRates();
+        }, null, false);
+        jobUpdateExchangeRates.start();
+    }
 }
