@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import routes from '../db/routes';
 import config from '../config';
 import { LoggerStream } from '../loaders/logger';
-
+import * as Sentry from "@sentry/node";
 
 export default ({ app }: { app: express.Application }): void => {
     /**
@@ -20,11 +20,17 @@ export default ({ app }: { app: express.Application }): void => {
         res.status(200).end();
     });
 
+    // RequestHandler creates a separate execution context using domains, so that every
+    // transaction/span/breadcrumb is attached to its own Hub instance
+    app.use(Sentry.Handlers.requestHandler());
+    // TracingHandler creates a trace for every incoming request
+    app.use(Sentry.Handlers.tracingHandler());
+
     // Useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
     // It shows the real origin IP in the heroku or Cloudwatch logs
     app.enable('trust proxy');
 
-    app.use(morgan('combined', {  stream: new LoggerStream() }));
+    app.use(morgan('combined', { stream: new LoggerStream() }));
 
     app.use(helmet());
     // The magic package that prevents frontend developers going nuts
@@ -41,6 +47,9 @@ export default ({ app }: { app: express.Application }): void => {
     app.use(bodyParser.json());
     // Load API routes
     app.use(config.api.prefix, routes());
+
+    // The error handler must be before any other error middleware and after all controllers
+    app.use(Sentry.Handlers.errorHandler());
 
     /// catch 404 and forward to error handler
     app.use((req, res, next) => {
