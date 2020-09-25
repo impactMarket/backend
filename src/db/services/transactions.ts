@@ -18,6 +18,7 @@ import { groupBy } from '../../utils';
 import { LogDescription } from 'ethers/lib/utils';
 import moment from 'moment';
 import _ from 'lodash';
+import ExperimentalService from './experimental';
 
 
 interface ICommunityAddedEventValues {
@@ -124,6 +125,15 @@ export default class TransactionsService {
     ): Promise<Transactions> {
         const hash = new SHA3(256);
         hash.update(tx).update(JSON.stringify(values));
+        ExperimentalService.addTransaction({
+            _id: hash.digest('hex'),
+            tx,
+            txAt,
+            from,
+            contractAddress,
+            event,
+            values,
+        });
         return Transactions.create({
             uid: hash.digest('hex'),
             tx,
@@ -391,7 +401,7 @@ export default class TransactionsService {
         const registry = await this.addressesByNames();
 
         const rawResult: { to: string; from: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
-            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0');
+            .filter((r: { value: string; }) => (new BigNumber(r.value).gt('9999999999999999'))); // >0,009
 
         const result: IUserTxAPI[] = [];
         for (let index = 0; index < rawResult.length; index++) {

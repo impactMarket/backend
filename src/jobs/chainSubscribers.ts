@@ -70,17 +70,12 @@ async function subscribeChainEvents(
             // only donations
             if (allCommunitiesAddresses.includes(preParsedLog.args[1])) {
                 parsedLog = preParsedLog;
-                // GlobalStatusService.counterAdd(GlobalDataTypeEnum.totalRaised, preParsedLog.args[2].toString());
             }
             //
         } else if (allCommunitiesAddresses.includes(log.address)) {
             parsedLog = ifaceCommunity.parseLog(log);
             if (parsedLog.name === 'BeneficiaryAdded') {
                 sendPushNotification(parsedLog.args[0], 'Welcome', 'You\'ve been added as a beneficiary!', { action: "beneficiary-added" });
-                // GlobalStatusService.counterAdd(GlobalDataTypeEnum.totalBeneficiaries, '1');
-            } else if (parsedLog.name === 'BeneficiaryClaim') {
-                // GlobalStatusService.counterAdd(GlobalDataTypeEnum.totalClaims, '1');
-                // GlobalStatusService.counterAdd(GlobalDataTypeEnum.totalDistributed, parsedLog.args[1].toString());
             }
         }
         if (parsedLog !== undefined) {
