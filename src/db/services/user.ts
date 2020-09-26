@@ -53,7 +53,17 @@ export default class UserService {
         if (community === undefined) {
             community = await TransactionsService.findComunityToManager(address);
             if (community === null) {
-                community = undefined;
+                // is there any change this guy is in a private community?
+                community = await TransactionsService.findUserPrivateCommunity(address);
+                if (community === null) {
+                    community = undefined;
+                } else {
+                    if (community.event === 'ManagerAdded') {
+                        isManager = true;
+                    } else {
+                        isBeneficiary = true;
+                    }
+                }
             } else {
                 isManager = true;
             }

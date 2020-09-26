@@ -19,6 +19,7 @@ import { LogDescription } from 'ethers/lib/utils';
 import moment from 'moment';
 import _ from 'lodash';
 import ExperimentalService from './experimental';
+import { Community } from '../models/community';
 
 
 interface ICommunityAddedEventValues {
@@ -516,23 +517,73 @@ export default class TransactionsService {
         return result;
     }
 
+    public static async findUserPrivateCommunity(userAddress: string): Promise<Transactions | null> {
+        const privateCommunities: string[] = (await Community.findAll({
+            attributes: ['contractAddress'],
+            where: { visibility: 'private' }
+        })).map((c) => c.contractAddress);
+        const userEvents = await Transactions.findAll({
+            attributes: ['event'],
+            where: {
+                event: {
+                    [Op.or]: [
+                        'BeneficiaryAdded',
+                        'BeneficiaryRemoved',
+                        'ManagerAdded',
+                        'ManagerRemoved'
+                    ]
+                },
+                values: { _account: userAddress },
+                contractAddress: {
+                    [Op.in]: privateCommunities
+                },
+            },
+            limit: 1,
+            order: [['txAt', 'DESC']],
+            raw: true,
+        });
+
+        if (userEvents[0].event === 'BeneficiaryRemoved' || userEvents[0].event === 'ManagerRemoved') {
+            // not in any private community
+            return null;
+        }
+        return userEvents[0];
+    }
+
     public static async getGlobalStatus(): Promise<IGlobalStatus> {
+        const privateCommunities: string[] = (await Community.findAll({
+            attributes: ['contractAddress'],
+            where: { visibility: 'private' }
+        })).map((c) => c.contractAddress);
+        //
         const raised = await Transactions.findAll({
-            where: { event: 'Transfer' },
+            where: {
+                event: 'Transfer',
+                contractAddress: { [Op.notIn]: privateCommunities },
+            },
             raw: true,
         })
         const totalRaised = raised.map((donation) => donation.values.value).reduce((a, b) => a.plus(b), new BigNumber(0));
         const distributed = await Transactions.findAll({
-            where: { event: 'BeneficiaryClaim' },
+            where: {
+                event: 'BeneficiaryClaim',
+                contractAddress: { [Op.notIn]: privateCommunities },
+            },
             raw: true,
         })
         const totalDistributed = distributed.map((claim) => claim.values._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
         const beneficiaries = Array.from(new Set((await Transactions.findAll({
-            where: { event: 'BeneficiaryAdded' },
+            where: {
+                event: 'BeneficiaryAdded',
+                contractAddress: { [Op.notIn]: privateCommunities },
+            },
             raw: true,
         })).map((b) => b.values._account)));
         const nonBeneficiaries = Array.from(new Set((await Transactions.findAll({
-            where: { event: 'BeneficiaryRemoved' },
+            where: {
+                event: 'BeneficiaryRemoved',
+                contractAddress: { [Op.notIn]: privateCommunities },
+            },
             raw: true,
         })).map((b) => b.values._account)));
         return {
@@ -544,23 +595,40 @@ export default class TransactionsService {
     }
 
     public static async getOutflowStatus(): Promise<IGlobalOutflowStatus> {
+        const privateCommunities: string[] = (await Community.findAll({
+            attributes: ['contractAddress'],
+            where: { visibility: 'private' }
+        })).map((c) => c.contractAddress);
+        //
         const distributed = await Transactions.findAll({
-            where: { event: 'BeneficiaryClaim' },
+            where: {
+                event: 'BeneficiaryClaim',
+                contractAddress: { [Op.notIn]: privateCommunities },
+            },
             attributes: ['txAt', 'values'],
             raw: true,
         })
         const beneficiaries = await Transactions.findAll({
-            where: { event: 'BeneficiaryAdded' },
+            where: {
+                event: 'BeneficiaryAdded',
+                contractAddress: { [Op.notIn]: privateCommunities },
+            },
             attributes: ['txAt', 'values'],
             raw: true,
         });
         const nonBeneficiaries = await Transactions.findAll({
-            where: { event: 'BeneficiaryRemoved' },
+            where: {
+                event: 'BeneficiaryRemoved',
+                contractAddress: { [Op.notIn]: privateCommunities },
+            },
             attributes: ['txAt', 'values'],
             raw: true,
         });
         const communities = await Transactions.findAll({
-            where: { event: 'CommunityAdded' },
+            where: {
+                event: 'CommunityAdded',
+                contractAddress: { [Op.notIn]: privateCommunities },
+            },
             attributes: ['txAt'],
             raw: true,
         });

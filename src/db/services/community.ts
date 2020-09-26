@@ -14,6 +14,7 @@ export default class CommunityService {
         requestByAddress: string,
         name: string,
         description: string,
+        currency: string,
         city: string,
         country: string,
         gps: {
@@ -29,13 +30,14 @@ export default class CommunityService {
             requestByAddress,
             name,
             description,
+            currency,
             city,
             country,
             gps,
             email,
             visibility,
             coverImage,
-            status: 'pending',
+            status: (visibility === 'public' ? 'pending' : 'valid'),
             txCreationObj,
         });
     }
@@ -44,6 +46,7 @@ export default class CommunityService {
         publicId: string,
         name: string,
         description: string,
+        currency: string,
         city: string,
         country: string,
         gps: {
@@ -57,6 +60,7 @@ export default class CommunityService {
         return Community.update({
             name,
             description,
+            currency,
             city,
             country,
             gps,
@@ -96,33 +100,7 @@ export default class CommunityService {
         return true;
     }
 
-    public static async getAll(status?: string): Promise<ICommunityInfo[]> {
-        if (status === undefined) {
-            const communities = await Community.findAll({ raw: true });
-            return communities.map((community) => ({
-                ...community,
-                createdAt: community.createdAt.toString(),
-                updatedAt: community.updatedAt.toString(),
-                backers: [],
-                beneficiaries: {
-                    added: [],
-                    removed: [],
-                },
-                managers: [],
-                ssi: {
-                    dates: [],
-                    values: [],
-                },
-                totalClaimed: '0',
-                totalRaised: '0',
-                vars: {
-                    _claimAmount: '0',
-                    _baseInterval: '0',
-                    _maxClaim: '0',
-                    _incrementInterval: '0',
-                },
-            }))
-        }
+    public static async getAll(status: string): Promise<ICommunityInfo[]> {
         const result: ICommunityInfo[] = [];
         const communities = await Community.findAll({ where: { status }, raw: true });
         for (let index = 0; index < communities.length; index++) {
