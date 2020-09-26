@@ -35,7 +35,7 @@ export default (app: Router): void => {
     );
 
     route.get(
-        '/all/:status?',
+        '/all/:status',
         async (req: Request, res: Response) => {
             res.send(await CommunityService.getAll(req.params.status));
         },
@@ -56,6 +56,7 @@ export default (app: Router): void => {
                 requestByAddress: Joi.string().required(),
                 name: Joi.string().required(),
                 description: Joi.string().required(),
+                currency: Joi.string(), // TODO: make required
                 city: Joi.string().required(),
                 country: Joi.string().required(),
                 gps: {
@@ -73,6 +74,7 @@ export default (app: Router): void => {
                 requestByAddress, // the address making the request (will be community manager)
                 name,
                 description,
+                currency,
                 city,
                 country,
                 gps,
@@ -87,6 +89,7 @@ export default (app: Router): void => {
                     requestByAddress,
                     name,
                     description,
+                    currency,
                     city,
                     country,
                     gps,
@@ -112,6 +115,7 @@ export default (app: Router): void => {
                 publicId: Joi.string().required(),
                 name: Joi.string().required(),
                 description: Joi.string().required(),
+                currency: Joi.string(),
                 city: Joi.string().required(),
                 country: Joi.string().required(),
                 gps: {
@@ -127,12 +131,13 @@ export default (app: Router): void => {
             const {
                 publicId,
                 name,
+                description,
+                currency,
                 city,
                 country,
                 gps,
                 email,
                 visibility,
-                location,
                 coverImage,
             } = req.body;
             // verify if the current user is manager in this community
@@ -146,12 +151,13 @@ export default (app: Router): void => {
                         await CommunityService.edit(
                             publicId,
                             name,
+                            description,
+                            currency,
                             city,
                             country,
                             gps,
                             email,
                             visibility,
-                            location,
                             coverImage,
                         );
                         returningStatus = 200;
