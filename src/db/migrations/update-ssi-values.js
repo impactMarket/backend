@@ -2,7 +2,7 @@
 
 const math = require('mathjs');
 module.exports = {
-    up: (queryInterface, Sequelize) => {
+    up: async (queryInterface, Sequelize) => {
 
         const m1 = [86700, 86400, 86400, 86400, 86400]
         const n1 = [31, 26179, 3403, 3767, 1818]
@@ -17,22 +17,22 @@ module.exports = {
         const n4 = [119, 166606, 499, 26179, 96, 30885, 71327, 5271, 41293, 67904, 580]
 
         const calcSSI = (n, m) => parseFloat(((math.mad(n) / math.mean(m)) * 100 / 2).toFixed(2))
-        queryInterface.bulkUpdate('ssi', {
+        await queryInterface.bulkUpdate('ssi', {
             ssi: calcSSI(n1, m1),
         }, {
             id: 1,
         });
-        queryInterface.bulkUpdate('ssi', {
+        await queryInterface.bulkUpdate('ssi', {
             ssi: calcSSI(n2, m2),
         }, {
             id: 2,
         });
-        queryInterface.bulkUpdate('ssi', {
+        await queryInterface.bulkUpdate('ssi', {
             ssi: calcSSI(n3, m3),
         }, {
             id: 3,
         });
-        queryInterface.bulkUpdate('ssi', {
+        await queryInterface.bulkUpdate('ssi', {
             ssi: calcSSI(n4, m4),
         }, {
             id: 4,
