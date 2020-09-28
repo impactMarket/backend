@@ -3,7 +3,7 @@ import CommunityService from "../db/services/community";
 import TransactionsService from "../db/services/transactions";
 import { ethers } from "ethers";
 import SSIService from "../db/services/ssi";
-import math from 'mathjs';
+import { median, mean } from 'mathjs';
 
 
 async function calcuateSSI(provider: ethers.providers.JsonRpcProvider): Promise<void> {
@@ -30,8 +30,8 @@ async function calcuateSSI(provider: ethers.providers.JsonRpcProvider): Promise<
         // calculate result
         console.log(beneficiariesTimeToWait, beneficiariesTimeWaited);
         if (beneficiariesTimeToWait.length > 1 && beneficiariesTimeWaited.length > 1) {
-            const meanTimeToWait = math.mean(beneficiariesTimeToWait);
-            const madTimeWaited = math.mad(beneficiariesTimeWaited);
+            const meanTimeToWait = mean(beneficiariesTimeToWait);
+            const madTimeWaited = median(beneficiariesTimeWaited);
             SSIService.add(community.publicId, new Date(), parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2)));
         }
     }

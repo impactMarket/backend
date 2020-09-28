@@ -16,7 +16,7 @@ module.exports = {
         const m4 = [87000, 86400, 87300, 86400, 86700, 86700, 87000, 87300, 86400, 86400, 86700]
         const n4 = [119, 166606, 499, 26179, 96, 30885, 71327, 5271, 41293, 67904, 580]
 
-        const calcSSI = (n, m) => parseFloat(((math.mad(n) / math.mean(m)) * 100 / 2).toFixed(2))
+        const calcSSI = (n, m) => parseFloat(((math.median(n) / math.mean(m)) * 100 / 2).toFixed(2))
         await queryInterface.bulkUpdate('ssi', {
             ssi: calcSSI(n1, m1),
         }, {
