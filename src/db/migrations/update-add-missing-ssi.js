@@ -10,6 +10,7 @@ module.exports = {
         const calcSSI = (n, m) => parseFloat(((math.median(n) / math.mean(m)) * 100 / 2).toFixed(2))
 
         return queryInterface.bulkInsert('ssi', [{
+            communityPublicId: '84f00afc-ca5a-450d-8fe6-dcfa9de98d1e',
             date: new Date(),
             ssi: calcSSI(n5, m5),
             createdAt: new Date(),
