@@ -49,13 +49,15 @@ export default (app: Router): void => {
     );
 
     route.post(
-        '/request',
+        '/create',
         authenticateToken,
         celebrate({
             body: Joi.object({
                 requestByAddress: Joi.string().required(),
                 name: Joi.string().required(),
+                contractAddress: Joi.string().required(),
                 description: Joi.string().required(),
+                language: Joi.string(), // TODO: make required
                 currency: Joi.string(), // TODO: make required
                 city: Joi.string().required(),
                 country: Joi.string().required(),
@@ -64,7 +66,64 @@ export default (app: Router): void => {
                     longitude: Joi.number().required(),
                 },
                 email: Joi.string().required(),
-                visibility: Joi.string().required(),
+                coverImage: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                requestByAddress, // the address making the request (will be community manager)
+                name,
+                contractAddress,
+                description,
+                language,
+                currency,
+                city,
+                country,
+                gps,
+                email,
+                coverImage,
+            } = req.body;
+            let returningStatus = 201;
+            try {
+                await CommunityService.create(
+                    requestByAddress,
+                    name,
+                    contractAddress,
+                    description,
+                    language,
+                    currency,
+                    city,
+                    country,
+                    gps,
+                    email,
+                    coverImage,
+                );
+            } catch (e) {
+                Logger.error(e);
+                returningStatus = 403;
+            } finally {
+                res.sendStatus(returningStatus);
+            }
+        },
+    );
+
+    route.post(
+        '/request',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                requestByAddress: Joi.string().required(),
+                name: Joi.string().required(),
+                description: Joi.string().required(),
+                language: Joi.string(), // TODO: make required
+                currency: Joi.string(), // TODO: make required
+                city: Joi.string().required(),
+                country: Joi.string().required(),
+                gps: {
+                    latitude: Joi.number().required(),
+                    longitude: Joi.number().required(),
+                },
+                email: Joi.string().required(),
                 coverImage: Joi.string().required(),
                 txCreationObj: Joi.object().required(),
             }),
@@ -74,12 +133,12 @@ export default (app: Router): void => {
                 requestByAddress, // the address making the request (will be community manager)
                 name,
                 description,
+                language,
                 currency,
                 city,
                 country,
                 gps,
                 email,
-                visibility,
                 coverImage,
                 txCreationObj,
             } = req.body;
@@ -89,12 +148,12 @@ export default (app: Router): void => {
                     requestByAddress,
                     name,
                     description,
+                    language,
                     currency,
                     city,
                     country,
                     gps,
                     email,
-                    visibility,
                     coverImage,
                     txCreationObj,
                 );

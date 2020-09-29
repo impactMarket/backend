@@ -10,6 +10,7 @@ export class Community extends Model {
     public name!: string;
     public description!: string;
     public descriptionEn!: string;
+    public language!: string;
     public currency!: string;
     public city!: string;
     public country!: string;
@@ -60,6 +61,10 @@ export function initializeCommunity(sequelize: Sequelize): void {
         },
         descriptionEn: {
             type: DataTypes.STRING(1024),
+            allowNull: true
+        },
+        language: {
+            type: DataTypes.STRING(8),
             allowNull: false
         },
         currency: {

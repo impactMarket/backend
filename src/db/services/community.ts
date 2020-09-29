@@ -10,10 +10,12 @@ import { sendPushNotification } from '../../utils';
 
 
 export default class CommunityService {
-    public static async request(
+    public static async create(
         requestByAddress: string,
         name: string,
+        contractAddress: string,
         description: string,
+        language: string,
         currency: string,
         city: string,
         country: string,
@@ -22,7 +24,38 @@ export default class CommunityService {
             longitude: number,
         },
         email: string,
-        visibility: string,
+        coverImage: string,
+    ): Promise<Community> {
+        return await Community.create({
+            requestByAddress,
+            name,
+            contractAddress,
+            description,
+            language,
+            currency,
+            city,
+            country,
+            gps,
+            email,
+            visibility: 'private',
+            coverImage,
+            status: 'valid',
+        });
+    }
+
+    public static async request(
+        requestByAddress: string,
+        name: string,
+        description: string,
+        language: string,
+        currency: string,
+        city: string,
+        country: string,
+        gps: {
+            latitude: number,
+            longitude: number,
+        },
+        email: string,
         coverImage: string,
         txCreationObj: ICommunityVars,
     ): Promise<Community> {
@@ -30,14 +63,15 @@ export default class CommunityService {
             requestByAddress,
             name,
             description,
+            language,
             currency,
             city,
             country,
             gps,
             email,
-            visibility,
+            visibility: 'public',
             coverImage,
-            status: (visibility === 'public' ? 'pending' : 'valid'),
+            status: 'pending',
             txCreationObj,
         });
     }
