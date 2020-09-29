@@ -543,6 +543,9 @@ export default class TransactionsService {
             raw: true,
         });
 
+        if (userEvents.length === 0) {
+            return null;
+        }
         if (userEvents[0].event === 'BeneficiaryRemoved' || userEvents[0].event === 'ManagerRemoved') {
             // not in any private community
             return null;
