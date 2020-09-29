@@ -2,8 +2,8 @@ import winston from 'winston';
 import config from '../config';
 
 const transports: (winston.transports.FileTransportInstance | winston.transports.ConsoleTransportInstance)[] = [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' }),
+    // new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    // new winston.transports.File({ filename: 'combined.log' }),
     new winston.transports.Console({
         format: winston.format.combine(
             winston.format.cli(),
@@ -38,7 +38,7 @@ const LoggerInstance = winston.createLogger({
 
 export class LoggerStream {
     write(message: string): void {
-        LoggerInstance.info(message.substring(0, message.lastIndexOf('\n')));
+        LoggerInstance.verbose(message.substring(0, message.lastIndexOf('\n')));
     }
 }
 

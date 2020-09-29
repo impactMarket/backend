@@ -9,7 +9,7 @@ export default async (): Promise<Sequelize> => {
     if (process.env.NODE_ENV === 'development') {
         logging = (msg) => false;
     } else {
-        logging = (msg) => Logger.debug(msg);
+        logging = (msg) => Logger.verbose(msg);
     }
     const dbConfig: Options = {
         dialect: 'postgres',
