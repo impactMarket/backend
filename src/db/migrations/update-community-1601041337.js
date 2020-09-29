@@ -8,7 +8,8 @@ module.exports = {
                 'currency', // new field name
                 {
                     type: Sequelize.STRING(4),
-                    allowNull: true,
+                    defaultValue: 'USD',
+                    allowNull: false,
                 },
             ),
             queryInterface.addColumn(
@@ -19,6 +20,15 @@ module.exports = {
                     allowNull: true,
                 },
             ),
+            queryInterface.addColumn(
+                'community',
+                'language',
+                {
+                    type: Sequelize.STRING(8),
+                    defaultValue: 'en',
+                    allowNull: false,
+                },
+            ),
         ]);
     },
 
@@ -27,6 +37,7 @@ module.exports = {
         return Promise.all([
             queryInterface.removeColumn('community', 'currency'),
             queryInterface.removeColumn('community', 'descriptionEn'),
+            queryInterface.removeColumn('community', 'language'),
         ]);
     },
 };
