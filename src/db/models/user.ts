@@ -25,6 +25,7 @@ export function initializeUser(sequelize: Sequelize): void {
         address: {
             type: DataTypes.STRING(44),
             allowNull: false,
+            unique: true,
         },
         username: {
             type: DataTypes.STRING(64),
