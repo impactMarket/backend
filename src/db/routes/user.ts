@@ -22,7 +22,7 @@ export default (app: Router): void => {
             body: Joi.object({
                 address: Joi.string().required(),
                 language: Joi.string().required(),
-                pushNotificationsToken: Joi.string(), // TODO: must be required
+                pushNotificationsToken: Joi.string().allow(''),
             }),
         }),
         async (req: Request, res: Response) => {
@@ -31,8 +31,7 @@ export default (app: Router): void => {
                 language,
                 pushNotificationsToken,
             } = req.body;
-            console.log('pushNotificationsToken', pushNotificationsToken);
-            if (pushNotificationsToken === null || pushNotificationsToken === undefined) { // TODO: replace, should never be invalid
+            if (pushNotificationsToken === null || pushNotificationsToken === undefined) {
                 pushNotificationsToken = '';
             }
             const result = await UserService.auth(
@@ -61,7 +60,7 @@ export default (app: Router): void => {
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
-                token: Joi.string().required(),
+                token: Joi.string().allow(''),
             }),
         }),
         async (req: Request, res: Response) => {
@@ -69,15 +68,16 @@ export default (app: Router): void => {
                 address,
                 token,
             } = req.body;
-            const isTokenSet = await UserService.setPushNotificationsToken(
-                address,
-                token
-            );
-            if (!isTokenSet) {
-                res.sendStatus(404);
-            } else {
-                res.send(await UserService.welcome(address));
+            if (token.length > 0) {
+                const isTokenSet = await UserService.setPushNotificationsToken(
+                    address,
+                    token
+                );
+                if (!isTokenSet) {
+                    res.sendStatus(404);
+                }
             }
+            res.send(await UserService.welcome(address));
         },
     );
 
