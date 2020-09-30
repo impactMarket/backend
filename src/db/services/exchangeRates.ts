@@ -9,7 +9,6 @@ export default class ExchangeRatesService {
         for (let index = 0; index < previousRates.length; index++) {
             mapRates[previousRates[index].currency] = previousRates[index].rate;
         }
-        console.log(mapRates);
         const cashify = new Cashify({ base: 'EUR', rates: mapRates });
         const rates = {
             "EUR": {

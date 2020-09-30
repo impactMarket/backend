@@ -65,10 +65,12 @@ export function initializeCommunity(sequelize: Sequelize): void {
         },
         language: {
             type: DataTypes.STRING(8),
+            defaultValue: 'en',
             allowNull: false
         },
         currency: {
             type: DataTypes.STRING(4),
+            defaultValue: 'USD',
             allowNull: false
         },
         city: {

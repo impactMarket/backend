@@ -59,7 +59,7 @@ export default class CommunityService {
         coverImage: string,
         txCreationObj: ICommunityVars,
     ): Promise<Community> {
-        return Community.create({
+        return await Community.create({
             requestByAddress,
             name,
             description,
@@ -136,7 +136,7 @@ export default class CommunityService {
 
     public static async getAll(status: string): Promise<ICommunityInfo[]> {
         const result: ICommunityInfo[] = [];
-        const communities = await Community.findAll({ where: { status }, raw: true });
+        const communities = await Community.findAll({ where: { status, visibility: 'public' }, raw: true });
         for (let index = 0; index < communities.length; index++) {
             result.push(await this.getCachedInfoToCommunity(communities[index]));
         }
