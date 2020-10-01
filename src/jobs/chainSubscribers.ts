@@ -5,6 +5,7 @@ import ERC20ABI from '../contracts/ERC20ABI.json'
 import TransactionsService from '../db/services/transactions';
 import config from '../config';
 import { sendPushNotification } from '../utils';
+import CommunityService from '../db/services/community';
 
 
 interface IFilterCommunityTmpData {
@@ -54,25 +55,25 @@ async function subscribeChainEvents(
     const ifaceImpactMarket = new ethers.utils.Interface(ImpactMarketContractABI);
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
-    const allCommunitiesAddresses = communitiesAddress;
-    provider.on(filter, (log: ethers.providers.Log) => {
+    // const allCommunitiesAddresses = communitiesAddress;
+    provider.on(filter, async (log: ethers.providers.Log) => {
         let parsedLog: ethers.utils.LogDescription | undefined;
         if (log.address === config.impactMarketContractAddress) {
             parsedLog = ifaceImpactMarket.parseLog(log);
             if (parsedLog.name === 'CommunityAdded') {
                 // it's necessary to get ManagerAdded here!
                 updateCommunityCache(log.blockNumber - 1, provider, parsedLog.args[0]);
-                allCommunitiesAddresses.push(parsedLog.args[0]);
+                // allCommunitiesAddresses.push(parsedLog.args[0]);
             }
             //
         } else if (log.address === config.cUSDContractAddress) {
             const preParsedLog = ifaceERC20.parseLog(log);
             // only donations
-            if (allCommunitiesAddresses.includes(preParsedLog.args[1])) {
+            if ((await CommunityService.getAllAddresses()).includes(preParsedLog.args[1])) {
                 parsedLog = preParsedLog;
             }
             //
-        } else if (allCommunitiesAddresses.includes(log.address)) {
+        } else if ((await CommunityService.getAllAddresses()).includes(log.address)) {
             parsedLog = ifaceCommunity.parseLog(log);
             if (parsedLog.name === 'BeneficiaryAdded') {
                 sendPushNotification(parsedLog.args[0], 'Welcome', 'You\'ve been added as a beneficiary!', { action: "beneficiary-added" });

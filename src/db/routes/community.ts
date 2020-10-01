@@ -67,6 +67,8 @@ export default (app: Router): void => {
                 },
                 email: Joi.string().required(),
                 coverImage: Joi.string().required(),
+                txReceipt: Joi.object().required(),
+                txCreationObj: Joi.object().required(),
             }),
         }),
         async (req: Request, res: Response) => {
@@ -82,6 +84,8 @@ export default (app: Router): void => {
                 gps,
                 email,
                 coverImage,
+                txReceipt,
+                txCreationObj,
             } = req.body;
             let returningStatus = 201;
             try {
@@ -97,6 +101,8 @@ export default (app: Router): void => {
                     gps,
                     email,
                     coverImage,
+                    txReceipt,
+                    txCreationObj,
                 );
             } catch (e) {
                 Logger.error(e);

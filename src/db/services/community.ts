@@ -2,6 +2,7 @@ import { Community } from '../models/community';
 import { ethers } from 'ethers';
 import config from '../../config';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json'
+import CommunityContractABI from '../../contracts/CommunityABI.json'
 import TransactionsService from './transactions';
 import { ICommunityInfo, ICommunityVars } from '../../types';
 import { Op } from 'sequelize';
@@ -25,8 +26,10 @@ export default class CommunityService {
         },
         email: string,
         coverImage: string,
+        txReceipt: any,
+        txCreationObj: any,
     ): Promise<Community> {
-        return await Community.create({
+        const newCommunity = await Community.create({
             requestByAddress,
             name,
             contractAddress,
@@ -40,7 +43,25 @@ export default class CommunityService {
             visibility: 'private',
             coverImage,
             status: 'valid',
+            txCreationObj,
         });
+        // add tx manager
+        const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
+        const eventsCoomunity: ethers.utils.LogDescription[] = [];
+        for (let index = 0; index < txReceipt.logs.length; index++) {
+            try {
+                const parsedLog = ifaceCommunity.parseLog(txReceipt.logs[index]);
+                eventsCoomunity.push(parsedLog);
+            } catch (e) { }
+        }
+        const index = eventsCoomunity.findIndex(
+            (event) => event !== null && event.name === 'ManagerAdded'
+        );
+        if (index !== -1) {
+            const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
+            await TransactionsService.add(provider, txReceipt.logs[index], eventsCoomunity[index]);
+        }
+        return newCommunity;
     }
 
     public static async request(
@@ -143,6 +164,11 @@ export default class CommunityService {
         return result;
     }
 
+    public static async getAllAddresses(): Promise<string[]> {
+        const result = await Community.findAll({ attributes: ['contractAddress'], raw: true });
+        return result.map((c) => c.contractAddress);
+    }
+
     public static async findByFirstManager(requestByAddress: string): Promise<Community | null> {
         return Community.findOne({ where: { requestByAddress } });
     }
@@ -178,7 +204,12 @@ export default class CommunityService {
         const beneficiaries = await TransactionsService.getBeneficiariesInCommunity(community.contractAddress);
         const managers = await TransactionsService.getCommunityManagersInCommunity(community.contractAddress);
         const backers = await TransactionsService.getBackersInCommunity(community.contractAddress);
-        const vars = await TransactionsService.getCommunityVars(community.contractAddress);
+        let vars;
+        if (community.visibility === 'public') {
+            vars = await TransactionsService.getCommunityVars(community.contractAddress);
+        } else {
+            vars = community.txCreationObj;
+        }
 
         const totalClaimed = await TransactionsService.getCommunityClaimedAmount(community.contractAddress);
         const totalRaised = await TransactionsService.getCommunityRaisedAmount(community.contractAddress);
