@@ -26,10 +26,10 @@ export default (app: Router): void => {
         s3.upload(params, (err, data) => {
             if (err) {
                 Logger.error('Error occured while trying to upload to S3 bucket', err);
-                res.send(400);
+                res.sendStatus(400);
             }
             if (data) {
-                res.send(200);
+                res.sendStatus(200);
             }
         });
     });
