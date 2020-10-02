@@ -11,11 +11,29 @@ import { CronJob } from 'cron';
 import { calcuateSSI } from '../jobs/calculateSSI';
 import { prepareAgenda } from '../jobs/agenda';
 import { updateExchangeRates } from '../jobs/updateExchangeRates';
+import Logger from './logger';
 
 
 export default async (): Promise<void> => {
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     cron(provider);
+    let waitingForResponseAfterCrash = false;
+    process.on('unhandledRejection', (error: any) => {
+        // close all RPC connections and restart when available again
+        if (error.message.indexOf('eth_blockNumber') !== -1 && error.message.indexOf('code=SERVER_ERROR') !== -1 && !waitingForResponseAfterCrash) {
+            provider.removeAllListeners();
+            waitingForResponseAfterCrash = true;
+            const intervalObj = setInterval(() => {
+                Logger.error('Checking if RPC is available again');
+                provider.getBlockNumber().then(() => {
+                    Logger.error('Reconnecting...');
+                    subscribers(provider);
+                    clearInterval(intervalObj);
+                    setTimeout(() => waitingForResponseAfterCrash = false, 2000);
+                })
+            }, 2000);
+        }
+    });
     await Promise.all([
         prepareAgenda(),
         subscribers(provider)
