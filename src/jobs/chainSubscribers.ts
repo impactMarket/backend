@@ -6,6 +6,7 @@ import TransactionsService from '../db/services/transactions';
 import config from '../config';
 import { sendPushNotification } from '../utils';
 import CommunityService from '../db/services/community';
+import Logger from '../loaders/logger';
 
 
 interface IFilterCommunityTmpData {
@@ -17,7 +18,7 @@ function catchHandlerTransactionsService(error: any) {
     // that's fine if it is a SequelizeUniqueConstraintError
     // it's already there 👌
     if (error.name !== 'SequelizeUniqueConstraintError') {
-        console.log(typeof error, error, ':18');
+        Logger.warning(typeof error, error, ':18');
     }
 }
 

@@ -4,10 +4,11 @@ import TransactionsService from "../db/services/transactions";
 import { ethers } from "ethers";
 import SSIService from "../db/services/ssi";
 import { median, mean } from 'mathjs';
+import Logger from "../loaders/logger";
 
 
 async function calcuateSSI(provider: ethers.providers.JsonRpcProvider): Promise<void> {
-    console.log('Calculating SSI...');
+    Logger.info('Calculating SSI...');
     const communities = await CommunityService.getAll('valid');
     const calculateNewSSI = async (community: ICommunityInfo) => {
         const beneficiariesTimeToWait: number[] = [];
@@ -28,7 +29,7 @@ async function calcuateSSI(provider: ethers.providers.JsonRpcProvider): Promise<
             beneficiariesTimeWaited.push(timeWaited);
         }
         // calculate result
-        console.log(beneficiariesTimeToWait, beneficiariesTimeWaited);
+        Logger.verbose({ beneficiariesTimeToWait, beneficiariesTimeWaited });
         if (beneficiariesTimeToWait.length > 1 && beneficiariesTimeWaited.length > 1) {
             const meanTimeToWait = mean(beneficiariesTimeToWait);
             const madTimeWaited = median(beneficiariesTimeWaited);
