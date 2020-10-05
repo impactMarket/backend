@@ -2,10 +2,10 @@ import { ethers } from 'ethers';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 import CommunityContractABI from '../contracts/CommunityABI.json'
 import ERC20ABI from '../contracts/ERC20ABI.json'
-import TransactionsService from '../db/services/transactions';
+import TransactionsService from '../services/transactions';
 import config from '../config';
 import { sendPushNotification } from '../utils';
-import CommunityService from '../db/services/community';
+import CommunityService from '../services/community';
 import Logger from '../loaders/logger';
 
 

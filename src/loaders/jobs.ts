@@ -6,7 +6,7 @@ import {
 } from '../jobs/chainSubscribers';
 import config from '../config';
 import { ethers } from 'ethers';
-import CommunityService from '../db/services/community';
+import CommunityService from '../services/community';
 import { CronJob } from 'cron';
 import { calcuateSSI } from '../jobs/calculateSSI';
 import { prepareAgenda } from '../jobs/agenda';

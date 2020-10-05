@@ -1,4 +1,4 @@
-import { ClaimLocation } from '../models/claimLocation';
+import { ClaimLocation } from '../db/models/claimLocation';
 
 
 export default class ClaimLocationService {

@@ -1,8 +1,8 @@
 import { ICommunityInfo } from "../types";
-import CommunityService from "../db/services/community";
-import TransactionsService from "../db/services/transactions";
+import CommunityService from "../services/community";
+import TransactionsService from "../services/transactions";
 import { ethers } from "ethers";
-import SSIService from "../db/services/ssi";
+import SSIService from "../services/ssi";
 import { median, mean } from 'mathjs';
 import Logger from "../loaders/logger";
 

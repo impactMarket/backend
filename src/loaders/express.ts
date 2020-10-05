@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
-import routes from '../db/routes';
+import routes from '../routes';
 import config from '../config';
 import { LoggerStream } from '../loaders/logger';
 import * as Sentry from "@sentry/node";

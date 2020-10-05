@@ -1,13 +1,13 @@
-import { Community } from '../models/community';
+import { Community } from '../db/models/community';
 import { ethers } from 'ethers';
-import config from '../../config';
-import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json'
-import CommunityContractABI from '../../contracts/CommunityABI.json'
+import config from '../config';
+import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
+import CommunityContractABI from '../contracts/CommunityABI.json'
 import TransactionsService from './transactions';
-import { ICommunityInfo, ICommunityVars } from '../../types';
+import { ICommunityInfo, ICommunityVars } from '../types';
 import { Op } from 'sequelize';
 import SSIService from './ssi';
-import { sendPushNotification } from '../../utils';
+import { sendPushNotification } from '../utils';
 
 
 export default class CommunityService {

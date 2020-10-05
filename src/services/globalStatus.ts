@@ -1,4 +1,4 @@
-import { IGlobalOutflowStatus, IGlobalStatus } from "../../types";
+import { IGlobalOutflowStatus, IGlobalStatus } from "../types";
 import TransactionsService from "./transactions";
 
 

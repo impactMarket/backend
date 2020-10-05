@@ -1,9 +1,9 @@
 import { Router, Request, Response } from 'express';
 import CommunityService from '../services/community';
 import { celebrate, Joi } from 'celebrate';
-import { authenticateToken } from '../../middlewares';
+import { authenticateToken } from '../middlewares';
 import TransactionsService from '../services/transactions';
-import Logger from '../../loaders/logger';
+import Logger from '../loaders/logger';
 
 
 const route = Router();

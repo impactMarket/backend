@@ -1,4 +1,4 @@
-import { Agenda } from '../models/agenda';
+import { Agenda } from '../db/models/agenda';
 
 
 export default class AgendaService {

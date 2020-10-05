@@ -1,9 +1,9 @@
 import { Router, Request, Response } from 'express';
 import TransactionsService from '../services/transactions';
 import CommunityService from '../services/community';
-import { Transactions } from '../models/transactions';
-import { Community } from '../models/community';
-import { ICommunityInfo } from '../../types';
+import { Transactions } from '../db/models/transactions';
+import { Community } from '../db/models/community';
+import { ICommunityInfo } from '../types';
 // import middlewares from '../middlewares';
 const route = Router();
 

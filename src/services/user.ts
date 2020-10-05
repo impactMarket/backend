@@ -1,9 +1,9 @@
-import { User } from '../models/user';
-import { generateAccessToken } from '../../middlewares';
-import { ICommunityInfo, IUserWelcomeAuth, IUserWelcome } from '../../types';
+import { User } from '../db/models/user';
+import { generateAccessToken } from '../middlewares';
+import { ICommunityInfo, IUserWelcomeAuth, IUserWelcome } from '../types';
 import ExchangeRatesService from './exchangeRates';
 import TransactionsService from './transactions';
-import { Transactions } from '../models/transactions';
+import { Transactions } from '../db/models/transactions';
 import CommunityService from './community';
 
 

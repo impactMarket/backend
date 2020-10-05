@@ -1,5 +1,5 @@
 import { Cashify } from 'cashify';
-import { ExchangeRates } from '../models/exchangeRates';
+import { ExchangeRates } from '../db/models/exchangeRates';
 
 export default class ExchangeRatesService {
 

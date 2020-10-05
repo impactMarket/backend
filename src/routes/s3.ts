@@ -1,8 +1,8 @@
 import {
     Router,
 } from 'express';
-import { upload } from '../../storage/s3';
-import { authenticateToken } from '../../middlewares';
+import { upload } from '../storage/s3';
+import { authenticateToken } from '../middlewares';
 
 const route = Router();
 

@@ -1,4 +1,4 @@
-import { SSI } from '../models/ssi';
+import { SSI } from '../db/models/ssi';
 
 
 export default class SSIService {

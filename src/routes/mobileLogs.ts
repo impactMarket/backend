@@ -2,7 +2,7 @@ import {
     Router,
 } from 'express';
 import aws from 'aws-sdk';
-import Logger from '../../loaders/logger';
+import Logger from '../loaders/logger';
 
 const route = Router();
 

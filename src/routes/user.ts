@@ -8,7 +8,7 @@ import {
     celebrate,
     Joi
 } from 'celebrate';
-import { authenticateToken } from '../../middlewares';
+import { authenticateToken } from '../middlewares';
 
 
 const route = Router();

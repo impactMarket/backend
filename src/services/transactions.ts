@@ -1,5 +1,5 @@
 import { SHA3 } from 'sha3';
-import { Transactions } from '../models/transactions';
+import { Transactions } from '../db/models/transactions';
 import BigNumber from 'bignumber.js';
 import {
     ICommunityVars,
@@ -7,19 +7,19 @@ import {
     IPaymentsTxAPI,
     IAddressAndName,
     ICommunityInfoBeneficiary, IUserTxAPI, IGlobalStatus, IGlobalOutflowStatus
-} from '../../types';
-import config from '../../config';
+} from '../types';
+import config from '../config';
 import axios from 'axios';
 import { Op, fn, literal } from 'sequelize';
 import CommunityService from './community';
 import { ethers } from 'ethers';
 import UserService from './user';
-import { groupBy } from '../../utils';
+import { groupBy } from '../utils';
 import { LogDescription } from 'ethers/lib/utils';
 import moment from 'moment';
 import _ from 'lodash';
 import ExperimentalService from './experimental';
-import { Community } from '../models/community';
+import { Community } from '../db/models/community';
 
 
 interface ICommunityAddedEventValues {

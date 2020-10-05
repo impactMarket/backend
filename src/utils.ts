@@ -1,5 +1,5 @@
 import axios from 'axios';
-import UserService from "./db/services/user";
+import UserService from "./services/user";
 import Logger from './loaders/logger';
 
 // Accepts the array and key
@@ -43,3 +43,4 @@ export async function sendPushNotification(userAddress: string, title: string, b
     }
     return false;
 }
+
