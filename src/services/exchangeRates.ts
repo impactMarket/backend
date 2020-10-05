@@ -31,6 +31,10 @@ export default class ExchangeRatesService {
                 name: 'Escudo Cabo Verde',
                 rate: cashify.convert(1, { from: 'USD', to: 'CVE' }),
             },
+            "NGN": {
+                name: 'Nigerian Naira',
+                rate: cashify.convert(1, { from: 'USD', to: 'NGN' }),
+            },
         };
         return rates;
     }
