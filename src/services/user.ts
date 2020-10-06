@@ -24,8 +24,8 @@ export default class UserService {
             });
         } else {
             await User.update(
-                { authToken: token },
-                { returning: true, where: { address } },
+                { pushNotificationsToken },
+                { where: { address } },
             );
         }
         const welcomeUser = await UserService.welcome(address);
