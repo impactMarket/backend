@@ -28,7 +28,7 @@ export function initializeUser(sequelize: Sequelize): void {
             unique: true,
         },
         username: {
-            type: DataTypes.STRING(64),
+            type: DataTypes.STRING(128),
         },
         avatar: {
             type: DataTypes.STRING(128),

@@ -12,7 +12,7 @@ module.exports = {
                 allowNull: false,
             },
             username: {
-                type: Sequelize.STRING(64),
+                type: Sequelize.STRING(128),
             },
             avatar: {
                 type: Sequelize.STRING(128),
