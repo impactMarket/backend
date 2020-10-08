@@ -609,7 +609,11 @@ export default class TransactionsService {
                 event: 'BeneficiaryClaim',
                 contractAddress: { [Op.notIn]: privateCommunities },
             },
-            attributes: ['txAt', 'values'],
+            attributes: [
+                [Sequelize.fn('DATE', Sequelize.col('txAt')), 'by_day'],
+                'values'
+            ],
+            order: [[Sequelize.fn('DATE', Sequelize.col('txAt')), 'ASC']],
             raw: true,
         })
         // select count(distinct(values->>'_account')) as total, date("txAt") as by_day from public.transactions where event = 'BeneficiaryAdded' group by date("txAt") order by date("txAt") ASC;
@@ -623,21 +627,13 @@ export default class TransactionsService {
                 contractAddress: { [Op.notIn]: privateCommunities },
             },
             group: ['values'],
+            // order: [['by_day', 'ASC']],
             raw: true,
         });
-        const communities = await Transactions.findAll({
-            where: {
-                event: 'CommunityAdded',
-                contractAddress: { [Op.notIn]: privateCommunities },
-            },
-            attributes: ['txAt'],
-            raw: true,
-        });
-        const dayNumber = (item: Transactions) => moment((item as any).by_day, 'YYYY-MM-DD').format('DD-MMM');
+        const dayNumber = (item: { by_day: string }) => new Date(item.by_day).getTime();
         return {
-            claimed: _.groupBy(distributed, dayNumber),
+            claims: _.groupBy(distributed, dayNumber),
             beneficiaries: _.groupBy(beneficiaries, dayNumber),
-            communities: _.groupBy(communities, dayNumber),
         }
     }
 

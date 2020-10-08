@@ -115,8 +115,7 @@ export interface IGlobalStatus {
 }
 
 export interface IGlobalOutflowStatus {
-    claimed: any,
-    communities: any,
+    claims: any,
     beneficiaries: any,
 }
 
