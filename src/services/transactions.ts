@@ -10,7 +10,7 @@ import {
 } from '../types';
 import config from '../config';
 import axios from 'axios';
-import { Op, fn, literal } from 'sequelize';
+import { Op, fn, literal, Sequelize } from 'sequelize';
 import CommunityService from './community';
 import { ethers } from 'ethers';
 import UserService from './user';
@@ -562,7 +562,9 @@ export default class TransactionsService {
         const raised = await Transactions.findAll({
             where: {
                 event: 'Transfer',
-                contractAddress: { [Op.notIn]: privateCommunities },
+                values: {
+                    to: { [Op.notIn]: privateCommunities }
+                },
             },
             raw: true,
         })
@@ -575,24 +577,23 @@ export default class TransactionsService {
             raw: true,
         })
         const totalDistributed = distributed.map((claim) => claim.values._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
-        const beneficiaries = Array.from(new Set((await Transactions.findAll({
+        // select distinct(values->>'_account') as account, max("txAt") as by_day from public.transactions where event = 'BeneficiaryAdded' group by (values->>'_account');
+        const beneficiaries = await Transactions.findAll({
+            attributes: [
+                [Sequelize.fn('DISTINCT', Sequelize.json('values._account')), 'account'],
+                [Sequelize.fn('MAX', Sequelize.col('txAt')), 'by_day'],
+            ],
             where: {
                 event: 'BeneficiaryAdded',
                 contractAddress: { [Op.notIn]: privateCommunities },
             },
+            group: ['values'],
             raw: true,
-        })).map((b) => b.values._account)));
-        const nonBeneficiaries = Array.from(new Set((await Transactions.findAll({
-            where: {
-                event: 'BeneficiaryRemoved',
-                contractAddress: { [Op.notIn]: privateCommunities },
-            },
-            raw: true,
-        })).map((b) => b.values._account)));
+        });
         return {
             totalRaised: totalRaised.toString(),
             totalDistributed: totalDistributed.toString(),
-            totalBeneficiaries: (beneficiaries.length - nonBeneficiaries.length).toString(),
+            totalBeneficiaries: beneficiaries.length.toString(),
             totalClaims: distributed.length.toString(),
         }
     }
@@ -611,20 +612,17 @@ export default class TransactionsService {
             attributes: ['txAt', 'values'],
             raw: true,
         })
+        // select count(distinct(values->>'_account')) as total, date("txAt") as by_day from public.transactions where event = 'BeneficiaryAdded' group by date("txAt") order by date("txAt") ASC;
         const beneficiaries = await Transactions.findAll({
+            attributes: [
+                [Sequelize.fn('DISTINCT', Sequelize.json('values._account')), 'account'],
+                [Sequelize.fn('DATE', Sequelize.fn('MAX', Sequelize.col('txAt'))), 'by_day'],
+            ],
             where: {
                 event: 'BeneficiaryAdded',
                 contractAddress: { [Op.notIn]: privateCommunities },
             },
-            attributes: ['txAt', 'values'],
-            raw: true,
-        });
-        const nonBeneficiaries = await Transactions.findAll({
-            where: {
-                event: 'BeneficiaryRemoved',
-                contractAddress: { [Op.notIn]: privateCommunities },
-            },
-            attributes: ['txAt', 'values'],
+            group: ['values'],
             raw: true,
         });
         const communities = await Transactions.findAll({
@@ -635,11 +633,10 @@ export default class TransactionsService {
             attributes: ['txAt'],
             raw: true,
         });
-        const uniqueBeneficiaries = _.uniqBy(_.concat(beneficiaries, nonBeneficiaries), 'values._account');
-        const dayNumber = (item: Transactions) => moment(item.txAt, 'YYYY-MM-DD').format('DD-MMM');
+        const dayNumber = (item: Transactions) => moment((item as any).by_day, 'YYYY-MM-DD').format('DD-MMM');
         return {
             claimed: _.groupBy(distributed, dayNumber),
-            beneficiaries: _.groupBy(uniqueBeneficiaries, dayNumber),
+            beneficiaries: _.groupBy(beneficiaries, dayNumber),
             communities: _.groupBy(communities, dayNumber),
         }
     }
