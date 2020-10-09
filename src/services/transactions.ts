@@ -578,22 +578,32 @@ export default class TransactionsService {
         })
         const totalDistributed = distributed.map((claim) => claim.values._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
         // select distinct(values->>'_account') as account, max("txAt") as by_day from public.transactions where event = 'BeneficiaryAdded' group by (values->>'_account');
-        const beneficiaries = await Transactions.findAll({
+        // select count(distinct(t."values")) as total from transactions t, community c where c."contractAddress" = t."contractAddress" and t."event" = 'BeneficiaryAdded' and t."values" not in (select t1."values" from transactions t1 where t1."event" = 'BeneficiaryRemoved') and c.visibility = 'public'
+        const notBeneficiary = (await Transactions.findAll({
             attributes: [
                 [Sequelize.fn('DISTINCT', Sequelize.json('values._account')), 'account'],
-                [Sequelize.fn('MAX', Sequelize.col('txAt')), 'by_day'],
+            ],
+            where: {
+                event: 'BeneficiaryRemoved',
+                contractAddress: { [Op.notIn]: privateCommunities },
+            },
+            raw: true,
+        })).map((tx: any) => tx.account);
+        const beneficiaries = ((await Transactions.findAll({
+            attributes: [
+                [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT', Sequelize.json('values._account'))), 'total'],
             ],
             where: {
                 event: 'BeneficiaryAdded',
                 contractAddress: { [Op.notIn]: privateCommunities },
+                values: { _account: { [Op.notIn]: notBeneficiary } },
             },
-            group: ['values'],
             raw: true,
-        });
+        }))[0] as any).total;
         return {
             totalRaised: totalRaised.toString(),
             totalDistributed: totalDistributed.toString(),
-            totalBeneficiaries: beneficiaries.length.toString(),
+            totalBeneficiaries: beneficiaries.toString(),
             totalClaims: distributed.length.toString(),
         }
     }
@@ -613,21 +623,33 @@ export default class TransactionsService {
                 [Sequelize.fn('DATE', Sequelize.col('txAt')), 'by_day'],
                 'values'
             ],
-            order: [[Sequelize.fn('DATE', Sequelize.col('txAt')), 'ASC']],
+            // order: [[Sequelize.fn('DATE', Sequelize.col('txAt')), 'ASC']],
             raw: true,
         })
-        // select count(distinct(values->>'_account')) as total, date("txAt") as by_day from public.transactions where event = 'BeneficiaryAdded' group by date("txAt") order by date("txAt") ASC;
-        const beneficiaries = await Transactions.findAll({
+
+        const notBeneficiary = (await Transactions.findAll({
             attributes: [
                 [Sequelize.fn('DISTINCT', Sequelize.json('values._account')), 'account'],
-                [Sequelize.fn('DATE', Sequelize.fn('MAX', Sequelize.col('txAt'))), 'by_day'],
+            ],
+            where: {
+                event: 'BeneficiaryRemoved',
+                contractAddress: { [Op.notIn]: privateCommunities },
+            },
+            raw: true,
+        })).map((tx: any) => tx.account);
+        // select date_trunc('day', t."createdAt"), count(distinct(t."values")) from transactions t, community c where c."contractAddress" = t."contractAddress" and t."event" = 'BeneficiaryAdded' and t."values" not in (select t1."values" from transactions t1 where t1."event" = 'BeneficiaryRemoved') and c.visibility = 'public' group by 1
+        const beneficiaries = await Transactions.findAll({
+            attributes: [
+                [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'by_day'],
+                [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT', Sequelize.json('values._account'))), 'total']
+                // [Sequelize.fn('DISTINCT', Sequelize.json('values._account')), 'account'],
             ],
             where: {
                 event: 'BeneficiaryAdded',
                 contractAddress: { [Op.notIn]: privateCommunities },
+                values: { _account: { [Op.notIn]: notBeneficiary } },
             },
-            group: ['values'],
-            // order: [['by_day', 'ASC']],
+            group: ['by_day'],
             raw: true,
         });
         const dayNumber = (item: { by_day: string }) => new Date(item.by_day).getTime();
