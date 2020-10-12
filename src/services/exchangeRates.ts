@@ -35,6 +35,10 @@ export default class ExchangeRatesService {
                 name: 'Nigerian Naira',
                 rate: cashify.convert(1, { from: 'USD', to: 'NGN' }),
             },
+            "ARS": {
+                name: 'Peso Argentino',
+                rate: cashify.convert(1, { from: 'USD', to: 'ARS' }),
+            },
         };
         return rates;
     }
