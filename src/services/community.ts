@@ -157,7 +157,7 @@ export default class CommunityService {
 
     public static async getAll(status: string): Promise<ICommunityInfo[]> {
         const result: ICommunityInfo[] = [];
-        const communities = await Community.findAll({ where: { status, visibility: 'public' }, order: [['createdAt', 'DESC']], raw: true });
+        const communities = await Community.findAll({ where: { status, visibility: 'public' }, order: [['createdAt', 'ASC']], raw: true });
         for (let index = 0; index < communities.length; index++) {
             result.push(await this.getCachedInfoToCommunity(communities[index]));
         }

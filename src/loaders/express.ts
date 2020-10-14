@@ -5,7 +5,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import routes from '../routes';
 import config from '../config';
-import { LoggerStream } from '../loaders/logger';
+import Logger, { LoggerStream } from '../loaders/logger';
 import * as Sentry from "@sentry/node";
 
 export default ({ app }: { app: express.Application }): void => {
@@ -51,29 +51,21 @@ export default ({ app }: { app: express.Application }): void => {
     // The error handler must be before any other error middleware and after all controllers
     app.use(Sentry.Handlers.errorHandler());
 
-    /// catch 404 and forward to error handler
+    /// catch 404
     app.use((req, res, next) => {
-        const err = new Error('Not Found');
-        // err['status'] = 404; // TODO: hmm
-        next(err);
+        Logger.info(JSON.stringify(req));
+        res.status(404).send('what???');
     });
 
     /// error handlers
-    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-        /**
-         * Handle 401 thrown by express-jwt library
-         */
+    app.use((err: any, req: Request, res: Response) => {
         if (err.name === 'UnauthorizedError') {
-            return res
+            res
                 .status(err.status)
                 .send({ message: err.message })
                 .end();
         }
-        return next(err);
-    });
-    app.use((err: any, req: Request, res: Response) => {
-        res.status(err.status || 500);
-        res.json({
+        res.status(err.status || 500).json({
             errors: {
                 message: err.message,
             },

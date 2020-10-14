@@ -5,9 +5,7 @@ import { authenticateToken } from '../middlewares';
 import TransactionsService from '../services/transactions';
 import Logger from '../loaders/logger';
 
-
 const route = Router();
-
 
 export default (app: Router): void => {
     app.use('/community', route);
@@ -178,6 +176,7 @@ export default (app: Router): void => {
         celebrate({
             body: Joi.object({
                 publicId: Joi.string().required(),
+                userAddress: Joi.string().allow(''), // TODO: make it required
                 name: Joi.string().required(),
                 description: Joi.string().required(),
                 currency: Joi.string(),
@@ -195,6 +194,7 @@ export default (app: Router): void => {
         async (req: Request, res: Response) => {
             const {
                 publicId,
+                userAddress,
                 name,
                 description,
                 currency,
@@ -208,6 +208,7 @@ export default (app: Router): void => {
             // verify if the current user is manager in this community
             let returningStatus = 404;
             try {
+                // TODO: verify if userAddress is manager of this community
                 // the sender must be a manager
                 const communityToManager = await TransactionsService.findComunityToManager((req as any).user);
                 if (communityToManager !== null) {

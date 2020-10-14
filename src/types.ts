@@ -1,4 +1,11 @@
+import { Request } from "express";
 
+export interface UserInRequest {
+    address: string;
+}
+export interface RequestWithUser extends Request {
+    user: UserInRequest;
+}
 // API to app
 
 export interface ICommunity {
@@ -125,7 +132,7 @@ export enum AgendaAction {
 
 export enum GlobalDataTypeEnum {
     totalRaised = 'totalraised',
-    totalDistributed= 'totaldistributed',
+    totalDistributed = 'totaldistributed',
     totalBeneficiaries = 'totalbeneficiaries',
     totalClaims = 'totalclaims'
 }
