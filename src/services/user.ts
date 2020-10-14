@@ -5,6 +5,7 @@ import ExchangeRatesService from './exchangeRates';
 import TransactionsService from './transactions';
 import { Transactions } from '../db/models/transactions';
 import CommunityService from './community';
+import Logger from '../loaders/logger';
 
 
 export default class UserService {
@@ -13,29 +14,34 @@ export default class UserService {
         language: string,
         pushNotificationsToken: string,
     ): Promise<IUserWelcomeAuth | undefined> {
-        const token = generateAccessToken(address);
-        const user = await User.findOne({ where: { address } });
-        if (user === null) {
-            await User.create({
-                address,
-                avatar: Math.floor(Math.random() * 8) + 1,
-                language,
-                pushNotificationsToken,
-            });
-        } else {
-            await User.update(
-                { pushNotificationsToken },
-                { where: { address } },
-            );
-        }
-        const welcomeUser = await UserService.welcome(address);
-        if (welcomeUser === undefined) {
+        try {
+            const token = generateAccessToken(address);
+            const user = await User.findOne({ where: { address } });
+            if (user === null) {
+                await User.create({
+                    address,
+                    avatar: Math.floor(Math.random() * 8) + 1,
+                    language,
+                    pushNotificationsToken,
+                });
+            } else {
+                await User.update(
+                    { pushNotificationsToken },
+                    { where: { address } },
+                );
+            }
+            const welcomeUser = await UserService.welcome(address);
+            if (welcomeUser === undefined) {
+                return undefined;
+            }
+            return {
+                token,
+                ...welcomeUser
+            };
+        } catch (e) {
+            Logger.warning(address, JSON.stringify(e));
             return undefined;
         }
-        return {
-            token,
-            ...welcomeUser
-        };
     }
 
     public static async welcome(

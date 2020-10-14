@@ -20,7 +20,9 @@ export default async (): Promise<void> => {
     let waitingForResponseAfterCrash = false;
     process.on('unhandledRejection', (error: any) => {
         // close all RPC connections and restart when available again
-        if (error.message.indexOf('eth_blockNumber') !== -1 && error.message.indexOf('code=SERVER_ERROR') !== -1 && !waitingForResponseAfterCrash) {
+        const strError = JSON.stringify(error);
+        Logger.error(strError);
+        if (strError.indexOf('eth_blockNumber') !== -1 && strError.indexOf('SERVER_ERROR') !== -1 && !waitingForResponseAfterCrash) {
             provider.removeAllListeners();
             waitingForResponseAfterCrash = true;
             const intervalObj = setInterval(() => {

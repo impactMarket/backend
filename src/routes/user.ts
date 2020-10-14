@@ -9,6 +9,7 @@ import {
     Joi
 } from 'celebrate';
 import { authenticateToken } from '../middlewares';
+import Logger from '../loaders/logger';
 
 
 const route = Router();
@@ -69,15 +70,21 @@ export default (app: Router): void => {
                 token,
             } = req.body;
             if (token.length > 0) {
-                const isTokenSet = await UserService.setPushNotificationsToken(
-                    address,
-                    token
-                );
-                if (!isTokenSet) {
-                    res.sendStatus(404);
+                try {
+                    await UserService.setPushNotificationsToken(
+                        address,
+                        token
+                    );
+                } catch(e) {
+                    Logger.warning(e);
                 }
             }
-            res.send(await UserService.welcome(address));
+            try {
+                res.send(await UserService.welcome(address));
+            } catch(e) {
+                Logger.warning(e);
+                res.sendStatus(403);
+            }
         },
     );
 

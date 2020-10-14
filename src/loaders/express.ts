@@ -22,9 +22,9 @@ export default ({ app }: { app: express.Application }): void => {
 
     // RequestHandler creates a separate execution context using domains, so that every
     // transaction/span/breadcrumb is attached to its own Hub instance
-    app.use(Sentry.Handlers.requestHandler());
+    // app.use(Sentry.Handlers.requestHandler());
     // TracingHandler creates a trace for every incoming request
-    app.use(Sentry.Handlers.tracingHandler());
+    // app.use(Sentry.Handlers.tracingHandler());
 
     // Useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
     // It shows the real origin IP in the heroku or Cloudwatch logs
