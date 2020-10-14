@@ -1,4 +1,4 @@
-import { IGlobalOutflowStatus, IGlobalStatus } from "../types";
+import { IGlobalInflowStatus, IGlobalOutflowStatus, IGlobalStatus } from "../types";
 import TransactionsService from "./transactions";
 
 
@@ -8,5 +8,8 @@ export default class GlobalStatusService {
     }
     public static async outflow(): Promise<IGlobalOutflowStatus> {
         return await TransactionsService.getOutflowStatus();
+    }
+    public static async inflow(): Promise<IGlobalInflowStatus> {
+        return await TransactionsService.getInflowStatus();
     }
 }

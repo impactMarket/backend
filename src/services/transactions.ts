@@ -6,7 +6,7 @@ import {
     IRecentTxAPI,
     IPaymentsTxAPI,
     IAddressAndName,
-    ICommunityInfoBeneficiary, IUserTxAPI, IGlobalStatus, IGlobalOutflowStatus
+    ICommunityInfoBeneficiary, IUserTxAPI, IGlobalStatus, IGlobalOutflowStatus, IGlobalInflowStatus
 } from '../types';
 import config from '../config';
 import axios from 'axios';
@@ -656,6 +656,31 @@ export default class TransactionsService {
         return {
             claims: _.groupBy(distributed, dayNumber),
             beneficiaries: _.groupBy(beneficiaries, dayNumber),
+        }
+    }
+
+    public static async getInflowStatus(): Promise<IGlobalInflowStatus> {
+        const publicCommunities: string[] = (await Community.findAll({
+            attributes: ['contractAddress'],
+            where: { visibility: 'public' }
+        })).map((c) => c.contractAddress);
+
+        const raised = await Transactions.findAll({
+            where: {
+                event: 'Transfer',
+                values: { to: { [Op.in]: publicCommunities } },
+            },
+            attributes: [
+                [Sequelize.fn('DATE', Sequelize.col('txAt')), 'by_day'],
+                'values'
+            ],
+            raw: true,
+        });
+
+        const dayNumber = (item: { by_day: string }) => new Date(item.by_day).getTime();
+        return {
+            raises: _.groupBy(raised, dayNumber),
+            rate: {}
         }
     }
 

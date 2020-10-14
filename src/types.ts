@@ -122,8 +122,13 @@ export interface IGlobalStatus {
 }
 
 export interface IGlobalOutflowStatus {
-    claims: any,
-    beneficiaries: any,
+    claims: any;
+    beneficiaries: any;
+}
+
+export interface IGlobalInflowStatus {
+    raises: any;
+    rate: any;
 }
 
 export enum AgendaAction {
