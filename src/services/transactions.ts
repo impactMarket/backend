@@ -200,12 +200,13 @@ export default class TransactionsService {
                         'BeneficiaryRemoved',
                     ]
                 },
-            }
+            },
+            order: [['txAt', 'DESC']]
         });
         const beneficiaries = dbRequestResult.map((beneficiary) => ({
             account: beneficiary.values._account,
             event: beneficiary.event,
-            timestamp: beneficiary.createdAt.getTime(),
+            timestamp: beneficiary.txAt.getTime(),
         }));
         // group
         const result = { added: [], removed: [] } as { added: ICommunityInfoBeneficiary[], removed: ICommunityInfoBeneficiary[] };
@@ -216,11 +217,13 @@ export default class TransactionsService {
             if (event.event === 'BeneficiaryAdded') {
                 result.added.push({
                     ...this.addressToAddressAndName(event.account, registry),
+                    timestamp: event.timestamp,
                     claimed: claimed.get(event.account)!,
                 });
             } else {
                 result.removed.push({
                     ...this.addressToAddressAndName(event.account, registry),
+                    timestamp: event.timestamp,
                     claimed: claimed.get(event.account)!,
                 });
             }
