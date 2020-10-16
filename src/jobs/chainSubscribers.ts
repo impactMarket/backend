@@ -56,28 +56,44 @@ async function subscribeChainEvents(
     const ifaceImpactMarket = new ethers.utils.Interface(ImpactMarketContractABI);
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
-    // const allCommunitiesAddresses = communitiesAddress;
+    const allCommunitiesAddresses = communitiesAddress;
     provider.on(filter, async (log: ethers.providers.Log) => {
         let parsedLog: ethers.utils.LogDescription | undefined;
         if (log.address === config.impactMarketContractAddress) {
             parsedLog = ifaceImpactMarket.parseLog(log);
             if (parsedLog.name === 'CommunityAdded') {
                 // it's necessary to get ManagerAdded here!
+                // TODO: is this necessary here?
                 updateCommunityCache(log.blockNumber - 1, provider, parsedLog.args[0]);
-                // allCommunitiesAddresses.push(parsedLog.args[0]);
+                allCommunitiesAddresses.push(parsedLog.args[0]);
             }
             //
         } else if (log.address === config.cUSDContractAddress) {
             const preParsedLog = ifaceERC20.parseLog(log);
             // only donations
-            if ((await CommunityService.getAllAddresses()).includes(preParsedLog.args[1])) {
+            if (allCommunitiesAddresses.includes(preParsedLog.args[1])) {
                 parsedLog = preParsedLog;
             }
             //
-        } else if ((await CommunityService.getAllAddresses()).includes(log.address)) {
+        } else if (allCommunitiesAddresses.includes(log.address)) {
             parsedLog = ifaceCommunity.parseLog(log);
             if (parsedLog.name === 'BeneficiaryAdded') {
                 sendPushNotification(parsedLog.args[0], 'Welcome', 'You\'ve been added as a beneficiary!', { action: "beneficiary-added" });
+            }
+        } else {
+            try {
+                parsedLog = ifaceCommunity.parseLog(log);
+                if (parsedLog.name === 'ManagerAdded') {
+                    if ((await CommunityService.getAllAddresses()).includes(log.address) && !allCommunitiesAddresses.includes(log.address)) {
+                        // new private community (are events from public one getting here?)
+                        allCommunitiesAddresses.push(parsedLog.args[0]);
+                    }
+                }
+            } catch(e) {
+                // as this else catch events from anywhere, it might catch unwanted events
+                if (e.reason !== 'no matching event') {
+                    Logger.error(e);
+                }
             }
         }
         if (parsedLog !== undefined) {
