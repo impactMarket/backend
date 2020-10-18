@@ -94,7 +94,7 @@ export default (app: Router): void => {
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
-                username: Joi.string().required(),
+                username: Joi.string().required().allow(''),
             }),
         }),
         async (req: Request, res: Response) => {

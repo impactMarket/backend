@@ -53,7 +53,6 @@ export default ({ app }: { app: express.Application }): void => {
 
     /// catch 404
     app.use((req, res, next) => {
-        Logger.info(JSON.stringify(req));
         res.status(404).send('what???');
     });
 

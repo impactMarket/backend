@@ -13,14 +13,14 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null) {
-        Logger.debug(JSON.stringify({ body: req.body, msg: 'User auth token is not valid!' }));
+        Logger.debug('User auth token is not valid!');
         res.sendStatus(401); // if there isn't any token
         return;
     }
 
     jwt.verify(token, config.jwtSecret, (err, _user) => {
         if (err) {
-            Logger.debug(err);
+            Logger.debug(err.message);
             res.sendStatus(403);
             return;
         }

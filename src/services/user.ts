@@ -39,7 +39,7 @@ export default class UserService {
                 ...welcomeUser
             };
         } catch (e) {
-            Logger.warning(address, JSON.stringify(e));
+            Logger.warning(address, e.message);
             return undefined;
         }
     }
