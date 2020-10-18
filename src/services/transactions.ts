@@ -526,7 +526,7 @@ export default class TransactionsService {
             where: { visibility: 'private' }
         })).map((c) => c.contractAddress);
         const userEvents = await Transactions.findAll({
-            attributes: ['event'],
+            // attributes: ['event'],
             where: {
                 event: {
                     [Op.or]: [
