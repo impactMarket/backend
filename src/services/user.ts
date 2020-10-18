@@ -52,6 +52,8 @@ export default class UserService {
             return undefined;
         }
         let community: Transactions | undefined | null;
+        let communityManager: Transactions | undefined | null;
+        let communityPrivate: Transactions | undefined | null;
         let communityInfo: ICommunityInfo | null;
         let isBeneficiary = false;
         let isManager = false;
@@ -59,14 +61,14 @@ export default class UserService {
         if (community !== undefined) {
             isBeneficiary = true;
         }
-        community = await TransactionsService.findComunityToManager(address);
-        if (community === null) {
+        communityManager = await TransactionsService.findComunityToManager(address);
+        if (communityManager === null) {
             // is there any change this guy is in a private community?
-            community = await TransactionsService.findUserPrivateCommunity(address);
-            if (community === null) {
-                community = undefined;
+            communityPrivate = await TransactionsService.findUserPrivateCommunity(address);
+            if (communityPrivate === null) {
+                communityPrivate = undefined;
             } else {
-                if (community.event === 'ManagerAdded') {
+                if (communityPrivate.event === 'ManagerAdded') {
                     isManager = true;
                 } else {
                     isBeneficiary = true;
@@ -77,11 +79,15 @@ export default class UserService {
         }
         if (community !== undefined) {
             communityInfo = await CommunityService.findByContractAddress(community.contractAddress);
+        } else if (communityManager !== undefined) {
+            communityInfo = await CommunityService.findByContractAddress(communityManager.contractAddress);
+        } else if (communityPrivate !== undefined) {
+            communityInfo = await CommunityService.findByContractAddress(communityPrivate.contractAddress);
         }
         return {
             user: user as any,
             exchangeRates: await ExchangeRatesService.get(),
-            community: community ? communityInfo! : undefined,
+            community: (community  || communityManager || communityPrivate) ? communityInfo! : undefined,
             isBeneficiary,
             isManager,
         };
