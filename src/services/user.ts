@@ -79,9 +79,9 @@ export default class UserService {
         }
         if (community !== undefined) {
             communityInfo = await CommunityService.findByContractAddress(community.contractAddress);
-        } else if (communityManager !== undefined) {
+        } else if (communityManager !== null && communityManager !== undefined) {
             communityInfo = await CommunityService.findByContractAddress(communityManager.contractAddress);
-        } else if (communityPrivate !== undefined) {
+        } else if (communityPrivate !== null && communityPrivate !== undefined) {
             communityInfo = await CommunityService.findByContractAddress(communityPrivate.contractAddress);
         }
         return {
