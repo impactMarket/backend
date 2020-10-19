@@ -8,6 +8,7 @@ import exchange from './exchangeRates';
 import experimental from './experimental';
 import globalStatus from './globalStatus';
 import mobileLogs from './mobileLogs';
+import mobile from './mobile';
 
 
 export default (): Router => {
@@ -21,6 +22,7 @@ export default (): Router => {
     experimental(app);
     globalStatus(app);
     mobileLogs(app);
+    mobile(app);
 
     return app;
 }
