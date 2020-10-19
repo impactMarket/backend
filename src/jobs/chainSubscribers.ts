@@ -78,7 +78,14 @@ async function subscribeChainEvents(
         } else if (allCommunitiesAddresses.includes(log.address)) {
             parsedLog = ifaceCommunity.parseLog(log);
             if (parsedLog.name === 'BeneficiaryAdded') {
-                sendPushNotification(parsedLog.args[0], 'Welcome', 'You\'ve been added as a beneficiary!', { action: "beneficiary-added" });
+                sendPushNotification(
+                    parsedLog.args[0],
+                    'Welcome',
+                    'You\'ve been added as a beneficiary!',
+                    {
+                        action: "beneficiary-added",
+                        communityAddress: log.address,
+                    });
             }
         } else {
             try {
@@ -89,7 +96,7 @@ async function subscribeChainEvents(
                         allCommunitiesAddresses.push(parsedLog.args[0]);
                     }
                 }
-            } catch(e) {
+            } catch (e) {
                 // as this else catch events from anywhere, it might catch unwanted events
                 if (e.reason !== 'no matching event') {
                     Logger.error(e);
