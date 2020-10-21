@@ -6,7 +6,7 @@ import Logger from '../loaders/logger';
 async function updateExchangeRates(): Promise<void> {
     Logger.info('Updating exchange rates...');
     const query = await axios.get(
-        `http://data.fixer.io/api/latest?access_key=${config.fixerApiKey}`
+        config.currenciesApiBaseUrl + config.currenciesApiKey
     );
     const latestRates = query.data.rates;
     for (const currency in latestRates) {

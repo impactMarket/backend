@@ -1,4 +1,3 @@
-import { Cashify } from 'cashify';
 import { ExchangeRates } from '../db/models/exchangeRates';
 
 export default class ExchangeRatesService {
@@ -9,11 +8,10 @@ export default class ExchangeRatesService {
         for (let index = 0; index < previousRates.length; index++) {
             mapRates[previousRates[index].currency] = previousRates[index].rate;
         }
-        const cashify = new Cashify({ base: 'EUR', rates: mapRates });
         const rates = {
             "EUR": {
                 name: 'Euro',
-                rate: cashify.convert(1, { from: 'USD', to: 'EUR' })
+                rate: mapRates['EUR'],
             },
             "USD": {
                 name: 'American Dollar',
@@ -21,23 +19,27 @@ export default class ExchangeRatesService {
             },
             "BRL": {
                 name: 'Real Brasileiro',
-                rate: cashify.convert(1, { from: 'USD', to: 'BRL' }),
+                rate: mapRates['BRL'],
             },
             "GHS": {
                 name: 'Ghanaian Cedi',
-                rate: cashify.convert(1, { from: 'USD', to: 'GHS' }),
+                rate: mapRates['GHS'],
             },
             "CVE": {
                 name: 'Escudo Cabo Verde',
-                rate: cashify.convert(1, { from: 'USD', to: 'CVE' }),
+                rate: mapRates['CVE'],
             },
             "NGN": {
                 name: 'Nigerian Naira',
-                rate: cashify.convert(1, { from: 'USD', to: 'NGN' }),
+                rate: mapRates['NGN'],
             },
             "ARS": {
                 name: 'Peso Argentino',
-                rate: cashify.convert(1, { from: 'USD', to: 'ARS' }),
+                rate: mapRates['ARS'],
+            },
+            "VES": {
+                name: 'Bolívar Venezuelano',
+                rate: mapRates['VES'],
             },
         };
         return rates;

@@ -73,5 +73,10 @@ export default {
     /**
      * Fixer API to get currency rates.
      */
-    fixerApiKey: process.env.FIXER_API_KEY,
+    currenciesApiBaseUrl: process.env.CURRENCIES_API_BASE_URL!,
+
+    /**
+     * Fixer API to get currency rates.
+     */
+    currenciesApiKey: process.env.CURRENCIES_API_KEY!,
 };

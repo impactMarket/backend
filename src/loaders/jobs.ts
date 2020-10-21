@@ -69,7 +69,7 @@ function cron(provider: ethers.providers.JsonRpcProvider) {
         calcuateSSI(provider);
     }, null, false, 'Europe/Paris');
     jobCalculateSSI.start();
-    if (config.fixerApiKey !== undefined && config.fixerApiKey.length > 0) {
+    if (config.currenciesApiKey !== undefined && config.currenciesApiKey.length > 0) {
         updateExchangeRates();
         // every three ours, update exchange rates
         const jobUpdateExchangeRates = new CronJob('0 */3 * * *', () => {
