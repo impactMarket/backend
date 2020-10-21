@@ -21,6 +21,7 @@ export default (app: Router): void => {
         '/auth',
         celebrate({
             body: Joi.object({
+                authKey: Joi.string().optional(),
                 address: Joi.string().required(),
                 language: Joi.string().required(),
                 pushNotificationsToken: Joi.string().allow(''),
