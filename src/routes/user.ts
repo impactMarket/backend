@@ -21,7 +21,7 @@ export default (app: Router): void => {
         '/auth',
         celebrate({
             body: Joi.object({
-                authKey: Joi.string().optional(),
+                authKey: Joi.string().optional(), // TODO: make required
                 address: Joi.string().required(),
                 language: Joi.string().required(),
                 pushNotificationsToken: Joi.string().allow(''),
@@ -61,6 +61,7 @@ export default (app: Router): void => {
         authenticateToken,
         celebrate({
             body: Joi.object({
+                authKey: Joi.string().optional(), // TODO: remove
                 address: Joi.string().required(),
                 token: Joi.string().allow(''),
             }),
