@@ -87,7 +87,7 @@ export default class UserService {
         return {
             user: user as any,
             exchangeRates: await ExchangeRatesService.get(),
-            community: (community  || communityManager || communityPrivate) ? communityInfo! : undefined,
+            community: (community || communityManager || communityPrivate) ? communityInfo! : undefined,
             isBeneficiary,
             isManager,
         };
@@ -139,6 +139,14 @@ export default class UserService {
 
     public static async get(address: string): Promise<User | null> {
         return User.findOne({ where: { address } });
+    }
+
+    public static async getPushTokensFromAddresses(addresses: string[]): Promise<string[]> {
+        const users = await User.findAll({
+            attributes: ['pushNotificationToken'],
+            where: { addresses }
+        });
+        return users.map((u) => u.pushNotificationToken);
     }
 
     public static async mappedNames(): Promise<Map<string, string>> {

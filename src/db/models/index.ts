@@ -7,6 +7,7 @@ import { initializeAgenda } from './agenda';
 import { ClaimLocation, initializeClaimLocation } from './claimLocation';
 import { initializeGlobalStatus } from './globalStatus';
 import { initializeExchangeRates } from './exchangeRates';
+import { initializeNotifiedBackers } from './notifiedBackers';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -18,6 +19,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeClaimLocation(sequelize);
     initializeGlobalStatus(sequelize);
     initializeExchangeRates(sequelize);
+    initializeNotifiedBackers(sequelize);
 
     Community.hasMany(SSI, { foreignKey: 'communityPublicId' });
     Community.hasMany(ClaimLocation, { foreignKey: 'communityPublicId' });

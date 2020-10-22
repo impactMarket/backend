@@ -12,6 +12,7 @@ import { calcuateSSI } from '../jobs/calculateSSI';
 import { prepareAgenda } from '../jobs/agenda';
 import { updateExchangeRates } from '../jobs/updateExchangeRates';
 import Logger from './logger';
+import { verifyCommunityFunds } from '../jobs/communityLowFunds';
 
 
 export default async (): Promise<void> => {
@@ -69,6 +70,7 @@ function cron(provider: ethers.providers.JsonRpcProvider) {
         calcuateSSI(provider);
     }, null, false, 'Europe/Paris');
     jobCalculateSSI.start();
+    // update exchange rates
     if (config.currenciesApiKey !== undefined && config.currenciesApiKey.length > 0) {
         updateExchangeRates();
         // every three ours, update exchange rates
@@ -77,4 +79,9 @@ function cron(provider: ethers.providers.JsonRpcProvider) {
         }, null, false);
         jobUpdateExchangeRates.start();
     }
+    // verify community funds three hours
+    const jobVerifyCommunityFunds = new CronJob('0 */3 * * *', () => {
+        verifyCommunityFunds();
+    }, null, false);
+    jobVerifyCommunityFunds.start();
 }
