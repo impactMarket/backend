@@ -162,9 +162,21 @@ export default class CommunityService {
         return true;
     }
 
-    public static async getAll(status: string): Promise<ICommunityInfo[]> {
+    public static async getAll(status: string, onlyPublic: boolean = true): Promise<ICommunityInfo[]> {
         const result: ICommunityInfo[] = [];
-        const communities = await Community.findAll({ where: { status, visibility: 'public' }, order: [['createdAt', 'ASC']], raw: true });
+        const communities = await Community.findAll({
+            where: {
+                status,
+                visibility: onlyPublic ? 'public' : {
+                    [Op.or]: [
+                        'public',
+                        'private'
+                    ],
+                }
+            },
+            order: [['createdAt', 'ASC']],
+            raw: true
+        });
         for (let index = 0; index < communities.length; index++) {
             result.push(await this.getCachedInfoToCommunity(communities[index]));
         }

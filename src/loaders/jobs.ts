@@ -59,7 +59,7 @@ async function subscribers(provider: ethers.providers.JsonRpcProvider): Promise<
     // This means that it's necessary to filter ManagerAdded with
     // impactmarket address.
     updateCommunityCache(startFrom, provider, config.impactMarketContractAddress);
-    const availableCommunities = await CommunityService.getAll('valid');
+    const availableCommunities = await CommunityService.getAll('valid', false);
     availableCommunities.forEach((community) => updateCommunityCache(startFrom, provider, community.contractAddress));
     subscribeChainEvents(provider, availableCommunities.map((community) => community.contractAddress));
 }
