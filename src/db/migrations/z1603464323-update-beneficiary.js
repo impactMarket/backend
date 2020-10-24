@@ -2,6 +2,42 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
+        const Users = await queryInterface.sequelize.define('user', {
+            address: {
+                type: Sequelize.STRING(44),
+                allowNull: false,
+                unique: true,
+                primaryKey: true,
+            },
+            username: {
+                type: Sequelize.STRING(64),
+            },
+            avatar: {
+                type: Sequelize.STRING(128),
+            },
+            language: {
+                type: Sequelize.STRING(8),
+                allowNull: false,
+            },
+            currency: {
+                type: Sequelize.STRING(4),
+            },
+            pushNotificationToken: {
+                type: Sequelize.STRING(64),
+            },
+            createdAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            },
+            updatedAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            }
+        }, {
+            tableName: 'user',
+            sequelize: queryInterface.sequelize, // this bit is important
+        });
+        const users = await Users.findAll({});
         const Transactions = await queryInterface.sequelize.define('transactions', {
             uid: {
                 type: Sequelize.STRING(64),
