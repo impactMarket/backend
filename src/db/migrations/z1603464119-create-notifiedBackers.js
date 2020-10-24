@@ -12,9 +12,14 @@ module.exports = {
                 type: Sequelize.STRING(44),
                 allowNull: false,
             },
-            community: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
+            communityId: {
+                type: Sequelize.UUID,
+                references: {
+                    model: 'community', // name of Target model
+                    key: 'publicId', // key in Target model that we're referencing
+                },
+                onDelete: 'RESTRICT',
+                allowNull: false
             },
             at: {
                 type: Sequelize.DATE,

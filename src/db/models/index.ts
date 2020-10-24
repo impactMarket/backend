@@ -8,6 +8,9 @@ import { ClaimLocation, initializeClaimLocation } from './claimLocation';
 import { initializeGlobalStatus } from './globalStatus';
 import { initializeExchangeRates } from './exchangeRates';
 import { initializeNotifiedBackers } from './notifiedBackers';
+import { initializeImMetadata } from './imMetadata';
+import { Beneficiary, initializeBeneficiary } from './beneficiary';
+import { NotifiedBacker } from './notifiedBacker';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -20,9 +23,23 @@ export default function initModels(sequelize: Sequelize): void {
     initializeGlobalStatus(sequelize);
     initializeExchangeRates(sequelize);
     initializeNotifiedBackers(sequelize);
+    initializeImMetadata(sequelize);
+    initializeNotifiedBackers(sequelize);
+    initializeBeneficiary(sequelize);
 
     Community.hasMany(SSI, { foreignKey: 'communityPublicId' });
-    Community.hasMany(ClaimLocation, { foreignKey: 'communityPublicId' });
     SSI.belongsTo(Community, { foreignKey: 'communityPublicId' });
+
+    Community.hasMany(ClaimLocation, { foreignKey: 'communityPublicId' });
     ClaimLocation.belongsTo(Community, { foreignKey: 'communityPublicId' });
+
+    Beneficiary.belongsTo(Community, {
+        foreignKey: 'communityId',  // Beneficiary.communityId
+        targetKey: 'publicId', // the Community.publicId
+    });
+
+    NotifiedBacker.belongsTo(Community, {
+        foreignKey: 'communityId',  // NotifiedBacker.communityId
+        targetKey: 'publicId', // the Community.publicId
+    });
 }
