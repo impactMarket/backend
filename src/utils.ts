@@ -60,6 +60,17 @@ export async function notifyBackersCommunityLowFunds(community: ICommunityInfo, 
     expo.chunkPushNotifications(messages);
 }
 
+export async function notifyBeneficiaryAdded(userAddress: string, communityAddress: string): Promise<boolean> {
+    return await sendPushNotification(
+        userAddress,
+        'Welcome',
+        'You\'ve been added as a beneficiary!',
+        {
+            action: "beneficiary-added",
+            communityAddress,
+        });
+}
+
 export async function sendPushNotification(userAddress: string, title: string, body: string, data: any): Promise<boolean> {
     const user = await UserService.get(userAddress);
     if (user !== null) {
