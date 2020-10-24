@@ -4,9 +4,11 @@ import CommunityContractABI from '../contracts/CommunityABI.json'
 import ERC20ABI from '../contracts/ERC20ABI.json'
 import TransactionsService from '../services/transactions';
 import config from '../config';
-import { sendPushNotification } from '../utils';
+import { notifyBeneficiaryAdded } from '../utils';
 import CommunityService from '../services/community';
 import Logger from '../loaders/logger';
+import ImMetadataService from '../services/imMetadata';
+import BeneficiaryService from '../services/beneficiary';
 
 
 interface IFilterCommunityTmpData {
@@ -22,55 +24,49 @@ function catchHandlerTransactionsService(error: any) {
     }
 }
 
-async function startFromBlock(
-    provider: ethers.providers.JsonRpcProvider,
-    defaultStart: number,
-): Promise<number> {
-    // get the last transaction cached
-    const lastEntry = await TransactionsService.getLastEntry();
-    if (lastEntry === undefined) {
-        return defaultStart;
-    }
-    const block = await provider.getTransactionReceipt(lastEntry.tx);
-    return block.blockNumber !== undefined ? block.blockNumber : defaultStart;
-}
-
 async function subscribeChainEvents(
     provider: ethers.providers.JsonRpcProvider,
-    communitiesAddress: string[],
+    communities: Map<string, string>,
 ): Promise<void> {
     const filter = {
         topics: [[
-            ethers.utils.id('CommunityAdded(address,address,uint256,uint256,uint256,uint256)'),
-            ethers.utils.id('CommunityRemoved(address)'),
+            // ethers.utils.id('CommunityAdded(address,address,uint256,uint256,uint256,uint256)'),
+            // ethers.utils.id('CommunityRemoved(address)'),
             ethers.utils.id('ManagerAdded(address)'),
-            ethers.utils.id('ManagerRemoved(address)'),
+            // ethers.utils.id('ManagerRemoved(address)'),
             ethers.utils.id('BeneficiaryAdded(address)'),
-            ethers.utils.id('BeneficiaryLocked(address)'),
+            // ethers.utils.id('BeneficiaryLocked(address)'),
             ethers.utils.id('BeneficiaryRemoved(address)'),
             ethers.utils.id('BeneficiaryClaim(address,uint256)'),
-            ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
+            // ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
             ethers.utils.id('Transfer(address,address,uint256)'),
         ]]
     };
-    const ifaceImpactMarket = new ethers.utils.Interface(ImpactMarketContractABI);
+    // const ifaceImpactMarket = new ethers.utils.Interface(ImpactMarketContractABI);
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
-    const allCommunitiesAddresses = communitiesAddress;
+    const allCommunitiesAddresses = Array.from(communities.keys());
+    const allCommunities = communities;
     provider.on(filter, async (log: ethers.providers.Log) => {
         let parsedLog: ethers.utils.LogDescription | undefined;
-        if (log.address === config.impactMarketContractAddress) {
-            parsedLog = ifaceImpactMarket.parseLog(log);
-            if (parsedLog.name === 'CommunityAdded') {
-                // it's necessary to get ManagerAdded here!
-                // TODO: is this necessary here?
-                updateCommunityCache(log.blockNumber - 1, provider, parsedLog.args[0]);
-                allCommunitiesAddresses.push(parsedLog.args[0]);
-            }
-            //
-        } else if (log.address === config.cUSDContractAddress) {
+        // if (log.address === config.impactMarketContractAddress) {
+        //     parsedLog = ifaceImpactMarket.parseLog(log);
+        //     if (parsedLog.name === 'CommunityAdded') {
+        //         console.log('CommunityAdded')
+        //         // it's necessary to get ManagerAdded here!
+        //         // TODO: is this necessary here?
+        //         updateCommunityCache(log.blockNumber - 1, provider, parsedLog.args[0]);
+        //         allCommunitiesAddresses.push(parsedLog.args[0]);
+        //         const community = await CommunityService.findByContractAddress(parsedLog.args[0]);
+        //         if (community !== null) {
+        //             allCommunities.set(parsedLog.args[0], community.publicId);
+        //         }
+        //     }
+        //     //
+        // } else
+        if (log.address === config.cUSDContractAddress) {
             const preParsedLog = ifaceERC20.parseLog(log);
-            // only donations
+            // only transactions to community contracts
             if (allCommunitiesAddresses.includes(preParsedLog.args[1])) {
                 parsedLog = preParsedLog;
             }
@@ -78,22 +74,41 @@ async function subscribeChainEvents(
         } else if (allCommunitiesAddresses.includes(log.address)) {
             parsedLog = ifaceCommunity.parseLog(log);
             if (parsedLog.name === 'BeneficiaryAdded') {
-                sendPushNotification(
-                    parsedLog.args[0],
-                    'Welcome',
-                    'You\'ve been added as a beneficiary!',
-                    {
-                        action: "beneficiary-added",
-                        communityAddress: log.address,
-                    });
+                let communityPublicId = allCommunities.get(log.address);
+                if (communityPublicId === undefined) {
+                    // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
+                    const community = await CommunityService.findByContractAddress(log.address);
+                    allCommunities.set(log.address, community!.publicId);
+                    communityPublicId = community!.publicId;
+                }
+                notifyBeneficiaryAdded(parsedLog.args[0], log.address);
+                BeneficiaryService.add(parsedLog.args[0], communityPublicId);
+            } else if (parsedLog.name === 'BeneficiaryRemoved') {
+                BeneficiaryService.remove(parsedLog.args[0]);
             }
         } else {
             try {
                 parsedLog = ifaceCommunity.parseLog(log);
                 if (parsedLog.name === 'ManagerAdded') {
-                    if ((await CommunityService.getAllAddresses()).includes(log.address) && !allCommunitiesAddresses.includes(log.address)) {
-                        // new private community (are events from public one getting here?)
-                        allCommunitiesAddresses.push(parsedLog.args[0]);
+                    if (!allCommunitiesAddresses.includes(log.address)) {
+                        const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
+                        if (Array.from(communityAddressesAndIds.keys()).includes(log.address)) {
+                            // in case new manager means new community
+                            allCommunitiesAddresses.push(parsedLog.args[0]);
+                            allCommunities.set(parsedLog.args[0], communityAddressesAndIds.get(parsedLog.args[0])!);
+                        } else {
+                            // if for some reason (mainly timing), the community wasn't in the database, try again in 4 secs
+                            const cancelTimeout = setInterval(async (pLog: ethers.utils.LogDescription) => {
+                                Logger.warn(`Community ${pLog.args[0]} was not in the database when "ManagerAdded".`);
+                                const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
+                                if (Array.from(communityAddressesAndIds.keys()).includes(log.address) && !allCommunitiesAddresses.includes(log.address)) {
+                                    // new private community (are events from public one getting here?)
+                                    allCommunitiesAddresses.push(pLog.args[0]);
+                                    allCommunities.set(pLog.args[0], communityAddressesAndIds.get(pLog.args[0])!);
+                                    clearInterval(cancelTimeout);
+                                }
+                            }, 4000, parsedLog);
+                        }
                     }
                 }
             } catch (e) {
@@ -110,6 +125,7 @@ async function subscribeChainEvents(
                 parsedLog,
             ).catch(catchHandlerTransactionsService)
         }
+        ImMetadataService.setLastBlock(log.blockNumber);
     });
 }
 
@@ -207,7 +223,6 @@ function updateCommunityCache(
 }
 
 export {
-    startFromBlock,
     subscribeChainEvents,
     updateImpactMarketCache,
     updateCommunityCache,
