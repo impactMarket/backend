@@ -183,9 +183,9 @@ export default class CommunityService {
         return result;
     }
 
-    public static async getAllAddresses(): Promise<string[]> {
-        const result = await Community.findAll({ attributes: ['contractAddress'], raw: true });
-        return result.map((c) => c.contractAddress);
+    public static async getAllAddressesAndIds(): Promise<Map<string, string>> {
+        const result = await Community.findAll({ attributes: ['contractAddress', 'publicId'], raw: true });
+        return new Map(result.map((c) => [c.contractAddress, c.publicId]));
     }
 
     public static async findByFirstManager(requestByAddress: string): Promise<Community | null> {
