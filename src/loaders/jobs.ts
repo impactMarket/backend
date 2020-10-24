@@ -2,7 +2,6 @@ import {
     updateImpactMarketCache,
     updateCommunityCache,
     subscribeChainEvents,
-    startFromBlock,
 } from '../jobs/chainSubscribers';
 import config from '../config';
 import { ethers } from 'ethers';
@@ -13,6 +12,7 @@ import { prepareAgenda } from '../jobs/agenda';
 import { updateExchangeRates } from '../jobs/updateExchangeRates';
 import Logger from './logger';
 import { verifyCommunityFunds } from '../jobs/communityLowFunds';
+import ImMetadataService from '../services/imMetadata';
 
 
 export default async (): Promise<void> => {
@@ -44,7 +44,7 @@ export default async (): Promise<void> => {
 };
 
 async function subscribers(provider: ethers.providers.JsonRpcProvider): Promise<void> {
-    const startFrom = await startFromBlock(provider, config.impactMarketContractBlockNumber);
+    const startFrom = await ImMetadataService.getLastBlock();
     const fromLogs = await updateImpactMarketCache(provider, startFrom);
     fromLogs.forEach((community) => updateCommunityCache(
         community.block === undefined
@@ -61,7 +61,10 @@ async function subscribers(provider: ethers.providers.JsonRpcProvider): Promise<
     updateCommunityCache(startFrom, provider, config.impactMarketContractAddress);
     const availableCommunities = await CommunityService.getAll('valid', false);
     availableCommunities.forEach((community) => updateCommunityCache(startFrom, provider, community.contractAddress));
-    subscribeChainEvents(provider, availableCommunities.map((community) => community.contractAddress));
+    subscribeChainEvents(
+        provider,
+        new Map(availableCommunities.map((c) => [c.contractAddress, c.publicId]))
+    );
 }
 
 function cron(provider: ethers.providers.JsonRpcProvider) {
