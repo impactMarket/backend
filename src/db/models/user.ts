@@ -2,7 +2,6 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 
 export class User extends Model {
-    public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public address!: string;
     public username!: string;
     public avatar!: string;
@@ -17,14 +16,10 @@ export class User extends Model {
 
 export function initializeUser(sequelize: Sequelize): void {
     return User.init({
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
         address: {
             type: DataTypes.STRING(44),
             allowNull: false,
+            primaryKey: true,
             unique: true,
         },
         username: {
