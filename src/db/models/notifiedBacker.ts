@@ -1,7 +1,7 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 
-export class NotifiedBackers extends Model {
+export class NotifiedBacker extends Model {
     public id!: number;
     public backer!: string;
     public community!: string;
@@ -12,8 +12,8 @@ export class NotifiedBackers extends Model {
     public readonly updatedAt!: Date;
 }
 
-export function initializeNotifiedBackers(sequelize: Sequelize): void {
-    return NotifiedBackers.init({
+export function initializeNotifiedBacker(sequelize: Sequelize): void {
+    return NotifiedBacker.init({
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -40,7 +40,7 @@ export function initializeNotifiedBackers(sequelize: Sequelize): void {
             allowNull: false,
         }
     }, {
-        tableName: 'notifiedbackers',
+        tableName: 'notifiedBacker',
         sequelize: sequelize, // this bit is important
     });
 }
