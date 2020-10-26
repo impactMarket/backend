@@ -2,10 +2,10 @@ import { User } from '../db/models/user';
 import { generateAccessToken } from '../middlewares';
 import { ICommunityInfo, IUserWelcomeAuth, IUserWelcome } from '../types';
 import ExchangeRatesService from './exchangeRates';
-import TransactionsService from './transactions';
-import { Transactions } from '../db/models/transactions';
 import CommunityService from './community';
 import Logger from '../loaders/logger';
+import BeneficiaryService from './beneficiary';
+import ManagerService from './managers';
 
 
 export default class UserService {
@@ -30,7 +30,7 @@ export default class UserService {
                     { where: { address } },
                 );
             }
-            const welcomeUser = await UserService.welcome(address);
+            const welcomeUser = await UserService.welcome(address, user);
             if (welcomeUser === undefined) {
                 return undefined;
             }
@@ -39,55 +39,43 @@ export default class UserService {
                 ...welcomeUser
             };
         } catch (e) {
-            Logger.warning(address, e.message);
+            Logger.warning('Error while auth user ', address, e.message);
             return undefined;
         }
     }
 
     public static async welcome(
-        address: string
+        address: string,
+        user: User | null = null
     ): Promise<IUserWelcome | undefined> {
-        const user = await User.findOne({ where: { address } });
         if (user === null) {
-            return undefined;
+            user = await User.findOne({ where: { address } });
+            if (user === null) {
+                return undefined;
+            }
         }
-        let community: Transactions | undefined | null;
-        let communityManager: Transactions | undefined | null;
-        let communityPrivate: Transactions | undefined | null;
-        let communityInfo: ICommunityInfo | null;
+        const beneficiary = await BeneficiaryService.get(user.address);
+        const manager = await ManagerService.get(user.address);
+        let community: ICommunityInfo | null = null;
         let isBeneficiary = false;
         let isManager = false;
-        community = await TransactionsService.findComunityToBeneficicary(address);
-        if (community !== undefined) {
+        if (beneficiary !== null) {
+            community = await CommunityService.findByPublicId(beneficiary.communityId);
             isBeneficiary = true;
-        }
-        communityManager = await TransactionsService.findComunityToManager(address);
-        if (communityManager === null) {
-            // is there any change this guy is in a private community?
-            communityPrivate = await TransactionsService.findUserPrivateCommunity(address);
-            if (communityPrivate === null) {
-                communityPrivate = undefined;
-            } else {
-                if (communityPrivate.event === 'ManagerAdded') {
-                    isManager = true;
-                } else {
-                    isBeneficiary = true;
-                }
-            }
-        } else {
+        } else if (manager !== null) {
+            community = await CommunityService.findByPublicId(manager.communityId);
             isManager = true;
-        }
-        if (community !== undefined) {
-            communityInfo = await CommunityService.findByContractAddress(community.contractAddress);
-        } else if (communityManager !== null && communityManager !== undefined) {
-            communityInfo = await CommunityService.findByContractAddress(communityManager.contractAddress);
-        } else if (communityPrivate !== null && communityPrivate !== undefined) {
-            communityInfo = await CommunityService.findByContractAddress(communityPrivate.contractAddress);
+        } else {
+            const rawCommunity = await CommunityService.findByFirstManager(user.address);
+            if (rawCommunity !== null) {
+                community = await CommunityService.findByPublicId(rawCommunity.publicId);
+                isManager = true;
+            }
         }
         return {
             user: user as any,
             exchangeRates: await ExchangeRatesService.get(),
-            community: (community || communityManager || communityPrivate) ? communityInfo! : undefined,
+            community: community ? community : undefined,
             isBeneficiary,
             isManager,
         };

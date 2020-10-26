@@ -20,6 +20,12 @@ export default class BeneficiaryService {
         return true;
     }
 
+    public static async get(
+        address: string,
+    ): Promise<Beneficiary | null> {
+        return await Beneficiary.findOne({ where: { address } });
+    }
+
     public static async remove(
         address: string,
     ): Promise<void> {

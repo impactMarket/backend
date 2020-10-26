@@ -9,6 +9,7 @@ import CommunityService from '../services/community';
 import Logger from '../loaders/logger';
 import ImMetadataService from '../services/imMetadata';
 import BeneficiaryService from '../services/beneficiary';
+import ManagerService from '../services/managers';
 
 
 interface IFilterCommunityTmpData {
@@ -74,40 +75,51 @@ async function subscribeChainEvents(
         } else if (allCommunitiesAddresses.includes(log.address)) {
             parsedLog = ifaceCommunity.parseLog(log);
             if (parsedLog.name === 'BeneficiaryAdded') {
-                let communityPublicId = allCommunities.get(log.address);
+                const beneficiaryAddress = parsedLog.args[0];
+                const communityAddress = log.address;
+                let communityPublicId = allCommunities.get(communityAddress);
                 if (communityPublicId === undefined) {
                     // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
-                    const community = await CommunityService.findByContractAddress(log.address);
-                    allCommunities.set(log.address, community!.publicId);
-                    communityPublicId = community!.publicId;
+                    const community = (await CommunityService.findByContractAddress(communityAddress))!;
+                    allCommunities.set(communityAddress, community.publicId);
+                    communityPublicId = community.publicId;
                 }
-                notifyBeneficiaryAdded(parsedLog.args[0], log.address);
-                BeneficiaryService.add(parsedLog.args[0], communityPublicId);
+                notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
+                BeneficiaryService.add(beneficiaryAddress, communityPublicId);
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
-                BeneficiaryService.remove(parsedLog.args[0]);
+                const beneficiaryAddress = parsedLog.args[0];
+                BeneficiaryService.remove(beneficiaryAddress);
             }
         } else {
             try {
                 parsedLog = ifaceCommunity.parseLog(log);
                 if (parsedLog.name === 'ManagerAdded') {
-                    if (!allCommunitiesAddresses.includes(log.address)) {
+                    const managerAddress = parsedLog.args[0];
+                    const communityAddress = log.address;
+                    if (allCommunitiesAddresses.includes(communityAddress)) {
+                        ManagerService.add(managerAddress, allCommunities.get(communityAddress)!);
+                    } else {
                         const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
-                        if (Array.from(communityAddressesAndIds.keys()).includes(log.address)) {
+                        if (Array.from(communityAddressesAndIds.keys()).includes(communityAddress)) {
                             // in case new manager means new community
-                            allCommunitiesAddresses.push(parsedLog.args[0]);
-                            allCommunities.set(parsedLog.args[0], communityAddressesAndIds.get(parsedLog.args[0])!);
+                            const communityId = communityAddressesAndIds.get(communityAddress)!;
+                            ManagerService.add(managerAddress, communityId);
+                            allCommunities.set(communityAddress, communityId);
+                            allCommunitiesAddresses.push(communityAddress);
                         } else {
                             // if for some reason (mainly timing), the community wasn't in the database, try again in 4 secs
-                            const cancelTimeout = setInterval(async (pLog: ethers.utils.LogDescription) => {
-                                Logger.warn(`Community ${pLog.args[0]} was not in the database when "ManagerAdded".`);
+                            const cancelTimeout = setInterval(async (_managerAddress: string, _communityAddress: string) => {
+                                Logger.warn(`Community ${_communityAddress} was not in the database when "ManagerAdded".`);
                                 const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
-                                if (Array.from(communityAddressesAndIds.keys()).includes(log.address) && !allCommunitiesAddresses.includes(log.address)) {
+                                if (Array.from(communityAddressesAndIds.keys()).includes(_communityAddress) && !allCommunitiesAddresses.includes(_communityAddress)) {
                                     // new private community (are events from public one getting here?)
-                                    allCommunitiesAddresses.push(pLog.args[0]);
-                                    allCommunities.set(pLog.args[0], communityAddressesAndIds.get(pLog.args[0])!);
+                                    const communityId = communityAddressesAndIds.get(communityAddress)!;
+                                    ManagerService.add(_managerAddress, communityId);
+                                    allCommunities.set(_communityAddress, communityId);
+                                    allCommunitiesAddresses.push(_communityAddress);
                                     clearInterval(cancelTimeout);
                                 }
-                            }, 4000, parsedLog);
+                            }, 4000, managerAddress, communityAddress);
                         }
                     }
                 }
