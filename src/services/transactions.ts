@@ -92,6 +92,9 @@ export function translateEvent(
 }
 
 export default class TransactionsService {
+    /**
+     * @deprecated
+     */
     public static async add(
         provider: ethers.providers.JsonRpcProvider,
         logs: ethers.providers.Log,
@@ -116,6 +119,9 @@ export default class TransactionsService {
         );
     }
 
+    /**
+     * @deprecated
+     */
     public static async addRaw(
         tx: string,
         txAt: Date,
@@ -146,14 +152,23 @@ export default class TransactionsService {
         });
     }
 
+    /**
+     * @deprecated
+     */
     public static async getAll(): Promise<Transactions[]> {
         return Transactions.findAll();
     }
 
+    /**
+     * @deprecated
+     */
     public static async get(account: string): Promise<Transactions[]> {
         return Transactions.findAll({ where: { values: { _account: account } } });
     }
 
+    /**
+     * @deprecated
+     */
     public static async findComunityToBeneficicary(beneficiaryAddress: string): Promise<Transactions | undefined> {
         const reqResult = await Transactions.findAll({
             limit: 1,
@@ -177,6 +192,9 @@ export default class TransactionsService {
         return reqResult[0];
     }
 
+    /**
+     * @deprecated
+     */
     public static async findComunityToManager(managerAddress: string): Promise<Transactions | null> {
         // TODO: get only if it was added and not removed yet
         return Transactions.findOne({
@@ -187,6 +205,9 @@ export default class TransactionsService {
         });
     }
 
+    /**
+     * @deprecated
+     */
     public static async getBeneficiariesInCommunity(communityAddress: string): Promise<{
         added: ICommunityInfoBeneficiary[];
         removed: ICommunityInfoBeneficiary[];
@@ -231,6 +252,9 @@ export default class TransactionsService {
         return result;
     }
 
+    /**
+     * @deprecated
+     */
     public static async getCommunityManagersInCommunity(communityAddress: string): Promise<string[]> {
         const dbRequest = Transactions.findAll({
             where: {
@@ -243,6 +267,9 @@ export default class TransactionsService {
         return managers;
     }
 
+    /**
+     * @deprecated
+     */
     public static async getBackersInCommunity(communityAddress: string): Promise<string[]> {
         const dbRequest = Transactions.findAll({
             where: {
@@ -256,6 +283,9 @@ export default class TransactionsService {
         return [...new Set(backers)];
     }
 
+    /**
+     * @deprecated
+     */
     public static async getCommunityVars(communityAddress: string): Promise<ICommunityVars> {
         const vars = await Transactions.findAll({
             limit: 1,
@@ -284,6 +314,9 @@ export default class TransactionsService {
         };
     }
 
+    /**
+     * @deprecated
+     */
     public static async getCommunityRaisedAmount(communityAddress: string): Promise<string> {
         const donations = await Transactions.findAll({
             where: {
@@ -296,6 +329,9 @@ export default class TransactionsService {
         return raised.toString();
     }
 
+    /**
+     * @deprecated
+     */
     public static async getCommunityClaimedAmount(communityAddress: string): Promise<string> {
         const claims = await Transactions.findAll({
             where: {
@@ -308,6 +344,9 @@ export default class TransactionsService {
         return claimed.toString();
     }
 
+    /**
+     * @deprecated
+     */
     public static async getBeneficiariesCommunityClaimedAmount(communityAddress: string): Promise<Map<string, string>> {
         const claims = await Transactions.findAll({
             // attributes: ['from', [fn('sum', literal("values->>'_amount'")), 'claimed']], // cant be used because _amount is a string
@@ -328,6 +367,9 @@ export default class TransactionsService {
         return result;
     }
 
+    /**
+     * @deprecated
+     */
     public static async getBeneficiariesCommunityClaims(communityAddress: string): Promise<Map<string, number>> {
         const claims = await Transactions.findAll({
             where: {
@@ -345,6 +387,9 @@ export default class TransactionsService {
         return result;
     }
 
+    /**
+     * @deprecated
+     */
     public static async getBeneficiariesLastClaim(beneficiaryAddress: string): Promise<Transactions[] | undefined> {
         const claim = await Transactions.findAll({
             where: {
@@ -361,6 +406,9 @@ export default class TransactionsService {
         return claim;
     }
 
+    /**
+     * @deprecated
+     */
     public static async getLastClaim(communityAddress: string/*, startDate: Date = new Date(new Date().getTime() - 86400000), endDate: Date = new Date() */): Promise<Transactions | undefined> {
         const tx = await Transactions.findAll({
             where: {
@@ -380,6 +428,9 @@ export default class TransactionsService {
         return tx[0];
     }
 
+    /**
+     * @deprecated
+     */
     public static async getLastEntry(): Promise<Transactions | undefined> {
         const entries = await Transactions.findAll({
             limit: 1,
@@ -394,6 +445,9 @@ export default class TransactionsService {
         return entries[0];
     }
 
+    /**
+     * @deprecated
+     */
     public static async userTx(userAddress: string): Promise<IUserTxAPI[]> {
         const query = await axios.get(
             `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`
@@ -520,6 +574,9 @@ export default class TransactionsService {
         return result;
     }
 
+    /**
+     * @deprecated
+     */
     public static async findUserPrivateCommunity(userAddress: string): Promise<Transactions | null> {
         const privateCommunities: string[] = (await Community.findAll({
             attributes: ['contractAddress'],
@@ -556,6 +613,9 @@ export default class TransactionsService {
         return userEvents[0];
     }
 
+    /**
+     * @deprecated
+     */
     public static async getGlobalStatus(): Promise<IGlobalStatus> {
         const privateCommunities: string[] = (await Community.findAll({
             attributes: ['contractAddress'],
@@ -611,6 +671,9 @@ export default class TransactionsService {
         }
     }
 
+    /**
+     * @deprecated
+     */
     public static async getOutflowStatus(): Promise<IGlobalOutflowStatus> {
         const privateCommunities: string[] = (await Community.findAll({
             attributes: ['contractAddress'],
@@ -662,6 +725,9 @@ export default class TransactionsService {
         }
     }
 
+    /**
+     * @deprecated
+     */
     public static async getInflowStatus(): Promise<IGlobalInflowStatus> {
         const publicCommunities: string[] = (await Community.findAll({
             attributes: ['contractAddress'],
@@ -687,17 +753,26 @@ export default class TransactionsService {
         }
     }
 
+    /**
+     * @deprecated
+     */
     private static async addressesByNames() {
         const communities = await CommunityService.mappedNames();
         const usernames = await UserService.mappedNames();
         return new Map([...communities, ...usernames]); // addresses.map((a) => registry.has(a) !== undefined ? registry.get(a) : a);
     }
 
+    /**
+     * @deprecated
+     */
     private static addressToAddressAndName(address: string, registry: Map<string, string>) {
         const addressFromRegistry = registry.get(address);
         return { address, name: (addressFromRegistry === null || addressFromRegistry === undefined) ? '' : addressFromRegistry }
     }
 
+    /**
+     * @deprecated
+     */
     private static async findPicture(address: string) {
         const user = await UserService.get(address);
         let picture;
