@@ -71,6 +71,17 @@ export async function notifyBeneficiaryAdded(userAddress: string, communityAddre
         });
 }
 
+export async function notifyManagerAdded(managerAddress: string, communityAddress: string): Promise<boolean> {
+    return await sendPushNotification(
+        managerAddress,
+        'Community Accepted',
+        'Your community was accepted!',
+        {
+            action: "community-accepted",
+            communityAddress,
+        });
+}
+
 export async function sendPushNotification(userAddress: string, title: string, body: string, data: any): Promise<boolean> {
     const user = await UserService.get(userAddress);
     if (user !== null) {
@@ -94,7 +105,7 @@ export async function sendPushNotification(userAddress: string, title: string, b
             const result = await axios.post('https://exp.host/--/api/v2/push/send', JSON.stringify(message), requestHeaders);
             return result.status === 200 ? true : false;
         } catch (error) {
-            Logger.error(error);
+            Logger.error('Couldn\'t send notification ' + error);
             return false;
         }
     }
