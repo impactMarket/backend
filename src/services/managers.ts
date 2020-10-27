@@ -27,13 +27,7 @@ export default class ManagerService {
     ): Promise<Manager | null> {
         return await Manager.findOne({
             where: {
-                user: address,
-                status: {
-                    [Op.or]: [
-                        'valid',
-                        'pending'
-                    ],
-                }
+                user: address
             }
         });
     }
