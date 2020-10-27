@@ -25,11 +25,7 @@ export default class ManagerService {
     public static async get(
         address: string,
     ): Promise<Manager | null> {
-        return await Manager.findOne({
-            where: {
-                user: address
-            }
-        });
+        return await Manager.findOne({ where: { user: address } });
     }
 
     public static async remove(

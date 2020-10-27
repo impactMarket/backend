@@ -182,11 +182,32 @@ export default class CommunityService {
     }
 
     public static async findByFirstManager(requestByAddress: string): Promise<Community | null> {
-        return Community.findOne({ where: { requestByAddress } });
+        return Community.findOne({
+            where: {
+                requestByAddress,
+                status: {
+                    [Op.or]: [
+                        'valid',
+                        'pending'
+                    ],
+                }
+            }
+        });
     }
 
     public static async findByPublicId(publicId: string): Promise<ICommunityInfo | null> {
-        const community = await Community.findOne({ where: { publicId }, raw: true });
+        const community = await Community.findOne({
+            where: {
+                publicId,
+                status: {
+                    [Op.or]: [
+                        'valid',
+                        'pending'
+                    ],
+                }
+            },
+            raw: true
+        });
         if (community === null) {
             return null;
         }
