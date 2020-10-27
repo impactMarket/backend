@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { Manager } from '../db/models/manager';
 
 
@@ -24,7 +25,17 @@ export default class ManagerService {
     public static async get(
         address: string,
     ): Promise<Manager | null> {
-        return await Manager.findOne({ where: { user: address } });
+        return await Manager.findOne({
+            where: {
+                user: address,
+                status: {
+                    [Op.or]: [
+                        'valid',
+                        'pending'
+                    ],
+                }
+            }
+        });
     }
 
     public static async remove(
