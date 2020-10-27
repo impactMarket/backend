@@ -3,6 +3,8 @@ import {
 } from 'express';
 import aws from 'aws-sdk';
 import Logger from '../loaders/logger';
+import Joi from '@hapi/joi';
+import { celebrate } from 'celebrate';
 
 const route = Router();
 
@@ -40,4 +42,22 @@ export default (app: Router): void => {
             minimal: process.env.MINIMAL_MOBILE_APP_VERSION
         });
     });
+
+    route.post('/error',
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().allow(''), // if not logged-in
+                action: Joi.string().required(),
+                error: Joi.string().required(),
+            }),
+        }),
+        (req, res) => {
+            const {
+                address,
+                action,
+                error
+            } = req.body;
+            Logger.warn(address, action, error);
+            res.sendStatus(200);
+        });
 };
