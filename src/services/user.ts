@@ -63,7 +63,8 @@ export default class UserService {
         if (beneficiary !== null) {
             community = await CommunityService.findByPublicId(beneficiary.communityId);
             isBeneficiary = true;
-        } else if (manager !== null) {
+        }
+        if (manager !== null) {
             community = await CommunityService.findByPublicId(manager.communityId);
             isManager = true;
         } else {
