@@ -6,6 +6,7 @@ import CommunityService from './community';
 import Logger from '../loaders/logger';
 import BeneficiaryService from './beneficiary';
 import ManagerService from './managers';
+import { Op } from 'sequelize';
 
 
 export default class UserService {
@@ -132,7 +133,7 @@ export default class UserService {
     public static async getPushTokensFromAddresses(addresses: string[]): Promise<string[]> {
         const users = await User.findAll({
             attributes: ['pushNotificationToken'],
-            where: { addresses }
+            where: { address: { [Op.in]: addresses } }
         });
         return users.map((u) => u.pushNotificationToken);
     }

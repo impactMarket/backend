@@ -4,6 +4,7 @@ import { celebrate, Joi } from 'celebrate';
 import { authenticateToken } from '../middlewares';
 import TransactionsService from '../services/transactions';
 import Logger from '../loaders/logger';
+import { Community } from '../db/models/community';
 
 const route = Router();
 
@@ -86,8 +87,9 @@ export default (app: Router): void => {
                 txCreationObj,
             } = req.body;
             let returningStatus = 201;
+            let community: Community | undefined = undefined;
             try {
-                await CommunityService.create(
+                community = await CommunityService.create(
                     requestByAddress,
                     name,
                     contractAddress,
@@ -106,7 +108,7 @@ export default (app: Router): void => {
                 Logger.error(e);
                 returningStatus = 403;
             } finally {
-                res.sendStatus(returningStatus);
+                res.status(returningStatus).send(community);
             }
         },
     );
@@ -147,8 +149,9 @@ export default (app: Router): void => {
                 txCreationObj,
             } = req.body;
             let returningStatus = 201;
+            let community: Community | undefined = undefined;
             try {
-                await CommunityService.request(
+                community = await CommunityService.request(
                     requestByAddress,
                     name,
                     description,
@@ -165,7 +168,7 @@ export default (app: Router): void => {
                 Logger.error(e);
                 returningStatus = 403;
             } finally {
-                res.sendStatus(returningStatus);
+                res.status(returningStatus).send(community);
             }
         },
     );
