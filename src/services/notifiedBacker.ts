@@ -1,33 +1,57 @@
+import moment from 'moment';
+import { Op } from 'sequelize';
 import { NotifiedBacker } from '../db/models/notifiedBacker';
 
 
 export default class NotifiedBackerService {
 
     public static async add(
-        address: string,
+        addresses: string[],
         communityId: string
-    ): Promise<boolean> {
-        const backer = await NotifiedBacker.findOne({ where: { backer: address, communityId } });
-        if (backer === null) {
-            const updated = await NotifiedBacker.create({
-                address,
-                communityId
+    ): Promise<string[]> {
+
+        const allNotifiedBacker = await NotifiedBacker.findAll({
+            where: {
+                backer: { [Op.in]: addresses },
+                communityId,
+            },
+            raw: true,
+        });
+        const recentlyNotifiedBacker = allNotifiedBacker
+            .filter((n) => moment().diff(n.at, 'days') < 3)
+            .map((b) => b.backer);
+
+        const subtract = (arrayOriginal: string[], arraySubtract: string[]) => {
+            let hash = Object.create(null);
+            arraySubtract.forEach((a) => {
+                hash[a] = (hash[a] || 0) + 1;
             });
-            return updated[0] > 0;
-        } else {
-            // 3 days in ms
-            if (new Date().getTime() - backer.at.getTime() >= 259200000) {
-                const updated = await NotifiedBacker.update(
-                    { at: new Date() },
-                    {
-                        where: {
-                            backer: address,
-                            communityId
-                        }
-                    });
-                return updated[0] > 0;
-            }
+            return arrayOriginal.filter((a) => {
+                return !hash[a] || (hash[a]--, false);
+            });
         }
-        return false;
+
+        const longNotifiedBackers = subtract(addresses, allNotifiedBacker.map((b) => b.backer));
+        const neverNotifiedBackers = subtract(longNotifiedBackers, recentlyNotifiedBacker);
+
+        longNotifiedBackers.forEach((b) => {
+            NotifiedBacker.create({
+                backer: b,
+                communityId,
+                at: new Date()
+            });
+        });
+
+        neverNotifiedBackers.forEach((b) => {
+            NotifiedBacker.update(
+                { at: new Date() },
+                {
+                    where: {
+                        backer: b,
+                        communityId
+                    }
+                });
+        });
+        return neverNotifiedBackers.concat(longNotifiedBackers);
     }
 }

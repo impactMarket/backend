@@ -1,4 +1,4 @@
-import { Expo, ExpoPushMessage } from 'expo-server-sdk';
+import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 import axios from 'axios';
 import UserService from "./services/user";
 import Logger from './loaders/logger';
@@ -57,7 +57,24 @@ export async function notifyBackersCommunityLowFunds(community: ICommunityInfo, 
     // recommend you batch your notifications to reduce the number of requests
     // and to compress them (notifications with similar content will get
     // compressed).
-    expo.chunkPushNotifications(messages);
+    const chunks = expo.chunkPushNotifications(messages);
+    const tickets: ExpoPushTicket[] = [];
+    // Send the chunks to the Expo push notification service. There are
+    // different strategies you could use. A simple one is to send one chunk at a
+    // time, which nicely spreads the load out over time:
+    for (const chunk of chunks) {
+        try {
+            const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+            // console.log(ticketChunk);
+            tickets.push(...ticketChunk);
+            // NOTE: If a ticket contains an error code in ticket.details.error, you
+            // must handle it appropriately. The error codes are listed in the Expo
+            // documentation:
+            // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
+        } catch (error) {
+            Logger.error(error);
+        }
+    }
 }
 
 export async function notifyBeneficiaryAdded(userAddress: string, communityAddress: string): Promise<boolean> {

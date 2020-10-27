@@ -4,7 +4,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export class NotifiedBacker extends Model {
     public id!: number;
     public backer!: string;
-    public community!: string;
+    public communityId!: string;
     public at!: Date;
 
     // timestamps!
@@ -23,7 +23,7 @@ export function initializeNotifiedBacker(sequelize: Sequelize): void {
             type: DataTypes.STRING(44),
             allowNull: false,
         },
-        community: {
+        communityId: {
             type: DataTypes.STRING(44),
             allowNull: false,
         },
@@ -40,7 +40,7 @@ export function initializeNotifiedBacker(sequelize: Sequelize): void {
             allowNull: false,
         }
     }, {
-        tableName: 'notifiedBacker',
+        tableName: 'notifiedbacker',
         sequelize: sequelize, // this bit is important
     });
 }
