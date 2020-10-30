@@ -1,4 +1,4 @@
-import { Claims } from '../db/models/claims';
+import { Claim } from '../db/models/claim';
 import Logger from '../loaders/logger';
 
 
@@ -11,7 +11,7 @@ export default class ClaimsService {
         tx: string,
     ): Promise<void> {
         try {
-            await Claims.create({
+            await Claim.create({
                 address,
                 communityId,
                 amount,

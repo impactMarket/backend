@@ -1,7 +1,7 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 
-export class Claims extends Model {
+export class Claim extends Model {
     public id!: number;
     public address!: string;
     public communityId!: string;
@@ -14,8 +14,8 @@ export class Claims extends Model {
     public readonly updatedAt!: Date;
 }
 
-export function initializeClaims(sequelize: Sequelize): void {
-    return Claims.init({
+export function initializeClaim(sequelize: Sequelize): void {
+    return Claim.init({
         id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -57,7 +57,7 @@ export function initializeClaims(sequelize: Sequelize): void {
             allowNull: false,
         }
     }, {
-        tableName: 'claims',
+        tableName: 'claim',
         sequelize: sequelize, // this bit is important
     });
 }

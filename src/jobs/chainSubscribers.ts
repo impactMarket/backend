@@ -10,7 +10,7 @@ import Logger from '../loaders/logger';
 import ImMetadataService from '../services/imMetadata';
 import BeneficiaryService from '../services/beneficiary';
 import ManagerService from '../services/managers';
-import ClaimsService from '../services/claims';
+import ClaimsService from '../services/claim';
 import InflowService from '../services/inflow';
 
 
