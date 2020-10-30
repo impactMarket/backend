@@ -10,6 +10,7 @@ import Logger from '../loaders/logger';
 import ImMetadataService from '../services/imMetadata';
 import BeneficiaryService from '../services/beneficiary';
 import ManagerService from '../services/managers';
+import ClaimsService from '../services/claims';
 
 
 interface IFilterCommunityTmpData {
@@ -89,6 +90,16 @@ async function subscribeChainEvents(
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
                 const beneficiaryAddress = parsedLog.args[0];
                 BeneficiaryService.remove(beneficiaryAddress);
+            } else if (parsedLog.name === 'BeneficiaryClaim') {
+                const beneficiaryAddress = parsedLog.args[0];
+                const amount = parsedLog.args[1];
+                const communityPublicId = allCommunities.get(log.address)!;
+                ClaimsService.add(
+                    beneficiaryAddress,
+                    communityPublicId,
+                    amount,
+                    log.transactionHash
+                );
             }
         } else {
             try {

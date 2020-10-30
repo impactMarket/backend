@@ -11,6 +11,7 @@ import { initializeNotifiedBacker, NotifiedBacker } from './notifiedBacker';
 import { initializeImMetadata } from './imMetadata';
 import { Beneficiary, initializeBeneficiary } from './beneficiary';
 import { initializeManager, Manager } from './manager';
+import { Claims, initializeClaims } from './claims';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -27,6 +28,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeNotifiedBacker(sequelize);
     initializeBeneficiary(sequelize);
     initializeManager(sequelize);
+    initializeClaims(sequelize);
 
     Community.hasMany(SSI, { foreignKey: 'communityPublicId' });
     SSI.belongsTo(Community, { foreignKey: 'communityPublicId' });
@@ -52,5 +54,10 @@ export default function initModels(sequelize: Sequelize): void {
     Manager.belongsTo(User, {
         foreignKey: 'user',  // Manager.user
         targetKey: 'address', // the user.address
+    });
+
+    Claims.belongsTo(Community, {
+        foreignKey: 'communityId',  // Claims.communityId
+        targetKey: 'publicId', // the Community.publicId
     });
 }
