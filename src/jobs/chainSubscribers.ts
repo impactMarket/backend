@@ -11,6 +11,7 @@ import ImMetadataService from '../services/imMetadata';
 import BeneficiaryService from '../services/beneficiary';
 import ManagerService from '../services/managers';
 import ClaimsService from '../services/claims';
+import InflowService from '../services/inflow';
 
 
 interface IFilterCommunityTmpData {
@@ -71,6 +72,16 @@ async function subscribeChainEvents(
             // only transactions to community contracts
             if (allCommunitiesAddresses.includes(preParsedLog.args[1])) {
                 parsedLog = preParsedLog;
+                const from = parsedLog.args[0];
+                const toCommunityAddress = parsedLog.args[1];
+                const communityPublicId = allCommunities.get(toCommunityAddress)!;
+                const amount = parsedLog.args[2];
+                InflowService.add(
+                    from,
+                    communityPublicId,
+                    amount,
+                    log.transactionHash
+                );
             }
             //
         } else if (allCommunitiesAddresses.includes(log.address)) {

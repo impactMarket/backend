@@ -12,6 +12,7 @@ import { initializeImMetadata } from './imMetadata';
 import { Beneficiary, initializeBeneficiary } from './beneficiary';
 import { initializeManager, Manager } from './manager';
 import { Claims, initializeClaims } from './claims';
+import { Inflow } from './inflow';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -58,6 +59,11 @@ export default function initModels(sequelize: Sequelize): void {
 
     Claims.belongsTo(Community, {
         foreignKey: 'communityId',  // Claims.communityId
+        targetKey: 'publicId', // the Community.publicId
+    });
+
+    Inflow.belongsTo(Community, {
+        foreignKey: 'communityId',  // Inflow.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 }
