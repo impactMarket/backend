@@ -2,10 +2,9 @@ import { Sequelize } from 'sequelize';
 import { initializeCommunity, Community } from './community';
 import { initializeTransactions } from './transactions';
 import { initializeUser, User } from './user';
-import { initializeSSI, SSI } from './ssi';
+import { initializeSSI } from './ssi';
 import { initializeAgenda } from './agenda';
 import { ClaimLocation, initializeClaimLocation } from './claimLocation';
-import { initializeGlobalStatus } from './globalStatus';
 import { initializeExchangeRates } from './exchangeRates';
 import { initializeNotifiedBacker, NotifiedBacker } from './notifiedBacker';
 import { initializeImMetadata } from './imMetadata';
@@ -13,6 +12,9 @@ import { Beneficiary, initializeBeneficiary } from './beneficiary';
 import { initializeManager, Manager } from './manager';
 import { Claim, initializeClaim } from './claim';
 import { Inflow, initializeInflow } from './inflow';
+import { CommunityState, initializeCommunityState } from './communityState';
+import { CommunityDailyState, initializeCommunityDailyState } from './communityDailyState';
+import { CommunityDailyMetrics, initializeCommunityDailyMetrics } from './communityDailyMetrics';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -22,7 +24,6 @@ export default function initModels(sequelize: Sequelize): void {
     initializeUser(sequelize);
     initializeAgenda(sequelize);
     initializeClaimLocation(sequelize);
-    initializeGlobalStatus(sequelize);
     initializeExchangeRates(sequelize);
     initializeNotifiedBacker(sequelize);
     initializeImMetadata(sequelize);
@@ -31,12 +32,14 @@ export default function initModels(sequelize: Sequelize): void {
     initializeManager(sequelize);
     initializeClaim(sequelize);
     initializeInflow(sequelize);
+    initializeCommunityState(sequelize);
+    initializeCommunityDailyState(sequelize);
+    initializeCommunityDailyMetrics(sequelize);
 
-    Community.hasMany(SSI, { foreignKey: 'communityPublicId' });
-    SSI.belongsTo(Community, { foreignKey: 'communityPublicId' });
-
-    Community.hasMany(ClaimLocation, { foreignKey: 'communityPublicId' });
-    ClaimLocation.belongsTo(Community, { foreignKey: 'communityPublicId' });
+    ClaimLocation.belongsTo(Community, {
+        foreignKey: 'communityId',  // NotifiedBacker.communityId
+        targetKey: 'publicId', // the Community.publicId
+    });
 
     NotifiedBacker.belongsTo(Community, {
         foreignKey: 'communityId',  // NotifiedBacker.communityId
@@ -65,6 +68,21 @@ export default function initModels(sequelize: Sequelize): void {
 
     Inflow.belongsTo(Community, {
         foreignKey: 'communityId',  // Inflow.communityId
+        targetKey: 'publicId', // the Community.publicId
+    });
+
+    CommunityState.belongsTo(Community, {
+        foreignKey: 'communityId',  // CommunityState.communityId
+        targetKey: 'publicId', // the Community.publicId
+    });
+
+    CommunityDailyState.belongsTo(Community, {
+        foreignKey: 'communityId',  // CommunityDailyState.communityId
+        targetKey: 'publicId', // the Community.publicId
+    });
+
+    CommunityDailyMetrics.belongsTo(Community, {
+        foreignKey: 'communityId',  // CommunityDailyMetrics.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 }
