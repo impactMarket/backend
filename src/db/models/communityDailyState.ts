@@ -1,6 +1,15 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-
+// this is necessary, as the model requires other fields such as id and dates
+export interface ICommunityDailyStatusInsert {
+    communityId: string;
+    claimed: string;
+    claims: number;
+    beneficiaries: number;
+    raised: string;
+    backers: number;
+    date: Date;
+}
 export class CommunityDailyState extends Model {
     public id!: number;
     public communityId!: string;
@@ -34,23 +43,30 @@ export function initializeCommunityDailyState(sequelize: Sequelize): void {
             allowNull: false
         },
         claimed: {
-            type: DataTypes.STRING(48), // max 999999999999999999999999999999.999999999999999999 - 18 decimals
+            // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+            type: DataTypes.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
+            defaultValue: 0,
             allowNull: false,
         },
         claims: {
             type: DataTypes.INTEGER, // max 2,147,483,647
+            defaultValue: 0,
             allowNull: false,
         },
         beneficiaries: {
             type: DataTypes.INTEGER, // max 2,147,483,647
+            defaultValue: 0,
             allowNull: false,
         },
         raised: {
-            type: DataTypes.STRING(48), // max 999999999999999999999999999999.999999999999999999 - 18 decimals
+            // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+            type: DataTypes.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
+            defaultValue: 0,
             allowNull: false,
         },
         backers: {
             type: DataTypes.INTEGER, // max 2,147,483,647
+            defaultValue: 0,
             allowNull: false,
         },
         date: {

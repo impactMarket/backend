@@ -3,16 +3,12 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('claim', {
+        return queryInterface.createTable('communitydailystate', {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true
-            },
-            address: {
-                type: Sequelize.STRING(44),
-                allowNull: false
             },
             communityId: {
                 type: Sequelize.UUID,
@@ -23,19 +19,36 @@ module.exports = {
                 onDelete: 'RESTRICT',
                 allowNull: false
             },
-            amount: {
+            claimed: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
-                type: Sequelize.DECIMAL(24), // max 999,999 - plus 18 decimals
+                type: Sequelize.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
+                defaultValue: 0,
                 allowNull: false,
             },
-            tx: {
-                type: Sequelize.STRING(68),
-                unique: true,
+            claims: {
+                type: Sequelize.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
                 allowNull: false,
             },
-            txAt: {
+            beneficiaries: {
+                type: Sequelize.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
+                allowNull: false,
+            },
+            raised: {
+                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+                type: Sequelize.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
+                defaultValue: 0,
+                allowNull: false,
+            },
+            backers: {
+                type: Sequelize.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
+                allowNull: false,
+            },
+            date: {
                 type: Sequelize.DATE,
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 allowNull: false,
@@ -48,6 +61,6 @@ module.exports = {
         });
     },
     down: (queryInterface) => {
-        return queryInterface.dropTable('claim');
+        return queryInterface.dropTable('communitydailystate');
     }
 };

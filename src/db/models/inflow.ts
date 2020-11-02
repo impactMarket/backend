@@ -36,7 +36,8 @@ export function initializeInflow(sequelize: Sequelize): void {
             allowNull: false
         },
         amount: {
-            type: DataTypes.STRING(32), // we are saving all decimals, 18
+            // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+            type: DataTypes.DECIMAL(29), // max 9,999,999,999 - plus 18 decimals
             allowNull: false,
         },
         tx: {

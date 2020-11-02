@@ -32,11 +32,11 @@ export function initializeCommunityDailyMetrics(sequelize: Sequelize): void {
         },
         ssi: {
             type: DataTypes.FLOAT,
-            allowNull: false,
+            allowNull: true,
         },
         fundingRate: {
             type: DataTypes.FLOAT,
-            allowNull: false,
+            allowNull: true,
         },
         date: {
             type: DataTypes.DATE,

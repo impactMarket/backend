@@ -3,7 +3,7 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('communitydailystate', {
+        return queryInterface.createTable('communitydailymetrics', {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -19,25 +19,13 @@ module.exports = {
                 onDelete: 'RESTRICT',
                 allowNull: false
             },
-            claimed: {
-                type: Sequelize.STRING(48), // max 999999999999999999999999999999.999999999999999999 - 18 decimals
-                allowNull: false,
+            ssi: {
+                type: Sequelize.FLOAT,
+                allowNull: true,
             },
-            claims: {
-                type: Sequelize.INTEGER, // max 2,147,483,647
-                allowNull: false,
-            },
-            beneficiaries: {
-                type: Sequelize.INTEGER, // max 2,147,483,647
-                allowNull: false,
-            },
-            raised: {
-                type: Sequelize.STRING(48), // max 999999999999999999999999999999.999999999999999999 - 18 decimals
-                allowNull: false,
-            },
-            backers: {
-                type: Sequelize.INTEGER, // max 2,147,483,647
-                allowNull: false,
+            fundingRate: {
+                type: Sequelize.FLOAT,
+                allowNull: true,
             },
             date: {
                 type: Sequelize.DATE,
@@ -54,6 +42,6 @@ module.exports = {
         });
     },
     down: (queryInterface) => {
-        return queryInterface.dropTable('communitydailystate');
+        return queryInterface.dropTable('communitydailymetrics');
     }
 };
