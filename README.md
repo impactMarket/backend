@@ -36,6 +36,4 @@ Disable SSL locally
 ## Thanks
 
 Thanks to [Jetbrains](https://www.jetbrains.com/?from=impactMarket) for the free DataGrip license.
-<div align="center">
-    <img height="70" src="icon-datagrip.png">
-</div>
+<img height="70" src="icon-datagrip.png">
