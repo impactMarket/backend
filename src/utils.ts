@@ -3,6 +3,7 @@ import axios from 'axios';
 import UserService from "./services/user";
 import Logger from './loaders/logger';
 import { ICommunityInfo } from './types';
+import config from './config';
 
 // Accepts the array and key
 export function groupBy<T>(array: any[], key: string): Map<string, T[]> {
@@ -14,6 +15,28 @@ export function groupBy<T>(array: any[], key: string): Map<string, T[]> {
         // Return the current iteration `result` value, this will be taken as next iteration `result` value and accumulate
         return result.set(currentValue[key], content);
     }, new Map<string, T[]>()); // empty map is the initial value for result object
+}
+
+export async function getBlockTime(blockHash: string): Promise<Date> {
+    const requestContent = {
+        id: 0,
+        jsonrpc: '2.0',
+        method: 'eth_getBlockByHash',
+        params: [
+            blockHash,
+            false
+        ]
+    };
+    // handle success
+    const requestHeaders = {
+        headers: {
+            'Accept': 'application/json',
+            'Accept-encoding': 'gzip, deflate',
+            'Content-Type': 'application/json',
+        }
+    };
+    const response = await axios.post<{ result: { timestamp: string } }>(config.jsonRpcUrl, requestContent, requestHeaders);
+    return new Date(parseInt(response.data.result.timestamp, 16) * 1000);
 }
 
 export async function notifyBackersCommunityLowFunds(community: ICommunityInfo, backersPushTokens: string[]) {
