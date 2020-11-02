@@ -1,5 +1,5 @@
 <div align="center">
-    <img style="max-height: 408px" src="logo.png">
+    <img src="logo.png">
 </div>
 
 > A decentralized impact-driven 2-sided marketplace to provide financial services to charities and vulnerable beneficiaries in need or living in extreme poverty.
@@ -36,6 +36,6 @@ Disable SSL locally
 ## Thanks
 
 Thanks to [Jetbrains](https://www.jetbrains.com/?from=impactMarket) for the free DataGrip license.
-<div align="left">
-    <img style="max-height: 100px" src="icon-datagrip.png">
+<div align="center">
+    <img height="70" src="icon-datagrip.png">
 </div>
