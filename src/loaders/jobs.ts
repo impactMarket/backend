@@ -7,17 +7,18 @@ import config from '../config';
 import { ethers } from 'ethers';
 import CommunityService from '../services/community';
 import { CronJob } from 'cron';
-import { calcuateSSI } from '../jobs/calculateSSI';
+import { calcuateCommunitiesMetrics } from '../jobs/cron/community';
 import { prepareAgenda } from '../jobs/agenda';
-import { updateExchangeRates } from '../jobs/updateExchangeRates';
+import { updateExchangeRates } from '../jobs/cron/updateExchangeRates';
 import Logger from './logger';
-import { verifyCommunityFunds } from '../jobs/communityLowFunds';
+import { populateCommunityDailyState, verifyCommunityFunds } from '../jobs/cron/community';
 import ImMetadataService from '../services/imMetadata';
+import CronJobExecutedService from '../services/cronJobExecuted';
 
 
 export default async (): Promise<void> => {
+    cron();
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
-    cron(provider);
     let waitingForResponseAfterCrash = false;
     process.on('unhandledRejection', (error: any) => {
         // close all RPC connections and restart when available again
@@ -67,24 +68,49 @@ async function subscribers(provider: ethers.providers.JsonRpcProvider): Promise<
     );
 }
 
-function cron(provider: ethers.providers.JsonRpcProvider) {
-    // everyday at midnight (Europe/Paris time)
-    const jobCalculateSSI = new CronJob('0 0 * * *', () => {
-        calcuateSSI(provider);
-    }, null, false, 'Europe/Paris');
-    jobCalculateSSI.start();
-    // update exchange rates
+/**
+ * This method starts all cron jobs. Cron jobs jave specific times to happen.
+ * They all follow the API timezone, which should be UTC, same as postgresql.
+ */
+function cron() {
+    // multiple times a day
+
+    // every three hours, update exchange rates
     if (config.currenciesApiKey !== undefined && config.currenciesApiKey.length > 0) {
         updateExchangeRates();
-        // every three ours, update exchange rates
-        const jobUpdateExchangeRates = new CronJob('0 */3 * * *', () => {
-            updateExchangeRates();
-        }, null, false);
-        jobUpdateExchangeRates.start();
+        new CronJob('0 */3 * * *', async () => {
+            await updateExchangeRates();
+        }, () => {
+            CronJobExecutedService.add('updateExchangeRates');
+            Logger.info('updateExchangeRates successfully executed!');
+        }, true);
     }
-    // verify community funds three hours
-    const jobVerifyCommunityFunds = new CronJob('0 */3 * * *', () => {
-        verifyCommunityFunds();
-    }, null, false);
-    jobVerifyCommunityFunds.start();
+
+    // every four hours, verify community funds
+    new CronJob('0 */4 * * *', async () => {
+        await verifyCommunityFunds();
+    }, () => {
+        CronJobExecutedService.add('verifyCommunityFunds');
+        Logger.info('verifyCommunityFunds successfully executed!');
+    }, true);
+
+
+    // once a day
+
+    // everyday at midnight
+    new CronJob('0 0 * * *', async () => {
+        await calcuateCommunitiesMetrics();
+        // TODO: calculate global metrics
+    }, () => {
+        CronJobExecutedService.add('calcuateMetrics');
+        Logger.info('calcuateMetrics successfully executed!');
+    }, true);
+
+    // everyday at midday, insert community daily rows with 5 days in advance
+    new CronJob('0 12 * * *', async () => {
+        await populateCommunityDailyState();
+    }, () => {
+        CronJobExecutedService.add('populateCommunityDailyState');
+        Logger.info('populateCommunityDailyState successfully executed!');
+    }, true);
 }
