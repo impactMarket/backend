@@ -10,10 +10,14 @@ import BeneficiaryService from '../../services/beneficiary';
 import { Beneficiary } from '../../db/models/beneficiary';
 import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
 import { median, mean } from 'mathjs';
+import ClaimService from '../../services/claim';
+import InflowService from '../../services/inflow';
 
 
-async function calcuateMetrics(): Promise<void> {
+export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
+    const monthlyClaimed = await ClaimService.getMonthlyClaimed();
+    const monthlyRaised = await InflowService.getMonthlyRaised();
     const calculateMetrics = async (community: ICommunityInfo) => {
         let ssi: number | null = null;
         let fundingRate: number | null = null;
@@ -46,8 +50,19 @@ async function calcuateMetrics(): Promise<void> {
             const madTimeWaited = median(beneficiariesTimeWaited);
             ssi = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
         }
-        // TODO: calculate funding rate
-        
+        // calculate funding rate
+        const communityMonthlyClaimed = monthlyClaimed.get(community.publicId);
+        const communityMonthlyRaised = monthlyRaised.get(community.publicId);
+        if (communityMonthlyClaimed !== undefined && communityMonthlyRaised !== undefined) {
+            fundingRate = parseFloat(
+                new BigNumber(communityMonthlyRaised)
+                    .minus(communityMonthlyClaimed)
+                    .dividedBy(communityMonthlyRaised)
+                    .multipliedBy(100)
+                    .toString()
+            );
+        }
+
         if (ssi !== null || fundingRate !== null) {
             CommunityDailyMetricsService.add(
                 community.publicId,

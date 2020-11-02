@@ -7,7 +7,7 @@ import TransactionsService from './transactions';
 import { ICommunityInfo, ICommunityVars } from '../types';
 import { Op } from 'sequelize';
 import SSIService from './ssi';
-import { notifyManagerAdded, sendPushNotification } from '../utils';
+import { notifyManagerAdded } from '../utils';
 
 
 export default class CommunityService {
@@ -60,7 +60,10 @@ export default class CommunityService {
         if (index !== -1) {
             const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
             await TransactionsService.add(provider, txReceipt.logs[index], eventsCoomunity[index]);
+            // it's not necessary to register the event!
+            return newCommunity;
         }
+        // TODO: should return undefined
         return newCommunity;
     }
 

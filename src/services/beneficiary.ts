@@ -20,6 +20,12 @@ export default class BeneficiaryService {
         return true;
     }
 
+    public static async getAllInCommunity(
+        communityId: string,
+    ): Promise<Beneficiary[]> {
+        return await Beneficiary.findAll({ where: { communityId } });
+    }
+
     public static async get(
         address: string,
     ): Promise<Beneficiary | null> {
