@@ -5,6 +5,9 @@ export class Beneficiary extends Model {
     public id!: number;
     public address!: string;
     public communityId!: string;
+    public claims!: number;
+    public lastClaimAt!: Date;
+    public penultimateClaimAt!: Date;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -30,6 +33,19 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
             },
             onDelete: 'RESTRICT',
             allowNull: false
+        },
+        claims: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0,
+            allowNull: false,
+        },
+        lastClaimAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        penultimateClaimAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
         },
         createdAt: {
             type: DataTypes.DATE,
