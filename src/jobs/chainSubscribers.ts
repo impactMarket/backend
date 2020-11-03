@@ -4,7 +4,7 @@ import CommunityContractABI from '../contracts/CommunityABI.json'
 import ERC20ABI from '../contracts/ERC20ABI.json'
 import TransactionsService from '../services/transactions';
 import config from '../config';
-import { notifyBeneficiaryAdded } from '../utils';
+import { getBlockTime, notifyBeneficiaryAdded } from '../utils';
 import CommunityService from '../services/community';
 import Logger from '../loaders/logger';
 import ImMetadataService from '../services/imMetadata';
@@ -50,6 +50,7 @@ async function subscribeChainEvents(
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
     const allCommunitiesAddresses = Array.from(communities.keys());
     const allCommunities = communities;
+    // TODO: remove await
     provider.on(filter, async (log: ethers.providers.Log) => {
         let parsedLog: ethers.utils.LogDescription | undefined;
         // if (log.address === config.impactMarketContractAddress) {
@@ -76,12 +77,13 @@ async function subscribeChainEvents(
                 const toCommunityAddress = parsedLog.args[1];
                 const communityPublicId = allCommunities.get(toCommunityAddress)!;
                 const amount = parsedLog.args[2];
-                InflowService.add(
+                getBlockTime(log.blockHash).then((txAt) => InflowService.add(
                     from,
                     communityPublicId,
                     amount,
-                    log.transactionHash
-                );
+                    log.transactionHash,
+                    txAt,
+                ));
             }
             //
         } else if (allCommunitiesAddresses.includes(log.address)) {
@@ -97,7 +99,8 @@ async function subscribeChainEvents(
                     communityPublicId = community.publicId;
                 }
                 notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
-                BeneficiaryService.add(beneficiaryAddress, communityPublicId);
+                getBlockTime(log.blockHash).then((txAt) => BeneficiaryService
+                    .add(beneficiaryAddress, communityPublicId!, txAt));
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
                 const beneficiaryAddress = parsedLog.args[0];
                 BeneficiaryService.remove(beneficiaryAddress);
@@ -105,12 +108,13 @@ async function subscribeChainEvents(
                 const beneficiaryAddress = parsedLog.args[0];
                 const amount = parsedLog.args[1];
                 const communityPublicId = allCommunities.get(log.address)!;
-                ClaimsService.add(
+                getBlockTime(log.blockHash).then((txAt) => ClaimsService.add(
                     beneficiaryAddress,
                     communityPublicId,
                     amount,
-                    log.transactionHash
-                );
+                    log.transactionHash,
+                    txAt,
+                ));
             }
         } else {
             try {

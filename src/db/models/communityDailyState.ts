@@ -70,7 +70,7 @@ export function initializeCommunityDailyState(sequelize: Sequelize): void {
             allowNull: false,
         },
         date: {
-            type: DataTypes.DATE,
+            type: DataTypes.DATEONLY,
             allowNull: false
         },
         createdAt: {

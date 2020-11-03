@@ -5,7 +5,8 @@ export default class BeneficiaryService {
 
     public static async add(
         address: string,
-        communityId: string
+        communityId: string,
+        txAt: Date,
     ): Promise<boolean> {
         // if user does not exist, add to pending list
         // otherwise update
@@ -13,7 +14,8 @@ export default class BeneficiaryService {
         if (user === null) {
             const updated = await Beneficiary.create({
                 address,
-                communityId
+                communityId,
+                txAt,
             });
             return updated[0] > 0;
         }

@@ -39,7 +39,7 @@ export function initializeCommunityDailyMetrics(sequelize: Sequelize): void {
             allowNull: true,
         },
         date: {
-            type: DataTypes.DATE,
+            type: DataTypes.DATEONLY,
             allowNull: false
         },
         createdAt: {

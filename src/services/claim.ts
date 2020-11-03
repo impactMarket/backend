@@ -10,6 +10,7 @@ export default class ClaimService {
         communityId: string,
         amount: string,
         tx: string,
+        txAt: Date,
     ): Promise<void> {
         try {
             await Claim.create({
@@ -17,7 +18,7 @@ export default class ClaimService {
                 communityId,
                 amount,
                 tx,
-                txAt: new Date(),
+                txAt,
             });
         } catch (e) {
             Logger.info(e);

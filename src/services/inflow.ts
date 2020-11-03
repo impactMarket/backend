@@ -10,6 +10,7 @@ export default class InflowService {
         communityId: string,
         amount: string,
         tx: string,
+        txAt: Date,
     ): Promise<void> {
         try {
             await Inflow.create({
@@ -17,7 +18,7 @@ export default class InflowService {
                 communityId,
                 amount,
                 tx,
-                txAt: new Date(),
+                txAt,
             });
         } catch(e) {
             Logger.info(e);
