@@ -15,6 +15,7 @@ import { Inflow, initializeInflow } from './inflow';
 import { CommunityState, initializeCommunityState } from './communityState';
 import { CommunityDailyState, initializeCommunityDailyState } from './communityDailyState';
 import { CommunityDailyMetrics, initializeCommunityDailyMetrics } from './communityDailyMetrics';
+import { initializeMobileError } from './mobileError';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -35,6 +36,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeCommunityState(sequelize);
     initializeCommunityDailyState(sequelize);
     initializeCommunityDailyMetrics(sequelize);
+    initializeMobileError(sequelize);
 
     ClaimLocation.belongsTo(Community, {
         foreignKey: 'communityId',  // NotifiedBacker.communityId

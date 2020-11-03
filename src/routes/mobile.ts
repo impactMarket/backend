@@ -5,6 +5,7 @@ import aws from 'aws-sdk';
 import Logger from '../loaders/logger';
 import Joi from '@hapi/joi';
 import { celebrate } from 'celebrate';
+import { MobileError } from '../db/models/mobileError';
 
 const route = Router();
 
@@ -57,6 +58,11 @@ export default (app: Router): void => {
                 action,
                 error
             } = req.body;
+            MobileError.create({
+                address,
+                action,
+                error
+            });
             Logger.warn(address, action, error);
             res.sendStatus(200);
         });
