@@ -165,7 +165,7 @@ module.exports = {
             tableName: 'community',
             sequelize: queryInterface.sequelize, // this bit is important
         });
-        let lastTx;
+        const beneficiariesToInsert = [];
         for (let index = 0; index < users.length; index++) {
             const user = users[index];
             const reqResult = await Transactions.findAll({
@@ -184,16 +184,17 @@ module.exports = {
             if (reqResult.length !== 0 && reqResult[0].event !== 'BeneficiaryRemoved') {
                 const community = await Community.findOne({ where: { contractAddress: reqResult[0].contractAddress } });
                 if (community !== null) {
-                    lastTx = await queryInterface.bulkInsert('beneficiary', [{
+                    beneficiariesToInsert.push({
                         address: user.address,
                         communityId: community.publicId,
+                        txAt: reqResult[0].txAt,
                         createdAt: new Date(),
                         updatedAt: new Date()
-                    }]);
+                    });
                 }
             }
         }
-        return lastTx;
+        return queryInterface.bulkInsert('beneficiary', beneficiariesToInsert);
     },
 
     down(queryInterface, Sequelize) {
