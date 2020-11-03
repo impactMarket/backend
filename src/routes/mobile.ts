@@ -64,7 +64,6 @@ export default (app: Router): void => {
                 action,
                 error
             });
-            Logger.warn(address, action, error);
             res.sendStatus(200);
         });
 };
