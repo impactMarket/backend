@@ -21,11 +21,23 @@ module.exports = {
             },
             ssi: {
                 type: Sequelize.FLOAT,
-                allowNull: true,
+                allowNull: false,
             },
             fundingRate: {
                 type: Sequelize.FLOAT,
-                allowNull: true,
+                allowNull: false,
+            },
+            spendingRate: {
+                type: Sequelize.FLOAT,
+                allowNull: false,
+            },
+            ubiRate: {
+                type: Sequelize.FLOAT,
+                allowNull: false,
+            },
+            estimatedDuration: {
+                type: Sequelize.FLOAT,
+                allowNull: false,
             },
             date: {
                 type: Sequelize.DATEONLY,

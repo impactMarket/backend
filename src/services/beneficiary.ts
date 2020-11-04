@@ -1,3 +1,4 @@
+import { Op, fn } from 'sequelize';
 import { Beneficiary } from '../db/models/beneficiary';
 
 
@@ -39,4 +40,22 @@ export default class BeneficiaryService {
     ): Promise<void> {
         await Beneficiary.destroy({ where: { address } });
     }
+
+    public static async getActiveBeneficiariesLast7Days(): Promise<Map<string, number>> {
+        const yesterday = new Date(new Date().getTime() - 86400000);
+        yesterday.setHours(0, 0, 0, 0);
+        // seven days ago, from yesterday
+        const sevenDaysAgo = new Date(yesterday.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
+        return new Map((await Beneficiary.findAll({
+            attributes: ['communityId', [fn('count', fn('distinct', 'address')), 'active']],
+            where: {
+                lastClaimAt: {
+                    [Op.lte]: yesterday,
+                    [Op.gte]: sevenDaysAgo,
+                }
+            },
+            group: 'communityId',
+        })).map((c: any) => [c.communityId, c.active]));
+    }
+
 }

@@ -2,7 +2,6 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 
 export class CommunityState extends Model {
-    public id!: number;
     public communityId!: string;
     public claimed!: string;
     public claims!: number;
@@ -17,20 +16,16 @@ export class CommunityState extends Model {
 
 export function initializeCommunityState(sequelize: Sequelize): void {
     return CommunityState.init({
-        id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            autoIncrement: true,
-            primaryKey: true
-        },
         communityId: {
             type: DataTypes.UUID,
+            primaryKey: true,
+            unique: true,
             references: {
                 model: 'community', // name of Target model
                 key: 'publicId', // key in Target model that we're referencing
             },
             onDelete: 'RESTRICT',
-            allowNull: false
+            allowNull: false,
         },
         claimed: {
             // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102

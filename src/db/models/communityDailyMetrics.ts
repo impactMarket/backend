@@ -6,6 +6,9 @@ export class CommunityDailyMetrics extends Model {
     public communityId!: string;
     public ssi!: number;
     public fundingRate!: number;
+    public spendingRate!: number;
+    public ubiRate!: number;
+    public estimatedDuration!: number;
     public date!: Date;
 
     // timestamps!
@@ -32,11 +35,23 @@ export function initializeCommunityDailyMetrics(sequelize: Sequelize): void {
         },
         ssi: {
             type: DataTypes.FLOAT,
-            allowNull: true,
+            allowNull: false,
         },
         fundingRate: {
             type: DataTypes.FLOAT,
-            allowNull: true,
+            allowNull: false,
+        },
+        spendingRate: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+        },
+        ubiRate: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+        },
+        estimatedDuration: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
         },
         date: {
             type: DataTypes.DATEONLY,

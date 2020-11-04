@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { Op, fn } from 'sequelize';
 import { CommunityDailyState, ICommunityDailyStatusInsert } from '../db/models/communityDailyState';
 import Logger from '../loaders/logger';
 
@@ -37,7 +38,7 @@ export default class CommunityDailyStateService {
         const lastDay = (await CommunityDailyState.findOne({ where: { communityId }, order: [['date', 'DESC']] }))!.date;
         let missingDays = moment(today.setTime(today.getTime() + (days * 24 * 60 * 60 * 1000))).diff(lastDay, 'days');
         const emptyDays: ICommunityDailyStatusInsert[] = [];
-        while(missingDays-- > 0) {
+        while (missingDays-- > 0) {
             emptyDays.push({
                 communityId,
                 claimed: '0',
@@ -60,5 +61,25 @@ export default class CommunityDailyStateService {
         return await CommunityDailyState.findAll({
             where: { date },
         });
+    }
+
+    /**
+     * Get total claimed for each community, for the 7 previous days, starting yesterday.
+     */
+    public static async getTotalClaimedLast7Days(): Promise<Map<string, string>> {
+        const yesterday = new Date(new Date().getTime() - 86400000);
+        yesterday.setHours(0, 0, 0, 0);
+        // seven days ago, from yesterday
+        const sevenDaysAgo = new Date(yesterday.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
+        return new Map((await CommunityDailyState.findAll({
+            attributes: ['communityId', [fn('sum', 'claimed'), 'totalClaimed']],
+            where: {
+                date: {
+                    [Op.lte]: yesterday,
+                    [Op.gte]: sevenDaysAgo,
+                }
+            },
+            group: 'communityId',
+        })).map((c: any) => [c.communityId, c.totalClaimed]));
     }
 }

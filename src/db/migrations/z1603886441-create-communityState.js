@@ -4,20 +4,16 @@
 module.exports = {
     up(queryInterface, Sequelize) {
         return queryInterface.createTable('communitystate', {
-            id: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-                autoIncrement: true,
-                primaryKey: true
-            },
             communityId: {
                 type: Sequelize.UUID,
+                primaryKey: true,
+                unique: true,
                 references: {
                     model: 'community', // name of Target model
                     key: 'publicId', // key in Target model that we're referencing
                 },
                 onDelete: 'RESTRICT',
-                allowNull: false
+                allowNull: false,
             },
             claimed: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
