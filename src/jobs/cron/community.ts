@@ -12,22 +12,36 @@ import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
 import { median, mean } from 'mathjs';
 import ClaimService from '../../services/claim';
 import InflowService from '../../services/inflow';
+import CommunityContractService from '../../services/communityContract';
+import config from '../../config';
 
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
     const monthlyClaimed = await ClaimService.getMonthlyClaimed();
     const monthlyRaised = await InflowService.getMonthlyRaised();
+    const activeBeneficiariesLast7Days = await BeneficiaryService.getActiveBeneficiariesLast7Days();
+    const totalClaimedLast7Days = await CommunityDailyStateService.getTotalClaimedLast7Days();
+    const communitiesContract = await CommunityContractService.getAll();
     const calculateMetrics = async (community: ICommunityInfo) => {
-        let ssi: number | null = null;
-        let fundingRate: number | null = null;
+        // if no activity, do not calculate
+        if (community.totalClaimed === '0' || community.totalRaised === '0') {
+            return;
+        }
+        const rawBeneficiaries = await BeneficiaryService.getAllInCommunity(community.publicId);
+        if (rawBeneficiaries.length < 1) {
+            return;
+        }
+        let ssi: number;
+        let fundingRate: number;
+        let spendingRate: number;
+        let ubiRate: number;
+        let estimatedDuration: number;
 
         const beneficiariesTimeToWait: number[] = [];
         const beneficiariesTimeWaited: number[] = [];
 
-        const beneficiaries = (
-            await BeneficiaryService.getAllInCommunity(community.publicId)
-        ).reduce((map, obj) => {
+        const beneficiaries = rawBeneficiaries.reduce((map, obj) => {
             map[obj.address] = obj;
             return map;
         }, {} as { [key: string]: Beneficiary; });
@@ -45,32 +59,48 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             beneficiariesTimeWaited.push(timeWaited);
         }
         // calculate ssi
-        if (beneficiariesTimeToWait.length > 1 && beneficiariesTimeWaited.length > 1) {
-            const meanTimeToWait = mean(beneficiariesTimeToWait);
-            const madTimeWaited = median(beneficiariesTimeWaited);
-            ssi = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
-        }
+        const meanTimeToWait = mean(beneficiariesTimeToWait);
+        const madTimeWaited = median(beneficiariesTimeWaited);
+        ssi = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
         // calculate funding rate
-        const communityMonthlyClaimed = monthlyClaimed.get(community.publicId);
-        const communityMonthlyRaised = monthlyRaised.get(community.publicId);
-        if (communityMonthlyClaimed !== undefined && communityMonthlyRaised !== undefined) {
-            fundingRate = parseFloat(
-                new BigNumber(communityMonthlyRaised)
-                    .minus(communityMonthlyClaimed)
-                    .dividedBy(communityMonthlyRaised)
-                    .multipliedBy(100)
-                    .toFixed(2, 1)
-            );
-        }
+        const communityMonthlyClaimed = monthlyClaimed.get(community.publicId)!;
+        const communityMonthlyRaised = monthlyRaised.get(community.publicId)!;
+        fundingRate = parseFloat(
+            new BigNumber(communityMonthlyRaised)
+                .minus(communityMonthlyClaimed)
+                .dividedBy(communityMonthlyRaised)
+                .multipliedBy(100)
+                .toFixed(2, 1)
+        );
 
-        if (ssi !== null || fundingRate !== null) {
-            CommunityDailyMetricsService.add(
-                community.publicId,
-                ssi,
-                fundingRate,
-                new Date(),
-            );
-        }
+        // calculate ubiRate
+        ubiRate = parseFloat(
+            new BigNumber(totalClaimedLast7Days.get(community.publicId)!)
+                .dividedBy(config.cUSDDecimal) // set 18 decimals from onchain values
+                .dividedBy(activeBeneficiariesLast7Days.get(community.publicId)!)
+                .dividedBy(7)
+                .toFixed(2, 1)
+        );
+        // TODO: calculate spendingRate
+        spendingRate = 0;
+        // calculate estimatedDuration
+        estimatedDuration = parseFloat(
+            new BigNumber(communitiesContract.get(community.publicId)!.maxClaim)
+                .dividedBy(config.cUSDDecimal) // set 18 decimals from onchain values
+                .dividedBy(ubiRate)
+                .dividedBy(30)
+                .toFixed(2, 1)
+        );
+
+        CommunityDailyMetricsService.add(
+            community.publicId,
+            ssi,
+            fundingRate,
+            spendingRate,
+            ubiRate,
+            estimatedDuration,
+            new Date(),
+        );
     }
     const communities = await CommunityService.getAll('valid');
     // for each community
