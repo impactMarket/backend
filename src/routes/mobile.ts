@@ -6,13 +6,14 @@ import Logger from '../loaders/logger';
 import Joi from '@hapi/joi';
 import { celebrate } from 'celebrate';
 import { MobileError } from '../db/models/mobileError';
+import config from '../config';
 
 const route = Router();
 
 aws.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: "eu-west-3",
+    accessKeyId: config.aws.accessKeyId,
+    secretAccessKey: config.aws.secretAccessKey,
+    region: config.aws.region,
 });
 const s3 = new aws.S3();
 
@@ -22,7 +23,7 @@ export default (app: Router): void => {
     route.post('/logs', (req, res) => {
         const params = {
             ACL: 'public-read',
-            Bucket: process.env.AWS_BUKET_LOGS!,
+            Bucket: config.aws.bucketLogs,
             Body: Buffer.from(req.body.logs),
             Key: Date.now() + Math.random() + '.txt'
         };
@@ -39,8 +40,8 @@ export default (app: Router): void => {
 
     route.get('/version', (req, res) => {
         res.send({
-            latest: process.env.LATEST_MOBILE_APP_VERSION,
-            minimal: process.env.MINIMAL_MOBILE_APP_VERSION
+            latest: config.mobileVersion.latest,
+            minimal: config.mobileVersion.minimal
         });
     });
 

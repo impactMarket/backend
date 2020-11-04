@@ -79,4 +79,33 @@ export default {
      * Fixer API to get currency rates.
      */
     currenciesApiKey: process.env.CURRENCIES_API_KEY!,
+
+    /**
+     * Sentry key.
+     */
+    sentryKey: process.env.SENTRY_KEY,
+
+    /**
+     * Master internal key.
+     */
+    masterKey: process.env.MASTER_KEY!,
+
+    /**
+     * AWS config.
+     */
+    aws: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        region: 'eu-west-3',
+        picturesBucket: process.env.AWS_BUCKET!,
+        bucketLogs: process.env.AWS_BUKET_LOGS!
+    },
+
+    /**
+     * Mobile versions.
+     */
+    mobileVersion: {
+        latest: process.env.LATEST_MOBILE_APP_VERSION!,
+        minimal: process.env.MINIMAL_MOBILE_APP_VERSION!
+    },
 };

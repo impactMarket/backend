@@ -39,5 +39,5 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
 }
 
 export function generateAccessToken(userAddress: string): string {
-    return jwt.sign({ address: userAddress, masterKey: process.env.MASTER_KEY } as UserInRequest, config.jwtSecret);
+    return jwt.sign({ address: userAddress, masterKey: config.masterKey } as UserInRequest, config.jwtSecret);
 }

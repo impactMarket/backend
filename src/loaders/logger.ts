@@ -11,7 +11,7 @@ const transports: (winston.transports.FileTransportInstance | winston.transports
         )
     })
 ];
-// if (process.env.NODE_ENV === 'development') {
+// if (NODE_ENV === 'development') {
 //     transports.push(
 //         new winston.transports.Console({
 //             format: winston.format.combine(

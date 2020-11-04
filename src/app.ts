@@ -8,12 +8,12 @@ import loaders from './loaders';
 async function startServer() {
     const app = express();
 
-    if (process.env.SENTRY_KEY !== undefined) {
+    if (config.sentryKey !== undefined) {
         Sentry.init({
-            dsn: process.env.SENTRY_KEY,
+            dsn: config.sentryKey,
             integrations: [
                 // enable HTTP calls tracing
-                // new Sentry.Integrations.Http({ tracing: true }),
+                new Sentry.Integrations.Http({ tracing: true }),
                 // enable Express.js middleware tracing
                 new Tracing.Integrations.Express({ app }),
             ],
