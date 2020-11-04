@@ -131,6 +131,10 @@ export default class UserService {
         return User.findOne({ where: { address } });
     }
 
+    public static async getAllAddresses(): Promise<string[]> {
+        return (await User.findAll({ attributes: ['address'] })).map((u) => u.address);
+    }
+
     public static async getPushTokensFromAddresses(addresses: string[]): Promise<string[]> {
         const users = await User.findAll({
             attributes: ['pushNotificationToken'],

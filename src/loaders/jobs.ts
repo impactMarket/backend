@@ -14,6 +14,7 @@ import Logger from './logger';
 import { populateCommunityDailyState, verifyCommunityFunds } from '../jobs/cron/community';
 import ImMetadataService from '../services/imMetadata';
 import CronJobExecutedService from '../services/cronJobExecuted';
+import { calcuateGlobalMetrics } from '../jobs/cron/global';
 
 
 export default async (): Promise<void> => {
@@ -100,7 +101,7 @@ function cron() {
     // everyday at midnight
     new CronJob('0 0 * * *', async () => {
         await calcuateCommunitiesMetrics();
-        // TODO: calculate global metrics
+        await calcuateGlobalMetrics();
     }, () => {
         CronJobExecutedService.add('calcuateMetrics');
         Logger.info('calcuateMetrics successfully executed!');

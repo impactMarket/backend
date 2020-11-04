@@ -59,7 +59,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     .minus(communityMonthlyClaimed)
                     .dividedBy(communityMonthlyRaised)
                     .multipliedBy(100)
-                    .toString()
+                    .toFixed(2, 1)
             );
         }
 
