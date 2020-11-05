@@ -3,6 +3,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class MobileError extends Model {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
+    public version!: string;
     public address!: string;
     public action!: string;
     public error!: string;
@@ -18,6 +19,10 @@ export function initializeMobileError(sequelize: Sequelize): void {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
+        },
+        version: {
+            type: DataTypes.STRING(8),
+            allowNull: true,
         },
         address: {
             type: DataTypes.STRING(44),

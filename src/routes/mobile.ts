@@ -48,6 +48,7 @@ export default (app: Router): void => {
     route.post('/error',
         celebrate({
             body: Joi.object({
+                version: Joi.string().optional(), // if not logged-in
                 address: Joi.string().allow(''), // if not logged-in
                 action: Joi.string().required(),
                 error: Joi.string().required(),
@@ -55,11 +56,13 @@ export default (app: Router): void => {
         }),
         (req, res) => {
             const {
+                version,
                 address,
                 action,
                 error
             } = req.body;
             MobileError.create({
+                version,
                 address,
                 action,
                 error
