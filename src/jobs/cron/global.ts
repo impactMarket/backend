@@ -10,6 +10,7 @@ import InflowService from '../../services/inflow';
 import GlobalDailyStateService from '../../services/globalDailyState';
 import CommunityDailyStateService from '../../services/communityDailyState';
 import CommunityContractService from '../../services/communityContract';
+import ReachedAddressService from '../../services/reachedAddress';
 
 
 export async function calcuateGlobalMetrics(): Promise<void> {
@@ -47,17 +48,19 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const monthlyRaised = await InflowService.getMonthlyRaised();
 
     // inflow / outflow
-    const totalRaised = lastGlobalMetrics.totalRaised + communitiesToday.totalRaised;
-    const totalDistributed = lastGlobalMetrics.totalDistributed + communitiesToday.totalClaimed;
+    const totalRaised = new BigNumber(lastGlobalMetrics.totalRaised).plus(communitiesToday.totalRaised).toString();
+    const totalDistributed = new BigNumber(lastGlobalMetrics.totalDistributed).plus(communitiesToday.totalClaimed).toString();
     const totalBackers = await InflowService.countEvergreenBackers();
     const totalBeneficiaries = lastGlobalMetrics.totalBeneficiaries + communitiesToday.totalBeneficiaries;
 
     // ubi pulse
-    const givingRate = new BigNumber(backersAndFunding.funding)
-        .dividedBy(backersAndFunding.backers)
-        .dividedBy(30)
-        .decimalPlaces(2, 1)
-        .toString();
+    const givingRate = parseFloat(
+        new BigNumber(backersAndFunding.funding)
+            .dividedBy(backersAndFunding.backers)
+            .dividedBy(30)
+            .decimalPlaces(2, 1)
+            .toString()
+    );
     const ubiRate = parseFloat(
         new BigNumber(beneficiariesAndClaimed.claimed)
             .dividedBy(beneficiariesAndClaimed.beneficiaries)
@@ -80,7 +83,8 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         new BigNumber(0)
     ).toString();
     const transactions = fromUsers.length + toUsers.length;
-    const reach = new Set(addressFromUsers.concat(addressToUsers));
+    const newAddressesReachedToday = Array.from(new Set(addressFromUsers.concat(addressToUsers)));
+    const reach = await ReachedAddressService.addNewReachedToday(newAddressesReachedToday);
     // TODO: spending rate
     const spendingRate = 0;
 
@@ -93,8 +97,8 @@ export async function calcuateGlobalMetrics(): Promise<void> {
             .multipliedBy(100)
             .toFixed(2, 1)
     );
-    const totalVolume = lastGlobalMetrics.totalVolume + volume;
-    const totalTransactions = lastGlobalMetrics.totalTransactions.toString() + transactions;
+    const totalVolume = new BigNumber(lastGlobalMetrics.totalVolume).plus(volume).toString();
+    const totalTransactions = new BigNumber(lastGlobalMetrics.totalTransactions.toString()).plus(transactions).toString();
 
     // register new global daily state
     await GlobalDailyStateService.add(
@@ -119,7 +123,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         avgComulativeUbi,
         avgUbiDuration,
         totalVolume,
-        totalTransactions
+        BigInt(totalTransactions)
     );
 
     // save currentBlockNumber as QueryFilterLastBlock
