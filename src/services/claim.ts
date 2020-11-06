@@ -50,4 +50,30 @@ export default class ClaimService {
         // there will always be claimed.lenght > 0 (were only zero at the begining)
         return (claimed as any).claimed;
     }
+
+    public static async uniqueBeneficiariesAndClaimedLast7Days(): Promise<{
+        beneficiaries: number;
+        claimed: string;
+    }> {
+        const yesterday = new Date(new Date().getTime() - 86400000);
+        yesterday.setHours(0, 0, 0, 0);
+        // seven days ago, from yesterday
+        const sevenDaysAgo = new Date(yesterday.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
+        const result = await Claim.findAll({
+            attributes: [
+                [fn('count', fn('distinct', 'address')), 'beneficiaries'],
+                [fn('sum', 'amount'), 'claimed']
+            ],
+            where: {
+                txAt: {
+                    [Op.lte]: yesterday,
+                    [Op.gte]: sevenDaysAgo,
+                }
+            },
+        });
+        return {
+            beneficiaries: (result as any).beneficiaries,
+            claimed: (result as any).claimed,
+        }
+    }
 }

@@ -10,16 +10,12 @@ import BeneficiaryService from '../../services/beneficiary';
 import { Beneficiary } from '../../db/models/beneficiary';
 import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
 import { median, mean } from 'mathjs';
-import ClaimService from '../../services/claim';
-import InflowService from '../../services/inflow';
 import CommunityContractService from '../../services/communityContract';
 import config from '../../config';
 
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
-    const monthlyClaimed = await ClaimService.getMonthlyClaimed();
-    const monthlyRaised = await InflowService.getMonthlyRaised();
     const activeBeneficiariesLast7Days = await BeneficiaryService.getActiveBeneficiariesLast7Days();
     const totalClaimedLast7Days = await CommunityDailyStateService.getTotalClaimedLast7Days();
     const communitiesContract = await CommunityContractService.getAll();
@@ -33,8 +29,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             return;
         }
         let ssi: number;
-        let fundingRate: number;
-        let spendingRate: number;
         let ubiRate: number;
         let estimatedDuration: number;
 
@@ -62,16 +56,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const meanTimeToWait = mean(beneficiariesTimeToWait);
         const madTimeWaited = median(beneficiariesTimeWaited);
         ssi = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
-        // calculate funding rate
-        const communityMonthlyClaimed = monthlyClaimed.get(community.publicId)!;
-        const communityMonthlyRaised = monthlyRaised.get(community.publicId)!;
-        fundingRate = parseFloat(
-            new BigNumber(communityMonthlyRaised)
-                .minus(communityMonthlyClaimed)
-                .dividedBy(communityMonthlyRaised)
-                .multipliedBy(100)
-                .toFixed(2, 1)
-        );
 
         // calculate ubiRate
         ubiRate = parseFloat(
@@ -81,8 +65,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 .dividedBy(7)
                 .toFixed(2, 1)
         );
-        // TODO: calculate spendingRate
-        spendingRate = 0;
+
         // calculate estimatedDuration
         estimatedDuration = parseFloat(
             new BigNumber(communitiesContract.get(community.publicId)!.maxClaim)
@@ -95,8 +78,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         CommunityDailyMetricsService.add(
             community.publicId,
             ssi,
-            fundingRate,
-            spendingRate,
             ubiRate,
             estimatedDuration,
             new Date(),
