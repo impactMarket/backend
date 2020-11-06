@@ -23,14 +23,6 @@ module.exports = {
                 type: Sequelize.FLOAT,
                 allowNull: false,
             },
-            fundingRate: {
-                type: Sequelize.FLOAT,
-                allowNull: false,
-            },
-            spendingRate: {
-                type: Sequelize.FLOAT,
-                allowNull: false,
-            },
             ubiRate: {
                 type: Sequelize.FLOAT,
                 allowNull: false,
