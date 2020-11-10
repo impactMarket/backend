@@ -4,6 +4,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export class CommunityDailyMetrics extends Model {
     public id!: number;
     public communityId!: string;
+    public ssiDayAlone!: number;
     public ssi!: number;
     public ubiRate!: number;
     public estimatedDuration!: number;
@@ -30,6 +31,10 @@ export function initializeCommunityDailyMetrics(sequelize: Sequelize): void {
             },
             onDelete: 'RESTRICT',
             allowNull: false
+        },
+        ssiDayAlone: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
         },
         ssi: {
             type: DataTypes.FLOAT,

@@ -19,6 +19,10 @@ module.exports = {
                 onDelete: 'RESTRICT',
                 allowNull: false
             },
+            ssiDayAlone: {
+                type: Sequelize.FLOAT,
+                allowNull: false,
+            },
             ssi: {
                 type: Sequelize.FLOAT,
                 allowNull: false,
