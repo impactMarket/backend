@@ -2,84 +2,6 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        const Users = await queryInterface.sequelize.define('user', {
-            address: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
-                unique: true,
-                primaryKey: true,
-            },
-            username: {
-                type: Sequelize.STRING(64),
-            },
-            avatar: {
-                type: Sequelize.STRING(128),
-            },
-            language: {
-                type: Sequelize.STRING(8),
-                allowNull: false,
-            },
-            currency: {
-                type: Sequelize.STRING(4),
-            },
-            pushNotificationToken: {
-                type: Sequelize.STRING(64),
-            },
-            createdAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            }
-        }, {
-            tableName: 'user',
-            sequelize: queryInterface.sequelize, // this bit is important
-        });
-        const users = await Users.findAll({});
-        const Transactions = await queryInterface.sequelize.define('transactions', {
-            uid: {
-                type: Sequelize.STRING(64),
-                primaryKey: true,
-                unique: true,
-            },
-            tx: {
-                type: Sequelize.STRING(68),
-                allowNull: false,
-            },
-            txAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            from: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
-            },
-            contractAddress: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
-            },
-            event: {
-                type: Sequelize.STRING(64),
-                allowNull: false,
-            },
-            values: {
-                type: Sequelize.JSONB,
-                allowNull: false,
-            },
-            createdAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            }
-        }, {
-            tableName: 'transactions',
-            sequelize: queryInterface.sequelize, // this bit is important
-        });
         const Community = await queryInterface.sequelize.define('community', {
             id: {
                 type: Sequelize.INTEGER,
@@ -166,32 +88,23 @@ module.exports = {
             sequelize: queryInterface.sequelize, // this bit is important
         });
         const beneficiariesToInsert = [];
-        for (let index = 0; index < users.length; index++) {
-            const user = users[index];
-            const reqResult = await Transactions.findAll({
-                limit: 1,
-                where: {
-                    event: {
-                        [Sequelize.Op.or]: [
-                            'BeneficiaryAdded',
-                            'BeneficiaryRemoved'
-                        ],
-                    },
-                    values: { _account: user.address },
-                },
-                order: [['createdAt', 'DESC']]
-            });
-            if (reqResult.length !== 0 && reqResult[0].event !== 'BeneficiaryRemoved') {
-                const community = await Community.findOne({ where: { contractAddress: reqResult[0].contractAddress } });
-                if (community !== null) {
-                    beneficiariesToInsert.push({
-                        address: user.address,
-                        communityId: community.publicId,
-                        txAt: reqResult[0].txAt,
-                        createdAt: new Date(),
-                        updatedAt: new Date()
-                    });
-                }
+        const records = (await queryInterface.sequelize.query(`SELECT values->>'_account' account, "contractAddress", "txAt"
+        FROM transactions t1
+        WHERE t1."txAt" = (SELECT MAX(t2."txAt")
+                         FROM transactions t2
+                         WHERE t2.values->>'_account' = t1.values->>'_account'
+                           and (event='BeneficiaryAdded' or event='BeneficiaryRemoved')) and event='BeneficiaryAdded'`, { raw: true }))[0];
+
+        for (let index = 0; index < records.length; index++) {
+            const community = await Community.findOne({ where: { contractAddress: records[index].contractAddress } });
+            if (community !== null) {
+                beneficiariesToInsert.push({
+                    address: records[index].account,
+                    communityId: community.publicId,
+                    txAt: records[index].txAt,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                });
             }
         }
         return queryInterface.bulkInsert('beneficiary', beneficiariesToInsert);
