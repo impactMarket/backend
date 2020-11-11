@@ -72,17 +72,15 @@ EXECUTE PROCEDURE update_claim_states();`);
         n_today_backer bigint;
     BEGIN
         -- update backers
-        SELECT count(*) INTO n_backer FROM inflow WHERE "from" = NEW."from";
         -- if this address never donated, it's a new backer
+        SELECT count(*) INTO n_backer FROM inflow WHERE "from" = NEW."from" AND "communityId"=NEW."communityId";
         IF n_backer = 0 THEN
             UPDATE communitystate SET backers = backers + 1 WHERE "communityId"=NEW."communityId";
+        end if;
+        -- if ever donated, let's check if already donated today
+        SELECT count(*) INTO n_today_backer FROM inflow WHERE "from" = NEW."from" AND "communityId"=NEW."communityId" AND "txAt" >= NEW."txAt"::date + interval '0h' AND "txAt" < NEW."txAt"::date + interval '24h';
+        IF n_today_backer = 0 THEN
             UPDATE communitydailystate SET backers = backers + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
-        ELSE
-            -- if ever donated, let's check if already donated today
-            SELECT count(*) INTO n_today_backer FROM inflow WHERE "from" = NEW."from" AND "txAt" >= NEW."txAt"::date + interval '0h' AND "txAt" < NEW."txAt"::date + interval '24h';
-            IF n_today_backer = 0 THEN
-                UPDATE communitydailystate SET backers = backers + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
-            end if;
         end if;
         -- update total raised
         SELECT SUM(raised + NEW.amount) INTO state_raised FROM communitystate WHERE "communityId"=NEW."communityId";
