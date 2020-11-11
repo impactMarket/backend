@@ -5,7 +5,7 @@ import Logger from '../loaders/logger';
 
 export default class ReachedAddressService {
 
-    public static async addNewReachedToday(
+    public static async addNewReachedYesterday(
         addresses: string[],
     ): Promise<number> {
         // verify which ones were not registered on the last 30 days and return the count
@@ -26,11 +26,13 @@ export default class ReachedAddressService {
             },
         })) as any).total;
         try {
+            const yesterday = new Date(new Date().getTime() - 86400000);
+            yesterday.setHours(0, 0, 0, 0);
             // update all new and existing entries
             for (let index = 0; index < addresses.length; index++) {
                 await ReachedAddress.upsert({
                     address: addresses[index],
-                    lastInteraction: new Date(),
+                    lastInteraction: yesterday,
                 });
             }
         } catch (e) {

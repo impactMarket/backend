@@ -141,7 +141,7 @@ module.exports = {
                     ssiToInsert.push({
                         communityId: ssi.communityPublicId,
                         ssiDayAlone: ssi.ssi,
-                        ssi: Math.round((sumSSI / meanSSIs.length).toFixed(2) * 100) / 100,
+                        ssi: Math.round(parseFloat((sumSSI / meanSSIs.length).toFixed(2)) * 100) / 100,
                         ubiRate: 0,
                         estimatedDuration: 0,
                         date: ssi.date,

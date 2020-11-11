@@ -83,19 +83,17 @@ export default class CommunityDailyStateService {
         })).map((c: any) => [c.communityId, c.totalClaimed]));
     }
 
-    public static async getTodayCommunitiesSum(): Promise<{
-        avgSSI: number;
+    public static async getYesterdayCommunitiesSum(): Promise<{
         totalClaimed: string;
         totalClaims: number;
         totalBeneficiaries: number;
         totalRaised: string;
         totalBackers: number;
     }> {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const yesterday = new Date(new Date().getTime() - 86400000);
+        yesterday.setHours(0, 0, 0, 0);
         const summedResults = await CommunityDailyState.findAll({
             attributes: [
-                [fn('avg', 'ssi'), 'avgSSI'],
                 [fn('sum', 'claimed'), 'totalClaimed'],
                 [fn('sum', 'claims'), 'totalClaims'],
                 [fn('sum', 'beneficiaries'), 'totalBeneficiaries'],
@@ -103,7 +101,7 @@ export default class CommunityDailyStateService {
                 [fn('sum', 'backers'), 'totalBackers'],
             ],
             where: {
-                date: today
+                date: yesterday
             },
         });
         return summedResults[0] as any;

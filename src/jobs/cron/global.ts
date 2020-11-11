@@ -11,8 +11,12 @@ import GlobalDailyStateService from '../../services/globalDailyState';
 import CommunityDailyStateService from '../../services/communityDailyState';
 import CommunityContractService from '../../services/communityContract';
 import ReachedAddressService from '../../services/reachedAddress';
+import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
 
 
+/**
+ * As this is all calculated past midnight, everything is from yesterday
+ */
 export async function calcuateGlobalMetrics(): Promise<void> {
     Logger.info('Calculating global metrics...');
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
@@ -21,7 +25,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const allUsersAddress = await UserService.getAllAddresses();
 
     const lastGlobalMetrics = await GlobalDailyStateService.getLast();
-    const communitiesToday = await CommunityDailyStateService.getTodayCommunitiesSum();
+    const communitiesYesterday = await CommunityDailyStateService.getYesterdayCommunitiesSum();
 
     const currentBlockNumber = await provider.getBlockNumber();
     const fromUsers = await cUSDContract.queryFilter(
@@ -42,16 +46,16 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const amountToUsers: string[] = toUsers.map((u) => u.args!.value.toString());
 
     const backersAndFunding = await InflowService.uniqueBackersAndFundingLast30Days();
-    const beneficiariesAndClaimed = await ClaimService.uniqueBeneficiariesAndClaimedLast7Days();
+    const communitiesAvgYesterday = await CommunityDailyMetricsService.getCommunitiesAvgYesterday();
 
     const monthlyClaimed = await ClaimService.getMonthlyClaimed();
     const monthlyRaised = await InflowService.getMonthlyRaised();
 
     // inflow / outflow
-    const totalRaised = new BigNumber(lastGlobalMetrics.totalRaised).plus(communitiesToday.totalRaised).toString();
-    const totalDistributed = new BigNumber(lastGlobalMetrics.totalDistributed).plus(communitiesToday.totalClaimed).toString();
+    const totalRaised = new BigNumber(lastGlobalMetrics.totalRaised).plus(communitiesYesterday.totalRaised).toString();
+    const totalDistributed = new BigNumber(lastGlobalMetrics.totalDistributed).plus(communitiesYesterday.totalClaimed).toString();
     const totalBackers = await InflowService.countEvergreenBackers();
-    const totalBeneficiaries = lastGlobalMetrics.totalBeneficiaries + communitiesToday.totalBeneficiaries;
+    const totalBeneficiaries = lastGlobalMetrics.totalBeneficiaries + communitiesYesterday.totalBeneficiaries;
 
     // ubi pulse
     const givingRate = parseFloat(
@@ -61,13 +65,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
             .decimalPlaces(2, 1)
             .toString()
     );
-    const ubiRate = parseFloat(
-        new BigNumber(beneficiariesAndClaimed.claimed)
-            .dividedBy(beneficiariesAndClaimed.beneficiaries)
-            .dividedBy(7)
-            .decimalPlaces(2, 1)
-            .toString()
-    );
+    const ubiRate = communitiesAvgYesterday.avgUbiRate;
     const avgComulativeUbi = await CommunityContractService.avgComulativeUbi();
     const avgUbiDuration = parseFloat(
         new BigNumber(avgComulativeUbi)
@@ -83,13 +81,13 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         new BigNumber(0)
     ).toString();
     const transactions = fromUsers.length + toUsers.length;
-    const newAddressesReachedToday = Array.from(new Set(addressFromUsers.concat(addressToUsers)));
-    const reach = await ReachedAddressService.addNewReachedToday(newAddressesReachedToday);
+    const newAddressesReachedYesterday = Array.from(new Set(addressFromUsers.concat(addressToUsers)));
+    const reach = await ReachedAddressService.addNewReachedYesterday(newAddressesReachedYesterday);
     // TODO: spending rate
     const spendingRate = 0;
 
     // chart data by day, all communities sum
-    // remaining data are in communitiesToday
+    // remaining data are in communitiesYesterday
     const fundingRate = parseFloat(
         new BigNumber(monthlyRaised)
             .minus(monthlyClaimed)
@@ -103,12 +101,12 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     // register new global daily state
     await GlobalDailyStateService.add(
         new Date(),
-        communitiesToday.avgSSI,
-        communitiesToday.totalClaimed,
-        communitiesToday.totalClaims,
-        communitiesToday.totalBeneficiaries,
-        communitiesToday.totalRaised,
-        communitiesToday.totalBackers,
+        communitiesAvgYesterday.avgSSI,
+        communitiesYesterday.totalClaimed,
+        communitiesYesterday.totalClaims,
+        communitiesYesterday.totalBeneficiaries,
+        communitiesYesterday.totalRaised,
+        communitiesYesterday.totalBackers,
         volume,
         transactions,
         reach,
