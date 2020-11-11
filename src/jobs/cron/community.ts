@@ -18,6 +18,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
     const activeBeneficiariesLast7Days = await BeneficiaryService.getActiveBeneficiariesLast7Days();
     const totalClaimedLast7Days = await CommunityDailyStateService.getTotalClaimedLast7Days();
+    const ssiLast5Days = await CommunityDailyMetricsService.getSSILast5Days();
     const communitiesContract = await CommunityContractService.getAll();
     const calculateMetrics = async (community: ICommunityInfo) => {
         // if no activity, do not calculate
@@ -28,6 +29,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         if (rawBeneficiaries.length < 1) {
             return;
         }
+        let ssiDayAlone: number;
         let ssi: number;
         let ubiRate: number;
         let estimatedDuration: number;
@@ -52,10 +54,15 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             beneficiariesTimeToWait.push(timeToWait);
             beneficiariesTimeWaited.push(timeWaited);
         }
-        // calculate ssi
+        // calculate ssi day alone
         const meanTimeToWait = mean(beneficiariesTimeToWait);
         const madTimeWaited = median(beneficiariesTimeWaited);
-        ssi = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
+        ssiDayAlone = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
+
+        // ssi
+        const ssisAvailable = ssiLast5Days.get(community.publicId)!;
+        const sumSSI = ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) + ssiDayAlone;
+        ssi = Math.round(parseFloat((sumSSI / (ssisAvailable.length + 1)).toFixed(2)) * 100) / 100;
 
         // calculate ubiRate
         ubiRate = parseFloat(
@@ -77,10 +84,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
         CommunityDailyMetricsService.add(
             community.publicId,
+            ssiDayAlone,
             ssi,
             ubiRate,
             estimatedDuration,
-            new Date(),
+            // since it's calculated post-midnight, save it with yesterday's date
+            new Date(new Date().getTime() - 86400000),
         );
     }
     const communities = await CommunityService.getAll('valid');

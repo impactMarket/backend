@@ -134,7 +134,9 @@ module.exports = {
                 const ssi = allSSI[index];
                 const meanSSIs = allSSI.slice(Math.max(index - 5, 0), index + 1);
                 const sumSSI = meanSSIs.reduce((acc, mssi) => acc + mssi.ssi, 0);
-                const fixDate = new Date(ssi.date.getTime() - 86400000);
+                // do not fix date here, since ssi was run at paris time
+                // and the api and db were at utc time, so it was the right day
+                // const fixDate = new Date(ssi.date.getTime() - 86400000);
                 if (meanSSIs.length !== 0) {
                     ssiToInsert.push({
                         communityId: ssi.communityPublicId,
@@ -142,7 +144,7 @@ module.exports = {
                         ssi: Math.round((sumSSI / meanSSIs.length).toFixed(2) * 100) / 100,
                         ubiRate: 0,
                         estimatedDuration: 0,
-                        date: fixDate,
+                        date: ssi.date,
                         createdAt: new Date(),
                         updatedAt: new Date()
                     });
