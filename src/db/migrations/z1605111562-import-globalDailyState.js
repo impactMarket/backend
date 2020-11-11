@@ -258,8 +258,35 @@ module.exports = {
             totalDistributed = new BigNumber(totalDistributed).plus(state.totalClaimed).toString();
             totalBackers = totalBackers + parseInt(state.totalBackers);
             totalBeneficiaries = totalBeneficiaries + parseInt(state.totalBeneficiaries);
-            // totalVolume = '0';
-            // totalTransactions = 0;
+            totalVolume = '0';
+            totalTransactions = 0;
+
+            globaldailystateToInsert.push({
+                date: state.date,
+                meanSSI: 0,
+                claimed: state.totalClaimed,
+                claims: state.totalClaims,
+                beneficiaries: state.totalBeneficiaries,
+                raised: state.totalRaised,
+                backers: state.totalBackers,
+                volume: 0,
+                transactions: 0,
+                reach: 0,
+                totalRaised,
+                totalDistributed,
+                totalBackers,
+                totalBeneficiaries,
+                totalVolume,
+                totalTransactions,
+                givingRate: 0,
+                ubiRate: 0,
+                fundingRate: 0,
+                spendingRate: 0,
+                avgComulativeUbi: '0',
+                avgUbiDuration: 0,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            })
         }
 
         for (let index = 0; index < total; index++) {
