@@ -13,13 +13,9 @@
             ],
             "program": "${workspaceFolder}/src/app.ts",
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
+                "${workspaceFolder}/dist/**/*.js"
             ],
-            "runtimeExecutable": "${env:HOME}/.nvm/versions/node/v12.18.3/bin/node"
+            "runtimeVersion": "12.18.3"
         }
-    ],
-    "resolveSourceMapLocations": [
-        "${workspaceFolder}/**",
-        "!**/node_modules/**"
     ]
 }
