@@ -20,6 +20,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const totalClaimedLast7Days = await CommunityDailyStateService.getTotalClaimedLast7Days();
     const ssiLast5Days = await CommunityDailyMetricsService.getSSILast5Days();
     const communitiesContract = await CommunityContractService.getAll();
+    console.log(communitiesContract);
     const calculateMetrics = async (community: ICommunityInfo) => {
         // if no activity, do not calculate
         if (community.totalClaimed === '0' || community.totalRaised === '0') {
@@ -93,6 +94,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         );
     }
     const communities = await CommunityService.getAll('valid');
+    console.log(communities);
     // for each community
     communities.forEach(calculateMetrics);
 }

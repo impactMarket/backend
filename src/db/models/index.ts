@@ -17,6 +17,9 @@ import { CommunityDailyState, initializeCommunityDailyState } from './communityD
 import { CommunityDailyMetrics, initializeCommunityDailyMetrics } from './communityDailyMetrics';
 import { initializeMobileError } from './mobileError';
 import { CommunityContract, initializeCommunityContract } from './communityContract';
+import { initializeGlobalDailyState } from './globalDailyState';
+import { initializeReachedAddress } from './reachedAddress';
+import { initializeCronJobExecuted } from './cronJobExecuted';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -29,7 +32,6 @@ export default function initModels(sequelize: Sequelize): void {
     initializeExchangeRates(sequelize);
     initializeNotifiedBacker(sequelize);
     initializeImMetadata(sequelize);
-    initializeNotifiedBacker(sequelize);
     initializeBeneficiary(sequelize);
     initializeManager(sequelize);
     initializeClaim(sequelize);
@@ -39,6 +41,9 @@ export default function initModels(sequelize: Sequelize): void {
     initializeCommunityDailyMetrics(sequelize);
     initializeMobileError(sequelize);
     initializeCommunityContract(sequelize);
+    initializeGlobalDailyState(sequelize);
+    initializeReachedAddress(sequelize);
+    initializeCronJobExecuted(sequelize);
 
     ClaimLocation.belongsTo(Community, {
         foreignKey: 'communityId',  // NotifiedBacker.communityId

@@ -1,4 +1,4 @@
-import { fn, Op } from 'sequelize';
+import { col, fn, Op } from 'sequelize';
 import { CommunityDailyMetrics } from '../db/models/communityDailyMetrics';
 
 
@@ -58,18 +58,18 @@ export default class CommunityDailyMetricsService {
     }> {
         const yesterday = new Date(new Date().getTime() - 86400000);
         yesterday.setHours(0, 0, 0, 0);
-        const raw = await CommunityDailyMetrics.findAll({
+        const raw = (await CommunityDailyMetrics.findAll({
             attributes: [
-                [fn('avg', 'ssi'), 'avgSSI'],
-                [fn('avg', 'ubiRate'), 'avgUbiRate'],
+                [fn('avg', col('ssi')), 'avgSSI'],
+                [fn('avg', col('ubiRate')), 'avgUbiRate'],
             ],
             where: {
                 date: yesterday
             }
-        });
+        }))[0];
         return {
-            avgSSI: (raw[0] as any).avgSSI,
-            avgUbiRate: (raw[0] as any).avgUbiRate,
+            avgSSI: (raw as any).avgSSI,
+            avgUbiRate: (raw as any).avgUbiRate,
         };
     }
 }

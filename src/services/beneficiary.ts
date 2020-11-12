@@ -1,4 +1,4 @@
-import { Op, fn } from 'sequelize';
+import { Op, fn, col } from 'sequelize';
 import { Beneficiary } from '../db/models/beneficiary';
 
 
@@ -47,7 +47,7 @@ export default class BeneficiaryService {
         // seven days ago, from yesterday
         const sevenDaysAgo = new Date(yesterday.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
         return new Map((await Beneficiary.findAll({
-            attributes: ['communityId', [fn('count', fn('distinct', 'address')), 'active']],
+            attributes: ['communityId', [fn('count', fn('distinct', col('address'))), 'active']],
             where: {
                 lastClaimAt: {
                     [Op.lte]: yesterday,

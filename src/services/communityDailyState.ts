@@ -91,7 +91,7 @@ export default class CommunityDailyStateService {
     }> {
         const yesterday = new Date(new Date().getTime() - 86400000);
         yesterday.setHours(0, 0, 0, 0);
-        const summedResults = await CommunityDailyState.findAll({
+        const summedResults = (await CommunityDailyState.findAll({
             attributes: [
                 [fn('sum', col('claimed')), 'totalClaimed'],
                 [fn('sum', col('claims')), 'totalClaims'],
@@ -101,7 +101,12 @@ export default class CommunityDailyStateService {
             where: {
                 date: yesterday
             },
-        });
-        return summedResults[0] as any;
+        }))[0];
+        return {
+            totalClaimed: (summedResults as any).totalClaimed,
+            totalClaims: parseInt((summedResults as any).totalClaims),
+            totalBeneficiaries: parseInt((summedResults as any).totalBeneficiaries),
+            totalRaised: (summedResults as any).totalClaimed,
+        };
     }
 }

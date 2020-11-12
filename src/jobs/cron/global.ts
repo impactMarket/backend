@@ -18,11 +18,13 @@ import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
  * As this is all calculated past midnight, everything is from yesterday
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
-    Logger.info('Calculating global metrics...');
+    console.log('Calculating global metrics...');
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
+    console.log(config.jsonRpcUrl)
     const cUSDContract = new ethers.Contract(config.cUSDContractAddress, ERC20ABI, provider);
     const queryFilterLastBlock = await ImMetadataService.getQueryFilterLastBlock();
     const allUsersAddress = await UserService.getAllAddresses();
+    console.log(allUsersAddress);
 
     const lastGlobalMetrics = await GlobalDailyStateService.getLast();
     const communitiesYesterday = await CommunityDailyStateService.getYesterdayCommunitiesSum();
@@ -38,6 +40,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         queryFilterLastBlock,
         'latest'
     );
+    console.log(currentBlockNumber, fromUsers, toUsers);
 
     const addressFromUsers: string[] = fromUsers.map((u) => u.args!.to);
     const addressToUsers: string[] = toUsers.map((u) => u.args!.from);
@@ -46,6 +49,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const amountToUsers: string[] = toUsers.map((u) => u.args!.value.toString());
 
     const backersAndFunding = await InflowService.uniqueBackersAndFundingLast30Days();
+    console.log(backersAndFunding);
     const communitiesAvgYesterday = await CommunityDailyMetricsService.getCommunitiesAvgYesterday();
 
     const monthlyClaimed = await ClaimService.getMonthlyClaimed();

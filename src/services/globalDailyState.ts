@@ -58,8 +58,11 @@ export default class GlobalDailyStateService {
 
     public static async getLast(): Promise<GlobalDailyState> {
         // it was null just once at the system's begin.
-        return (await GlobalDailyState.findOne({
+        const last = await GlobalDailyState.findAll({
             order: [['date', 'DESC']],
-        }))!;
+            limit: 1
+        });
+        console.log(last)
+        return last[0];
     }
 }

@@ -1,4 +1,4 @@
-import { fn, Op } from 'sequelize';
+import { col, fn, Op } from 'sequelize';
 import { Inflow } from '../db/models/inflow';
 import Logger from '../loaders/logger';
 
@@ -38,15 +38,15 @@ export default class InflowService {
         yesterday.setHours(0, 0, 0, 0);
         // 30 days ago, from yesterday
         const aMonthAgo = new Date(yesterday.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        const raised = await Inflow.findAll({
-            attributes: [[fn('sum', 'amount'), 'raised']],
+        const raised = (await Inflow.findAll({
+            attributes: [[fn('sum', col('amount')), 'raised']],
             where: {
                 txAt: {
                     [Op.lte]: yesterday,
                     [Op.gte]: aMonthAgo,
                 }
             },
-        });
+        }))[0];
         // there will always be raised.lenght > 0 (were only zero at the begining)
         return (raised as any).raised;
     }
@@ -55,9 +55,9 @@ export default class InflowService {
      * Count unique backers since the begining of the project.
      */
     public static async countEvergreenBackers(): Promise<number> {
-        const backers = await Inflow.findAll({
-            attributes: [[fn('count', fn('distinct', 'from')), 'total']],
-        });
+        const backers = (await Inflow.findAll({
+            attributes: [[fn('count', fn('distinct', col('from'))), 'total']],
+        }))[0];
         return (backers as any).total;
     }
 
@@ -72,10 +72,10 @@ export default class InflowService {
         yesterday.setHours(0, 0, 0, 0);
         // 30 days ago, from yesterday
         const aMonthAgo = new Date(yesterday.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        const result = await Inflow.findAll({
+        const result = (await Inflow.findAll({
             attributes: [
-                [fn('count', fn('distinct', 'from')), 'backers'],
-                [fn('sum', 'amount'), 'funding']
+                [fn('count', fn('distinct', col('from'))), 'backers'],
+                [fn('sum', col('amount')), 'funding']
             ],
             where: {
                 txAt: {
@@ -83,9 +83,9 @@ export default class InflowService {
                     [Op.gte]: aMonthAgo,
                 }
             },
-        });
+        }))[0];
         return {
-            backers: (result as any).backers,
+            backers: parseInt((result as any).backers),
             funding: (result as any).funding,
         }
     }

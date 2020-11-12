@@ -6,6 +6,7 @@
         "start": "nodemon -w src src/app.ts",
         "serve": "node dist/app.js",
         "build": "tsc -p .",
+        "build:watch": "tsc -p . --watch",
         "postinstall": "yarn build",
         "lint": "eslint \"src/**/*.ts\"",
         "test": "mocha",

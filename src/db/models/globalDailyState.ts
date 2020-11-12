@@ -140,7 +140,7 @@ export function initializeGlobalDailyState(sequelize: Sequelize): void {
             allowNull: false,
         }
     }, {
-        tableName: 'communitystate',
+        tableName: 'globaldailystate',
         sequelize: sequelize, // this bit is important
     });
 }

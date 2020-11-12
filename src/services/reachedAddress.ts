@@ -1,4 +1,4 @@
-import { fn, Op } from 'sequelize';
+import { col, fn, Op } from 'sequelize';
 import { ReachedAddress } from '../db/models/reachedAddress';
 import Logger from '../loaders/logger';
 
@@ -14,7 +14,7 @@ export default class ReachedAddressService {
         // 30 days ago, from yesterday
         const aMonthAgo = new Date(yesterday.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         const totalNewAddresses = addresses.length - ((await ReachedAddress.findAll({
-            attributes: [[fn('count', 'address'), 'total']],
+            attributes: [[fn('count', col('address')), 'total']],
             where: {
                 address: {
                     [Op.in]: addresses
@@ -24,7 +24,7 @@ export default class ReachedAddressService {
                     [Op.gte]: aMonthAgo,
                 }
             },
-        })) as any).total;
+        }))[0] as any).total;
         try {
             const yesterday = new Date(new Date().getTime() - 86400000);
             yesterday.setHours(0, 0, 0, 0);

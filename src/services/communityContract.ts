@@ -9,11 +9,11 @@ export default class CommunityContractService {
     }
 
     public static async avgComulativeUbi(): Promise<string> {
-        const result = await CommunityContract.findAll({
+        const result = (await CommunityContract.findAll({
             attributes: [
                 [fn('avg', col('maxClaim')), 'avgComulativeUbi']
             ],
-        });
+        }))[0];
         return (result as any).avgComulativeUbi;
     }
 }
