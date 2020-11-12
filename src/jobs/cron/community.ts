@@ -67,7 +67,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         // calculate ubiRate
         ubiRate = parseFloat(
             new BigNumber(totalClaimedLast7Days.get(community.publicId)!)
-                .dividedBy(config.cUSDDecimal) // set 18 decimals from onchain values
+                .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                 .dividedBy(activeBeneficiariesLast7Days.get(community.publicId)!)
                 .dividedBy(7)
                 .toFixed(2, 1)
@@ -76,7 +76,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         // calculate estimatedDuration
         estimatedDuration = parseFloat(
             new BigNumber(communitiesContract.get(community.publicId)!.maxClaim)
-                .dividedBy(config.cUSDDecimal) // set 18 decimals from onchain values
+                .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                 .dividedBy(ubiRate)
                 .dividedBy(30)
                 .toFixed(2, 1)

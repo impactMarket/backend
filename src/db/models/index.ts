@@ -16,6 +16,7 @@ import { CommunityState, initializeCommunityState } from './communityState';
 import { CommunityDailyState, initializeCommunityDailyState } from './communityDailyState';
 import { CommunityDailyMetrics, initializeCommunityDailyMetrics } from './communityDailyMetrics';
 import { initializeMobileError } from './mobileError';
+import { CommunityContract, initializeCommunityContract } from './communityContract';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -37,6 +38,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeCommunityDailyState(sequelize);
     initializeCommunityDailyMetrics(sequelize);
     initializeMobileError(sequelize);
+    initializeCommunityContract(sequelize);
 
     ClaimLocation.belongsTo(Community, {
         foreignKey: 'communityId',  // NotifiedBacker.communityId
@@ -85,6 +87,11 @@ export default function initModels(sequelize: Sequelize): void {
 
     CommunityDailyMetrics.belongsTo(Community, {
         foreignKey: 'communityId',  // CommunityDailyMetrics.communityId
+        targetKey: 'publicId', // the Community.publicId
+    });
+
+    CommunityContract.belongsTo(Community, {
+        foreignKey: 'communityId',  // CommunityContract.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 }

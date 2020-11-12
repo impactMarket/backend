@@ -1,4 +1,4 @@
-import { fn } from 'sequelize';
+import { col, fn } from 'sequelize';
 import { CommunityContract } from '../db/models/communityContract';
 
 
@@ -11,7 +11,7 @@ export default class CommunityContractService {
     public static async avgComulativeUbi(): Promise<string> {
         const result = await CommunityContract.findAll({
             attributes: [
-                [fn('avg', 'maxClaim'), 'avgComulativeUbi']
+                [fn('avg', col('maxClaim')), 'avgComulativeUbi']
             ],
         });
         return (result as any).avgComulativeUbi;

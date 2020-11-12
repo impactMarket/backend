@@ -99,6 +99,7 @@ function cron() {
     // once a day
 
     // everyday at midnight
+    calcuateCommunitiesMetrics();
     new CronJob('0 0 * * *', async () => {
         await calcuateCommunitiesMetrics();
         await calcuateGlobalMetrics();

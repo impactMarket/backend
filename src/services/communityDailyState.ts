@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { Op, fn } from 'sequelize';
+import { Op, fn, col } from 'sequelize';
 import { CommunityDailyState, ICommunityDailyStatusInsert } from '../db/models/communityDailyState';
 import Logger from '../loaders/logger';
 
@@ -72,14 +72,14 @@ export default class CommunityDailyStateService {
         // seven days ago, from yesterday
         const sevenDaysAgo = new Date(yesterday.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
         return new Map((await CommunityDailyState.findAll({
-            attributes: ['communityId', [fn('sum', 'claimed'), 'totalClaimed']],
+            attributes: ['communityId', [fn('sum', col('claimed')), 'totalClaimed']],
             where: {
                 date: {
                     [Op.lte]: yesterday,
                     [Op.gte]: sevenDaysAgo,
                 }
             },
-            group: 'communityId',
+            group: 'communityId'
         })).map((c: any) => [c.communityId, c.totalClaimed]));
     }
 
@@ -93,10 +93,10 @@ export default class CommunityDailyStateService {
         yesterday.setHours(0, 0, 0, 0);
         const summedResults = await CommunityDailyState.findAll({
             attributes: [
-                [fn('sum', 'claimed'), 'totalClaimed'],
-                [fn('sum', 'claims'), 'totalClaims'],
-                [fn('sum', 'beneficiaries'), 'totalBeneficiaries'],
-                [fn('sum', 'raised'), 'totalRaised'],
+                [fn('sum', col('claimed')), 'totalClaimed'],
+                [fn('sum', col('claims')), 'totalClaims'],
+                [fn('sum', col('beneficiaries')), 'totalBeneficiaries'],
+                [fn('sum', col('raised')), 'totalRaised'],
             ],
             where: {
                 date: yesterday
