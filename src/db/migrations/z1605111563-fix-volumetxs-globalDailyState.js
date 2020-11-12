@@ -170,7 +170,11 @@ module.exports = {
 
         let transactions = 0;
         let volume = new BigNumber('0');
+        const allAddressesReached = [];
 
+        // TODO: get all community addresses
+
+        // TODO: remove limit
         const beneficiaryAddresses = (await Beneficiary.findAll({ attributes: ['address'], limit: 8 })).map((b) => b.address);
         for (let index = 0; index < beneficiaryAddresses.length; index++) {
 
@@ -185,6 +189,7 @@ module.exports = {
             const rawResult = query.data.result.filter((r) => (new BigNumber(r.value.toString()).gt('9999999999999999'))); // >0,009
 
             for (let index = 0; index < rawResult.length; index++) {
+                // TODO: if not "from" one community
                 transactions = transactions + 1;
                 volume = volume.plus(rawResult[index].value.toString());
             }

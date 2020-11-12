@@ -35,6 +35,10 @@ export default class BeneficiaryService {
         return await Beneficiary.findOne({ where: { address } });
     }
 
+    public static async getAllAddresses(): Promise<string[]> {
+        return (await Beneficiary.findAll({ attributes: ['address'] })).map((b) => b.address);
+    }
+
     public static async remove(
         address: string,
     ): Promise<void> {

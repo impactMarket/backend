@@ -107,7 +107,7 @@ export async function verifyCommunityFunds(): Promise<void> {
         if (community.backers.length > 0 && community.totalClaimed !== '0') {
             const isLessThan10 = parseFloat(new BigNumber(community.totalClaimed)
                 .div(community.totalRaised)
-                .toString()) >= 0.8;
+                .toString()) >= 0.9;
 
             if (isLessThan10) {
                 const backersAddresses = await NotifiedBackerService.add(

@@ -1,10 +1,4 @@
-import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
-import config from '../../config';
-import Logger from '../../loaders/logger';
-import ImMetadataService from '../../services/imMetadata';
-import ERC20ABI from '../../contracts/ERC20ABI.json';
-import UserService from '../../services/user';
 import ClaimService from '../../services/claim';
 import InflowService from '../../services/inflow';
 import GlobalDailyStateService from '../../services/globalDailyState';
@@ -12,6 +6,7 @@ import CommunityDailyStateService from '../../services/communityDailyState';
 import CommunityContractService from '../../services/communityContract';
 import ReachedAddressService from '../../services/reachedAddress';
 import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
+import BeneficiaryTransactionService from '../../services/beneficiaryTransaction';
 
 
 /**
@@ -19,37 +14,11 @@ import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
     console.log('Calculating global metrics...');
-    const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
-    console.log(config.jsonRpcUrl)
-    const cUSDContract = new ethers.Contract(config.cUSDContractAddress, ERC20ABI, provider);
-    const queryFilterLastBlock = await ImMetadataService.getQueryFilterLastBlock();
-    const allUsersAddress = await UserService.getAllAddresses();
-    console.log(allUsersAddress);
-
+    const yesterday = new Date(new Date().getTime() - 86400000); // yesterday
     const lastGlobalMetrics = await GlobalDailyStateService.getLast();
     const communitiesYesterday = await CommunityDailyStateService.getYesterdayCommunitiesSum();
-
-    const currentBlockNumber = await provider.getBlockNumber();
-    const fromUsers = await cUSDContract.queryFilter(
-        cUSDContract.filters.Transfer(allUsersAddress),
-        queryFilterLastBlock,
-        'latest'
-    );
-    const toUsers = await cUSDContract.queryFilter(
-        cUSDContract.filters.Transfer(null, allUsersAddress),
-        queryFilterLastBlock,
-        'latest'
-    );
-    console.log(currentBlockNumber, fromUsers, toUsers);
-
-    const addressFromUsers: string[] = fromUsers.map((u) => u.args!.to);
-    const addressToUsers: string[] = toUsers.map((u) => u.args!.from);
-
-    const amountFromUsers: string[] = fromUsers.map((u) => u.args!.value.toString());
-    const amountToUsers: string[] = toUsers.map((u) => u.args!.value.toString());
-
+    const volumeTransactionsAndAddresses = await BeneficiaryTransactionService.getAllByDay(yesterday);
     const backersAndFunding = await InflowService.uniqueBackersAndFundingLast30Days();
-    console.log(backersAndFunding);
     const communitiesAvgYesterday = await CommunityDailyMetricsService.getCommunitiesAvgYesterday();
 
     const monthlyClaimed = await ClaimService.getMonthlyClaimed();
@@ -80,13 +49,9 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     );
 
     // economic activity
-    const volume = amountFromUsers.concat(amountToUsers).reduce<BigNumber>(
-        (previousValue: BigNumber, currentValue: string) => previousValue.plus(currentValue),
-        new BigNumber(0)
-    ).toString();
-    const transactions = fromUsers.length + toUsers.length;
-    const newAddressesReachedYesterday = Array.from(new Set(addressFromUsers.concat(addressToUsers)));
-    const reach = await ReachedAddressService.addNewReachedYesterday(newAddressesReachedYesterday);
+    const volume = volumeTransactionsAndAddresses.volume;
+    const transactions = volumeTransactionsAndAddresses.transactions;
+    const reach = await ReachedAddressService.addNewReachedYesterday(volumeTransactionsAndAddresses.uniqueAddressesReached);
     // TODO: spending rate
     const spendingRate = 0;
 
@@ -104,7 +69,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
 
     // register new global daily state
     await GlobalDailyStateService.add(
-        new Date(new Date().getTime() - 86400000), // yesterday
+        yesterday,
         communitiesAvgYesterday.avgSSI,
         communitiesYesterday.totalClaimed,
         communitiesYesterday.totalClaims,
@@ -127,7 +92,4 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         totalVolume,
         BigInt(totalTransactions)
     );
-
-    // save currentBlockNumber as QueryFilterLastBlock
-    await ImMetadataService.setQueryFilterLastBlock(currentBlockNumber);
 }

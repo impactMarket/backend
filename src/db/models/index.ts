@@ -20,6 +20,7 @@ import { CommunityContract, initializeCommunityContract } from './communityContr
 import { initializeGlobalDailyState } from './globalDailyState';
 import { initializeReachedAddress } from './reachedAddress';
 import { initializeCronJobExecuted } from './cronJobExecuted';
+import { initializeBeneficiaryTransaction } from './beneficiaryTransaction';
 
 
 export default function initModels(sequelize: Sequelize): void {
@@ -44,6 +45,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeGlobalDailyState(sequelize);
     initializeReachedAddress(sequelize);
     initializeCronJobExecuted(sequelize);
+    initializeBeneficiaryTransaction(sequelize);
 
     ClaimLocation.belongsTo(Community, {
         foreignKey: 'communityId',  // NotifiedBacker.communityId
