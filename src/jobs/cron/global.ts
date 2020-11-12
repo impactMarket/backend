@@ -100,13 +100,13 @@ export async function calcuateGlobalMetrics(): Promise<void> {
 
     // register new global daily state
     await GlobalDailyStateService.add(
-        new Date(),
+        new Date(new Date().getTime() - 86400000), // yesterday
         communitiesAvgYesterday.avgSSI,
         communitiesYesterday.totalClaimed,
         communitiesYesterday.totalClaims,
         communitiesYesterday.totalBeneficiaries,
         communitiesYesterday.totalRaised,
-        communitiesYesterday.totalBackers,
+        backersAndFunding.backers,
         volume,
         transactions,
         reach,

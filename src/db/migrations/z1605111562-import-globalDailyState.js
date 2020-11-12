@@ -196,16 +196,60 @@ module.exports = {
             tableName: 'community',
             sequelize: queryInterface.sequelize, // this bit is important
         });
+        const Inflow = await queryInterface.sequelize.define('inflow', {
+            id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true
+            },
+            from: {
+                type: Sequelize.STRING(44),
+                allowNull: false
+            },
+            communityId: {
+                type: Sequelize.UUID,
+                references: {
+                    model: 'community', // name of Target model
+                    key: 'publicId', // key in Target model that we're referencing
+                },
+                onDelete: 'RESTRICT',
+                allowNull: false
+            },
+            amount: {
+                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+                type: Sequelize.DECIMAL(29), // max 9,999,999,999 - plus 18 decimals
+                allowNull: false,
+            },
+            tx: {
+                type: Sequelize.STRING(68),
+                unique: true,
+                allowNull: false,
+            },
+            txAt: {
+                type: Sequelize.DATE,
+                allowNull: false,
+            },
+            createdAt: {
+                allowNull: false,
+                type: Sequelize.DATE
+            },
+            updatedAt: {
+                allowNull: false,
+                type: Sequelize.DATE
+            }
+        }, {
+            tableName: 'inflow',
+            sequelize: queryInterface.sequelize, // this bit is important
+        });
 
-        // TODO: do not count private communities
         const onlyPublicValidCommunities = (await Community.findAll({
             attributes: ['publicId'],
-            where:  {
+            where: {
                 status: 'valid',
                 visibility: 'public'
             },
         })).map((c) => c.publicId);
-        console.log(onlyPublicValidCommunities)
 
         const yesterday = new Date(new Date().getTime() - 86400000);
         yesterday.setHours(0, 0, 0, 0);
@@ -215,10 +259,9 @@ module.exports = {
                 [Sequelize.fn('sum', Sequelize.col('claims')), 'totalClaims'],
                 [Sequelize.fn('sum', Sequelize.col('beneficiaries')), 'totalBeneficiaries'],
                 [Sequelize.fn('sum', Sequelize.col('raised')), 'totalRaised'],
-                [Sequelize.fn('sum', Sequelize.col('backers')), 'totalBackers'],
                 'date'
             ],
-            where:  {
+            where: {
                 date: {
                     [Sequelize.Op.lte]: yesterday,
                 },
@@ -228,12 +271,11 @@ module.exports = {
             order: [['date', 'ASC']],
             raw: true
         });
-        console.log(allCommunityDailyState)
         const allCommunityDailyMetrics = await CommunityDailyMetrics.findAll({
             attributes: [
                 [Sequelize.fn('avg', Sequelize.col('ssi')), 'avgSsi']
             ],
-            where:  {
+            where: {
                 communityId: { [Sequelize.Op.in]: onlyPublicValidCommunities },
             },
             group: ['date'],
@@ -256,7 +298,7 @@ module.exports = {
 
             totalRaised = new BigNumber(totalRaised).plus(state.totalRaised).toString();
             totalDistributed = new BigNumber(totalDistributed).plus(state.totalClaimed).toString();
-            totalBackers = totalBackers + parseInt(state.totalBackers);
+            // totalBackers = totalBackers + parseInt(state.totalBackers); // TODO: fix calculation
             totalBeneficiaries = totalBeneficiaries + parseInt(state.totalBeneficiaries);
             totalVolume = '0';
             totalTransactions = 0;
@@ -268,13 +310,13 @@ module.exports = {
                 claims: state.totalClaims,
                 beneficiaries: state.totalBeneficiaries,
                 raised: state.totalRaised,
-                backers: state.totalBackers,
+                backers: 0, // TODO: fix calculation
                 volume: 0,
                 transactions: 0,
                 reach: 0,
                 totalRaised,
                 totalDistributed,
-                totalBackers,
+                totalBackers: 0, // TODO: fix calculation
                 totalBeneficiaries,
                 totalVolume,
                 totalTransactions,
@@ -295,25 +337,47 @@ module.exports = {
 
             totalRaised = new BigNumber(totalRaised).plus(state.totalRaised).toString();
             totalDistributed = new BigNumber(totalDistributed).plus(state.totalClaimed).toString();
-            totalBackers = totalBackers + parseInt(state.totalBackers);
+            const todaysBackers = (await Inflow.findAll({
+                attributes: [
+                    [Sequelize.fn('count', Sequelize.fn('distinct', Sequelize.col('from'))), 't'],
+                ],
+                where: {
+                    txAt: {
+                        [Sequelize.Op.lte]: state.date,
+                        [Sequelize.Op.gte]: new Date(new Date(state.date).getTime() - 2592000000), // 30 * 24 * 60 * 60 * 1000
+                    }
+                },
+                raw: true
+            }))[0].t;
+            totalBackers = parseInt((await Inflow.findAll({
+                attributes: [
+                    [Sequelize.fn('count', Sequelize.fn('distinct', Sequelize.col('from'))), 't'],
+                ],
+                where: {
+                    txAt: {
+                        [Sequelize.Op.lte]: state.date,
+                    }
+                },
+                raw: true
+            }))[0].t);
             totalBeneficiaries = totalBeneficiaries + parseInt(state.totalBeneficiaries);
             totalVolume = '0';
             totalTransactions = 0;
 
             globaldailystateToInsert.push({
                 date: state.date,
-                meanSSI: metrics.avgSsi,
+                meanSSI: Math.round(parseFloat(metrics.avgSsi) * 100) / 100,
                 claimed: state.totalClaimed,
                 claims: state.totalClaims,
                 beneficiaries: state.totalBeneficiaries,
                 raised: state.totalRaised,
-                backers: state.totalBackers,
+                backers: parseInt(todaysBackers), // TODO: fix calculation
                 volume: 0,
                 transactions: 0,
                 reach: 0,
                 totalRaised,
                 totalDistributed,
-                totalBackers,
+                totalBackers, // TODO: fix calculation
                 totalBeneficiaries,
                 totalVolume,
                 totalTransactions,

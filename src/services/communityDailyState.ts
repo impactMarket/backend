@@ -88,7 +88,6 @@ export default class CommunityDailyStateService {
         totalClaims: number;
         totalBeneficiaries: number;
         totalRaised: string;
-        totalBackers: number;
     }> {
         const yesterday = new Date(new Date().getTime() - 86400000);
         yesterday.setHours(0, 0, 0, 0);
@@ -98,7 +97,6 @@ export default class CommunityDailyStateService {
                 [fn('sum', 'claims'), 'totalClaims'],
                 [fn('sum', 'beneficiaries'), 'totalBeneficiaries'],
                 [fn('sum', 'raised'), 'totalRaised'],
-                [fn('sum', 'backers'), 'totalBackers'],
             ],
             where: {
                 date: yesterday
