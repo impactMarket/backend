@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch (NVM v10.20.1)",
+            "name": "Launch (NVM v12.18.3)",
             "skipFiles": [
                 "<node_internals>/**"
             ],
@@ -15,7 +15,11 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
-            "runtimeExecutable": "${env:HOME}/.nvm/versions/node/v10.20.1/bin/node"
+            "runtimeExecutable": "${env:HOME}/.nvm/versions/node/v12.18.3/bin/node"
         }
+    ],
+    "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
     ]
 }
