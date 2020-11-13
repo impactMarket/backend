@@ -46,6 +46,11 @@ export default {
     },
 
     /**
+     * Address to the attestation proxy contract
+     */
+    attestationProxyAddress: process.env.ATTESTATION_PROXY_ADDRESS!,
+
+    /**
      * Contract Address to use in dev
      */
     cUSDContractAddress: process.env.CUSD_CONTRACT_ADDRESS!,

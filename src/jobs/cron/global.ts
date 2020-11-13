@@ -66,6 +66,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     );
     const totalVolume = new BigNumber(lastGlobalMetrics.totalVolume).plus(volume).toString();
     const totalTransactions = new BigNumber(lastGlobalMetrics.totalTransactions.toString()).plus(transactions).toString();
+    const totalReach = new BigNumber(lastGlobalMetrics.totalReach.toString()).plus(reach).toString();
 
     // register new global daily state
     await GlobalDailyStateService.add(
@@ -90,6 +91,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         avgComulativeUbi,
         avgUbiDuration,
         totalVolume,
-        BigInt(totalTransactions)
+        BigInt(totalTransactions),
+        BigInt(totalReach),
     );
 }

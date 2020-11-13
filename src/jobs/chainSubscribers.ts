@@ -86,14 +86,20 @@ async function subscribeChainEvents(
                     log.transactionHash,
                     txAt,
                 ));
-            } else {
+            } else if (
+                !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
+                // ignore AttestationProxy
+                preParsedLog.args[1] !== config.attestationProxyAddress &&
+                // yeah, people without knowing make transactions to themselves! 🕊️
+                preParsedLog.args[0] !== preParsedLog.args[1]
+            ) {
+                // transactions from or to beneficiaries but not from any communities (that would be a claim)
+                // save to table to calculate txs and volume
                 parsedLog = preParsedLog;
                 const fromIsBeneficiary = allBeneficiaryAddressses.includes(parsedLog.args[0]);
                 if (fromIsBeneficiary || allBeneficiaryAddressses.includes(parsedLog.args[1])) {
                     const beneficiaryAddress = fromIsBeneficiary ? parsedLog.args[0] : parsedLog.args[1];
                     const withAddress = fromIsBeneficiary ? parsedLog.args[1] : parsedLog.args[0];
-                    // or transactions from or to beneficiaries but not from any communities (that would be a claim)
-                    // save to table to calculate txs and volume
                     BeneficiaryTransactionService.add(
                         beneficiaryAddress,
                         withAddress,
