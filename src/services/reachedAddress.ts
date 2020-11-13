@@ -13,7 +13,7 @@ export default class ReachedAddressService {
         yesterday.setHours(0, 0, 0, 0);
         // 30 days ago, from yesterday
         const aMonthAgo = new Date(yesterday.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        const totalNewAddresses = addresses.length - ((await ReachedAddress.findAll({
+        const existingAddresses = (await ReachedAddress.findAll({
             attributes: [[fn('count', col('address')), 'total']],
             where: {
                 address: {
@@ -24,7 +24,8 @@ export default class ReachedAddressService {
                     [Op.gte]: aMonthAgo,
                 }
             },
-        }))[0] as any).total;
+        }))[0];
+        const totalNewAddresses = addresses.length - (existingAddresses as any).total;
         try {
             const yesterday = new Date(new Date().getTime() - 86400000);
             yesterday.setHours(0, 0, 0, 0);

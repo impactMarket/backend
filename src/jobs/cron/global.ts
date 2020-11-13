@@ -7,13 +7,14 @@ import CommunityContractService from '../../services/communityContract';
 import ReachedAddressService from '../../services/reachedAddress';
 import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
 import BeneficiaryTransactionService from '../../services/beneficiaryTransaction';
+import Logger from '../../loaders/logger';
 
 
 /**
  * As this is all calculated past midnight, everything is from yesterday
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
-    console.log('Calculating global metrics...');
+    Logger.info('Calculating global metrics...');
     const yesterday = new Date(new Date().getTime() - 86400000); // yesterday
     const lastGlobalMetrics = await GlobalDailyStateService.getLast();
     const communitiesYesterday = await CommunityDailyStateService.getYesterdayCommunitiesSum();
