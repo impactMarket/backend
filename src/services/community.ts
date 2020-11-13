@@ -5,9 +5,12 @@ import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 import CommunityContractABI from '../contracts/CommunityABI.json'
 import TransactionsService from './transactions';
 import { ICommunityInfo, ICommunityVars } from '../types';
-import { Op } from 'sequelize';
+import { col, Op } from 'sequelize';
 import SSIService from './ssi';
 import { notifyManagerAdded } from '../utils';
+import { CommunityState } from '../db/models/communityState';
+import CommunityDailyStateService from './communityDailyState';
+import CommunityStateService from './communityState';
 
 
 export default class CommunityService {
@@ -237,6 +240,7 @@ export default class CommunityService {
     }
 
     private static async getCachedInfoToCommunity(community: Community): Promise<ICommunityInfo> {
+        const communityState = await CommunityStateService.get(community.publicId);
         const beneficiaries = await TransactionsService.getBeneficiariesInCommunity(community.contractAddress);
         const managers = await TransactionsService.getCommunityManagersInCommunity(community.contractAddress);
         const backers = await TransactionsService.getBackersInCommunity(community.contractAddress);
@@ -253,15 +257,14 @@ export default class CommunityService {
 
         return {
             ...community,
-            createdAt: community.createdAt.toString(),
-            updatedAt: community.updatedAt.toString(),
-            backers,
+            backers, // TODO: to remove
             beneficiaries,
             managers,
             ssi,
-            totalClaimed: totalClaimed.toString(),
-            totalRaised: totalRaised.toString(),
+            totalClaimed: totalClaimed.toString(), // TODO: to remove
+            totalRaised: totalRaised.toString(), // TODO: to remove
             vars,
+            state: communityState,
         };
     }
 

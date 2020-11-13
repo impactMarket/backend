@@ -28,8 +28,13 @@ export interface ICommunity {
     coverImage: string;
     status: string;
     txCreationObj: ICommunityVars;
-    createdAt: string;
-    updatedAt: string;
+}
+
+export interface ICommunityState {
+    claimed: string;
+    raised: string;
+    beneficiaries: number;
+    backers: number;
 }
 
 export interface ICommunityInfo extends ICommunity {
@@ -46,6 +51,7 @@ export interface ICommunityInfo extends ICommunity {
     totalClaimed: string;
     totalRaised: string;
     vars: ICommunityVars;
+    state: ICommunityState;
 }
 
 export interface ICommunityVars {
