@@ -29,6 +29,7 @@ export default class GlobalDailyStateService {
         avgUbiDuration: number,
         totalVolume: string,
         totalTransactions: BigInt,
+        totalReach: BigInt,
     ): Promise<GlobalDailyState> {
         return await GlobalDailyState.create({
             date,
@@ -53,6 +54,7 @@ export default class GlobalDailyStateService {
             avgUbiDuration,
             totalVolume,
             totalTransactions,
+            totalReach
         });
     }
 
@@ -62,7 +64,6 @@ export default class GlobalDailyStateService {
             order: [['date', 'DESC']],
             limit: 1
         });
-        console.log(last)
         return last[0];
     }
 }

@@ -27,6 +27,7 @@ export class GlobalDailyState extends Model {
     // 9007199254740992 and BIGINT in postgres is
     // 9223372036854775807
     public totalTransactions!: BigInt;
+    public totalReach!: BigInt;
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -128,6 +129,10 @@ export function initializeGlobalDailyState(sequelize: Sequelize): void {
             allowNull: false,
         },
         totalTransactions: {
+            type: DataTypes.BIGINT, // max 9,223,372,036,854,775,807
+            allowNull: false,
+        },
+        totalReach: {
             type: DataTypes.BIGINT, // max 9,223,372,036,854,775,807
             allowNull: false,
         },

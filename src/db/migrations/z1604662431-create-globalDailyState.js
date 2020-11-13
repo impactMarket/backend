@@ -99,6 +99,10 @@ module.exports = {
                 type: Sequelize.BIGINT, // max 9,223,372,036,854,775,807
                 allowNull: false,
             },
+            totalReach: {
+                type: Sequelize.BIGINT, // max 9,223,372,036,854,775,807
+                allowNull: false,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
