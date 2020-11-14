@@ -251,8 +251,8 @@ module.exports = {
             },
         })).map((c) => c.publicId);
 
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
+        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
+        yesterdayDateOnly.setHours(0, 0, 0, 0);
         const allCommunityDailyState = await CommunityDailyState.findAll({
             attributes: [
                 [Sequelize.fn('sum', Sequelize.col('claimed')), 'totalClaimed'],
@@ -263,7 +263,7 @@ module.exports = {
             ],
             where: {
                 date: {
-                    [Sequelize.Op.lte]: yesterday,
+                    [Sequelize.Op.lte]: yesterdayDateOnly,
                 },
                 communityId: { [Sequelize.Op.in]: onlyPublicValidCommunities },
             },
@@ -332,11 +332,13 @@ module.exports = {
             })
         }
 
-        for (let index = 0; index < total; index++) {
+        for (let index = 0; index < total - 1; index++) {
             const metrics = allCommunityDailyMetrics[index];
             const state = allCommunityDailyState[index + 2];
 
+            console.log('1')
             totalRaised = new BigNumber(totalRaised).plus(state.totalRaised).toString();
+            console.log('2')
             totalDistributed = new BigNumber(totalDistributed).plus(state.totalClaimed).toString();
             const todaysBackers = (await Inflow.findAll({
                 attributes: [

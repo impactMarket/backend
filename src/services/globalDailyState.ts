@@ -66,4 +66,21 @@ export default class GlobalDailyStateService {
         });
         return last[0];
     }
+
+    public static async getLast30Days(): Promise<GlobalDailyState[]> {
+        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
+        yesterdayDateOnly.setHours(0, 0, 0, 0);
+        // 30 days ago, from yesterdayDateOnly
+        const aMonthAgo = new Date(yesterdayDateOnly.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        // it was null just once at the system's begin.
+        return await GlobalDailyState.findAll({
+            where: {
+                date: {
+                    [Op.lte]: yesterdayDateOnly,
+                    [Op.gte]: aMonthAgo,
+                }
+            },
+            order: [['date', 'DESC']],
+        });
+    }
 }

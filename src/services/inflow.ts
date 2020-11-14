@@ -26,7 +26,7 @@ export default class InflowService {
     }
 
     /**
-     * Get total monthly (last 30 days, starting yesterday) raised amounts.
+     * Get total monthly (last 30 days, starting todayMidnightTime) raised amounts.
      * 
      * **NOTE**: raised amounts will always be bigger than zero though,
      * a community might not be listed if no raise has ever happened!
@@ -34,15 +34,15 @@ export default class InflowService {
      * @returns string
      */
     public static async getMonthlyRaised(): Promise<string> {
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
-        // 30 days ago, from yesterday
-        const aMonthAgo = new Date(yesterday.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const todayMidnightTime = new Date(new Date().getTime());
+        todayMidnightTime.setHours(0, 0, 0, 0);
+        // 30 days ago, from todayMidnightTime
+        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         const raised = (await Inflow.findAll({
             attributes: [[fn('sum', col('amount')), 'raised']],
             where: {
                 txAt: {
-                    [Op.lte]: yesterday,
+                    [Op.lt]: todayMidnightTime,
                     [Op.gte]: aMonthAgo,
                 }
             },
@@ -68,10 +68,10 @@ export default class InflowService {
         backers: number;
         funding: string;
     }> {
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
-        // 30 days ago, from yesterday
-        const aMonthAgo = new Date(yesterday.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const todayMidnightTime = new Date(new Date().getTime() - 86400000);
+        todayMidnightTime.setHours(0, 0, 0, 0);
+        // 30 days ago, from todayMidnightTime
+        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         const result = (await Inflow.findAll({
             attributes: [
                 [fn('count', fn('distinct', col('from'))), 'backers'],
@@ -79,7 +79,7 @@ export default class InflowService {
             ],
             where: {
                 txAt: {
-                    [Op.lte]: yesterday,
+                    [Op.lt]: todayMidnightTime,
                     [Op.gte]: aMonthAgo,
                 }
             },

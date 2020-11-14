@@ -1,5 +1,6 @@
 import { col, fn, Op } from 'sequelize';
 import { CommunityDailyMetrics } from '../db/models/communityDailyMetrics';
+import { ICommunityMetrics } from '../types';
 
 
 export default class CommunityDailyMetricsService {
@@ -22,17 +23,35 @@ export default class CommunityDailyMetricsService {
         });
     }
 
+    public static async getLastMetrics(communityId: string): Promise<ICommunityMetrics> {
+        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
+        yesterdayDateOnly.setHours(0, 0, 0, 0);
+        return (await CommunityDailyMetrics.findAll({
+            attributes: [
+                'ssiDayAlone',
+                'ssi',
+                'ubiRate',
+                'estimatedDuration'
+            ],
+            where: {
+                communityId,
+                date: yesterdayDateOnly
+            },
+            limit: 1,
+        }))[0] as any;
+    }
+
     public static async getSSILast5Days(): Promise<Map<string, number[]>> {
         const result = new Map<string, number[]>();
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
-        // seven days ago, from yesterday
-        const fiveDaysAgo = new Date(yesterday.getTime() - 432000000); // 5 * 24 * 60 * 60 * 1000
+        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
+        yesterdayDateOnly.setHours(0, 0, 0, 0);
+        // seven days ago, from yesterdayDateOnly
+        const fiveDaysAgo = new Date(yesterdayDateOnly.getTime() - 432000000); // 5 * 24 * 60 * 60 * 1000
         const raw = await CommunityDailyMetrics.findAll({
             attributes: ['communityId', 'ssi'],
             where: {
                 date: {
-                    [Op.lte]: yesterday,
+                    [Op.lte]: yesterdayDateOnly,
                     [Op.gte]: fiveDaysAgo,
                 }
             }
@@ -56,20 +75,20 @@ export default class CommunityDailyMetricsService {
         avgSSI: number;
         avgUbiRate: number;
     }> {
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
+        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
+        yesterdayDateOnly.setHours(0, 0, 0, 0);
         const raw = (await CommunityDailyMetrics.findAll({
             attributes: [
                 [fn('avg', col('ssi')), 'avgSSI'],
                 [fn('avg', col('ubiRate')), 'avgUbiRate'],
             ],
             where: {
-                date: yesterday
+                date: yesterdayDateOnly
             }
         }))[0];
         return {
-            avgSSI: (raw as any).avgSSI,
-            avgUbiRate: (raw as any).avgUbiRate,
+            avgSSI: parseFloat((raw as any).avgSSI),
+            avgUbiRate: parseFloat((raw as any).avgUbiRate),
         };
     }
 }

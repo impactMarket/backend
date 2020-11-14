@@ -27,7 +27,7 @@ export default class ClaimService {
     }
 
     /**
-     * Get total monthly (last 30 days, starting yesterday) claimed.
+     * Get total monthly (last 30 days, starting todayMidnightTime) claimed.
      * 
      * **NOTE**: claimed amounts will always be bigger than zero though,
      * a community might not be listed if no claim has ever happened!
@@ -35,15 +35,15 @@ export default class ClaimService {
      * @returns string
      */
     public static async getMonthlyClaimed(): Promise<string> {
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
-        // 30 days ago, from yesterday
-        const aMonthAgo = new Date(yesterday.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const todayMidnightTime = new Date(new Date().getTime()); 
+        todayMidnightTime.setHours(0, 0, 0, 0);
+        // 30 days ago, from todayMidnightTime
+        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         const claimed = (await Claim.findAll({
             attributes: [[fn('sum', col('amount')), 'claimed']],
             where: {
                 txAt: {
-                    [Op.lte]: yesterday,
+                    [Op.lt]: todayMidnightTime,
                     [Op.gte]: aMonthAgo,
                 }
             },
@@ -56,10 +56,10 @@ export default class ClaimService {
         beneficiaries: number;
         claimed: string;
     }> {
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
-        // seven days ago, from yesterday
-        const sevenDaysAgo = new Date(yesterday.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
+        const todayMidnightTime = new Date(new Date().getTime());
+        todayMidnightTime.setHours(0, 0, 0, 0);
+        // seven days ago, from todayMidnightTime
+        const sevenDaysAgo = new Date(todayMidnightTime.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
         const result = (await Claim.findAll({
             attributes: [
                 [fn('count', fn('distinct', col('address'))), 'beneficiaries'],
@@ -67,7 +67,7 @@ export default class ClaimService {
             ],
             where: {
                 txAt: {
-                    [Op.lte]: yesterday,
+                    [Op.lt]: todayMidnightTime,
                     [Op.gte]: sevenDaysAgo,
                 }
             },

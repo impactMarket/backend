@@ -46,20 +46,24 @@ export default class BeneficiaryService {
     }
 
     public static async getActiveBeneficiariesLast7Days(): Promise<Map<string, number>> {
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
-        // seven days ago, from yesterday
-        const sevenDaysAgo = new Date(yesterday.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
-        return new Map((await Beneficiary.findAll({
-            attributes: ['communityId', [fn('count', fn('distinct', col('address'))), 'active']],
+        const todayMidnightTime = new Date(new Date().getTime());
+        todayMidnightTime.setHours(0, 0, 0, 0);
+        // seven days ago, from todayMidnightTime
+        const sevenDaysAgo = new Date(todayMidnightTime.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
+        const result = await Beneficiary.findAll({
+            attributes: [
+                [fn('count', col('address')), 'active'],
+                'communityId',
+            ],
             where: {
                 lastClaimAt: {
-                    [Op.lte]: yesterday,
+                    [Op.lt]: todayMidnightTime,
                     [Op.gte]: sevenDaysAgo,
                 }
             },
             group: 'communityId',
-        })).map((c: any) => [c.communityId, c.active]));
+        });
+        return new Map(result.map((c: any) => [c.communityId, c.active]));
     }
 
 }

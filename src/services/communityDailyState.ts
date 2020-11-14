@@ -64,18 +64,18 @@ export default class CommunityDailyStateService {
     }
 
     /**
-     * Get total claimed for each community, for the 7 previous days, starting yesterday.
+     * Get total claimed for each community, for the 7 previous days, starting yesterdayDateOnly.
      */
     public static async getTotalClaimedLast7Days(): Promise<Map<string, string>> {
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
-        // seven days ago, from yesterday
-        const sevenDaysAgo = new Date(yesterday.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
+        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
+        yesterdayDateOnly.setHours(0, 0, 0, 0);
+        // seven days ago, from yesterdayDateOnly
+        const sevenDaysAgo = new Date(yesterdayDateOnly.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
         return new Map((await CommunityDailyState.findAll({
             attributes: ['communityId', [fn('sum', col('claimed')), 'totalClaimed']],
             where: {
                 date: {
-                    [Op.lte]: yesterday,
+                    [Op.lte]: yesterdayDateOnly,
                     [Op.gte]: sevenDaysAgo,
                 }
             },
@@ -89,8 +89,8 @@ export default class CommunityDailyStateService {
         totalBeneficiaries: number;
         totalRaised: string;
     }> {
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
+        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
+        yesterdayDateOnly.setHours(0, 0, 0, 0);
         const summedResults = (await CommunityDailyState.findAll({
             attributes: [
                 [fn('sum', col('claimed')), 'totalClaimed'],
@@ -99,7 +99,7 @@ export default class CommunityDailyStateService {
                 [fn('sum', col('raised')), 'totalRaised'],
             ],
             where: {
-                date: yesterday
+                date: yesterdayDateOnly
             },
         }))[0];
         return {

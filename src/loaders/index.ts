@@ -8,8 +8,8 @@ export default async ({ expressApp }: { expressApp: express.Application }): Prom
     await databaseLoader();
     Logger.info('🗺️  DB loaded and connected');
     
-    // await jobsLoader();
-    // Logger.info('🛠️  Jobs loaded');
+    await jobsLoader();
+    Logger.info('🛠️  Jobs loaded');
 
     await expressLoader({ app: expressApp });
     Logger.info('📡 Express loaded');

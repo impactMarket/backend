@@ -37,6 +37,13 @@ export interface ICommunityState {
     backers: number;
 }
 
+export interface ICommunityMetrics {
+    ssiDayAlone: number;
+    ssi: number;
+    ubiRate: number;
+    estimatedDuration: number;
+}
+
 export interface ICommunityInfo extends ICommunity {
     backers: string[];
     beneficiaries: {
@@ -52,6 +59,7 @@ export interface ICommunityInfo extends ICommunity {
     totalRaised: string;
     vars: ICommunityVars;
     state: ICommunityState;
+    metrics: ICommunityMetrics;
 }
 
 export interface ICommunityVars {

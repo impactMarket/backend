@@ -17,7 +17,9 @@ import config from '../../config';
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
     const activeBeneficiariesLast7Days = await BeneficiaryService.getActiveBeneficiariesLast7Days();
+    console.log('activeBeneficiariesLast7Days', activeBeneficiariesLast7Days)
     const totalClaimedLast7Days = await CommunityDailyStateService.getTotalClaimedLast7Days();
+    console.log('totalClaimedLast7Days', totalClaimedLast7Days)
     const ssiLast5Days = await CommunityDailyMetricsService.getSSILast5Days();
     const communitiesContract = await CommunityContractService.getAll();
     const calculateMetrics = async (community: ICommunityInfo) => {
@@ -88,7 +90,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             ssi,
             ubiRate,
             estimatedDuration,
-            // since it's calculated post-midnight, save it with yesterday's date
+            // since it's calculated post-midnight, save it with yesterdayDateOnly's date
             new Date(new Date().getTime() - 86400000),
         );
     }

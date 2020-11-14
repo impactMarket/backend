@@ -9,10 +9,10 @@ export default class ReachedAddressService {
         addresses: string[],
     ): Promise<number> {
         // verify which ones were not registered on the last 30 days and return the count
-        const yesterday = new Date(new Date().getTime() - 86400000);
-        yesterday.setHours(0, 0, 0, 0);
-        // 30 days ago, from yesterday
-        const aMonthAgo = new Date(yesterday.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
+        yesterdayDateOnly.setHours(0, 0, 0, 0);
+        // 30 days ago, from yesterdayDateOnly
+        const aMonthAgo = new Date(yesterdayDateOnly.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         const existingAddresses = (await ReachedAddress.findAll({
             attributes: [[fn('count', col('address')), 'total']],
             where: {
@@ -20,20 +20,20 @@ export default class ReachedAddressService {
                     [Op.in]: addresses
                 },
                 lastInteraction: {
-                    [Op.lte]: yesterday,
+                    [Op.lte]: yesterdayDateOnly,
                     [Op.gte]: aMonthAgo,
                 }
             },
         }))[0];
         const totalNewAddresses = addresses.length - (existingAddresses as any).total;
         try {
-            const yesterday = new Date(new Date().getTime() - 86400000);
-            yesterday.setHours(0, 0, 0, 0);
+            const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
+            yesterdayDateOnly.setHours(0, 0, 0, 0);
             // update all new and existing entries
             for (let index = 0; index < addresses.length; index++) {
                 await ReachedAddress.upsert({
                     address: addresses[index],
-                    lastInteraction: yesterday,
+                    lastInteraction: yesterdayDateOnly,
                 });
             }
         } catch (e) {

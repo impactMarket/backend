@@ -299,6 +299,7 @@ module.exports = {
         const beneficiaryAddresses = (await Beneficiary.findAll({
             attributes: ['address'],
             where: { communityId: { [Sequelize.Op.in]: communitiesIds } },
+            limit: 1,
         })).map((b) => b.address);
         for (let b = 0; b < beneficiaryAddresses.length; b++) {
             console.log(b);
@@ -348,7 +349,7 @@ module.exports = {
 
         console.log(volume.toString(), transactions);
 
-        const lastEntryDate = new Date(new Date().getTime() - 24 * 60 * 60 * 1000); // updating yesterday, which is the last entry
+        const lastEntryDate = new Date(new Date().getTime() - 24 * 60 * 60 * 1000); // updating yesterdayDateOnly, which is the last entry
         lastEntryDate.setHours(0, 0, 0, 0);
 
         const reach = Array.from(new Set(allAddressesReached));

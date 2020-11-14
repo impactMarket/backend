@@ -8,17 +8,18 @@ import ReachedAddressService from '../../services/reachedAddress';
 import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
 import BeneficiaryTransactionService from '../../services/beneficiaryTransaction';
 import Logger from '../../loaders/logger';
+import config from '../../config';
 
 
 /**
- * As this is all calculated past midnight, everything is from yesterday
+ * As this is all calculated past midnight, everything is from yesterdayDateOnly
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
     Logger.info('Calculating global metrics...');
-    const yesterday = new Date(new Date().getTime() - 86400000); // yesterday
+    const yesterdayDateOnly = new Date(new Date().getTime() - 86400000); // yesterdayDateOnly
     const lastGlobalMetrics = await GlobalDailyStateService.getLast();
     const communitiesYesterday = await CommunityDailyStateService.getYesterdayCommunitiesSum();
-    const volumeTransactionsAndAddresses = await BeneficiaryTransactionService.getAllByDay(yesterday);
+    const volumeTransactionsAndAddresses = await BeneficiaryTransactionService.getAllByDay(yesterdayDateOnly);
     const backersAndFunding = await InflowService.uniqueBackersAndFundingLast30Days();
     const communitiesAvgYesterday = await CommunityDailyMetricsService.getCommunitiesAvgYesterday();
 
@@ -34,6 +35,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     // ubi pulse
     const givingRate = parseFloat(
         new BigNumber(backersAndFunding.funding)
+            .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
             .dividedBy(backersAndFunding.backers)
             .dividedBy(30)
             .decimalPlaces(2, 1)
@@ -41,8 +43,10 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     );
     const ubiRate = communitiesAvgYesterday.avgUbiRate;
     const avgComulativeUbi = await CommunityContractService.avgComulativeUbi();
+    console.log('avgComulativeUbi', avgComulativeUbi)
     const avgUbiDuration = parseFloat(
         new BigNumber(avgComulativeUbi)
+            .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
             .dividedBy(ubiRate)
             .dividedBy(30)
             .decimalPlaces(2, 1)
@@ -71,7 +75,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
 
     // register new global daily state
     await GlobalDailyStateService.add(
-        yesterday,
+        yesterdayDateOnly,
         communitiesAvgYesterday.avgSSI,
         communitiesYesterday.totalClaimed,
         communitiesYesterday.totalClaims,

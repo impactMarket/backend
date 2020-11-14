@@ -121,6 +121,7 @@ module.exports = {
             const activeBackers = await Inflow.findAll({
                 attributes: [
                     [Sequelize.fn('count', Sequelize.fn('distinct', Sequelize.col('from'))), 't'],
+                    [Sequelize.fn('date', Sequelize.col('txAt')), 'date'],
                     'communityId'
                 ],
                 where: {
@@ -129,14 +130,14 @@ module.exports = {
                         [Sequelize.Op.gte]: firstDay,
                     }
                 },
-                group: ['communityId'],
+                group: ['communityId', Sequelize.fn('date', Sequelize.col('txAt'))],
                 raw: true
             });
             // TODO: update community table
             if (activeBackers.length > 0) {
                 for (let index = 0; index < activeBackers.length; index++) {
                     const element = activeBackers[index];
-                    lastTx = await CommunityDailyState.update({ backers: element.t }, { where: { communityId: element.communityId } });
+                    lastTx = await CommunityDailyState.update({ backers: element.t }, { where: { communityId: element.communityId, date: element.date } });
                 }
             }
             // increment one day
