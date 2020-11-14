@@ -43,7 +43,6 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     );
     const ubiRate = communitiesAvgYesterday.avgUbiRate;
     const avgComulativeUbi = await CommunityContractService.avgComulativeUbi();
-    console.log('avgComulativeUbi', avgComulativeUbi)
     const avgUbiDuration = parseFloat(
         new BigNumber(avgComulativeUbi)
             .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values

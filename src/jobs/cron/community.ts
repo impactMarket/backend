@@ -17,9 +17,7 @@ import config from '../../config';
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
     const activeBeneficiariesLast7Days = await BeneficiaryService.getActiveBeneficiariesLast7Days();
-    console.log('activeBeneficiariesLast7Days', activeBeneficiariesLast7Days)
     const totalClaimedLast7Days = await CommunityDailyStateService.getTotalClaimedLast7Days();
-    console.log('totalClaimedLast7Days', totalClaimedLast7Days)
     const ssiLast5Days = await CommunityDailyMetricsService.getSSILast5Days();
     const communitiesContract = await CommunityContractService.getAll();
     const calculateMetrics = async (community: ICommunityInfo) => {

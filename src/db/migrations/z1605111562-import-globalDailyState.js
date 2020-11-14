@@ -332,13 +332,11 @@ module.exports = {
             })
         }
 
-        for (let index = 0; index < total - 1; index++) {
+        for (let index = 0; index < total; index++) {
             const metrics = allCommunityDailyMetrics[index];
             const state = allCommunityDailyState[index + 2];
 
-            console.log('1')
             totalRaised = new BigNumber(totalRaised).plus(state.totalRaised).toString();
-            console.log('2')
             totalDistributed = new BigNumber(totalDistributed).plus(state.totalClaimed).toString();
             const todaysBackers = (await Inflow.findAll({
                 attributes: [
