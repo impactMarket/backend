@@ -1,7 +1,7 @@
 import {
     Router,
 } from 'express';
-import GlobalStatusService from '../services/globalStatus';
+import GlobalDailyStateService from '../services/globalDailyState';
 
 const route = Router();
 
@@ -12,9 +12,7 @@ export default (app: Router): void => {
     route.get('/',
         async (req, res) => {
             res.send({
-                global: await GlobalStatusService.get(),
-                outflow: await GlobalStatusService.outflow(),
-                inflow: await GlobalStatusService.inflow(),
+                monthly: await GlobalDailyStateService.getLast30Days(),
             });
         });
 };
