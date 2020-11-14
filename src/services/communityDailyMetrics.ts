@@ -87,7 +87,7 @@ export default class CommunityDailyMetricsService {
             }
         }))[0];
         return {
-            avgSSI: parseFloat((raw as any).avgSSI),
+            avgSSI: Math.round(parseFloat((raw as any).avgSSI) * 100) / 100,
             avgUbiRate: parseFloat((raw as any).avgUbiRate),
         };
     }
