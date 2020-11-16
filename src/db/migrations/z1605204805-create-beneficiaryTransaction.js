@@ -22,7 +22,7 @@ module.exports = {
                 type: Sequelize.DECIMAL(26), // max 99,999,999 - plus 18 decimals
                 allowNull: false,
             },
-            isfromBeneficiary: {
+            isFromBeneficiary: {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
             },

@@ -1,11 +1,21 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 
+export interface IBeneficiaryTransaction {
+    beneficiary: string;
+    withAddress: string;
+    amount: string;
+    isFromBeneficiary: boolean;
+    tx: string;
+    date: Date;
+}
 export class BeneficiaryTransaction extends Model {
     public id!: number;
     public beneficiary!: string;
     public withAddress!: string;
     public amount!: string;
+    public isFromBeneficiary!: boolean;
+    public tx!: string;
     public date!: Date;
 
     // timestamps!
@@ -33,7 +43,7 @@ export function initializeBeneficiaryTransaction(sequelize: Sequelize): void {
             type: DataTypes.DECIMAL(26), // max 99,999,999 - plus 18 decimals
             allowNull: false,
         },
-        isfromBeneficiary: {
+        isFromBeneficiary: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
         },

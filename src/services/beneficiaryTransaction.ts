@@ -1,25 +1,12 @@
 import { col, fn } from 'sequelize';
-import { BeneficiaryTransaction } from '../db/models/beneficiaryTransaction';
+import { BeneficiaryTransaction, IBeneficiaryTransaction } from '../db/models/beneficiaryTransaction';
 
 
 export default class BeneficiaryTransactionService {
 
-    public static async add(
-        beneficiary: string,
-        withAddress: string,
-        amount: string,
-        isFromBeneficiary: boolean,
-        tx: string,
-        date: Date,
-    ): Promise<any> {
-        return BeneficiaryTransaction.create({
-            beneficiary,
-            withAddress,
-            amount,
-            isFromBeneficiary,
-            tx,
-            date
-        });
+    public static async add(beneficiaryTx: IBeneficiaryTransaction): Promise<void> {
+        await BeneficiaryTransaction.create(beneficiaryTx);
+        return;
     }
 
     public static async getAllByDay(date: Date): Promise<{
