@@ -27,7 +27,10 @@ export interface ICommunity {
     email: string;
     coverImage: string;
     status: string;
-    txCreationObj: ICommunityVars;
+    /**
+     * @deprecated
+     */
+    txCreationObj: ICommunityVars; // TODO: remove in future
 }
 
 export interface ICommunityState {
@@ -42,31 +45,58 @@ export interface ICommunityMetrics {
     ssi: number;
     ubiRate: number;
     estimatedDuration: number;
+    historicalSSI: number[];
 }
 
 export interface ICommunityInfo extends ICommunity {
+    /**
+     * @deprecated
+     */
     backers: string[];
     beneficiaries: {
         added: ICommunityInfoBeneficiary[];
         removed: ICommunityInfoBeneficiary[];
     };
     managers: string[];
+    /**
+     * @deprecated
+     */
     ssi: {
         dates: Date[],
         values: number[],
     };
+    /**
+     * @deprecated
+     */
     totalClaimed: string;
+    /**
+     * @deprecated
+     */
     totalRaised: string;
-    vars: ICommunityVars;
+    /**
+     * @deprecated
+     */
+    vars: ICommunityVars; // TODO: remove
     state: ICommunityState;
     metrics: ICommunityMetrics;
+    contractParams: ICommunityContractParams;
 }
 
+/**
+ * @deprecated
+ */
 export interface ICommunityVars {
     _claimAmount: string;
     _baseInterval: string;
     _incrementInterval: string;
     _maxClaim: string;
+}
+
+export interface ICommunityContractParams {
+    claimAmount: string,
+    maxClaim: string,
+    baseInterval: number,
+    incrementInterval: number,
 }
 
 export interface ICommunityInfoBeneficiary {
@@ -121,6 +151,9 @@ export interface IPaymentsTxAPI {
     timestamp: number;
 }
 
+/**
+ * @deprecated
+ */
 export interface IUserTxAPI {
     picture: string;
     counterParty: IAddressAndName;
@@ -129,6 +162,9 @@ export interface IUserTxAPI {
     fromUser: boolean;
 }
 
+/**
+ * @deprecated
+ */
 export interface IGlobalStatus {
     totalRaised: string,
     totalDistributed: string,
@@ -136,11 +172,17 @@ export interface IGlobalStatus {
     totalClaims: string,
 }
 
+/**
+ * @deprecated
+ */
 export interface IGlobalOutflowStatus {
     claims: any;
     beneficiaries: any;
 }
 
+/**
+ * @deprecated
+ */
 export interface IGlobalInflowStatus {
     raises: any;
     rate: any;
@@ -150,6 +192,9 @@ export enum AgendaAction {
     notification = 'notification'
 }
 
+/**
+ * @deprecated
+ */
 export enum GlobalDataTypeEnum {
     totalRaised = 'totalraised',
     totalDistributed = 'totaldistributed',

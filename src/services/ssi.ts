@@ -2,6 +2,9 @@ import { SSI } from '../db/models/ssi';
 
 
 export default class SSIService {
+    /**
+     * @deprecated
+     */
     public static async add(
         communityPublicId: string,
         date: Date,
@@ -14,6 +17,9 @@ export default class SSIService {
         });
     }
 
+    /**
+     * @deprecated
+     */
     public static async get(
         communityPublicId: string,
     ): Promise<{ dates: Date[], values: number[] }> {
@@ -28,6 +34,9 @@ export default class SSIService {
         return { dates, values };
     }
 
+    /**
+     * @deprecated
+     */
     public static async last(
         communityPublicId: string,
     ): Promise<{ date: Date, value: number } | undefined> {
