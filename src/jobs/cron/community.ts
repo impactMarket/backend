@@ -12,6 +12,7 @@ import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
 import { median, mean } from 'mathjs';
 import CommunityContractService from '../../services/communityContract';
 import config from '../../config';
+import InflowService from '../../services/inflow';
 
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
@@ -49,7 +50,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 continue;
             }
             // the first time you don't wait a single second, the second time, only base interval
-            const timeToWait = parseInt(community.vars._baseInterval, 10) + (beneficiary.claims - 2) * parseInt(community.vars._incrementInterval, 10);
+            const timeToWait = community.contractParams.baseInterval + (beneficiary.claims - 2) * community.contractParams.incrementInterval;
             const timeWaited = Math.floor((beneficiary.lastClaimAt.getTime() - beneficiary.penultimateClaimAt.getTime()) / 1000) - timeToWait;
             beneficiariesTimeToWait.push(timeToWait);
             beneficiariesTimeWaited.push(timeWaited);
@@ -102,14 +103,14 @@ export async function verifyCommunityFunds(): Promise<void> {
     const communities = await CommunityService.getAll('valid');
 
     communities.forEach(async (community) => {
-        if (community.backers.length > 0 && community.totalClaimed !== '0') {
-            const isLessThan10 = parseFloat(new BigNumber(community.totalClaimed)
-                .div(community.totalRaised)
+        if (community.state.backers > 0 && community.state.claimed !== '0') {
+            const isLessThan10 = parseFloat(new BigNumber(community.state.claimed)
+                .div(community.state.raised)
                 .toString()) >= 0.9;
 
             if (isLessThan10) {
                 const backersAddresses = await NotifiedBackerService.add(
-                    community.backers,
+                    await InflowService.getAllBackers(community.publicId),
                     community.publicId
                 );
                 const pushTokens = await UserService.getPushTokensFromAddresses(backersAddresses);

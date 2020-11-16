@@ -51,6 +51,7 @@ export function initializeCommunityState(sequelize: Sequelize): void {
         },
         backers: {
             type: DataTypes.INTEGER, // max 2,147,483,647
+            defaultValue: 0,
             allowNull: false,
         },
         createdAt: {
