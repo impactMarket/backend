@@ -1,7 +1,6 @@
 import moment from 'moment';
 import { Op, fn, col } from 'sequelize';
 import { CommunityDailyState, ICommunityDailyStatusInsert } from '../db/models/communityDailyState';
-import Logger from '../loaders/logger';
 
 
 export default class CommunityDailyStateService {
@@ -29,16 +28,19 @@ export default class CommunityDailyStateService {
         await CommunityDailyState.bulkCreate(emptyDays);
     }
 
+    // TODO: change this method to have communityId as optional
+    // if not undefined, populate the next five days for all existing 'valid' communities
     public static async populateNext5Days(
         communityId: string,
     ): Promise<void> {
         const days = 5;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const lastDay = (await CommunityDailyState.findOne({ where: { communityId }, order: [['date', 'DESC']] }))!.date;
+        const lastDay = (await CommunityDailyState.findAll({ attributes: ['date'], where: { communityId }, order: [['date', 'DESC']], limit: 1 }))[0].date;
         let missingDays = moment(today.setTime(today.getTime() + (days * 24 * 60 * 60 * 1000))).diff(lastDay, 'days');
         const emptyDays: ICommunityDailyStatusInsert[] = [];
-        while (missingDays-- > 0) {
+        while (--missingDays > 0) {
+            lastDay.setTime(lastDay.getTime() + (24 * 60 * 60 * 1000));
             emptyDays.push({
                 communityId,
                 claimed: '0',
@@ -48,9 +50,10 @@ export default class CommunityDailyStateService {
                 backers: 0,
                 date: lastDay,
             });
-            lastDay.setTime(lastDay.getTime() + (24 * 60 * 60 * 1000));
         }
-        await CommunityDailyState.bulkCreate(emptyDays);
+        if (emptyDays.length > 0) {
+            await CommunityDailyState.bulkCreate(emptyDays);
+        }
     }
 
     public static async getAll(
