@@ -10,15 +10,17 @@ export default class NotifiedBackerService {
         communityId: string
     ): Promise<string[]> {
 
-        const allNotifiedBacker = await NotifiedBacker.findAll({
+        const allNotifiedBackers = await NotifiedBacker.findAll({
             where: {
                 backer: { [Op.in]: addresses },
                 communityId,
             },
-            raw: true,
         });
-        const recentlyNotifiedBacker = allNotifiedBacker
+        const recentlyNotifiedBackers = allNotifiedBackers
             .filter((n) => moment().diff(n.at, 'days') < 3)
+            .map((b) => b.backer);
+        const longNotifiedBackers = allNotifiedBackers
+            .filter((n) => moment().diff(n.at, 'days') >= 3)
             .map((b) => b.backer);
 
         const subtract = (arrayOriginal: string[], arraySubtract: string[]) => {
@@ -30,19 +32,15 @@ export default class NotifiedBackerService {
                 return !hash[a] || (hash[a]--, false);
             });
         }
-
-        const longNotifiedBackers = subtract(addresses, allNotifiedBacker.map((b) => b.backer));
-        const neverNotifiedBackers = subtract(longNotifiedBackers, recentlyNotifiedBacker);
-
-        longNotifiedBackers.forEach((b) => {
+        const neverNotifiedBackers = subtract(addresses, longNotifiedBackers.concat(recentlyNotifiedBackers));
+        neverNotifiedBackers.forEach((b) => {
             NotifiedBacker.create({
                 backer: b,
                 communityId,
                 at: new Date()
             });
         });
-
-        neverNotifiedBackers.forEach((b) => {
+        longNotifiedBackers.forEach((b) => {
             NotifiedBacker.update(
                 { at: new Date() },
                 {
