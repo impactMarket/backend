@@ -4,14 +4,14 @@ import config from '../config';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json'
 import CommunityContractABI from '../contracts/CommunityABI.json'
 import TransactionsService from './transactions';
-import { ICommunityInfo, ICommunityVars } from '../types';
-import { col, Op } from 'sequelize';
+import { ICommunityContractParams, ICommunityInfo } from '../types';
+import { Op } from 'sequelize';
 import SSIService from './ssi';
 import { notifyManagerAdded } from '../utils';
-import { CommunityState } from '../db/models/communityState';
 import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
 import CommunityDailyMetricsService from './communityDailyMetrics';
+import CommunityContractService from './communityContract';
 
 
 export default class CommunityService {
@@ -31,8 +31,9 @@ export default class CommunityService {
         email: string,
         coverImage: string,
         txReceipt: any,
-        txCreationObj: any,
+        contractParams: ICommunityContractParams,
     ): Promise<Community> {
+        // TODO: improve, insert with unique transaction (see sequelize eager loading)
         const newCommunity = await Community.create({
             requestByAddress,
             name,
@@ -47,8 +48,15 @@ export default class CommunityService {
             visibility: 'private',
             coverImage,
             status: 'valid',
-            txCreationObj,
+            contractParams,
         });
+        await CommunityContractService.add(
+            newCommunity.publicId,
+            contractParams,
+        );
+        await CommunityStateService.add(newCommunity.publicId);
+        // TODO: also add one day to daily state with the unique transaction above
+        await CommunityDailyStateService.populateNext5Days(newCommunity.publicId);
         // add tx manager
         const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
         const eventsCoomunity: ethers.utils.LogDescription[] = [];
@@ -85,9 +93,10 @@ export default class CommunityService {
         },
         email: string,
         coverImage: string,
-        txCreationObj: ICommunityVars,
+        contractParams: ICommunityContractParams,
     ): Promise<Community> {
-        return await Community.create({
+        // TODO: improve, insert with unique transaction (see sequelize eager loading)
+        const community = await Community.create({
             requestByAddress,
             name,
             description,
@@ -100,8 +109,16 @@ export default class CommunityService {
             visibility: 'public',
             coverImage,
             status: 'pending',
-            txCreationObj,
+            contractParams,
         });
+        await CommunityContractService.add(
+            community.publicId,
+            contractParams,
+        );
+        await CommunityStateService.add(community.publicId);
+        // TODO: also add one day to daily state with the unique transaction above
+        await CommunityDailyStateService.populateNext5Days(community.publicId);
+        return community;
     }
 
     public static async edit(
@@ -243,6 +260,7 @@ export default class CommunityService {
     private static async getCachedInfoToCommunity(community: Community): Promise<ICommunityInfo> {
         const communityState = await CommunityStateService.get(community.publicId);
         const communityMetrics = await CommunityDailyMetricsService.getLastMetrics(community.publicId);
+        const contractParams = await CommunityContractService.get(community.publicId);
         const beneficiaries = await TransactionsService.getBeneficiariesInCommunity(community.contractAddress);
         const managers = await TransactionsService.getCommunityManagersInCommunity(community.contractAddress);
         const backers = await TransactionsService.getBackersInCommunity(community.contractAddress);
@@ -268,6 +286,7 @@ export default class CommunityService {
             vars,
             state: communityState,
             metrics: communityMetrics,
+            contractParams,
         };
     }
 

@@ -20,7 +20,7 @@ export default class InflowService {
                 tx,
                 txAt,
             });
-        } catch(e) {
+        } catch (e) {
             Logger.info(e);
         }
     }
@@ -49,6 +49,14 @@ export default class InflowService {
         }))[0];
         // there will always be raised.lenght > 0 (were only zero at the begining)
         return (raised as any).raised;
+    }
+
+    public static async getAllBackers(communityId: string): Promise<string[]> {
+        const backers = (await Inflow.findAll({
+            attributes: [[fn('distinct', col('from')), 'backerAddress']],
+            where: { communityId },
+        })).map((b: any) => b.backerAddress);
+        return backers;
     }
 
     /**

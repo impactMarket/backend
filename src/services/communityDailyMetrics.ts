@@ -26,7 +26,21 @@ export default class CommunityDailyMetricsService {
     public static async getLastMetrics(communityId: string): Promise<ICommunityMetrics> {
         const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
         yesterdayDateOnly.setHours(0, 0, 0, 0);
-        return (await CommunityDailyMetrics.findAll({
+        // 30 days ago, from yesterdayDateOnly
+        const aMonthAgo = new Date(yesterdayDateOnly.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const historical = (await CommunityDailyMetrics.findAll({
+            attributes: [
+                'ssi',
+            ],
+            where: {
+                communityId,
+                date: {
+                    [Op.lte]: yesterdayDateOnly,
+                    [Op.gte]: aMonthAgo,
+                }
+            },
+        })) as any[];
+        const lastMetrics = (await CommunityDailyMetrics.findAll({
             attributes: [
                 'ssiDayAlone',
                 'ssi',
@@ -39,6 +53,13 @@ export default class CommunityDailyMetricsService {
             },
             limit: 1,
         }))[0] as any;
+        return {
+            historicalSSI: historical.map((h) => h.ssi),
+            ssiDayAlone: lastMetrics.ssiDayAlone,
+            ssi: lastMetrics.ssi,
+            ubiRate: lastMetrics.ubiRate,
+            estimatedDuration: lastMetrics.estimatedDuration,
+        }
     }
 
     public static async getSSILast5Days(): Promise<Map<string, number[]>> {
