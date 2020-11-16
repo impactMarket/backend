@@ -41,7 +41,8 @@ export default (app: Router): void => {
     route.get('/version', (req, res) => {
         res.send({
             latest: config.mobileVersion.latest,
-            minimal: config.mobileVersion.minimal
+            minimal: config.mobileVersion.minimal,
+            timestamp: new Date().getUTCMilliseconds(),
         });
     });
 
