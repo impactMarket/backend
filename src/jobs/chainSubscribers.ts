@@ -78,7 +78,7 @@ async function subscribeChainEvents(
                 const from = parsedLog.args[0];
                 const toCommunityAddress = parsedLog.args[1];
                 const communityPublicId = allCommunities.get(toCommunityAddress)!;
-                const amount = parsedLog.args[2];
+                const amount = parsedLog.args[2].toString();
                 getBlockTime(log.blockHash).then((txAt) => InflowService.add(
                     from,
                     communityPublicId,
@@ -87,27 +87,30 @@ async function subscribeChainEvents(
                     txAt,
                 ));
             } else if (
+                // do not count from communities [eg. claims]
                 !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
                 // ignore AttestationProxy
                 preParsedLog.args[1] !== config.attestationProxyAddress &&
                 // yeah, people without knowing make transactions to themselves! 🕊️
-                preParsedLog.args[0] !== preParsedLog.args[1]
+                preParsedLog.args[0] !== preParsedLog.args[1] &&
+                // any values >0.0009cUSD (999999999999999) [eg. cUSD fees]
+                preParsedLog.args[2].toString().length > 15
             ) {
-                // transactions from or to beneficiaries but not from any communities (that would be a claim)
-                // save to table to calculate txs and volume
                 parsedLog = preParsedLog;
-                const fromIsBeneficiary = allBeneficiaryAddressses.includes(parsedLog.args[0]);
-                if (fromIsBeneficiary || allBeneficiaryAddressses.includes(parsedLog.args[1])) {
-                    const beneficiaryAddress = fromIsBeneficiary ? parsedLog.args[0] : parsedLog.args[1];
-                    const withAddress = fromIsBeneficiary ? parsedLog.args[1] : parsedLog.args[0];
-                    BeneficiaryTransactionService.add(
-                        beneficiaryAddress,
+                const isFromBeneficiary = allBeneficiaryAddressses.includes(parsedLog.args[0]);
+                // transactions from or to beneficiaries
+                if (isFromBeneficiary || allBeneficiaryAddressses.includes(parsedLog.args[1])) {
+                    const beneficiaryAddress = isFromBeneficiary ? parsedLog.args[0] : parsedLog.args[1];
+                    const withAddress = isFromBeneficiary ? parsedLog.args[1] : parsedLog.args[0];
+                    // save to table to calculate txs and volume
+                    BeneficiaryTransactionService.add({
+                        beneficiary: beneficiaryAddress,
                         withAddress,
-                        parsedLog.args[2].toString(),
-                        fromIsBeneficiary,
-                        log.transactionHash,
-                        new Date()
-                    );
+                        amount: parsedLog.args[2].toString(),
+                        isFromBeneficiary,
+                        tx: log.transactionHash,
+                        date: new Date()
+                    });
                 }
             }
             //
