@@ -42,7 +42,7 @@ export default (app: Router): void => {
         res.send({
             latest: config.mobileVersion.latest,
             minimal: config.mobileVersion.minimal,
-            timestamp: new Date().getUTCMilliseconds(),
+            timestamp: new Date().getTime(),
         });
     });
 
