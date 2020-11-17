@@ -132,16 +132,16 @@ module.exports = {
 
             for (let index = 0; index < allSSI.length; index++) {
                 const ssi = allSSI[index];
-                const meanSSIs = allSSI.slice(Math.max(index - 5, 0), index + 1);
-                const sumSSI = meanSSIs.reduce((acc, mssi) => acc + mssi.ssi, 0);
+                const recentSSIs = allSSI.slice(Math.max(index - 5, 0), index + 1);
+                const sumSSI = recentSSIs.reduce((acc, mssi) => acc + mssi.ssi, 0);
                 // do not fix date here, since ssi was run at paris time
                 // and the api and db were at utc time, so it was the right day
                 // const fixDate = new Date(ssi.date.getTime() - 86400000);
-                if (meanSSIs.length !== 0) {
+                if (recentSSIs.length !== 0) {
                     ssiToInsert.push({
                         communityId: ssi.communityPublicId,
                         ssiDayAlone: ssi.ssi,
-                        ssi: Math.round(parseFloat((sumSSI / meanSSIs.length).toFixed(2)) * 100) / 100,
+                        ssi: Math.round(parseFloat((sumSSI / recentSSIs.length).toFixed(2)) * 100) / 100,
                         ubiRate: 0,
                         estimatedDuration: 0,
                         date: ssi.date,
