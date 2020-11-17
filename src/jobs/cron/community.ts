@@ -19,11 +19,11 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
     const activeBeneficiariesLast7Days = await BeneficiaryService.getActiveBeneficiariesLast7Days();
     const totalClaimedLast7Days = await CommunityDailyStateService.getTotalClaimedLast7Days();
-    const ssiLast5Days = await CommunityDailyMetricsService.getSSILast5Days();
+    const ssiLast4Days = await CommunityDailyMetricsService.getSSILast4Days();
     const communitiesContract = await CommunityContractService.getAll();
     const calculateMetrics = async (community: ICommunityInfo) => {
         // if no activity, do not calculate
-        if (community.totalClaimed === '0' || community.totalRaised === '0') {
+        if (community.state.claimed === '0' || community.state.raised === '0') {
             return;
         }
         const rawBeneficiaries = await BeneficiaryService.getAllInCommunity(community.publicId);
@@ -61,7 +61,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         ssiDayAlone = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
 
         // ssi
-        const ssisAvailable = ssiLast5Days.get(community.publicId)!;
+        const ssisAvailable = ssiLast4Days.get(community.publicId)!;
         const sumSSI = ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) + ssiDayAlone;
         ssi = Math.round(parseFloat((sumSSI / (ssisAvailable.length + 1)).toFixed(2)) * 100) / 100;
 
@@ -83,7 +83,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 .toFixed(2, 1)
         );
 
-        CommunityDailyMetricsService.add(
+        await CommunityDailyMetricsService.add(
             community.publicId,
             ssiDayAlone,
             ssi,
@@ -95,7 +95,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     }
     const communities = await CommunityService.getAll('valid');
     // for each community
-    communities.forEach(calculateMetrics);
+    for (let index = 0; index < communities.length; index++) {
+        await calculateMetrics(communities[index]);
+    }
 }
 
 export async function verifyCommunityFunds(): Promise<void> {
