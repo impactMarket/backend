@@ -1,6 +1,7 @@
 'use strict';
 
 const BigNumber = require("bignumber.js");
+const mathjs = require('mathjs');
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
@@ -271,9 +272,9 @@ module.exports = {
             order: [['date', 'ASC']],
             raw: true
         });
-        const allCommunityDailyMetrics = await CommunityDailyMetrics.findAll({
+        const countDays = await CommunityDailyMetrics.findAll({
             attributes: [
-                [Sequelize.fn('avg', Sequelize.col('ssi')), 'avgSsi']
+                [Sequelize.fn('count', Sequelize.col('ssi')), 't']
             ],
             where: {
                 communityId: { [Sequelize.Op.in]: onlyPublicValidCommunities },
@@ -284,7 +285,7 @@ module.exports = {
         });
 
         const globaldailystateToInsert = [];
-        const total = allCommunityDailyMetrics.length;
+        const total = countDays.length;
 
         let totalRaised = '0';
         let totalDistributed = '0';
@@ -305,7 +306,7 @@ module.exports = {
 
             globaldailystateToInsert.push({
                 date: state.date,
-                meanSSI: 0,
+                avgMedianSSI: 0,
                 claimed: state.totalClaimed,
                 claims: state.totalClaims,
                 beneficiaries: state.totalBeneficiaries,
@@ -332,8 +333,27 @@ module.exports = {
             })
         }
 
+        const pastSSI = [];
+
         for (let index = 0; index < total; index++) {
-            const metrics = allCommunityDailyMetrics[index];
+            const allSSIs = (await CommunityDailyMetrics.findAll({
+                attributes: ['ssi'],
+                where: {
+                    communityId: { [Sequelize.Op.in]: onlyPublicValidCommunities },
+                    date: allCommunityDailyState[index + 2].date,
+                },
+                raw: true
+            })).map((m) => m.ssi);
+
+            const rawMedianSSI = mathjs.median(allSSIs);
+            let avgMedianSSI = 0;
+            if (pastSSI.length > 0) {
+                avgMedianSSI = mathjs.mean(pastSSI.concat([rawMedianSSI]).slice(Math.max(0, index - 5), index + 1));
+            } else {
+                avgMedianSSI = rawMedianSSI;
+            }
+            pastSSI.push(avgMedianSSI);
+
             const state = allCommunityDailyState[index + 2];
 
             totalRaised = new BigNumber(totalRaised).plus(state.totalRaised).toString();
@@ -367,7 +387,7 @@ module.exports = {
 
             globaldailystateToInsert.push({
                 date: state.date,
-                meanSSI: Math.round(parseFloat(metrics.avgSsi) * 100) / 100,
+                avgMedianSSI: Math.round(avgMedianSSI * 100) / 100,
                 claimed: state.totalClaimed,
                 claims: state.totalClaims,
                 beneficiaries: state.totalBeneficiaries,
