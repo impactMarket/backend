@@ -78,7 +78,7 @@ export interface ICommunityInfo extends ICommunity {
      */
     vars: ICommunityVars; // TODO: remove
     state: ICommunityState;
-    metrics: ICommunityMetrics;
+    metrics?: ICommunityMetrics; // private communities do not have metrics
     contractParams: ICommunityContractParams;
 }
 
