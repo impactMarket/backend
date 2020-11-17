@@ -3,7 +3,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class GlobalDailyState extends Model {
     public date!: Date;
-    public meanSSI!: number;
+    public avgMedianSSI!: number;
     public claimed!: string;
     public claims!: number;
     public beneficiaries!: number;
@@ -41,7 +41,7 @@ export function initializeGlobalDailyState(sequelize: Sequelize): void {
             unique: true,
             allowNull: false,
         },
-        meanSSI: {
+        avgMedianSSI: {
             type: DataTypes.FLOAT,
             allowNull: false,
         },

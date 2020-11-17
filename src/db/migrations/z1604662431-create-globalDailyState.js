@@ -8,7 +8,7 @@ module.exports = {
                 unique: true,
                 allowNull: false,
             },
-            meanSSI: {
+            avgMedianSSI: {
                 type: Sequelize.FLOAT,
                 allowNull: false,
             },
