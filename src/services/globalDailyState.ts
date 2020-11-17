@@ -8,7 +8,7 @@ export default class GlobalDailyStateService {
 
     public static async add(
         date: Date,
-        meanSSI: number,
+        avgMedianSSI: number,
         claimed: string,
         claims: number,
         beneficiaries: number,
@@ -33,7 +33,7 @@ export default class GlobalDailyStateService {
     ): Promise<GlobalDailyState> {
         return await GlobalDailyState.create({
             date,
-            meanSSI,
+            avgMedianSSI,
             claimed,
             claims,
             beneficiaries,
@@ -58,6 +58,16 @@ export default class GlobalDailyStateService {
         });
     }
 
+    public static async getLast4AvgMedianSSI(): Promise<number[]> {
+        // it was null just once at the system's begin.
+        const last = await GlobalDailyState.findAll({
+            attributes: ['avgMedianSSI'],
+            order: [['date', 'DESC']],
+            limit: 4
+        });
+        return last.map((g) => g.avgMedianSSI);
+    }
+
     public static async getLast(): Promise<GlobalDailyState> {
         // it was null just once at the system's begin.
         const last = await GlobalDailyState.findAll({
@@ -68,15 +78,15 @@ export default class GlobalDailyStateService {
     }
 
     public static async getLast30Days(): Promise<GlobalDailyState[]> {
-        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
-        yesterdayDateOnly.setHours(0, 0, 0, 0);
-        // 30 days ago, from yesterdayDateOnly
-        const aMonthAgo = new Date(yesterdayDateOnly.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const todayMidnightTime = new Date();
+        todayMidnightTime.setHours(0, 0, 0, 0);
+        // 30 days ago, from todayMidnightTime
+        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         // it was null just once at the system's begin.
         return await GlobalDailyState.findAll({
             where: {
                 date: {
-                    [Op.lte]: yesterdayDateOnly,
+                    [Op.lt]: todayMidnightTime,
                     [Op.gte]: aMonthAgo,
                 }
             },

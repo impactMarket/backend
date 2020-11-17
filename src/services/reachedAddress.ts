@@ -9,10 +9,10 @@ export default class ReachedAddressService {
         addresses: string[],
     ): Promise<number> {
         // verify which ones were not registered on the last 30 days and return the count
-        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
-        yesterdayDateOnly.setHours(0, 0, 0, 0);
-        // 30 days ago, from yesterdayDateOnly
-        const aMonthAgo = new Date(yesterdayDateOnly.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const todayMidnightTime = new Date();
+        todayMidnightTime.setHours(0, 0, 0, 0);
+        // 30 days ago, from todayMidnightTime
+        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         const existingAddresses = (await ReachedAddress.findAll({
             attributes: [[fn('count', col('address')), 'total']],
             where: {
@@ -20,7 +20,7 @@ export default class ReachedAddressService {
                     [Op.in]: addresses
                 },
                 lastInteraction: {
-                    [Op.lte]: yesterdayDateOnly,
+                    [Op.lt]: todayMidnightTime,
                     [Op.gte]: aMonthAgo,
                 }
             },

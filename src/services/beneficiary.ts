@@ -46,7 +46,7 @@ export default class BeneficiaryService {
     }
 
     public static async getActiveBeneficiariesLast7Days(): Promise<Map<string, number>> {
-        const todayMidnightTime = new Date(new Date().getTime());
+        const todayMidnightTime = new Date();
         todayMidnightTime.setHours(0, 0, 0, 0);
         // seven days ago, from todayMidnightTime
         const sevenDaysAgo = new Date(todayMidnightTime.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000

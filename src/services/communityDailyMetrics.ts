@@ -1,6 +1,7 @@
 import { col, fn, Op } from 'sequelize';
 import { CommunityDailyMetrics } from '../db/models/communityDailyMetrics';
 import { ICommunityMetrics } from '../types';
+import { median } from 'mathjs';
 
 
 export default class CommunityDailyMetricsService {
@@ -23,23 +24,20 @@ export default class CommunityDailyMetricsService {
         });
     }
 
-    public static async getLastMetrics(communityId: string): Promise<ICommunityMetrics> {
-        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
-        yesterdayDateOnly.setHours(0, 0, 0, 0);
-        // 30 days ago, from yesterdayDateOnly
-        const aMonthAgo = new Date(yesterdayDateOnly.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+    public static async getLastMetrics(communityId: string): Promise<ICommunityMetrics | undefined> {
         const historical = (await CommunityDailyMetrics.findAll({
             attributes: [
                 'ssi',
             ],
             where: {
                 communityId,
-                date: {
-                    [Op.lte]: yesterdayDateOnly,
-                    [Op.gte]: aMonthAgo,
-                }
             },
+            order: [['date', 'DESC']],
+            limit: 15,
         })) as any[];
+        if (historical.length === 0) {
+            return undefined;
+        }
         const lastMetrics = (await CommunityDailyMetrics.findAll({
             attributes: [
                 'ssiDayAlone',
@@ -49,8 +47,8 @@ export default class CommunityDailyMetricsService {
             ],
             where: {
                 communityId,
-                date: yesterdayDateOnly
             },
+            order: [['date', 'DESC']],
             limit: 1,
         }))[0] as any;
         return {
@@ -62,17 +60,17 @@ export default class CommunityDailyMetricsService {
         }
     }
 
-    public static async getSSILast5Days(): Promise<Map<string, number[]>> {
+    public static async getSSILast4Days(): Promise<Map<string, number[]>> {
         const result = new Map<string, number[]>();
-        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
-        yesterdayDateOnly.setHours(0, 0, 0, 0);
+        const todayMidnightTime = new Date();
+        todayMidnightTime.setHours(0, 0, 0, 0);
         // seven days ago, from yesterdayDateOnly
-        const fiveDaysAgo = new Date(yesterdayDateOnly.getTime() - 432000000); // 5 * 24 * 60 * 60 * 1000
+        const fiveDaysAgo = new Date(todayMidnightTime.getTime() - 345600000); // 4 * 24 * 60 * 60 * 1000
         const raw = await CommunityDailyMetrics.findAll({
             attributes: ['communityId', 'ssi'],
             where: {
                 date: {
-                    [Op.lte]: yesterdayDateOnly,
+                    [Op.lt]: todayMidnightTime,
                     [Op.gte]: fiveDaysAgo,
                 }
             }
@@ -93,14 +91,21 @@ export default class CommunityDailyMetricsService {
     }
 
     public static async getCommunitiesAvgYesterday(): Promise<{
-        avgSSI: number;
+        meadianSSI: number;
         avgUbiRate: number;
     }> {
         const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
         yesterdayDateOnly.setHours(0, 0, 0, 0);
+
+        const meadianSSI = median((await CommunityDailyMetrics.findAll({
+            attributes: ['ssi'],
+            where: {
+                date: yesterdayDateOnly,
+            }
+        })).map((m) => m.ssi));
+
         const raw = (await CommunityDailyMetrics.findAll({
             attributes: [
-                [fn('avg', col('ssi')), 'avgSSI'],
                 [fn('avg', col('ubiRate')), 'avgUbiRate'],
             ],
             where: {
@@ -108,7 +113,7 @@ export default class CommunityDailyMetricsService {
             }
         }))[0];
         return {
-            avgSSI: Math.round(parseFloat((raw as any).avgSSI) * 100) / 100,
+            meadianSSI,
             avgUbiRate: parseFloat((raw as any).avgUbiRate),
         };
     }

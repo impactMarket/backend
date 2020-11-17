@@ -67,18 +67,18 @@ export default class CommunityDailyStateService {
     }
 
     /**
-     * Get total claimed for each community, for the 7 previous days, starting yesterdayDateOnly.
+     * Get total claimed for each community, for the 7 previous days, starting todayMidnightTime.
      */
     public static async getTotalClaimedLast7Days(): Promise<Map<string, string>> {
-        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
-        yesterdayDateOnly.setHours(0, 0, 0, 0);
-        // seven days ago, from yesterdayDateOnly
-        const sevenDaysAgo = new Date(yesterdayDateOnly.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
+        const todayMidnightTime = new Date();
+        todayMidnightTime.setHours(0, 0, 0, 0);
+        // seven days ago, from todayMidnightTime
+        const sevenDaysAgo = new Date(todayMidnightTime.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
         return new Map((await CommunityDailyState.findAll({
             attributes: ['communityId', [fn('sum', col('claimed')), 'totalClaimed']],
             where: {
                 date: {
-                    [Op.lte]: yesterdayDateOnly,
+                    [Op.lt]: todayMidnightTime,
                     [Op.gte]: sevenDaysAgo,
                 }
             },
