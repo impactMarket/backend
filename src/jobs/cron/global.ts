@@ -9,6 +9,7 @@ import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
 import BeneficiaryTransactionService from '../../services/beneficiaryTransaction';
 import Logger from '../../loaders/logger';
 import config from '../../config';
+import { mean } from 'mathjs';
 
 
 /**
@@ -18,6 +19,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     Logger.info('Calculating global metrics...');
     const yesterdayDateOnly = new Date(new Date().getTime() - 86400000); // yesterdayDateOnly
     const lastGlobalMetrics = await GlobalDailyStateService.getLast();
+    const last4DaysAvgSSI = await GlobalDailyStateService.getLast4AvgMedianSSI();
     const communitiesYesterday = await CommunityDailyStateService.getYesterdayCommunitiesSum();
     const volumeTransactionsAndAddresses = await BeneficiaryTransactionService.getAllByDay(yesterdayDateOnly);
     const backersAndFunding = await InflowService.uniqueBackersAndFundingLast30Days();
@@ -72,10 +74,11 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const totalTransactions = new BigNumber(lastGlobalMetrics.totalTransactions.toString()).plus(transactions).toString();
     const totalReach = new BigNumber(lastGlobalMetrics.totalReach.toString()).plus(reach).toString();
 
+    const avgMedianSSI = mean(last4DaysAvgSSI.concat([communitiesAvgYesterday.meadianSSI]));
     // register new global daily state
     await GlobalDailyStateService.add(
         yesterdayDateOnly,
-        communitiesAvgYesterday.avgSSI,
+        Math.round(avgMedianSSI * 100) / 100,
         communitiesYesterday.totalClaimed,
         communitiesYesterday.totalClaims,
         communitiesYesterday.totalBeneficiaries,
@@ -89,7 +92,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         totalBackers,
         totalBeneficiaries,
         givingRate,
-        ubiRate,
+        Math.round(ubiRate * 100) / 100,
         fundingRate,
         spendingRate,
         avgComulativeUbi,
