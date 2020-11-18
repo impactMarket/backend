@@ -7,7 +7,6 @@ import NotifiedBackerService from '../../services/notifiedBacker';
 import CommunityDailyStateService from '../../services/communityDailyState';
 import { ICommunityInfo } from '../../types';
 import BeneficiaryService from '../../services/beneficiary';
-import { Beneficiary } from '../../db/models/beneficiary';
 import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
 import { median, mean } from 'mathjs';
 import CommunityContractService from '../../services/communityContract';
@@ -17,8 +16,8 @@ import InflowService from '../../services/inflow';
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
-    const activeBeneficiariesLast7Days = await BeneficiaryService.getActiveBeneficiariesLast7Days();
-    const totalClaimedLast7Days = await CommunityDailyStateService.getTotalClaimedLast7Days();
+    const activeBeneficiariesLast30Days = await BeneficiaryService.getActiveBeneficiariesLast30Days();
+    const totalClaimedLast30Days = await CommunityDailyStateService.getTotalClaimedLast30Days();
     const ssiLast4Days = await CommunityDailyMetricsService.getSSILast4Days();
     const communitiesContract = await CommunityContractService.getAll();
     const calculateMetrics = async (community: ICommunityInfo) => {
@@ -64,10 +63,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
         // calculate ubiRate
         ubiRate = parseFloat(
-            new BigNumber(totalClaimedLast7Days.get(community.publicId)!)
+            new BigNumber(totalClaimedLast30Days.get(community.publicId)!)
                 .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
-                .dividedBy(activeBeneficiariesLast7Days.get(community.publicId)!)
-                .dividedBy(7)
+                .dividedBy(activeBeneficiariesLast30Days.get(community.publicId)!)
+                .dividedBy(30)
                 .toFixed(2, 1)
         );
 
