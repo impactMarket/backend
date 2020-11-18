@@ -93,4 +93,23 @@ export default class GlobalDailyStateService {
             order: [['date', 'DESC']],
         });
     }
+
+    public static async last90DaysAvgSSI(): Promise<{date: Date, avgMedianSSI: number}[]> {
+        const todayMidnightTime = new Date();
+        todayMidnightTime.setHours(0, 0, 0, 0);
+        // 90 days ago, from todayMidnightTime
+        const threeMonthsAgo = new Date(todayMidnightTime.getTime() - 7776000000); // 90 * 24 * 60 * 60 * 1000
+        const result = await GlobalDailyState.findAll({
+            attributes: ['date', 'avgMedianSSI'],
+            where: {
+                date: {
+                    [Op.lt]: todayMidnightTime,
+                    [Op.gte]: threeMonthsAgo,
+                }
+            },
+            order: [['date', 'DESC']],
+        });
+        // it was null just once at the system's begin.
+        return result.map((g) => ({ date: g.date, avgMedianSSI: g.avgMedianSSI }));
+    }
 }

@@ -66,7 +66,7 @@ export default class InflowService {
         const backers = (await Inflow.findAll({
             attributes: [[fn('count', fn('distinct', col('from'))), 'total']],
         }))[0];
-        return (backers as any).total;
+        return parseInt((backers as any).total, 10);
     }
 
     /**

@@ -112,4 +112,29 @@ export default class CommunityDailyStateService {
             totalRaised: (summedResults as any).totalClaimed,
         };
     }
+
+    /**
+     * 💂‍♀️ yes sir, that's about it!
+     * Used on dashboard to provider "real time" data
+     */
+    public static async notYetCountedToday(): Promise<{ totalClaimed: string, totalBeneficiaries: number, totalRaised: string }> {
+        const justToday = new Date();
+        const result = await CommunityDailyState.findAll({
+            attributes: [
+                [fn('sum', col('claimed')), 'totalClaimed'],
+                [fn('sum', col('beneficiaries')), 'totalBeneficiaries'],
+                [fn('sum', col('raised')), 'totalRaised'],
+            ],
+            where: {
+                date: justToday
+            },
+        });
+        // it was null just once at the system's begin.
+        const g = (result[0] as any);
+        return {
+            totalClaimed: g.totalClaimed,
+            totalBeneficiaries: parseInt(g.totalBeneficiaries, 10),
+            totalRaised: g.totalRaised,
+        }
+    }
 }
