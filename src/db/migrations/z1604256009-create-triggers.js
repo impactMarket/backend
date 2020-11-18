@@ -39,7 +39,7 @@ EXECUTE PROCEDURE update_beneficiaries_community_states();`);
     declare
         state_claimed numeric(29);
         state_daily_claimed numeric(29);
-        beneficiary_last_claim_at date;
+        beneficiary_last_claim_at timestamp with time zone;
     BEGIN
         -- update claims
         UPDATE communitystate SET claims = claims + 1 WHERE "communityId"=NEW."communityId";
