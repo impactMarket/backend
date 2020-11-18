@@ -26,8 +26,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         if (community.state.claimed === '0' || community.state.raised === '0') {
             return;
         }
-        const rawBeneficiaries = await BeneficiaryService.getAllInCommunity(community.publicId);
-        if (rawBeneficiaries.length < 1) {
+        const beneficiaries = await BeneficiaryService.getAllInCommunity(community.publicId);
+        if (beneficiaries.length < 1) {
             return;
         }
         let ssiDayAlone: number;
@@ -38,13 +38,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const beneficiariesTimeToWait: number[] = [];
         const beneficiariesTimeWaited: number[] = [];
 
-        const beneficiaries = rawBeneficiaries.reduce((map, obj) => {
-            map[obj.address] = obj;
-            return map;
-        }, {} as { [key: string]: Beneficiary; });
-
-        for (const beneficiaryAdddress in beneficiaries) {
-            const beneficiary = beneficiaries[beneficiaryAdddress];
+        for (let b = 0; b < beneficiaries.length; b++) {
+            const beneficiary = beneficiaries[b];
             // at least two claims are necessary
             if (beneficiary.claims < 2) {
                 continue;
@@ -52,12 +47,14 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             // the first time you don't wait a single second, the second time, only base interval
             const timeToWait = community.contractParams.baseInterval + (beneficiary.claims - 2) * community.contractParams.incrementInterval;
             const timeWaited = Math.floor((beneficiary.lastClaimAt.getTime() - beneficiary.penultimateClaimAt.getTime()) / 1000) - timeToWait;
+            // console.log(beneficiary.address, beneficiary.lastClaimAt, beneficiary.penultimateClaimAt);
             beneficiariesTimeToWait.push(timeToWait);
             beneficiariesTimeWaited.push(timeWaited);
         }
         // calculate ssi day alone
         const meanTimeToWait = mean(beneficiariesTimeToWait);
         const madTimeWaited = median(beneficiariesTimeWaited);
+        // console.log(community.name, madTimeWaited, meanTimeToWait);
         ssiDayAlone = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
 
         // ssi
