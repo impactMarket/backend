@@ -57,7 +57,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     // economic activity
     const volume = volumeTransactionsAndAddresses.volume;
     const transactions = volumeTransactionsAndAddresses.transactions;
-    const reach = await ReachedAddressService.addNewReachedYesterday(volumeTransactionsAndAddresses.uniqueAddressesReached);
+    const reach = volumeTransactionsAndAddresses.uniqueAddressesReached.length;
     // TODO: spending rate
     const spendingRate = 0;
 
@@ -72,7 +72,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     );
     const totalVolume = new BigNumber(lastGlobalMetrics.totalVolume).plus(volume).toString();
     const totalTransactions = new BigNumber(lastGlobalMetrics.totalTransactions.toString()).plus(transactions).toString();
-    const totalReach = new BigNumber(lastGlobalMetrics.totalReach.toString()).plus(reach).toString();
+    const totalReach = await ReachedAddressService.getAllReachedEver();
 
     const avgMedianSSI = mean(last4DaysAvgSSI.concat([communitiesAvgYesterday.meadianSSI]));
     // register new global daily state
