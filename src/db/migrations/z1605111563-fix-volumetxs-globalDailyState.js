@@ -4,6 +4,8 @@ const BigNumber = require("bignumber.js");
 const axios = require('axios');
 const { ethers } = require("ethers");
 
+BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
+
 // eslint-disable-next-line no-undef
 module.exports = {
     up: async (queryInterface, Sequelize) => {
@@ -155,6 +157,10 @@ module.exports = {
                 type: Sequelize.BIGINT, // max 9,223,372,036,854,775,807
                 allowNull: false,
             },
+            totalReach: {
+                type: Sequelize.BIGINT, // max 9,223,372,036,854,775,807
+                allowNull: false,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -252,33 +258,17 @@ module.exports = {
             tableName: 'community',
             sequelize: queryInterface.sequelize, // this bit is important
         });
-        const ReachedAddress = await queryInterface.sequelize.define('reachedaddress', {
-            address: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
-                unique: true,
-                primaryKey: true,
-            },
-            lastInteraction: {
-                type: Sequelize.DATEONLY,
-                allowNull: false,
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE
-            }
-        }, {
-            tableName: 'reachedaddress',
-            sequelize: queryInterface.sequelize, // this bit is important
-        });
 
-        let transactions = 0;
-        let volume = new BigNumber('0');
-        const allAddressesReached = [];
+        const onlyDate = (timestamp) => {
+            const dateObj = new Date(timestamp);
+            dateObj.setHours(0, 0, 0, 0);
+            return dateObj.getTime();
+        };
+
+        const volumeTxReachByDay = new Map();
+        const accVolumeTxReachByDay = new Map();
+        const reachedAddresses = new Map();
+        const allDates = [];
 
         // get all community addresses
         const communitiesAddresses = (await Community.findAll({
@@ -299,9 +289,31 @@ module.exports = {
         const beneficiaryAddresses = (await Beneficiary.findAll({
             attributes: ['address'],
             where: { communityId: { [Sequelize.Op.in]: communitiesIds } },
-            limit: 1,
         })).map((b) => b.address);
+
+        const updateMaps = (address, value, timestamp) => {
+            let previousValues = volumeTxReachByDay.get(onlyDate(timestamp));
+            let newValues;
+            if (previousValues === undefined) {
+                newValues = {
+                    transactions: 1,
+                    volume: value,
+                    reach: reachedAddresses.get(ethers.utils.getAddress(address)) !== undefined ? 0 : 1
+                }
+            } else {
+                newValues = {
+                    transactions: previousValues.transactions + 1,
+                    volume: new BigNumber(previousValues.volume).plus(value).toString(),
+                    reach: reachedAddresses.get(ethers.utils.getAddress(address)) !== undefined ? previousValues.reach : previousValues.reach + 1
+                }
+            }
+            reachedAddresses.set(ethers.utils.getAddress(address), new Date(timestamp));
+            volumeTxReachByDay.set(onlyDate(timestamp), newValues);
+            allDates.push(onlyDate(timestamp));
+        }
+
         for (let b = 0; b < beneficiaryAddresses.length; b++) {
+        // for (let b = 55; b < 65; b++) {
             console.log(b);
             const query = await axios.get(
                 `${process.env.BLOCKSCOUT_API_URL}?module=account&action=tokentx&address=${beneficiaryAddresses[b]}`
@@ -323,44 +335,56 @@ module.exports = {
                     continue;
                 }
                 if (!communitiesAddresses.includes(ethers.utils.getAddress(rawResult[r].from)) && !communitiesAddresses.includes(ethers.utils.getAddress(rawResult[r].to))) {
-                    // sending between beneficiaries does not count has reach
                     if (beneficiaryAddresses[b] === ethers.utils.getAddress(rawResult[r].from)) {
-                        allAddressesReached.push(ethers.utils.getAddress(rawResult[r].to));
-                        await ReachedAddress.upsert({
-                            address: ethers.utils.getAddress(rawResult[r].to),
-                            lastInteraction: new Date(parseInt(rawResult[r].timeStamp) * 1000),
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                        });
+                        updateMaps(rawResult[r].to, rawResult[r].value.toString(), parseInt(rawResult[r].timeStamp) * 1000);
                     } else if (beneficiaryAddresses[b] === ethers.utils.getAddress(rawResult[r].to)) {
-                        allAddressesReached.push(ethers.utils.getAddress(rawResult[r].from));
-                        await ReachedAddress.upsert({
-                            address: ethers.utils.getAddress(rawResult[r].from),
-                            lastInteraction: new Date(parseInt(rawResult[r].timeStamp) * 1000),
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                        });
+                        updateMaps(rawResult[r].from, rawResult[r].value.toString(), parseInt(rawResult[r].timeStamp) * 1000);
                     }
-                    transactions = transactions + 1;
-                    volume = volume.plus(rawResult[r].value.toString());
                 }
             }
         }
 
-        console.log(volume.toString(), transactions);
+        const uniqueOrderedDates = Array.from(new Set(allDates.sort()));
+        console.log(allDates.sort(), new Set(allDates.sort()), uniqueOrderedDates)
 
-        const lastEntryDate = new Date(new Date().getTime() - 24 * 60 * 60 * 1000); // updating yesterdayDateOnly, which is the last entry
-        lastEntryDate.setHours(0, 0, 0, 0);
+        accVolumeTxReachByDay.set(uniqueOrderedDates[0], volumeTxReachByDay.get(uniqueOrderedDates[0]));
+        for (let x = 1; x < uniqueOrderedDates.length; x += 1) {
+            const today = volumeTxReachByDay.get(uniqueOrderedDates[x]);
+            const previous = accVolumeTxReachByDay.get(uniqueOrderedDates[x - 1]);
+            accVolumeTxReachByDay.set(uniqueOrderedDates[x], {
+                transactions: today.transactions + previous.transactions,
+                volume: new BigNumber(today.volume).plus(previous.volume).toString(),
+                reach: today.reach + previous.reach,
+            });
+        }
 
-        const reach = Array.from(new Set(allAddressesReached));
-        return GlobalDailyState.update({
-            transactions,
-            volume: volume.toString(),
-            reach: reach.length,
-            totalTransactions: transactions,
-            totalVolume: volume.toString(),
-            totalReach: reach.length,
-        }, { where: { date: lastEntryDate } });
+        console.log(volumeTxReachByDay, reachedAddresses, uniqueOrderedDates, accVolumeTxReachByDay);
+
+        const reachedAddressesToInsert = [];
+
+        for (var [key, value] of reachedAddresses) {
+            reachedAddressesToInsert.push({
+                address: key,
+                lastInteraction: value,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+        }
+
+        await queryInterface.bulkInsert('reachedaddress', reachedAddressesToInsert);
+
+        for (let x = 0; x < uniqueOrderedDates.length; x += 1) {
+            const today = volumeTxReachByDay.get(uniqueOrderedDates[x]);
+            const accToday = accVolumeTxReachByDay.get(uniqueOrderedDates[x]);
+            await GlobalDailyState.update({
+                volume: today.volume,
+                transactions: today.transactions,
+                reach: today.reach,
+                totalVolume: accToday.volume,
+                totalTransactions: BigInt(accToday.transactions),
+                totalReach: BigInt(accToday.reach),
+            }, { where: { date: new Date(uniqueOrderedDates[x]) } });
+        }
     },
     down: (queryInterface) => {
     }
