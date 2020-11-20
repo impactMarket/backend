@@ -18,7 +18,7 @@ export function initializeClaimLocation(sequelize: Sequelize): void {
             autoIncrement: true,
             primaryKey: true,
         },
-        communityPublicId: {
+        communityId: {
             type: DataTypes.UUID,
             allowNull: false
         },
