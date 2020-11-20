@@ -96,10 +96,10 @@ async function subscribeChainEvents(
                 // any values >0.0009cUSD (999999999999999) [eg. cUSD fees]
                 preParsedLog.args[2].toString().length > 15
             ) {
-                parsedLog = preParsedLog;
-                const isFromBeneficiary = allBeneficiaryAddressses.includes(parsedLog.args[0]);
+                const isFromBeneficiary = allBeneficiaryAddressses.includes(preParsedLog.args[0]);
                 // transactions from or to beneficiaries
-                if (isFromBeneficiary || allBeneficiaryAddressses.includes(parsedLog.args[1])) {
+                if (isFromBeneficiary || allBeneficiaryAddressses.includes(preParsedLog.args[1])) {
+                    parsedLog = preParsedLog;
                     const beneficiaryAddress = isFromBeneficiary ? parsedLog.args[0] : parsedLog.args[1];
                     const withAddress = isFromBeneficiary ? parsedLog.args[1] : parsedLog.args[0];
                     // save to table to calculate txs and volume
