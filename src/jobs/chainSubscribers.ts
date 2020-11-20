@@ -99,14 +99,14 @@ async function subscribeChainEvents(
                 const isFromBeneficiary = allBeneficiaryAddressses.includes(preParsedLog.args[0]);
                 // transactions from or to beneficiaries
                 if (isFromBeneficiary || allBeneficiaryAddressses.includes(preParsedLog.args[1])) {
-                    parsedLog = preParsedLog;
-                    const beneficiaryAddress = isFromBeneficiary ? parsedLog.args[0] : parsedLog.args[1];
-                    const withAddress = isFromBeneficiary ? parsedLog.args[1] : parsedLog.args[0];
+                    const _parsedLog = preParsedLog; // TODO: rename to parsedLog
+                    const beneficiaryAddress = isFromBeneficiary ? _parsedLog.args[0] : _parsedLog.args[1];
+                    const withAddress = isFromBeneficiary ? _parsedLog.args[1] : _parsedLog.args[0];
                     // save to table to calculate txs and volume
                     BeneficiaryTransactionService.add({
                         beneficiary: beneficiaryAddress,
                         withAddress,
-                        amount: parsedLog.args[2].toString(),
+                        amount: _parsedLog.args[2].toString(),
                         isFromBeneficiary,
                         tx: log.transactionHash,
                         date: new Date()
