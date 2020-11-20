@@ -48,7 +48,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeBeneficiaryTransaction(sequelize);
 
     ClaimLocation.belongsTo(Community, {
-        foreignKey: 'communityId',  // NotifiedBacker.communityId
+        foreignKey: 'communityId',  // ClaimLocation.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 

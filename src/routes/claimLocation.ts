@@ -41,10 +41,13 @@ export default (app: Router): void => {
                 communityId,
                 gps,
             } = req.body;
-            let _communityId = communityId;
+            let _communityId;
             if (communityId === undefined) {
-                _communityId = communityPublicId // TODO: remove
+                _communityId = communityPublicId;
+            } else {
+                _communityId = communityId;
             }
+            console.log('_communityId', _communityId);
             res.sendStatus(await ClaimLocationService.add(
                 _communityId,
                 gps,
