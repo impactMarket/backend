@@ -77,11 +77,11 @@ async function subscribeChainEvents(
                 parsedLog = preParsedLog;
                 const from = parsedLog.args[0];
                 const toCommunityAddress = parsedLog.args[1];
-                const communityPublicId = allCommunities.get(toCommunityAddress)!;
+                const communityId = allCommunities.get(toCommunityAddress)!;
                 const amount = parsedLog.args[2].toString();
                 getBlockTime(log.blockHash).then((txAt) => InflowService.add(
                     from,
-                    communityPublicId,
+                    communityId,
                     amount,
                     log.transactionHash,
                     txAt,
@@ -119,27 +119,27 @@ async function subscribeChainEvents(
             if (parsedLog.name === 'BeneficiaryAdded') {
                 const beneficiaryAddress = parsedLog.args[0];
                 const communityAddress = log.address;
-                let communityPublicId = allCommunities.get(communityAddress);
-                if (communityPublicId === undefined) {
+                let communityId = allCommunities.get(communityAddress);
+                if (communityId === undefined) {
                     // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
                     const community = (await CommunityService.findByContractAddress(communityAddress))!;
                     allCommunities.set(communityAddress, community.publicId);
-                    communityPublicId = community.publicId;
+                    communityId = community.publicId;
                 }
                 allBeneficiaryAddressses.push(beneficiaryAddress);
                 notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
                 getBlockTime(log.blockHash).then((txAt) => BeneficiaryService
-                    .add(beneficiaryAddress, communityPublicId!, txAt));
+                    .add(beneficiaryAddress, communityId!, txAt));
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
                 const beneficiaryAddress = parsedLog.args[0];
                 BeneficiaryService.remove(beneficiaryAddress);
             } else if (parsedLog.name === 'BeneficiaryClaim') {
                 const beneficiaryAddress = parsedLog.args[0];
                 const amount = parsedLog.args[1];
-                const communityPublicId = allCommunities.get(log.address)!;
+                const communityId = allCommunities.get(log.address)!;
                 getBlockTime(log.blockHash).then((txAt) => ClaimsService.add(
                     beneficiaryAddress,
-                    communityPublicId,
+                    communityId,
                     amount,
                     log.transactionHash,
                     txAt,

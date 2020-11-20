@@ -3,11 +3,11 @@ import { ClaimLocation } from '../db/models/claimLocation';
 
 export default class ClaimLocationService {
     public static async add(
-        communityPublicId: string,
+        communityId: string,
         gps: any,
     ): Promise<ClaimLocation> {
         return ClaimLocation.create({
-            communityPublicId,
+            communityId,
             gps,
         });
     }

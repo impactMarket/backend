@@ -3,7 +3,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class ClaimLocation extends Model {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
-    public communityPublicId!: string;
+    public communityId!: string;
     public gps!: any;
 
     // timestamps!

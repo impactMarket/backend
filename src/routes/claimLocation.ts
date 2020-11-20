@@ -27,7 +27,8 @@ export default (app: Router): void => {
         authenticateToken,
         celebrate({
             body: Joi.object({
-                communityPublicId: Joi.string().required(),
+                communityPublicId: Joi.string().optional(), // TODO: remove
+                communityId: Joi.string().optional(),
                 gps: {
                     latitude: Joi.number().required(),
                     longitude: Joi.number().required(),
@@ -36,11 +37,16 @@ export default (app: Router): void => {
         }),
         async (req: Request, res: Response) => {
             const {
-                communityPublicId,
+                communityPublicId, // TODO: remove
+                communityId,
                 gps,
             } = req.body;
+            let _communityId = communityId;
+            if (communityId === undefined) {
+                _communityId = communityPublicId // TODO: remove
+            }
             res.sendStatus(await ClaimLocationService.add(
-                communityPublicId,
+                _communityId,
                 gps,
             ) ? 200 : 404);
         },

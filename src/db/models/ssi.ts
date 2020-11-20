@@ -3,7 +3,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class SSI extends Model {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
-    public communityId!: number;
+    public communityPublicId!: number;
     public date!: Date;
     public ssi!: number;
 
