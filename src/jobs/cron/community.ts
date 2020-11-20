@@ -12,6 +12,7 @@ import { median, mean } from 'mathjs';
 import CommunityContractService from '../../services/communityContract';
 import config from '../../config';
 import InflowService from '../../services/inflow';
+import SSIService from '../../services/ssi';
 
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
@@ -87,6 +88,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             estimatedDuration,
             // since it's calculated post-midnight, save it with yesterdayDateOnly's date
             new Date(new Date().getTime() - 86400000),
+        );
+        // TODO: deprecated to remove (backwards compatibility)
+        await SSIService.add(
+            community.publicId,
+            new Date(),
+            ssi,
         );
     }
     const communities = await CommunityService.getAll('valid');

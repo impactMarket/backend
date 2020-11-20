@@ -47,7 +47,6 @@ export default (app: Router): void => {
             } else {
                 _communityId = communityId;
             }
-            console.log('_communityId', _communityId);
             res.sendStatus(await ClaimLocationService.add(
                 _communityId,
                 gps,
