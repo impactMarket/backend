@@ -5,6 +5,7 @@ import { authenticateToken } from '../middlewares';
 import TransactionsService from '../services/transactions';
 import Logger from '../loaders/logger';
 import { Community } from '../db/models/community';
+import { ICommunityContractParams } from '../types';
 
 const route = Router();
 
@@ -67,7 +68,8 @@ export default (app: Router): void => {
                 email: Joi.string().required(),
                 coverImage: Joi.string().required(),
                 txReceipt: Joi.object().required(),
-                contractParams: Joi.object().required(),
+                contractParams: Joi.object().optional(), // TODO: make required
+                txCreationObj: Joi.object().optional(), // TODO: remove
             }),
         }),
         async (req: Request, res: Response) => {
@@ -85,8 +87,20 @@ export default (app: Router): void => {
                 coverImage,
                 txReceipt,
                 contractParams,
+                txCreationObj,
             } = req.body;
             let returningStatus = 201;
+            let _contractParams;
+            if (txCreationObj === undefined) {
+                _contractParams = contractParams;
+            } else {
+                _contractParams = {
+                    claimAmount: txCreationObj._claimAmount,
+                    maxClaim: txCreationObj._maxClaim,
+                    baseInterval: txCreationObj._baseInterval,
+                    incrementInterval: txCreationObj._incrementInterval,
+                }
+            }
             let community: Community | undefined = undefined;
             try {
                 community = await CommunityService.create(
@@ -102,7 +116,7 @@ export default (app: Router): void => {
                     email,
                     coverImage,
                     txReceipt,
-                    contractParams,
+                    _contractParams,
                 );
             } catch (e) {
                 Logger.error(e);
@@ -131,7 +145,8 @@ export default (app: Router): void => {
                 },
                 email: Joi.string().required(),
                 coverImage: Joi.string().required(),
-                contractParams: Joi.object().required(),
+                contractParams: Joi.object().optional(), // TODO: make required
+                txCreationObj: Joi.object().optional(), // TODO: remove
             }),
         }),
         async (req: Request, res: Response) => {
@@ -147,8 +162,20 @@ export default (app: Router): void => {
                 email,
                 coverImage,
                 contractParams,
+                txCreationObj,
             } = req.body;
             let returningStatus = 201;
+            let _contractParams;
+            if (txCreationObj === undefined) {
+                _contractParams = contractParams;
+            } else {
+                _contractParams = {
+                    claimAmount: txCreationObj._claimAmount,
+                    maxClaim: txCreationObj._maxClaim,
+                    baseInterval: txCreationObj._baseInterval,
+                    incrementInterval: txCreationObj._incrementInterval,
+                }
+            }
             let community: Community | undefined = undefined;
             try {
                 community = await CommunityService.request(
@@ -162,7 +189,7 @@ export default (app: Router): void => {
                     gps,
                     email,
                     coverImage,
-                    contractParams,
+                    _contractParams,
                 );
             } catch (e) {
                 Logger.error(e);
