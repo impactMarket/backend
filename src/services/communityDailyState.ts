@@ -109,7 +109,7 @@ export default class CommunityDailyStateService {
             totalClaimed: (summedResults as any).totalClaimed,
             totalClaims: parseInt((summedResults as any).totalClaims),
             totalBeneficiaries: parseInt((summedResults as any).totalBeneficiaries),
-            totalRaised: (summedResults as any).totalClaimed,
+            totalRaised: (summedResults as any).totalRaised,
         };
     }
 
