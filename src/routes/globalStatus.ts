@@ -5,6 +5,7 @@ import CommunityDailyStateService from '../services/communityDailyState';
 import GlobalDailyStateService from '../services/globalDailyState';
 import GlobalStatusService from '../services/globalStatus';
 import InflowService from '../services/inflow';
+import ReachedAddressService from '../services/reachedAddress';
 
 const route = Router();
 
@@ -23,6 +24,7 @@ export default (app: Router): void => {
                 lastQuarterAvgSSI: await GlobalDailyStateService.last90DaysAvgSSI(),
                 today: await CommunityDailyStateService.notYetCountedToday(),
                 totalBackers: await InflowService.countEvergreenBackers(),
+                reachedLastMonth: await ReachedAddressService.getAllReachedLast30Days(),
             });
         });
 };
