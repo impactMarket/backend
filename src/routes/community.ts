@@ -170,10 +170,10 @@ export default (app: Router): void => {
                 _contractParams = contractParams;
             } else {
                 _contractParams = {
-                    claimAmount: txCreationObj._claimAmount,
-                    maxClaim: txCreationObj._maxClaim,
-                    baseInterval: txCreationObj._baseInterval,
-                    incrementInterval: txCreationObj._incrementInterval,
+                    claimAmount: txCreationObj.claimAmount,
+                    maxClaim: txCreationObj.maxClaim,
+                    baseInterval: txCreationObj.baseInterval,
+                    incrementInterval: txCreationObj.incrementInterval,
                 }
             }
             let community: Community | undefined = undefined;

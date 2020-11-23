@@ -167,7 +167,7 @@ async function subscribeChainEvents(
                                 Logger.warn(`Community ${_communityAddress} was not in the database when "ManagerAdded".`);
                                 const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
                                 if (Array.from(communityAddressesAndIds.keys()).includes(_communityAddress) && !allCommunitiesAddresses.includes(_communityAddress)) {
-                                    // new private community (are events from public one getting here?)
+                                    // new community
                                     const communityId = communityAddressesAndIds.get(communityAddress)!;
                                     ManagerService.add(_managerAddress, communityId);
                                     allCommunities.set(_communityAddress, communityId);

@@ -263,15 +263,15 @@ export default class CommunityService {
         const beneficiaries = await TransactionsService.getBeneficiariesInCommunity(community.contractAddress);
         const managers = await TransactionsService.getCommunityManagersInCommunity(community.contractAddress);
         const backers = await TransactionsService.getBackersInCommunity(community.contractAddress);
-        let vars;
-        if (community.visibility === 'public') {
-            vars = await TransactionsService.getCommunityVars(community.contractAddress);
-        } else {
-            vars = community.txCreationObj;
+        const vars = {
+            _claimAmount: contractParams.claimAmount,
+            _baseInterval: contractParams.baseInterval.toString(),
+            _incrementInterval: contractParams.incrementInterval.toString(),
+            _maxClaim: contractParams.maxClaim,
         }
 
-        const totalClaimed = await TransactionsService.getCommunityClaimedAmount(community.contractAddress);
-        const totalRaised = await TransactionsService.getCommunityRaisedAmount(community.contractAddress);
+        const totalClaimed = communityState.claimed;
+        const totalRaised = communityState.raised;
         const ssi = await SSIService.get(community.publicId);
 
         return {
@@ -280,8 +280,8 @@ export default class CommunityService {
             beneficiaries,
             managers,
             ssi,
-            totalClaimed: totalClaimed.toString(), // TODO: to remove
-            totalRaised: totalRaised.toString(), // TODO: to remove
+            totalClaimed: totalClaimed, // TODO: to remove
+            totalRaised: totalRaised, // TODO: to remove
             vars,
             state: communityState,
             metrics: communityMetrics,
