@@ -36,7 +36,18 @@ export default class CommunityDailyStateService {
         const days = 5;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const lastDay = (await CommunityDailyState.findAll({ attributes: ['date'], where: { communityId }, order: [['date', 'DESC']], limit: 1 }))[0].date;
+        const resultLastDay = await CommunityDailyState.findAll({
+            attributes: ['date'],
+            where: { communityId },
+            order: [['date', 'DESC']],
+            limit: 1
+        });
+        let lastDay;
+        if (resultLastDay.length === 0) {
+            lastDay = today;
+        } else {
+            lastDay = resultLastDay[0].date;
+        }
         let missingDays = moment(today.setTime(today.getTime() + (days * 24 * 60 * 60 * 1000))).diff(lastDay, 'days');
         const emptyDays: ICommunityDailyStatusInsert[] = [];
         while (--missingDays > 0) {
