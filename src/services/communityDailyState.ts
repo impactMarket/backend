@@ -46,11 +46,12 @@ export default class CommunityDailyStateService {
         if (resultLastDay.length === 0) {
             lastDay = today;
         } else {
-            lastDay = resultLastDay[0].date;
+            lastDay = new Date(resultLastDay[0].date);
         }
+        console.log(lastDay)
         let missingDays = moment(today.setTime(today.getTime() + (days * 24 * 60 * 60 * 1000))).diff(lastDay, 'days');
         const emptyDays: ICommunityDailyStatusInsert[] = [];
-        while (--missingDays > 0) {
+        while (missingDays-- > 0) {
             lastDay.setTime(lastDay.getTime() + (24 * 60 * 60 * 1000));
             emptyDays.push({
                 communityId,
@@ -59,7 +60,9 @@ export default class CommunityDailyStateService {
                 beneficiaries: 0,
                 raised: '0',
                 backers: 0,
-                date: lastDay,
+                // use new Date, otherwise it will use the object reference,
+                // resulting in the same date for each added row
+                date: new Date(lastDay),
             });
         }
         if (emptyDays.length > 0) {

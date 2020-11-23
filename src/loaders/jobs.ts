@@ -79,21 +79,19 @@ async function cron() {
     // every three hours, update exchange rates
     if (config.currenciesApiKey !== undefined && config.currenciesApiKey.length > 0) {
         updateExchangeRates();
-        new CronJob('0 */3 * * *', async () => {
+        new CronJob('25 */3 * * *', async () => {
             await updateExchangeRates();
-        }, () => {
             CronJobExecutedService.add('updateExchangeRates');
             Logger.info('updateExchangeRates successfully executed!');
-        }, true);
+        }, null, true);
     }
 
     // every four hours, verify community funds
-    new CronJob('0 */4 * * *', async () => {
+    new CronJob('45 */4 * * *', async () => {
         await verifyCommunityFunds();
-    }, () => {
         CronJobExecutedService.add('verifyCommunityFunds');
         Logger.info('verifyCommunityFunds successfully executed!');
-    }, true);
+    }, null, true);
 
 
     // once a day
@@ -102,16 +100,14 @@ async function cron() {
     new CronJob('0 0 * * *', async () => {
         await calcuateCommunitiesMetrics();
         await calcuateGlobalMetrics();
-    }, () => {
         CronJobExecutedService.add('calcuateMetrics');
         Logger.info('calcuateMetrics successfully executed!');
-    }, true);
+    }, null, true);
 
-    // everyday at midday, insert community daily rows with 5 days in advance
-    new CronJob('0 12 * * *', async () => {
+    // everyday at 3:35pm (odd times), insert community daily rows with 5 days in advance
+    new CronJob('35 15 * * *', async () => {
         await populateCommunityDailyState();
-    }, () => {
         CronJobExecutedService.add('populateCommunityDailyState');
         Logger.info('populateCommunityDailyState successfully executed!');
-    }, true);
+    }, null, true);
 }

@@ -191,8 +191,7 @@ export default class CommunityService {
                     ],
                 }
             },
-            order: [['createdAt', 'ASC']],
-            raw: true
+            order: [['createdAt', 'ASC']]
         });
         for (let index = 0; index < communities.length; index++) {
             result.push(await this.getCachedInfoToCommunity(communities[index]));
