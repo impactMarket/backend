@@ -263,11 +263,19 @@ export default class CommunityService {
         const beneficiaries = await TransactionsService.getBeneficiariesInCommunity(community.contractAddress);
         const managers = await TransactionsService.getCommunityManagersInCommunity(community.contractAddress);
         const backers = await TransactionsService.getBackersInCommunity(community.contractAddress);
-        const vars = {
-            _claimAmount: contractParams.claimAmount,
-            _baseInterval: contractParams.baseInterval.toString(),
-            _incrementInterval: contractParams.incrementInterval.toString(),
-            _maxClaim: contractParams.maxClaim,
+        let vars;
+        if (contractParams !== null) {
+            vars = {
+                _claimAmount: contractParams.claimAmount,
+                _baseInterval: contractParams.baseInterval.toString(),
+                _incrementInterval: contractParams.incrementInterval.toString(),
+                _maxClaim: contractParams.maxClaim,
+            };
+        }
+        else if (community.visibility === 'public') {
+            vars = await TransactionsService.getCommunityVars(community.contractAddress);
+        } else {
+            vars = community.txCreationObj;
         }
 
         const totalClaimed = communityState.claimed;
