@@ -17,6 +17,10 @@ import SSIService from '../../services/ssi';
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
+    // this should run post-midnight (well, at midnight)
+    const yesterday = new Date(new Date().getTime() - 86400000);
+    const todayDateOnly = new Date();
+    todayDateOnly.setHours(0, 0, 0, 0);
     const activeBeneficiariesLast30Days = await BeneficiaryService.getActiveBeneficiariesLast30Days();
     const totalClaimedLast30Days = await CommunityDailyStateService.getTotalClaimedLast30Days();
     const ssiLast4Days = await CommunityDailyMetricsService.getSSILast4Days();
@@ -32,8 +36,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         }
         let ssiDayAlone: number = 0;
         let ssi: number = 0;
-        let ubiRate: number;
-        let estimatedDuration: number;
+        let ubiRate: number = 0;
+        let estimatedDuration: number = 0;
 
         const beneficiariesTimeToWait: number[] = [];
         const beneficiariesTimeWaited: number[] = [];
@@ -57,7 +61,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             const madTimeWaited = median(beneficiariesTimeWaited);
             // console.log(community.name, madTimeWaited, meanTimeToWait);
             ssiDayAlone = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
-    
+
             // ssi
             const ssisAvailable = ssiLast4Days.get(community.publicId);
             if (ssisAvailable === undefined) {
@@ -68,12 +72,14 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             }
         }
 
+        const daysSinceStart = Math.round((todayDateOnly.getTime() - new Date(community.started).getTime()) / 86400000); // 86400000 1 days in ms
+
         // calculate ubiRate
         ubiRate = parseFloat(
             new BigNumber(totalClaimedLast30Days.get(community.publicId)!)
                 .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                 .dividedBy(activeBeneficiariesLast30Days.get(community.publicId)!)
-                .dividedBy(30)
+                .dividedBy(daysSinceStart)
                 .toFixed(2, 1)
         );
 
@@ -82,7 +88,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             new BigNumber(communitiesContract.get(community.publicId)!.maxClaim)
                 .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                 .dividedBy(ubiRate)
-                .dividedBy(30)
+                .dividedBy(daysSinceStart)
                 .toFixed(2, 1)
         );
 
@@ -93,7 +99,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             ubiRate,
             estimatedDuration,
             // since it's calculated post-midnight, save it with yesterdayDateOnly's date
-            new Date(new Date().getTime() - 86400000),
+            yesterday,
         );
         // TODO: deprecated to remove (backwards compatibility)
         await SSIService.add(
