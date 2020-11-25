@@ -49,6 +49,7 @@ export default class CommunityService {
             coverImage,
             status: 'valid',
             contractParams,
+            started: new Date(),
         });
         await CommunityContractService.add(
             newCommunity.publicId,
@@ -110,6 +111,7 @@ export default class CommunityService {
             coverImage,
             status: 'pending',
             contractParams,
+            started: new Date(),
         });
         await CommunityContractService.add(
             community.publicId,

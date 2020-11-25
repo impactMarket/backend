@@ -2,6 +2,7 @@ import { col, fn, Op } from 'sequelize';
 import { CommunityDailyMetrics } from '../db/models/communityDailyMetrics';
 import { ICommunityMetrics } from '../types';
 import { median } from 'mathjs';
+import { Community } from '../db/models/community';
 
 
 export default class CommunityDailyMetricsService {
@@ -35,7 +36,7 @@ export default class CommunityDailyMetricsService {
             order: [['date', 'DESC']],
             limit: 15,
         })) as any[];
-        if (historical.length === 0) {
+        if (historical.length < 5) { // at least 5 days until showing data
             return undefined;
         }
         const lastMetrics = (await CommunityDailyMetrics.findAll({
@@ -97,11 +98,26 @@ export default class CommunityDailyMetricsService {
     }> {
         const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
         yesterdayDateOnly.setHours(0, 0, 0, 0);
+        const fiveDaysAgo = new Date(new Date().getTime() - 432000000);
+        fiveDaysAgo.setHours(0, 0, 0, 0);
 
+        const onlyPublicValidCommunities = (await Community.findAll({
+            attributes: ['publicId'],
+            where: {
+                visibility: 'public',
+                status: 'valid',
+                date: {
+                    [Op.lt]: fiveDaysAgo,
+                }
+            }
+        })).map((c) => c.publicId);
+
+        // TODO: only communities with more that 5 days
         const medianSSI = median((await CommunityDailyMetrics.findAll({
             attributes: ['ssi'],
             where: {
                 date: yesterdayDateOnly,
+                communityId: { [Op.in]: onlyPublicValidCommunities },
             }
         })).map((m) => m.ssi));
 
@@ -111,7 +127,8 @@ export default class CommunityDailyMetricsService {
                 [fn('avg', col('estimatedDuration')), 'avgEstimatedDuration'],
             ],
             where: {
-                date: yesterdayDateOnly
+                date: yesterdayDateOnly,
+                communityId: { [Op.in]: onlyPublicValidCommunities },
             }
         }))[0];
         return {
