@@ -51,7 +51,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             beneficiariesTimeToWait.push(timeToWait);
             beneficiariesTimeWaited.push(timeWaited);
         }
-        if (beneficiariesTimeToWait.length > 0 && beneficiariesTimeWaited.length > 0) {
+        if (beneficiariesTimeToWait.length > 1 && beneficiariesTimeWaited.length > 1) {
             // calculate ssi day alone
             const meanTimeToWait = mean(beneficiariesTimeToWait);
             const madTimeWaited = median(beneficiariesTimeWaited);
@@ -59,9 +59,13 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             ssiDayAlone = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
     
             // ssi
-            const ssisAvailable = ssiLast4Days.get(community.publicId)!;
-            const sumSSI = ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) + ssiDayAlone;
-            ssi = Math.round(parseFloat((sumSSI / (ssisAvailable.length + 1)).toFixed(2)) * 100) / 100;
+            const ssisAvailable = ssiLast4Days.get(community.publicId);
+            if (ssisAvailable === undefined) {
+                ssi = ssiDayAlone;
+            } else {
+                const sumSSI = ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) + ssiDayAlone;
+                ssi = Math.round(parseFloat((sumSSI / (ssisAvailable.length + 1)).toFixed(2)) * 100) / 100;
+            }
         }
 
         // calculate ubiRate
