@@ -97,7 +97,7 @@ async function cron() {
     // once a day
 
     // everyday at midnight
-    new CronJob('0 10 * * *', async () => {
+    new CronJob('0 0 * * *', async () => {
         await calcuateCommunitiesMetrics();
         await calcuateGlobalMetrics();
         CronJobExecutedService.add('calcuateMetrics');
