@@ -23,6 +23,7 @@ export class Community extends Model {
     public coverImage!: string;
     public status!: string; // pending / valid / removed
     public txCreationObj!: ICommunityVars;
+    public started!: Date;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -103,6 +104,10 @@ export function initializeCommunity(sequelize: Sequelize): void {
         },
         txCreationObj: {
             type: DataTypes.JSON
+        },
+        started: {
+            type: DataTypes.DATEONLY,
+            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,

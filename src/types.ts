@@ -31,6 +31,7 @@ export interface ICommunity {
      * @deprecated
      */
     txCreationObj: ICommunityVars; // TODO: remove in future
+    started: Date;
 }
 
 export interface ICommunityState {
