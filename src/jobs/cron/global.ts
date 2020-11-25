@@ -45,14 +45,15 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     );
     const ubiRate = communitiesAvgYesterday.avgUbiRate;
     const avgComulativeUbi = await CommunityContractService.avgComulativeUbi();
-    const avgUbiDuration = parseFloat(
-        new BigNumber(avgComulativeUbi)
-            .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
-            .dividedBy(ubiRate)
-            .dividedBy(30)
-            .decimalPlaces(2, 1)
-            .toString()
-    );
+    // const avgUbiDuration = parseFloat(
+    //     new BigNumber(avgComulativeUbi)
+    //         .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
+    //         .dividedBy(ubiRate)
+    //         .dividedBy(30)
+    //         .decimalPlaces(2, 1)
+    //         .toString()
+    // );
+    const avgUbiDuration = communitiesAvgYesterday.avgEstimatedDuration;
 
     // economic activity
     const volume = volumeTransactionsAndAddresses.volume;
@@ -74,7 +75,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const totalTransactions = new BigNumber(lastGlobalMetrics.totalTransactions.toString()).plus(transactions).toString();
     const totalReach = await ReachedAddressService.getAllReachedEver();
 
-    const avgMedianSSI = mean(last4DaysAvgSSI.concat([communitiesAvgYesterday.meadianSSI]));
+    const avgMedianSSI = mean(last4DaysAvgSSI.concat([communitiesAvgYesterday.medianSSI]));
     // register new global daily state
     await GlobalDailyStateService.add(
         yesterdayDateOnly,

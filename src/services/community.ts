@@ -264,6 +264,7 @@ export default class CommunityService {
         const managers = await TransactionsService.getCommunityManagersInCommunity(community.contractAddress);
         const backers = await TransactionsService.getBackersInCommunity(community.contractAddress);
         let vars;
+        // TODO: remove others
         if (contractParams !== null) {
             vars = {
                 _claimAmount: contractParams.claimAmount,

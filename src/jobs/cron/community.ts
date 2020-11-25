@@ -30,8 +30,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         if (beneficiaries.length < 1) {
             return;
         }
-        let ssiDayAlone: number;
-        let ssi: number;
+        let ssiDayAlone: number = 0;
+        let ssi: number = 0;
         let ubiRate: number;
         let estimatedDuration: number;
 
@@ -51,16 +51,18 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             beneficiariesTimeToWait.push(timeToWait);
             beneficiariesTimeWaited.push(timeWaited);
         }
-        // calculate ssi day alone
-        const meanTimeToWait = mean(beneficiariesTimeToWait);
-        const madTimeWaited = median(beneficiariesTimeWaited);
-        // console.log(community.name, madTimeWaited, meanTimeToWait);
-        ssiDayAlone = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
-
-        // ssi
-        const ssisAvailable = ssiLast4Days.get(community.publicId)!;
-        const sumSSI = ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) + ssiDayAlone;
-        ssi = Math.round(parseFloat((sumSSI / (ssisAvailable.length + 1)).toFixed(2)) * 100) / 100;
+        if (beneficiariesTimeToWait.length > 0 && beneficiariesTimeWaited.length > 0) {
+            // calculate ssi day alone
+            const meanTimeToWait = mean(beneficiariesTimeToWait);
+            const madTimeWaited = median(beneficiariesTimeWaited);
+            // console.log(community.name, madTimeWaited, meanTimeToWait);
+            ssiDayAlone = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
+    
+            // ssi
+            const ssisAvailable = ssiLast4Days.get(community.publicId)!;
+            const sumSSI = ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) + ssiDayAlone;
+            ssi = Math.round(parseFloat((sumSSI / (ssisAvailable.length + 1)).toFixed(2)) * 100) / 100;
+        }
 
         // calculate ubiRate
         ubiRate = parseFloat(

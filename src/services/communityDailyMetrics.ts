@@ -91,13 +91,14 @@ export default class CommunityDailyMetricsService {
     }
 
     public static async getCommunitiesAvgYesterday(): Promise<{
-        meadianSSI: number;
+        medianSSI: number;
         avgUbiRate: number;
+        avgEstimatedDuration: number;
     }> {
         const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
         yesterdayDateOnly.setHours(0, 0, 0, 0);
 
-        const meadianSSI = median((await CommunityDailyMetrics.findAll({
+        const medianSSI = median((await CommunityDailyMetrics.findAll({
             attributes: ['ssi'],
             where: {
                 date: yesterdayDateOnly,
@@ -107,14 +108,16 @@ export default class CommunityDailyMetricsService {
         const raw = (await CommunityDailyMetrics.findAll({
             attributes: [
                 [fn('avg', col('ubiRate')), 'avgUbiRate'],
+                [fn('avg', col('estimatedDuration')), 'avgEstimatedDuration'],
             ],
             where: {
                 date: yesterdayDateOnly
             }
         }))[0];
         return {
-            meadianSSI,
+            medianSSI,
             avgUbiRate: parseFloat((raw as any).avgUbiRate),
+            avgEstimatedDuration: parseFloat((raw as any).avgEstimatedDuration),
         };
     }
 }

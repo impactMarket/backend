@@ -125,15 +125,15 @@ export async function notifyManagerAdded(managerAddress: string, communityAddres
 export async function sendPushNotification(userAddress: string, title: string, body: string, data: any): Promise<boolean> {
     const user = await UserService.get(userAddress);
     if (user !== null) {
+        const message = {
+            to: user.pushNotificationToken,
+            sound: 'default',
+            title,
+            body,
+            color: "#2400ff",
+            data,
+        };
         try {
-            const message = {
-                to: user.pushNotificationToken,
-                sound: 'default',
-                title,
-                body,
-                color: "#2400ff",
-                data,
-            };
             // handle success
             const requestHeaders = {
                 headers: {
@@ -145,7 +145,7 @@ export async function sendPushNotification(userAddress: string, title: string, b
             const result = await axios.post('https://exp.host/--/api/v2/push/send', JSON.stringify(message), requestHeaders);
             return result.status === 200 ? true : false;
         } catch (error) {
-            Logger.error('Couldn\'t send notification ' + error);
+            Logger.error('Couldn\'t send notification ' + error + ' with request ' + message);
             return false;
         }
     }
