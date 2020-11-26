@@ -106,7 +106,7 @@ export default class CommunityDailyMetricsService {
             where: {
                 visibility: 'public',
                 status: 'valid',
-                date: {
+                started: {
                     [Op.lt]: fiveDaysAgo,
                 }
             }
