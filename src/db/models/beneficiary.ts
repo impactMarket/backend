@@ -5,6 +5,7 @@ export class Beneficiary extends Model {
     public id!: number;
     public address!: string;
     public communityId!: string;
+    public active!: boolean;
     public txAt!: Date;
     public claims!: number;
     public lastClaimAt!: Date;
@@ -34,6 +35,11 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
             },
             onDelete: 'RESTRICT',
             allowNull: false
+        },
+        active: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true,
+            allowNull: false,
         },
         txAt: {
             type: DataTypes.DATE,
