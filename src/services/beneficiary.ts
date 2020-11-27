@@ -11,14 +11,15 @@ export default class BeneficiaryService {
     ): Promise<boolean> {
         // if user does not exist, add to pending list
         // otherwise update
-        const user = await Beneficiary.findOne({ where: { address } });
+        const user = await Beneficiary.findOne({ where: { address, active: false } });
         if (user === null) {
-            const updated = await Beneficiary.create({
+            await Beneficiary.create({
                 address,
                 communityId,
                 txAt,
             });
-            return updated[0] > 0;
+        } else {
+            await Beneficiary.update({ active: true }, { where: { address } });
         }
         return true;
     }
@@ -26,7 +27,12 @@ export default class BeneficiaryService {
     public static async getAllInCommunity(
         communityId: string,
     ): Promise<Beneficiary[]> {
-        return await Beneficiary.findAll({ where: { communityId } });
+        return await Beneficiary.findAll({
+            where: {
+                communityId,
+                active: true
+            }
+        });
     }
 
     public static async get(
@@ -42,7 +48,7 @@ export default class BeneficiaryService {
     public static async remove(
         address: string,
     ): Promise<void> {
-        await Beneficiary.destroy({ where: { address } });
+        await Beneficiary.update({ active: false }, { where: { address } });
     }
 
     public static async getActiveBeneficiariesLast30Days(): Promise<Map<string, number>> {
