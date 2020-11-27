@@ -58,7 +58,7 @@ export default class BeneficiaryService {
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         const result = await Beneficiary.findAll({
             attributes: [
-                [fn('count', col('address')), 'active'],
+                [fn('count', col('address')), 'total'],
                 'communityId',
             ],
             where: {
@@ -69,7 +69,7 @@ export default class BeneficiaryService {
             },
             group: 'communityId',
         });
-        return new Map(result.map((c: any) => [c.communityId, c.active]));
+        return new Map(result.map((c: any) => [c.communityId, c.total]));
     }
 
 }
