@@ -10,12 +10,17 @@ module.exports = {
         CREATE OR REPLACE FUNCTION update_beneficiaries_community_states()
     RETURNS TRIGGER AS $$
     BEGIN
-        IF (NEW.active IS TRUE) THEN
+        IF (TG_OP = 'INSERT') THEN -- INSERT operations
             -- update overall state
             UPDATE communitystate SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId";
             -- update daily state
             UPDATE communitydailystate SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
-        ELSE
+        ELSEIF (OLD.active IS FALSE AND NEW.active IS TRUE) THEN
+            -- update overall state
+            UPDATE communitystate SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId";
+            -- update daily state
+            UPDATE communitydailystate SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+        ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN
             -- update overall state
             UPDATE communitystate SET beneficiaries = beneficiaries - 1 WHERE "communityId"=NEW."communityId";
             -- update daily state
