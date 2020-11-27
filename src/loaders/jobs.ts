@@ -15,6 +15,7 @@ import { populateCommunityDailyState, verifyCommunityFunds } from '../jobs/cron/
 import ImMetadataService from '../services/imMetadata';
 import CronJobExecutedService from '../services/cronJobExecuted';
 import { calcuateGlobalMetrics } from '../jobs/cron/global';
+import BeneficiaryService from '../services/beneficiary';
 
 
 export default async (): Promise<void> => {
@@ -62,10 +63,18 @@ async function subscribers(provider: ethers.providers.JsonRpcProvider): Promise<
     // impactmarket address.
     updateCommunityCache(startFrom, provider, config.impactMarketContractAddress);
     const availableCommunities = await CommunityService.getAll('valid', false);
+    let beneficiariesInPrivateCommunities: string[] = [];
+    const privateCommunities = availableCommunities.filter((c) => c.visibility === 'private');
+    for(let c = 0; c < privateCommunities.length; c+= 1) {
+        const inCommunity = await BeneficiaryService.getAllInCommunity(privateCommunities[c].publicId);
+        beneficiariesInPrivateCommunities = beneficiariesInPrivateCommunities.concat(inCommunity.map((b) => b.address));
+    }
     availableCommunities.forEach((community) => updateCommunityCache(startFrom, provider, community.contractAddress));
     subscribeChainEvents(
         provider,
-        new Map(availableCommunities.map((c) => [c.contractAddress, c.publicId]))
+        new Map(availableCommunities.map((c) => [c.contractAddress, c.publicId])),
+        new Map(availableCommunities.map((c) => [c.contractAddress, c.visibility === 'public'])),
+        beneficiariesInPrivateCommunities
     );
 }
 

@@ -72,7 +72,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             }
         }
 
-        const daysSinceStart = Math.round((todayDateOnly.getTime() - new Date(community.started).getTime()) / 86400000); // 86400000 1 days in ms
+        let daysSinceStart = Math.round((todayDateOnly.getTime() - new Date(community.started).getTime()) / 86400000); // 86400000 1 days in ms
+        if (daysSinceStart > 30) {
+            daysSinceStart = 30;
+        }
 
         // calculate ubiRate
         ubiRate = parseFloat(
@@ -88,7 +91,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             new BigNumber(communitiesContract.get(community.publicId)!.maxClaim)
                 .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                 .dividedBy(ubiRate)
-                .dividedBy(daysSinceStart)
+                .dividedBy(30)
                 .toFixed(2, 1)
         );
 

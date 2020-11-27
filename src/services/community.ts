@@ -247,6 +247,10 @@ export default class CommunityService {
         return await this.getCachedInfoToCommunity(community);
     }
 
+    public static async getOnlyCommunityByContractAddress(contractAddress: string): Promise<Community | null> {
+        return await Community.findOne({ where: { contractAddress } });
+    }
+
     public static async getNamesAndFromAddresses(addresses: string[]): Promise<Community[]> {
         return Community.findAll({
             attributes: ['contractAddress', 'name'],
