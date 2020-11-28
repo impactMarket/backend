@@ -1,12 +1,13 @@
+import { Op } from 'sequelize';
+
 import { User } from '../db/models/user';
+import Logger from '../loaders/logger';
 import { generateAccessToken } from '../middlewares';
 import { ICommunityInfo, IUserWelcomeAuth, IUserWelcome } from '../types';
-import ExchangeRatesService from './exchangeRates';
-import CommunityService from './community';
-import Logger from '../loaders/logger';
 import BeneficiaryService from './beneficiary';
+import CommunityService from './community';
+import ExchangeRatesService from './exchangeRates';
 import ManagerService from './managers';
-import { Op } from 'sequelize';
 
 export default class UserService {
     public static async auth(

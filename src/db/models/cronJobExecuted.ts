@@ -38,7 +38,7 @@ export function initializeCronJobExecuted(sequelize: Sequelize): void {
         },
         {
             tableName: 'cronjobexecuted',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

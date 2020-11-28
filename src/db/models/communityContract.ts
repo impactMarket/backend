@@ -55,7 +55,7 @@ export function initializeCommunityContract(sequelize: Sequelize): void {
         },
         {
             tableName: 'communitycontract',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

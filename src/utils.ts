@@ -1,9 +1,10 @@
-import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 import axios from 'axios';
-import UserService from './services/user';
-import Logger from './loaders/logger';
-import { ICommunityInfo } from './types';
+import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
+
 import config from './config';
+import Logger from './loaders/logger';
+import UserService from './services/user';
+import { ICommunityInfo } from './types';
 
 // Accepts the array and key
 export function groupBy<T>(array: any[], key: string): Map<string, T[]> {
@@ -66,8 +67,8 @@ export async function notifyBackersCommunityLowFunds(
         },
     };
     // Create the messages that you want to send to clients
-    let messages: ExpoPushMessage[] = [];
-    for (let pushToken of backersPushTokens) {
+    const messages: ExpoPushMessage[] = [];
+    for (const pushToken of backersPushTokens) {
         // Each push token looks like ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
 
         // Check that all your push tokens appear to be valid Expo push tokens
@@ -170,7 +171,7 @@ export async function sendPushNotification(
                 JSON.stringify(message),
                 requestHeaders
             );
-            return result.status === 200 ? true : false;
+            return result.status === 200;
         } catch (error) {
             Logger.error(
                 "Couldn't send notification " +

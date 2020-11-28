@@ -1,5 +1,6 @@
 import { String } from 'aws-sdk/clients/acm';
 import { col, fn, Op } from 'sequelize';
+
 import { Claim } from '../db/models/claim';
 import Logger from '../loaders/logger';
 

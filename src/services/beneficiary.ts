@@ -1,4 +1,5 @@
 import { Op, fn, col } from 'sequelize';
+
 import { Beneficiary } from '../db/models/beneficiary';
 
 export default class BeneficiaryService {

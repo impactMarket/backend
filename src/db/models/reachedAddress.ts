@@ -33,7 +33,7 @@ export function initializeReachedAddress(sequelize: Sequelize): void {
         },
         {
             tableName: 'reachedaddress',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

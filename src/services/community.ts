@@ -1,17 +1,18 @@
-import { Community } from '../db/models/community';
 import { ethers } from 'ethers';
-import config from '../config';
-import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
-import CommunityContractABI from '../contracts/CommunityABI.json';
-import TransactionsService from './transactions';
-import { ICommunityContractParams, ICommunityInfo } from '../types';
 import { Op } from 'sequelize';
-import SSIService from './ssi';
+
+import config from '../config';
+import CommunityContractABI from '../contracts/CommunityABI.json';
+import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
+import { Community } from '../db/models/community';
+import { ICommunityContractParams, ICommunityInfo } from '../types';
 import { notifyManagerAdded } from '../utils';
+import CommunityContractService from './communityContract';
+import CommunityDailyMetricsService from './communityDailyMetrics';
 import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
-import CommunityDailyMetricsService from './communityDailyMetrics';
-import CommunityContractService from './communityContract';
+import SSIService from './ssi';
+import TransactionsService from './transactions';
 
 export default class CommunityService {
     public static async create(
@@ -354,8 +355,8 @@ export default class CommunityService {
             beneficiaries,
             managers,
             ssi,
-            totalClaimed: totalClaimed, // TODO: to remove
-            totalRaised: totalRaised, // TODO: to remove
+            totalClaimed, // TODO: to remove
+            totalRaised, // TODO: to remove
             vars,
             state: communityState,
             metrics: communityMetrics,

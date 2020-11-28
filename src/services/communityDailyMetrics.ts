@@ -1,8 +1,9 @@
+import { median } from 'mathjs';
 import { col, fn, Op } from 'sequelize';
+
+import { Community } from '../db/models/community';
 import { CommunityDailyMetrics } from '../db/models/communityDailyMetrics';
 import { ICommunityMetrics } from '../types';
-import { median } from 'mathjs';
-import { Community } from '../db/models/community';
 
 export default class CommunityDailyMetricsService {
     public static async add(

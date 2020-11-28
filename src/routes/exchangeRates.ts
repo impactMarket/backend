@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+
 import ExchangeRatesService from '../services/exchangeRates';
 
 const route = Router();

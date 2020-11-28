@@ -60,7 +60,7 @@ export function initializeClaim(sequelize: Sequelize): void {
         },
         {
             tableName: 'claim',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

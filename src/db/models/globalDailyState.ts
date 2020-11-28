@@ -147,7 +147,7 @@ export function initializeGlobalDailyState(sequelize: Sequelize): void {
         },
         {
             tableName: 'globaldailystate',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

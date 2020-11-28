@@ -67,7 +67,7 @@ export function initializeBeneficiaryTransaction(sequelize: Sequelize): void {
         },
         {
             tableName: 'beneficiarytransaction',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

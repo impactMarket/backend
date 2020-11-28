@@ -1,4 +1,5 @@
 import { col, fn, Op } from 'sequelize';
+
 import { ReachedAddress } from '../db/models/reachedAddress';
 
 export default class ReachedAddressService {

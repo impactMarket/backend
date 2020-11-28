@@ -42,7 +42,7 @@ export function initializeAgenda(sequelize: Sequelize): void {
         },
         {
             tableName: 'agenda',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

@@ -47,7 +47,7 @@ export function initializeManager(sequelize: Sequelize): void {
         },
         {
             tableName: 'manager',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

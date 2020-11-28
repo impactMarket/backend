@@ -1,4 +1,5 @@
 import { col, fn } from 'sequelize';
+
 import { CommunityContract } from '../db/models/communityContract';
 import { ICommunityContractParams } from '../types';
 

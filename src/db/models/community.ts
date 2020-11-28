@@ -1,4 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import { ICommunityVars } from '../../types';
 
 export class Community extends Model {
@@ -119,8 +120,7 @@ export function initializeCommunity(sequelize: Sequelize): void {
         },
         {
             tableName: 'community',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
-    return;
 }

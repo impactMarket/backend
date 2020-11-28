@@ -1,7 +1,8 @@
-import { Router, Request, Response } from 'express';
-import ClaimLocationService from '../services/claimLocation';
 import { celebrate, Joi } from 'celebrate';
+import { Router, Request, Response } from 'express';
+
 import { authenticateToken } from '../middlewares';
+import ClaimLocationService from '../services/claimLocation';
 
 const route = Router();
 

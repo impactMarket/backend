@@ -2,6 +2,7 @@ import { S3 } from 'aws-sdk';
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import path from 'path';
+
 import config from '../config';
 
 const s3 = new S3({

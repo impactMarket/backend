@@ -1,4 +1,5 @@
 import { col, fn } from 'sequelize';
+
 import {
     BeneficiaryTransaction,
     IBeneficiaryTransaction,
@@ -9,7 +10,6 @@ export default class BeneficiaryTransactionService {
         beneficiaryTx: IBeneficiaryTransaction
     ): Promise<void> {
         await BeneficiaryTransaction.create(beneficiaryTx);
-        return;
     }
 
     public static async getAllByDay(

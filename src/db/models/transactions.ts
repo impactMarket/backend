@@ -56,7 +56,7 @@ export function initializeTransactions(sequelize: Sequelize): void {
         },
         {
             tableName: 'transactions',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

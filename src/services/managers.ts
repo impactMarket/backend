@@ -1,4 +1,5 @@
 import { Op } from 'sequelize';
+
 import { Manager } from '../db/models/manager';
 
 export default class ManagerService {

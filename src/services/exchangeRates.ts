@@ -3,7 +3,7 @@ import { ExchangeRates } from '../db/models/exchangeRates';
 export default class ExchangeRatesService {
     public static async get(): Promise<any> {
         const previousRates = await ExchangeRates.findAll();
-        let mapRates = {};
+        const mapRates = {};
         for (let index = 0; index < previousRates.length; index++) {
             mapRates[previousRates[index].currency] = previousRates[index].rate;
         }

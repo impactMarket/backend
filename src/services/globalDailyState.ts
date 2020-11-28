@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { Op, fn } from 'sequelize';
+
 import { GlobalDailyState } from '../db/models/globalDailyState';
 import Logger from '../loaders/logger';
 

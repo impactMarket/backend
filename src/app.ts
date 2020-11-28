@@ -1,9 +1,10 @@
-import express from 'express';
 import * as Sentry from '@sentry/node';
 import { Integrations } from '@sentry/tracing';
+import express from 'express';
+
 import config from './config';
-import Logger from './loaders/logger';
 import loaders from './loaders';
+import Logger from './loaders/logger';
 
 async function startServer() {
     const app = express();

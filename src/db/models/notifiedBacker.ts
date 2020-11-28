@@ -42,7 +42,7 @@ export function initializeNotifiedBacker(sequelize: Sequelize): void {
         },
         {
             tableName: 'notifiedbacker',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

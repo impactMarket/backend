@@ -42,8 +42,7 @@ export function initializeSSI(sequelize: Sequelize): void {
         },
         {
             tableName: 'ssi',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
-    return;
 }

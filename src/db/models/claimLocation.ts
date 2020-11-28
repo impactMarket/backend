@@ -37,7 +37,7 @@ export function initializeClaimLocation(sequelize: Sequelize): void {
         },
         {
             tableName: 'claimlocation',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

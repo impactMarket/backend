@@ -33,7 +33,7 @@ export function initializeExchangeRates(sequelize: Sequelize): void {
         },
         {
             tableName: 'exchangerates',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

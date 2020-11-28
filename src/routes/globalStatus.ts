@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import CommunityDailyStateService from '../services/communityDailyState';
 import GlobalDailyStateService from '../services/globalDailyState';
 import InflowService from '../services/inflow';

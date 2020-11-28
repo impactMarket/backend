@@ -1,4 +1,5 @@
 import { Sequelize, Options } from 'sequelize';
+
 import config from '../config';
 import initModels from '../db/models';
 import Logger from '../loaders/logger';

@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { Op, fn, col } from 'sequelize';
+
 import {
     CommunityDailyState,
     ICommunityDailyStatusInsert,

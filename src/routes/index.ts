@@ -1,14 +1,15 @@
 import { Router } from 'express';
-import community from './community';
-import transactions from './transactions';
-import user from './user';
-import s3 from './s3';
+
 import claimLocation from './claimLocation';
+import community from './community';
 import exchange from './exchangeRates';
 import experimental from './experimental';
 import globalStatus from './globalStatus';
-import mobileLogs from './mobileLogs';
 import mobile from './mobile';
+import mobileLogs from './mobileLogs';
+import s3 from './s3';
+import transactions from './transactions';
+import user from './user';
 
 export default (): Router => {
     const app = Router();

@@ -32,7 +32,7 @@ export function initializeImMetadata(sequelize: Sequelize): void {
         },
         {
             tableName: 'immetadata',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { Op } from 'sequelize';
+
 import { NotifiedBacker } from '../db/models/notifiedBacker';
 
 export default class NotifiedBackerService {
@@ -21,7 +22,7 @@ export default class NotifiedBackerService {
             .map((b) => b.backer);
 
         const subtract = (arrayOriginal: string[], arraySubtract: string[]) => {
-            let hash = Object.create(null);
+            const hash = Object.create(null);
             arraySubtract.forEach((a) => {
                 hash[a] = (hash[a] || 0) + 1;
             });

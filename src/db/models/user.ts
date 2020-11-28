@@ -49,7 +49,7 @@ export function initializeUser(sequelize: Sequelize): void {
         },
         {
             tableName: 'user',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

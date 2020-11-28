@@ -1,24 +1,25 @@
+import { CronJob } from 'cron';
+import { ethers } from 'ethers';
+
+import config from '../config';
+import { prepareAgenda } from '../jobs/agenda';
 import {
     updateImpactMarketCache,
     updateCommunityCache,
     subscribeChainEvents,
 } from '../jobs/chainSubscribers';
-import config from '../config';
-import { ethers } from 'ethers';
-import CommunityService from '../services/community';
-import { CronJob } from 'cron';
-import { calcuateCommunitiesMetrics } from '../jobs/cron/community';
-import { prepareAgenda } from '../jobs/agenda';
-import { updateExchangeRates } from '../jobs/cron/updateExchangeRates';
-import Logger from './logger';
 import {
+    calcuateCommunitiesMetrics,
     populateCommunityDailyState,
     verifyCommunityFunds,
 } from '../jobs/cron/community';
-import ImMetadataService from '../services/imMetadata';
-import CronJobExecutedService from '../services/cronJobExecuted';
 import { calcuateGlobalMetrics } from '../jobs/cron/global';
+import { updateExchangeRates } from '../jobs/cron/updateExchangeRates';
 import BeneficiaryService from '../services/beneficiary';
+import CommunityService from '../services/community';
+import CronJobExecutedService from '../services/cronJobExecuted';
+import ImMetadataService from '../services/imMetadata';
+import Logger from './logger';
 
 export default async (): Promise<void> => {
     await cron();

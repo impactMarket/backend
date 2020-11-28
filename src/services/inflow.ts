@@ -1,4 +1,5 @@
 import { col, fn, Op } from 'sequelize';
+
 import { Inflow } from '../db/models/inflow';
 import Logger from '../loaders/logger';
 

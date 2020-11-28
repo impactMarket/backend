@@ -1,8 +1,9 @@
 import express from 'express';
-import Logger from './logger';
-import expressLoader from './express';
+
 import databaseLoader from './database';
+import expressLoader from './express';
 import jobsLoader from './jobs';
+import Logger from './logger';
 
 export default async ({
     expressApp,

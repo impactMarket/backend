@@ -85,7 +85,7 @@ export function initializeCommunityDailyState(sequelize: Sequelize): void {
         },
         {
             tableName: 'communitydailystate',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

@@ -1,18 +1,19 @@
 import { ethers } from 'ethers';
-import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
+
+import config from '../config';
 import CommunityContractABI from '../contracts/CommunityABI.json';
 import ERC20ABI from '../contracts/ERC20ABI.json';
-import TransactionsService from '../services/transactions';
-import config from '../config';
-import { getBlockTime, notifyBeneficiaryAdded } from '../utils';
-import CommunityService from '../services/community';
+import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
 import Logger from '../loaders/logger';
-import ImMetadataService from '../services/imMetadata';
 import BeneficiaryService from '../services/beneficiary';
-import ManagerService from '../services/managers';
-import ClaimsService from '../services/claim';
-import InflowService from '../services/inflow';
 import BeneficiaryTransactionService from '../services/beneficiaryTransaction';
+import ClaimsService from '../services/claim';
+import CommunityService from '../services/community';
+import ImMetadataService from '../services/imMetadata';
+import InflowService from '../services/inflow';
+import ManagerService from '../services/managers';
+import TransactionsService from '../services/transactions';
+import { getBlockTime, notifyBeneficiaryAdded } from '../utils';
 
 interface IFilterCommunityTmpData {
     address: string;

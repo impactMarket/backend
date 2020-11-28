@@ -63,7 +63,7 @@ export function initializeCommunityDailyMetrics(sequelize: Sequelize): void {
         },
         {
             tableName: 'communitydailymetrics',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

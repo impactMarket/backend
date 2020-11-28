@@ -1,6 +1,15 @@
-import { SHA3 } from 'sha3';
-import { Transactions } from '../db/models/transactions';
+import axios from 'axios';
 import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
+import { LogDescription } from 'ethers/lib/utils';
+import _ from 'lodash';
+import moment from 'moment';
+import { Op, fn, literal, Sequelize } from 'sequelize';
+import { SHA3 } from 'sha3';
+
+import config from '../config';
+import { Community } from '../db/models/community';
+import { Transactions } from '../db/models/transactions';
 import {
     ICommunityVars,
     IRecentTxAPI,
@@ -12,18 +21,10 @@ import {
     IGlobalOutflowStatus,
     IGlobalInflowStatus,
 } from '../types';
-import config from '../config';
-import axios from 'axios';
-import { Op, fn, literal, Sequelize } from 'sequelize';
-import CommunityService from './community';
-import { ethers } from 'ethers';
-import UserService from './user';
 import { groupBy } from '../utils';
-import { LogDescription } from 'ethers/lib/utils';
-import moment from 'moment';
-import _ from 'lodash';
+import CommunityService from './community';
 import ExperimentalService from './experimental';
-import { Community } from '../db/models/community';
+import UserService from './user';
 
 interface ICommunityAddedEventValues {
     _communityAddress: string;

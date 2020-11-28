@@ -47,7 +47,7 @@ export function initializeMobileError(sequelize: Sequelize): void {
         },
         {
             tableName: 'mobileerror',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }

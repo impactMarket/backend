@@ -1,10 +1,11 @@
-import { Router } from 'express';
-import aws from 'aws-sdk';
-import Logger from '../loaders/logger';
 import Joi from '@hapi/joi';
+import aws from 'aws-sdk';
 import { celebrate } from 'celebrate';
-import { MobileError } from '../db/models/mobileError';
+import { Router } from 'express';
+
 import config from '../config';
+import { MobileError } from '../db/models/mobileError';
+import Logger from '../loaders/logger';
 
 const route = Router();
 

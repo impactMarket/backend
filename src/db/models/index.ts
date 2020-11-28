@@ -1,35 +1,36 @@
 import { Sequelize } from 'sequelize';
-import { initializeCommunity, Community } from './community';
-import { initializeTransactions } from './transactions';
-import { initializeUser, User } from './user';
-import { initializeSSI } from './ssi';
+
 import { initializeAgenda } from './agenda';
-import { ClaimLocation, initializeClaimLocation } from './claimLocation';
-import { initializeExchangeRates } from './exchangeRates';
-import { initializeNotifiedBacker, NotifiedBacker } from './notifiedBacker';
-import { initializeImMetadata } from './imMetadata';
 import { Beneficiary, initializeBeneficiary } from './beneficiary';
-import { initializeManager, Manager } from './manager';
+import { initializeBeneficiaryTransaction } from './beneficiaryTransaction';
 import { Claim, initializeClaim } from './claim';
-import { Inflow, initializeInflow } from './inflow';
-import { CommunityState, initializeCommunityState } from './communityState';
-import {
-    CommunityDailyState,
-    initializeCommunityDailyState,
-} from './communityDailyState';
-import {
-    CommunityDailyMetrics,
-    initializeCommunityDailyMetrics,
-} from './communityDailyMetrics';
-import { initializeMobileError } from './mobileError';
+import { ClaimLocation, initializeClaimLocation } from './claimLocation';
+import { initializeCommunity, Community } from './community';
 import {
     CommunityContract,
     initializeCommunityContract,
 } from './communityContract';
-import { initializeGlobalDailyState } from './globalDailyState';
-import { initializeReachedAddress } from './reachedAddress';
+import {
+    CommunityDailyMetrics,
+    initializeCommunityDailyMetrics,
+} from './communityDailyMetrics';
+import {
+    CommunityDailyState,
+    initializeCommunityDailyState,
+} from './communityDailyState';
+import { CommunityState, initializeCommunityState } from './communityState';
 import { initializeCronJobExecuted } from './cronJobExecuted';
-import { initializeBeneficiaryTransaction } from './beneficiaryTransaction';
+import { initializeExchangeRates } from './exchangeRates';
+import { initializeGlobalDailyState } from './globalDailyState';
+import { initializeImMetadata } from './imMetadata';
+import { Inflow, initializeInflow } from './inflow';
+import { initializeManager, Manager } from './manager';
+import { initializeMobileError } from './mobileError';
+import { initializeNotifiedBacker, NotifiedBacker } from './notifiedBacker';
+import { initializeReachedAddress } from './reachedAddress';
+import { initializeSSI } from './ssi';
+import { initializeTransactions } from './transactions';
+import { initializeUser, User } from './user';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeCommunity(sequelize);

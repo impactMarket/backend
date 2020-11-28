@@ -1,8 +1,9 @@
-import { Router, Request, Response } from 'express';
-import UserService from '../services/user';
 import { celebrate, Joi } from 'celebrate';
-import { authenticateToken } from '../middlewares';
+import { Router, Request, Response } from 'express';
+
 import Logger from '../loaders/logger';
+import { authenticateToken } from '../middlewares';
+import UserService from '../services/user';
 
 const route = Router();
 

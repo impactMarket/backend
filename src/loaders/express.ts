@@ -1,12 +1,13 @@
-import express, { Request, Response, NextFunction } from 'express';
+import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import morgan from 'morgan';
+import express, { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
-import routes from '../routes';
+import morgan from 'morgan';
+
 import config from '../config';
 import Logger, { LoggerStream } from '../loaders/logger';
-import * as Sentry from '@sentry/node';
+import routes from '../routes';
 
 export default ({ app }: { app: express.Application }): void => {
     /**

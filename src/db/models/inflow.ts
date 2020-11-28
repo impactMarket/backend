@@ -60,7 +60,7 @@ export function initializeInflow(sequelize: Sequelize): void {
         },
         {
             tableName: 'inflow',
-            sequelize: sequelize, // this bit is important
+            sequelize, // this bit is important
         }
     );
 }
