@@ -1,4 +1,4 @@
-import { stub, assert, spy } from 'sinon';
+import { stub, assert, match } from 'sinon';
 
 import BeneficiaryService from '../../../../src/services/beneficiary';
 import CommunityDailyStateService from '../../../../src/services/communityDailyState';
@@ -140,7 +140,11 @@ describe('[jobs - cron] community', () => {
             
             await calcuateCommunitiesMetrics();
             dailyMetricsAdd.restore();
-            assert.calledWith(dailyMetricsAdd.secondCall, 'b090d41f-91c0-4f18-a809-633217590bbb', -50.06, -8.39, -30.4, -1.64, new Date(new Date().getTime() - 86400000));
+            assert.callCount(dailyMetricsAdd, allCommunities.length);
+
+            assert.calledWith(dailyMetricsAdd.getCall(0), 'c77a15a7-2cef-4d1e-96db-afd0b91ab71d', -50.11, -9.12, -44.28, -0.75, match.any);
+            assert.calledWith(dailyMetricsAdd.getCall(1), 'b090d41f-91c0-4f18-a809-633217590bbb', -50.06, -8.39, -30.4, -1.64, match.any);
+            assert.calledWith(dailyMetricsAdd.getCall(2), 'a3b4ad6e-dc8e-4861-b5b2-c1973907c515', -50.17, -9.19, -90.38, -0.22, match.any);
         });
     });
 });
