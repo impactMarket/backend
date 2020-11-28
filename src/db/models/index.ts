@@ -13,15 +13,23 @@ import { initializeManager, Manager } from './manager';
 import { Claim, initializeClaim } from './claim';
 import { Inflow, initializeInflow } from './inflow';
 import { CommunityState, initializeCommunityState } from './communityState';
-import { CommunityDailyState, initializeCommunityDailyState } from './communityDailyState';
-import { CommunityDailyMetrics, initializeCommunityDailyMetrics } from './communityDailyMetrics';
+import {
+    CommunityDailyState,
+    initializeCommunityDailyState,
+} from './communityDailyState';
+import {
+    CommunityDailyMetrics,
+    initializeCommunityDailyMetrics,
+} from './communityDailyMetrics';
 import { initializeMobileError } from './mobileError';
-import { CommunityContract, initializeCommunityContract } from './communityContract';
+import {
+    CommunityContract,
+    initializeCommunityContract,
+} from './communityContract';
 import { initializeGlobalDailyState } from './globalDailyState';
 import { initializeReachedAddress } from './reachedAddress';
 import { initializeCronJobExecuted } from './cronJobExecuted';
 import { initializeBeneficiaryTransaction } from './beneficiaryTransaction';
-
 
 export default function initModels(sequelize: Sequelize): void {
     initializeCommunity(sequelize);
@@ -48,57 +56,57 @@ export default function initModels(sequelize: Sequelize): void {
     initializeBeneficiaryTransaction(sequelize);
 
     ClaimLocation.belongsTo(Community, {
-        foreignKey: 'communityId',  // ClaimLocation.communityId
+        foreignKey: 'communityId', // ClaimLocation.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 
     NotifiedBacker.belongsTo(Community, {
-        foreignKey: 'communityId',  // NotifiedBacker.communityId
+        foreignKey: 'communityId', // NotifiedBacker.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 
     Beneficiary.belongsTo(Community, {
-        foreignKey: 'communityId',  // Beneficiary.communityId
+        foreignKey: 'communityId', // Beneficiary.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 
     Manager.belongsTo(Community, {
-        foreignKey: 'communityId',  // Manager.communityId
+        foreignKey: 'communityId', // Manager.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 
     Manager.belongsTo(User, {
-        foreignKey: 'user',  // Manager.user
+        foreignKey: 'user', // Manager.user
         targetKey: 'address', // the user.address
     });
 
     Claim.belongsTo(Community, {
-        foreignKey: 'communityId',  // Claim.communityId
+        foreignKey: 'communityId', // Claim.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 
     Inflow.belongsTo(Community, {
-        foreignKey: 'communityId',  // Inflow.communityId
+        foreignKey: 'communityId', // Inflow.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 
     CommunityState.belongsTo(Community, {
-        foreignKey: 'communityId',  // CommunityState.communityId
+        foreignKey: 'communityId', // CommunityState.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 
     CommunityDailyState.belongsTo(Community, {
-        foreignKey: 'communityId',  // CommunityDailyState.communityId
+        foreignKey: 'communityId', // CommunityDailyState.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 
     CommunityDailyMetrics.belongsTo(Community, {
-        foreignKey: 'communityId',  // CommunityDailyMetrics.communityId
+        foreignKey: 'communityId', // CommunityDailyMetrics.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 
     CommunityContract.belongsTo(Community, {
-        foreignKey: 'communityId',  // CommunityContract.communityId
+        foreignKey: 'communityId', // CommunityContract.communityId
         targetKey: 'publicId', // the Community.publicId
     });
 }

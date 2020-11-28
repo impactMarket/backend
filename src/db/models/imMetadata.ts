@@ -1,6 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-
 export class ImMetadata extends Model {
     public key!: string;
     public value!: string;
@@ -11,26 +10,29 @@ export class ImMetadata extends Model {
 }
 
 export function initializeImMetadata(sequelize: Sequelize): void {
-    return ImMetadata.init({
-        key: {
-            type: DataTypes.STRING(128),
-            unique: true,
-            primaryKey: true,
+    return ImMetadata.init(
+        {
+            key: {
+                type: DataTypes.STRING(128),
+                unique: true,
+                primaryKey: true,
+            },
+            value: {
+                type: DataTypes.STRING(512),
+                allowNull: false,
+            },
+            createdAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
+            updatedAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
         },
-        value: {
-            type: DataTypes.STRING(512),
-            allowNull: false,
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
+        {
+            tableName: 'immetadata',
+            sequelize: sequelize, // this bit is important
         }
-    }, {
-        tableName: 'immetadata',
-        sequelize: sequelize, // this bit is important
-    });
+    );
 }

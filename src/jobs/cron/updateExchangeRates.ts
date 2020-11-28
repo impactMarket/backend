@@ -11,12 +11,13 @@ async function updateExchangeRates(): Promise<void> {
     const latestRates = query.data.rates;
     for (const currency in latestRates) {
         const rate = latestRates[currency];
-        await ExchangeRates.update({
-            rate,
-        }, { where: { currency: currency } });
+        await ExchangeRates.update(
+            {
+                rate,
+            },
+            { where: { currency: currency } }
+        );
     }
 }
 
-export {
-    updateExchangeRates,
-}
+export { updateExchangeRates };

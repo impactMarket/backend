@@ -2,7 +2,6 @@ import { col, fn, Op } from 'sequelize';
 import { ReachedAddress } from '../db/models/reachedAddress';
 
 export default class ReachedAddressService {
-
     public static async getAllReachedLast30Days(): Promise<number> {
         const todayMidnightTime = new Date();
         todayMidnightTime.setHours(0, 0, 0, 0);
@@ -14,10 +13,10 @@ export default class ReachedAddressService {
                 lastInteraction: {
                     [Op.lt]: todayMidnightTime,
                     [Op.gte]: aMonthAgo,
-                }
-            }
+                },
+            },
         });
-        const reachedAddressesLast30Days = (result[0] as any);
+        const reachedAddressesLast30Days = result[0] as any;
         return parseInt(reachedAddressesLast30Days.total, 10);
     }
 
@@ -25,7 +24,7 @@ export default class ReachedAddressService {
         const result = await ReachedAddress.findAll({
             attributes: [[fn('count', col('address')), 'total']],
         });
-        const existingAddresses = (result[0] as any);
+        const existingAddresses = result[0] as any;
         return parseInt(existingAddresses.total, 10);
     }
 }

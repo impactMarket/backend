@@ -10,7 +10,6 @@ import globalStatus from './globalStatus';
 import mobileLogs from './mobileLogs';
 import mobile from './mobile';
 
-
 export default (): Router => {
     const app = Router();
     community(app);
@@ -25,4 +24,4 @@ export default (): Router => {
     mobile(app);
 
     return app;
-}
+};

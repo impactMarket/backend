@@ -1,6 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-
 export class ClaimLocation extends Model {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public communityId!: string;
@@ -12,30 +11,33 @@ export class ClaimLocation extends Model {
 }
 
 export function initializeClaimLocation(sequelize: Sequelize): void {
-    return ClaimLocation.init({
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
+    return ClaimLocation.init(
+        {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+            },
+            communityId: {
+                type: DataTypes.UUID,
+                allowNull: false,
+            },
+            gps: {
+                type: DataTypes.JSON,
+                allowNull: false,
+            },
+            createdAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
+            updatedAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
         },
-        communityId: {
-            type: DataTypes.UUID,
-            allowNull: false
-        },
-        gps: {
-            type: DataTypes.JSON,
-            allowNull: false
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
+        {
+            tableName: 'claimlocation',
+            sequelize: sequelize, // this bit is important
         }
-    }, {
-        tableName: 'claimlocation',
-        sequelize: sequelize, // this bit is important
-    });
+    );
 }

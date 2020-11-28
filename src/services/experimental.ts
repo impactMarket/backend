@@ -22,6 +22,6 @@ export default class ExperimentalService {
 
     public static get(): any[] {
         const result = ['']; //db.get('');
-        return result
+        return result;
     }
 }

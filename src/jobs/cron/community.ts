@@ -14,7 +14,6 @@ import config from '../../config';
 import InflowService from '../../services/inflow';
 import SSIService from '../../services/ssi';
 
-
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
     // this should run post-midnight (well, at midnight)
@@ -30,7 +29,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         if (community.state.claimed === '0' || community.state.raised === '0') {
             return;
         }
-        const beneficiaries = await BeneficiaryService.getAllInCommunity(community.publicId);
+        const beneficiaries = await BeneficiaryService.getAllInCommunity(
+            community.publicId
+        );
         if (beneficiaries.length < 1) {
             return;
         }
@@ -49,30 +50,54 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 continue;
             }
             // the first time you don't wait a single second, the second time, only base interval
-            const timeToWait = community.contractParams.baseInterval + (beneficiary.claims - 2) * community.contractParams.incrementInterval;
-            const timeWaited = Math.floor((beneficiary.lastClaimAt.getTime() - beneficiary.penultimateClaimAt.getTime()) / 1000) - timeToWait;
+            const timeToWait =
+                community.contractParams.baseInterval +
+                (beneficiary.claims - 2) *
+                    community.contractParams.incrementInterval;
+            const timeWaited =
+                Math.floor(
+                    (beneficiary.lastClaimAt.getTime() -
+                        beneficiary.penultimateClaimAt.getTime()) /
+                        1000
+                ) - timeToWait;
             // console.log(beneficiary.address, beneficiary.lastClaimAt, beneficiary.penultimateClaimAt);
             beneficiariesTimeToWait.push(timeToWait);
             beneficiariesTimeWaited.push(timeWaited);
         }
-        if (beneficiariesTimeToWait.length > 1 && beneficiariesTimeWaited.length > 1) {
+        if (
+            beneficiariesTimeToWait.length > 1 &&
+            beneficiariesTimeWaited.length > 1
+        ) {
             // calculate ssi day alone
             const meanTimeToWait = mean(beneficiariesTimeToWait);
             const madTimeWaited = median(beneficiariesTimeWaited);
             // console.log(community.name, madTimeWaited, meanTimeToWait);
-            ssiDayAlone = parseFloat(((madTimeWaited / meanTimeToWait) * 50 /* aka, 100 / 2 */).toFixed(2));
+            ssiDayAlone = parseFloat(
+                ((madTimeWaited / meanTimeToWait) * 50) /* aka, 100 / 2 */
+                    .toFixed(2)
+            );
 
             // ssi
             const ssisAvailable = ssiLast4Days.get(community.publicId);
             if (ssisAvailable === undefined) {
                 ssi = ssiDayAlone;
             } else {
-                const sumSSI = ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) + ssiDayAlone;
-                ssi = Math.round(parseFloat((sumSSI / (ssisAvailable.length + 1)).toFixed(2)) * 100) / 100;
+                const sumSSI =
+                    ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) +
+                    ssiDayAlone;
+                ssi =
+                    Math.round(
+                        parseFloat(
+                            (sumSSI / (ssisAvailable.length + 1)).toFixed(2)
+                        ) * 100
+                    ) / 100;
             }
         }
 
-        let daysSinceStart = Math.round((todayDateOnly.getTime() - new Date(community.started).getTime()) / 86400000); // 86400000 1 days in ms
+        let daysSinceStart = Math.round(
+            (todayDateOnly.getTime() - new Date(community.started).getTime()) /
+                86400000
+        ); // 86400000 1 days in ms
         if (daysSinceStart > 30) {
             daysSinceStart = 30;
         }
@@ -81,7 +106,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         ubiRate = parseFloat(
             new BigNumber(totalClaimedLast30Days.get(community.publicId)!)
                 .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
-                .dividedBy(activeBeneficiariesLast30Days.get(community.publicId)!)
+                .dividedBy(
+                    activeBeneficiariesLast30Days.get(community.publicId)!
+                )
                 .dividedBy(daysSinceStart)
                 .toFixed(2, 1)
         );
@@ -102,15 +129,11 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             ubiRate,
             estimatedDuration,
             // since it's calculated post-midnight, save it with yesterdayDateOnly's date
-            yesterday,
+            yesterday
         );
         // TODO: deprecated to remove (backwards compatibility)
-        await SSIService.add(
-            community.publicId,
-            new Date(),
-            ssi,
-        );
-    }
+        await SSIService.add(community.publicId, new Date(), ssi);
+    };
     const communities = await CommunityService.getAll('valid');
     // for each community
     for (let index = 0; index < communities.length; index++) {
@@ -124,16 +147,21 @@ export async function verifyCommunityFunds(): Promise<void> {
 
     communities.forEach(async (community) => {
         if (community.state.backers > 0 && community.state.claimed !== '0') {
-            const isLessThan10 = parseFloat(new BigNumber(community.state.claimed)
-                .div(community.state.raised)
-                .toString()) >= 0.9;
+            const isLessThan10 =
+                parseFloat(
+                    new BigNumber(community.state.claimed)
+                        .div(community.state.raised)
+                        .toString()
+                ) >= 0.9;
 
             if (isLessThan10) {
                 const backersAddresses = await NotifiedBackerService.add(
                     await InflowService.getAllBackers(community.publicId),
                     community.publicId
                 );
-                const pushTokens = await UserService.getPushTokensFromAddresses(backersAddresses);
+                const pushTokens = await UserService.getPushTokensFromAddresses(
+                    backersAddresses
+                );
                 notifyBackersCommunityLowFunds(community, pushTokens);
             }
         }

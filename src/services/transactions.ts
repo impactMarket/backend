@@ -6,7 +6,11 @@ import {
     IRecentTxAPI,
     IPaymentsTxAPI,
     IAddressAndName,
-    ICommunityInfoBeneficiary, IUserTxAPI, IGlobalStatus, IGlobalOutflowStatus, IGlobalInflowStatus
+    ICommunityInfoBeneficiary,
+    IUserTxAPI,
+    IGlobalStatus,
+    IGlobalOutflowStatus,
+    IGlobalInflowStatus,
 } from '../types';
 import config from '../config';
 import axios from 'axios';
@@ -21,33 +25,37 @@ import _ from 'lodash';
 import ExperimentalService from './experimental';
 import { Community } from '../db/models/community';
 
-
 interface ICommunityAddedEventValues {
-    _communityAddress: string,
-    _firstManager: string,
-    _claimAmount: BigNumber,
-    _maxClaim: BigNumber,
-    _baseInterval: BigNumber,
-    _incrementInterval: BigNumber,
+    _communityAddress: string;
+    _firstManager: string;
+    _claimAmount: BigNumber;
+    _maxClaim: BigNumber;
+    _baseInterval: BigNumber;
+    _incrementInterval: BigNumber;
 }
 interface ICommunityEditedEventValues {
-    _claimAmount: BigNumber,
-    _maxClaim: BigNumber
-    _baseInterval: BigNumber,
-    _incrementInterval: BigNumber,
+    _claimAmount: BigNumber;
+    _maxClaim: BigNumber;
+    _baseInterval: BigNumber;
+    _incrementInterval: BigNumber;
 }
 interface IBeneficiaryClaimEventValues {
-    _account: string,
-    _amount: BigNumber,
+    _account: string;
+    _amount: BigNumber;
 }
 interface ITransferEventValues {
-    from: string,
-    to: string,
-    value: BigNumber,
+    from: string;
+    to: string;
+    value: BigNumber;
 }
 
 export function translateEvent(
-    rawValues: ICommunityAddedEventValues | ICommunityEditedEventValues | IBeneficiaryClaimEventValues | ITransferEventValues | { _account: string },
+    rawValues:
+        | ICommunityAddedEventValues
+        | ICommunityEditedEventValues
+        | IBeneficiaryClaimEventValues
+        | ITransferEventValues
+        | { _account: string }
 ): any {
     if ((rawValues as ICommunityAddedEventValues)._firstManager) {
         const values = rawValues as ICommunityAddedEventValues;
@@ -58,37 +66,34 @@ export function translateEvent(
             _maxClaim: values._maxClaim.toString(),
             _baseInterval: values._baseInterval.toString(),
             _incrementInterval: values._incrementInterval.toString(),
-        }
-    }
-    else if ((rawValues as ITransferEventValues).from) {
+        };
+    } else if ((rawValues as ITransferEventValues).from) {
         const values = rawValues as ITransferEventValues;
         return {
             from: values.from,
             to: values.to,
             value: values.value.toString(),
-        }
-    }
-    else if ((rawValues as IBeneficiaryClaimEventValues)._amount) {
+        };
+    } else if ((rawValues as IBeneficiaryClaimEventValues)._amount) {
         const values = rawValues as IBeneficiaryClaimEventValues;
         return {
             _account: values._account,
             _amount: values._amount.toString(),
-        }
-    }
-    else if ((rawValues as ICommunityEditedEventValues)._claimAmount) {
+        };
+    } else if ((rawValues as ICommunityEditedEventValues)._claimAmount) {
         const values = rawValues as ICommunityEditedEventValues;
         return {
             _claimAmount: values._claimAmount.toString(),
             _maxClaim: values._maxClaim.toString(),
             _baseInterval: values._baseInterval.toString(),
             _incrementInterval: values._incrementInterval.toString(),
-        }
+        };
     }
     // everything else
     const values = rawValues as { _account: string };
     return {
         _account: values._account,
-    }
+    };
 }
 
 export default class TransactionsService {
@@ -100,9 +105,8 @@ export default class TransactionsService {
         logs: ethers.providers.Log,
         events: LogDescription
     ): Promise<Transactions> {
-
         const tx = logs.transactionHash!;
-        const txReceipt = await provider.getTransactionReceipt(tx)
+        const txReceipt = await provider.getTransactionReceipt(tx);
         const from = txReceipt.from!;
         // const block = await provider.getBlock(txReceipt.blockHash!);
         const contractAddress = logs.address;
@@ -115,7 +119,7 @@ export default class TransactionsService {
             from,
             contractAddress,
             event,
-            values,
+            values
         );
     }
 
@@ -128,7 +132,7 @@ export default class TransactionsService {
         from: string,
         contractAddress: string,
         event: string,
-        values: unknown, // values from events can have multiple forms
+        values: unknown // values from events can have multiple forms
     ): Promise<Transactions> {
         const hash = new SHA3(256);
         hash.update(tx).update(JSON.stringify(values));
@@ -163,25 +167,26 @@ export default class TransactionsService {
      * @deprecated
      */
     public static async get(account: string): Promise<Transactions[]> {
-        return Transactions.findAll({ where: { values: { _account: account } } });
+        return Transactions.findAll({
+            where: { values: { _account: account } },
+        });
     }
 
     /**
      * @deprecated
      */
-    public static async findComunityToBeneficicary(beneficiaryAddress: string): Promise<Transactions | undefined> {
+    public static async findComunityToBeneficicary(
+        beneficiaryAddress: string
+    ): Promise<Transactions | undefined> {
         const reqResult = await Transactions.findAll({
             limit: 1,
             where: {
                 event: {
-                    [Op.or]: [
-                        'BeneficiaryAdded',
-                        'BeneficiaryRemoved'
-                    ],
+                    [Op.or]: ['BeneficiaryAdded', 'BeneficiaryRemoved'],
                 },
                 values: { _account: beneficiaryAddress },
             },
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
         });
         if (reqResult.length === 0) {
             return undefined;
@@ -195,12 +200,14 @@ export default class TransactionsService {
     /**
      * @deprecated
      */
-    public static async findComunityToManager(managerAddress: string): Promise<Transactions | null> {
+    public static async findComunityToManager(
+        managerAddress: string
+    ): Promise<Transactions | null> {
         // TODO: get only if it was added and not removed yet
         return Transactions.findOne({
             where: {
                 event: 'ManagerAdded',
-                values: { _account: managerAddress }
+                values: { _account: managerAddress },
             },
         });
     }
@@ -208,7 +215,9 @@ export default class TransactionsService {
     /**
      * @deprecated
      */
-    public static async getBeneficiariesInCommunity(communityAddress: string): Promise<{
+    public static async getBeneficiariesInCommunity(
+        communityAddress: string
+    ): Promise<{
         added: ICommunityInfoBeneficiary[];
         removed: ICommunityInfoBeneficiary[];
     }> {
@@ -216,13 +225,10 @@ export default class TransactionsService {
             where: {
                 contractAddress: communityAddress,
                 event: {
-                    [Op.or]: [
-                        'BeneficiaryAdded',
-                        'BeneficiaryRemoved',
-                    ]
+                    [Op.or]: ['BeneficiaryAdded', 'BeneficiaryRemoved'],
                 },
             },
-            order: [['txAt', 'DESC']]
+            order: [['txAt', 'DESC']],
         });
         const beneficiaries = dbRequestResult.map((beneficiary) => ({
             account: beneficiary.values._account,
@@ -230,11 +236,18 @@ export default class TransactionsService {
             timestamp: beneficiary.txAt.getTime(),
         }));
         // group
-        const result = { added: [], removed: [] } as { added: ICommunityInfoBeneficiary[], removed: ICommunityInfoBeneficiary[] };
-        const claimed = await TransactionsService.getBeneficiariesCommunityClaimedAmount(communityAddress);
+        const result = { added: [], removed: [] } as {
+            added: ICommunityInfoBeneficiary[];
+            removed: ICommunityInfoBeneficiary[];
+        };
+        const claimed = await TransactionsService.getBeneficiariesCommunityClaimedAmount(
+            communityAddress
+        );
         const registry = await this.addressesByNames();
         for (const [, v] of groupBy<any>(beneficiaries, 'account')) {
-            const event = v.sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
+            const event = v.sort(
+                (a: any, b: any) => b.timestamp - a.timestamp
+            )[0];
             if (event.event === 'BeneficiaryAdded') {
                 result.added.push({
                     ...this.addressToAddressAndName(event.account, registry),
@@ -255,30 +268,36 @@ export default class TransactionsService {
     /**
      * @deprecated
      */
-    public static async getCommunityManagersInCommunity(communityAddress: string): Promise<string[]> {
+    public static async getCommunityManagersInCommunity(
+        communityAddress: string
+    ): Promise<string[]> {
         const dbRequest = Transactions.findAll({
             where: {
                 contractAddress: communityAddress,
                 event: 'ManagerAdded',
-            }
+            },
         });
-        const managers = (await dbRequest)
-            .map((manager) => manager.values._account as string);
+        const managers = (await dbRequest).map(
+            (manager) => manager.values._account as string
+        );
         return managers;
     }
 
     /**
      * @deprecated
      */
-    public static async getBackersInCommunity(communityAddress: string): Promise<string[]> {
+    public static async getBackersInCommunity(
+        communityAddress: string
+    ): Promise<string[]> {
         const dbRequest = Transactions.findAll({
             where: {
                 event: 'Transfer',
-                values: { to: communityAddress }
-            }
+                values: { to: communityAddress },
+            },
         });
-        const backers = (await dbRequest)
-            .map((backer) => backer.values.from as string);
+        const backers = (await dbRequest).map(
+            (backer) => backer.values.from as string
+        );
         // Because Set only lets you store unique values.
         return [...new Set(backers)];
     }
@@ -286,22 +305,24 @@ export default class TransactionsService {
     /**
      * @deprecated
      */
-    public static async getCommunityVars(communityAddress: string): Promise<ICommunityVars> {
+    public static async getCommunityVars(
+        communityAddress: string
+    ): Promise<ICommunityVars> {
         const vars = await Transactions.findAll({
             limit: 1,
             where: {
                 [Op.or]: [
                     {
                         event: 'CommunityAdded',
-                        values: { _communityAddress: communityAddress }
+                        values: { _communityAddress: communityAddress },
                     },
                     {
                         event: 'CommunityEdited',
-                        contractAddress: communityAddress
+                        contractAddress: communityAddress,
                     },
-                ]
+                ],
             },
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
         });
         if (vars.length === 0) {
             return {} as any;
@@ -310,44 +331,54 @@ export default class TransactionsService {
             _claimAmount: vars[0].values._claimAmount,
             _maxClaim: vars[0].values._maxClaim,
             _baseInterval: vars[0].values._baseInterval,
-            _incrementInterval: vars[0].values._incrementInterval
+            _incrementInterval: vars[0].values._incrementInterval,
         };
     }
 
     /**
      * @deprecated
      */
-    public static async getCommunityRaisedAmount(communityAddress: string): Promise<string> {
+    public static async getCommunityRaisedAmount(
+        communityAddress: string
+    ): Promise<string> {
         const donations = await Transactions.findAll({
             where: {
                 event: 'Transfer',
-                values: { to: communityAddress }
-            }
+                values: { to: communityAddress },
+            },
         });
         let raised = new BigNumber(0);
-        donations.forEach((donation) => raised = raised.plus(donation.values.value));
+        donations.forEach(
+            (donation) => (raised = raised.plus(donation.values.value))
+        );
         return raised.toString();
     }
 
     /**
      * @deprecated
      */
-    public static async getCommunityClaimedAmount(communityAddress: string): Promise<string> {
+    public static async getCommunityClaimedAmount(
+        communityAddress: string
+    ): Promise<string> {
         const claims = await Transactions.findAll({
             where: {
                 contractAddress: communityAddress,
                 event: 'BeneficiaryClaim',
-            }
+            },
         });
         let claimed = new BigNumber(0);
-        claims.forEach((claim) => claimed = claimed.plus(claim.values._amount));
+        claims.forEach(
+            (claim) => (claimed = claimed.plus(claim.values._amount))
+        );
         return claimed.toString();
     }
 
     /**
      * @deprecated
      */
-    public static async getBeneficiariesCommunityClaimedAmount(communityAddress: string): Promise<Map<string, string>> {
+    public static async getBeneficiariesCommunityClaimedAmount(
+        communityAddress: string
+    ): Promise<Map<string, string>> {
         const claims = await Transactions.findAll({
             // attributes: ['from', [fn('sum', literal("values->>'_amount'")), 'claimed']], // cant be used because _amount is a string
             where: {
@@ -356,11 +387,13 @@ export default class TransactionsService {
             },
             // group: 'from'
             raw: true,
-        })
+        });
         const result: Map<string, string> = new Map();
 
         for (const [k, v] of groupBy<any>(claims, 'from')) {
-            const sumResult = v.map((vv) => vv.values._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
+            const sumResult = v
+                .map((vv) => vv.values._amount)
+                .reduce((a, b) => a.plus(b), new BigNumber(0));
             result.set(k, sumResult.toString());
         }
 
@@ -370,7 +403,9 @@ export default class TransactionsService {
     /**
      * @deprecated
      */
-    public static async getBeneficiariesCommunityClaims(communityAddress: string): Promise<Map<string, number>> {
+    public static async getBeneficiariesCommunityClaims(
+        communityAddress: string
+    ): Promise<Map<string, number>> {
         const claims = await Transactions.findAll({
             where: {
                 contractAddress: communityAddress,
@@ -390,7 +425,9 @@ export default class TransactionsService {
     /**
      * @deprecated
      */
-    public static async getBeneficiariesLastClaim(beneficiaryAddress: string): Promise<Transactions[] | undefined> {
+    public static async getBeneficiariesLastClaim(
+        beneficiaryAddress: string
+    ): Promise<Transactions[] | undefined> {
         const claim = await Transactions.findAll({
             where: {
                 from: beneficiaryAddress,
@@ -409,7 +446,9 @@ export default class TransactionsService {
     /**
      * @deprecated
      */
-    public static async getLastClaim(communityAddress: string/*, startDate: Date = new Date(new Date().getTime() - 86400000), endDate: Date = new Date() */): Promise<Transactions | undefined> {
+    public static async getLastClaim(
+        communityAddress: string /*, startDate: Date = new Date(new Date().getTime() - 86400000), endDate: Date = new Date() */
+    ): Promise<Transactions | undefined> {
         const tx = await Transactions.findAll({
             where: {
                 contractAddress: communityAddress,
@@ -437,7 +476,7 @@ export default class TransactionsService {
             where: {
                 //your where conditions, or without them if you need ANY entry
             },
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
         });
         if (entries.length === 0) {
             return undefined;
@@ -458,14 +497,23 @@ export default class TransactionsService {
         }
         const registry = await this.addressesByNames();
 
-        const rawResult: { to: string; from: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
-            .filter((r: { value: string; }) => (new BigNumber(r.value).gt('9999999999999999'))); // >0,009
+        const rawResult: {
+            to: string;
+            from: string;
+            value: string;
+            tokenDecimal: string;
+            timeStamp: string;
+        }[] = query.data.result.filter((r: { value: string }) =>
+            new BigNumber(r.value).gt('9999999999999999')
+        ); // >0,009
 
         const result: IUserTxAPI[] = [];
         for (let index = 0; index < rawResult.length; index++) {
             const r = rawResult[index];
             const fromUser = ethers.utils.getAddress(r.from) === userAddress;
-            const k = fromUser ? ethers.utils.getAddress(r.to) : ethers.utils.getAddress(r.from);
+            const k = fromUser
+                ? ethers.utils.getAddress(r.to)
+                : ethers.utils.getAddress(r.from);
             result.push({
                 picture: await this.findPicture(k),
                 counterParty: this.addressToAddressAndName(k, registry),
@@ -481,7 +529,9 @@ export default class TransactionsService {
     /**
      * @deprecated
      */
-    public static async paymentsTx(userAddress: string): Promise<IPaymentsTxAPI[]> {
+    public static async paymentsTx(
+        userAddress: string
+    ): Promise<IPaymentsTxAPI[]> {
         const query = await axios.get(
             `${config.baseBlockScoutApiUrl}?module=account&action=tokentx&address=${userAddress}`
         );
@@ -491,8 +541,16 @@ export default class TransactionsService {
         }
         const registry = await this.addressesByNames();
 
-        const rawResult: { to: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
-            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0' && r.from.toLowerCase() === userAddress.toLowerCase());
+        const rawResult: {
+            to: string;
+            value: string;
+            tokenDecimal: string;
+            timeStamp: string;
+        }[] = query.data.result.filter(
+            (r: { logIndex: string; from: string }) =>
+                r.logIndex === '0' &&
+                r.from.toLowerCase() === userAddress.toLowerCase()
+        );
 
         const result: IPaymentsTxAPI[] = [];
         for (let index = 0; index < rawResult.length; index++) {
@@ -502,11 +560,13 @@ export default class TransactionsService {
                 picture: await this.findPicture(k),
                 to: this.addressToAddressAndName(k, registry),
                 value: r.value.toString(),
-                timestamp: parseInt(r.timeStamp, 10)
+                timestamp: parseInt(r.timeStamp, 10),
             });
         }
         // https://dev.to/marinamosti/removing-duplicates-in-an-array-of-objects-in-js-with-sets-3fep
-        return Array.from(new Set(result.map((a) => a.to.address))).map(address => result.find((a) => a.to.address === address)!);
+        return Array.from(new Set(result.map((a) => a.to.address))).map(
+            (address) => result.find((a) => a.to.address === address)!
+        );
     }
 
     /**
@@ -545,18 +605,28 @@ export default class TransactionsService {
         }
         const registry = await this.addressesByNames();
 
-        const rawResult: { to: string; from: string; value: string; tokenDecimal: string; timeStamp: string; }[] = query.data.result
-            .filter((r: { logIndex: string; from: string; }) => r.logIndex === '0');
+        const rawResult: {
+            to: string;
+            from: string;
+            value: string;
+            tokenDecimal: string;
+            timeStamp: string;
+        }[] = query.data.result.filter(
+            (r: { logIndex: string; from: string }) => r.logIndex === '0'
+        );
 
         const result: IRecentTxAPI[] = [];
         for (let index = 0; index < rawResult.length; index++) {
             const r = rawResult[index];
-            const k = ethers.utils.getAddress(r.to) === userAddress ? ethers.utils.getAddress(r.from) : ethers.utils.getAddress(r.to);
+            const k =
+                ethers.utils.getAddress(r.to) === userAddress
+                    ? ethers.utils.getAddress(r.from)
+                    : ethers.utils.getAddress(r.to);
             result.push({
                 picture: await this.findPicture(k),
                 from: this.addressToAddressAndName(k, registry),
                 value: r.value.toString(),
-                timestamp: parseInt(r.timeStamp, 10)
+                timestamp: parseInt(r.timeStamp, 10),
             });
         }
 
@@ -577,11 +647,15 @@ export default class TransactionsService {
     /**
      * @deprecated
      */
-    public static async findUserPrivateCommunity(userAddress: string): Promise<Transactions | null> {
-        const privateCommunities: string[] = (await Community.findAll({
-            attributes: ['contractAddress'],
-            where: { visibility: 'private' }
-        })).map((c) => c.contractAddress);
+    public static async findUserPrivateCommunity(
+        userAddress: string
+    ): Promise<Transactions | null> {
+        const privateCommunities: string[] = (
+            await Community.findAll({
+                attributes: ['contractAddress'],
+                where: { visibility: 'private' },
+            })
+        ).map((c) => c.contractAddress);
         const userEvents = await Transactions.findAll({
             // attributes: ['event'],
             where: {
@@ -590,12 +664,12 @@ export default class TransactionsService {
                         'BeneficiaryAdded',
                         'BeneficiaryRemoved',
                         'ManagerAdded',
-                        'ManagerRemoved'
-                    ]
+                        'ManagerRemoved',
+                    ],
                 },
                 values: { _account: userAddress },
                 contractAddress: {
-                    [Op.in]: privateCommunities
+                    [Op.in]: privateCommunities,
                 },
             },
             limit: 1,
@@ -606,7 +680,10 @@ export default class TransactionsService {
         if (userEvents.length === 0) {
             return null;
         }
-        if (userEvents[0].event === 'BeneficiaryRemoved' || userEvents[0].event === 'ManagerRemoved') {
+        if (
+            userEvents[0].event === 'BeneficiaryRemoved' ||
+            userEvents[0].event === 'ManagerRemoved'
+        ) {
             // not in any private community
             return null;
         }
@@ -617,68 +694,95 @@ export default class TransactionsService {
      * @deprecated
      */
     public static async getGlobalStatus(): Promise<IGlobalStatus> {
-        const privateCommunities: string[] = (await Community.findAll({
-            attributes: ['contractAddress'],
-            where: { visibility: 'private' }
-        })).map((c) => c.contractAddress);
+        const privateCommunities: string[] = (
+            await Community.findAll({
+                attributes: ['contractAddress'],
+                where: { visibility: 'private' },
+            })
+        ).map((c) => c.contractAddress);
         //
         const raised = await Transactions.findAll({
             where: {
                 event: 'Transfer',
                 values: {
-                    to: { [Op.notIn]: privateCommunities }
+                    to: { [Op.notIn]: privateCommunities },
                 },
             },
             raw: true,
-        })
-        const totalRaised = raised.map((donation) => donation.values.value).reduce((a, b) => a.plus(b), new BigNumber(0));
+        });
+        const totalRaised = raised
+            .map((donation) => donation.values.value)
+            .reduce((a, b) => a.plus(b), new BigNumber(0));
         const distributed = await Transactions.findAll({
             where: {
                 event: 'BeneficiaryClaim',
                 contractAddress: { [Op.notIn]: privateCommunities },
             },
             raw: true,
-        })
-        const totalDistributed = distributed.map((claim) => claim.values._amount).reduce((a, b) => a.plus(b), new BigNumber(0));
+        });
+        const totalDistributed = distributed
+            .map((claim) => claim.values._amount)
+            .reduce((a, b) => a.plus(b), new BigNumber(0));
         // select distinct(values->>'_account') as account, max("txAt") as by_day from public.transactions where event = 'BeneficiaryAdded' group by (values->>'_account');
         // select count(distinct(t."values")) as total from transactions t, community c where c."contractAddress" = t."contractAddress" and t."event" = 'BeneficiaryAdded' and t."values" not in (select t1."values" from transactions t1 where t1."event" = 'BeneficiaryRemoved') and c.visibility = 'public'
-        const notBeneficiary = (await Transactions.findAll({
-            attributes: [
-                [Sequelize.fn('DISTINCT', Sequelize.json('values._account')), 'account'],
-            ],
-            where: {
-                event: 'BeneficiaryRemoved',
-                contractAddress: { [Op.notIn]: privateCommunities },
-            },
-            raw: true,
-        })).map((tx: any) => tx.account);
-        const beneficiaries = ((await Transactions.findAll({
-            attributes: [
-                [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT', Sequelize.json('values._account'))), 'total'],
-            ],
-            where: {
-                event: 'BeneficiaryAdded',
-                contractAddress: { [Op.notIn]: privateCommunities },
-                values: { _account: { [Op.notIn]: notBeneficiary } },
-            },
-            raw: true,
-        }))[0] as any).total;
+        const notBeneficiary = (
+            await Transactions.findAll({
+                attributes: [
+                    [
+                        Sequelize.fn(
+                            'DISTINCT',
+                            Sequelize.json('values._account')
+                        ),
+                        'account',
+                    ],
+                ],
+                where: {
+                    event: 'BeneficiaryRemoved',
+                    contractAddress: { [Op.notIn]: privateCommunities },
+                },
+                raw: true,
+            })
+        ).map((tx: any) => tx.account);
+        const beneficiaries = ((
+            await Transactions.findAll({
+                attributes: [
+                    [
+                        Sequelize.fn(
+                            'COUNT',
+                            Sequelize.fn(
+                                'DISTINCT',
+                                Sequelize.json('values._account')
+                            )
+                        ),
+                        'total',
+                    ],
+                ],
+                where: {
+                    event: 'BeneficiaryAdded',
+                    contractAddress: { [Op.notIn]: privateCommunities },
+                    values: { _account: { [Op.notIn]: notBeneficiary } },
+                },
+                raw: true,
+            })
+        )[0] as any).total;
         return {
             totalRaised: totalRaised.toString(),
             totalDistributed: totalDistributed.toString(),
             totalBeneficiaries: beneficiaries.toString(),
             totalClaims: distributed.length.toString(),
-        }
+        };
     }
 
     /**
      * @deprecated
      */
     public static async getOutflowStatus(): Promise<IGlobalOutflowStatus> {
-        const privateCommunities: string[] = (await Community.findAll({
-            attributes: ['contractAddress'],
-            where: { visibility: 'private' }
-        })).map((c) => c.contractAddress);
+        const privateCommunities: string[] = (
+            await Community.findAll({
+                attributes: ['contractAddress'],
+                where: { visibility: 'private' },
+            })
+        ).map((c) => c.contractAddress);
         //
         const distributed = await Transactions.findAll({
             where: {
@@ -687,27 +791,44 @@ export default class TransactionsService {
             },
             attributes: [
                 [Sequelize.fn('DATE', Sequelize.col('txAt')), 'by_day'],
-                'values'
+                'values',
             ],
             // order: [[Sequelize.fn('DATE', Sequelize.col('txAt')), 'ASC']],
             raw: true,
-        })
+        });
 
-        const notBeneficiary = (await Transactions.findAll({
-            attributes: [
-                [Sequelize.fn('DISTINCT', Sequelize.json('values._account')), 'account'],
-            ],
-            where: {
-                event: 'BeneficiaryRemoved',
-                contractAddress: { [Op.notIn]: privateCommunities },
-            },
-            raw: true,
-        })).map((tx: any) => tx.account);
+        const notBeneficiary = (
+            await Transactions.findAll({
+                attributes: [
+                    [
+                        Sequelize.fn(
+                            'DISTINCT',
+                            Sequelize.json('values._account')
+                        ),
+                        'account',
+                    ],
+                ],
+                where: {
+                    event: 'BeneficiaryRemoved',
+                    contractAddress: { [Op.notIn]: privateCommunities },
+                },
+                raw: true,
+            })
+        ).map((tx: any) => tx.account);
         // select date_trunc('day', t."createdAt"), count(distinct(t."values")) from transactions t, community c where c."contractAddress" = t."contractAddress" and t."event" = 'BeneficiaryAdded' and t."values" not in (select t1."values" from transactions t1 where t1."event" = 'BeneficiaryRemoved') and c.visibility = 'public' group by 1
         const beneficiaries = await Transactions.findAll({
             attributes: [
                 [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'by_day'],
-                [Sequelize.fn('COUNT', Sequelize.fn('DISTINCT', Sequelize.json('values._account'))), 'total']
+                [
+                    Sequelize.fn(
+                        'COUNT',
+                        Sequelize.fn(
+                            'DISTINCT',
+                            Sequelize.json('values._account')
+                        )
+                    ),
+                    'total',
+                ],
                 // [Sequelize.fn('DISTINCT', Sequelize.json('values._account')), 'account'],
             ],
             where: {
@@ -718,21 +839,24 @@ export default class TransactionsService {
             group: ['by_day'],
             raw: true,
         });
-        const dayNumber = (item: { by_day: string }) => new Date(item.by_day).getTime();
+        const dayNumber = (item: { by_day: string }) =>
+            new Date(item.by_day).getTime();
         return {
             claims: _.groupBy(distributed, dayNumber),
             beneficiaries: _.groupBy(beneficiaries, dayNumber),
-        }
+        };
     }
 
     /**
      * @deprecated
      */
     public static async getInflowStatus(): Promise<IGlobalInflowStatus> {
-        const publicCommunities: string[] = (await Community.findAll({
-            attributes: ['contractAddress'],
-            where: { visibility: 'public' }
-        })).map((c) => c.contractAddress);
+        const publicCommunities: string[] = (
+            await Community.findAll({
+                attributes: ['contractAddress'],
+                where: { visibility: 'public' },
+            })
+        ).map((c) => c.contractAddress);
 
         const raised = await Transactions.findAll({
             where: {
@@ -741,16 +865,17 @@ export default class TransactionsService {
             },
             attributes: [
                 [Sequelize.fn('DATE', Sequelize.col('txAt')), 'by_day'],
-                'values'
+                'values',
             ],
             raw: true,
         });
 
-        const dayNumber = (item: { by_day: string }) => new Date(item.by_day).getTime();
+        const dayNumber = (item: { by_day: string }) =>
+            new Date(item.by_day).getTime();
         return {
             raises: _.groupBy(raised, dayNumber),
-            rate: {}
-        }
+            rate: {},
+        };
     }
 
     /**
@@ -765,9 +890,19 @@ export default class TransactionsService {
     /**
      * @deprecated
      */
-    private static addressToAddressAndName(address: string, registry: Map<string, string>) {
+    private static addressToAddressAndName(
+        address: string,
+        registry: Map<string, string>
+    ) {
         const addressFromRegistry = registry.get(address);
-        return { address, name: (addressFromRegistry === null || addressFromRegistry === undefined) ? '' : addressFromRegistry }
+        return {
+            address,
+            name:
+                addressFromRegistry === null ||
+                addressFromRegistry === undefined
+                    ? ''
+                    : addressFromRegistry,
+        };
     }
 
     /**
@@ -779,7 +914,9 @@ export default class TransactionsService {
         if (user !== null) {
             picture = user.avatar;
         } else {
-            const community = await CommunityService.findByContractAddress(address);
+            const community = await CommunityService.findByContractAddress(
+                address
+            );
             if (community !== null) {
                 picture = community.coverImage;
             }

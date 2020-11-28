@@ -1,6 +1,6 @@
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 import axios from 'axios';
-import UserService from "./services/user";
+import UserService from './services/user';
 import Logger from './loaders/logger';
 import { ICommunityInfo } from './types';
 import config from './config';
@@ -11,7 +11,9 @@ export function groupBy<T>(array: any[], key: string): Map<string, T[]> {
     return array.reduce((result, currentValue) => {
         let content = result.get(currentValue[key]);
         // If an array already present for key, push it to the array. Else create an array and push the object
-        (content === undefined) ? content = [currentValue] : content.push(currentValue);
+        content === undefined
+            ? (content = [currentValue])
+            : content.push(currentValue);
         // Return the current iteration `result` value, this will be taken as next iteration `result` value and accumulate
         return result.set(currentValue[key], content);
     }, new Map<string, T[]>()); // empty map is the initial value for result object
@@ -22,41 +24,47 @@ export async function getBlockTime(blockHash: string): Promise<Date> {
         id: 0,
         jsonrpc: '2.0',
         method: 'eth_getBlockByHash',
-        params: [
-            blockHash,
-            false
-        ]
+        params: [blockHash, false],
     };
     // handle success
     const requestHeaders = {
         headers: {
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'Accept-encoding': 'gzip, deflate',
             'Content-Type': 'application/json',
-        }
+        },
     };
-    const response = await axios.post<{ result: { timestamp: string } }>(config.jsonRpcUrl, requestContent, requestHeaders);
+    const response = await axios.post<{ result: { timestamp: string } }>(
+        config.jsonRpcUrl,
+        requestContent,
+        requestHeaders
+    );
     return new Date(parseInt(response.data.result.timestamp, 16) * 1000);
 }
 
-export async function notifyBackersCommunityLowFunds(community: ICommunityInfo, backersPushTokens: string[]) {
+export async function notifyBackersCommunityLowFunds(
+    community: ICommunityInfo,
+    backersPushTokens: string[]
+) {
     // Create a new Expo SDK client
     // optionally providing an access token if you have enabled push security
     const expo = new Expo();
     const basePushMessage: {
-        sound?: "default" | null | undefined;
+        sound?: 'default' | null | undefined;
         title?: string | undefined;
         body?: string | undefined;
         data?: object | undefined;
     } = {
         sound: 'default',
         title: 'A community you backed before is running out of funds.',
-        body: community.name + ' currently has less than 10% of funds available to be claimed by end beneficiaries. Back them again by sending cUSD (Celo Dollar) to their community contract.',
+        body:
+            community.name +
+            ' currently has less than 10% of funds available to be claimed by end beneficiaries. Back them again by sending cUSD (Celo Dollar) to their community contract.',
         data: {
-            action: "community-low-funds",
-            communityAddress: community.contractAddress
+            action: 'community-low-funds',
+            communityAddress: community.contractAddress,
         },
-    }
+    };
     // Create the messages that you want to send to clients
     let messages: ExpoPushMessage[] = [];
     for (let pushToken of backersPushTokens) {
@@ -64,15 +72,17 @@ export async function notifyBackersCommunityLowFunds(community: ICommunityInfo, 
 
         // Check that all your push tokens appear to be valid Expo push tokens
         if (!Expo.isExpoPushToken(pushToken)) {
-            Logger.debug(`Push token ${pushToken} is not a valid Expo push token`);
+            Logger.debug(
+                `Push token ${pushToken} is not a valid Expo push token`
+            );
             continue;
         }
 
         // Construct a message (see https://docs.expo.io/push-notifications/sending-notifications/)
         messages.push({
             to: pushToken,
-            ...basePushMessage
-        })
+            ...basePushMessage,
+        });
     }
 
     // The Expo push notification service accepts batches of notifications so
@@ -100,29 +110,42 @@ export async function notifyBackersCommunityLowFunds(community: ICommunityInfo, 
     }
 }
 
-export async function notifyBeneficiaryAdded(userAddress: string, communityAddress: string): Promise<boolean> {
+export async function notifyBeneficiaryAdded(
+    userAddress: string,
+    communityAddress: string
+): Promise<boolean> {
     return await sendPushNotification(
         userAddress,
         'Welcome',
-        'You\'ve been added as a beneficiary!',
+        "You've been added as a beneficiary!",
         {
-            action: "beneficiary-added",
+            action: 'beneficiary-added',
             communityAddress,
-        });
+        }
+    );
 }
 
-export async function notifyManagerAdded(managerAddress: string, communityAddress: string): Promise<boolean> {
+export async function notifyManagerAdded(
+    managerAddress: string,
+    communityAddress: string
+): Promise<boolean> {
     return await sendPushNotification(
         managerAddress,
         'Community Accepted',
         'Your community was accepted!',
         {
-            action: "community-accepted",
+            action: 'community-accepted',
             communityAddress,
-        });
+        }
+    );
 }
 
-export async function sendPushNotification(userAddress: string, title: string, body: string, data: any): Promise<boolean> {
+export async function sendPushNotification(
+    userAddress: string,
+    title: string,
+    body: string,
+    data: any
+): Promise<boolean> {
     const user = await UserService.get(userAddress);
     if (user !== null) {
         const message = {
@@ -130,25 +153,33 @@ export async function sendPushNotification(userAddress: string, title: string, b
             sound: 'default',
             title,
             body,
-            color: "#2400ff",
+            color: '#2400ff',
             data,
         };
         try {
             // handle success
             const requestHeaders = {
                 headers: {
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                     'Accept-encoding': 'gzip, deflate',
                     'Content-Type': 'application/json',
-                }
+                },
             };
-            const result = await axios.post('https://exp.host/--/api/v2/push/send', JSON.stringify(message), requestHeaders);
+            const result = await axios.post(
+                'https://exp.host/--/api/v2/push/send',
+                JSON.stringify(message),
+                requestHeaders
+            );
             return result.status === 200 ? true : false;
         } catch (error) {
-            Logger.error('Couldn\'t send notification ' + error + ' with request ' + message);
+            Logger.error(
+                "Couldn't send notification " +
+                    error +
+                    ' with request ' +
+                    message
+            );
             return false;
         }
     }
     return false;
 }
-

@@ -15,38 +15,37 @@ export default (app: Router): void => {
     route.get(
         '/address/:contractAddress',
         async (req: Request, res: Response) => {
-            const community = await CommunityService.findByContractAddress(req.params.contractAddress);
+            const community = await CommunityService.findByContractAddress(
+                req.params.contractAddress
+            );
             if (community === null) {
                 res.sendStatus(404);
             }
             res.send(community);
-        },
+        }
     );
 
-    route.get(
-        '/id/:publicId',
-        async (req: Request, res: Response) => {
-            const community = await CommunityService.findByPublicId(req.params.publicId)
-            if (community === null) {
-                res.sendStatus(404);
-            }
-            res.send(community);
-        },
-    );
+    route.get('/id/:publicId', async (req: Request, res: Response) => {
+        const community = await CommunityService.findByPublicId(
+            req.params.publicId
+        );
+        if (community === null) {
+            res.sendStatus(404);
+        }
+        res.send(community);
+    });
 
-    route.get(
-        '/all/:status',
-        async (req: Request, res: Response) => {
-            res.send(await CommunityService.getAll(req.params.status));
-        },
-    );
+    route.get('/all/:status', async (req: Request, res: Response) => {
+        res.send(await CommunityService.getAll(req.params.status));
+    });
 
-    route.get(
-        '/getnames/:addresses',
-        async (req: Request, res: Response) => {
-            res.send(await CommunityService.getNamesAndFromAddresses(req.params.addresses.split(';')));
-        },
-    );
+    route.get('/getnames/:addresses', async (req: Request, res: Response) => {
+        res.send(
+            await CommunityService.getNamesAndFromAddresses(
+                req.params.addresses.split(';')
+            )
+        );
+    });
 
     route.post(
         '/create',
@@ -99,7 +98,7 @@ export default (app: Router): void => {
                     maxClaim: txCreationObj._maxClaim,
                     baseInterval: txCreationObj._baseInterval,
                     incrementInterval: txCreationObj._incrementInterval,
-                }
+                };
             }
             let community: Community | undefined = undefined;
             try {
@@ -116,7 +115,7 @@ export default (app: Router): void => {
                     email,
                     coverImage,
                     txReceipt,
-                    _contractParams,
+                    _contractParams
                 );
             } catch (e) {
                 Logger.error(e);
@@ -124,7 +123,7 @@ export default (app: Router): void => {
             } finally {
                 res.status(returningStatus).send(community);
             }
-        },
+        }
     );
 
     route.post(
@@ -174,7 +173,7 @@ export default (app: Router): void => {
                     maxClaim: txCreationObj.maxClaim,
                     baseInterval: txCreationObj.baseInterval,
                     incrementInterval: txCreationObj.incrementInterval,
-                }
+                };
             }
             let community: Community | undefined = undefined;
             try {
@@ -189,7 +188,7 @@ export default (app: Router): void => {
                     gps,
                     email,
                     coverImage,
-                    _contractParams,
+                    _contractParams
                 );
             } catch (e) {
                 Logger.error(e);
@@ -197,7 +196,7 @@ export default (app: Router): void => {
             } finally {
                 res.status(returningStatus).send(community);
             }
-        },
+        }
     );
 
     route.post(
@@ -240,10 +239,18 @@ export default (app: Router): void => {
             try {
                 // TODO: verify if userAddress is manager of this community
                 // the sender must be a manager
-                const communityToManager = await TransactionsService.findComunityToManager((req as any).user);
+                const communityToManager = await TransactionsService.findComunityToManager(
+                    (req as any).user
+                );
                 if (communityToManager !== null) {
-                    const community = await CommunityService.findByPublicId(publicId);
-                    if (community !== null && community.contractAddress === communityToManager.contractAddress) {
+                    const community = await CommunityService.findByPublicId(
+                        publicId
+                    );
+                    if (
+                        community !== null &&
+                        community.contractAddress ===
+                            communityToManager.contractAddress
+                    ) {
                         await CommunityService.edit(
                             publicId,
                             name,
@@ -254,7 +261,7 @@ export default (app: Router): void => {
                             gps,
                             email,
                             visibility,
-                            coverImage,
+                            coverImage
                         );
                         returningStatus = 200;
                     }
@@ -265,7 +272,7 @@ export default (app: Router): void => {
             } finally {
                 res.sendStatus(returningStatus);
             }
-        },
+        }
     );
 
     // TODO: add verification (not urgent, as it highly depends on the contract transaction)
@@ -282,10 +289,11 @@ export default (app: Router): void => {
                 acceptanceTransaction, // the address accepting the request (must be admin)
                 publicId,
             } = req.body;
-            res.sendStatus(await CommunityService.accept(
-                acceptanceTransaction,
-                publicId,
-            ) ? 202 : 403);
-        },
+            res.sendStatus(
+                (await CommunityService.accept(acceptanceTransaction, publicId))
+                    ? 202
+                    : 403
+            );
+        }
     );
 };

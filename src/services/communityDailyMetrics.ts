@@ -4,16 +4,14 @@ import { ICommunityMetrics } from '../types';
 import { median } from 'mathjs';
 import { Community } from '../db/models/community';
 
-
 export default class CommunityDailyMetricsService {
-
     public static async add(
         communityId: string,
         ssiDayAlone: number,
         ssi: number,
         ubiRate: number,
         estimatedDuration: number,
-        date: Date,
+        date: Date
     ): Promise<CommunityDailyMetrics> {
         return await CommunityDailyMetrics.create({
             communityId,
@@ -25,40 +23,43 @@ export default class CommunityDailyMetricsService {
         });
     }
 
-    public static async getLastMetrics(communityId: string): Promise<ICommunityMetrics | undefined> {
+    public static async getLastMetrics(
+        communityId: string
+    ): Promise<ICommunityMetrics | undefined> {
         const historical = (await CommunityDailyMetrics.findAll({
-            attributes: [
-                'ssi',
-            ],
+            attributes: ['ssi'],
             where: {
                 communityId,
             },
             order: [['date', 'DESC']],
             limit: 15,
         })) as any[];
-        if (historical.length < 5) { // at least 5 days until showing data
+        if (historical.length < 5) {
+            // at least 5 days until showing data
             return undefined;
         }
-        const lastMetrics = (await CommunityDailyMetrics.findAll({
-            attributes: [
-                'ssiDayAlone',
-                'ssi',
-                'ubiRate',
-                'estimatedDuration'
-            ],
-            where: {
-                communityId,
-            },
-            order: [['date', 'DESC']],
-            limit: 1,
-        }))[0] as any;
+        const lastMetrics = (
+            await CommunityDailyMetrics.findAll({
+                attributes: [
+                    'ssiDayAlone',
+                    'ssi',
+                    'ubiRate',
+                    'estimatedDuration',
+                ],
+                where: {
+                    communityId,
+                },
+                order: [['date', 'DESC']],
+                limit: 1,
+            })
+        )[0] as any;
         return {
             historicalSSI: historical.map((h) => h.ssi),
             ssiDayAlone: lastMetrics.ssiDayAlone,
             ssi: lastMetrics.ssi,
             ubiRate: lastMetrics.ubiRate,
             estimatedDuration: lastMetrics.estimatedDuration,
-        }
+        };
     }
 
     public static async getSSILast4Days(): Promise<Map<string, number[]>> {
@@ -73,8 +74,8 @@ export default class CommunityDailyMetricsService {
                 date: {
                     [Op.lt]: todayMidnightTime,
                     [Op.gte]: fiveDaysAgo,
-                }
-            }
+                },
+            },
         });
         for (let index = 0; index < raw.length; index++) {
             const element = raw[index];
@@ -101,36 +102,47 @@ export default class CommunityDailyMetricsService {
         const fiveDaysAgo = new Date(new Date().getTime() - 432000000);
         fiveDaysAgo.setHours(0, 0, 0, 0);
 
-        const onlyPublicValidCommunities = (await Community.findAll({
-            attributes: ['publicId'],
-            where: {
-                visibility: 'public',
-                status: 'valid',
-                started: {
-                    [Op.lt]: fiveDaysAgo,
-                }
-            }
-        })).map((c) => c.publicId);
+        const onlyPublicValidCommunities = (
+            await Community.findAll({
+                attributes: ['publicId'],
+                where: {
+                    visibility: 'public',
+                    status: 'valid',
+                    started: {
+                        [Op.lt]: fiveDaysAgo,
+                    },
+                },
+            })
+        ).map((c) => c.publicId);
 
         // TODO: only communities with more that 5 days
-        const medianSSI = median((await CommunityDailyMetrics.findAll({
-            attributes: ['ssi'],
-            where: {
-                date: yesterdayDateOnly,
-                communityId: { [Op.in]: onlyPublicValidCommunities },
-            }
-        })).map((m) => m.ssi));
+        const medianSSI = median(
+            (
+                await CommunityDailyMetrics.findAll({
+                    attributes: ['ssi'],
+                    where: {
+                        date: yesterdayDateOnly,
+                        communityId: { [Op.in]: onlyPublicValidCommunities },
+                    },
+                })
+            ).map((m) => m.ssi)
+        );
 
-        const raw = (await CommunityDailyMetrics.findAll({
-            attributes: [
-                [fn('avg', col('ubiRate')), 'avgUbiRate'],
-                [fn('avg', col('estimatedDuration')), 'avgEstimatedDuration'],
-            ],
-            where: {
-                date: yesterdayDateOnly,
-                communityId: { [Op.in]: onlyPublicValidCommunities },
-            }
-        }))[0];
+        const raw = (
+            await CommunityDailyMetrics.findAll({
+                attributes: [
+                    [fn('avg', col('ubiRate')), 'avgUbiRate'],
+                    [
+                        fn('avg', col('estimatedDuration')),
+                        'avgEstimatedDuration',
+                    ],
+                ],
+                where: {
+                    date: yesterdayDateOnly,
+                    communityId: { [Op.in]: onlyPublicValidCommunities },
+                },
+            })
+        )[0];
         return {
             medianSSI,
             avgUbiRate: parseFloat((raw as any).avgUbiRate),

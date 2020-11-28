@@ -8,12 +8,11 @@ import BeneficiaryService from './beneficiary';
 import ManagerService from './managers';
 import { Op } from 'sequelize';
 
-
 export default class UserService {
     public static async auth(
         address: string,
         language: string,
-        pushNotificationsToken: string,
+        pushNotificationsToken: string
     ): Promise<IUserWelcomeAuth | undefined> {
         try {
             const token = generateAccessToken(address);
@@ -28,7 +27,7 @@ export default class UserService {
             } else {
                 await User.update(
                     { pushNotificationsToken },
-                    { where: { address } },
+                    { where: { address } }
                 );
             }
             const welcomeUser = await UserService.welcome(address, user);
@@ -37,7 +36,7 @@ export default class UserService {
             }
             return {
                 token,
-                ...welcomeUser
+                ...welcomeUser,
             };
         } catch (e) {
             Logger.warning('Error while auth user ', address, e.message);
@@ -61,16 +60,24 @@ export default class UserService {
         let isBeneficiary = false;
         let isManager = false;
         if (beneficiary !== null) {
-            community = await CommunityService.findByPublicId(beneficiary.communityId);
+            community = await CommunityService.findByPublicId(
+                beneficiary.communityId
+            );
             isBeneficiary = true;
         }
         if (manager !== null) {
-            community = await CommunityService.findByPublicId(manager.communityId);
+            community = await CommunityService.findByPublicId(
+                manager.communityId
+            );
             isManager = true;
         } else {
-            const rawCommunity = await CommunityService.findByFirstManager(user.address);
+            const rawCommunity = await CommunityService.findByFirstManager(
+                user.address
+            );
             if (rawCommunity !== null) {
-                community = await CommunityService.findByPublicId(rawCommunity.publicId);
+                community = await CommunityService.findByPublicId(
+                    rawCommunity.publicId
+                );
                 isManager = true;
             }
         }
@@ -89,7 +96,7 @@ export default class UserService {
     ): Promise<boolean> {
         const updated = await User.update(
             { username },
-            { returning: true, where: { address } },
+            { returning: true, where: { address } }
         );
         return updated[0] > 0;
     }
@@ -100,7 +107,7 @@ export default class UserService {
     ): Promise<boolean> {
         const updated = await User.update(
             { currency },
-            { returning: true, where: { address } },
+            { returning: true, where: { address } }
         );
         return updated[0] > 0;
     }
@@ -111,7 +118,7 @@ export default class UserService {
     ): Promise<boolean> {
         const updated = await User.update(
             { pushNotificationToken },
-            { returning: true, where: { address } },
+            { returning: true, where: { address } }
         );
         return updated[0] > 0;
     }
@@ -122,7 +129,7 @@ export default class UserService {
     ): Promise<boolean> {
         const updated = await User.update(
             { language },
-            { returning: true, where: { address } },
+            { returning: true, where: { address } }
         );
         return updated[0] > 0;
     }
@@ -132,13 +139,17 @@ export default class UserService {
     }
 
     public static async getAllAddresses(): Promise<string[]> {
-        return (await User.findAll({ attributes: ['address'] })).map((u) => u.address);
+        return (await User.findAll({ attributes: ['address'] })).map(
+            (u) => u.address
+        );
     }
 
-    public static async getPushTokensFromAddresses(addresses: string[]): Promise<string[]> {
+    public static async getPushTokensFromAddresses(
+        addresses: string[]
+    ): Promise<string[]> {
         const users = await User.findAll({
             attributes: ['pushNotificationToken'],
-            where: { address: { [Op.in]: addresses } }
+            where: { address: { [Op.in]: addresses } },
         });
         return users.map((u) => u.pushNotificationToken);
     }

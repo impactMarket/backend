@@ -1,6 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-
 export class ExchangeRates extends Model {
     public currency!: string;
     public rate!: number;
@@ -11,27 +10,30 @@ export class ExchangeRates extends Model {
 }
 
 export function initializeExchangeRates(sequelize: Sequelize): void {
-    return ExchangeRates.init({
-        currency: {
-            type: DataTypes.STRING(5),
-            primaryKey: true,
-            unique: true,
-            allowNull: false
+    return ExchangeRates.init(
+        {
+            currency: {
+                type: DataTypes.STRING(5),
+                primaryKey: true,
+                unique: true,
+                allowNull: false,
+            },
+            rate: {
+                type: DataTypes.FLOAT,
+                allowNull: false,
+            },
+            createdAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
+            updatedAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
         },
-        rate: {
-            type: DataTypes.FLOAT,
-            allowNull: false
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
+        {
+            tableName: 'exchangerates',
+            sequelize: sequelize, // this bit is important
         }
-    }, {
-        tableName: 'exchangerates',
-        sequelize: sequelize, // this bit is important
-    });
+    );
 }

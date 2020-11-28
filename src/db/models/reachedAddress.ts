@@ -1,6 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-
 export class ReachedAddress extends Model {
     public address!: string;
     public lastInteraction!: Date;
@@ -11,27 +10,30 @@ export class ReachedAddress extends Model {
 }
 
 export function initializeReachedAddress(sequelize: Sequelize): void {
-    return ReachedAddress.init({
-        address: {
-            type: DataTypes.STRING(44),
-            allowNull: false,
-            unique: true,
-            primaryKey: true,
+    return ReachedAddress.init(
+        {
+            address: {
+                type: DataTypes.STRING(44),
+                allowNull: false,
+                unique: true,
+                primaryKey: true,
+            },
+            lastInteraction: {
+                type: DataTypes.DATEONLY,
+                allowNull: false,
+            },
+            createdAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
+            updatedAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
         },
-        lastInteraction: {
-            type: DataTypes.DATEONLY,
-            allowNull: false,
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
+        {
+            tableName: 'reachedaddress',
+            sequelize: sequelize, // this bit is important
         }
-    }, {
-        tableName: 'reachedaddress',
-        sequelize: sequelize, // this bit is important
-    });
+    );
 }

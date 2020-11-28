@@ -1,26 +1,15 @@
-import {
-    Router,
-    Request,
-    Response,
-} from 'express';
+import { Router, Request, Response } from 'express';
 import ClaimLocationService from '../services/claimLocation';
-import {
-    celebrate,
-    Joi
-} from 'celebrate';
+import { celebrate, Joi } from 'celebrate';
 import { authenticateToken } from '../middlewares';
-
 
 const route = Router();
 
 export default (app: Router): void => {
     app.use('/claim-location', route);
-    route.get(
-        '/',
-        async (req: Request, res: Response) => {
-            res.send(await ClaimLocationService.getAll());
-        },
-    );
+    route.get('/', async (req: Request, res: Response) => {
+        res.send(await ClaimLocationService.getAll());
+    });
 
     route.post(
         '/',
@@ -47,10 +36,9 @@ export default (app: Router): void => {
             } else {
                 _communityId = communityId;
             }
-            res.sendStatus(await ClaimLocationService.add(
-                _communityId,
-                gps,
-            ) ? 200 : 404);
-        },
+            res.sendStatus(
+                (await ClaimLocationService.add(_communityId, gps)) ? 200 : 404
+            );
+        }
     );
 };

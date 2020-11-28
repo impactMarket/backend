@@ -1,14 +1,14 @@
-import jwt from "jsonwebtoken";
-import {
-    Response,
-    NextFunction,
-    Request,
-} from 'express';
-import config from "../config";
+import jwt from 'jsonwebtoken';
+import { Response, NextFunction, Request } from 'express';
+import config from '../config';
 import Logger from '../loaders/logger';
-import { RequestWithUser, UserInRequest } from "../types";
+import { RequestWithUser, UserInRequest } from '../types';
 
-export function authenticateToken(req: Request, res: Response, next: NextFunction): void {
+export function authenticateToken(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): void {
     // Gather the jwt access token from the request header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -39,5 +39,8 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
 }
 
 export function generateAccessToken(userAddress: string): string {
-    return jwt.sign({ address: userAddress, masterKey: config.masterKey } as UserInRequest, config.jwtSecret);
+    return jwt.sign(
+        { address: userAddress, masterKey: config.masterKey } as UserInRequest,
+        config.jwtSecret
+    );
 }

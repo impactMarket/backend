@@ -1,6 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-
 export class NotifiedBacker extends Model {
     public id!: number;
     public backer!: string;
@@ -13,34 +12,37 @@ export class NotifiedBacker extends Model {
 }
 
 export function initializeNotifiedBacker(sequelize: Sequelize): void {
-    return NotifiedBacker.init({
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
+    return NotifiedBacker.init(
+        {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+            },
+            backer: {
+                type: DataTypes.STRING(44),
+                allowNull: false,
+            },
+            communityId: {
+                type: DataTypes.STRING(44),
+                allowNull: false,
+            },
+            at: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
+            createdAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
+            updatedAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
         },
-        backer: {
-            type: DataTypes.STRING(44),
-            allowNull: false,
-        },
-        communityId: {
-            type: DataTypes.STRING(44),
-            allowNull: false,
-        },
-        at: {
-            type: DataTypes.DATE,
-            allowNull: false,
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            allowNull: false,
+        {
+            tableName: 'notifiedbacker',
+            sequelize: sequelize, // this bit is important
         }
-    }, {
-        tableName: 'notifiedbacker',
-        sequelize: sequelize, // this bit is important
-    });
+    );
 }

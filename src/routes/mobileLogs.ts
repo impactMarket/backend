@@ -1,6 +1,4 @@
-import {
-    Router,
-} from 'express';
+import { Router } from 'express';
 import aws from 'aws-sdk';
 import Logger from '../loaders/logger';
 import config from '../config';
@@ -22,11 +20,14 @@ export default (app: Router): void => {
             ACL: 'public-read',
             Bucket: config.aws.bucketLogs,
             Body: Buffer.from(req.body.logs),
-            Key: Date.now() + Math.random() + '.txt'
+            Key: Date.now() + Math.random() + '.txt',
         };
         s3.upload(params, (err, data) => {
             if (err) {
-                Logger.error('Error occured while trying to upload to S3 bucket', err);
+                Logger.error(
+                    'Error occured while trying to upload to S3 bucket',
+                    err
+                );
                 res.sendStatus(400);
             }
             if (data) {

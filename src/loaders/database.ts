@@ -3,9 +3,11 @@ import config from '../config';
 import initModels from '../db/models';
 import Logger from '../loaders/logger';
 
-
 export default async (): Promise<Sequelize> => {
-    let logging: boolean | ((sql: string, timing?: number | undefined) => void) | undefined;
+    let logging:
+        | boolean
+        | ((sql: string, timing?: number | undefined) => void)
+        | undefined;
     if (process.env.NODE_ENV === 'development') {
         logging = (msg) => false;
     } else {

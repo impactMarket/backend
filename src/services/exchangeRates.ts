@@ -1,7 +1,6 @@
 import { ExchangeRates } from '../db/models/exchangeRates';
 
 export default class ExchangeRatesService {
-
     public static async get(): Promise<any> {
         const previousRates = await ExchangeRates.findAll();
         let mapRates = {};
@@ -9,35 +8,35 @@ export default class ExchangeRatesService {
             mapRates[previousRates[index].currency] = previousRates[index].rate;
         }
         const rates = {
-            "EUR": {
+            EUR: {
                 name: 'Euro',
                 rate: mapRates['EUR'],
             },
-            "USD": {
+            USD: {
                 name: 'American Dollar',
                 rate: 1,
             },
-            "BRL": {
+            BRL: {
                 name: 'Real Brasileiro',
                 rate: mapRates['BRL'],
             },
-            "GHS": {
+            GHS: {
                 name: 'Ghanaian Cedi',
                 rate: mapRates['GHS'],
             },
-            "CVE": {
+            CVE: {
                 name: 'Escudo Cabo Verde',
                 rate: mapRates['CVE'],
             },
-            "NGN": {
+            NGN: {
                 name: 'Nigerian Naira',
                 rate: mapRates['NGN'],
             },
-            "ARS": {
+            ARS: {
                 name: 'Peso Argentino',
                 rate: mapRates['ARS'],
             },
-            "VES": {
+            VES: {
                 name: 'Bolívar Venezuelano',
                 rate: mapRates['VES'],
             },

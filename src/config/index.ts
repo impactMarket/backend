@@ -63,7 +63,10 @@ export default {
     /**
      * Contract Address to use in dev
      */
-    impactMarketContractBlockNumber: parseInt(process.env.IMPACT_MARKET_CONTRACT_BLOCK!, 10),
+    impactMarketContractBlockNumber: parseInt(
+        process.env.IMPACT_MARKET_CONTRACT_BLOCK!,
+        10
+    ),
 
     /**
      * Used to query
@@ -103,7 +106,7 @@ export default {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
         region: 'eu-west-3',
         picturesBucket: process.env.AWS_BUCKET!,
-        bucketLogs: process.env.AWS_BUKET_LOGS!
+        bucketLogs: process.env.AWS_BUKET_LOGS!,
     },
 
     /**
@@ -111,6 +114,6 @@ export default {
      */
     mobileVersion: {
         latest: process.env.LATEST_MOBILE_APP_VERSION!,
-        minimal: process.env.MINIMAL_MOBILE_APP_VERSION!
+        minimal: process.env.MINIMAL_MOBILE_APP_VERSION!,
     },
 };

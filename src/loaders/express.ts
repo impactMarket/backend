@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import routes from '../routes';
 import config from '../config';
 import Logger, { LoggerStream } from '../loaders/logger';
-import * as Sentry from "@sentry/node";
+import * as Sentry from '@sentry/node';
 
 export default ({ app }: { app: express.Application }): void => {
     /**
@@ -39,7 +39,10 @@ export default ({ app }: { app: express.Application }): void => {
     app.use(cors());
     app.use((req, res, next) => {
         res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+        res.header(
+            'Access-Control-Allow-Headers',
+            'Origin, X-Requested-With, Content-Type, Accept'
+        );
         next();
     });
 
@@ -59,10 +62,7 @@ export default ({ app }: { app: express.Application }): void => {
     /// error handlers
     app.use((err: any, req: Request, res: Response) => {
         if (err.name === 'UnauthorizedError') {
-            res
-                .status(err.status)
-                .send({ message: err.message })
-                .end();
+            res.status(err.status).send({ message: err.message }).end();
         }
         res.status(err.status || 500).json({
             errors: {

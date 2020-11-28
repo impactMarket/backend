@@ -2,14 +2,11 @@ import moment from 'moment';
 import { Op } from 'sequelize';
 import { NotifiedBacker } from '../db/models/notifiedBacker';
 
-
 export default class NotifiedBackerService {
-
     public static async add(
         addresses: string[],
         communityId: string
     ): Promise<string[]> {
-
         const allNotifiedBackers = await NotifiedBacker.findAll({
             where: {
                 backer: { [Op.in]: addresses },
@@ -31,13 +28,16 @@ export default class NotifiedBackerService {
             return arrayOriginal.filter((a) => {
                 return !hash[a] || (hash[a]--, false);
             });
-        }
-        const neverNotifiedBackers = subtract(addresses, longNotifiedBackers.concat(recentlyNotifiedBackers));
+        };
+        const neverNotifiedBackers = subtract(
+            addresses,
+            longNotifiedBackers.concat(recentlyNotifiedBackers)
+        );
         neverNotifiedBackers.forEach((b) => {
             NotifiedBacker.create({
                 backer: b,
                 communityId,
-                at: new Date()
+                at: new Date(),
             });
         });
         longNotifiedBackers.forEach((b) => {
@@ -46,9 +46,10 @@ export default class NotifiedBackerService {
                 {
                     where: {
                         backer: b,
-                        communityId
-                    }
-                });
+                        communityId,
+                    },
+                }
+            );
         });
         return neverNotifiedBackers.concat(longNotifiedBackers);
     }

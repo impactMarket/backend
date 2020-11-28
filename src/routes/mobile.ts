@@ -1,6 +1,4 @@
-import {
-    Router,
-} from 'express';
+import { Router } from 'express';
 import aws from 'aws-sdk';
 import Logger from '../loaders/logger';
 import Joi from '@hapi/joi';
@@ -25,11 +23,14 @@ export default (app: Router): void => {
             ACL: 'public-read',
             Bucket: config.aws.bucketLogs,
             Body: Buffer.from(req.body.logs),
-            Key: Date.now() + Math.random() + '.txt'
+            Key: Date.now() + Math.random() + '.txt',
         };
         s3.upload(params, (err, data) => {
             if (err) {
-                Logger.error('Error occured while trying to upload to S3 bucket', err);
+                Logger.error(
+                    'Error occured while trying to upload to S3 bucket',
+                    err
+                );
                 res.sendStatus(400);
             }
             if (data) {
@@ -46,7 +47,8 @@ export default (app: Router): void => {
         });
     });
 
-    route.post('/error',
+    route.post(
+        '/error',
         celebrate({
             body: Joi.object({
                 version: Joi.string().optional(), // if not logged-in
@@ -56,18 +58,14 @@ export default (app: Router): void => {
             }),
         }),
         (req, res) => {
-            const {
-                version,
-                address,
-                action,
-                error
-            } = req.body;
+            const { version, address, action, error } = req.body;
             MobileError.create({
                 version,
                 address,
                 action,
-                error
+                error,
             });
             res.sendStatus(200);
-        });
+        }
+    );
 };

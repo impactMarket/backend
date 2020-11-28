@@ -1,11 +1,10 @@
 import { Agenda } from '../db/models/agenda';
 
-
 export default class AgendaService {
     public static async add(
         when: Date,
         action: string,
-        data: any,
+        data: any
     ): Promise<Agenda> {
         return Agenda.create({
             when,

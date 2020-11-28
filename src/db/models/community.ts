@@ -1,7 +1,6 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 import { ICommunityVars } from '../../types';
 
-
 export class Community extends Model {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public publicId!: string;
@@ -30,96 +29,98 @@ export class Community extends Model {
     public readonly updatedAt!: Date;
 }
 
-
 export function initializeCommunity(sequelize: Sequelize): void {
-    Community.init({
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
+    Community.init(
+        {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+            },
+            publicId: {
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
+                unique: true,
+                allowNull: false,
+            },
+            requestByAddress: {
+                type: DataTypes.STRING(44),
+                unique: true,
+                allowNull: false,
+            },
+            contractAddress: {
+                type: DataTypes.STRING(44),
+            },
+            name: {
+                type: DataTypes.STRING(64),
+                allowNull: false,
+            },
+            description: {
+                type: DataTypes.STRING(1024),
+                allowNull: false,
+            },
+            descriptionEn: {
+                type: DataTypes.STRING(1024),
+                allowNull: true,
+            },
+            language: {
+                type: DataTypes.STRING(8),
+                defaultValue: 'en',
+                allowNull: false,
+            },
+            currency: {
+                type: DataTypes.STRING(4),
+                defaultValue: 'USD',
+                allowNull: false,
+            },
+            city: {
+                type: DataTypes.STRING(64),
+                allowNull: false,
+            },
+            country: {
+                type: DataTypes.STRING(64),
+                allowNull: false,
+            },
+            gps: {
+                type: DataTypes.JSON,
+                allowNull: false,
+            },
+            email: {
+                type: DataTypes.STRING(64),
+                allowNull: false,
+            },
+            visibility: {
+                type: DataTypes.ENUM('public', 'private'),
+                allowNull: false,
+            },
+            coverImage: {
+                type: DataTypes.STRING(128),
+                allowNull: false,
+            },
+            status: {
+                type: DataTypes.ENUM('pending', 'valid', 'removed'),
+                allowNull: false,
+            },
+            txCreationObj: {
+                type: DataTypes.JSON,
+            },
+            started: {
+                type: DataTypes.DATEONLY,
+                allowNull: false,
+            },
+            createdAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
+            updatedAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
         },
-        publicId: {
-            type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
-            unique: true,
-            allowNull: false,
-        },
-        requestByAddress: {
-            type: DataTypes.STRING(44),
-            unique: true,
-            allowNull: false,
-        },
-        contractAddress: {
-            type: DataTypes.STRING(44),
-        },
-        name: {
-            type: DataTypes.STRING(64),
-            allowNull: false
-        },
-        description: {
-            type: DataTypes.STRING(1024),
-            allowNull: false
-        },
-        descriptionEn: {
-            type: DataTypes.STRING(1024),
-            allowNull: true
-        },
-        language: {
-            type: DataTypes.STRING(8),
-            defaultValue: 'en',
-            allowNull: false
-        },
-        currency: {
-            type: DataTypes.STRING(4),
-            defaultValue: 'USD',
-            allowNull: false
-        },
-        city: {
-            type: DataTypes.STRING(64),
-            allowNull: false
-        },
-        country: {
-            type: DataTypes.STRING(64),
-            allowNull: false
-        },
-        gps: {
-            type: DataTypes.JSON,
-            allowNull: false
-        },
-        email: {
-            type: DataTypes.STRING(64),
-            allowNull: false
-        },
-        visibility: {
-            type: DataTypes.ENUM('public', 'private'),
-            allowNull: false
-        },
-        coverImage: {
-            type: DataTypes.STRING(128),
-            allowNull: false
-        },
-        status: {
-            type: DataTypes.ENUM('pending', 'valid', 'removed'),
-            allowNull: false
-        },
-        txCreationObj: {
-            type: DataTypes.JSON
-        },
-        started: {
-            type: DataTypes.DATEONLY,
-            allowNull: false
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            allowNull: false
+        {
+            tableName: 'community',
+            sequelize: sequelize, // this bit is important
         }
-    }, {
-        tableName: 'community',
-        sequelize: sequelize, // this bit is important
-    });
+    );
     return;
 }

@@ -1,4 +1,4 @@
-import { Request } from "express";
+import { Request } from 'express';
 
 export interface UserInRequest {
     address: string;
@@ -63,8 +63,8 @@ export interface ICommunityInfo extends ICommunity {
      * @deprecated
      */
     ssi: {
-        dates: Date[],
-        values: number[],
+        dates: Date[];
+        values: number[];
     };
     /**
      * @deprecated
@@ -94,10 +94,10 @@ export interface ICommunityVars {
 }
 
 export interface ICommunityContractParams {
-    claimAmount: string,
-    maxClaim: string,
-    baseInterval: number,
-    incrementInterval: number,
+    claimAmount: string;
+    maxClaim: string;
+    baseInterval: number;
+    incrementInterval: number;
 }
 
 export interface ICommunityInfoBeneficiary {
@@ -167,10 +167,10 @@ export interface IUserTxAPI {
  * @deprecated
  */
 export interface IGlobalStatus {
-    totalRaised: string,
-    totalDistributed: string,
-    totalBeneficiaries: string,
-    totalClaims: string,
+    totalRaised: string;
+    totalDistributed: string;
+    totalBeneficiaries: string;
+    totalClaims: string;
 }
 
 /**
@@ -190,7 +190,7 @@ export interface IGlobalInflowStatus {
 }
 
 export enum AgendaAction {
-    notification = 'notification'
+    notification = 'notification',
 }
 
 /**
@@ -200,5 +200,5 @@ export enum GlobalDataTypeEnum {
     totalRaised = 'totalraised',
     totalDistributed = 'totaldistributed',
     totalBeneficiaries = 'totalbeneficiaries',
-    totalClaims = 'totalclaims'
+    totalClaims = 'totalclaims',
 }
