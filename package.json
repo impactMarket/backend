@@ -23,7 +23,7 @@
     },
     "homepage": "https://github.com/impactMarket/api#readme",
     "engines": {
-        "node": "12.18.3"
+        "node": "14.15.1"
     },
     "dependencies": {
         "@sentry/node": "5.27.6",
