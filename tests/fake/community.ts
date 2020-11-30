@@ -1,16 +1,18 @@
+export const nowTimestamp = new Date().getTime();
+
 export const communityIds = [
     // more than 30 days, fully running
     'c77a15a7-2cef-4d1e-96db-afd0b91ab71d',
     'b090d41f-91c0-4f18-a809-633217590bbb',
     'a3b4ad6e-dc8e-4861-b5b2-c1973907c515',
-    // running for less that 30 days, fully running
-    'ffb2fa59-78c6-4378-82a8-2a28f9056c3d',
-    'ff629eac-1669-4b30-a9cd-793e62052d73',
-    'fa12164c-3039-47e1-9005-aaad668215ee',
-    // no beneficiaries
-    '2c0f816e-3475-4d4a-847f-13fb141993f6',
-    // beneficiaries and no claims
-    'e3d59aaa-bcde-420f-88c5-77d21367fd28',
+    // // running for less that 30 days, fully running
+    // 'ffb2fa59-78c6-4378-82a8-2a28f9056c3d',
+    // 'ff629eac-1669-4b30-a9cd-793e62052d73',
+    // 'fa12164c-3039-47e1-9005-aaad668215ee',
+    // // no beneficiaries
+    // '2c0f816e-3475-4d4a-847f-13fb141993f6',
+    // // beneficiaries and no claims
+    // 'e3d59aaa-bcde-420f-88c5-77d21367fd28',
 ];
 
 export const totalClaimedLast30Days = new Map<string, string>();
@@ -56,7 +58,7 @@ export const validNonEmptyMonthLongCommunities: any[] = [
             baseInterval: 86400,
             incrementInterval: 600,
         },
-        started: new Date(new Date().getTime() - 4752000000), // 55×24×60×60×1000
+        started: new Date(nowTimestamp - 4752000000), // 55×24×60×60×1000
     },
     {
         publicId: 'b090d41f-91c0-4f18-a809-633217590bbb',
@@ -68,7 +70,7 @@ export const validNonEmptyMonthLongCommunities: any[] = [
             baseInterval: 86400,
             incrementInterval: 300,
         },
-        started: new Date(new Date().getTime() - 3888000000), // 45×24×60×60×1000
+        started: new Date(nowTimestamp - 3888000000), // 45×24×60×60×1000
     },
     {
         publicId: 'a3b4ad6e-dc8e-4861-b5b2-c1973907c515',
@@ -80,6 +82,6 @@ export const validNonEmptyMonthLongCommunities: any[] = [
             baseInterval: 86400,
             incrementInterval: 900,
         },
-        started: new Date(new Date().getTime() - 3542400000), // 41×24×60×60×1000
+        started: new Date(nowTimestamp - 3542400000), // 41×24×60×60×1000
     },
 ];
