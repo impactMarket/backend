@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import config from '../config';
-import Logger, { LoggerStream } from '../loaders/logger';
+import { LoggerStream } from '../loaders/logger';
 import routes from '../routes';
 
 export default ({ app }: { app: express.Application }): void => {

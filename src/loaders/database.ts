@@ -2,7 +2,7 @@ import { Sequelize, Options } from 'sequelize';
 
 import config from '../config';
 import initModels from '../db/models';
-import Logger from '../loaders/logger';
+import { Logger } from '../loaders/logger';
 
 export default async (): Promise<Sequelize> => {
     let logging:

@@ -19,7 +19,7 @@ import BeneficiaryService from '../services/beneficiary';
 import CommunityService from '../services/community';
 import CronJobExecutedService from '../services/cronJobExecuted';
 import ImMetadataService from '../services/imMetadata';
-import Logger from './logger';
+import { Logger } from './logger';
 
 export default async (): Promise<void> => {
     await cron();

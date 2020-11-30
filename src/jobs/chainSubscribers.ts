@@ -4,7 +4,7 @@ import config from '../config';
 import CommunityContractABI from '../contracts/CommunityABI.json';
 import ERC20ABI from '../contracts/ERC20ABI.json';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
-import Logger from '../loaders/logger';
+import { Logger } from '../loaders/logger';
 import BeneficiaryService from '../services/beneficiary';
 import BeneficiaryTransactionService from '../services/beneficiaryTransaction';
 import ClaimsService from '../services/claim';
@@ -30,7 +30,7 @@ function catchHandlerTransactionsService(error: any) {
 
 async function subscribeChainEvents(
     provider: ethers.providers.JsonRpcProvider,
-    communities: Map<string, string>,
+    communities: Map<string, string>, // <address, publicId>
     communitiesVisibility: Map<string, boolean>, // true if public community
     beneficiariesInPrivateCommunities: string[]
 ): Promise<void> {
@@ -157,13 +157,11 @@ async function subscribeChainEvents(
                 }
                 allBeneficiaryAddressses.push(beneficiaryAddress);
                 notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
-                getBlockTime(log.blockHash).then((txAt) =>
-                    BeneficiaryService.add(
-                        beneficiaryAddress,
-                        communityId!,
-                        txAt
-                    )
-                );
+                getBlockTime(log.blockHash).then((txAt) => BeneficiaryService.add(
+                    beneficiaryAddress,
+                    communityId!,
+                    txAt
+                ));
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
                 const beneficiaryAddress = parsedLog.args[0];
                 BeneficiaryService.remove(beneficiaryAddress);
@@ -260,7 +258,7 @@ async function subscribeChainEvents(
                                             communitiesVisibility.set(
                                                 communityAddress,
                                                 community.visibility ===
-                                                    'public'
+                                                'public'
                                             );
                                             allCommunities.set(
                                                 _communityAddress,
@@ -325,7 +323,7 @@ async function updateImpactMarketCache(
                 logsImpactMarket[index]
             );
             eventsImpactMarket.push(parsedLog);
-        } catch (e) {}
+        } catch (e) { }
     }
     const communitiesAdded = [] as IFilterCommunityTmpData[];
     for (let eim = 0; eim < eventsImpactMarket.length; eim += 1) {

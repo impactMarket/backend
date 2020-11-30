@@ -1,7 +1,7 @@
 import { celebrate, Joi } from 'celebrate';
 import { Router, Request, Response } from 'express';
 
-import Logger from '../loaders/logger';
+import { Logger } from '../loaders/logger';
 import { authenticateToken } from '../middlewares';
 import UserService from '../services/user';
 
@@ -78,7 +78,7 @@ export default (app: Router): void => {
         authenticateToken,
         celebrate({
             body: Joi.object({
-                address: Joi.string().required(),
+                address: Joi.string().required(), // TODO: make it optional
                 username: Joi.string().required().allow(''),
             }),
         }),
@@ -95,7 +95,7 @@ export default (app: Router): void => {
         authenticateToken,
         celebrate({
             body: Joi.object({
-                address: Joi.string().required(),
+                address: Joi.string().required(), // TODO: make it optional
                 currency: Joi.string().required(),
             }),
         }),
@@ -112,7 +112,7 @@ export default (app: Router): void => {
         authenticateToken,
         celebrate({
             body: Joi.object({
-                address: Joi.string().required(),
+                address: Joi.string().required(), // TODO: make it optional
                 token: Joi.string().required(),
             }),
         }),
@@ -131,7 +131,7 @@ export default (app: Router): void => {
         authenticateToken,
         celebrate({
             body: Joi.object({
-                address: Joi.string().required(),
+                address: Joi.string().required(), // TODO: make it optional
                 language: Joi.string().required(),
             }),
         }),

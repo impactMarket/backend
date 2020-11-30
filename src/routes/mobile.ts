@@ -5,7 +5,7 @@ import { Router } from 'express';
 
 import config from '../config';
 import { MobileError } from '../db/models/mobileError';
-import Logger from '../loaders/logger';
+import { Logger } from '../loaders/logger';
 
 const route = Router();
 

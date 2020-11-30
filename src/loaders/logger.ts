@@ -6,15 +6,15 @@ const transports: (
     | winston.transports.FileTransportInstance
     | winston.transports.ConsoleTransportInstance
 )[] = [
-    // new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    // new winston.transports.File({ filename: 'combined.log' }),
-    new winston.transports.Console({
-        format: winston.format.combine(
-            winston.format.cli(),
-            winston.format.splat()
-        ),
-    }),
-];
+        // new winston.transports.File({ filename: 'error.log', level: 'error' }),
+        // new winston.transports.File({ filename: 'combined.log' }),
+        new winston.transports.Console({
+            format: winston.format.combine(
+                winston.format.cli(),
+                winston.format.splat()
+            ),
+        }),
+    ];
 // if (NODE_ENV === 'development') {
 //     transports.push(
 //         new winston.transports.Console({
@@ -26,7 +26,7 @@ const transports: (
 //     )
 // }
 
-const LoggerInstance = winston.createLogger({
+export const Logger = winston.createLogger({
     level: config.logs.level,
     levels: winston.config.npm.levels,
     format: winston.format.combine(
@@ -42,8 +42,30 @@ const LoggerInstance = winston.createLogger({
 
 export class LoggerStream {
     write(message: string): void {
-        LoggerInstance.verbose(message.substring(0, message.lastIndexOf('\n')));
+        switch (Logger.level) {
+            case 'debug':
+                Logger.debug(message);
+                break;
+
+            case 'info':
+                Logger.info(message);
+                break;
+
+            case 'warning':
+                Logger.warning(message);
+                break;
+
+            case 'error':
+                Logger.error(message);
+                break;
+
+            case 'critical':
+                Logger.crit(message);
+                break;
+
+            default:
+                Logger.verbose(message);
+                break;
+        }
     }
 }
-
-export default LoggerInstance;

@@ -1,7 +1,7 @@
 import { col, fn, Op } from 'sequelize';
 
 import { Inflow } from '../db/models/inflow';
-import Logger from '../loaders/logger';
+import { Logger } from '../loaders/logger';
 
 export default class InflowService {
     public static async add(

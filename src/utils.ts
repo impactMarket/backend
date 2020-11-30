@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
 import config from './config';
-import Logger from './loaders/logger';
+import { Logger } from './loaders/logger';
 import UserService from './services/user';
 import { ICommunityInfo } from './types';
 

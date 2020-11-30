@@ -2,7 +2,7 @@ import { celebrate, Joi } from 'celebrate';
 import { Router, Request, Response } from 'express';
 
 import { Community } from '../db/models/community';
-import Logger from '../loaders/logger';
+import { Logger } from '../loaders/logger';
 import { authenticateToken } from '../middlewares';
 import CommunityService from '../services/community';
 import TransactionsService from '../services/transactions';

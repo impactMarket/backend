@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 
 import { User } from '../db/models/user';
-import Logger from '../loaders/logger';
+import { Logger } from '../loaders/logger';
 import { generateAccessToken } from '../middlewares';
 import { ICommunityInfo, IUserWelcomeAuth, IUserWelcome } from '../types';
 import BeneficiaryService from './beneficiary';
