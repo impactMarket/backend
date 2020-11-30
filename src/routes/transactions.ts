@@ -36,35 +36,6 @@ export default (app: Router): void => {
     );
 
     route.get(
-        '/usertx/:accountAddress',
-        async (req: Request, res: Response) => {
-            return res.send(
-                await TransactionsService.userTx(req.params.accountAddress)
-            );
-        }
-    );
-
-    // TODO: remove
-    route.get(
-        '/tokentx/:accountAddress',
-        async (req: Request, res: Response) => {
-            return res.send(
-                await TransactionsService.tokenTx(req.params.accountAddress)
-            );
-        }
-    );
-
-    // TODO: remove
-    route.get(
-        '/paymentstx/:accountAddress',
-        async (req: Request, res: Response) => {
-            return res.send(
-                await TransactionsService.paymentsTx(req.params.accountAddress)
-            );
-        }
-    );
-
-    route.get(
         '/managerin/:managerAddress',
         async (req: Request, res: Response) => {
             let community: Transactions | Community | null;
@@ -88,72 +59,6 @@ export default (app: Router): void => {
                 );
             }
             return res.send(communityInfo);
-        }
-    );
-
-    route.get(
-        '/community/beneficiaries/:communityContractAddress',
-        async (req: Request, res: Response) => {
-            return res.send(
-                await TransactionsService.getBeneficiariesInCommunity(
-                    req.params.communityContractAddress
-                )
-            );
-        }
-    );
-
-    route.get(
-        '/community/managers/:communityContractAddress',
-        async (req: Request, res: Response) => {
-            return res.send(
-                await TransactionsService.getCommunityManagersInCommunity(
-                    req.params.communityContractAddress
-                )
-            );
-        }
-    );
-
-    route.get(
-        '/community/backers/:communityContractAddress',
-        async (req: Request, res: Response) => {
-            return res.send(
-                await TransactionsService.getBackersInCommunity(
-                    req.params.communityContractAddress
-                )
-            );
-        }
-    );
-
-    route.get(
-        '/community/vars/:communityContractAddress',
-        async (req: Request, res: Response) => {
-            return res.send(
-                await TransactionsService.getCommunityVars(
-                    req.params.communityContractAddress
-                )
-            );
-        }
-    );
-
-    route.get(
-        '/community/raised/:communityContractAddress',
-        async (req: Request, res: Response) => {
-            return res.send(
-                await TransactionsService.getCommunityRaisedAmount(
-                    req.params.communityContractAddress
-                )
-            );
-        }
-    );
-
-    route.get(
-        '/community/claimed/:communityContractAddress',
-        async (req: Request, res: Response) => {
-            return res.send(
-                await TransactionsService.getCommunityClaimedAmount(
-                    req.params.communityContractAddress
-                )
-            );
         }
     );
 };
