@@ -13,7 +13,7 @@ export class MobileError extends Model {
 }
 
 export function initializeMobileError(sequelize: Sequelize): void {
-    return MobileError.init(
+    MobileError.init(
         {
             id: {
                 type: DataTypes.INTEGER,

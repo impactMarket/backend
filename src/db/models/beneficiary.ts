@@ -16,7 +16,7 @@ export class Beneficiary extends Model {
 }
 
 export function initializeBeneficiary(sequelize: Sequelize): void {
-    return Beneficiary.init(
+    Beneficiary.init(
         {
             id: {
                 type: DataTypes.INTEGER,

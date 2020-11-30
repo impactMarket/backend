@@ -10,7 +10,7 @@ export class ImMetadata extends Model {
 }
 
 export function initializeImMetadata(sequelize: Sequelize): void {
-    return ImMetadata.init(
+    ImMetadata.init(
         {
             key: {
                 type: DataTypes.STRING(128),

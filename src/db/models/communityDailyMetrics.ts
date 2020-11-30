@@ -15,7 +15,7 @@ export class CommunityDailyMetrics extends Model {
 }
 
 export function initializeCommunityDailyMetrics(sequelize: Sequelize): void {
-    return CommunityDailyMetrics.init(
+    CommunityDailyMetrics.init(
         {
             id: {
                 type: DataTypes.INTEGER,

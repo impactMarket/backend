@@ -23,7 +23,7 @@ export class BeneficiaryTransaction extends Model {
 }
 
 export function initializeBeneficiaryTransaction(sequelize: Sequelize): void {
-    return BeneficiaryTransaction.init(
+    BeneficiaryTransaction.init(
         {
             id: {
                 type: DataTypes.INTEGER,

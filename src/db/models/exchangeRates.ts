@@ -10,7 +10,7 @@ export class ExchangeRates extends Model {
 }
 
 export function initializeExchangeRates(sequelize: Sequelize): void {
-    return ExchangeRates.init(
+    ExchangeRates.init(
         {
             currency: {
                 type: DataTypes.STRING(5),

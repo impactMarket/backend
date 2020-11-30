@@ -11,7 +11,7 @@ export class ClaimLocation extends Model {
 }
 
 export function initializeClaimLocation(sequelize: Sequelize): void {
-    return ClaimLocation.init(
+    ClaimLocation.init(
         {
             id: {
                 type: DataTypes.INTEGER,

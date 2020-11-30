@@ -12,7 +12,7 @@ export class NotifiedBacker extends Model {
 }
 
 export function initializeNotifiedBacker(sequelize: Sequelize): void {
-    return NotifiedBacker.init(
+    NotifiedBacker.init(
         {
             id: {
                 type: DataTypes.INTEGER,

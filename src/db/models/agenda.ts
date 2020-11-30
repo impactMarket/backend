@@ -12,7 +12,7 @@ export class Agenda extends Model {
 }
 
 export function initializeAgenda(sequelize: Sequelize): void {
-    return Agenda.init(
+    Agenda.init(
         {
             id: {
                 type: DataTypes.INTEGER,

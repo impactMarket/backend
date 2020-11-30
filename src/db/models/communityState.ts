@@ -14,7 +14,7 @@ export class CommunityState extends Model {
 }
 
 export function initializeCommunityState(sequelize: Sequelize): void {
-    return CommunityState.init(
+    CommunityState.init(
         {
             communityId: {
                 type: DataTypes.UUID,

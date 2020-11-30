@@ -14,7 +14,7 @@ export class User extends Model {
 }
 
 export function initializeUser(sequelize: Sequelize): void {
-    return User.init(
+    User.init(
         {
             address: {
                 type: DataTypes.STRING(44),

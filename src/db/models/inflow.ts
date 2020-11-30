@@ -14,7 +14,7 @@ export class Inflow extends Model {
 }
 
 export function initializeInflow(sequelize: Sequelize): void {
-    return Inflow.init(
+    Inflow.init(
         {
             id: {
                 type: DataTypes.INTEGER,

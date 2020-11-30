@@ -14,7 +14,7 @@ export class Claim extends Model {
 }
 
 export function initializeClaim(sequelize: Sequelize): void {
-    return Claim.init(
+    Claim.init(
         {
             id: {
                 type: DataTypes.INTEGER,

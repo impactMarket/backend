@@ -14,7 +14,7 @@ export class Transactions extends Model {
 }
 
 export function initializeTransactions(sequelize: Sequelize): void {
-    return Transactions.init(
+    Transactions.init(
         {
             uid: {
                 type: DataTypes.STRING(64),

@@ -26,7 +26,7 @@ export class CommunityDailyState extends Model {
 }
 
 export function initializeCommunityDailyState(sequelize: Sequelize): void {
-    return CommunityDailyState.init(
+    CommunityDailyState.init(
         {
             id: {
                 type: DataTypes.INTEGER,

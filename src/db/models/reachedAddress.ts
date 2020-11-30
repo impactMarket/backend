@@ -10,7 +10,7 @@ export class ReachedAddress extends Model {
 }
 
 export function initializeReachedAddress(sequelize: Sequelize): void {
-    return ReachedAddress.init(
+    ReachedAddress.init(
         {
             address: {
                 type: DataTypes.STRING(44),

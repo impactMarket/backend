@@ -11,7 +11,7 @@ export class CronJobExecuted extends Model {
 }
 
 export function initializeCronJobExecuted(sequelize: Sequelize): void {
-    return CronJobExecuted.init(
+    CronJobExecuted.init(
         {
             id: {
                 type: DataTypes.INTEGER,

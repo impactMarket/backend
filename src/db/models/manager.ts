@@ -11,7 +11,7 @@ export class Manager extends Model {
 }
 
 export function initializeManager(sequelize: Sequelize): void {
-    return Manager.init(
+    Manager.init(
         {
             id: {
                 type: DataTypes.INTEGER,

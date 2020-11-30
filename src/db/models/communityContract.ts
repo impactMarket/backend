@@ -13,7 +13,7 @@ export class CommunityContract extends Model {
 }
 
 export function initializeCommunityContract(sequelize: Sequelize): void {
-    return CommunityContract.init(
+    CommunityContract.init(
         {
             communityId: {
                 type: DataTypes.UUID,

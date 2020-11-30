@@ -33,7 +33,7 @@ export class GlobalDailyState extends Model {
 }
 
 export function initializeGlobalDailyState(sequelize: Sequelize): void {
-    return GlobalDailyState.init(
+    GlobalDailyState.init(
         {
             date: {
                 type: DataTypes.DATEONLY,
