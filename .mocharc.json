@@ -6,5 +6,6 @@
     "require": "ts-node/register",
     "delay": false,
     "bail": false,
-    "watch": false
+    "watch": false,
+    "timeout": 6000
 }
