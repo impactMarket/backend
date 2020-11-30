@@ -21,7 +21,7 @@ export function initializeManager(sequelize: Sequelize): void {
             user: {
                 type: DataTypes.STRING(44),
                 references: {
-                    model: 'user', // name of Target model
+                    model: sequelize.models.User, // name of Target model
                     key: 'address', // key in Target model that we're referencing
                 },
                 onDelete: 'RESTRICT',

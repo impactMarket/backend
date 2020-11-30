@@ -17,21 +17,21 @@ export default (app: Router): void => {
                 authKey: Joi.string().optional(), // TODO: make required
                 address: Joi.string().required(),
                 language: Joi.string().required(),
-                pushNotificationsToken: Joi.string().allow(''),
+                pushNotificationToken: Joi.string().allow(''),
             }),
         }),
         async (req: Request, res: Response) => {
-            let { address, language, pushNotificationsToken } = req.body;
+            let { address, language, pushNotificationToken } = req.body;
             if (
-                pushNotificationsToken === null ||
-                pushNotificationsToken === undefined
+                pushNotificationToken === null ||
+                pushNotificationToken === undefined
             ) {
-                pushNotificationsToken = '';
+                pushNotificationToken = '';
             }
             const result = await UserService.auth(
                 address,
                 language,
-                pushNotificationsToken
+                pushNotificationToken
             );
             if (result === undefined) {
                 res.sendStatus(403);

@@ -1,6 +1,29 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { Sequelize, DataTypes, Model, BuildOptions } from 'sequelize';
 
-export class User extends Model {
+export interface UserAttributes {
+    address: string;
+    username: string;
+    avatar: string;
+    language: string;
+    currency: string;
+    pushNotificationToken: string;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+export interface UserCreationAttributes {
+    address: string;
+    avatar: string;
+    language: string;
+    pushNotificationToken: string;
+};
+
+// export interface UserModel extends Model<UserAttributes>, UserAttributes { }
+
+export type UserModel = Model<UserAttributes>;
+
+export class User extends Model<UserAttributes, UserCreationAttributes> {
     public address!: string;
     public username!: string;
     public avatar!: string;

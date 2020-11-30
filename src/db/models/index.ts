@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+import { DataTypes, Sequelize } from 'sequelize';
 
 import { initializeAgenda } from './agenda';
 import { Beneficiary, initializeBeneficiary } from './beneficiary';
@@ -30,7 +30,7 @@ import { initializeNotifiedBacker, NotifiedBacker } from './notifiedBacker';
 import { initializeReachedAddress } from './reachedAddress';
 import { initializeSSI } from './ssi';
 import { initializeTransactions } from './transactions';
-import { initializeUser, User } from './user';
+import { initializeUser } from './user';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeCommunity(sequelize);
@@ -56,58 +56,76 @@ export default function initModels(sequelize: Sequelize): void {
     initializeCronJobExecuted(sequelize);
     initializeBeneficiaryTransaction(sequelize);
 
-    ClaimLocation.belongsTo(Community, {
-        foreignKey: 'communityId', // ClaimLocation.communityId
-        targetKey: 'publicId', // the Community.publicId
+    // ClaimLocation.belongsTo(Community, {
+    //     foreignKey: 'communityId', // ClaimLocation.communityId
+    //     targetKey: 'publicId', // the Community.publicId
+    // });
+
+    // NotifiedBacker.belongsTo(Community, {
+    //     foreignKey: 'communityId', // NotifiedBacker.communityId
+    //     targetKey: 'publicId', // the Community.publicId
+    // });
+
+    // Beneficiary.belongsTo(Community, {
+    //     foreignKey: 'communityId', // Beneficiary.communityId
+    //     targetKey: 'publicId', // the Community.publicId
+    // });
+
+    // Manager.belongsTo(Community, {
+    //     foreignKey: 'communityId', // Manager.communityId
+    //     targetKey: 'publicId', // the Community.publicId
+    // });
+
+    sequelize.models.Manager.belongsTo(sequelize.models.User, {
+        foreignKey: 'user',
+        targetKey: 'address',
     });
 
-    NotifiedBacker.belongsTo(Community, {
-        foreignKey: 'communityId', // NotifiedBacker.communityId
-        targetKey: 'publicId', // the Community.publicId
+    sequelize.models.User.hasOne(sequelize.models.Manager, {
+        foreignKey: 'user',
     });
 
-    Beneficiary.belongsTo(Community, {
-        foreignKey: 'communityId', // Beneficiary.communityId
-        targetKey: 'publicId', // the Community.publicId
-    });
+    // Manager.belongsTo(User, {
+    //     foreignKey: 'user', // Manager.user
+    //     targetKey: 'address', // the user.address
+    // });
 
-    Manager.belongsTo(Community, {
-        foreignKey: 'communityId', // Manager.communityId
-        targetKey: 'publicId', // the Community.publicId
-    });
+    // Claim.belongsTo(Community, {
+    //     foreignKey: 'communityId', // Claim.communityId
+    //     targetKey: 'publicId', // the Community.publicId
+    // });
 
-    Manager.belongsTo(User, {
-        foreignKey: 'user', // Manager.user
-        targetKey: 'address', // the user.address
-    });
+    // Inflow.belongsTo(Community, {
+    //     foreignKey: 'communityId', // Inflow.communityId
+    //     targetKey: 'publicId', // the Community.publicId
+    // });
 
-    Claim.belongsTo(Community, {
-        foreignKey: 'communityId', // Claim.communityId
-        targetKey: 'publicId', // the Community.publicId
-    });
+    // CommunityState.belongsTo(Community, {
+    //     foreignKey: 'communityId', // CommunityState.communityId
+    //     targetKey: 'publicId', // the Community.publicId
+    // });
 
-    Inflow.belongsTo(Community, {
-        foreignKey: 'communityId', // Inflow.communityId
-        targetKey: 'publicId', // the Community.publicId
-    });
+    // CommunityDailyState.belongsTo(Community, {
+    //     foreignKey: 'communityId', // CommunityDailyState.communityId
+    //     targetKey: 'publicId', // the Community.publicId
+    // });
 
-    CommunityState.belongsTo(Community, {
-        foreignKey: 'communityId', // CommunityState.communityId
-        targetKey: 'publicId', // the Community.publicId
-    });
+    // CommunityDailyMetrics.belongsTo(Community, {
+    //     foreignKey: 'communityId', // CommunityDailyMetrics.communityId
+    //     targetKey: 'publicId', // the Community.publicId
+    // });
 
-    CommunityDailyState.belongsTo(Community, {
-        foreignKey: 'communityId', // CommunityDailyState.communityId
-        targetKey: 'publicId', // the Community.publicId
-    });
+    // sequelize.models.CommunityContract.belongsTo(sequelize.models.Community, {
+    //     foreignKey: {
+    //         name: 'communityId',
+    //         field: 
+    //     }
+    //     targetKey: 'publicId', // the Community.publicId
+    //     keyType: DataTypes.UUID
+    // });
 
-    CommunityDailyMetrics.belongsTo(Community, {
-        foreignKey: 'communityId', // CommunityDailyMetrics.communityId
-        targetKey: 'publicId', // the Community.publicId
-    });
-
-    CommunityContract.belongsTo(Community, {
-        foreignKey: 'communityId', // CommunityContract.communityId
-        targetKey: 'publicId', // the Community.publicId
-    });
+    // sequelize.models.Community.hasOne(sequelize.models.CommunityContract, {
+    //     foreignKey: 'communityId', // CommunityContract.communityId
+    //     keyType: DataTypes.UUID
+    // });
 }

@@ -1,6 +1,7 @@
 import { Op } from 'sequelize';
+import { User, UserAttributes, UserModel } from '../db/models/user';
 
-import { User } from '../db/models/user';
+import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 import { generateAccessToken } from '../middlewares';
 import { ICommunityInfo, IUserWelcomeAuth, IUserWelcome } from '../types';
@@ -9,29 +10,30 @@ import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';
 import ManagerService from './managers';
 
+const sequelize = database();
 export default class UserService {
     public static async auth(
         address: string,
         language: string,
-        pushNotificationsToken: string
+        pushNotificationToken: string
     ): Promise<IUserWelcomeAuth | undefined> {
         try {
             const token = generateAccessToken(address);
-            const user = await User.findOne({ where: { address } });
+            const user = await sequelize.models.User.findOne<UserModel>({ where: { address } });
             if (user === null) {
-                await User.create({
+                await User.create<User>({
                     address,
-                    avatar: Math.floor(Math.random() * 8) + 1,
+                    avatar: (Math.floor(Math.random() * 8) + 1).toString(),
                     language,
-                    pushNotificationsToken,
+                    pushNotificationToken,
                 });
             } else {
                 await User.update(
-                    { pushNotificationsToken },
+                    { pushNotificationToken },
                     { where: { address } }
                 );
             }
-            const welcomeUser = await UserService.welcome(address, user);
+            const welcomeUser = await UserService.welcome(address, user?._attributes);
             if (welcomeUser === undefined) {
                 return undefined;
             }
@@ -47,7 +49,7 @@ export default class UserService {
 
     public static async welcome(
         address: string,
-        user: User | null = null
+        user: UserAttributes | null = null
     ): Promise<IUserWelcome | undefined> {
         if (user === null) {
             user = await User.findOne({ where: { address } });
