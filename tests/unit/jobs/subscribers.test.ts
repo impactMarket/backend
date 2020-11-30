@@ -1,4 +1,4 @@
-import { stub, assert, match, createStubInstance } from 'sinon';
+import { stub, assert, match, SinonStub } from 'sinon';
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 
@@ -10,10 +10,15 @@ import { subscribeChainEvents } from '../../../src/jobs/chainSubscribers';
 import CommunityContractJSON from './Community.json';
 import cUSDContractJSON from './cUSD.json';
 
-async function delay() {
-    return new Promise((resolve) => setTimeout(() => {
-        resolve();
-    }, 5000));
+async function waitForStubCall(stub: SinonStub<any, any>, callNumber: number) {
+    return new Promise((resolve) => {
+        const validationInterval = setInterval(() => {
+            if (stub.callCount >= callNumber) {
+                resolve();
+                clearInterval(validationInterval);
+            }
+        }, 1000)
+    });
 }
 
 describe('[jobs] subscribers', () => {
@@ -23,7 +28,7 @@ describe('[jobs] subscribers', () => {
     let communities = new Map<string, string>();
     let communitiesVisibility = new Map<string, boolean>();
     let accounts: string[] = [];
-    let beneficiaryAdd;
+    let beneficiaryAdd: SinonStub<any, any>;
 
     before(async () => {
         provider = new ethers.providers.Web3Provider(ganache.provider());
@@ -59,15 +64,10 @@ describe('[jobs] subscribers', () => {
     })
 
     it('#subscribeChainEvents()', async () => {
-        // provider.emit()
         await subscribeChainEvents(provider, communities, communitiesVisibility, []);
-        // await provider.getSigner(0).sendTransaction({
-        //     to: provider.getSigner(1)._address,
-        //     value: ethers.utils.parseEther("1.0")
-        // })
         await communityContract.addBeneficiary(accounts[5]);
 
-        await delay();
+        await waitForStubCall(beneficiaryAdd, 1);
 
         assert.callCount(beneficiaryAdd, 1);
         assert.calledWith(beneficiaryAdd.getCall(0), accounts[5], 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd', match.any);
