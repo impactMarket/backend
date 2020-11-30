@@ -54,8 +54,8 @@
         "pg": "8.0.2",
         "pg-hstore": "2.3.3",
         "pg-native": "3.0.0",
-        "sequelize": "5.21.6",
-        "sequelize-cli": "5.5.1",
+        "sequelize": "6.3.5",
+        "sequelize-cli": "6.2.0",
         "sha3": "2.1.2",
         "winston": "3.2.1"
     },
