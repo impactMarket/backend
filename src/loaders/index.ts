@@ -10,9 +10,9 @@ export default async ({
 }: {
     expressApp: express.Application;
 }): Promise<void> => {
-    const sequelize = databaseLoader();
-    await sequelize.authenticate();
-    await sequelize.sync();
+    const dbLoader = databaseLoader();
+    await dbLoader.sequelize.authenticate();
+    await dbLoader.sequelize.sync();
     Logger.info('🗺️  DB loaded and connected');
 
     await jobsLoader();

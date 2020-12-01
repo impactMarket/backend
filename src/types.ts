@@ -1,10 +1,19 @@
 import { Request } from 'express';
+import { ModelCtor, Sequelize } from 'sequelize/types';
+import { User } from './db/models/user';
 
 export interface UserInRequest {
     address: string;
 }
 export interface RequestWithUser extends Request {
     user: UserInRequest;
+}
+export interface DbModels {
+    user: ModelCtor<User>;
+}
+export interface DbLoader {
+    sequelize: Sequelize;
+    models: DbModels;
 }
 // API to app
 

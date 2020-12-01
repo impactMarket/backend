@@ -1,18 +1,18 @@
-import { Sequelize, DataTypes, Model, BuildOptions } from 'sequelize';
+import { Sequelize, DataTypes, Model, BuildOptions, ModelStatic } from 'sequelize';
 
-export interface UserAttributes {
+interface UserAttributes {
     address: string;
-    username: string;
+    username: string | null;
     avatar: string;
     language: string;
     currency: string;
-    pushNotificationToken: string;
+    pushNotificationToken: string | null;
 
     // timestamps
     createdAt: Date;
     updatedAt: Date;
 };
-export interface UserCreationAttributes {
+interface UserCreationAttributes {
     address: string;
     avatar: string;
     language: string;
@@ -21,15 +21,16 @@ export interface UserCreationAttributes {
 
 // export interface UserModel extends Model<UserAttributes>, UserAttributes { }
 
-export type UserModel = Model<UserAttributes>;
+// type UserModel = Model<UserAttributes, UserCreationAttributes>;
+// export type UserModel = Model<UserAttributes, UserCreationAttributes> & UserAttributes;
 
 export class User extends Model<UserAttributes, UserCreationAttributes> {
     public address!: string;
-    public username!: string;
+    public username!: string | null;
     public avatar!: string;
     public language!: string;
     public currency!: string;
-    public pushNotificationToken!: string;
+    public pushNotificationToken!: string | null;
 
     // timestamps!
     public readonly createdAt!: Date;

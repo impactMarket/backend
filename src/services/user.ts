@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { User, UserAttributes, UserModel } from '../db/models/user';
+import { User } from '../db/models/user';
 
 import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
@@ -10,7 +10,7 @@ import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';
 import ManagerService from './managers';
 
-const sequelize = database();
+const db = database();
 export default class UserService {
     public static async auth(
         address: string,
@@ -19,21 +19,21 @@ export default class UserService {
     ): Promise<IUserWelcomeAuth | undefined> {
         try {
             const token = generateAccessToken(address);
-            const user = await sequelize.models.User.findOne<UserModel>({ where: { address } });
+            const user = await db.models.user.findOne({ where: { address } });
             if (user === null) {
-                await User.create<User>({
+                await db.models.user.create({
                     address,
                     avatar: (Math.floor(Math.random() * 8) + 1).toString(),
                     language,
                     pushNotificationToken,
                 });
             } else {
-                await User.update(
+                await db.models.user.update(
                     { pushNotificationToken },
                     { where: { address } }
                 );
             }
-            const welcomeUser = await UserService.welcome(address, user?._attributes);
+            const welcomeUser = await UserService.welcome(address, user);
             if (welcomeUser === undefined) {
                 return undefined;
             }
@@ -49,7 +49,7 @@ export default class UserService {
 
     public static async welcome(
         address: string,
-        user: UserAttributes | null = null
+        user: User | null = null
     ): Promise<IUserWelcome | undefined> {
         if (user === null) {
             user = await User.findOne({ where: { address } });
@@ -138,7 +138,7 @@ export default class UserService {
     }
 
     public static async get(address: string): Promise<User | null> {
-        return User.findOne({ where: { address } });
+        return db.models.user.findOne({ where: { address } });
     }
 
     public static async getAllAddresses(): Promise<string[]> {
@@ -154,7 +154,7 @@ export default class UserService {
             attributes: ['pushNotificationToken'],
             where: { address: { [Op.in]: addresses } },
         });
-        return users.map((u) => u.pushNotificationToken);
+        return users.filter((u) => u.pushNotificationToken !== null).map((u) => u.pushNotificationToken!);
     }
 
     public static async mappedNames(): Promise<Map<string, string>> {
@@ -162,7 +162,7 @@ export default class UserService {
         const query = await User.findAll();
         for (let index = 0; index < query.length; index++) {
             const element = query[index];
-            mapped.set(element.address, element.username);
+            mapped.set(element.address, element.username ? element.username : '');
         }
         return mapped;
     }

@@ -1,11 +1,13 @@
-import { Sequelize, Options } from 'sequelize';
+import { Sequelize, Options, ModelCtor } from 'sequelize';
 
 import config from '../config';
 import initModels from '../db/models';
 import { CommunityContract } from '../db/models/communityContract';
+import { User } from '../db/models/user';
 import { Logger } from '../loaders/logger';
+import { DbLoader } from '../types';
 
-export default (): Sequelize => {
+export default (): DbLoader => {
     let logging:
         | boolean
         | ((sql: string, timing?: number | undefined) => void)
@@ -20,7 +22,7 @@ export default (): Sequelize => {
         protocol: 'postgres',
         native: true,
         logging,
-        // query: { raw: true },
+        query: { raw: true }, //TODO: in order to eager loading to work, this needs to be removed
     };
     const sequelize = new Sequelize(config.dbUrl, dbConfig);
     initModels(sequelize);
@@ -31,5 +33,10 @@ export default (): Sequelize => {
     //     include: [{ model: sequelize.models.Manager }],
     //     raw: true
     // }).then(console.log);
-    return sequelize;
+    return {
+        sequelize,
+        models: {
+            user: sequelize.models.User as ModelCtor<User>,
+        },
+    };
 };
