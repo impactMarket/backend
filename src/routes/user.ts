@@ -24,7 +24,8 @@ export default (app: Router): void => {
                 authKey: Joi.string().optional(), // TODO: make required
                 address: Joi.string().required(),
                 language: Joi.string().required(),
-                pushNotificationsToken: Joi.string().allow(''),
+                pushNotificationsToken: Joi.string().optional(), // TODO: make required
+                pushNotificationToken: Joi.string().optional(), // TODO: make required
             }),
         }),
         async (req: Request, res: Response) => {
@@ -32,14 +33,19 @@ export default (app: Router): void => {
                 address,
                 language,
                 pushNotificationsToken,
+                pushNotificationToken,
             } = req.body;
-            if (pushNotificationsToken === null || pushNotificationsToken === undefined) {
-                pushNotificationsToken = '';
+            if (pushNotificationToken === null || pushNotificationToken === undefined) {
+                if (pushNotificationsToken === null || pushNotificationsToken === undefined) {
+                    pushNotificationToken = '';
+                } else {
+                    pushNotificationToken = pushNotificationsToken;
+                }
             }
             const result = await UserService.auth(
                 address,
                 language,
-                pushNotificationsToken,
+                pushNotificationToken,
             );
             if (result === undefined) {
                 res.sendStatus(403);
@@ -77,13 +83,13 @@ export default (app: Router): void => {
                         address,
                         token
                     );
-                } catch(e) {
+                } catch (e) {
                     Logger.warning(e);
                 }
             }
             try {
                 res.send(await UserService.welcome(address));
-            } catch(e) {
+            } catch (e) {
                 Logger.warning(e);
                 res.sendStatus(403);
             }
