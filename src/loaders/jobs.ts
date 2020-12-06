@@ -81,14 +81,12 @@ async function subscribers(
 
     // get all available communities
     const availableCommunities = await CommunityService.getAll('valid', false);
-    // starting 10 blocks in the past, check if they have lost transactions
-    Logger.info('Recovering past events...');
-    await checkCommunitiesOnChainEvents(startFrom, provider, availableCommunities);
-    // get beneficiaries in private communities, so we don't count them
-    let beneficiariesInPrivateCommunities: string[] = [];
     const privateCommunities = availableCommunities.filter(
         (c) => c.visibility === 'private'
     );
+    let beneficiariesInPrivateCommunities: string[] = [];
+    // starting 10 blocks in the past, check if they have lost transactions
+    Logger.info('Recovering past events...');
     for (let c = 0; c < privateCommunities.length; c += 1) {
         const inCommunity = await BeneficiaryService.getAllInCommunity(
             privateCommunities[c].publicId
@@ -97,7 +95,17 @@ async function subscribers(
             inCommunity.map((b) => b.address)
         );
     }
+    await checkCommunitiesOnChainEvents(startFrom, provider, availableCommunities, beneficiariesInPrivateCommunities);
+    // get beneficiaries in private communities, so we don't count them
     Logger.info('Starting subscribers...');
+    for (let c = 0; c < privateCommunities.length; c += 1) {
+        const inCommunity = await BeneficiaryService.getAllInCommunity(
+            privateCommunities[c].publicId
+        );
+        beneficiariesInPrivateCommunities = beneficiariesInPrivateCommunities.concat(
+            inCommunity.map((b) => b.address)
+        );
+    }
     // start subscribers
     subscribeChainEvents(
         provider,

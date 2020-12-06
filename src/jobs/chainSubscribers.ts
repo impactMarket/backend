@@ -24,7 +24,9 @@ import { getBlockTime, notifyBeneficiaryAdded } from '../utils';
 function catchHandlerTransactionsService(error: any) {
     // that's fine if it is a SequelizeUniqueConstraintError
     // it's already there 👌
-    Logger.error('catchHandlerTransactionsService' + error);
+    if (error.name !== 'SequelizeUniqueConstraintError') {
+        Logger.error('catchHandlerTransactionsService ' + error);
+    }
 }
 
 async function subscribeChainEvents(
@@ -346,10 +348,15 @@ async function subscribeChainEvents(
 async function checkCommunitiesOnChainEvents(
     startFromBlock: number,
     provider: ethers.providers.JsonRpcProvider,
-    availableCommunities: ICommunityInfo[]
+    availableCommunities: ICommunityInfo[],
+    beneficiariesInPrivateCommunities: string[]
 ): Promise<void> {
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
+    const allCommunitiesAddresses = availableCommunities
+        .filter((c) => c.visibility === 'public')
+        .map((c) => c.contractAddress);
+    const allBeneficiaryAddressses = await BeneficiaryService.getAllAddresses();
     // get past community events
     for (let c = 0; c < availableCommunities.length; c++) {
         const logsCommunity = await provider
@@ -381,7 +388,7 @@ async function checkCommunitiesOnChainEvents(
                 const beneficiaryAddress = parsedLog.args[0];
                 const communityAddress = log.address;
                 // let communityId = allCommunities.get(communityAddress);
-                notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
+                // notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
                 const txAt = await getBlockTime(log.blockHash);
                 await BeneficiaryService.add(
                     beneficiaryAddress,
@@ -425,6 +432,7 @@ async function checkCommunitiesOnChainEvents(
             });
         const eventsCUSD = logsCUSD.map((log) => ifaceERC20.parseLog(log));
         for (let ec = 0; ec < eventsCUSD.length; ec += 1) {
+            const preParsedLog = eventsCUSD[ec];
             if (eventsCUSD[ec].args.to === availableCommunities[c].contractAddress) {
                 const log = logsCUSD[ec];
                 const parsedLog = eventsCUSD[ec];
@@ -445,6 +453,45 @@ async function checkCommunitiesOnChainEvents(
                     logsCUSD[ec],
                     eventsCUSD[ec]
                 ).catch(catchHandlerTransactionsService);
+            } else if (
+                // same as in subscribe
+                !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
+                !beneficiariesInPrivateCommunities.includes(
+                    preParsedLog.args[0]
+                ) &&
+                !beneficiariesInPrivateCommunities.includes(
+                    preParsedLog.args[1]
+                ) &&
+                preParsedLog.args[1] !== config.attestationProxyAddress &&
+                preParsedLog.args[0] !== preParsedLog.args[1] &&
+                preParsedLog.args[2].toString().length > 15
+            ) {
+                const isFromBeneficiary = allBeneficiaryAddressses.includes(
+                    preParsedLog.args[0]
+                );
+                // transactions from or to beneficiaries
+                if (
+                    isFromBeneficiary ||
+                    allBeneficiaryAddressses.includes(preParsedLog.args[1])
+                ) {
+                    const log = logsCUSD[ec];
+                    const _parsedLog = preParsedLog; // TODO: rename to parsedLog
+                    const beneficiaryAddress = isFromBeneficiary
+                        ? _parsedLog.args[0]
+                        : _parsedLog.args[1];
+                    const withAddress = isFromBeneficiary
+                        ? _parsedLog.args[1]
+                        : _parsedLog.args[0];
+                    // save to table to calculate txs and volume
+                    await BeneficiaryTransactionService.add({
+                        beneficiary: beneficiaryAddress,
+                        withAddress,
+                        amount: _parsedLog.args[2].toString(),
+                        isFromBeneficiary,
+                        tx: log.transactionHash,
+                        date: new Date(),
+                    });
+                }
             }
         }
     }
