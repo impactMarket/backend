@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
 import { Manager } from '../db/models/manager';
+import Logger from '../loaders/logger';
 
 
 export default class ManagerService {
@@ -12,11 +13,20 @@ export default class ManagerService {
         // otherwise update
         const user = await Manager.findOne({ where: { user: address, communityId } });
         if (user === null) {
-            const updated = await Manager.create({
+            const managerData = {
                 user: address,
                 communityId
-            });
-            return updated[0] > 0;
+            };
+            try {
+                const updated = await Manager.create(managerData);
+                return updated[0] > 0;
+            } catch (e) {
+                if (e.name !== 'SequelizeUniqueConstraintError') {
+                    Logger.error('Error inserting new Manager. Data = ' + JSON.stringify(managerData));
+                    Logger.error(e);
+                }
+                return false;
+            }
         }
         return true;
     }

@@ -1,5 +1,6 @@
 import { Op, fn, col } from 'sequelize';
 import { Beneficiary } from '../db/models/beneficiary';
+import Logger from '../loaders/logger';
 
 
 export default class BeneficiaryService {
@@ -13,11 +14,19 @@ export default class BeneficiaryService {
         // otherwise update
         const user = await Beneficiary.findOne({ where: { address, active: false } });
         if (user === null) {
-            await Beneficiary.create({
+            const beneficiaryData = {
                 address,
                 communityId,
                 txAt,
-            });
+            };
+            try {
+                await Beneficiary.create(beneficiaryData);
+            } catch(e) {
+                if (e.name !== 'SequelizeUniqueConstraintError') {
+                    Logger.error('Error inserting new Beneficiary. Data = ' + JSON.stringify(beneficiaryData));
+                    Logger.error(e);
+                }
+            }
         } else {
             await Beneficiary.update({ active: true }, { where: { address } });
         }

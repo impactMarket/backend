@@ -1,11 +1,19 @@
 import { col, fn } from 'sequelize';
 import { BeneficiaryTransaction, IBeneficiaryTransaction } from '../db/models/beneficiaryTransaction';
+import Logger from '../loaders/logger';
 
 
 export default class BeneficiaryTransactionService {
 
     public static async add(beneficiaryTx: IBeneficiaryTransaction): Promise<void> {
-        await BeneficiaryTransaction.create(beneficiaryTx);
+        try {
+            await BeneficiaryTransaction.create(beneficiaryTx);
+        } catch (e) {
+            if (e.name !== 'SequelizeUniqueConstraintError') {
+                Logger.error('Error inserting new BeneficiaryTransaction. Data = ' + JSON.stringify(beneficiaryTx));
+                Logger.error(e);
+            }
+        }
         return;
     }
 

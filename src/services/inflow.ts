@@ -12,16 +12,20 @@ export default class InflowService {
         tx: string,
         txAt: Date,
     ): Promise<void> {
+        const inflowData = {
+            from,
+            communityId,
+            amount,
+            tx,
+            txAt,
+        };
         try {
-            await Inflow.create({
-                from,
-                communityId,
-                amount,
-                tx,
-                txAt,
-            });
+            await Inflow.create(inflowData);
         } catch (e) {
-            Logger.info(e);
+            if (e.name !== 'SequelizeUniqueConstraintError') {
+                Logger.error('Error inserting new Inflow. Data = ' + JSON.stringify(inflowData));
+                Logger.error(e);
+            }
         }
     }
 
