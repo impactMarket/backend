@@ -1,22 +1,25 @@
+import { CronJob } from 'cron';
+import { ethers } from 'ethers';
+
+import config from '../config';
+import { prepareAgenda } from '../jobs/agenda';
 import {
-    updateImpactMarketCache,
-    updateCommunityCache,
+    // updateImpactMarketCache,
+    checkCommunitiesOnChainEvents,
     subscribeChainEvents,
 } from '../jobs/chainSubscribers';
-import config from '../config';
-import { ethers } from 'ethers';
-import CommunityService from '../services/community';
-import { CronJob } from 'cron';
-import { calcuateCommunitiesMetrics } from '../jobs/cron/community';
-import { prepareAgenda } from '../jobs/agenda';
-import { updateExchangeRates } from '../jobs/cron/updateExchangeRates';
-import Logger from './logger';
-import { populateCommunityDailyState, verifyCommunityFunds } from '../jobs/cron/community';
-import ImMetadataService from '../services/imMetadata';
-import CronJobExecutedService from '../services/cronJobExecuted';
+import {
+    calcuateCommunitiesMetrics,
+    populateCommunityDailyState,
+    verifyCommunityFunds,
+} from '../jobs/cron/community';
 import { calcuateGlobalMetrics } from '../jobs/cron/global';
+import { updateExchangeRates } from '../jobs/cron/updateExchangeRates';
 import BeneficiaryService from '../services/beneficiary';
-
+import CommunityService from '../services/community';
+import CronJobExecutedService from '../services/cronJobExecuted';
+import ImMetadataService from '../services/imMetadata';
+import Logger from './logger';
 
 export default async (): Promise<void> => {
     await cron();
@@ -26,7 +29,11 @@ export default async (): Promise<void> => {
         // close all RPC connections and restart when available again
         const strError = JSON.stringify(error);
         Logger.error(strError);
-        if (strError.indexOf('eth_blockNumber') !== -1 && strError.indexOf('SERVER_ERROR') !== -1 && !waitingForResponseAfterCrash) {
+        if (
+            strError.indexOf('eth_blockNumber') !== -1 &&
+            strError.indexOf('SERVER_ERROR') !== -1 &&
+            !waitingForResponseAfterCrash
+        ) {
             provider.removeAllListeners();
             waitingForResponseAfterCrash = true;
             const intervalObj = setInterval(() => {
@@ -35,45 +42,74 @@ export default async (): Promise<void> => {
                     Logger.error('Reconnecting...');
                     subscribers(provider);
                     clearInterval(intervalObj);
-                    setTimeout(() => waitingForResponseAfterCrash = false, 2000);
-                })
+                    setTimeout(
+                        () => (waitingForResponseAfterCrash = false),
+                        2000
+                    );
+                });
             }, 2000);
         }
     });
-    await Promise.all([
-        prepareAgenda(),
-        subscribers(provider)
-    ]);
+    await Promise.all([prepareAgenda(), subscribers(provider)]);
 };
 
-async function subscribers(provider: ethers.providers.JsonRpcProvider): Promise<void> {
-    const startFrom = await ImMetadataService.getLastBlock();
-    const fromLogs = await updateImpactMarketCache(provider, startFrom);
-    fromLogs.forEach((community) => updateCommunityCache(
-        community.block === undefined
-            ? startFrom
-            : community.block,
-        provider,
-        community.address
-    ));
+async function subscribers(
+    provider: ethers.providers.JsonRpcProvider
+): Promise<void> {
+    const startFrom = await ImMetadataService.getLastBlock() - 15; // start 10 blocks before
+    // NEW: does not make sense to recover "lost community contracts" has in this case,
+    // it would have not been added in the database.
+    // const fromLogs = await updateImpactMarketCache(provider, startFrom);
+    // fromLogs.forEach((community) =>
+    //     updateCommunityCache(
+    //         startFrom,
+    //         provider,
+    //         community
+    //     )
+    // );
     // Because we are filtering events by address
     // when the community is created, the first manager
     // is actually added by impactmarket in an internal transaction.
     // This means that it's necessary to filter ManagerAdded with
     // impactmarket address.
-    updateCommunityCache(startFrom, provider, config.impactMarketContractAddress);
+    // NEW: this also does not apply
+    // updateCommunityCache(
+    //     startFrom,
+    //     provider,
+    //     config.impactMarketContractAddress
+    // );
+
+    // get all available communities
     const availableCommunities = await CommunityService.getAll('valid', false);
+    // starting 10 blocks in the past, check if they have lost transactions
+    Logger.info('Recovering past events...');
+    await checkCommunitiesOnChainEvents(startFrom, provider, availableCommunities);
+    // get beneficiaries in private communities, so we don't count them
     let beneficiariesInPrivateCommunities: string[] = [];
-    const privateCommunities = availableCommunities.filter((c) => c.visibility === 'private');
-    for(let c = 0; c < privateCommunities.length; c+= 1) {
-        const inCommunity = await BeneficiaryService.getAllInCommunity(privateCommunities[c].publicId);
-        beneficiariesInPrivateCommunities = beneficiariesInPrivateCommunities.concat(inCommunity.map((b) => b.address));
+    const privateCommunities = availableCommunities.filter(
+        (c) => c.visibility === 'private'
+    );
+    for (let c = 0; c < privateCommunities.length; c += 1) {
+        const inCommunity = await BeneficiaryService.getAllInCommunity(
+            privateCommunities[c].publicId
+        );
+        beneficiariesInPrivateCommunities = beneficiariesInPrivateCommunities.concat(
+            inCommunity.map((b) => b.address)
+        );
     }
-    availableCommunities.forEach((community) => updateCommunityCache(startFrom, provider, community.contractAddress));
+    Logger.info('Starting subscribers...');
+    // start subscribers
     subscribeChainEvents(
         provider,
-        new Map(availableCommunities.map((c) => [c.contractAddress, c.publicId])),
-        new Map(availableCommunities.map((c) => [c.contractAddress, c.visibility === 'public'])),
+        new Map(
+            availableCommunities.map((c) => [c.contractAddress, c.publicId])
+        ),
+        new Map(
+            availableCommunities.map((c) => [
+                c.contractAddress,
+                c.visibility === 'public',
+            ])
+        ),
         beneficiariesInPrivateCommunities
     );
 }
@@ -86,37 +122,59 @@ async function cron() {
     // multiple times a day
 
     // every three hours, update exchange rates
-    if (config.currenciesApiKey !== undefined && config.currenciesApiKey.length > 0) {
+    if (
+        config.currenciesApiKey !== undefined &&
+        config.currenciesApiKey.length > 0
+    ) {
         updateExchangeRates();
-        new CronJob('25 */3 * * *', async () => {
-            await updateExchangeRates();
-            CronJobExecutedService.add('updateExchangeRates');
-            Logger.info('updateExchangeRates successfully executed!');
-        }, null, true);
+        new CronJob(
+            '25 */3 * * *',
+            async () => {
+                await updateExchangeRates();
+                CronJobExecutedService.add('updateExchangeRates');
+                Logger.info('updateExchangeRates successfully executed!');
+            },
+            null,
+            true
+        );
     }
 
     // every four hours, verify community funds
-    new CronJob('45 */4 * * *', async () => {
-        await verifyCommunityFunds();
-        CronJobExecutedService.add('verifyCommunityFunds');
-        Logger.info('verifyCommunityFunds successfully executed!');
-    }, null, true);
-
+    new CronJob(
+        '45 */4 * * *',
+        async () => {
+            await verifyCommunityFunds();
+            CronJobExecutedService.add('verifyCommunityFunds');
+            Logger.info('verifyCommunityFunds successfully executed!');
+        },
+        null,
+        true
+    );
 
     // once a day
 
     // everyday at midnight
-    new CronJob('0 0 * * *', async () => {
-        await calcuateCommunitiesMetrics();
-        await calcuateGlobalMetrics();
-        CronJobExecutedService.add('calcuateMetrics');
-        Logger.info('calcuateMetrics successfully executed!');
-    }, null, true);
+    new CronJob(
+        '0 0 * * *',
+        async () => {
+            await calcuateCommunitiesMetrics();
+            await calcuateGlobalMetrics();
+            CronJobExecutedService.add('calcuateMetrics');
+            Logger.info('calcuateMetrics successfully executed!');
+        },
+        null,
+        true
+    );
 
     // everyday at 3:35pm (odd times), insert community daily rows with 5 days in advance
-    new CronJob('35 15 * * *', async () => {
-        await populateCommunityDailyState();
-        CronJobExecutedService.add('populateCommunityDailyState');
-        Logger.info('populateCommunityDailyState successfully executed!');
-    }, null, true);
+    new CronJob(
+        '35 15 * * *',
+        async () => {
+            await populateCommunityDailyState();
+            CronJobExecutedService.add('populateCommunityDailyState');
+            Logger.info('populateCommunityDailyState successfully executed!');
+        },
+        null,
+        true
+    );
 }
