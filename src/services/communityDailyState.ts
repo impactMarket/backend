@@ -42,14 +42,14 @@ export default class CommunityDailyStateService {
             order: [['date', 'DESC']],
             limit: 1
         });
-        let lastDay;
+        let lastDay: Date;
         if (resultLastDay.length === 0) {
             lastDay = today;
         } else {
             lastDay = new Date(resultLastDay[0].date);
         }
-        console.log(lastDay)
-        let missingDays = moment(today.setTime(today.getTime() + (days * 24 * 60 * 60 * 1000))).diff(lastDay, 'days');
+        let missingDays = moment(today.getTime() + (days * 24 * 60 * 60 * 1000)).diff(lastDay, 'days');
+        console.log(resultLastDay, today, lastDay, missingDays)
         const emptyDays: ICommunityDailyStatusInsert[] = [];
         while (missingDays-- > 0) {
             lastDay.setTime(lastDay.getTime() + (24 * 60 * 60 * 1000));
@@ -65,6 +65,7 @@ export default class CommunityDailyStateService {
                 date: new Date(lastDay),
             });
         }
+        console.log(emptyDays)
         if (emptyDays.length > 0) {
             await CommunityDailyState.bulkCreate(emptyDays);
         }
