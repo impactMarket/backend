@@ -161,6 +161,7 @@ async function subscribeChainEvents(
                 getBlockTime(log.blockHash).then((txAt) => BeneficiaryService.add(
                     beneficiaryAddress,
                     communityId!,
+                    log.transactionHash,
                     txAt
                 ));
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
@@ -393,6 +394,7 @@ async function checkCommunitiesOnChainEvents(
                 await BeneficiaryService.add(
                     beneficiaryAddress,
                     availableCommunities[c].publicId,
+                    log.transactionHash,
                     txAt
                 );
             } else if (parsedLog.name === 'BeneficiaryRemoved') {

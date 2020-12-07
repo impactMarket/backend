@@ -8,6 +8,7 @@ export default class BeneficiaryService {
     public static async add(
         address: string,
         communityId: string,
+        tx: string,
         txAt: Date,
     ): Promise<boolean> {
         // if user does not exist, add to pending list
@@ -17,6 +18,7 @@ export default class BeneficiaryService {
             const beneficiaryData = {
                 address,
                 communityId,
+                tx,
                 txAt,
             };
             try {
