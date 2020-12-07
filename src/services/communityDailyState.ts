@@ -44,12 +44,12 @@ export default class CommunityDailyStateService {
         });
         let lastDay: Date;
         if (resultLastDay.length === 0) {
-            lastDay = today;
+            // yesterday, since we start by adding one day to the last one
+            lastDay = new Date(today.getTime() - (24 * 60 * 60 * 1000));
         } else {
             lastDay = new Date(resultLastDay[0].date);
         }
         let missingDays = moment(today.getTime() + (days * 24 * 60 * 60 * 1000)).diff(lastDay, 'days');
-        console.log(resultLastDay, today, lastDay, missingDays)
         const emptyDays: ICommunityDailyStatusInsert[] = [];
         while (missingDays-- > 0) {
             lastDay.setTime(lastDay.getTime() + (24 * 60 * 60 * 1000));
@@ -65,7 +65,6 @@ export default class CommunityDailyStateService {
                 date: new Date(lastDay),
             });
         }
-        console.log(emptyDays)
         if (emptyDays.length > 0) {
             await CommunityDailyState.bulkCreate(emptyDays);
         }
