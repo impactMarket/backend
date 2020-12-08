@@ -23,5 +23,5 @@ export const upload = multer({
         key(req, file, cb) {
             cb(null, Date.now().toString() + path.extname(file.originalname));
         },
-    }),
+    }) as any,
 });
