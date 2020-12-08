@@ -1,28 +1,40 @@
 import { Op } from 'sequelize';
-
 import { Manager } from '../db/models/manager';
+import { Logger } from '../loaders/logger';
+
 
 export default class ManagerService {
+
     public static async add(
         address: string,
         communityId: string
     ): Promise<boolean> {
         // if user does not exist, add to pending list
         // otherwise update
-        const user = await Manager.findOne({
-            where: { user: address, communityId },
-        });
+        const user = await Manager.findOne({ where: { user: address, communityId } });
         if (user === null) {
-            const updated = await Manager.create({
+            const managerData = {
                 user: address,
-                communityId,
-            });
-            return updated[0] > 0;
+                communityId
+            };
+            try {
+                const updated = await Manager.create(managerData);
+                return updated[0] > 0;
+            } catch (e) {
+                if (e.name !== 'SequelizeUniqueConstraintError') {
+                    Logger.error('Error inserting new Manager. Data = ' + JSON.stringify(managerData));
+                    Logger.error(e);
+                }
+                return false;
+            }
         }
         return true;
     }
 
-    public static async get(address: string): Promise<Manager | null> {
+
+    public static async get(
+        address: string,
+    ): Promise<Manager | null> {
         return await Manager.findOne({ where: { user: address } });
     }
 

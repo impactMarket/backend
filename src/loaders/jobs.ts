@@ -4,8 +4,8 @@ import { ethers } from 'ethers';
 import config from '../config';
 import { prepareAgenda } from '../jobs/agenda';
 import {
-    updateImpactMarketCache,
-    updateCommunityCache,
+    // updateImpactMarketCache,
+    checkCommunitiesOnChainEvents,
     subscribeChainEvents,
 } from '../jobs/chainSubscribers';
 import {
@@ -56,30 +56,37 @@ export default async (): Promise<void> => {
 async function subscribers(
     provider: ethers.providers.JsonRpcProvider
 ): Promise<void> {
-    const startFrom = await ImMetadataService.getLastBlock();
-    const fromLogs = await updateImpactMarketCache(provider, startFrom);
-    fromLogs.forEach((community) =>
-        updateCommunityCache(
-            community.block === undefined ? startFrom : community.block,
-            provider,
-            community.address
-        )
-    );
+    const startFrom = await ImMetadataService.getLastBlock() - 15; // start 10 blocks before
+    // NEW: does not make sense to recover "lost community contracts" has in this case,
+    // it would have not been added in the database.
+    // const fromLogs = await updateImpactMarketCache(provider, startFrom);
+    // fromLogs.forEach((community) =>
+    //     updateCommunityCache(
+    //         startFrom,
+    //         provider,
+    //         community
+    //     )
+    // );
     // Because we are filtering events by address
     // when the community is created, the first manager
     // is actually added by impactmarket in an internal transaction.
     // This means that it's necessary to filter ManagerAdded with
     // impactmarket address.
-    updateCommunityCache(
-        startFrom,
-        provider,
-        config.impactMarketContractAddress
-    );
+    // NEW: this also does not apply
+    // updateCommunityCache(
+    //     startFrom,
+    //     provider,
+    //     config.impactMarketContractAddress
+    // );
+
+    // get all available communities
     const availableCommunities = await CommunityService.getAll('valid', false);
-    let beneficiariesInPrivateCommunities: string[] = [];
     const privateCommunities = availableCommunities.filter(
         (c) => c.visibility === 'private'
     );
+    let beneficiariesInPrivateCommunities: string[] = [];
+    // starting 10 blocks in the past, check if they have lost transactions
+    Logger.info('Recovering past events...');
     for (let c = 0; c < privateCommunities.length; c += 1) {
         const inCommunity = await BeneficiaryService.getAllInCommunity(
             privateCommunities[c].publicId
@@ -88,9 +95,18 @@ async function subscribers(
             inCommunity.map((b) => b.address)
         );
     }
-    availableCommunities.forEach((community) =>
-        updateCommunityCache(startFrom, provider, community.contractAddress)
-    );
+    await checkCommunitiesOnChainEvents(startFrom, provider, availableCommunities, beneficiariesInPrivateCommunities);
+    // get beneficiaries in private communities, so we don't count them
+    Logger.info('Starting subscribers...');
+    for (let c = 0; c < privateCommunities.length; c += 1) {
+        const inCommunity = await BeneficiaryService.getAllInCommunity(
+            privateCommunities[c].publicId
+        );
+        beneficiariesInPrivateCommunities = beneficiariesInPrivateCommunities.concat(
+            inCommunity.map((b) => b.address)
+        );
+    }
+    // start subscribers
     subscribeChainEvents(
         provider,
         new Map(

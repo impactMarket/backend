@@ -1,4 +1,3 @@
-import { String } from 'aws-sdk/clients/acm';
 import { col, fn, Op } from 'sequelize';
 
 import { Claim } from '../db/models/claim';
@@ -12,16 +11,20 @@ export default class ClaimService {
         tx: string,
         txAt: Date
     ): Promise<void> {
+        const claimData = {
+            address,
+            communityId,
+            amount,
+            tx,
+            txAt,
+        };
         try {
-            await Claim.create({
-                address,
-                communityId,
-                amount,
-                tx,
-                txAt,
-            });
+            await Claim.create(claimData);
         } catch (e) {
-            Logger.info(e);
+            if (e.name !== 'SequelizeUniqueConstraintError') {
+                Logger.error('Error inserting new Claim. Data = ' + JSON.stringify(claimData));
+                Logger.error(e);
+            }
         }
     }
 

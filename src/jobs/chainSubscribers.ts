@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import config from '../config';
 import CommunityContractABI from '../contracts/CommunityABI.json';
 import ERC20ABI from '../contracts/ERC20ABI.json';
-import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
+// import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
 import { Logger } from '../loaders/logger';
 import BeneficiaryService from '../services/beneficiary';
 import BeneficiaryTransactionService from '../services/beneficiaryTransaction';
@@ -13,18 +13,19 @@ import ImMetadataService from '../services/imMetadata';
 import InflowService from '../services/inflow';
 import ManagerService from '../services/managers';
 import TransactionsService from '../services/transactions';
+import { ICommunityInfo } from '../types';
 import { getBlockTime, notifyBeneficiaryAdded } from '../utils';
 
-interface IFilterCommunityTmpData {
-    address: string;
-    block?: number;
-}
+// interface IFilterCommunityTmpData {
+//     address: string;
+//     block?: number;
+// }
 
 function catchHandlerTransactionsService(error: any) {
     // that's fine if it is a SequelizeUniqueConstraintError
     // it's already there 👌
     if (error.name !== 'SequelizeUniqueConstraintError') {
-        Logger.warning(typeof error, error, ':18');
+        Logger.error('catchHandlerTransactionsService ' + error);
     }
 }
 
@@ -160,6 +161,7 @@ async function subscribeChainEvents(
                 getBlockTime(log.blockHash).then((txAt) => BeneficiaryService.add(
                     beneficiaryAddress,
                     communityId!,
+                    log.transactionHash,
                     txAt
                 ));
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
@@ -294,113 +296,207 @@ async function subscribeChainEvents(
     });
 }
 
-async function updateImpactMarketCache(
-    provider: ethers.providers.JsonRpcProvider,
-    startFromBlock: number
-): Promise<IFilterCommunityTmpData[]> {
-    const ifaceImpactMarket = new ethers.utils.Interface(
-        ImpactMarketContractABI
-    );
+// async function updateImpactMarketCache(
+//     provider: ethers.providers.JsonRpcProvider,
+//     startFromBlock: number
+// ): Promise<string[]> {
+//     const ifaceImpactMarket = new ethers.utils.Interface(
+//         ImpactMarketContractABI
+//     );
 
-    const logsImpactMarket = await provider.getLogs({
-        address: config.impactMarketContractAddress,
-        fromBlock: startFromBlock,
-        toBlock: 'latest',
-        topics: [
-            [
-                ethers.utils.id(
-                    'CommunityAdded(address,address,uint256,uint256,uint256,uint256)'
-                ),
-                ethers.utils.id('CommunityRemoved(address)'),
-            ],
-        ],
-    });
+//     const logsImpactMarket = await provider.getLogs({
+//         address: config.impactMarketContractAddress,
+//         fromBlock: startFromBlock,
+//         toBlock: 'latest',
+//         topics: [
+//             [
+//                 ethers.utils.id('CommunityAdded(address,address,uint256,uint256,uint256,uint256)'),
+//                 // ethers.utils.id('CommunityRemoved(address)'),
+//             ],
+//         ],
+//     });
 
-    const eventsImpactMarket: ethers.utils.LogDescription[] = [];
-    for (let index = 0; index < logsImpactMarket.length; index++) {
-        try {
-            const parsedLog = ifaceImpactMarket.parseLog(
-                logsImpactMarket[index]
-            );
-            eventsImpactMarket.push(parsedLog);
-        } catch (e) { }
-    }
-    const communitiesAdded = [] as IFilterCommunityTmpData[];
-    for (let eim = 0; eim < eventsImpactMarket.length; eim += 1) {
-        if (eventsImpactMarket[eim].name === 'CommunityAdded') {
-            communitiesAdded.push({
-                address: eventsImpactMarket[eim].args._communityAddress,
-                block: logsImpactMarket[eim].blockNumber,
-            });
-        }
-        TransactionsService.add(
-            provider,
-            logsImpactMarket[eim],
-            eventsImpactMarket[eim]
-        ).catch(catchHandlerTransactionsService);
-    }
-    return communitiesAdded;
-}
+//     const eventsImpactMarket: ethers.utils.LogDescription[] = [];
+//     for (let index = 0; index < logsImpactMarket.length; index++) {
+//         try {
+//             const parsedLog = ifaceImpactMarket.parseLog(
+//                 logsImpactMarket[index]
+//             );
+//             eventsImpactMarket.push(parsedLog);
+//         } catch (e) { }
+//     }
+//     const communitiesAdded: string[] = [];
+//     for (let eim = 0; eim < eventsImpactMarket.length; eim += 1) {
+//         if (eventsImpactMarket[eim].name === 'CommunityAdded') {
+//             communitiesAdded.push(eventsImpactMarket[eim].args._communityAddress);
+//         }
+//         TransactionsService.add(
+//             provider,
+//             logsImpactMarket[eim],
+//             eventsImpactMarket[eim]
+//         ).catch(catchHandlerTransactionsService);
+//     }
+//     return communitiesAdded;
+// }
 
-function updateCommunityCache(
+/**
+ * This is a critical method called only once at an important time. This is only used in case
+ * there's a complete crash of the api or if some service stops working and 
+ * @param startFromBlock where to start
+ * @param provider json rpc
+ * @param availableCommunities all valid communities
+ */
+async function checkCommunitiesOnChainEvents(
     startFromBlock: number,
     provider: ethers.providers.JsonRpcProvider,
-    contractAddress: string
-): void {
+    availableCommunities: ICommunityInfo[],
+    beneficiariesInPrivateCommunities: string[]
+): Promise<void> {
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
+    const allCommunitiesAddresses = availableCommunities
+        .filter((c) => c.visibility === 'public')
+        .map((c) => c.contractAddress);
+    const allBeneficiaryAddressses = await BeneficiaryService.getAllAddresses();
     // get past community events
-    provider
-        .getLogs({
-            address: contractAddress,
-            fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
-            toBlock: 'latest',
-            topics: [
-                [
-                    ethers.utils.id('ManagerAdded(address)'),
-                    ethers.utils.id('ManagerRemoved(address)'),
-                    ethers.utils.id('BeneficiaryAdded(address)'),
-                    ethers.utils.id('BeneficiaryLocked(address)'),
-                    ethers.utils.id('BeneficiaryRemoved(address)'),
-                    ethers.utils.id('BeneficiaryClaim(address,uint256)'),
-                    ethers.utils.id(
-                        'CommunityEdited(uint256,uint256,uint256,uint256)'
-                    ),
+    for (let c = 0; c < availableCommunities.length; c++) {
+        const logsCommunity = await provider
+            .getLogs({
+                address: availableCommunities[c].contractAddress,
+                fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
+                toBlock: 'latest',
+                topics: [
+                    [
+                        ethers.utils.id('ManagerAdded(address)'),
+                        // ethers.utils.id('ManagerRemoved(address)'),
+                        ethers.utils.id('BeneficiaryAdded(address)'),
+                        // ethers.utils.id('BeneficiaryLocked(address)'),
+                        ethers.utils.id('BeneficiaryRemoved(address)'),
+                        ethers.utils.id('BeneficiaryClaim(address,uint256)'),
+                        // ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
+                    ],
                 ],
-            ],
-        })
-        .then(async (logsCommunity) => {
-            const eventsCommunity = logsCommunity.map((log) =>
-                ifaceCommunity.parseLog(log)
-            );
-            // save community events
-            for (let ec = 0; ec < eventsCommunity.length; ec += 1) {
+            });
+
+        const eventsCommunity = logsCommunity.map((log) =>
+            ifaceCommunity.parseLog(log)
+        );
+        // save community events
+        for (let ec = 0; ec < eventsCommunity.length; ec += 1) {
+            const log = logsCommunity[ec];
+            const parsedLog = eventsCommunity[ec];
+            if (parsedLog.name === 'BeneficiaryAdded') {
+                const beneficiaryAddress = parsedLog.args[0];
+                const communityAddress = log.address;
+                // let communityId = allCommunities.get(communityAddress);
+                // notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
+                const txAt = await getBlockTime(log.blockHash);
+                await BeneficiaryService.add(
+                    beneficiaryAddress,
+                    availableCommunities[c].publicId,
+                    log.transactionHash,
+                    txAt
+                );
+            } else if (parsedLog.name === 'BeneficiaryRemoved') {
+                const beneficiaryAddress = parsedLog.args[0];
+                await BeneficiaryService.remove(beneficiaryAddress);
+            } else if (parsedLog.name === 'BeneficiaryClaim') {
+                const beneficiaryAddress = parsedLog.args[0];
+                const amount = parsedLog.args[1];
+                // const communityId = allCommunities.get(log.address)!;
+                const txAt = await getBlockTime(log.blockHash);
+                await ClaimsService.add(
+                    beneficiaryAddress,
+                    availableCommunities[c].publicId,
+                    amount,
+                    log.transactionHash,
+                    txAt
+                );
+            } else if (parsedLog.name === 'ManagerAdded') {
+                const managerAddress = parsedLog.args[0];
+                await ManagerService.add(
+                    managerAddress,
+                    availableCommunities[c].publicId,
+                );
+            }
+            TransactionsService.add(
+                provider,
+                logsCommunity[ec],
+                eventsCommunity[ec]
+            ).catch(catchHandlerTransactionsService);
+        }
+        // get past donations
+        const logsCUSD = await provider
+            .getLogs({
+                fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
+                toBlock: 'latest',
+                topics: [[ethers.utils.id('Transfer(address,address,uint256)')]],
+            });
+        const eventsCUSD = logsCUSD.map((log) => ifaceERC20.parseLog(log));
+        for (let ec = 0; ec < eventsCUSD.length; ec += 1) {
+            const preParsedLog = eventsCUSD[ec];
+            if (eventsCUSD[ec].args.to === availableCommunities[c].contractAddress) {
+                const log = logsCUSD[ec];
+                const parsedLog = eventsCUSD[ec];
+                const from = parsedLog.args[0];
+                // const toCommunityAddress = parsedLog.args[1];
+                // const communityId = allCommunities.get(toCommunityAddress)!;
+                const amount = parsedLog.args[2].toString();
+                const txAt = await getBlockTime(log.blockHash);
+                await InflowService.add(
+                    from,
+                    availableCommunities[c].publicId,
+                    amount,
+                    log.transactionHash,
+                    txAt
+                );
                 TransactionsService.add(
                     provider,
-                    logsCommunity[ec],
-                    eventsCommunity[ec]
+                    logsCUSD[ec],
+                    eventsCUSD[ec]
                 ).catch(catchHandlerTransactionsService);
-            }
-        });
-    // get past donations
-    provider
-        .getLogs({
-            fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
-            toBlock: 'latest',
-            topics: [[ethers.utils.id('Transfer(address,address,uint256)')]],
-        })
-        .then(async (logsCUSD) => {
-            const eventsCUSD = logsCUSD.map((log) => ifaceERC20.parseLog(log));
-            for (let ec = 0; ec < eventsCUSD.length; ec += 1) {
-                if (eventsCUSD[ec].args.to === contractAddress) {
-                    TransactionsService.add(
-                        provider,
-                        logsCUSD[ec],
-                        eventsCUSD[ec]
-                    ).catch(catchHandlerTransactionsService);
+            } else if (
+                // same as in subscribe
+                !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
+                !beneficiariesInPrivateCommunities.includes(
+                    preParsedLog.args[0]
+                ) &&
+                !beneficiariesInPrivateCommunities.includes(
+                    preParsedLog.args[1]
+                ) &&
+                preParsedLog.args[1] !== config.attestationProxyAddress &&
+                preParsedLog.args[0] !== preParsedLog.args[1] &&
+                preParsedLog.args[2].toString().length > 15
+            ) {
+                const isFromBeneficiary = allBeneficiaryAddressses.includes(
+                    preParsedLog.args[0]
+                );
+                // transactions from or to beneficiaries
+                if (
+                    isFromBeneficiary ||
+                    allBeneficiaryAddressses.includes(preParsedLog.args[1])
+                ) {
+                    const log = logsCUSD[ec];
+                    const _parsedLog = preParsedLog; // TODO: rename to parsedLog
+                    const beneficiaryAddress = isFromBeneficiary
+                        ? _parsedLog.args[0]
+                        : _parsedLog.args[1];
+                    const withAddress = isFromBeneficiary
+                        ? _parsedLog.args[1]
+                        : _parsedLog.args[0];
+                    // save to table to calculate txs and volume
+                    await BeneficiaryTransactionService.add({
+                        beneficiary: beneficiaryAddress,
+                        withAddress,
+                        amount: _parsedLog.args[2].toString(),
+                        isFromBeneficiary,
+                        tx: log.transactionHash,
+                        date: new Date(),
+                    });
                 }
             }
-        });
+        }
+    }
 }
 
-export { subscribeChainEvents, updateImpactMarketCache, updateCommunityCache };
+export { subscribeChainEvents, /** updateImpactMarketCache, */ checkCommunitiesOnChainEvents };
