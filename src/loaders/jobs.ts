@@ -25,6 +25,7 @@ export default async (): Promise<void> => {
     await cron();
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     let waitingForResponseAfterCrash = false;
+    let waitingForResponseAfterTxRegWarn = false;
     process.on('unhandledRejection', (error: any) => {
         // close all RPC connections and restart when available again
         const strError = JSON.stringify(error);
@@ -32,24 +33,44 @@ export default async (): Promise<void> => {
         if (
             strError.indexOf('eth_') !== -1 && // any eth_ surely is related to the RPC
             strError.indexOf('SERVER_ERROR') !== -1 &&
-            !waitingForResponseAfterCrash
+            !waitingForResponseAfterCrash &&
+            !waitingForResponseAfterTxRegWarn
         ) {
-            provider.removeAllListeners();
             waitingForResponseAfterCrash = true;
+            provider.removeAllListeners();
             const intervalObj = setInterval(() => {
                 Logger.error('Checking if RPC is available again');
                 provider.getBlockNumber().then(() => {
-                    Logger.error('Reconnecting...');
+                    Logger.error('Reconnecting json rpc provider...');
                     subscribers(provider);
                     clearInterval(intervalObj);
                     setTimeout(
                         () => (waitingForResponseAfterCrash = false),
                         2000
                     );
-                });
+                }).catch(() => {});
             }, 2000);
         }
     });
+    process.on('warning', (warning) => {
+        if (warning.name === 'TxRegistryFailureWarning') {
+            waitingForResponseAfterTxRegWarn = true;
+            Logger.error('Restarting provider listeners after registry failure');
+            provider.removeAllListeners();
+            const intervalObj = setInterval(() => {
+                Logger.error('Checking if RPC is available');
+                provider.getBlockNumber().then(() => {
+                    Logger.error('Reconnecting json rpc provider...');
+                    subscribers(provider);
+                    clearInterval(intervalObj);
+                    setTimeout(
+                        () => (waitingForResponseAfterTxRegWarn = false),
+                        2000
+                    );
+                }).catch(() => {});
+            }, 2000);
+        }
+    })
     await Promise.all([prepareAgenda(), subscribers(provider)]);
 };
 
@@ -81,28 +102,28 @@ async function subscribers(
 
     // get all available communities
     const availableCommunities = await CommunityService.getAll('valid', false);
-    const privateCommunities = availableCommunities.filter(
-        (c) => c.visibility === 'private'
+    const publicCommunities = availableCommunities.filter(
+        (c) => c.visibility === 'public'
     );
-    let beneficiariesInPrivateCommunities: string[] = [];
+    let beneficiariesInPublicCommunities: string[] = [];
     // starting 10 blocks in the past, check if they have lost transactions
     Logger.info('Recovering past events...');
-    for (let c = 0; c < privateCommunities.length; c += 1) {
+    for (let c = 0; c < publicCommunities.length; c += 1) {
         const inCommunity = await BeneficiaryService.getAllInCommunity(
-            privateCommunities[c].publicId
+            publicCommunities[c].publicId
         );
-        beneficiariesInPrivateCommunities = beneficiariesInPrivateCommunities.concat(
+        beneficiariesInPublicCommunities = beneficiariesInPublicCommunities.concat(
             inCommunity.map((b) => b.address)
         );
     }
-    await checkCommunitiesOnChainEvents(startFrom, provider, availableCommunities, beneficiariesInPrivateCommunities);
+    await checkCommunitiesOnChainEvents(startFrom, provider, availableCommunities, beneficiariesInPublicCommunities);
     // get beneficiaries in private communities, so we don't count them
     Logger.info('Starting subscribers...');
-    for (let c = 0; c < privateCommunities.length; c += 1) {
+    for (let c = 0; c < publicCommunities.length; c += 1) {
         const inCommunity = await BeneficiaryService.getAllInCommunity(
-            privateCommunities[c].publicId
+            publicCommunities[c].publicId
         );
-        beneficiariesInPrivateCommunities = beneficiariesInPrivateCommunities.concat(
+        beneficiariesInPublicCommunities = beneficiariesInPublicCommunities.concat(
             inCommunity.map((b) => b.address)
         );
     }
@@ -118,7 +139,7 @@ async function subscribers(
                 c.visibility === 'public',
             ])
         ),
-        beneficiariesInPrivateCommunities
+        beneficiariesInPublicCommunities
     );
 }
 

@@ -18,25 +18,30 @@ export function groupBy<T>(array: any[], key: string): Map<string, T[]> {
 }
 
 export async function getBlockTime(blockHash: string): Promise<Date> {
-    const requestContent = {
-        id: 0,
-        jsonrpc: '2.0',
-        method: 'eth_getBlockByHash',
-        params: [
-            blockHash,
-            false
-        ]
-    };
-    // handle success
-    const requestHeaders = {
-        headers: {
-            'Accept': 'application/json',
-            'Accept-encoding': 'gzip, deflate',
-            'Content-Type': 'application/json',
-        }
-    };
-    const response = await axios.post<{ result: { timestamp: string } }>(config.jsonRpcUrl, requestContent, requestHeaders);
-    return new Date(parseInt(response.data.result.timestamp, 16) * 1000);
+    try {
+        const requestContent = {
+            id: 0,
+            jsonrpc: '2.0',
+            method: 'eth_getBlockByHash',
+            params: [
+                blockHash,
+                false
+            ]
+        };
+        // handle success
+        const requestHeaders = {
+            headers: {
+                'Accept': 'application/json',
+                'Accept-encoding': 'gzip, deflate',
+                'Content-Type': 'application/json',
+            }
+        };
+        const response = await axios.post<{ result: { timestamp: string } }>(config.jsonRpcUrl, requestContent, requestHeaders);
+        return new Date(parseInt(response.data.result.timestamp, 16) * 1000);
+    } catch(e) {
+        Logger.error('getBlockTime ' + e);
+        return new Date();
+    }
 }
 
 export async function notifyBackersCommunityLowFunds(community: ICommunityInfo, backersPushTokens: string[]) {
