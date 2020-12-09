@@ -163,7 +163,7 @@ async function cron() {
 
     // everyday at midnight
     new CronJob(
-        '0 0 * * *',
+        '0 1 * * *',
         async () => {
             await calcuateCommunitiesMetrics();
             await calcuateGlobalMetrics();
