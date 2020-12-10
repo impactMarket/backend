@@ -459,7 +459,7 @@ module.exports = {
                     updatedAt: new Date()
                 });
             } catch(e) {
-                console.log('' + e)
+                console.log('error in ReachedAddress' + e)
             }
         }
 
