@@ -30,7 +30,7 @@ function catchHandlerTransactionsService(error: any) {
 }
 
 function asyncTxsFailure(error: any) {
-    Logger.crit('asyncTxsFailure ' + error);
+    Logger.error('asyncTxsFailure ' + error);
     // should this restart the subscribers?
     process.emitWarning(error, 'TxRegistryFailureWarning');
 }
@@ -140,7 +140,7 @@ async function subscribeChainEvents(
                         communityAddress
                     );
                     if (community === null) {
-                        Logger.crit(
+                        Logger.error(
                             `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
                         );
                     } else {
@@ -214,7 +214,7 @@ async function subscribeChainEvents(
                                 communityAddress
                             );
                             if (community === null) {
-                                Logger.crit(
+                                Logger.error(
                                     `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
                                 );
                             } else {
@@ -259,7 +259,7 @@ async function subscribeChainEvents(
                                             communityAddress
                                         );
                                         if (community === null) {
-                                            Logger.crit(
+                                            Logger.error(
                                                 `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
                                             );
                                         } else {

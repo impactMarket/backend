@@ -40,7 +40,7 @@ export default class UserService {
                 ...welcomeUser
             };
         } catch (e) {
-            Logger.warning('Error while auth user ', address, e.message);
+            Logger.warn('Error while auth user ', address, e.message);
             return undefined;
         }
     }
