@@ -25,6 +25,10 @@ export default async (): Promise<void> => {
     await cron();
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     let waitingForResponseAfterCrash = false;
+    let successfullAnswersAfterCrash = 0;
+    let successfullAnswersAfterTxRegWarn = 0;
+    let intervalWhenCrash: NodeJS.Timeout | undefined = undefined;
+    let intervalWhenTxRegWarn: NodeJS.Timeout | undefined = undefined;
     let waitingForResponseAfterTxRegWarn = false;
     process.on('unhandledRejection', (error: any) => {
         // close all RPC connections and restart when available again
@@ -38,17 +42,33 @@ export default async (): Promise<void> => {
         ) {
             waitingForResponseAfterCrash = true;
             provider.removeAllListeners();
-            const intervalObj = setInterval(() => {
-                Logger.error('Checking if RPC is available again');
+            // if a second crash happen before recovering from the first
+            // it will get here again. Clear past time interval
+            // and start again.
+            if (intervalWhenCrash !== undefined) {
+                clearInterval(intervalWhenCrash);
+            }
+            intervalWhenCrash = setInterval(() => {
                 provider.getBlockNumber().then(() => {
-                    Logger.error('Reconnecting json rpc provider...');
-                    subscribers(provider);
-                    clearInterval(intervalObj);
-                    setTimeout(
-                        () => (waitingForResponseAfterCrash = false),
-                        2000
-                    );
-                }).catch(() => {});
+                    successfullAnswersAfterCrash += 1;
+                    // require 5 successfull answers, to prevent two or more crashes in row
+                    if (successfullAnswersAfterCrash < 5) {
+                        Logger.error('Got ' + successfullAnswersAfterCrash + '/5 sucessfull responses form json rpc provider...');
+                    } else {
+                        Logger.error('Reconnecting json rpc provider...');
+                        subscribers(provider);
+                        clearInterval(intervalWhenCrash!);
+                        intervalWhenCrash = undefined;
+                        waitingForResponseAfterCrash = false;
+                        // setTimeout(
+                        //     () => (waitingForResponseAfterCrash = false),
+                        //     2000
+                        // );
+                    }
+                }).catch(() => {
+                    Logger.error('Checking again if RPC is available...');
+                    successfullAnswersAfterCrash = 0;
+                });
             }, 2000);
         }
     });
@@ -57,17 +77,31 @@ export default async (): Promise<void> => {
             waitingForResponseAfterTxRegWarn = true;
             Logger.error('Restarting provider listeners after registry failure');
             provider.removeAllListeners();
-            const intervalObj = setInterval(() => {
+            // if a second crash happen before recovering from the first
+            // it will get here again. Clear past time interval
+            // and start again.
+            if (intervalWhenTxRegWarn !== undefined) {
+                clearInterval(intervalWhenTxRegWarn);
+            }
+            intervalWhenTxRegWarn = setInterval(() => {
                 Logger.error('Checking if RPC is available');
                 provider.getBlockNumber().then(() => {
-                    Logger.error('Reconnecting json rpc provider...');
-                    subscribers(provider);
-                    clearInterval(intervalObj);
-                    setTimeout(
-                        () => (waitingForResponseAfterTxRegWarn = false),
-                        2000
-                    );
-                }).catch(() => {});
+                    successfullAnswersAfterTxRegWarn += 1;
+                    if (successfullAnswersAfterTxRegWarn < 5) {
+                        Logger.error('Got ' + successfullAnswersAfterTxRegWarn + '/5 sucessfull responses form json rpc provider...');
+                    } else {
+                        subscribers(provider);
+                        clearInterval(intervalWhenTxRegWarn!);
+                        waitingForResponseAfterTxRegWarn = false;
+                        // setTimeout(
+                        //     () => (waitingForResponseAfterTxRegWarn = false),
+                        //     2000
+                        // );
+                    }
+                }).catch(() => {
+                    Logger.error('Checking again if RPC is available...');
+                    successfullAnswersAfterTxRegWarn = 0;
+                });
             }, 2000);
         }
     })
@@ -77,7 +111,7 @@ export default async (): Promise<void> => {
 async function subscribers(
     provider: ethers.providers.JsonRpcProvider
 ): Promise<void> {
-    const startFrom = await ImMetadataService.getLastBlock() - 15; // start 10 blocks before
+    const startFrom = await ImMetadataService.getLastBlock() - 15; // start 15 blocks before
     // NEW: does not make sense to recover "lost community contracts" has in this case,
     // it would have not been added in the database.
     // const fromLogs = await updateImpactMarketCache(provider, startFrom);
