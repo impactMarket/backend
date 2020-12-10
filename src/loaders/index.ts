@@ -6,10 +6,6 @@ import expressLoader from './express';
 import jobsLoader from './jobs';
 
 export default async ({ expressApp }: { expressApp: express.Application }): Promise<void> => {
-    const dbLoader = databaseLoader();
-    await dbLoader.sequelize.authenticate();
-    await dbLoader.sequelize.sync();
-
     if (process.env.NODE_ENV === 'development') {
         Logger.debug('DEBUG');
         Logger.verbose('VERBOSE');
@@ -17,8 +13,10 @@ export default async ({ expressApp }: { expressApp: express.Application }): Prom
         Logger.warn('WARNING');
         Logger.error('ERROR');
     }
-
-    await databaseLoader();
+    
+    const dbLoader = databaseLoader();
+    await dbLoader.sequelize.authenticate();
+    await dbLoader.sequelize.sync();
     Logger.info('🗺️  DB loaded and connected');
 
     await jobsLoader();
