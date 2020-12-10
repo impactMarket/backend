@@ -29,11 +29,17 @@ function catchHandlerTransactionsService(error: any) {
     }
 }
 
+function asyncTxsFailure(error: any) {
+    Logger.error('asyncTxsFailure ' + error);
+    // should this restart the subscribers?
+    process.emitWarning(error, 'TxRegistryFailureWarning');
+}
+
 async function subscribeChainEvents(
     provider: ethers.providers.JsonRpcProvider,
     communities: Map<string, string>, // <address, publicId>
-    communitiesVisibility: Map<string, boolean>, // true if public community
-    beneficiariesInPrivateCommunities: string[]
+    isCommunityPublic: Map<string, boolean>, // true if public community
+    beneficiariesInPublicCommunities: string[]
 ): Promise<void> {
     const filter = {
         topics: [
@@ -76,18 +82,18 @@ async function subscribeChainEvents(
                         amount,
                         log.transactionHash,
                         txAt
-                    )
+                    ).catch(asyncTxsFailure)
                 );
             } else if (
                 // do not count from communities [eg. claims]
                 !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
-                // beneficiary not in private community (both from and to)
-                !beneficiariesInPrivateCommunities.includes(
+                // beneficiary in public community (both from or to)
+                (beneficiariesInPublicCommunities.includes(
                     preParsedLog.args[0]
-                ) &&
-                !beneficiariesInPrivateCommunities.includes(
-                    preParsedLog.args[1]
-                ) &&
+                ) ||
+                    beneficiariesInPublicCommunities.includes(
+                        preParsedLog.args[1]
+                    )) &&
                 // ignore AttestationProxy
                 preParsedLog.args[1] !== config.attestationProxyAddress &&
                 // yeah, people without knowing make transactions to themselves! 🕊️
@@ -117,8 +123,8 @@ async function subscribeChainEvents(
                         amount: _parsedLog.args[2].toString(),
                         isFromBeneficiary,
                         tx: log.transactionHash,
-                        date: new Date(),
-                    });
+                        date: new Date(), // date only
+                    }).catch(asyncTxsFailure);
                 }
             }
             //
@@ -134,11 +140,11 @@ async function subscribeChainEvents(
                         communityAddress
                     );
                     if (community === null) {
-                        Logger.crit(
+                        Logger.error(
                             `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
                         );
                     } else {
-                        communitiesVisibility.set(
+                        isCommunityPublic.set(
                             communityAddress,
                             community.visibility === 'public'
                         );
@@ -150,11 +156,11 @@ async function subscribeChainEvents(
                         communityId = community.publicId;
                     }
                 }
-                const isThisCommunityPublic = communitiesVisibility.get(
+                const isThisCommunityPublic = isCommunityPublic.get(
                     communityAddress
                 );
-                if (!isThisCommunityPublic) {
-                    beneficiariesInPrivateCommunities.push(beneficiaryAddress);
+                if (isThisCommunityPublic) {
+                    beneficiariesInPublicCommunities.push(beneficiaryAddress);
                 }
                 allBeneficiaryAddressses.push(beneficiaryAddress);
                 notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
@@ -163,7 +169,7 @@ async function subscribeChainEvents(
                     communityId!,
                     log.transactionHash,
                     txAt
-                ));
+                ).catch(asyncTxsFailure));
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
                 const beneficiaryAddress = parsedLog.args[0];
                 BeneficiaryService.remove(beneficiaryAddress);
@@ -208,11 +214,11 @@ async function subscribeChainEvents(
                                 communityAddress
                             );
                             if (community === null) {
-                                Logger.crit(
+                                Logger.error(
                                     `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
                                 );
                             } else {
-                                communitiesVisibility.set(
+                                isCommunityPublic.set(
                                     communityAddress,
                                     community.visibility === 'public'
                                 );
@@ -253,11 +259,11 @@ async function subscribeChainEvents(
                                             communityAddress
                                         );
                                         if (community === null) {
-                                            Logger.crit(
+                                            Logger.error(
                                                 `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
                                             );
                                         } else {
-                                            communitiesVisibility.set(
+                                            isCommunityPublic.set(
                                                 communityAddress,
                                                 community.visibility ===
                                                 'public'
@@ -350,7 +356,7 @@ async function checkCommunitiesOnChainEvents(
     startFromBlock: number,
     provider: ethers.providers.JsonRpcProvider,
     availableCommunities: ICommunityInfo[],
-    beneficiariesInPrivateCommunities: string[]
+    beneficiariesInPublicCommunities: string[]
 ): Promise<void> {
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
@@ -458,12 +464,12 @@ async function checkCommunitiesOnChainEvents(
             } else if (
                 // same as in subscribe
                 !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
-                !beneficiariesInPrivateCommunities.includes(
+                (beneficiariesInPublicCommunities.includes(
                     preParsedLog.args[0]
-                ) &&
-                !beneficiariesInPrivateCommunities.includes(
-                    preParsedLog.args[1]
-                ) &&
+                ) ||
+                    beneficiariesInPublicCommunities.includes(
+                        preParsedLog.args[1]
+                    )) &&
                 preParsedLog.args[1] !== config.attestationProxyAddress &&
                 preParsedLog.args[0] !== preParsedLog.args[1] &&
                 preParsedLog.args[2].toString().length > 15

@@ -24,8 +24,8 @@ export default (app: Router): void => {
                 authKey: Joi.string().optional(), // TODO: make required
                 address: Joi.string().required(),
                 language: Joi.string().required(),
-                pushNotificationsToken: Joi.string().optional(), // TODO: make required
-                pushNotificationToken: Joi.string().optional(), // TODO: make required
+                pushNotificationsToken: Joi.string().optional().allow(''), // TODO: make required
+                pushNotificationToken: Joi.string().optional().allow(''), // TODO: make required
             }),
         }),
         async (req: Request, res: Response) => {
@@ -84,13 +84,13 @@ export default (app: Router): void => {
                         token
                     );
                 } catch (e) {
-                    Logger.warning(e);
+                    Logger.warn(e);
                 }
             }
             try {
                 res.send(await UserService.welcome(address));
             } catch (e) {
-                Logger.warning(e);
+                Logger.warn(e);
                 res.sendStatus(403);
             }
         },

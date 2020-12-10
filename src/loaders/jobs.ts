@@ -25,38 +25,93 @@ export default async (): Promise<void> => {
     await cron();
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     let waitingForResponseAfterCrash = false;
+    let successfullAnswersAfterCrash = 0;
+    let successfullAnswersAfterTxRegWarn = 0;
+    let intervalWhenCrash: NodeJS.Timeout | undefined = undefined;
+    let intervalWhenTxRegWarn: NodeJS.Timeout | undefined = undefined;
+    let waitingForResponseAfterTxRegWarn = false;
     process.on('unhandledRejection', (error: any) => {
         // close all RPC connections and restart when available again
         const strError = JSON.stringify(error);
         Logger.error(strError);
         if (
-            strError.indexOf('eth_blockNumber') !== -1 &&
+            strError.indexOf('eth_') !== -1 && // any eth_ surely is related to the RPC
             strError.indexOf('SERVER_ERROR') !== -1 &&
-            !waitingForResponseAfterCrash
+            !waitingForResponseAfterCrash &&
+            !waitingForResponseAfterTxRegWarn
         ) {
-            provider.removeAllListeners();
             waitingForResponseAfterCrash = true;
-            const intervalObj = setInterval(() => {
-                Logger.error('Checking if RPC is available again');
+            provider.removeAllListeners();
+            // if a second crash happen before recovering from the first
+            // it will get here again. Clear past time interval
+            // and start again.
+            if (intervalWhenCrash !== undefined) {
+                clearInterval(intervalWhenCrash);
+            }
+            intervalWhenCrash = setInterval(() => {
                 provider.getBlockNumber().then(() => {
-                    Logger.error('Reconnecting...');
-                    subscribers(provider);
-                    clearInterval(intervalObj);
-                    setTimeout(
-                        () => (waitingForResponseAfterCrash = false),
-                        2000
-                    );
+                    successfullAnswersAfterCrash += 1;
+                    // require 5 successfull answers, to prevent two or more crashes in row
+                    if (successfullAnswersAfterCrash < 5) {
+                        Logger.error('Got ' + successfullAnswersAfterCrash + '/5 sucessfull responses form json rpc provider...');
+                    } else {
+                        Logger.error('Reconnecting json rpc provider...');
+                        subscribers(provider);
+                        clearInterval(intervalWhenCrash!);
+                        intervalWhenCrash = undefined;
+                        waitingForResponseAfterCrash = false;
+                        // setTimeout(
+                        //     () => (waitingForResponseAfterCrash = false),
+                        //     2000
+                        // );
+                    }
+                }).catch(() => {
+                    Logger.error('Checking again if RPC is available...');
+                    successfullAnswersAfterCrash = 0;
                 });
             }, 2000);
         }
     });
+    process.on('warning', (warning) => {
+        if (warning.name === 'TxRegistryFailureWarning') {
+            waitingForResponseAfterTxRegWarn = true;
+            Logger.error('Restarting provider listeners after registry failure');
+            provider.removeAllListeners();
+            // if a second crash happen before recovering from the first
+            // it will get here again. Clear past time interval
+            // and start again.
+            if (intervalWhenTxRegWarn !== undefined) {
+                clearInterval(intervalWhenTxRegWarn);
+            }
+            intervalWhenTxRegWarn = setInterval(() => {
+                Logger.error('Checking if RPC is available');
+                provider.getBlockNumber().then(() => {
+                    successfullAnswersAfterTxRegWarn += 1;
+                    if (successfullAnswersAfterTxRegWarn < 5) {
+                        Logger.error('Got ' + successfullAnswersAfterTxRegWarn + '/5 sucessfull responses form json rpc provider...');
+                    } else {
+                        subscribers(provider);
+                        clearInterval(intervalWhenTxRegWarn!);
+                        waitingForResponseAfterTxRegWarn = false;
+                        // setTimeout(
+                        //     () => (waitingForResponseAfterTxRegWarn = false),
+                        //     2000
+                        // );
+                    }
+                }).catch(() => {
+                    Logger.error('Checking again if RPC is available...');
+                    successfullAnswersAfterTxRegWarn = 0;
+                });
+            }, 2000);
+        }
+    })
     await Promise.all([prepareAgenda(), subscribers(provider)]);
 };
 
 async function subscribers(
     provider: ethers.providers.JsonRpcProvider
 ): Promise<void> {
-    const startFrom = await ImMetadataService.getLastBlock() - 15; // start 10 blocks before
+    const startFrom = await ImMetadataService.getLastBlock() - 15; // start 15 blocks before
     // NEW: does not make sense to recover "lost community contracts" has in this case,
     // it would have not been added in the database.
     // const fromLogs = await updateImpactMarketCache(provider, startFrom);
@@ -81,28 +136,28 @@ async function subscribers(
 
     // get all available communities
     const availableCommunities = await CommunityService.getAll('valid', false);
-    const privateCommunities = availableCommunities.filter(
-        (c) => c.visibility === 'private'
+    const publicCommunities = availableCommunities.filter(
+        (c) => c.visibility === 'public'
     );
-    let beneficiariesInPrivateCommunities: string[] = [];
+    let beneficiariesInPublicCommunities: string[] = [];
     // starting 10 blocks in the past, check if they have lost transactions
     Logger.info('Recovering past events...');
-    for (let c = 0; c < privateCommunities.length; c += 1) {
+    for (let c = 0; c < publicCommunities.length; c += 1) {
         const inCommunity = await BeneficiaryService.getAllInCommunity(
-            privateCommunities[c].publicId
+            publicCommunities[c].publicId
         );
-        beneficiariesInPrivateCommunities = beneficiariesInPrivateCommunities.concat(
+        beneficiariesInPublicCommunities = beneficiariesInPublicCommunities.concat(
             inCommunity.map((b) => b.address)
         );
     }
-    await checkCommunitiesOnChainEvents(startFrom, provider, availableCommunities, beneficiariesInPrivateCommunities);
+    await checkCommunitiesOnChainEvents(startFrom, provider, availableCommunities, beneficiariesInPublicCommunities);
     // get beneficiaries in private communities, so we don't count them
     Logger.info('Starting subscribers...');
-    for (let c = 0; c < privateCommunities.length; c += 1) {
+    for (let c = 0; c < publicCommunities.length; c += 1) {
         const inCommunity = await BeneficiaryService.getAllInCommunity(
-            privateCommunities[c].publicId
+            publicCommunities[c].publicId
         );
-        beneficiariesInPrivateCommunities = beneficiariesInPrivateCommunities.concat(
+        beneficiariesInPublicCommunities = beneficiariesInPublicCommunities.concat(
             inCommunity.map((b) => b.address)
         );
     }
@@ -118,7 +173,7 @@ async function subscribers(
                 c.visibility === 'public',
             ])
         ),
-        beneficiariesInPrivateCommunities
+        beneficiariesInPublicCommunities
     );
 }
 
