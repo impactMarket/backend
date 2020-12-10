@@ -30,7 +30,7 @@ export default async (): Promise<void> => {
         const strError = JSON.stringify(error);
         Logger.error(strError);
         if (
-            strError.indexOf('eth_blockNumber') !== -1 &&
+            strError.indexOf('eth_') !== -1 && // any eth_ surely is related to the RPC
             strError.indexOf('SERVER_ERROR') !== -1 &&
             !waitingForResponseAfterCrash
         ) {

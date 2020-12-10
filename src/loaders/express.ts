@@ -30,7 +30,7 @@ export default ({ app }: { app: express.Application }): void => {
     // It shows the real origin IP in the heroku or Cloudwatch logs
     app.enable('trust proxy');
 
-    app.use(morgan('combined', { stream: new LoggerStream() }));
+    app.use(morgan('combined', { stream: new LoggerStream() }) as any);
 
     app.use(helmet());
     // The magic package that prevents frontend developers going nuts

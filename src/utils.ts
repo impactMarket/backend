@@ -142,10 +142,10 @@ export async function sendPushNotification(userAddress: string, title: string, b
                     'Content-Type': 'application/json',
                 }
             };
-            const result = await axios.post('https://exp.host/--/api/v2/push/send', JSON.stringify(message), requestHeaders);
+            const result = await axios.post('https://exp.host/--/api/v2/push/send', message, requestHeaders);
             return result.status === 200 ? true : false;
         } catch (error) {
-            Logger.error('Couldn\'t send notification ' + error + ' with request ' + message);
+            Logger.error('Couldn\'t send notification ' + error + ' with request ' + JSON.stringify(message));
             return false;
         }
     }

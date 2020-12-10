@@ -21,7 +21,13 @@ export const upload = multer({
             cb(null, { fieldName: file.fieldname });
         },
         key(req, file, cb) {
-            cb(null, Date.now().toString() + path.extname(file.originalname));
+            const today = new Date();
+            const s3FilePrefix = `${today.getFullYear()}${(today.getMonth() + 1)}${today.getDate()}/`;
+            const s3Filename = `${s3FilePrefix}${Date.now().toString()}${path.extname(file.originalname)}`;
+            cb(
+                null,
+                s3Filename
+            );
         }
-    })
+    }) as any
 })
