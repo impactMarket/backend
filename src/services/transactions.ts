@@ -23,7 +23,6 @@ import {
 } from '../types';
 import { groupBy } from '../utils';
 import CommunityService from './community';
-import ExperimentalService from './experimental';
 import UserService from './user';
 
 interface ICommunityAddedEventValues {
@@ -137,15 +136,6 @@ export default class TransactionsService {
     ): Promise<Transactions> {
         const hash = new SHA3(256);
         hash.update(tx).update(JSON.stringify(values));
-        ExperimentalService.addTransaction({
-            _id: hash.digest('hex'),
-            tx,
-            txAt,
-            from,
-            contractAddress,
-            event,
-            values,
-        });
         return Transactions.create({
             uid: hash.digest('hex'),
             tx,
@@ -162,15 +152,6 @@ export default class TransactionsService {
      */
     public static async getAll(): Promise<Transactions[]> {
         return Transactions.findAll();
-    }
-
-    /**
-     * @deprecated
-     */
-    public static async get(account: string): Promise<Transactions[]> {
-        return Transactions.findAll({
-            where: { values: { _account: account } },
-        });
     }
 
     /**
