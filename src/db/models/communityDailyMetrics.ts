@@ -1,6 +1,28 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class CommunityDailyMetrics extends Model {
+export interface CommunityDailyMetricsAttributes {
+    id: number;
+    communityId: string;
+    ssiDayAlone: number;
+    ssi: number;
+    ubiRate: number;
+    estimatedDuration: number;
+    date: Date;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface CommunityDailyMetricsCreationAttributes {
+    communityId: string;
+    ssiDayAlone: number;
+    ssi: number;
+    ubiRate: number;
+    estimatedDuration: number;
+    date: Date;
+};
+
+export class CommunityDailyMetrics extends Model<CommunityDailyMetricsAttributes, CommunityDailyMetricsCreationAttributes> {
     public id!: number;
     public communityId!: string;
     public ssiDayAlone!: number;

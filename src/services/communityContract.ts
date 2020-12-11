@@ -1,8 +1,10 @@
 import { col, fn } from 'sequelize';
+import database from '../loaders/database';
 
 import { CommunityContract } from '../db/models/communityContract';
 import { ICommunityContractParams } from '../types';
 
+const db = database();
 export default class CommunityContractService {
     public static async add(
         communityId: string,
@@ -14,7 +16,7 @@ export default class CommunityContractService {
             baseInterval,
             incrementInterval,
         } = contractParams;
-        return await CommunityContract.create({
+        return await db.models.communityContract.create({
             communityId,
             claimAmount,
             maxClaim,
@@ -26,7 +28,7 @@ export default class CommunityContractService {
     public static async get(
         communityId: string
     ): Promise<ICommunityContractParams> {
-        return (await CommunityContract.findOne({
+        return (await db.models.communityContract.findOne({
             attributes: [
                 'claimAmount',
                 'maxClaim',
@@ -39,13 +41,13 @@ export default class CommunityContractService {
 
     public static async getAll(): Promise<Map<string, CommunityContract>> {
         return new Map(
-            (await CommunityContract.findAll()).map((c) => [c.communityId, c])
+            (await db.models.communityContract.findAll()).map((c) => [c.communityId, c])
         );
     }
 
     public static async avgComulativeUbi(): Promise<string> {
         const result = (
-            await CommunityContract.findAll({
+            await db.models.communityContract.findAll({
                 attributes: [[fn('avg', col('maxClaim')), 'avgComulativeUbi']],
             })
         )[0];

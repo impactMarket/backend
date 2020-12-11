@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model, BuildOptions, ModelStatic } from 'sequelize';
+import { Sequelize, DataTypes, Model } from 'sequelize';
 
 interface UserAttributes {
     address: string;
@@ -18,11 +18,6 @@ interface UserCreationAttributes {
     language: string;
     pushNotificationToken: string;
 };
-
-// export interface UserModel extends Model<UserAttributes>, UserAttributes { }
-
-// type UserModel = Model<UserAttributes, UserCreationAttributes>;
-// export type UserModel = Model<UserAttributes, UserCreationAttributes> & UserAttributes;
 
 export class User extends Model<UserAttributes, UserCreationAttributes> {
     public address!: string;
@@ -73,7 +68,7 @@ export function initializeUser(sequelize: Sequelize): void {
         },
         {
             tableName: 'user',
-            sequelize, // this bit is important
+            sequelize
         }
     );
 }

@@ -2,9 +2,11 @@ import { median } from 'mathjs';
 import { col, fn, Op } from 'sequelize';
 
 import { Community } from '../db/models/community';
+import database from '../loaders/database';
 import { CommunityDailyMetrics } from '../db/models/communityDailyMetrics';
 import { ICommunityMetrics } from '../types';
 
+const db = database();
 export default class CommunityDailyMetricsService {
     public static async add(
         communityId: string,
@@ -14,7 +16,7 @@ export default class CommunityDailyMetricsService {
         estimatedDuration: number,
         date: Date
     ): Promise<CommunityDailyMetrics> {
-        return await CommunityDailyMetrics.create({
+        return await db.models.communityDailyMetrics.create({
             communityId,
             ssiDayAlone,
             ssi,
@@ -27,7 +29,7 @@ export default class CommunityDailyMetricsService {
     public static async getLastMetrics(
         communityId: string
     ): Promise<ICommunityMetrics | undefined> {
-        const historical = (await CommunityDailyMetrics.findAll({
+        const historical = (await db.models.communityDailyMetrics.findAll({
             attributes: ['ssi'],
             where: {
                 communityId,
@@ -40,7 +42,7 @@ export default class CommunityDailyMetricsService {
             return undefined;
         }
         const lastMetrics = (
-            await CommunityDailyMetrics.findAll({
+            await db.models.communityDailyMetrics.findAll({
                 attributes: [
                     'ssiDayAlone',
                     'ssi',
@@ -69,7 +71,7 @@ export default class CommunityDailyMetricsService {
         todayMidnightTime.setHours(0, 0, 0, 0);
         // seven days ago, from yesterdayDateOnly
         const fiveDaysAgo = new Date(todayMidnightTime.getTime() - 345600000); // 4 * 24 * 60 * 60 * 1000
-        const raw = await CommunityDailyMetrics.findAll({
+        const raw = await db.models.communityDailyMetrics.findAll({
             attributes: ['communityId', 'ssi'],
             where: {
                 date: {
@@ -119,7 +121,7 @@ export default class CommunityDailyMetricsService {
         // TODO: only communities with more that 5 days
         const medianSSI = median(
             (
-                await CommunityDailyMetrics.findAll({
+                await db.models.communityDailyMetrics.findAll({
                     attributes: ['ssi'],
                     where: {
                         date: yesterdayDateOnly,
@@ -130,7 +132,7 @@ export default class CommunityDailyMetricsService {
         );
 
         const raw = (
-            await CommunityDailyMetrics.findAll({
+            await db.models.communityDailyMetrics.findAll({
                 attributes: [
                     [fn('avg', col('ubiRate')), 'avgUbiRate'],
                     [

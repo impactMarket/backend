@@ -1,15 +1,63 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
-
 import { ICommunityVars } from '../../types';
 
-export class Community extends Model {
+export interface CommunityAttributes {
+    id: number; // Note that the `null assertion` `!` is required in strict mode.
+    publicId: string;
+    requestByAddress: string;
+    contractAddress: string | null;
+    name: string;
+    description: string;
+    descriptionEn: string | null;
+    language: string;
+    currency: string;
+    city: string;
+    country: string;
+    gps: {
+        latitude: number;
+        longitude: number;
+    };
+    email: string;
+    visibility: 'public' | 'private';
+    coverImage: string;
+    status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
+    txCreationObj: ICommunityVars | null;
+    started: Date;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface CommunityCreationAttributes {
+    requestByAddress: string;
+    contractAddress?: string;
+    name: string;
+    description: string;
+    descriptionEn? :string;
+    language: string;
+    currency: string;
+    city: string;
+    country: string;
+    gps: {
+        latitude: number;
+        longitude: number;
+    };
+    email: string;
+    visibility: 'public' | 'private';
+    coverImage: string;
+    status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
+    txCreationObj?: ICommunityVars;
+    started: Date;
+};
+
+export class Community extends Model<CommunityAttributes, CommunityCreationAttributes> {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public publicId!: string;
     public requestByAddress!: string;
-    public contractAddress!: string;
+    public contractAddress!: string | null;
     public name!: string;
     public description!: string;
-    public descriptionEn!: string;
+    public descriptionEn!: string | null;
     public language!: string;
     public currency!: string;
     public city!: string;
@@ -19,10 +67,10 @@ export class Community extends Model {
         longitude: number;
     };
     public email!: string;
-    public visibility!: string;
+    public visibility!: 'public' | 'private';
     public coverImage!: string;
-    public status!: string; // pending / valid / removed
-    public txCreationObj!: ICommunityVars;
+    public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
+    public txCreationObj!: ICommunityVars | null;
     public started!: Date;
 
     // timestamps!
@@ -120,7 +168,7 @@ export function initializeCommunity(sequelize: Sequelize): void {
         },
         {
             tableName: 'community',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

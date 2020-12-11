@@ -52,7 +52,7 @@ export default class UserService {
         user: User | null = null
     ): Promise<IUserWelcome | undefined> {
         if (user === null) {
-            user = await User.findOne({ where: { address } });
+            user = await db.models.user.findOne({ where: { address } });
             if (user === null) {
                 return undefined;
             }
@@ -97,7 +97,7 @@ export default class UserService {
         address: string,
         username: string
     ): Promise<boolean> {
-        const updated = await User.update(
+        const updated = await db.models.user.update(
             { username },
             { returning: true, where: { address } }
         );
@@ -108,7 +108,7 @@ export default class UserService {
         address: string,
         currency: string
     ): Promise<boolean> {
-        const updated = await User.update(
+        const updated = await db.models.user.update(
             { currency },
             { returning: true, where: { address } }
         );
@@ -119,7 +119,7 @@ export default class UserService {
         address: string,
         pushNotificationToken: string
     ): Promise<boolean> {
-        const updated = await User.update(
+        const updated = await db.models.user.update(
             { pushNotificationToken },
             { returning: true, where: { address } }
         );
@@ -130,7 +130,7 @@ export default class UserService {
         address: string,
         language: string
     ): Promise<boolean> {
-        const updated = await User.update(
+        const updated = await db.models.user.update(
             { language },
             { returning: true, where: { address } }
         );
@@ -142,7 +142,7 @@ export default class UserService {
     }
 
     public static async getAllAddresses(): Promise<string[]> {
-        return (await User.findAll({ attributes: ['address'] })).map(
+        return (await db.models.user.findAll({ attributes: ['address'] })).map(
             (u) => u.address
         );
     }
@@ -150,7 +150,7 @@ export default class UserService {
     public static async getPushTokensFromAddresses(
         addresses: string[]
     ): Promise<string[]> {
-        const users = await User.findAll({
+        const users = await db.models.user.findAll({
             attributes: ['pushNotificationToken'],
             where: { address: { [Op.in]: addresses } },
         });
@@ -159,7 +159,7 @@ export default class UserService {
 
     public static async mappedNames(): Promise<Map<string, string>> {
         const mapped = new Map<string, string>();
-        const query = await User.findAll();
+        const query = await db.models.user.findAll();
         for (let index = 0; index < query.length; index++) {
             const element = query[index];
             mapped.set(element.address, element.username ? element.username : '');

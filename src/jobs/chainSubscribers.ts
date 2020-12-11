@@ -368,7 +368,7 @@ async function checkCommunitiesOnChainEvents(
     for (let c = 0; c < availableCommunities.length; c++) {
         const logsCommunity = await provider
             .getLogs({
-                address: availableCommunities[c].contractAddress,
+                address: availableCommunities[c].contractAddress!,
                 fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
                 toBlock: 'latest',
                 topics: [

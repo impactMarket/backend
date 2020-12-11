@@ -1,7 +1,7 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-// this is necessary, as the model requires other fields such as id and dates
-export interface ICommunityDailyStatusInsert {
+interface CommunityDailyStateAttributes {
+    id: number;
     communityId: string;
     claimed: string;
     claims: number;
@@ -9,8 +9,16 @@ export interface ICommunityDailyStatusInsert {
     raised: string;
     backers: number;
     date: Date;
-}
-export class CommunityDailyState extends Model {
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+export interface CommunityDailyStateCreationAttributes {
+    communityId: string;
+    date: Date;
+};
+export class CommunityDailyState extends Model<CommunityDailyStateAttributes, CommunityDailyStateCreationAttributes> {
     public id!: number;
     public communityId!: string;
     public claimed!: string;
@@ -85,7 +93,7 @@ export function initializeCommunityDailyState(sequelize: Sequelize): void {
         },
         {
             tableName: 'communitydailystate',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

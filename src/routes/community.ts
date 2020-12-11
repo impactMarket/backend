@@ -50,6 +50,7 @@ export default (app: Router): void => {
         );
     });
 
+    route.get('/list', communityController.list);
 
     route.post(
         '/new',
@@ -244,7 +245,6 @@ export default (app: Router): void => {
                 country,
                 gps,
                 email,
-                visibility,
                 coverImage,
             } = req.body;
             // verify if the current user is manager in this community
@@ -273,7 +273,6 @@ export default (app: Router): void => {
                             country,
                             gps,
                             email,
-                            visibility,
                             coverImage
                         );
                         returningStatus = 200;

@@ -1,15 +1,16 @@
 import { CommunityState } from '../db/models/communityState';
-import { ICommunityState } from '../types';
+import database from '../loaders/database';
 
+const db = database();
 export default class CommunityStateService {
-    public static async add(communityId: string): Promise<ICommunityState> {
-        return await CommunityState.create({
+    public static async add(communityId: string): Promise<CommunityState> {
+        return await db.models.communityState.create({
             communityId,
         });
     }
 
-    public static async get(communityId: string): Promise<ICommunityState> {
-        return (await CommunityState.findOne({
+    public static async get(communityId: string): Promise<CommunityState> {
+        return (await db.models.communityState.findOne({
             attributes: ['claimed', 'raised', 'beneficiaries', 'backers'],
             where: { communityId },
         }))!;

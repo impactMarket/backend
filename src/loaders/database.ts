@@ -2,7 +2,11 @@ import { Sequelize, Options, ModelCtor } from 'sequelize';
 
 import config from '../config';
 import initModels from '../db/models';
+import { Community } from '../db/models/community';
 import { CommunityContract } from '../db/models/communityContract';
+import { CommunityDailyMetrics } from '../db/models/communityDailyMetrics';
+import { CommunityDailyState } from '../db/models/communityDailyState';
+import { CommunityState } from '../db/models/communityState';
 import { User } from '../db/models/user';
 import { Logger } from '../loaders/logger';
 import { DbLoader } from '../types';
@@ -26,17 +30,15 @@ export default (): DbLoader => {
     };
     const sequelize = new Sequelize(config.dbUrl, dbConfig);
     initModels(sequelize);
-    // sequelize.models.Manager.findAll({
-    //     include: [{ model: sequelize.models.User }]
-    // }).then(console.log);
-    // sequelize.models.User.findAll({
-    //     include: [{ model: sequelize.models.Manager }],
-    //     raw: true
-    // }).then(console.log);
     return {
         sequelize,
         models: {
             user: sequelize.models.User as ModelCtor<User>,
+            community: sequelize.models.Community as ModelCtor<Community>,
+            communityContract: sequelize.models.CommunityContract as ModelCtor<CommunityContract>,
+            communityState: sequelize.models.CommunityState as ModelCtor<CommunityState>,
+            communityDailyState: sequelize.models.CommunityDailyState as ModelCtor<CommunityDailyState>,
+            communityDailyMetrics: sequelize.models.CommunityDailyMetrics as ModelCtor<CommunityDailyMetrics>,
         },
     };
 };

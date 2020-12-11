@@ -165,11 +165,11 @@ async function subscribers(
     subscribeChainEvents(
         provider,
         new Map(
-            availableCommunities.map((c) => [c.contractAddress, c.publicId])
+            availableCommunities.map((c) => [c.contractAddress!, c.publicId])
         ),
         new Map(
             availableCommunities.map((c) => [
-                c.contractAddress,
+                c.contractAddress!,
                 c.visibility === 'public',
             ])
         ),

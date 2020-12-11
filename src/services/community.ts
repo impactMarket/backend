@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import config from '../config';
 import CommunityContractABI from '../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
+import database from '../loaders/database';
 import { Community } from '../db/models/community';
 import { ICommunityContractParams, ICommunityInfo } from '../types';
 import { notifyManagerAdded } from '../utils';
@@ -13,7 +14,9 @@ import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
 import SSIService from './ssi';
 import TransactionsService from './transactions';
+import { ICommunity } from '../types/endpoints';
 
+const db = database();
 export default class CommunityService {
     public static async create(
         requestByAddress: string,
@@ -34,7 +37,7 @@ export default class CommunityService {
         contractParams: ICommunityContractParams
     ): Promise<Community> {
         // TODO: improve, insert with unique transaction (see sequelize eager loading)
-        const newCommunity = await Community.create({
+        const newCommunity = await db.models.community.create({
             requestByAddress,
             name,
             contractAddress,
@@ -48,7 +51,6 @@ export default class CommunityService {
             visibility: 'private',
             coverImage,
             status: 'valid',
-            contractParams,
             started: new Date(),
         });
         await CommunityContractService.add(
@@ -69,7 +71,7 @@ export default class CommunityService {
                     txReceipt.logs[index]
                 );
                 eventsCoomunity.push(parsedLog);
-            } catch (e) {}
+            } catch (e) { }
         }
         const index = eventsCoomunity.findIndex(
             (event) => event !== null && event.name === 'ManagerAdded'
@@ -107,7 +109,7 @@ export default class CommunityService {
         contractParams: ICommunityContractParams
     ): Promise<Community> {
         // TODO: improve, insert with unique transaction (see sequelize eager loading)
-        const community = await Community.create({
+        const community = await db.models.community.create({
             requestByAddress,
             name,
             description,
@@ -120,7 +122,6 @@ export default class CommunityService {
             visibility: 'public',
             coverImage,
             status: 'pending',
-            contractParams,
             started: new Date(),
         });
         await CommunityContractService.add(community.publicId, contractParams);
@@ -142,10 +143,9 @@ export default class CommunityService {
             longitude: number;
         },
         email: string,
-        visibility: string,
         coverImage: string
     ): Promise<[number, Community[]]> {
-        return Community.update(
+        return db.models.community.update(
             {
                 name,
                 description,
@@ -154,7 +154,6 @@ export default class CommunityService {
                 country,
                 gps,
                 email,
-                visibility,
                 coverImage,
             },
             { returning: true, where: { publicId } }
@@ -184,7 +183,7 @@ export default class CommunityService {
                     receipt.logs[index]
                 );
                 eventsImpactMarket.push(parsedLog);
-            } catch (e) {}
+            } catch (e) { }
         }
         const index = eventsImpactMarket.findIndex(
             (event) => event !== null && event.name === 'CommunityAdded'
@@ -192,7 +191,7 @@ export default class CommunityService {
         if (index !== -1) {
             const communityContractAddress =
                 eventsImpactMarket[index].args._communityAddress;
-            const dbUpdate: [number, Community[]] = await Community.update(
+            const dbUpdate: [number, Community[]] = await db.models.community.update(
                 {
                     contractAddress: communityContractAddress,
                     status: 'valid',
@@ -212,19 +211,22 @@ export default class CommunityService {
         return true;
     }
 
+    /**
+     * @deprecated
+     */
     public static async getAll(
         status: string,
         onlyPublic: boolean = true
     ): Promise<ICommunityInfo[]> {
         const result: ICommunityInfo[] = [];
-        const communities = await Community.findAll({
+        const communities = await db.models.community.findAll({
             where: {
                 status,
                 visibility: onlyPublic
                     ? 'public'
                     : {
-                          [Op.or]: ['public', 'private'],
-                      },
+                        [Op.or]: ['public', 'private'],
+                    },
             },
             order: [['createdAt', 'ASC']],
         });
@@ -236,18 +238,69 @@ export default class CommunityService {
         return result;
     }
 
-    public static async getAllAddressesAndIds(): Promise<Map<string, string>> {
-        const result = await Community.findAll({
-            attributes: ['contractAddress', 'publicId'],
-            raw: true,
+    public static async list(): Promise<ICommunity[]> {
+        // this could be much better, but byt the time of ritting, sequelize
+        // does not support eager loading with global "raw: false".
+        // Please, check again, and if available, update this
+        // https://github.com/sequelize/sequelize/issues/6408
+        const result: ICommunity[] = [];
+        const communities = await db.models.community.findAll({
+            where: {
+                status: 'valid',
+                visibility: 'public',
+            },
         });
-        return new Map(result.map((c) => [c.contractAddress, c.publicId]));
+        const inCommunities = communities.map((c) => c.publicId);
+        const communityState = await db.models.communityState.findAll({
+            where: {
+                communityId: {
+                    [Op.in]: inCommunities
+                }
+            },
+        });
+        const communityContract = await db.models.communityContract.findAll({
+            where: {
+                communityId: {
+                    [Op.in]: inCommunities
+                }
+            },
+        });
+        const communityDailyMetrics = await db.models.communityDailyMetrics.findAll({
+            where: {
+                communityId: {
+                    [Op.in]: inCommunities
+                }
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1
+        });
+        for (let index = 0; index < communities.length; index++) {
+            result.push({
+                ...communities[index],
+                state: communityState.find((c) => c.communityId = communities[index].publicId)!,
+                contract: communityContract.find((c) => c.communityId = communities[index].publicId)!,
+                metrics: communityDailyMetrics.find((c) => c.communityId = communities[index].publicId)!,
+            });
+        }
+        return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? 1 : (a.state.beneficiaries < b.state.beneficiaries ? -1 : 0));
+    }
+
+    public static async getAllAddressesAndIds(): Promise<Map<string, string>> {
+        const result = await db.models.community.findAll({
+            attributes: ['contractAddress', 'publicId'],
+            where: {
+                contractAddress: {
+                    [Op.ne]: null
+                }
+            }
+        });
+        return new Map(result.map((c) => [c.contractAddress!, c.publicId]));
     }
 
     public static async findByFirstManager(
         requestByAddress: string
     ): Promise<Community | null> {
-        return Community.findOne({
+        return db.models.community.findOne({
             where: {
                 requestByAddress,
                 status: {
@@ -260,14 +313,13 @@ export default class CommunityService {
     public static async findByPublicId(
         publicId: string
     ): Promise<ICommunityInfo | null> {
-        const community = await Community.findOne({
+        const community = await db.models.community.findOne({
             where: {
                 publicId,
                 status: {
                     [Op.or]: ['valid', 'pending'],
                 },
             },
-            raw: true,
         });
         if (community === null) {
             return null;
@@ -278,9 +330,8 @@ export default class CommunityService {
     public static async findByContractAddress(
         contractAddress: string
     ): Promise<ICommunityInfo | null> {
-        const community = await Community.findOne({
+        const community = await db.models.community.findOne({
             where: { contractAddress },
-            raw: true,
         });
         if (community === null) {
             return null;
@@ -291,13 +342,13 @@ export default class CommunityService {
     public static async getOnlyCommunityByContractAddress(
         contractAddress: string
     ): Promise<Community | null> {
-        return await Community.findOne({ where: { contractAddress } });
+        return await db.models.community.findOne({ where: { contractAddress } });
     }
 
     public static async getNamesAndFromAddresses(
         addresses: string[]
     ): Promise<Community[]> {
-        return Community.findAll({
+        return db.models.community.findAll({
             attributes: ['contractAddress', 'name'],
             where: {
                 contractAddress: {
@@ -307,6 +358,9 @@ export default class CommunityService {
         });
     }
 
+    /**
+     * @deprecated
+     */
     private static async getCachedInfoToCommunity(
         community: Community
     ): Promise<ICommunityInfo> {
@@ -320,13 +374,13 @@ export default class CommunityService {
             community.publicId
         );
         const beneficiaries = await TransactionsService.getBeneficiariesInCommunity(
-            community.contractAddress
+            community.contractAddress!
         );
         const managers = await TransactionsService.getCommunityManagersInCommunity(
-            community.contractAddress
+            community.contractAddress!
         );
         const backers = await TransactionsService.getBackersInCommunity(
-            community.contractAddress
+            community.contractAddress!
         );
         let vars;
         // TODO: remove others
@@ -339,7 +393,7 @@ export default class CommunityService {
             };
         } else if (community.visibility === 'public') {
             vars = await TransactionsService.getCommunityVars(
-                community.contractAddress
+                community.contractAddress!
             );
         } else {
             vars = community.txCreationObj;
@@ -366,12 +420,17 @@ export default class CommunityService {
 
     public static async mappedNames(): Promise<Map<string, string>> {
         const mapped = new Map<string, string>();
-        const query = await Community.findAll({
+        const query = await db.models.community.findAll({
             attributes: ['contractAddress', 'name'],
+            where: {
+                contractAddress: {
+                    [Op.ne]: null
+                }
+            }
         });
         for (let index = 0; index < query.length; index++) {
             const element = query[index];
-            mapped.set(element.contractAddress, element.name);
+            mapped.set(element.contractAddress!, element.name);
         }
         return mapped;
     }

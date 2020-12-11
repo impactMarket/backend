@@ -656,7 +656,7 @@ export default class TransactionsService {
                 attributes: ['contractAddress'],
                 where: { visibility: 'private' },
             })
-        ).map((c) => c.contractAddress);
+        ).map((c) => c.contractAddress!);
         const userEvents = await Transactions.findAll({
             // attributes: ['event'],
             where: {
@@ -700,7 +700,7 @@ export default class TransactionsService {
                 attributes: ['contractAddress'],
                 where: { visibility: 'private' },
             })
-        ).map((c) => c.contractAddress);
+        ).map((c) => c.contractAddress!);
         //
         const raised = await Transactions.findAll({
             where: {
@@ -783,7 +783,7 @@ export default class TransactionsService {
                 attributes: ['contractAddress'],
                 where: { visibility: 'private' },
             })
-        ).map((c) => c.contractAddress);
+        ).map((c) => c.contractAddress!);
         //
         const distributed = await Transactions.findAll({
             where: {
@@ -857,7 +857,7 @@ export default class TransactionsService {
                 attributes: ['contractAddress'],
                 where: { visibility: 'public' },
             })
-        ).map((c) => c.contractAddress);
+        ).map((c) => c.contractAddress!);
 
         const raised = await Transactions.findAll({
             where: {

@@ -1,5 +1,10 @@
 import { Request } from 'express';
 import { ModelCtor, Sequelize } from 'sequelize/types';
+import { Community } from './db/models/community';
+import { CommunityContract } from './db/models/communityContract';
+import { CommunityDailyMetrics } from './db/models/communityDailyMetrics';
+import { CommunityDailyState } from './db/models/communityDailyState';
+import { CommunityState } from './db/models/communityState';
 import { User } from './db/models/user';
 
 export interface UserInRequest {
@@ -10,6 +15,11 @@ export interface RequestWithUser extends Request {
 }
 export interface DbModels {
     user: ModelCtor<User>;
+    community: ModelCtor<Community>;
+    communityContract: ModelCtor<CommunityContract>;
+    communityState: ModelCtor<CommunityState>;
+    communityDailyState: ModelCtor<CommunityDailyState>;
+    communityDailyMetrics: ModelCtor<CommunityDailyMetrics>;
 }
 export interface DbLoader {
     sequelize: Sequelize;
@@ -17,13 +27,16 @@ export interface DbLoader {
 }
 // API to app
 
+/**
+ * @deprecated
+ */
 export interface ICommunity {
     publicId: string;
     requestByAddress: string;
-    contractAddress: string;
+    contractAddress: string | null;
     name: string;
     description: string;
-    descriptionEn: string;
+    descriptionEn: string | null;
     language: string;
     currency: string;
     country: string;
@@ -39,10 +52,13 @@ export interface ICommunity {
     /**
      * @deprecated
      */
-    txCreationObj: ICommunityVars; // TODO: remove in future
+    txCreationObj: ICommunityVars | null; // TODO: remove in future
     started: Date;
 }
 
+/**
+ * @deprecated
+ */
 export interface ICommunityState {
     claimed: string;
     raised: string;

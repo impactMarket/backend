@@ -115,7 +115,7 @@ dist
 .pnp.*
 
 build/
-types/
+contracts/types/
 .secret
 coverage.json
 

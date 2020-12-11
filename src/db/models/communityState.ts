@@ -1,6 +1,23 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class CommunityState extends Model {
+export interface CommunityStateAttributes {
+    communityId: string;
+    claimed: string;
+    claims: number;
+    beneficiaries: number;
+    raised: string;
+    backers: number;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+interface CommunityStateCreationAttributes {
+    communityId: string;
+};
+
+export class CommunityState extends Model<CommunityStateAttributes, CommunityStateCreationAttributes> {
     public communityId!: string;
     public claimed!: string;
     public claims!: number;
@@ -65,7 +82,7 @@ export function initializeCommunityState(sequelize: Sequelize): void {
         },
         {
             tableName: 'communitystate',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

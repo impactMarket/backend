@@ -1,6 +1,26 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class CommunityContract extends Model {
+export interface CommunityContractAttributes {
+    communityId: string;
+    claimAmount: string;
+    maxClaim: string;
+    baseInterval: number;
+    incrementInterval: number;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+interface CommunityContractCreationAttributes {
+    communityId: string;
+    claimAmount: string;
+    maxClaim: string;
+    baseInterval: number;
+    incrementInterval: number;
+};
+
+export class CommunityContract extends Model<CommunityContractAttributes, CommunityContractCreationAttributes> {
     public communityId!: string;
     public claimAmount!: string;
     public maxClaim!: string;
@@ -20,8 +40,8 @@ export function initializeCommunityContract(sequelize: Sequelize): void {
                 primaryKey: true,
                 unique: true,
                 references: {
-                    model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                    model: 'community',
+                    key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false,
@@ -55,7 +75,7 @@ export function initializeCommunityContract(sequelize: Sequelize): void {
         },
         {
             tableName: 'communitycontract',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }
