@@ -1,6 +1,5 @@
-import Joi from '@hapi/joi';
 import aws from 'aws-sdk';
-import { celebrate } from 'celebrate';
+import { celebrate, Joi } from 'celebrate';
 import { Router } from 'express';
 
 import config from '../config';

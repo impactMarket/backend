@@ -1,12 +1,14 @@
 import { celebrate, Joi } from 'celebrate';
 import { Router, Request, Response } from 'express';
+import communityController from '../controllers/community';
+import communityValidators from '../validators/community';
+import { upload } from '../storage/s3';
 
 import { Community } from '../db/models/community';
 import { Logger } from '../loaders/logger';
 import { authenticateToken } from '../middlewares';
 import CommunityService from '../services/community';
 import TransactionsService from '../services/transactions';
-import { ICommunityContractParams } from '../types';
 
 const route = Router();
 
@@ -47,6 +49,16 @@ export default (app: Router): void => {
             )
         );
     });
+
+
+    route.post(
+        '/new',
+        // authenticateToken,
+        communityValidators.split,
+        communityValidators.create,
+        upload.single('photo'),
+        communityController.create
+    );    
 
     route.post(
         '/create',

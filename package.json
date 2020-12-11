@@ -31,7 +31,7 @@
     "dependencies": {
         "@sentry/node": "5.27.6",
         "@sentry/tracing": "5.27.6",
-        "aws-sdk": "2.755.0",
+        "aws-sdk": "2.808.0",
         "axios": "0.19.2",
         "bignumber.js": "9.0.0",
         "body-parser": "1.19.0",
