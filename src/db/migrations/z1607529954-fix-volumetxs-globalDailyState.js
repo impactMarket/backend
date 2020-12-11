@@ -6,6 +6,33 @@ const { ethers } = require("ethers");
 
 BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
 
+async function getBlockTime(blockHash) {
+    try {
+        const requestContent = {
+            id: 0,
+            jsonrpc: '2.0',
+            method: 'eth_getBlockByHash',
+            params: [
+                blockHash,
+                false
+            ]
+        };
+        // handle success
+        const requestHeaders = {
+            headers: {
+                'Accept': 'application/json',
+                'Accept-encoding': 'gzip, deflate',
+                'Content-Type': 'application/json',
+            }
+        };
+        const response = await axios.post(process.env.CHAIN_JSON_RPC_URL, requestContent, requestHeaders);
+        return new Date(parseInt(response.data.result.timestamp, 16) * 1000);
+    } catch(e) {
+        console.log('getBlockTime ' + e);
+        return new Date();
+    }
+}
+
 // eslint-disable-next-line no-undef
 module.exports = {
     up: async (queryInterface, Sequelize) => {
@@ -368,7 +395,7 @@ module.exports = {
             where: { communityId: { [Sequelize.Op.in]: communitiesIds } },
         })).map((b) => b.address);
 
-        const updateMaps = (fromBeneficiary, beneficiary, address, value, timestamp, tx) => {
+        const updateMaps = (fromBeneficiary, beneficiary, address, value, timestamp, tx, blockHash) => {
             let previousValues = volumeTxReachByDay.get(onlyDate(timestamp));
             let newValues;
             if (previousValues === undefined) {
@@ -385,16 +412,16 @@ module.exports = {
                 }
             }
             // add to BeneficiaryTransaction
-            BeneficiaryTransaction.create({
+            getBlockTime(blockHash).then((timestamp) => BeneficiaryTransaction.create({
                 beneficiary,
                 withAddress: address,
                 amount: value,
                 isFromBeneficiary: fromBeneficiary,
                 tx,
-                date: new Date(),
+                date: timestamp,
                 createdAt: new Date(),
                 updatedAt: new Date()
-            }).catch((e) => console.log('error in BeneficiaryTransaction ' + e));
+            }).catch((e) => console.log('error in BeneficiaryTransaction ' + e)));
             reachedAddresses.set(ethers.utils.getAddress(address), new Date(timestamp));
             volumeTxReachByDay.set(onlyDate(timestamp), newValues);
             allDates.push(onlyDate(timestamp));
@@ -424,9 +451,9 @@ module.exports = {
                 }
                 if (!communitiesAddresses.includes(ethers.utils.getAddress(rawResult[r].from)) && !communitiesAddresses.includes(ethers.utils.getAddress(rawResult[r].to))) {
                     if (beneficiaryAddresses[b] === ethers.utils.getAddress(rawResult[r].from)) {
-                        updateMaps(true, ethers.utils.getAddress(rawResult[r].from), rawResult[r].to, rawResult[r].value.toString(), parseInt(rawResult[r].timeStamp) * 1000, rawResult[r].hash);
+                        updateMaps(true, ethers.utils.getAddress(rawResult[r].from), rawResult[r].to, rawResult[r].value.toString(), parseInt(rawResult[r].timeStamp) * 1000, rawResult[r].hash, rawResult[r].blockHash);
                     } else if (beneficiaryAddresses[b] === ethers.utils.getAddress(rawResult[r].to)) {
-                        updateMaps(false, ethers.utils.getAddress(rawResult[r].to), rawResult[r].from, rawResult[r].value.toString(), parseInt(rawResult[r].timeStamp) * 1000, rawResult[r].hash);
+                        updateMaps(false, ethers.utils.getAddress(rawResult[r].to), rawResult[r].from, rawResult[r].value.toString(), parseInt(rawResult[r].timeStamp) * 1000, rawResult[r].hash, rawResult[r].blockHash);
                     }
                 }
             }
