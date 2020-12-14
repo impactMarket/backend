@@ -1,6 +1,19 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class ImMetadata extends Model {
+interface ImMetadataAttributes {
+    key: string;
+    value: string;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface ImMetadataCreationAttributes {
+    key: string;
+    value: string;
+};
+
+export class ImMetadata extends Model<ImMetadataAttributes, ImMetadataCreationAttributes> {
     public key!: string;
     public value!: string;
 
@@ -32,7 +45,7 @@ export function initializeImMetadata(sequelize: Sequelize): void {
         },
         {
             tableName: 'immetadata',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

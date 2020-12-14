@@ -1,8 +1,9 @@
-import { ExchangeRates } from '../db/models/exchangeRates';
+import database from '../loaders/database';
 
+const db = database();
 export default class ExchangeRatesService {
     public static async get(): Promise<any> {
-        const previousRates = await ExchangeRates.findAll();
+        const previousRates = await db.models.exchangeRates.findAll();
         const mapRates = {};
         for (let index = 0; index < previousRates.length; index++) {
             mapRates[previousRates[index].currency] = previousRates[index].rate;

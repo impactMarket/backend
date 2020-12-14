@@ -1,6 +1,20 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class CronJobExecuted extends Model {
+interface CronJobExecutedAttributes {
+    id: number;
+    jobName: string;
+    lastExecuted: Date;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface CronJobExecutedCreationAttributes {
+    jobName: string;
+    lastExecuted: Date;
+};
+
+export class CronJobExecuted extends Model<CronJobExecutedAttributes, CronJobExecutedCreationAttributes> {
     public id!: number;
     public jobName!: string;
     public lastExecuted!: Date;
@@ -38,7 +52,7 @@ export function initializeCronJobExecuted(sequelize: Sequelize): void {
         },
         {
             tableName: 'cronjobexecuted',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

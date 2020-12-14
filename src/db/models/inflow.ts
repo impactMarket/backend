@@ -1,6 +1,25 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class Inflow extends Model {
+interface InflowAttributes {
+    id: number;
+    from: string;
+    communityId: string;
+    amount: string;
+    tx: string;
+    txAt: Date;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface InflowCreationAttributes {
+    from: string;
+    communityId: string;
+    amount: string;
+    tx: string;
+    txAt: Date;
+};
+export class Inflow extends Model<InflowAttributes, InflowCreationAttributes> {
     public id!: number;
     public from!: string;
     public communityId!: string;
@@ -60,7 +79,7 @@ export function initializeInflow(sequelize: Sequelize): void {
         },
         {
             tableName: 'inflow',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

@@ -1,6 +1,26 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class Claim extends Model {
+interface ClaimAttributes {
+    id: number;
+    address: string;
+    communityId: string;
+    amount: string;
+    tx: string;
+    txAt: Date;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface ClaimCreationAttributes {
+    address: string;
+    communityId: string;
+    amount: string;
+    tx: string;
+    txAt: Date;
+};
+
+export class Claim extends Model<ClaimAttributes, ClaimCreationAttributes> {
     public id!: number;
     public address!: string;
     public communityId!: string;
@@ -60,7 +80,7 @@ export function initializeClaim(sequelize: Sequelize): void {
         },
         {
             tableName: 'claim',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

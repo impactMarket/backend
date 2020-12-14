@@ -1,8 +1,8 @@
 import { col, fn, Op } from 'sequelize';
-
-import { Inflow } from '../db/models/inflow';
+import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 
+const db = database();
 export default class InflowService {
     public static async add(
         from: string,
@@ -19,7 +19,7 @@ export default class InflowService {
             txAt,
         };
         try {
-            await Inflow.create(inflowData);
+            await db.models.inflow.create(inflowData);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error('Error inserting new Inflow. Data = ' + JSON.stringify(inflowData));
@@ -41,8 +41,8 @@ export default class InflowService {
         todayMidnightTime.setHours(0, 0, 0, 0);
         // 30 days ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        const raised = (
-            await Inflow.findAll({
+        const raised: { raised: string } = (
+            await db.models.inflow.findAll({
                 attributes: [[fn('sum', col('amount')), 'raised']],
                 where: {
                     txAt: {
@@ -51,14 +51,14 @@ export default class InflowService {
                     },
                 },
             })
-        )[0];
+        )[0] as any;
         // there will always be raised.lenght > 0 (were only zero at the begining)
-        return (raised as any).raised;
+        return raised.raised;
     }
 
     public static async getAllBackers(communityId: string): Promise<string[]> {
         const backers = (
-            await Inflow.findAll({
+            await db.models.inflow.findAll({
                 attributes: [[fn('distinct', col('from')), 'backerAddress']],
                 where: { communityId },
             })
@@ -70,14 +70,14 @@ export default class InflowService {
      * Count unique backers since the begining of the project.
      */
     public static async countEvergreenBackers(): Promise<number> {
-        const backers = (
-            await Inflow.findAll({
+        const backers: { total: string } = (
+            await db.models.inflow.findAll({
                 attributes: [
                     [fn('count', fn('distinct', col('from'))), 'total'],
                 ],
             })
-        )[0];
-        return parseInt((backers as any).total, 10);
+        )[0] as any;
+        return parseInt(backers.total, 10);
     }
 
     /**
@@ -91,8 +91,8 @@ export default class InflowService {
         todayMidnightTime.setHours(0, 0, 0, 0);
         // 30 days ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        const result = (
-            await Inflow.findAll({
+        const result: { backers: string, funding: string } = (
+            await db.models.inflow.findAll({
                 attributes: [
                     [fn('count', fn('distinct', col('from'))), 'backers'],
                     [fn('sum', col('amount')), 'funding'],
@@ -104,10 +104,10 @@ export default class InflowService {
                     },
                 },
             })
-        )[0];
+        )[0] as any;
         return {
-            backers: parseInt((result as any).backers),
-            funding: (result as any).funding,
+            backers: parseInt(result.backers),
+            funding: result.funding,
         };
     }
 }

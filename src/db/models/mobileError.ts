@@ -1,7 +1,24 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class MobileError extends Model {
-    public id!: number; // Note that the `null assertion` `!` is required in strict mode.
+interface MobileErrorAttributes {
+    id: number;
+    version: string;
+    address: string;
+    action: string;
+    error: string;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface MobileErrorCreationAttributes {
+    version: string;
+    address: string;
+    action: string;
+    error: string;
+};
+export class MobileError extends Model<MobileErrorAttributes, MobileErrorCreationAttributes> {
+    public id!: number;
     public version!: string;
     public address!: string;
     public action!: string;
@@ -47,7 +64,7 @@ export function initializeMobileError(sequelize: Sequelize): void {
         },
         {
             tableName: 'mobileerror',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

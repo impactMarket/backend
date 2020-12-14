@@ -47,19 +47,23 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         for (let b = 0; b < beneficiaries.length; b++) {
             const beneficiary = beneficiaries[b];
             // at least two claims are necessary
-            if (beneficiary.claims < 2) {
+            if (
+                beneficiary.claims < 2 ||
+                beneficiary.lastClaimAt === null ||
+                beneficiary.penultimateClaimAt === null
+            ) {
                 continue;
             }
             // the first time you don't wait a single second, the second time, only base interval
             const timeToWait =
                 community.contractParams.baseInterval +
                 (beneficiary.claims - 2) *
-                    community.contractParams.incrementInterval;
+                community.contractParams.incrementInterval;
             const timeWaited =
                 Math.floor(
                     (beneficiary.lastClaimAt.getTime() -
                         beneficiary.penultimateClaimAt.getTime()) /
-                        1000
+                    1000
                 ) - timeToWait;
             // console.log(beneficiary.address, beneficiary.lastClaimAt, beneficiary.penultimateClaimAt);
             beneficiariesTimeToWait.push(timeToWait);
@@ -97,7 +101,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
         let daysSinceStart = Math.round(
             (todayDateOnly.getTime() - new Date(community.started).getTime()) /
-                86400000
+            86400000
         ); // 86400000 1 days in ms
         if (daysSinceStart > 30) {
             daysSinceStart = 30;

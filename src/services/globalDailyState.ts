@@ -1,65 +1,19 @@
-import moment from 'moment';
-import { Op, fn } from 'sequelize';
+import { Op } from 'sequelize';
+import {
+    GlobalDailyState,
+    GlobalDailyStateCreationAttributes
+} from '../db/models/globalDailyState';
+import database from '../loaders/database';
 
-import { GlobalDailyState } from '../db/models/globalDailyState';
-import { Logger } from '../loaders/logger';
-
+const db = database();
 export default class GlobalDailyStateService {
-    public static async add(
-        date: Date,
-        avgMedianSSI: number,
-        claimed: string,
-        claims: number,
-        beneficiaries: number,
-        raised: string,
-        backers: number,
-        volume: string,
-        transactions: number,
-        reach: number,
-        totalRaised: string,
-        totalDistributed: string,
-        totalBackers: number,
-        totalBeneficiaries: number,
-        givingRate: number,
-        ubiRate: number,
-        fundingRate: number,
-        spendingRate: number,
-        avgComulativeUbi: string,
-        avgUbiDuration: number,
-        totalVolume: string,
-        totalTransactions: BigInt,
-        totalReach: BigInt
-    ): Promise<GlobalDailyState> {
-        return await GlobalDailyState.create({
-            date,
-            avgMedianSSI,
-            claimed,
-            claims,
-            beneficiaries,
-            raised,
-            backers,
-            volume,
-            transactions,
-            reach,
-            totalRaised,
-            totalDistributed,
-            totalBackers,
-            totalBeneficiaries,
-            givingRate,
-            ubiRate,
-            fundingRate,
-            spendingRate,
-            avgComulativeUbi,
-            avgUbiDuration,
-            totalVolume,
-            totalTransactions,
-            totalReach,
-        });
+    public static async add(state: GlobalDailyStateCreationAttributes): Promise<GlobalDailyState> {
+        return await db.models.globalDailyState.create(state);
     }
 
     public static async getLast4AvgMedianSSI(): Promise<number[]> {
         // it was null just once at the system's begin.
-        const last = await GlobalDailyState.findAll({
+        const last = await db.models.globalDailyState.findAll({
             attributes: ['avgMedianSSI'],
             order: [['date', 'DESC']],
             limit: 4,
@@ -69,7 +23,7 @@ export default class GlobalDailyStateService {
 
     public static async getLast(): Promise<GlobalDailyState> {
         // it was null just once at the system's begin.
-        const last = await GlobalDailyState.findAll({
+        const last = await db.models.globalDailyState.findAll({
             order: [['date', 'DESC']],
             limit: 1,
         });
@@ -82,7 +36,7 @@ export default class GlobalDailyStateService {
         // 30 days ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         // it was null just once at the system's begin.
-        return await GlobalDailyState.findAll({
+        return await db.models.globalDailyState.findAll({
             where: {
                 date: {
                     [Op.lt]: todayMidnightTime,
@@ -102,7 +56,7 @@ export default class GlobalDailyStateService {
         const threeMonthsAgo = new Date(
             todayMidnightTime.getTime() - 7776000000
         ); // 90 * 24 * 60 * 60 * 1000
-        const result = await GlobalDailyState.findAll({
+        const result = await db.models.globalDailyState.findAll({
             attributes: ['date', 'avgMedianSSI'],
             where: {
                 date: {

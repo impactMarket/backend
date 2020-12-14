@@ -1,6 +1,21 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class NotifiedBacker extends Model {
+interface NotifiedBackerAttributes {
+    id: number;
+    backer: string;
+    communityId: string;
+    at: Date;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface NotifiedBackerCreationAttributes {
+    backer: string;
+    communityId: string;
+    at: Date;
+};
+export class NotifiedBacker extends Model<NotifiedBackerAttributes, NotifiedBackerCreationAttributes> {
     public id!: number;
     public backer!: string;
     public communityId!: string;
@@ -42,7 +57,7 @@ export function initializeNotifiedBacker(sequelize: Sequelize): void {
         },
         {
             tableName: 'notifiedbacker',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

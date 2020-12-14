@@ -1,14 +1,27 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export interface IBeneficiaryTransaction {
+interface BeneficiaryTransactionAttributes {
+    id: number;
     beneficiary: string;
     withAddress: string;
     amount: string;
     isFromBeneficiary: boolean;
     tx: string;
     date: Date;
-}
-export class BeneficiaryTransaction extends Model {
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+export interface BeneficiaryTransactionCreationAttributes {
+    beneficiary: string;
+    withAddress: string;
+    amount: string;
+    isFromBeneficiary: boolean;
+    tx: string;
+    date: Date;
+};
+export class BeneficiaryTransaction extends Model<BeneficiaryTransactionAttributes, BeneficiaryTransactionCreationAttributes> {
     public id!: number;
     public beneficiary!: string;
     public withAddress!: string;
@@ -67,7 +80,7 @@ export function initializeBeneficiaryTransaction(sequelize: Sequelize): void {
         },
         {
             tableName: 'beneficiarytransaction',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

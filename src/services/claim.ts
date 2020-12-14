@@ -1,8 +1,10 @@
 import { col, fn, Op } from 'sequelize';
 
-import { Claim } from '../db/models/claim';
+// import { Claim } from '../db/models/claim';
+import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 
+const db = database();
 export default class ClaimService {
     public static async add(
         address: string,
@@ -19,7 +21,7 @@ export default class ClaimService {
             txAt,
         };
         try {
-            await Claim.create(claimData);
+            await db.models.claim.create(claimData);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error('Error inserting new Claim. Data = ' + JSON.stringify(claimData));
@@ -42,7 +44,7 @@ export default class ClaimService {
         // 30 days ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         const claimed = (
-            await Claim.findAll({
+            await db.models.claim.findAll({
                 attributes: [[fn('sum', col('amount')), 'claimed']],
                 where: {
                     txAt: {
@@ -65,7 +67,7 @@ export default class ClaimService {
         // seven days ago, from todayMidnightTime
         const sevenDaysAgo = new Date(todayMidnightTime.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
         const result = (
-            await Claim.findAll({
+            await db.models.claim.findAll({
                 attributes: [
                     [
                         fn('count', fn('distinct', col('address'))),

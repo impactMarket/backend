@@ -1,6 +1,18 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class ReachedAddress extends Model {
+interface ReachedAddressAttributes {
+    address: string;
+    lastInteraction: Date;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface ReachedAddressCreationAttributes {
+    address: string;
+    lastInteraction: Date;
+};
+export class ReachedAddress extends Model<ReachedAddressAttributes, ReachedAddressCreationAttributes> {
     public address!: string;
     public lastInteraction!: Date;
 
@@ -33,7 +45,7 @@ export function initializeReachedAddress(sequelize: Sequelize): void {
         },
         {
             tableName: 'reachedaddress',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

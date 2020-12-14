@@ -1,29 +1,10 @@
 import { Request } from 'express';
-import { ModelCtor, Sequelize } from 'sequelize/types';
-import { Community } from './db/models/community';
-import { CommunityContract } from './db/models/communityContract';
-import { CommunityDailyMetrics } from './db/models/communityDailyMetrics';
-import { CommunityDailyState } from './db/models/communityDailyState';
-import { CommunityState } from './db/models/communityState';
-import { User } from './db/models/user';
 
 export interface UserInRequest {
     address: string;
 }
 export interface RequestWithUser extends Request {
     user: UserInRequest;
-}
-export interface DbModels {
-    user: ModelCtor<User>;
-    community: ModelCtor<Community>;
-    communityContract: ModelCtor<CommunityContract>;
-    communityState: ModelCtor<CommunityState>;
-    communityDailyState: ModelCtor<CommunityDailyState>;
-    communityDailyMetrics: ModelCtor<CommunityDailyMetrics>;
-}
-export interface DbLoader {
-    sequelize: Sequelize;
-    models: DbModels;
 }
 // API to app
 

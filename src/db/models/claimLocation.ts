@@ -1,9 +1,32 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class ClaimLocation extends Model {
-    public id!: number; // Note that the `null assertion` `!` is required in strict mode.
+interface ClaimLocationAttributes {
+    id: number;
+    communityId: string;
+    gps: {
+        latitude: number;
+        longitude: number;
+    };
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface ClaimLocationCreationAttributes {
+    communityId: string;
+    gps: {
+        latitude: number;
+        longitude: number;
+    };
+};
+
+export class ClaimLocation extends Model<ClaimLocationAttributes, ClaimLocationCreationAttributes> {
+    public id!: number;
     public communityId!: string;
-    public gps!: any;
+    public gps!: {
+        latitude: number;
+        longitude: number;
+    };
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -37,7 +60,7 @@ export function initializeClaimLocation(sequelize: Sequelize): void {
         },
         {
             tableName: 'claimlocation',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

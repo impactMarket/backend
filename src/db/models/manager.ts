@@ -1,6 +1,19 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class Manager extends Model {
+interface ManagerAttributes {
+    id: number;
+    user: string;
+    communityId: string;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface ManagerCreationAttributes {
+    user: string;
+    communityId: string;
+};
+export class Manager extends Model<ManagerAttributes, ManagerCreationAttributes> {
     public id!: number;
     public user!: string;
     public communityId!: string;
@@ -21,8 +34,8 @@ export function initializeManager(sequelize: Sequelize): void {
             user: {
                 type: DataTypes.STRING(44),
                 references: {
-                    model: sequelize.models.User, // name of Target model
-                    key: 'address', // key in Target model that we're referencing
+                    model: sequelize.models.User,
+                    key: 'address',
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false,
@@ -30,8 +43,8 @@ export function initializeManager(sequelize: Sequelize): void {
             communityId: {
                 type: DataTypes.UUID,
                 references: {
-                    model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                    model: 'community',
+                    key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false,
@@ -47,7 +60,7 @@ export function initializeManager(sequelize: Sequelize): void {
         },
         {
             tableName: 'manager',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

@@ -1,18 +1,23 @@
-import { ImMetadata } from '../db/models/imMetadata';
+import config from '../config';
+import database from '../loaders/database';
 
+const db = database();
 export default class ImMetadataService {
     public static async setLastBlock(value: number): Promise<void> {
-        await ImMetadata.update(
+        await db.models.imMetadata.update(
             { value: value.toString() },
             { where: { key: 'lastBlock' } }
         );
     }
 
     public static async getLastBlock(): Promise<number> {
-        const last = await ImMetadata.findOne({
+        const last = await db.models.imMetadata.findOne({
             where: { key: 'lastBlock' },
             raw: true,
         });
-        return parseInt(last!.value);
+        if (last === null) {
+            return config.impactMarketContractBlockNumber;
+        }
+        return parseInt(last.value);
     }
 }

@@ -1,8 +1,9 @@
-import { Op } from 'sequelize';
 import { Manager } from '../db/models/manager';
+import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 
 
+const db = database();
 export default class ManagerService {
 
     public static async add(
@@ -11,14 +12,14 @@ export default class ManagerService {
     ): Promise<boolean> {
         // if user does not exist, add to pending list
         // otherwise update
-        const user = await Manager.findOne({ where: { user: address, communityId } });
+        const user = await db.models.manager.findOne({ where: { user: address, communityId } });
         if (user === null) {
             const managerData = {
                 user: address,
                 communityId
             };
             try {
-                const updated = await Manager.create(managerData);
+                const updated = await db.models.manager.create(managerData);
                 return updated[0] > 0;
             } catch (e) {
                 if (e.name !== 'SequelizeUniqueConstraintError') {
@@ -35,13 +36,13 @@ export default class ManagerService {
     public static async get(
         address: string,
     ): Promise<Manager | null> {
-        return await Manager.findOne({ where: { user: address } });
+        return await db.models.manager.findOne({ where: { user: address } });
     }
 
     public static async remove(
         address: string,
         communityId: string
     ): Promise<void> {
-        await Manager.destroy({ where: { user: address, communityId } });
+        await db.models.manager.destroy({ where: { user: address, communityId } });
     }
 }

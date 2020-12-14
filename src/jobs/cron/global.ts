@@ -93,14 +93,14 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         last4DaysAvgSSI.concat([communitiesAvgYesterday.medianSSI])
     );
     // register new global daily state
-    await GlobalDailyStateService.add(
-        yesterdayDateOnly,
-        Math.round(avgMedianSSI * 100) / 100,
-        communitiesYesterday.totalClaimed,
-        communitiesYesterday.totalClaims,
-        communitiesYesterday.totalBeneficiaries,
-        communitiesYesterday.totalRaised,
-        backersAndFunding.backers,
+    await GlobalDailyStateService.add({
+        date: yesterdayDateOnly,
+        avgMedianSSI: Math.round(avgMedianSSI * 100) / 100,
+        claimed: communitiesYesterday.totalClaimed,
+        claims: communitiesYesterday.totalClaims,
+        beneficiaries: communitiesYesterday.totalBeneficiaries,
+        raised: communitiesYesterday.totalRaised,
+        backers: backersAndFunding.backers,
         volume,
         transactions,
         reach,
@@ -109,13 +109,13 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         totalBackers,
         totalBeneficiaries,
         givingRate,
-        Math.round(ubiRate * 100) / 100,
+        ubiRate: Math.round(ubiRate * 100) / 100,
         fundingRate,
         spendingRate,
         avgComulativeUbi,
         avgUbiDuration,
         totalVolume,
-        BigInt(totalTransactions),
-        BigInt(totalReach)
-    );
+        totalTransactions: BigInt(totalTransactions),
+        totalReach: BigInt(totalReach)
+    });
 }

@@ -1,8 +1,10 @@
 import { Op, fn, col } from 'sequelize';
 import { Beneficiary } from '../db/models/beneficiary';
+import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 
 
+const db = database();
 export default class BeneficiaryService {
 
     public static async add(
@@ -13,7 +15,7 @@ export default class BeneficiaryService {
     ): Promise<boolean> {
         // if user does not exist, add to pending list
         // otherwise update
-        const user = await Beneficiary.findOne({ where: { address, active: false } });
+        const user = await db.models.beneficiary.findOne({ where: { address, active: false } });
         if (user === null) {
             const beneficiaryData = {
                 address,
@@ -22,7 +24,7 @@ export default class BeneficiaryService {
                 txAt,
             };
             try {
-                await Beneficiary.create(beneficiaryData);
+                await db.models.beneficiary.create(beneficiaryData);
             } catch (e) {
                 if (e.name !== 'SequelizeUniqueConstraintError') {
                     Logger.error('Error inserting new Beneficiary. Data = ' + JSON.stringify(beneficiaryData));
@@ -30,7 +32,7 @@ export default class BeneficiaryService {
                 }
             }
         } else {
-            await Beneficiary.update({ active: true }, { where: { address } });
+            await db.models.beneficiary.update({ active: true }, { where: { address } });
         }
         return true;
     }
@@ -38,7 +40,7 @@ export default class BeneficiaryService {
     public static async getAllInCommunity(
         communityId: string,
     ): Promise<Beneficiary[]> {
-        return await Beneficiary.findAll({
+        return await db.models.beneficiary.findAll({
             where: {
                 communityId,
                 active: true
@@ -49,17 +51,17 @@ export default class BeneficiaryService {
     public static async get(
         address: string,
     ): Promise<Beneficiary | null> {
-        return await Beneficiary.findOne({ where: { address } });
+        return await db.models.beneficiary.findOne({ where: { address } });
     }
 
     public static async getAllAddresses(): Promise<string[]> {
-        return (await Beneficiary.findAll({ attributes: ['address'] })).map((b) => b.address);
+        return (await db.models.beneficiary.findAll({ attributes: ['address'] })).map((b) => b.address);
     }
 
     public static async remove(
         address: string,
     ): Promise<void> {
-        await Beneficiary.update({ active: false }, { where: { address } });
+        await db.models.beneficiary.update({ active: false }, { where: { address } });
     }
 
     public static async getActiveBeneficiariesLast30Days(): Promise<Map<string, number>> {
@@ -67,7 +69,7 @@ export default class BeneficiaryService {
         todayMidnightTime.setHours(0, 0, 0, 0);
         // a month ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        const result = await Beneficiary.findAll({
+        const result = await db.models.beneficiary.findAll({
             attributes: [
                 [fn('count', col('address')), 'total'],
                 'communityId',

@@ -1,19 +1,11 @@
-import aws from 'aws-sdk';
 import { celebrate, Joi } from 'celebrate';
 import { Router } from 'express';
 
 import config from '../config';
-import { MobileError } from '../db/models/mobileError';
-import { Logger } from '../loaders/logger';
+import database from '../loaders/database';
 
 const route = Router();
-
-aws.config.update({
-    accessKeyId: config.aws.accessKeyId,
-    secretAccessKey: config.aws.secretAccessKey,
-    region: config.aws.region,
-});
-const s3 = new aws.S3();
+const db = database();
 
 export default (app: Router): void => {
     app.use('/mobile', route);
@@ -38,7 +30,7 @@ export default (app: Router): void => {
         }),
         (req, res) => {
             const { version, address, action, error } = req.body;
-            MobileError.create({
+            db.models.mobileError.create({
                 version,
                 address,
                 action,

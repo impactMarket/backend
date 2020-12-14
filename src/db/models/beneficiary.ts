@@ -1,7 +1,28 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
+interface BeneficiaryAttributes {
+    id: number;
+    address: string;
+    communityId: string;
+    active: boolean;
+    tx: string;
+    txAt: Date;
+    claims: number;
+    lastClaimAt: Date | null;
+    penultimateClaimAt: Date | null;
 
-export class Beneficiary extends Model {
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+interface BeneficiaryCreationAttributes {
+    address: string;
+    communityId: string;
+    tx: string;
+    txAt: Date;
+};
+
+export class Beneficiary extends Model<BeneficiaryAttributes, BeneficiaryCreationAttributes> {
     public id!: number;
     public address!: string;
     public communityId!: string;
@@ -9,8 +30,8 @@ export class Beneficiary extends Model {
     public tx!: string;
     public txAt!: Date;
     public claims!: number;
-    public lastClaimAt!: Date;
-    public penultimateClaimAt!: Date;
+    public lastClaimAt!: Date | null;
+    public penultimateClaimAt!: Date | null;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -74,6 +95,6 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
         }
     }, {
         tableName: 'beneficiary',
-        sequelize: sequelize, // this bit is important
+        sequelize: sequelize,
     });
 }

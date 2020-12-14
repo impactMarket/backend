@@ -1,6 +1,61 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class GlobalDailyState extends Model {
+interface GlobalDailyStateAttributes {
+    date: Date;
+    avgMedianSSI: number;
+    claimed: string;
+    claims: number;
+    beneficiaries: number;
+    raised: string;
+    backers: number;
+    volume: string;
+    transactions: number;
+    reach: number;
+    totalRaised: string;
+    totalDistributed: string;
+    totalBackers: number;
+    totalBeneficiaries: number;
+    givingRate: number;
+    ubiRate: number;
+    fundingRate: number;
+    spendingRate: number;
+    avgComulativeUbi: string;
+    avgUbiDuration: number;
+    totalVolume: string;
+    totalTransactions: BigInt;
+    totalReach: BigInt;
+
+    // timestamps
+    createdAt: Date;
+    updatedAt: Date;
+};
+export interface GlobalDailyStateCreationAttributes {
+    date: Date;
+    avgMedianSSI: number;
+    claimed: string;
+    claims: number;
+    beneficiaries: number;
+    raised: string;
+    backers: number;
+    volume: string;
+    transactions: number;
+    reach: number;
+    totalRaised: string;
+    totalDistributed: string;
+    totalBackers: number;
+    totalBeneficiaries: number;
+    givingRate: number;
+    ubiRate: number;
+    fundingRate: number;
+    spendingRate: number;
+    avgComulativeUbi: string;
+    avgUbiDuration: number;
+    totalVolume: string;
+    totalTransactions: BigInt;
+    totalReach: BigInt;
+};
+
+export class GlobalDailyState extends Model<GlobalDailyStateAttributes, GlobalDailyStateCreationAttributes> {
     public date!: Date;
     public avgMedianSSI!: number;
     public claimed!: string;
@@ -147,7 +202,7 @@ export function initializeGlobalDailyState(sequelize: Sequelize): void {
         },
         {
             tableName: 'globaldailystate',
-            sequelize, // this bit is important
+            sequelize,
         }
     );
 }

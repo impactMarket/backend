@@ -1,17 +1,22 @@
 import { ClaimLocation } from '../db/models/claimLocation';
+import database from "../loaders/database";
 
+const db = database();
 export default class ClaimLocationService {
     public static async add(
         communityId: string,
-        gps: any
+        gps: {
+            latitude: number;
+            longitude: number;
+        }
     ): Promise<ClaimLocation> {
-        return ClaimLocation.create({
+        return db.models.claimLocation.create({
             communityId,
             gps,
         });
     }
 
     public static async getAll(): Promise<ClaimLocation[]> {
-        return ClaimLocation.findAll();
+        return db.models.claimLocation.findAll();
     }
 }
