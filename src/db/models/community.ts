@@ -28,7 +28,7 @@ export interface CommunityAttributes {
     createdAt: Date;
     updatedAt: Date;
 };
-interface CommunityCreationAttributes {
+export interface CommunityCreationAttributes {
     requestByAddress: string;
     contractAddress?: string;
     name: string;
@@ -46,7 +46,6 @@ interface CommunityCreationAttributes {
     visibility: 'public' | 'private';
     coverImage: string;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    txCreationObj?: ICommunityVars;
     started: Date;
 };
 

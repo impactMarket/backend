@@ -5,7 +5,7 @@ import config from '../config';
 import CommunityContractABI from '../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
 import database from '../loaders/database';
-import { Community } from '../db/models/community';
+import { Community, CommunityCreationAttributes } from '../db/models/community';
 import { ICommunityContractParams, ICommunityInfo } from '../types';
 import { notifyManagerAdded } from '../utils';
 import CommunityContractService from './communityContract';
@@ -15,13 +15,14 @@ import CommunityStateService from './communityState';
 import SSIService from './ssi';
 import TransactionsService from './transactions';
 import { ICommunity } from '../types/endpoints';
+import ManagerService from './managers';
 
 const db = database();
 export default class CommunityService {
     public static async create(
         requestByAddress: string,
         name: string,
-        contractAddress: string,
+        contractAddress: string | undefined,
         description: string,
         language: string,
         currency: string,
@@ -33,11 +34,54 @@ export default class CommunityService {
         },
         email: string,
         coverImage: string,
-        txReceipt: any,
+        txReceipt: any | undefined,
         contractParams: ICommunityContractParams
     ): Promise<Community> {
-        // TODO: improve, insert with unique transaction (see sequelize eager loading)
-        const newCommunity = await db.models.community.create({
+        let managerAddress: string = '';
+        let createObject: CommunityCreationAttributes = {
+            requestByAddress,
+            name,
+            description,
+            language,
+            currency,
+            city,
+            country,
+            gps,
+            email,
+            coverImage,
+            visibility: 'public', // will be changed if private
+            status: 'pending', // will be changed if private
+            started: new Date(),
+        }
+        // if it was submitted as private, validate the transaction first.
+        if (txReceipt !== undefined) {
+            const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
+            const eventsCoomunity: ethers.utils.LogDescription[] = [];
+            for (let index = 0; index < txReceipt.logs.length; index++) {
+                try {
+                    const parsedLog = ifaceCommunity.parseLog(
+                        txReceipt.logs[index]
+                    );
+                    eventsCoomunity.push(parsedLog);
+                } catch (e) { }
+            }
+            const index = eventsCoomunity.findIndex(
+                (event) => event !== null && event.name === 'ManagerAdded'
+            );
+            if (index !== -1) {
+                managerAddress = eventsCoomunity[index].args[0];
+            } else {
+                throw new Error('Event not found!');
+            }
+            createObject = {
+                ...createObject,
+                contractAddress,
+                visibility: 'private',
+                status: 'valid',
+            }
+        }
+
+        const community = await db.models.community.create({
             requestByAddress,
             name,
             contractAddress,
@@ -53,43 +97,16 @@ export default class CommunityService {
             status: 'valid',
             started: new Date(),
         });
-        await CommunityContractService.add(
-            newCommunity.publicId,
-            contractParams
-        );
-        await CommunityStateService.add(newCommunity.publicId);
-        // TODO: also add one day to daily state with the unique transaction above
-        await CommunityDailyStateService.populateNext5Days(
-            newCommunity.publicId
-        );
-        // add tx manager
-        const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
-        const eventsCoomunity: ethers.utils.LogDescription[] = [];
-        for (let index = 0; index < txReceipt.logs.length; index++) {
-            try {
-                const parsedLog = ifaceCommunity.parseLog(
-                    txReceipt.logs[index]
-                );
-                eventsCoomunity.push(parsedLog);
-            } catch (e) { }
-        }
-        const index = eventsCoomunity.findIndex(
-            (event) => event !== null && event.name === 'ManagerAdded'
-        );
-        if (index !== -1) {
-            const provider = new ethers.providers.JsonRpcProvider(
-                config.jsonRpcUrl
+        await CommunityContractService.add(community.publicId, contractParams);
+        await CommunityStateService.add(community.publicId);
+        await CommunityDailyStateService.populateNext5Days(community.publicId);
+        if (txReceipt !== undefined) {
+            await ManagerService.add(
+                managerAddress,
+                community.publicId
             );
-            await TransactionsService.add(
-                provider,
-                txReceipt.logs[index],
-                eventsCoomunity[index]
-            );
-            // it's not necessary to register the event!
-            return newCommunity;
         }
-        // TODO: should return undefined
-        return newCommunity;
+        return community;
     }
 
     public static async request(
@@ -126,7 +143,6 @@ export default class CommunityService {
         });
         await CommunityContractService.add(community.publicId, contractParams);
         await CommunityStateService.add(community.publicId);
-        // TODO: also add one day to daily state with the unique transaction above
         await CommunityDailyStateService.populateNext5Days(community.publicId);
         return community;
     }
@@ -135,13 +151,10 @@ export default class CommunityService {
         publicId: string,
         name: string,
         description: string,
+        language: string,
         currency: string,
         city: string,
         country: string,
-        gps: {
-            latitude: number;
-            longitude: number;
-        },
         email: string,
         coverImage: string
     ): Promise<[number, Community[]]> {
@@ -149,10 +162,10 @@ export default class CommunityService {
             {
                 name,
                 description,
+                language,
                 currency,
                 city,
                 country,
-                gps,
                 email,
                 coverImage,
             },
