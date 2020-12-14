@@ -23,51 +23,69 @@ module.exports = {
             },
             name: {
                 type: Sequelize.STRING(64),
-                allowNull: false
+                allowNull: false,
             },
             description: {
                 type: Sequelize.STRING(1024),
-                allowNull: false
+                allowNull: false,
+            },
+            descriptionEn: {
+                type: Sequelize.STRING(1024),
+                allowNull: true,
+            },
+            language: {
+                type: Sequelize.STRING(8),
+                defaultValue: 'en',
+                allowNull: false,
+            },
+            currency: {
+                type: Sequelize.STRING(4),
+                defaultValue: 'USD',
+                allowNull: false,
             },
             city: {
                 type: Sequelize.STRING(64),
-                allowNull: false
+                allowNull: false,
             },
             country: {
                 type: Sequelize.STRING(64),
-                allowNull: false
+                allowNull: false,
             },
             gps: {
                 type: Sequelize.JSON,
-                allowNull: false
+                allowNull: false,
             },
             email: {
                 type: Sequelize.STRING(64),
-                allowNull: false
+                allowNull: false,
             },
             visibility: {
                 type: Sequelize.ENUM('public', 'private'),
-                allowNull: false
+                allowNull: false,
             },
             coverImage: {
                 type: Sequelize.STRING(128),
-                allowNull: false
+                allowNull: false,
             },
             status: {
                 type: Sequelize.ENUM('pending', 'valid', 'removed'),
-                allowNull: false
+                allowNull: false,
             },
             txCreationObj: {
-                type: Sequelize.JSON
+                type: Sequelize.JSON,
+            },
+            started: {
+                type: Sequelize.DATEONLY,
+                allowNull: false,
             },
             createdAt: {
+                type: Sequelize.DATE,
                 allowNull: false,
-                type: Sequelize.DATE
             },
             updatedAt: {
+                type: Sequelize.DATE,
                 allowNull: false,
-                type: Sequelize.DATE
-            }
+            },
         });
     },
     down: (queryInterface, Sequelize) => {

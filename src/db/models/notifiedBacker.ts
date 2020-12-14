@@ -40,6 +40,11 @@ export function initializeNotifiedBacker(sequelize: Sequelize): void {
             },
             communityId: {
                 type: DataTypes.STRING(44),
+                references: {
+                    model: 'community',
+                    key: 'publicId',
+                },
+                onDelete: 'RESTRICT',
                 allowNull: false,
             },
             at: {

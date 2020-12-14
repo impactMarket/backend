@@ -43,6 +43,11 @@ export function initializeClaimLocation(sequelize: Sequelize): void {
             },
             communityId: {
                 type: DataTypes.UUID,
+                references: {
+                    model: 'community',
+                    key: 'publicId',
+                },
+                onDelete: 'RESTRICT',
                 allowNull: false,
             },
             gps: {

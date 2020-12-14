@@ -13,8 +13,8 @@ module.exports = {
             communityId: {
                 type: Sequelize.UUID,
                 references: {
-                    model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                    model: 'community',
+                    key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false

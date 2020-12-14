@@ -3,41 +3,39 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('communitydailymetrics', {
+        return queryInterface.createTable('claim', {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true
             },
+            address: {
+                type: Sequelize.STRING(44),
+                allowNull: false
+            },
             communityId: {
                 type: Sequelize.UUID,
                 references: {
-                    model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                    model: 'community',
+                    key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false
             },
-            ssiDayAlone: {
-                type: Sequelize.FLOAT,
+            amount: {
+                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+                type: Sequelize.DECIMAL(24), // max 999,999 - plus 18 decimals
                 allowNull: false,
             },
-            ssi: {
-                type: Sequelize.FLOAT,
+            tx: {
+                type: Sequelize.STRING(68),
+                unique: true,
                 allowNull: false,
             },
-            ubiRate: {
-                type: Sequelize.FLOAT,
+            txAt: {
+                type: Sequelize.DATE,
                 allowNull: false,
-            },
-            estimatedDuration: {
-                type: Sequelize.FLOAT,
-                allowNull: false,
-            },
-            date: {
-                type: Sequelize.DATEONLY,
-                allowNull: false
             },
             createdAt: {
                 allowNull: false,
@@ -50,6 +48,6 @@ module.exports = {
         });
     },
     down: (queryInterface) => {
-        return queryInterface.dropTable('communitydailymetrics');
+        return queryInterface.dropTable('claim');
     }
 };

@@ -3,29 +3,29 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('claim', {
+        return queryInterface.createTable('inflow', {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true
             },
-            address: {
+            from: {
                 type: Sequelize.STRING(44),
                 allowNull: false
             },
             communityId: {
                 type: Sequelize.UUID,
                 references: {
-                    model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                    model: 'community',
+                    key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false
             },
             amount: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
-                type: Sequelize.DECIMAL(24), // max 999,999 - plus 18 decimals
+                type: Sequelize.DECIMAL(29), // max 9,999,999,999 - plus 18 decimals
                 allowNull: false,
             },
             tx: {
@@ -48,6 +48,6 @@ module.exports = {
         });
     },
     down: (queryInterface) => {
-        return queryInterface.dropTable('claim');
+        return queryInterface.dropTable('inflow');
     }
 };
