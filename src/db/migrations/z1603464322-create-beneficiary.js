@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
-    up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable('beneficiary', {
+    up: async (queryInterface, Sequelize) => {
+        await  queryInterface.createTable('beneficiary', {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
@@ -56,6 +56,7 @@ module.exports = {
                 type: Sequelize.DATE,
             }
         });
+        return queryInterface.sequelize.query(`ALTER TABLE beneficiary ADD CONSTRAINT one_beneficiary_per_community_key UNIQUE (address, "communityId");`)
     },
     down: (queryInterface, Sequelize) => {
         return queryInterface.dropTable('beneficiary');
