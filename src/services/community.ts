@@ -14,7 +14,7 @@ import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
 import SSIService from './ssi';
 import TransactionsService from './transactions';
-import { ICommunity } from '../types/endpoints';
+import { ICommunity, ICommunityLightDetails } from '../types/endpoints';
 import ManagerService from './managers';
 
 const db = database();
@@ -251,7 +251,51 @@ export default class CommunityService {
         return result;
     }
 
-    public static async list(): Promise<ICommunity[]> {
+    public static async list(): Promise<ICommunityLightDetails[]> {
+        // this could be much better, but byt the time of ritting, sequelize
+        // does not support eager loading with global "raw: false".
+        // Please, check again, and if available, update this
+        // https://github.com/sequelize/sequelize/issues/6408
+        const result: ICommunityLightDetails[] = [];
+        const communities = await db.models.community.findAll({
+            attributes: [
+                'publicId',
+                'name',
+                'city',
+                'country',
+            ],
+            where: {
+                status: 'valid',
+                visibility: 'public',
+            },
+        });
+        const inCommunities = communities.map((c) => c.publicId);
+        const communityState = await db.models.communityState.findAll({
+            where: {
+                communityId: {
+                    [Op.in]: inCommunities
+                }
+            },
+        });
+        const communityContract = await db.models.communityContract.findAll({
+            attributes: ['claimAmount'],
+            where: {
+                communityId: {
+                    [Op.in]: inCommunities
+                }
+            },
+        });
+        for (let index = 0; index < communities.length; index++) {
+            result.push({
+                ...communities[index],
+                state: communityState.find((c) => c.communityId = communities[index].publicId)!,
+                claimAmount: communityContract.find((c) => c.communityId = communities[index].publicId)!.claimAmount,
+            });
+        }
+        return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? 1 : (a.state.beneficiaries < b.state.beneficiaries ? -1 : 0));
+    }
+
+    public static async listFull(): Promise<ICommunity[]> {
         // this could be much better, but byt the time of ritting, sequelize
         // does not support eager loading with global "raw: false".
         // Please, check again, and if available, update this

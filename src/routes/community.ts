@@ -21,6 +21,7 @@ export default (app: Router): void => {
         communityController.getAll
     );
     route.get('/list', communityController.list);
+    route.get('/list/full', communityController.listFull);
     route.post(
         '/create',
         authenticateToken,

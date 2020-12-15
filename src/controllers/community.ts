@@ -42,6 +42,12 @@ const list = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 500, res));
 }
 
+const listFull = (req: Request, res: Response) => {
+    CommunityService.listFull()
+        .then((r) => res.send(r))
+        .catch((e) => controllerLogAndFail(e, 500, res));
+}
+
 const create = (req: Request, res: Response) => {
     const {
         requestByAddress, // the address making the request (will be community manager)
@@ -128,6 +134,7 @@ export default {
     findByPublicId,
     getAll,
     list,
+    listFull,
     create,
     edit,
     accept
