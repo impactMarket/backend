@@ -1,4 +1,4 @@
-import { col, fn } from 'sequelize';
+import { col, fn, Transaction } from 'sequelize';
 import database from '../loaders/database';
 
 import { CommunityContract } from '../db/models/communityContract';
@@ -8,7 +8,8 @@ const db = database();
 export default class CommunityContractService {
     public static async add(
         communityId: string,
-        contractParams: ICommunityContractParams
+        contractParams: ICommunityContractParams,
+        t: Transaction | undefined = undefined
     ): Promise<CommunityContract> {
         const {
             claimAmount,
@@ -22,7 +23,7 @@ export default class CommunityContractService {
             maxClaim,
             baseInterval,
             incrementInterval,
-        });
+        }, { transaction: t });
     }
 
     public static async get(

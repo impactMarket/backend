@@ -81,34 +81,37 @@ export default class CommunityService {
             }
         }
 
-        const community = await db.models.community.create({
-            requestByAddress,
-            name,
-            contractAddress,
-            description,
-            language,
-            currency,
-            city,
-            country,
-            gps,
-            email,
-            visibility: 'private',
-            coverImage,
-            status: 'valid',
-            started: new Date(),
-        });
-        await CommunityContractService.add(community.publicId, contractParams);
-        await CommunityStateService.add(community.publicId);
-        await CommunityDailyStateService.populateNext5Days(community.publicId);
-        if (txReceipt !== undefined) {
-            await ManagerService.add(
-                managerAddress,
-                community.publicId
-            );
+        const t = await db.sequelize.transaction();
+        try {
+            const community = await db.models.community.create(createObject, { transaction: t });
+            await CommunityContractService.add(community.publicId, contractParams, t);
+            await CommunityStateService.add(community.publicId, t);
+            await CommunityDailyStateService.populateNext5Days(community.publicId, t);
+            if (txReceipt !== undefined) {
+                await ManagerService.add(
+                    managerAddress,
+                    community.publicId,
+                    t
+                );
+            }
+            // If the execution reaches this line, no errors were thrown.
+            // We commit the transaction.
+            await t.commit();
+            return community;
+        } catch (error) {
+
+            // If the execution reaches this line, an error was thrown.
+            // We rollback the transaction.
+            await t.rollback();
+            // Since this is the service, we throw the error back to the controller,
+            // so the route returns an error. 
+            throw new Error(error);
         }
-        return community;
     }
 
+    /**
+     * @deprecated
+     */
     public static async request(
         requestByAddress: string,
         name: string,

@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { Op, fn, col } from 'sequelize';
+import { Op, fn, col, Transaction } from 'sequelize';
 import {
     CommunityDailyState,
     CommunityDailyStateCreationAttributes
@@ -31,6 +31,7 @@ export default class CommunityDailyStateService {
     // if not undefined, populate the next five days for all existing 'valid' communities
     public static async populateNext5Days(
         communityId: string,
+        t: Transaction | undefined = undefined
     ): Promise<void> {
         const days = 5;
         const today = new Date();
@@ -60,7 +61,7 @@ export default class CommunityDailyStateService {
             });
         }
         if (emptyDays.length > 0) {
-            await db.models.communityDailyState.bulkCreate(emptyDays);
+            await db.models.communityDailyState.bulkCreate(emptyDays, { transaction: t });
         }
     }
 
