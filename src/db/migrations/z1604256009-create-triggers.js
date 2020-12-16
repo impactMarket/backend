@@ -31,7 +31,7 @@ module.exports = {
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_beneficiaries_community_states
-AFTER INSERT OR DELETE
+AFTER INSERT OR UPDATE
 ON beneficiary
 FOR EACH ROW
 EXECUTE PROCEDURE update_beneficiaries_community_states();`);
