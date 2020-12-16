@@ -17,6 +17,10 @@ export default (app: Router): void => {
         communityController.findByPublicId
     );
     route.get(
+        '/publicid/:publicId',
+        communityController.get
+    );
+    route.get(
         '/all/:status',
         communityController.getAll
     );

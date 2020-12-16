@@ -333,7 +333,7 @@ export default class CommunityService {
                 }
             },
             order: [['createdAt', 'DESC']],
-            limit: 1
+            limit: inCommunities.length
         });
         for (let index = 0; index < communities.length; index++) {
             result.push({
@@ -344,6 +344,42 @@ export default class CommunityService {
             });
         }
         return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? 1 : (a.state.beneficiaries < b.state.beneficiaries ? -1 : 0));
+    }
+
+    public static async get(
+        publicId: string
+    ): Promise<ICommunity | null> {
+        const community = await db.models.community.findOne({
+            where: {
+                publicId,
+            },
+        });
+        if (community === null) {
+            throw new Error('Not found community ' + publicId);
+        }
+        const communityState = await db.models.communityState.findOne({
+            where: {
+                communityId: community.publicId
+            },
+        });
+        const communityContract = await db.models.communityContract.findOne({
+            where: {
+                communityId: community.publicId
+            },
+        });
+        const communityDailyMetrics = await db.models.communityDailyMetrics.findAll({
+            where: {
+                communityId: community.publicId
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1
+        });
+        return {
+            ...community,
+            state: communityState!,
+            contract: communityContract!,
+            metrics: communityDailyMetrics[0]!,
+        }
     }
 
     public static async getAllAddressesAndIds(): Promise<Map<string, string>> {
@@ -371,6 +407,9 @@ export default class CommunityService {
         });
     }
 
+    /**
+     * @deprecated
+     */
     public static async findByPublicId(
         publicId: string
     ): Promise<ICommunityInfo | null> {
