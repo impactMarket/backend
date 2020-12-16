@@ -53,6 +53,7 @@ export default class CommunityService {
             status: 'pending', // will be changed if private
             started: new Date(),
         }
+
         // if it was submitted as private, validate the transaction first.
         if (txReceipt !== undefined) {
             const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
@@ -75,7 +76,7 @@ export default class CommunityService {
             }
             createObject = {
                 ...createObject,
-                contractAddress,
+                contractAddress: contractAddress!,
                 visibility: 'private',
                 status: 'valid',
             }
@@ -266,6 +267,7 @@ export default class CommunityService {
                 'name',
                 'city',
                 'country',
+                'coverImage',
             ],
             where: {
                 status: 'valid',
@@ -281,7 +283,6 @@ export default class CommunityService {
             },
         });
         const communityContract = await db.models.communityContract.findAll({
-            attributes: ['claimAmount'],
             where: {
                 communityId: {
                     [Op.in]: inCommunities
@@ -292,7 +293,7 @@ export default class CommunityService {
             result.push({
                 ...communities[index],
                 state: communityState.find((c) => c.communityId = communities[index].publicId)!,
-                claimAmount: communityContract.find((c) => c.communityId = communities[index].publicId)!.claimAmount,
+                contract: communityContract.find((c) => c.communityId = communities[index].publicId)!,
             });
         }
         return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? 1 : (a.state.beneficiaries < b.state.beneficiaries ? -1 : 0));

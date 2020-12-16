@@ -10,15 +10,16 @@ const create = celebrate({
         currency: Joi.string().required(),
         city: Joi.string().required(),
         country: Joi.string().required(),
-        gps: {
+        gps: Joi.object({
             latitude: Joi.number().required(),
             longitude: Joi.number().required(),
-        },
+        }).required(),
         email: Joi.string().required(),
         coverImage: Joi.string().required(),
         txReceipt: Joi.when('contractAddress', {
             not: undefined,
-            then: Joi.object().required()
+            then: Joi.object().required(),
+            otherwise: Joi.object().optional(),
         }),
         contractParams: Joi.object().required(),
     }),

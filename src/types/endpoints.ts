@@ -8,8 +8,9 @@ export interface ICommunityLightDetails {
     name: string;
     city: string;
     country: string;
+    coverImage: string;
     state: CommunityStateAttributes;
-    claimAmount: string;
+    contract: CommunityContractAttributes;
 }
 export interface ICommunity extends CommunityAttributes {
     state: CommunityStateAttributes;
