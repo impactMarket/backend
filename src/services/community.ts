@@ -14,8 +14,9 @@ import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
 import SSIService from './ssi';
 import TransactionsService from './transactions';
-import { ICommunity, ICommunityLightDetails } from '../types/endpoints';
+import { ICommunity, ICommunityLightDetails, IManagers, IManagersDetails } from '../types/endpoints';
 import ManagerService from './managers';
+import BeneficiaryService from './beneficiary';
 
 const db = database();
 export default class CommunityService {
@@ -344,6 +345,32 @@ export default class CommunityService {
             });
         }
         return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? 1 : (a.state.beneficiaries < b.state.beneficiaries ? -1 : 0));
+    }
+
+    public static async managers(managerAddress: string): Promise<IManagers> {
+        const manager = await ManagerService.get(managerAddress);
+        if(manager === null) {
+            throw new Error('Not a manager ' + managerAddress);
+        }
+        const managers = await ManagerService.countManagers(manager.communityId);
+        const beneficiaries = await BeneficiaryService.countInCommunity(manager.communityId);
+        return {
+            managers,
+            beneficiaries
+        }
+    }
+
+    public static async managersDetails(managerAddress: string): Promise<IManagersDetails> {
+        const manager = await ManagerService.get(managerAddress);
+        if(manager === null) {
+            throw new Error('Not a manager ' + managerAddress);
+        }
+        const managers = await ManagerService.listManagers(manager.communityId);
+        const beneficiaries = await BeneficiaryService.listAllInCommunity(manager.communityId);
+        return {
+            managers,
+            beneficiaries
+        }
     }
 
     public static async get(

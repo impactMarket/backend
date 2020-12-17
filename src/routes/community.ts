@@ -24,6 +24,16 @@ export default (app: Router): void => {
         '/all/:status',
         communityController.getAll
     );
+    route.get(
+        '/managers',
+        authenticateToken,
+        communityController.managers
+    );
+    route.get(
+        '/managers/details',
+        authenticateToken,
+        communityController.managersDetails
+    );
     route.get('/list', communityController.list);
     route.get('/list/full', communityController.listFull);
     route.post(

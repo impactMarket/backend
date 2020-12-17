@@ -15,7 +15,7 @@ import {
     IRecentTxAPI,
     IPaymentsTxAPI,
     IAddressAndName,
-    ICommunityInfoBeneficiary,
+    IManagerDetailsBeneficiary,
     IUserTxAPI,
     IGlobalStatus,
     IGlobalOutflowStatus,
@@ -200,8 +200,8 @@ export default class TransactionsService {
     public static async getBeneficiariesInCommunity(
         communityAddress: string
     ): Promise<{
-        added: ICommunityInfoBeneficiary[];
-        removed: ICommunityInfoBeneficiary[];
+        added: IManagerDetailsBeneficiary[];
+        removed: IManagerDetailsBeneficiary[];
     }> {
         const dbRequestResult = await Transactions.findAll({
             where: {
@@ -219,8 +219,8 @@ export default class TransactionsService {
         }));
         // group
         const result = { added: [], removed: [] } as {
-            added: ICommunityInfoBeneficiary[];
-            removed: ICommunityInfoBeneficiary[];
+            added: IManagerDetailsBeneficiary[];
+            removed: IManagerDetailsBeneficiary[];
         };
         const claimed = await TransactionsService.getBeneficiariesCommunityClaimedAmount(
             communityAddress

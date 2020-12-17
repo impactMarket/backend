@@ -1,7 +1,8 @@
-import { Transaction } from 'sequelize';
+import { col, fn, Op, Transaction } from 'sequelize';
 import { Manager } from '../db/models/manager';
 import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
+import { IManagerDetailsManager } from '../types/endpoints';
 
 
 const db = database();
@@ -34,11 +35,51 @@ export default class ManagerService {
         return true;
     }
 
-
     public static async get(
         address: string,
     ): Promise<Manager | null> {
         return await db.models.manager.findOne({ where: { user: address } });
+    }
+
+    public static async countManagers(
+        communityId: string,
+    ): Promise<number> {
+        const managers: { total: number } = (await db.models.manager.findAll({
+            attributes: [
+                [fn('count', col('address')), 'total']
+            ],
+            where: { communityId }
+        }))[0] as any;
+        return managers.total;
+    }
+
+    public static async listManagers(
+        communityId: string,
+    ): Promise<IManagerDetailsManager[]> {
+        // TODO: this needs to be improved with eager loading (I mean, a lot!)
+        const managers: IManagerDetailsManager[] = [];
+        const bAddresses: string[] = []
+        // select m."user" address, u.username username from manager m left join "user" u on u.address = m."user"
+        const manager = await db.models.manager.findAll({ where: { communityId } });
+        bAddresses.concat(manager.map((a) => a.user));
+        const names = await db.models.user.findAll({
+            attributes: ['address', 'username'],
+            where: {
+                address: {
+                    [Op.in]: bAddresses
+                },
+            },
+        });
+        for (let index = 0; index < manager.length; index++) {
+            const e = manager[index];
+            const u = names.find((n) => n.address === e.user);
+            managers.push({
+                address: e.user,
+                username: u ? u.username : null,
+                timestamp: e.createdAt.getTime(), // TODO: do not depend on createdAt
+            });
+        }
+        return managers;
     }
 
     public static async remove(

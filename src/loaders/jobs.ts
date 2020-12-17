@@ -143,7 +143,7 @@ async function subscribers(
     // starting 10 blocks in the past, check if they have lost transactions
     Logger.info('Recovering past events...');
     for (let c = 0; c < publicCommunities.length; c += 1) {
-        const inCommunity = await BeneficiaryService.getAllInCommunity(
+        const inCommunity = await BeneficiaryService.listActiveInCommunity(
             publicCommunities[c].publicId
         );
         beneficiariesInPublicCommunities = beneficiariesInPublicCommunities.concat(
@@ -154,7 +154,7 @@ async function subscribers(
     // get beneficiaries in private communities, so we don't count them
     Logger.info('Starting subscribers...');
     for (let c = 0; c < publicCommunities.length; c += 1) {
-        const inCommunity = await BeneficiaryService.getAllInCommunity(
+        const inCommunity = await BeneficiaryService.listActiveInCommunity(
             publicCommunities[c].publicId
         );
         beneficiariesInPublicCommunities = beneficiariesInPublicCommunities.concat(

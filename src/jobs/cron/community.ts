@@ -30,7 +30,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         if (community.state.claimed === '0' || community.state.raised === '0') {
             return;
         }
-        const beneficiaries = await BeneficiaryService.getAllInCommunity(
+        const beneficiaries = await BeneficiaryService.listActiveInCommunity(
             community.publicId
         );
         if (beneficiaries.length < 1) {

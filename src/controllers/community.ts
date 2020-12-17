@@ -62,6 +62,18 @@ const listFull = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 500, res));
 }
 
+const managers = (req: Request, res: Response) => {
+    CommunityService.managers((req as any).user)
+        .then((r) => res.send(r))
+        .catch((e) => controllerLogAndFail(e, 500, res));
+}
+
+const managersDetails = (req: Request, res: Response) => {
+    CommunityService.managersDetails((req as any).user)
+        .then((r) => res.send(r))
+        .catch((e) => controllerLogAndFail(e, 500, res));
+}
+
 const create = (req: Request, res: Response) => {
     const {
         requestByAddress, // the address making the request (will be community manager)
@@ -150,6 +162,8 @@ export default {
     getAll,
     list,
     listFull,
+    managers,
+    managersDetails,
     create,
     edit,
     accept
