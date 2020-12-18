@@ -181,6 +181,20 @@ export default class CommunityService {
         return true;
     }
 
+    public static async listCommunitiesStructOnly(): Promise<Community[]> {
+        return await Community.findAll({
+            where: {
+                status: 'valid',
+                visibility: {
+                    [Op.or]: [
+                        'public',
+                        'private'
+                    ],
+                }
+            },
+        });
+    }
+
     public static async getAll(status: string, onlyPublic: boolean = true): Promise<ICommunityInfo[]> {
         const result: ICommunityInfo[] = [];
         const communities = await Community.findAll({

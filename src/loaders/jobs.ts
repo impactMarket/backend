@@ -111,7 +111,7 @@ export default async (): Promise<void> => {
 async function subscribers(
     provider: ethers.providers.JsonRpcProvider
 ): Promise<void> {
-    const startFrom = await ImMetadataService.getLastBlock() - 15; // start 15 blocks before
+    const startFrom = await ImMetadataService.getLastBlock() - 5; // start 5 blocks before
     // NEW: does not make sense to recover "lost community contracts" has in this case,
     // it would have not been added in the database.
     // const fromLogs = await updateImpactMarketCache(provider, startFrom);
@@ -135,32 +135,42 @@ async function subscribers(
     // );
 
     // get all available communities
-    const availableCommunities = await CommunityService.getAll('valid', false);
-    const publicCommunities = availableCommunities.filter(
-        (c) => c.visibility === 'public'
-    );
-    let beneficiariesInPublicCommunities: string[] = [];
+    const availableCommunities = await CommunityService.listCommunitiesStructOnly();
+    // let beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
     // starting 10 blocks in the past, check if they have lost transactions
     Logger.info('Recovering past events...');
-    for (let c = 0; c < publicCommunities.length; c += 1) {
-        const inCommunity = await BeneficiaryService.getAllInCommunity(
-            publicCommunities[c].publicId
-        );
-        beneficiariesInPublicCommunities = beneficiariesInPublicCommunities.concat(
-            inCommunity.map((b) => b.address)
-        );
-    }
-    await checkCommunitiesOnChainEvents(startFrom, provider, availableCommunities, beneficiariesInPublicCommunities);
+    checkCommunitiesOnChainEvents(
+        startFrom,
+        provider,
+        availableCommunities,
+        // beneficiariesInPublicCommunities
+    ).then(() => {
+        // wait for the next block and a second later, restart subscribers
+        provider.once('block', () => {
+            setTimeout(async () => {
+                Logger.info('Restarting subscribers...');
+                provider.removeAllListeners();
+                // beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
+                // start subscribers
+                subscribeChainEvents(
+                    provider,
+                    new Map(
+                        availableCommunities.map((c) => [c.contractAddress, c.publicId])
+                    ),
+                    new Map(
+                        availableCommunities.map((c) => [
+                            c.contractAddress,
+                            c.visibility === 'public',
+                        ])
+                    ),
+                    // beneficiariesInPublicCommunities
+                );
+            }, 1000);
+        })
+    });
     // get beneficiaries in private communities, so we don't count them
     Logger.info('Starting subscribers...');
-    for (let c = 0; c < publicCommunities.length; c += 1) {
-        const inCommunity = await BeneficiaryService.getAllInCommunity(
-            publicCommunities[c].publicId
-        );
-        beneficiariesInPublicCommunities = beneficiariesInPublicCommunities.concat(
-            inCommunity.map((b) => b.address)
-        );
-    }
+    // beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
     // start subscribers
     subscribeChainEvents(
         provider,
@@ -173,7 +183,7 @@ async function subscribers(
                 c.visibility === 'public',
             ])
         ),
-        beneficiariesInPublicCommunities
+        // beneficiariesInPublicCommunities
     );
 }
 

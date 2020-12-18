@@ -1,5 +1,6 @@
 import { Op, fn, col } from 'sequelize';
 import { Beneficiary } from '../db/models/beneficiary';
+import { Community } from '../db/models/community';
 import Logger from '../loaders/logger';
 
 
@@ -23,7 +24,7 @@ export default class BeneficiaryService {
             };
             try {
                 await Beneficiary.create(beneficiaryData);
-            } catch(e) {
+            } catch (e) {
                 if (e.name !== 'SequelizeUniqueConstraintError') {
                     Logger.error('Error inserting new Beneficiary. Data = ' + JSON.stringify(beneficiaryData));
                     Logger.error(e);
@@ -33,6 +34,21 @@ export default class BeneficiaryService {
             await Beneficiary.update({ active: true }, { where: { address } });
         }
         return true;
+    }
+
+    public static async getAllAddressesInPublicValidCommunities(): Promise<string[]> {
+        const publicCommunities: string[] = (await Community.findAll({
+            attributes: ['publicId'],
+            where: { visibility: 'public', status: 'valid' }
+        })).map((c) => c.contractAddress);
+
+        return (await Beneficiary.findAll({
+            attributes: ['address'],
+            where: {
+                communityId: { [Op.in]: publicCommunities },
+                active: true
+            }
+        })).map((b) => b.address);
     }
 
     public static async getAllInCommunity(

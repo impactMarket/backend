@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import config from '../config';
 import CommunityContractABI from '../contracts/CommunityABI.json';
 import ERC20ABI from '../contracts/ERC20ABI.json';
+import { Community } from '../db/models/community';
 // import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
 import Logger from '../loaders/logger';
 import BeneficiaryService from '../services/beneficiary';
@@ -39,7 +40,7 @@ async function subscribeChainEvents(
     provider: ethers.providers.JsonRpcProvider,
     communities: Map<string, string>, // <address, publicId>
     isCommunityPublic: Map<string, boolean>, // true if public community
-    beneficiariesInPublicCommunities: string[]
+    // beneficiariesInPublicCommunities: string[]
 ): Promise<void> {
     const filter = {
         topics: [
@@ -60,7 +61,8 @@ async function subscribeChainEvents(
     // const ifaceImpactMarket = new ethers.utils.Interface(ImpactMarketContractABI);
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
-    const allBeneficiaryAddressses = await BeneficiaryService.getAllAddresses();
+    // const allBeneficiaryAddressses = await BeneficiaryService.getAllAddresses();
+    const beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
     const allCommunitiesAddresses = Array.from(communities.keys());
     const allCommunities = communities;
     // TODO: remove await
@@ -88,12 +90,12 @@ async function subscribeChainEvents(
                 // do not count from communities [eg. claims]
                 !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
                 // beneficiary in public community (both from or to)
-                (beneficiariesInPublicCommunities.includes(
-                    preParsedLog.args[0]
-                ) ||
-                    beneficiariesInPublicCommunities.includes(
-                        preParsedLog.args[1]
-                    )) &&
+                // (beneficiariesInPublicCommunities.includes(
+                //     preParsedLog.args[0]
+                // ) ||
+                //     beneficiariesInPublicCommunities.includes(
+                //         preParsedLog.args[1]
+                //     )) &&
                 // ignore AttestationProxy
                 preParsedLog.args[1] !== config.attestationProxyAddress &&
                 // yeah, people without knowing make transactions to themselves! 🕊️
@@ -101,13 +103,13 @@ async function subscribeChainEvents(
                 // any values >0.0009cUSD (999999999999999) [eg. cUSD fees]
                 preParsedLog.args[2].toString().length > 15
             ) {
-                const isFromBeneficiary = allBeneficiaryAddressses.includes(
+                const isFromBeneficiary = beneficiariesInPublicCommunities.includes(
                     preParsedLog.args[0]
                 );
                 // transactions from or to beneficiaries
                 if (
                     isFromBeneficiary ||
-                    allBeneficiaryAddressses.includes(preParsedLog.args[1])
+                    beneficiariesInPublicCommunities.includes(preParsedLog.args[1])
                 ) {
                     const _parsedLog = preParsedLog; // TODO: rename to parsedLog
                     const beneficiaryAddress = isFromBeneficiary
@@ -162,7 +164,7 @@ async function subscribeChainEvents(
                 if (isThisCommunityPublic) {
                     beneficiariesInPublicCommunities.push(beneficiaryAddress);
                 }
-                allBeneficiaryAddressses.push(beneficiaryAddress);
+                // allBeneficiaryAddressses.push(beneficiaryAddress);
                 notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
                 getBlockTime(log.blockHash).then((txAt) => BeneficiaryService.add(
                     beneficiaryAddress,
@@ -355,15 +357,16 @@ async function subscribeChainEvents(
 async function checkCommunitiesOnChainEvents(
     startFromBlock: number,
     provider: ethers.providers.JsonRpcProvider,
-    availableCommunities: ICommunityInfo[],
-    beneficiariesInPublicCommunities: string[]
+    availableCommunities: Community[],
+    // beneficiariesInPublicCommunities: string[]
 ): Promise<void> {
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
     const allCommunitiesAddresses = availableCommunities
         .filter((c) => c.visibility === 'public')
         .map((c) => c.contractAddress);
-    const allBeneficiaryAddressses = await BeneficiaryService.getAllAddresses();
+    // const allBeneficiaryAddressses = await BeneficiaryService.getAllAddresses();
+    const beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
     // get past community events
     for (let c = 0; c < availableCommunities.length; c++) {
         const logsCommunity = await provider
@@ -384,9 +387,20 @@ async function checkCommunitiesOnChainEvents(
                 ],
             });
 
-        const eventsCommunity = logsCommunity.map((log) =>
+        const orderedLogs = logsCommunity.sort((a, b) => {
+            if (a.blockNumber > b.blockNumber) {
+                return 1;
+            }
+            if (a.blockNumber < b.blockNumber) {
+                return -1;
+            }
+            // a must be equal to b
+            return 0;
+        });
+        const eventsCommunity = orderedLogs.map((log) =>
             ifaceCommunity.parseLog(log)
         );
+
         // save community events
         for (let ec = 0; ec < eventsCommunity.length; ec += 1) {
             const log = logsCommunity[ec];
@@ -396,6 +410,10 @@ async function checkCommunitiesOnChainEvents(
                 const communityAddress = log.address;
                 // let communityId = allCommunities.get(communityAddress);
                 // notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
+                const isPublicCommunity = availableCommunities.find((c) => c.contractAddress === communityAddress);
+                if (isPublicCommunity?.visibility === 'public') {
+                    beneficiariesInPublicCommunities.push(beneficiaryAddress);
+                }
                 const txAt = await getBlockTime(log.blockHash);
                 await BeneficiaryService.add(
                     beneficiaryAddress,
@@ -464,23 +482,23 @@ async function checkCommunitiesOnChainEvents(
             } else if (
                 // same as in subscribe
                 !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
-                (beneficiariesInPublicCommunities.includes(
-                    preParsedLog.args[0]
-                ) ||
-                    beneficiariesInPublicCommunities.includes(
-                        preParsedLog.args[1]
-                    )) &&
+                // (beneficiariesInPublicCommunities.includes(
+                //     preParsedLog.args[0]
+                // ) ||
+                //     beneficiariesInPublicCommunities.includes(
+                //         preParsedLog.args[1]
+                //     )) &&
                 preParsedLog.args[1] !== config.attestationProxyAddress &&
                 preParsedLog.args[0] !== preParsedLog.args[1] &&
                 preParsedLog.args[2].toString().length > 15
             ) {
-                const isFromBeneficiary = allBeneficiaryAddressses.includes(
+                const isFromBeneficiary = beneficiariesInPublicCommunities.includes(
                     preParsedLog.args[0]
                 );
                 // transactions from or to beneficiaries
                 if (
                     isFromBeneficiary ||
-                    allBeneficiaryAddressses.includes(preParsedLog.args[1])
+                    beneficiariesInPublicCommunities.includes(preParsedLog.args[1])
                 ) {
                     const log = logsCUSD[ec];
                     const _parsedLog = preParsedLog; // TODO: rename to parsedLog
