@@ -1,8 +1,9 @@
-import { Op, fn, col } from 'sequelize';
+import { Op, fn, col, QueryTypes } from 'sequelize';
 import { Beneficiary } from '../db/models/beneficiary';
 import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 import { IManagerDetailsBeneficiary } from '../types/endpoints';
+import { isUUID } from '../utils';
 
 
 const db = database();
@@ -53,7 +54,7 @@ export default class BeneficiaryService {
     public static async countInCommunity(
         communityId: string,
     ): Promise<{ active: number, inactive: number }> {
-        const active: { total: number } = (await db.models.beneficiary.findAll({
+        const active: { total: string } = (await db.models.beneficiary.findAll({
             attributes: [
                 [fn('count', col('address')), 'total']
             ],
@@ -62,7 +63,7 @@ export default class BeneficiaryService {
                 active: true
             }
         }))[0] as any;
-        const inactive: { total: number } = (await db.models.beneficiary.findAll({
+        const inactive: { total: string } = (await db.models.beneficiary.findAll({
             attributes: [
                 [fn('count', col('address')), 'total']
             ],
@@ -72,86 +73,32 @@ export default class BeneficiaryService {
             }
         }))[0] as any;
         return {
-            active: active.total,
-            inactive: inactive.total
+            active: parseInt(active.total, 10),
+            inactive: parseInt(inactive.total, 10)
         }
     }
 
     public static async listAllInCommunity(
         communityId: string,
     ): Promise<{ active: IManagerDetailsBeneficiary[], inactive: IManagerDetailsBeneficiary[] }> {
-        // TODO: this needs to be improved with eager loading (I mean, a lot!)
-        const active: IManagerDetailsBeneficiary[] = [];
-        const inactive: IManagerDetailsBeneficiary[] = [];
 
-        // select b.address, u.username, b."txAt", sum(c.amount)
+        // sequelize still has a bug related to eager loading when using global raw:false
+
+        // select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed
         // from beneficiary b
         //     left join "user" u on b.address = u.address
         //     left join claim c on b.address = c.address
+        // where b."communityId" = 'ca16d975-4a11-4cdc-baa9-91442c534125'
         // group by b.address, u.username, b."txAt"
+        // order by b."txAt" desc
 
-        const bAddresses: string[] = []
-        const actives = await db.models.beneficiary.findAll({
-            where: {
-                communityId,
-                active: true
-            },
-            order: [['txAt', 'DESC']]
-        });
-        const inactives = await db.models.beneficiary.findAll({
-            where: {
-                communityId,
-                active: false
-            },
-            order: [['txAt', 'DESC']]
-        });
-        bAddresses.concat(actives.map((a) => a.address)).concat(inactives.map((a) => a.address));
-        const names = await db.models.user.findAll({
-            attributes: ['address', 'username'],
-            where: {
-                address: {
-                    [Op.in]: bAddresses
-                },
-            },
-        });
-        const claimed: {address:string, claimed: string}[] = (await db.models.claim.findAll({
-            attributes: [
-                'address',
-                [fn('sum', col('amount')), 'claimed']
-            ],
-            where: {
-                address: {
-                    [Op.in]: bAddresses
-                },
-            },
-            group: ['address']
-        })) as any;
-
-        // for active
-        for (let index = 0; index < actives.length; index++) {
-            const e = actives[index];
-            const u = names.find((n) => n.address === e.address);
-            const c = claimed.find((n) => n.address === e.address);
-            active.push({
-                address: e.address,
-                username: u ? u.username : null,
-                timestamp: e.txAt.getTime(),
-                claimed: c ? c.claimed : '0'
-            });
+        if (!isUUID(communityId)) {
+            throw new Error('Not valid UUID ' + communityId);
         }
 
-        // for inactive
-        for (let index = 0; index < inactives.length; index++) {
-            const e = inactives[index];
-            const u = names.find((n) => n.address === e.address);
-            const c = claimed.find((n) => n.address === e.address);
-            inactive.push({
-                address: e.address,
-                username: u ? u.username : null,
-                timestamp: e.txAt.getTime(),
-                claimed: c ? c.claimed : '0'
-            });
-        }
+        const active: IManagerDetailsBeneficiary[] = await db.sequelize.query("select b.address, u.username, b.\"txAt\" \"timestamp\", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join \"user\" u on b.address = u.address left join claim c on b.address = c.address where b.\"communityId\" = '" + communityId + "' and b.active = true group by b.address, u.username, b.\"txAt\" order by b.\"txAt\" desc", { type: QueryTypes.SELECT });
+
+        const inactive: IManagerDetailsBeneficiary[] = await db.sequelize.query("select b.address, u.username, b.\"txAt\" \"timestamp\", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join \"user\" u on b.address = u.address left join claim c on b.address = c.address where b.\"communityId\" = '" + communityId + "' and b.active = false group by b.address, u.username, b.\"txAt\" order by b.\"txAt\" desc", { type: QueryTypes.SELECT });
 
         return {
             active,

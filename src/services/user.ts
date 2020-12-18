@@ -45,7 +45,7 @@ export default class UserService {
         }
     }
 
-    public static async welcome(
+    public static async hello(
         address: string
     ): Promise<IUserWelcome> {
         const user = await db.models.user.findOne({ where: { address } });

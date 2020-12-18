@@ -63,7 +63,7 @@ export default (app: Router): void => {
     );
 
     route.post(
-        '/welcome',
+        '/hello',
         authenticateToken,
         celebrate({
             body: Joi.object({
@@ -88,7 +88,7 @@ export default (app: Router): void => {
                 }
             }
             try {
-                res.send(await UserService.welcome(address));
+                res.send(await UserService.hello(address));
             } catch (e) {
                 Logger.warn(e);
                 res.sendStatus(403);

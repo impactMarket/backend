@@ -44,13 +44,13 @@ export default class ManagerService {
     public static async countManagers(
         communityId: string,
     ): Promise<number> {
-        const managers: { total: number } = (await db.models.manager.findAll({
+        const managers: { total: string } = (await db.models.manager.findAll({
             attributes: [
                 [fn('count', col('user')), 'total']
             ],
             where: { communityId }
         }))[0] as any;
-        return managers.total;
+        return parseInt(managers.total, 10);
     }
 
     public static async listManagers(
