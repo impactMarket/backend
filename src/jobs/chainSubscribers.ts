@@ -363,7 +363,6 @@ async function checkCommunitiesOnChainEvents(
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
     const allCommunitiesAddresses = availableCommunities
-        .filter((c) => c.visibility === 'public')
         .map((c) => c.contractAddress);
     // const allBeneficiaryAddressses = await BeneficiaryService.getAllAddresses();
     const beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
