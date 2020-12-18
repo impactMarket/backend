@@ -38,7 +38,7 @@ export async function getBlockTime(blockHash: string): Promise<Date> {
         };
         const response = await axios.post<{ result: { timestamp: string } }>(config.jsonRpcUrl, requestContent, requestHeaders);
         return new Date(parseInt(response.data.result.timestamp, 16) * 1000);
-    } catch(e) {
+    } catch (e) {
         Logger.error('getBlockTime ' + e);
         return new Date();
     }
@@ -129,7 +129,7 @@ export async function notifyManagerAdded(managerAddress: string, communityAddres
 
 export async function sendPushNotification(userAddress: string, title: string, body: string, data: any): Promise<boolean> {
     const user = await UserService.get(userAddress);
-    if (user !== null) {
+    if (user !== null && user.pushNotificationToken !== null && user.pushNotificationToken.length > 0) {
         const message = {
             to: user.pushNotificationToken,
             sound: 'default',
