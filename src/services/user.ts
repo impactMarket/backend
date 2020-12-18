@@ -4,7 +4,7 @@ import { User } from '../db/models/user';
 import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 import { generateAccessToken } from '../middlewares';
-import { ICommunityInfo, IUserWelcomeAuth, IUserWelcome } from '../types';
+import { ICommunity, IUserWelcome, IUserWelcomeAuth } from '../types/endpoints';
 import BeneficiaryService from './beneficiary';
 import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';
@@ -16,12 +16,12 @@ export default class UserService {
         address: string,
         language: string,
         pushNotificationToken: string
-    ): Promise<IUserWelcomeAuth | undefined> {
+    ): Promise<IUserWelcomeAuth> {
         try {
             const token = generateAccessToken(address);
-            const user = await db.models.user.findOne({ where: { address } });
+            let user = await db.models.user.findOne({ where: { address } });
             if (user === null) {
-                await db.models.user.create({
+                user = await db.models.user.create({
                     address,
                     avatar: (Math.floor(Math.random() * 8) + 1).toString(),
                     language,
@@ -33,64 +33,26 @@ export default class UserService {
                     { where: { address } }
                 );
             }
-            const welcomeUser = await UserService.welcome(address, user);
-            if (welcomeUser === undefined) {
-                return undefined;
-            }
+            const loadedUser = await UserService.loadUser(user);
             return {
+                user,
                 token,
-                ...welcomeUser,
+                ...loadedUser,
             };
         } catch (e) {
             Logger.warn('Error while auth user ', address, e.message);
-            return undefined;
+            throw new Error(e);
         }
     }
 
     public static async welcome(
-        address: string,
-        user: User | null = null
-    ): Promise<IUserWelcome | undefined> {
+        address: string
+    ): Promise<IUserWelcome> {
+        const user = await db.models.user.findOne({ where: { address } });
         if (user === null) {
-            user = await db.models.user.findOne({ where: { address } });
-            if (user === null) {
-                return undefined;
-            }
+            throw new Error(address + ' user not found!');
         }
-        const beneficiary = await BeneficiaryService.get(user.address);
-        const manager = await ManagerService.get(user.address);
-        let community: ICommunityInfo | null = null;
-        let isBeneficiary = false;
-        let isManager = false;
-        if (beneficiary !== null) {
-            community = await CommunityService.findByPublicId(
-                beneficiary.communityId
-            );
-            isBeneficiary = true;
-        }
-        if (manager !== null) {
-            community = await CommunityService.findByPublicId(
-                manager.communityId
-            );
-            isManager = true;
-        } else {
-            const rawCommunity = await CommunityService.findByFirstManager(
-                user.address
-            );
-            if (rawCommunity !== null) {
-                community = await CommunityService.findByPublicId(
-                    rawCommunity.publicId
-                );
-                isManager = true;
-            }
-        }
-        return {
-            user: user as any,
-            exchangeRates: await ExchangeRatesService.get(),
-            community: community ? community : undefined,
-            isBeneficiary,
-            isManager,
-        };
+        return await UserService.loadUser(user);
     }
 
     public static async setUsername(
@@ -165,5 +127,45 @@ export default class UserService {
             mapped.set(element.address, element.username ? element.username : '');
         }
         return mapped;
+    }
+
+    private static async loadUser(user: User): Promise<IUserWelcome> {
+        let community: ICommunity | undefined;
+        let communityId: string | undefined;
+        let isBeneficiary = false;
+        let isManager = false;
+        const beneficiary = await BeneficiaryService.get(user.address);
+        if (beneficiary) {
+            isBeneficiary = true;
+            communityId = beneficiary.communityId;
+        }
+        const manager = await ManagerService.get(user.address);
+        if (manager) {
+            isManager = true;
+            communityId = manager.communityId;
+        }
+        if (communityId) {
+            const _community = await CommunityService.get(communityId);
+            if (_community) {
+                community = _community;
+            }
+        } else {
+            const _communityId = await CommunityService.findByFirstManager(
+                user.address
+            );
+            if (_communityId !== null) {
+                const _community = await CommunityService.get(_communityId);
+                if (_community) {
+                    isManager = true;
+                    community = _community;
+                }
+            }
+        }
+        return {
+            exchangeRates: await ExchangeRatesService.get(),
+            community: community ? community : undefined,
+            isBeneficiary,
+            isManager,
+        };
     }
 }

@@ -46,7 +46,7 @@ export default class ManagerService {
     ): Promise<number> {
         const managers: { total: number } = (await db.models.manager.findAll({
             attributes: [
-                [fn('count', col('address')), 'total']
+                [fn('count', col('user')), 'total']
             ],
             where: { communityId }
         }))[0] as any;

@@ -423,8 +423,9 @@ export default class CommunityService {
 
     public static async findByFirstManager(
         requestByAddress: string
-    ): Promise<Community | null> {
-        return db.models.community.findOne({
+    ): Promise<string | null> {
+        const community = await db.models.community.findOne({
+            attributes: ['publicId'],
             where: {
                 requestByAddress,
                 status: {
@@ -432,6 +433,10 @@ export default class CommunityService {
                 },
             },
         });
+        if (community) {
+            return community.publicId;
+        }
+        return null;
     }
 
     /**

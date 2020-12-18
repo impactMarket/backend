@@ -21,6 +21,10 @@ export default (app: Router): void => {
         communityController.get
     );
     route.get(
+        '/hssi/:publicId',
+        communityController.getHistoricalSSI
+    );
+    route.get(
         '/all/:status',
         communityController.getAll
     );

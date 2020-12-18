@@ -65,6 +65,24 @@ export default class CommunityDailyMetricsService {
         };
     }
 
+    public static async getHistoricalSSI(
+        communityId: string
+    ): Promise<number[]> {
+        const historical = await db.models.communityDailyMetrics.findAll({
+            attributes: ['ssi'],
+            where: {
+                communityId,
+            },
+            order: [['date', 'DESC']],
+            limit: 15,
+        });
+        if (historical.length < 5) {
+            // at least 5 days until showing data
+            return [];
+        }
+        return historical.map((h) => h.ssi);
+    }
+
     public static async getSSILast4Days(): Promise<Map<string, number[]>> {
         const result = new Map<string, number[]>();
         const todayMidnightTime = new Date();

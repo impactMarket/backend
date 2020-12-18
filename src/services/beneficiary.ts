@@ -84,6 +84,12 @@ export default class BeneficiaryService {
         const active: IManagerDetailsBeneficiary[] = [];
         const inactive: IManagerDetailsBeneficiary[] = [];
 
+        // select b.address, u.username, b."txAt", sum(c.amount)
+        // from beneficiary b
+        //     left join "user" u on b.address = u.address
+        //     left join claim c on b.address = c.address
+        // group by b.address, u.username, b."txAt"
+
         const bAddresses: string[] = []
         const actives = await db.models.beneficiary.findAll({
             where: {

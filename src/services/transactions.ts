@@ -14,12 +14,11 @@ import {
     ICommunityVars,
     IRecentTxAPI,
     IPaymentsTxAPI,
-    IAddressAndName,
-    IManagerDetailsBeneficiary,
     IUserTxAPI,
     IGlobalStatus,
     IGlobalOutflowStatus,
     IGlobalInflowStatus,
+    ICommunityInfoBeneficiary,
 } from '../types';
 import { groupBy } from '../utils';
 import CommunityService from './community';
@@ -200,8 +199,8 @@ export default class TransactionsService {
     public static async getBeneficiariesInCommunity(
         communityAddress: string
     ): Promise<{
-        added: IManagerDetailsBeneficiary[];
-        removed: IManagerDetailsBeneficiary[];
+        added: ICommunityInfoBeneficiary[];
+        removed: ICommunityInfoBeneficiary[];
     }> {
         const dbRequestResult = await Transactions.findAll({
             where: {
@@ -219,8 +218,8 @@ export default class TransactionsService {
         }));
         // group
         const result = { added: [], removed: [] } as {
-            added: IManagerDetailsBeneficiary[];
-            removed: IManagerDetailsBeneficiary[];
+            added: ICommunityInfoBeneficiary[];
+            removed: ICommunityInfoBeneficiary[];
         };
         const claimed = await TransactionsService.getBeneficiariesCommunityClaimedAmount(
             communityAddress

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import CommunityService from '../services/community';
 import { Logger } from '../loaders/logger';
 import ManagerService from '../services/managers';
+import CommunityDailyMetricsService from '../services/communityDailyMetrics';
 
 const controllerLogAndFail = (e: any, status: number, res: Response) => {
     Logger.error(e);
@@ -44,6 +45,14 @@ const get = (req: Request, res: Response) => {
     }).catch((e) => controllerLogAndFail(e, 500, res));
 }
 
+const getHistoricalSSI = (req: Request, res: Response) => {
+    CommunityDailyMetricsService.getHistoricalSSI(
+        req.params.publicId
+    ).then((community) => {
+        res.send(community);
+    }).catch((e) => controllerLogAndFail(e, 500, res));
+}
+
 const getAll = (req: Request, res: Response) => {
     CommunityService.getAll(req.params.status)
         .then((r) => res.send(r))
@@ -63,13 +72,13 @@ const listFull = (req: Request, res: Response) => {
 }
 
 const managers = (req: Request, res: Response) => {
-    CommunityService.managers((req as any).user)
+    CommunityService.managers((req as any).user.address)
         .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 500, res));
 }
 
 const managersDetails = (req: Request, res: Response) => {
-    CommunityService.managersDetails((req as any).user)
+    CommunityService.managersDetails((req as any).user.address)
         .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 500, res));
 }
@@ -159,6 +168,7 @@ export default {
     findByContractAddress,
     findByPublicId,
     get,
+    getHistoricalSSI,
     getAll,
     list,
     listFull,

@@ -1,6 +1,6 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-interface UserAttributes {
+export interface UserAttributes {
     address: string;
     username: string | null;
     avatar: string;
