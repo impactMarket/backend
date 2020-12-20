@@ -188,6 +188,13 @@ async function subscribeChainEvents(
                         txAt
                     )
                 );
+            } else if (parsedLog.name === 'ManagerAdded') { // new managers in existing community
+                const managerAddress = parsedLog.args[0];
+                const communityAddress = log.address;
+                ManagerService.add(
+                    managerAddress,
+                    allCommunities.get(communityAddress)!
+                );
             }
         } else {
             try {
