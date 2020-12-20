@@ -1,6 +1,5 @@
-import { col, fn, Transaction } from 'sequelize';
+import { col, fn, Op, Transaction } from 'sequelize';
 import database from '../loaders/database';
-
 import { CommunityContract } from '../db/models/communityContract';
 import { ICommunityContractParams } from '../types';
 
@@ -47,11 +46,25 @@ export default class CommunityContractService {
     }
 
     public static async avgComulativeUbi(): Promise<string> {
-        const result = (
-            await db.models.communityContract.findAll({
-                attributes: [[fn('avg', col('maxClaim')), 'avgComulativeUbi']],
-            })
-        )[0];
+        // TODO: use a script instead
+        // select avg(cc."maxClaim")
+        // from communitycontract cc, community c
+        // where c."publicId" = cc."communityId"
+        // and c.status = 'valid'
+        // and c.visibility = 'public'
+        const publicCommunities: string[] = (await db.models.community.findAll({
+            attributes: ['publicId'],
+            where: { visibility: 'public', status: 'valid' }
+        })).map((c) => c.publicId);
+
+        const result = (await db.models.communityContract.findAll({
+            attributes: [
+                [fn('avg', col('maxClaim')), 'avgComulativeUbi']
+            ],
+            where: {
+                communityId: { [Op.in]: publicCommunities },
+            }
+        }))[0];
         return (result as any).avgComulativeUbi;
     }
 }
