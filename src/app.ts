@@ -30,7 +30,7 @@ async function startServer() {
                 },
             }),
         ],
-        tracesSampleRate: config.sentryKey === undefined ? 1 : 0.1,
+        tracesSampleRate: config.sentryKey === undefined ? 1 : 0.04,
     });
     await loaders({ expressApp: app });
 
