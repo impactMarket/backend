@@ -1,8 +1,9 @@
-import { col, fn, Op, Transaction } from 'sequelize';
+import { col, fn, Op, QueryTypes, Transaction } from 'sequelize';
 import { Manager } from '../db/models/manager';
 import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 import { IManagerDetailsManager } from '../types/endpoints';
+import { isUUID } from '../utils';
 
 
 const db = database();
@@ -56,29 +57,15 @@ export default class ManagerService {
     public static async listManagers(
         communityId: string,
     ): Promise<IManagerDetailsManager[]> {
-        // TODO: this needs to be improved with eager loading (I mean, a lot!)
-        const managers: IManagerDetailsManager[] = [];
-        const bAddresses: string[] = []
-        // select m."user" address, u.username username from manager m left join "user" u on u.address = m."user"
-        const manager = await db.models.manager.findAll({ where: { communityId } });
-        bAddresses.concat(manager.map((a) => a.user));
-        const names = await db.models.user.findAll({
-            attributes: ['address', 'username'],
-            where: {
-                address: {
-                    [Op.in]: bAddresses
-                },
-            },
-        });
-        for (let index = 0; index < manager.length; index++) {
-            const e = manager[index];
-            const u = names.find((n) => n.address === e.user);
-            managers.push({
-                address: e.user,
-                username: u ? u.username : null,
-                timestamp: e.createdAt.getTime(), // TODO: do not depend on createdAt
-            });
+        // select m."user" address, u.username username, m."createdAt" "timestamp"
+        // from manager m left join "user" u on u.address = m."user"
+
+        if (!isUUID(communityId)) {
+            throw new Error('Not valid UUID ' + communityId);
         }
+
+        const managers: IManagerDetailsManager[] = await db.sequelize.query("select m.\"user\" address, u.username username, m.\"createdAt\" \"timestamp\" from manager m left join \"user\" u on u.address = m.\"user\" where m.\"communityId\" = '" + communityId + "' order by m.\"createdAt\" desc", { type: QueryTypes.SELECT });
+
         return managers;
     }
 
