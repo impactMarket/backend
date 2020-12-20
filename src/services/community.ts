@@ -229,6 +229,20 @@ export default class CommunityService {
         return true;
     }
 
+    public static async listCommunitiesStructOnly(): Promise<Community[]> {
+        return await Community.findAll({
+            where: {
+                status: 'valid',
+                visibility: {
+                    [Op.or]: [
+                        'public',
+                        'private'
+                    ],
+                }
+            },
+        });
+    }
+
     /**
      * @deprecated
      */
@@ -349,7 +363,7 @@ export default class CommunityService {
 
     public static async managers(managerAddress: string): Promise<IManagers> {
         const manager = await ManagerService.get(managerAddress);
-        if(manager === null) {
+        if (manager === null) {
             throw new Error('Not a manager ' + managerAddress);
         }
         const managers = await ManagerService.countManagers(manager.communityId);
@@ -362,7 +376,7 @@ export default class CommunityService {
 
     public static async managersDetails(managerAddress: string): Promise<IManagersDetails> {
         const manager = await ManagerService.get(managerAddress);
-        if(manager === null) {
+        if (manager === null) {
             throw new Error('Not a manager ' + managerAddress);
         }
         const managers = await ManagerService.listManagers(manager.communityId);

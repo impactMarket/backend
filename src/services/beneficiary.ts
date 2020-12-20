@@ -39,6 +39,21 @@ export default class BeneficiaryService {
         return true;
     }
 
+    public static async getAllAddressesInPublicValidCommunities(): Promise<string[]> {
+        const publicCommunities: string[] = (await db.models.community.findAll({
+            attributes: ['publicId'],
+            where: { visibility: 'public', status: 'valid' }
+        })).map((c) => c.contractAddress!);
+
+        return (await Beneficiary.findAll({
+            attributes: ['address'],
+            where: {
+                communityId: { [Op.in]: publicCommunities },
+                active: true
+            }
+        })).map((b) => b.address);
+    }
+
     public static async listActiveInCommunity(
         communityId: string,
     ): Promise<Beneficiary[]> {

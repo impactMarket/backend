@@ -30,7 +30,7 @@ describe('[jobs - cron] community', () => {
             stub(CommunityDailyStateService, 'getTotalClaimedLast30Days').returns(Promise.resolve(totalClaimedLast30Days));
             stub(CommunityDailyMetricsService, 'getSSILast4Days').returns(Promise.resolve(ssiLast4Days));
             stub(CommunityContractService, 'getAll').returns(Promise.resolve(communitiesContract));
-            const allInCommunity = stub(BeneficiaryService, 'getAllInCommunity');
+            const allInCommunity = stub(BeneficiaryService, 'listActiveInCommunity');
             for (let x = 0; x < communityIds.length; x += 1) {
                 allInCommunity.withArgs(communityIds[x]).returns(Promise.resolve(allBeneficiariesInCommunity[x]));
             }
