@@ -11,8 +11,6 @@ module.exports = {
             'gender',
             {
                 type: Sequelize.STRING(2),
-                defaultValue: true,
-                allowNull: false,
             },
         );
         await queryInterface.addColumn(
@@ -20,17 +18,13 @@ module.exports = {
             'age',
             {
                 type: Sequelize.INTEGER,
-                defaultValue: true,
-                allowNull: false,
             },
         );
-        await queryInterface.addColumn(
+        return queryInterface.addColumn(
             'user',
             'childs',
             {
                 type: Sequelize.INTEGER,
-                defaultValue: true,
-                allowNull: false,
             },
         );
     },
