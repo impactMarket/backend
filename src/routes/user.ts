@@ -217,7 +217,7 @@ export default (app: Router): void => {
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
-                age: Joi.string().required(),
+                age: Joi.number().required(),
             }),
         }),
         async (req: Request, res: Response) => {
@@ -238,7 +238,7 @@ export default (app: Router): void => {
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
-                childs: Joi.string().required(),
+                childs: Joi.number().required(),
             }),
         }),
         async (req: Request, res: Response) => {
