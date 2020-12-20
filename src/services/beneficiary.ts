@@ -40,7 +40,7 @@ export default class BeneficiaryService {
         const publicCommunities: string[] = (await Community.findAll({
             attributes: ['publicId'],
             where: { visibility: 'public', status: 'valid' }
-        })).map((c) => c.contractAddress);
+        })).map((c) => c.publicId);
 
         return (await Beneficiary.findAll({
             attributes: ['address'],
