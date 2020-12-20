@@ -179,4 +179,67 @@ export default (app: Router): void => {
             ) ? 200 : 404);
         },
     );
+
+    route.post(
+        '/gender',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                gender: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                address,
+                gender,
+            } = req.body;
+            res.sendStatus(await UserService.setGender(
+                address,
+                gender
+            ) ? 200 : 404);
+        },
+    );
+
+    route.post(
+        '/age',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                age: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                address,
+                age,
+            } = req.body;
+            res.sendStatus(await UserService.setAge(
+                address,
+                age
+            ) ? 200 : 404);
+        },
+    );
+
+    route.post(
+        '/childs',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                childs: Joi.string().required(),
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                address,
+                childs,
+            } = req.body;
+            res.sendStatus(await UserService.setChilds(
+                address,
+                childs
+            ) ? 200 : 404);
+        },
+    );
 };

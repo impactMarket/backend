@@ -4,7 +4,7 @@ import { User } from '../db/models/user';
 import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 import { generateAccessToken } from '../middlewares';
-import { ICommunity, IUserWelcome, IUserWelcomeAuth } from '../types/endpoints';
+import { ICommunity, IUserHello, IUserAuth } from '../types/endpoints';
 import BeneficiaryService from './beneficiary';
 import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';
@@ -16,14 +16,13 @@ export default class UserService {
         address: string,
         language: string,
         pushNotificationToken: string
-    ): Promise<IUserWelcomeAuth> {
+    ): Promise<IUserAuth> {
         try {
             const token = generateAccessToken(address);
             let user = await db.models.user.findOne({ where: { address } });
             if (user === null) {
                 user = await db.models.user.create({
                     address,
-                    avatar: (Math.floor(Math.random() * 8) + 1).toString(),
                     language,
                     pushNotificationToken,
                 });
@@ -47,7 +46,7 @@ export default class UserService {
 
     public static async hello(
         address: string
-    ): Promise<IUserWelcome> {
+    ): Promise<IUserHello> {
         const user = await db.models.user.findOne({ where: { address } });
         if (user === null) {
             throw new Error(address + ' user not found!');
@@ -99,6 +98,39 @@ export default class UserService {
         return updated[0] > 0;
     }
 
+    public static async setGender(
+        address: string,
+        gender: string
+    ): Promise<boolean> {
+        const updated = await db.models.user.update(
+            { gender },
+            { returning: true, where: { address } }
+        );
+        return updated[0] > 0;
+    }
+
+    public static async setAge(
+        address: string,
+        age: number
+    ): Promise<boolean> {
+        const updated = await db.models.user.update(
+            { age },
+            { returning: true, where: { address } }
+        );
+        return updated[0] > 0;
+    }
+
+    public static async setChilds(
+        address: string,
+        childs: number
+    ): Promise<boolean> {
+        const updated = await db.models.user.update(
+            { childs },
+            { returning: true, where: { address } }
+        );
+        return updated[0] > 0;
+    }
+
     public static async get(address: string): Promise<User | null> {
         return db.models.user.findOne({ where: { address } });
     }
@@ -129,7 +161,7 @@ export default class UserService {
         return mapped;
     }
 
-    private static async loadUser(user: User): Promise<IUserWelcome> {
+    private static async loadUser(user: User): Promise<IUserHello> {
         let community: ICommunity | undefined;
         let communityId: string | undefined;
         let isBeneficiary = false;

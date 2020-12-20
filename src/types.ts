@@ -118,13 +118,13 @@ export interface IAddressAndName {
     name: string;
 }
 
-export interface IUser {
-    address: string;
-    username: string | null;
-    currency: string | null;
-    avatar: string;
-    language: number;
-}
+// export interface IUser {
+//     address: string;
+//     username: string | null;
+//     currency: string | null;
+//     avatar: string;
+//     language: number;
+// }
 
 // export interface IUserWelcome {
 //     user: IUser; // TODO: remove in the future, as it's intended to be on memory

@@ -3,10 +3,12 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export interface UserAttributes {
     address: string;
     username: string | null;
-    avatar: string;
     language: string;
     currency: string;
     pushNotificationToken: string | null;
+    gender: string | null;
+    age: number | null;
+    childs: number | null;
 
     // timestamps
     createdAt: Date;
@@ -14,7 +16,6 @@ export interface UserAttributes {
 };
 interface UserCreationAttributes {
     address: string;
-    avatar: string;
     language: string;
     pushNotificationToken: string;
 };
@@ -26,6 +27,9 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     public language!: string;
     public currency!: string;
     public pushNotificationToken!: string | null;
+    public gender!: string | null;
+    public age!: number | null;
+    public childs!: number | null;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -44,9 +48,6 @@ export function initializeUser(sequelize: Sequelize): void {
             username: {
                 type: DataTypes.STRING(128),
             },
-            avatar: {
-                type: DataTypes.STRING(128),
-            },
             language: {
                 type: DataTypes.STRING(8),
                 allowNull: false,
@@ -56,6 +57,15 @@ export function initializeUser(sequelize: Sequelize): void {
             },
             pushNotificationToken: {
                 type: DataTypes.STRING(64),
+            },
+            gender: {
+                type: DataTypes.STRING(2),
+            },
+            age: {
+                type: DataTypes.INTEGER,
+            },
+            childs: {
+                type: DataTypes.INTEGER,
             },
             createdAt: {
                 type: DataTypes.DATE,

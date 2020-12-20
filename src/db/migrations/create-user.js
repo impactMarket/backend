@@ -10,9 +10,6 @@ module.exports = {
             username: {
                 type: Sequelize.STRING(128),
             },
-            avatar: {
-                type: Sequelize.STRING(128),
-            },
             language: {
                 type:Sequelize.STRING(8),
                 allowNull: false,
@@ -23,6 +20,15 @@ module.exports = {
             },
             pushNotificationToken: {
                 type: Sequelize.STRING(64),
+            },
+            gender: {
+                type: Sequelize.STRING(2),
+            },
+            age: {
+                type: Sequelize.INTEGER,
+            },
+            childs: {
+                type: Sequelize.INTEGER,
             },
             createdAt: {
                 allowNull: false,
