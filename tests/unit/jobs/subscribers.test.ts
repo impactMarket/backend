@@ -64,7 +64,7 @@ describe('[jobs] subscribers', () => {
     })
 
     it('#subscribeChainEvents()', async () => {
-        await subscribeChainEvents(provider, communities, communitiesVisibility, []);
+        await subscribeChainEvents(provider, communities, communitiesVisibility);
         await communityContract.addBeneficiary(accounts[5]);
 
         await waitForStubCall(beneficiaryAdd, 1);
