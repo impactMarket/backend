@@ -135,6 +135,15 @@ export default class UserService {
         return db.models.user.findOne({ where: { address } });
     }
 
+    public static async exists(address: string): Promise<boolean> {
+        const exists = await db.models.user.findOne({
+            attributes: ['address'],
+            where: { address }
+        });
+        console.log(exists);
+        return exists === null ? false : true;
+    }
+
     public static async getAllAddresses(): Promise<string[]> {
         return (await db.models.user.findAll({ attributes: ['address'] })).map(
             (u) => u.address

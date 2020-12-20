@@ -56,9 +56,19 @@ export default (app: Router): void => {
     );
 
     route.get(
-        '/:address',
-        async (req: Request, res: Response) => {
-            res.send(await UserService.get(req.params.address));
+        '/exists/:address',
+        (req: Request, res: Response) => {
+            UserService.exists(req.params.address).then((u) => {
+                console.log('u', u);
+                if (u === false) {
+                    res.sendStatus(404);
+                } else {
+                    res.send('OK');
+                }
+            }).catch((e) => {
+                console.log(e);
+                res.sendStatus(404)
+            });
         },
     );
 
