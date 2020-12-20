@@ -90,12 +90,12 @@ async function subscribeChainEvents(
                 // do not count from communities [eg. claims]
                 !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
                 // beneficiary in public community (both from or to)
-                // (beneficiariesInPublicCommunities.includes(
-                //     preParsedLog.args[0]
-                // ) ||
-                //     beneficiariesInPublicCommunities.includes(
-                //         preParsedLog.args[1]
-                //     )) &&
+                (beneficiariesInPublicCommunities.includes(
+                    preParsedLog.args[0]
+                ) ||
+                    beneficiariesInPublicCommunities.includes(
+                        preParsedLog.args[1]
+                    )) &&
                 // ignore AttestationProxy
                 preParsedLog.args[1] !== config.attestationProxyAddress &&
                 // yeah, people without knowing make transactions to themselves! 🕊️
@@ -481,12 +481,12 @@ async function checkCommunitiesOnChainEvents(
             } else if (
                 // same as in subscribe
                 !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
-                // (beneficiariesInPublicCommunities.includes(
-                //     preParsedLog.args[0]
-                // ) ||
-                //     beneficiariesInPublicCommunities.includes(
-                //         preParsedLog.args[1]
-                //     )) &&
+                (beneficiariesInPublicCommunities.includes(
+                    preParsedLog.args[0]
+                ) ||
+                    beneficiariesInPublicCommunities.includes(
+                        preParsedLog.args[1]
+                    )) &&
                 preParsedLog.args[1] !== config.attestationProxyAddress &&
                 preParsedLog.args[0] !== preParsedLog.args[1] &&
                 preParsedLog.args[2].toString().length > 15
