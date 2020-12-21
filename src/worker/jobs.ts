@@ -2,24 +2,24 @@ import { CronJob } from 'cron';
 import { ethers } from 'ethers';
 
 import config from '../config';
-import { prepareAgenda } from '../jobs/agenda';
+import { prepareAgenda } from './jobs/agenda';
 import {
     // updateImpactMarketCache,
     checkCommunitiesOnChainEvents,
     subscribeChainEvents,
-} from '../jobs/chainSubscribers';
+} from './jobs/chainSubscribers';
 import {
     calcuateCommunitiesMetrics,
     populateCommunityDailyState,
     verifyCommunityFunds,
-} from '../jobs/cron/community';
-import { calcuateGlobalMetrics } from '../jobs/cron/global';
-import { updateExchangeRates } from '../jobs/cron/updateExchangeRates';
+} from './jobs/cron/community';
+import { calcuateGlobalMetrics } from './jobs/cron/global';
+import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
 import BeneficiaryService from '../services/beneficiary';
 import CommunityService from '../services/community';
 import CronJobExecutedService from '../services/cronJobExecuted';
 import ImMetadataService from '../services/imMetadata';
-import { Logger } from './logger';
+import { Logger } from '../loaders/logger';
 
 export default async (): Promise<void> => {
     await cron();

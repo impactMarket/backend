@@ -1,7 +1,7 @@
 import schedule from 'node-schedule';
 
-import AgendaService from '../services/agenda';
-import { AgendaAction } from '../types';
+import AgendaService from '../../services/agenda';
+import { AgendaAction } from '../../types';
 
 export async function prepareAgenda(): Promise<void> {
     const agenda = await AgendaService.get();

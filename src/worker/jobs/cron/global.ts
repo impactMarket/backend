@@ -1,16 +1,16 @@
 import BigNumber from 'bignumber.js';
 import { mean } from 'mathjs';
 
-import config from '../../config';
-import { Logger } from '../../loaders/logger';
-import BeneficiaryTransactionService from '../../services/beneficiaryTransaction';
-import ClaimService from '../../services/claim';
-import CommunityContractService from '../../services/communityContract';
-import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
-import CommunityDailyStateService from '../../services/communityDailyState';
-import GlobalDailyStateService from '../../services/globalDailyState';
-import InflowService from '../../services/inflow';
-import ReachedAddressService from '../../services/reachedAddress';
+import config from '../../../config';
+import { Logger } from '../../../loaders/logger';
+import BeneficiaryTransactionService from '../../../services/beneficiaryTransaction';
+import ClaimService from '../../../services/claim';
+import CommunityContractService from '../../../services/communityContract';
+import CommunityDailyMetricsService from '../../../services/communityDailyMetrics';
+import CommunityDailyStateService from '../../../services/communityDailyState';
+import GlobalDailyStateService from '../../../services/globalDailyState';
+import InflowService from '../../../services/inflow';
+import ReachedAddressService from '../../../services/reachedAddress';
 
 /**
  * As this is all calculated past midnight, everything is from yesterdayDateOnly

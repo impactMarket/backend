@@ -1,19 +1,19 @@
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
 
-import config from '../../config';
-import { Logger } from '../../loaders/logger';
-import BeneficiaryService from '../../services/beneficiary';
-import CommunityService from '../../services/community';
-import CommunityContractService from '../../services/communityContract';
-import CommunityDailyMetricsService from '../../services/communityDailyMetrics';
-import CommunityDailyStateService from '../../services/communityDailyState';
-import InflowService from '../../services/inflow';
-import NotifiedBackerService from '../../services/notifiedBacker';
-import SSIService from '../../services/ssi';
-import UserService from '../../services/user';
-import { ICommunityInfo } from '../../types';
-import { notifyBackersCommunityLowFunds } from '../../utils';
+import config from '../../../config';
+import { Logger } from '../../../loaders/logger';
+import BeneficiaryService from '../../../services/beneficiary';
+import CommunityService from '../../../services/community';
+import CommunityContractService from '../../../services/communityContract';
+import CommunityDailyMetricsService from '../../../services/communityDailyMetrics';
+import CommunityDailyStateService from '../../../services/communityDailyState';
+import InflowService from '../../../services/inflow';
+import NotifiedBackerService from '../../../services/notifiedBacker';
+import SSIService from '../../../services/ssi';
+import UserService from '../../../services/user';
+import { ICommunityInfo } from '../../../types';
+import { notifyBackersCommunityLowFunds } from '../../../utils';
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');

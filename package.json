@@ -4,6 +4,7 @@
     "description": "Decentralized impact-driven 2-sided marketplace to provide financial services to charities and vulnerable beneficiaries.",
     "scripts": {
         "start": "nodemon -w src src/app.ts",
+        "worker-dev": "nodemon -w src/worker src/worker/index.ts",
         "serve": "node dist/app.js",
         "build": "tsc -p .",
         "build:watch": "tsc -p . --watch",
