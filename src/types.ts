@@ -55,6 +55,9 @@ export interface ICommunityMetrics {
     historicalSSI: number[];
 }
 
+/**
+ * @deprecated
+ */
 export interface ICommunityInfo extends ICommunity {
     /**
      * @deprecated
@@ -118,25 +121,26 @@ export interface IAddressAndName {
     name: string;
 }
 
-// export interface IUser {
-//     address: string;
-//     username: string | null;
-//     currency: string | null;
-//     avatar: string;
-//     language: number;
-// }
+// TODO: remove
+export interface IUser {
+    address: string;
+    username: string | null;
+    currency: string | null;
+    avatar: string;
+    language: number;
+}
+// TODO: remove
+export interface IUserWelcome {
+    user: IUser; // TODO: remove in the future, as it's intended to be on memory
+    exchangeRates: object; // TODO: this is not really an object
+    isBeneficiary: boolean;
+    isManager: boolean;
+    community?: ICommunityInfo;
+}
 
-// export interface IUserWelcome {
-//     user: IUser; // TODO: remove in the future, as it's intended to be on memory
-//     exchangeRates: object; // TODO: this is not really an object
-//     isBeneficiary: boolean;
-//     isManager: boolean;
-//     community?: ICommunityInfo;
-// }
-
-// export interface IUserWelcomeAuth extends IUserWelcome {
-//     token: string;
-// }
+export interface IUserWelcomeAuth extends IUserWelcome {
+    token: string;
+}
 
 /**
  * @deprecated

@@ -307,11 +307,11 @@ export default class CommunityService {
         for (let index = 0; index < communities.length; index++) {
             result.push({
                 ...communities[index],
-                state: communityState.find((c) => c.communityId = communities[index].publicId)!,
-                contract: communityContract.find((c) => c.communityId = communities[index].publicId)!,
+                state: communityState.find((c) => c.communityId === communities[index].publicId)!,
+                contract: communityContract.find((c) => c.communityId === communities[index].publicId)!,
             });
         }
-        return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? 1 : (a.state.beneficiaries < b.state.beneficiaries ? -1 : 0));
+        return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? -1 : (a.state.beneficiaries < b.state.beneficiaries ? 1 : 0));
     }
 
     public static async listFull(): Promise<ICommunity[]> {
@@ -353,12 +353,12 @@ export default class CommunityService {
         for (let index = 0; index < communities.length; index++) {
             result.push({
                 ...communities[index],
-                state: communityState.find((c) => c.communityId = communities[index].publicId)!,
-                contract: communityContract.find((c) => c.communityId = communities[index].publicId)!,
-                metrics: communityDailyMetrics.find((c) => c.communityId = communities[index].publicId)!,
+                state: communityState.find((c) => c.communityId === communities[index].publicId)!,
+                contract: communityContract.find((c) => c.communityId === communities[index].publicId)!,
+                metrics: communityDailyMetrics.find((c) => c.communityId === communities[index].publicId)!,
             });
         }
-        return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? 1 : (a.state.beneficiaries < b.state.beneficiaries ? -1 : 0));
+        return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? -1 : (a.state.beneficiaries < b.state.beneficiaries ? 1 : 0));
     }
 
     public static async managers(managerAddress: string): Promise<IManagers> {
