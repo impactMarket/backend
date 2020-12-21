@@ -224,7 +224,7 @@ async function subscribeChainEvents(
                             );
                             if (community === null) {
                                 Logger.error(
-                                    `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
+                                    `Community with address ${communityAddress} wasn't found at "ManagerAdded"`
                                 );
                             } else {
                                 isCommunityPublic.set(
@@ -269,7 +269,7 @@ async function subscribeChainEvents(
                                         );
                                         if (community === null) {
                                             Logger.error(
-                                                `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
+                                                `Community with address ${communityAddress} wasn't found at "ManagerAdded"`
                                             );
                                         } else {
                                             isCommunityPublic.set(
