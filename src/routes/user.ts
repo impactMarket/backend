@@ -17,6 +17,80 @@ const route = Router();
 export default (app: Router): void => {
     app.use('/user', route);
 
+    //TODO: remove -  used until mobile-app@0.0.29
+    route.post(
+        '/auth',
+        celebrate({
+            body: Joi.object({
+                authKey: Joi.string().optional(), // TODO: make required
+                address: Joi.string().required(),
+                language: Joi.string().required(),
+                pushNotificationsToken: Joi.string().optional().allow(''), // TODO: make required
+                pushNotificationToken: Joi.string().optional().allow(''), // TODO: make required
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            let {
+                address,
+                language,
+                pushNotificationsToken,
+                pushNotificationToken,
+            } = req.body;
+            if (pushNotificationToken === null || pushNotificationToken === undefined) {
+                if (pushNotificationsToken === null || pushNotificationsToken === undefined) {
+                    pushNotificationToken = '';
+                } else {
+                    pushNotificationToken = pushNotificationsToken;
+                }
+            }
+            const result = await UserService.auth(
+                address,
+                language,
+                pushNotificationToken,
+            );
+            if (result === undefined) {
+                res.sendStatus(403);
+                return;
+            }
+            res.send(result);
+        },
+    );
+
+    //TODO: remove -  used until mobile-app@0.0.29
+    route.post(
+        '/welcome',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                authKey: Joi.string().optional(), // TODO: remove
+                address: Joi.string().required(),
+                token: Joi.string().allow(''),
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                address,
+                token,
+            } = req.body;
+            if (token.length > 0) {
+                try {
+                    await UserService.setPushNotificationsToken(
+                        address,
+                        token
+                    );
+                } catch (e) {
+                    Logger.warn(e);
+                }
+            }
+            try {
+                res.send(await UserService.welcome(address));
+            } catch (e) {
+                Logger.warn(e);
+                res.sendStatus(403);
+            }
+        },
+    );
+
     // used from mobile-app@0.1.0
     route.post(
         '/authenticate',
@@ -33,7 +107,7 @@ export default (app: Router): void => {
                 language,
                 pushNotificationToken,
             } = req.body;
-            const result = await UserService.auth(
+            const result = await UserService.authenticate(
                 address,
                 language,
                 pushNotificationToken,

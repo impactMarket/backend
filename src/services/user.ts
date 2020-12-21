@@ -4,6 +4,7 @@ import { User } from '../db/models/user';
 import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 import { generateAccessToken } from '../middlewares';
+import { ICommunityInfo, IUserWelcome, IUserWelcomeAuth } from '../types';
 import { ICommunity, IUserHello, IUserAuth } from '../types/endpoints';
 import BeneficiaryService from './beneficiary';
 import CommunityService from './community';
@@ -12,7 +13,80 @@ import ManagerService from './managers';
 
 const db = database();
 export default class UserService {
+
     public static async auth(
+        address: string,
+        language: string,
+        pushNotificationToken: string,
+    ): Promise<IUserWelcomeAuth | undefined> {
+        try {
+            const token = generateAccessToken(address);
+            const user = await db.models.user.findOne({ where: { address } });
+            if (user === null) {
+                await db.models.user.create({
+                    address,
+                    language,
+                    pushNotificationToken,
+                });
+            } else {
+                await db.models.user.update(
+                    { pushNotificationToken },
+                    { where: { address } },
+                );
+            }
+            const welcomeUser = await UserService.welcome(address, user);
+            if (welcomeUser === undefined) {
+                return undefined;
+            }
+            return {
+                token,
+                ...welcomeUser
+            };
+        } catch (e) {
+            Logger.warn('Error while auth user ', address, e.message);
+            return undefined;
+        }
+    }
+
+    public static async welcome(
+        address: string,
+        user: User | null = null
+    ): Promise<IUserWelcome | undefined> {
+        if (user === null) {
+            user = await db.models.user.findOne({ where: { address } });
+            if (user === null) {
+                return undefined;
+            }
+        }
+        const beneficiary = await BeneficiaryService.get(user.address);
+        const manager = await ManagerService.get(user.address);
+        let community: ICommunityInfo | null = null;
+        let isBeneficiary = false;
+        let isManager = false;
+        if (beneficiary !== null) {
+            community = await CommunityService.findByPublicId(beneficiary.communityId);
+            isBeneficiary = true;
+        }
+        if (manager !== null) {
+            community = await CommunityService.findByPublicId(manager.communityId);
+            isManager = true;
+        } else {
+            const rawCommunityId = await CommunityService.findByFirstManager(user.address);
+            if (rawCommunityId !== null) {
+                community = await CommunityService.findByPublicId(rawCommunityId);
+                isManager = true;
+            }
+        }
+        return {
+            user: user as any,
+            exchangeRates: await ExchangeRatesService.get(),
+            community: community ? community : undefined,
+            isBeneficiary,
+            isManager,
+        };
+    }
+
+    public static async authenticate(
         address: string,
         language: string,
         pushNotificationToken: string
