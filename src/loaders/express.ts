@@ -1,12 +1,10 @@
 import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import helmet from 'helmet';
-import morgan from 'morgan';
 
 import config from '../config';
-import { LoggerStream } from '../loaders/logger';
 import routes from '../routes';
 
 export default ({ app }: { app: express.Application }): void => {
@@ -30,8 +28,6 @@ export default ({ app }: { app: express.Application }): void => {
     // Useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
     // It shows the real origin IP in the heroku or Cloudwatch logs
     app.enable('trust proxy');
-
-    app.use(morgan('combined', { stream: new LoggerStream() }) as any);
 
     app.use(helmet());
     // The magic package that prevents frontend developers going nuts

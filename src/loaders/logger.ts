@@ -39,33 +39,3 @@ export const Logger = winston.createLogger({
     ),
     transports,
 });
-
-export class LoggerStream {
-    write(message: string): void {
-        switch (Logger.level) {
-            case 'debug':
-                Logger.debug(message);
-                break;
-
-            case 'info':
-                Logger.info(message);
-                break;
-
-            case 'warning':
-                Logger.warning(message);
-                break;
-
-            case 'error':
-                Logger.error(message);
-                break;
-
-            case 'critical':
-                Logger.crit(message);
-                break;
-
-            default:
-                Logger.verbose(message);
-                break;
-        }
-    }
-}
