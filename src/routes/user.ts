@@ -17,31 +17,22 @@ const route = Router();
 export default (app: Router): void => {
     app.use('/user', route);
 
+    // used from mobile-app@0.1.0
     route.post(
-        '/auth',
+        '/authenticate',
         celebrate({
             body: Joi.object({
-                authKey: Joi.string().optional(), // TODO: make required
                 address: Joi.string().required(),
                 language: Joi.string().required(),
-                pushNotificationsToken: Joi.string().optional().allow(''), // TODO: make required
-                pushNotificationToken: Joi.string().optional().allow(''), // TODO: make required
+                pushNotificationToken: Joi.string().required().allow(''),
             }),
         }),
         async (req: Request, res: Response) => {
-            let {
+            const {
                 address,
                 language,
-                pushNotificationsToken,
                 pushNotificationToken,
             } = req.body;
-            if (pushNotificationToken === null || pushNotificationToken === undefined) {
-                if (pushNotificationsToken === null || pushNotificationsToken === undefined) {
-                    pushNotificationToken = '';
-                } else {
-                    pushNotificationToken = pushNotificationsToken;
-                }
-            }
             const result = await UserService.auth(
                 address,
                 language,
@@ -72,12 +63,12 @@ export default (app: Router): void => {
         },
     );
 
+    // used from mobile-app@0.1.0
     route.post(
         '/hello',
         authenticateToken,
         celebrate({
             body: Joi.object({
-                authKey: Joi.string().optional(), // TODO: remove
                 address: Joi.string().required(),
                 token: Joi.string().allow(''),
             }),
