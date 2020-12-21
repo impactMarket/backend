@@ -41,6 +41,14 @@ export default class ExchangeRatesService {
                 name: 'Bolívar Venezuelano',
                 rate: mapRates['VES'],
             },
+            HNL: {
+                name: 'Honduran Lempira',
+                rate: mapRates['HNL'],
+            },
+            PHP: {
+                name: 'Philippine Peso',
+                rate: mapRates['PHP'],
+            },
         };
         return rates;
     }
