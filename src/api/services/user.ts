@@ -1,8 +1,8 @@
 import { Op } from 'sequelize';
-import { User } from '../../db/models/user';
+import { User } from '@models/user';
 
 import database from '../loaders/database';
-import { Logger } from '../loaders/logger';
+import { Logger } from '@logger/logger';
 import { generateAccessToken } from '../middlewares';
 import { ICommunityInfo, IUserWelcome, IUserWelcomeAuth } from '../../types';
 import { ICommunity, IUserHello, IUserAuth } from '../../types/endpoints';

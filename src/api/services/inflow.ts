@@ -1,6 +1,6 @@
 import { col, fn, Op } from 'sequelize';
 import database from '../loaders/database';
-import { Logger } from '../loaders/logger';
+import { Logger } from '@logger/logger';
 
 const db = database();
 export default class InflowService {

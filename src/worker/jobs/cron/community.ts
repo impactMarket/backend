@@ -2,16 +2,16 @@ import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
 
 import config from '../../../config';
-import { Logger } from '../../../api/loaders/logger';
-import BeneficiaryService from '../../../api/services/beneficiary';
-import CommunityService from '../../../api/services/community';
-import CommunityContractService from '../../../api/services/communityContract';
-import CommunityDailyMetricsService from '../../../api/services/communityDailyMetrics';
-import CommunityDailyStateService from '../../../api/services/communityDailyState';
-import InflowService from '../../../api/services/inflow';
-import NotifiedBackerService from '../../../api/services/notifiedBacker';
-import SSIService from '../../../api/services/ssi';
-import UserService from '../../../api/services/user';
+import { Logger } from '@logger/logger';
+import BeneficiaryService from '@services/beneficiary';
+import CommunityService from '@services/community';
+import CommunityContractService from '@services/communityContract';
+import CommunityDailyMetricsService from '@services/communityDailyMetrics';
+import CommunityDailyStateService from '@services/communityDailyState';
+import InflowService from '@services/inflow';
+import NotifiedBackerService from '@services/notifiedBacker';
+import SSIService from '@services/ssi';
+import UserService from '@services/user';
 import { ICommunityInfo } from '../../../types';
 import { notifyBackersCommunityLowFunds } from '../../../utils';
 

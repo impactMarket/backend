@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import communityController from '../controllers/community';
-import communityValidators from '../validators/community';
+import communityController from '@controllers/community';
+import communityValidators from '@validators/community';
 import { authenticateToken } from '../middlewares';
 
 const route = Router();

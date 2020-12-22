@@ -15,11 +15,11 @@ import {
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
-import BeneficiaryService from '../api/services/beneficiary';
-import CommunityService from '../api/services/community';
-import CronJobExecutedService from '../api/services/cronJobExecuted';
-import ImMetadataService from '../api/services/imMetadata';
-import { Logger } from '../api/loaders/logger';
+import BeneficiaryService from '@services/beneficiary';
+import CommunityService from '@services/community';
+import CronJobExecutedService from '@services/cronJobExecuted';
+import ImMetadataService from '@services/imMetadata';
+import { Logger } from '@logger/logger';
 
 export default async (): Promise<void> => {
     await cron();

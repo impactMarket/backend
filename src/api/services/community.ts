@@ -5,7 +5,7 @@ import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import database from '../loaders/database';
-import { Community, CommunityCreationAttributes } from '../../db/models/community';
+import { Community, CommunityCreationAttributes } from '@models/community';
 import { ICommunityContractParams, ICommunityInfo } from '../../types';
 import { notifyManagerAdded } from '../../utils';
 import CommunityContractService from './communityContract';

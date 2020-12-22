@@ -1,4 +1,4 @@
-import { ClaimLocation } from '../../db/models/claimLocation';
+import { ClaimLocation } from '@models/claimLocation';
 import database from "../loaders/database";
 
 const db = database();

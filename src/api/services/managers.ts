@@ -1,7 +1,7 @@
 import { col, fn, Op, QueryTypes, Transaction } from 'sequelize';
-import { Manager } from '../../db/models/manager';
+import { Manager } from '@models/manager';
 import database from '../loaders/database';
-import { Logger } from '../loaders/logger';
+import { Logger } from '@logger/logger';
 import { IManagerDetailsManager } from '../../types/endpoints';
 import { isUUID } from '../../utils';
 

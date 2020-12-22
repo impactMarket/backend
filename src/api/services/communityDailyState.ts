@@ -3,7 +3,7 @@ import { Op, fn, col, Transaction } from 'sequelize';
 import {
     CommunityDailyState,
     CommunityDailyStateCreationAttributes
-} from '../../db/models/communityDailyState';
+} from '@models/communityDailyState';
 import database from '../loaders/database';
 
 const db = database();

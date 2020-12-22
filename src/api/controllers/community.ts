@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import CommunityService from '../services/community';
-import { Logger } from '../loaders/logger';
-import ManagerService from '../services/managers';
-import CommunityDailyMetricsService from '../services/communityDailyMetrics';
+import CommunityService from '@services/community';
+import { Logger } from '@logger/logger';
+import ManagerService from '@services/managers';
+import CommunityDailyMetricsService from '@services/communityDailyMetrics';
 
 const controllerLogAndFail = (e: any, status: number, res: Response) => {
     Logger.error(e);

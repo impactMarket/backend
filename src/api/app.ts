@@ -1,10 +1,11 @@
+import 'module-alias/register';
 import * as Sentry from '@sentry/node';
 import { Integrations } from '@sentry/tracing';
 import express from 'express';
 
 import config from '../config';
 import loaders from './loaders';
-import { Logger } from './loaders/logger';
+import { Logger } from '@logger/logger';
 
 async function startServer() {
     const app = express();

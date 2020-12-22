@@ -1,4 +1,4 @@
-import { Agenda } from '../../db/models/agenda';
+import { Agenda } from '@models/agenda';
 
 export default class AgendaService {
     public static async add(

@@ -1,5 +1,13 @@
 {
     "compilerOptions": {
+        "baseUrl": "./src",
+        "paths": {
+            "@controllers/*": ["api/controllers/*"],
+            "@services/*": ["api/services/*"],
+            "@validators/*": ["api/validators/*"],
+            "@models/*": ["db/models/*"],
+            "@logger/*": ["logger/*"],
+        },
         "sourceMap": true,
         "target": "es2017",
         "module": "commonjs",

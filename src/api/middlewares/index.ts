@@ -2,7 +2,7 @@ import { Response, NextFunction, Request } from 'express';
 import jwt from 'jsonwebtoken';
 
 import config from '../../config';
-import { Logger } from '../loaders/logger';
+import { Logger } from '@logger/logger';
 import { RequestWithUser, UserInRequest } from '../../types';
 
 export function authenticateToken(

@@ -9,7 +9,7 @@ import {
     Joi
 } from 'celebrate';
 import { authenticateToken } from '../middlewares';
-import { Logger } from '../loaders/logger';
+import { Logger } from '@logger/logger';
 
 
 const route = Router();

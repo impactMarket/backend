@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { Logger } from './logger';
+import { Logger } from '@logger/logger';
 import databaseLoader from './database';
 import expressLoader from './express';
 // import jobsLoader from './jobs';

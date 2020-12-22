@@ -8,8 +8,8 @@ import { Op, fn, literal, Sequelize } from 'sequelize';
 import { SHA3 } from 'sha3';
 
 import config from '../../config';
-import { Community } from '../../db/models/community';
-import { Transactions } from '../../db/models/transactions';
+import { Community } from '@models/community';
+import { Transactions } from '@models/transactions';
 import {
     ICommunityVars,
     IRecentTxAPI,
