@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Request, Response } from 'express';
 import helmet from 'helmet';
+import morgan from 'morgan';
 
 import config from '../../config';
 import routes from '../routes';
@@ -24,6 +25,10 @@ export default ({ app }: { app: express.Application }): void => {
     app.use(Sentry.Handlers.requestHandler());
     // TracingHandler creates a trace for every incoming request
     app.use(Sentry.Handlers.tracingHandler());
+
+    if (process.env.NODE_ENV === 'development') {
+        app.use(morgan('combined'))
+    }
 
     // Useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
     // It shows the real origin IP in the heroku or Cloudwatch logs
