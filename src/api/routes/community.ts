@@ -39,7 +39,7 @@ export default (app: Router): void => {
         communityController.managersDetails
     );
     route.get('/list', communityController.list);
-    route.get('/list/full', communityController.listFull);
+    route.get('/list/full/:order?', communityController.listFull);
     route.post(
         '/create',
         authenticateToken,

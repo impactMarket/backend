@@ -1,11 +1,11 @@
 import { ethers } from 'ethers';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import database from '../loaders/database';
-import { Community, CommunityCreationAttributes } from '@models/community';
+import { Community, CommunityAttributes, CommunityCreationAttributes } from '@models/community';
 import { ICommunityContractParams, ICommunityInfo } from '../../types';
 import { notifyManagerAdded } from '../../utils';
 import CommunityContractService from './communityContract';
@@ -17,6 +17,9 @@ import TransactionsService from './transactions';
 import { ICommunity, ICommunityLightDetails, IManagers, IManagersDetails } from '../../types/endpoints';
 import ManagerService from './managers';
 import BeneficiaryService from './beneficiary';
+import { CommunityStateAttributes } from '@models/communityState';
+import { CommunityContractAttributes } from '@models/communityContract';
+import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
 
 const db = database();
 export default class CommunityService {
@@ -314,51 +317,109 @@ export default class CommunityService {
         return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? -1 : (a.state.beneficiaries < b.state.beneficiaries ? 1 : 0));
     }
 
-    public static async listFull(): Promise<ICommunity[]> {
+    public static async listFull(order: string | undefined): Promise<ICommunity[]> {
         // this could be much better, but byt the time of ritting, sequelize
         // does not support eager loading with global "raw: false".
         // Please, check again, and if available, update this
         // https://github.com/sequelize/sequelize/issues/6408
-        const result: ICommunity[] = [];
-        const communities = await db.models.community.findAll({
-            where: {
-                status: 'valid',
-                visibility: 'public',
-            },
-        });
-        const inCommunities = communities.map((c) => c.publicId);
-        const communityState = await db.models.communityState.findAll({
-            where: {
-                communityId: {
-                    [Op.in]: inCommunities
-                }
-            },
-        });
-        const communityContract = await db.models.communityContract.findAll({
-            where: {
-                communityId: {
-                    [Op.in]: inCommunities
-                }
-            },
-        });
-        const communityDailyMetrics = await db.models.communityDailyMetrics.findAll({
-            where: {
-                communityId: {
-                    [Op.in]: inCommunities
-                }
-            },
-            order: [['createdAt', 'DESC']],
-            limit: inCommunities.length
-        });
-        for (let index = 0; index < communities.length; index++) {
-            result.push({
-                ...communities[index],
-                state: communityState.find((c) => c.communityId === communities[index].publicId)!,
-                contract: communityContract.find((c) => c.communityId === communities[index].publicId)!,
-                metrics: communityDailyMetrics.find((c) => c.communityId === communities[index].publicId)!,
-            });
+        let sqlQuery = '';
+        switch (order) {
+            case 'out_of_funds':
+                sqlQuery = 'select * from community c ' +
+                    'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
+                    'left join communitycontract cc on c."publicId" = cc."communityId" ' +
+                    'left join communitystate cs on c."publicId" = cs."communityId" ' +
+                    'where c.visibility = \'public\' and c.status = \'valid\' ' +
+                    'order by (cs.raised - cs.claimed) / cm."ubiRate" / cs.beneficiaries';
+                console.log('no funds')
+                break;
+
+            case 'newest':
+                sqlQuery = 'select * from community c ' +
+                    'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
+                    'left join communitycontract cc on c."publicId" = cc."communityId" ' +
+                    'left join communitystate cs on c."publicId" = cs."communityId" ' +
+                    'where c.visibility = \'public\' and c.status = \'valid\' ' +
+                    'order by c.started desc';
+                console.log('no funds')
+                break;
+
+            default:
+                sqlQuery = 'select * from community c ' +
+                    'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
+                    'left join communitycontract cc on c."publicId" = cc."communityId" ' +
+                    'left join communitystate cs on c."publicId" = cs."communityId" ' +
+                    'where c.visibility = \'public\' and c.status = \'valid\' ' +
+                    'order by cs.beneficiaries desc';
+                console.log('other')
+                break;
         }
-        return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? -1 : (a.state.beneficiaries < b.state.beneficiaries ? 1 : 0));
+
+        const rawResult: (
+            CommunityAttributes &
+            CommunityStateAttributes &
+            CommunityContractAttributes &
+            CommunityDailyMetricsAttributes
+        )[] = await db.sequelize.query(sqlQuery, { type: QueryTypes.SELECT });
+
+        const results: ICommunity[] = rawResult.map((c) => ({
+            id: c.id,
+            publicId: c.publicId,
+            requestByAddress: c.requestByAddress,
+            contractAddress: c.contractAddress,
+            name: c.name,
+            description: c.description,
+            descriptionEn: c.descriptionEn,
+            language: c.language,
+            currency: c.currency,
+            city: c.city,
+            country: c.country,
+            gps: c.gps,
+            email: c.email,
+            visibility: c.visibility,
+            coverImage: c.coverImage,
+            status: c.status,
+            started: c.started,
+            txCreationObj: null,
+            contract: {
+                baseInterval: c.baseInterval,
+                claimAmount: c.claimAmount,
+                incrementInterval: c.incrementInterval,
+                maxClaim: c.maxClaim,
+                // values below don't matter 
+                communityId: c.publicId,
+                createdAt: c.createdAt,
+                updatedAt: c.updatedAt,
+            },
+            state: {
+                backers: c.backers,
+                beneficiaries: c.beneficiaries,
+                claimed: c.claimed,
+                claims: c.claims,
+                raised: c.raised,
+                // values below don't matter 
+                communityId: c.publicId,
+                createdAt: c.createdAt,
+                updatedAt: c.updatedAt,
+            },
+            metrics: {
+                date: c.date,
+                estimatedDuration: c.estimatedDuration,
+                ssi: c.ssi,
+                ssiDayAlone: c.ssiDayAlone,
+                ubiRate: c.ubiRate,
+                // values below don't matter 
+                communityId: c.publicId,
+                createdAt: c.createdAt,
+                updatedAt: c.updatedAt,
+                id: 0,
+            },
+            // values below don't matter 
+            createdAt: c.createdAt,
+            updatedAt: c.updatedAt,
+        }));
+
+        return results;
     }
 
     public static async managers(managerAddress: string): Promise<IManagers> {

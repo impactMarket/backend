@@ -66,7 +66,7 @@ const list = (req: Request, res: Response) => {
 }
 
 const listFull = (req: Request, res: Response) => {
-    CommunityService.listFull()
+    CommunityService.listFull(req.params.order)
         .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 500, res));
 }
