@@ -1,9 +1,9 @@
 import { Op, fn, col, QueryTypes } from 'sequelize';
-import { Beneficiary } from '../db/models/beneficiary';
+import { Beneficiary } from '../../db/models/beneficiary';
 import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
-import { IManagerDetailsBeneficiary } from '../types/endpoints';
-import { isUUID } from '../utils';
+import { IManagerDetailsBeneficiary } from '../../types/endpoints';
+import { isUUID } from '../../utils';
 
 
 const db = database();

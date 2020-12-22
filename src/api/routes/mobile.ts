@@ -1,7 +1,7 @@
 import { celebrate, Joi } from 'celebrate';
 import { Router } from 'express';
 
-import config from '../config';
+import config from '../../config';
 import database from '../loaders/database';
 
 const route = Router();

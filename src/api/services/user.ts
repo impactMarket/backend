@@ -1,11 +1,11 @@
 import { Op } from 'sequelize';
-import { User } from '../db/models/user';
+import { User } from '../../db/models/user';
 
 import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 import { generateAccessToken } from '../middlewares';
-import { ICommunityInfo, IUserWelcome, IUserWelcomeAuth } from '../types';
-import { ICommunity, IUserHello, IUserAuth } from '../types/endpoints';
+import { ICommunityInfo, IUserWelcome, IUserWelcomeAuth } from '../../types';
+import { ICommunity, IUserHello, IUserAuth } from '../../types/endpoints';
 import BeneficiaryService from './beneficiary';
 import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';

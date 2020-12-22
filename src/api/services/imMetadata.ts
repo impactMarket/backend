@@ -1,4 +1,4 @@
-import config from '../config';
+import config from '../../config';
 import database from '../loaders/database';
 
 const db = database();

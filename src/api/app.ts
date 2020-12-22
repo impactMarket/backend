@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/node';
 import { Integrations } from '@sentry/tracing';
 import express from 'express';
 
-import config from './config';
+import config from '../config';
 import loaders from './loaders';
 import { Logger } from './loaders/logger';
 

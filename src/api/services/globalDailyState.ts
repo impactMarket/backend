@@ -2,7 +2,7 @@ import { Op } from 'sequelize';
 import {
     GlobalDailyState,
     GlobalDailyStateCreationAttributes
-} from '../db/models/globalDailyState';
+} from '../../db/models/globalDailyState';
 import database from '../loaders/database';
 
 const db = database();

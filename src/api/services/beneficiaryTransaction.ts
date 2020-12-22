@@ -2,7 +2,7 @@ import { col, fn } from 'sequelize';
 import {
     // BeneficiaryTransaction,
     BeneficiaryTransactionCreationAttributes
-} from '../db/models/beneficiaryTransaction';
+} from '../../db/models/beneficiaryTransaction';
 import database from '../loaders/database';
 import { Logger } from '../loaders/logger';
 

@@ -3,9 +3,10 @@
     "version": "0.0.6",
     "description": "Decentralized impact-driven 2-sided marketplace to provide financial services to charities and vulnerable beneficiaries.",
     "scripts": {
-        "start": "nodemon -w src src/app.ts",
+        "start": "nodemon -w src/api src/api/app.ts",
         "worker-dev": "nodemon -w src/worker src/worker/index.ts",
-        "serve": "node dist/app.js",
+        "serve": "node dist/api/app.js",
+        "worker": "node dist/worker/index.js",
         "build": "tsc -p .",
         "build:watch": "tsc -p . --watch",
         "postinstall": "yarn build",

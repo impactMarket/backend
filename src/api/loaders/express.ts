@@ -4,7 +4,7 @@ import cors from 'cors';
 import express, { Request, Response } from 'express';
 import helmet from 'helmet';
 
-import config from '../config';
+import config from '../../config';
 import routes from '../routes';
 
 export default ({ app }: { app: express.Application }): void => {

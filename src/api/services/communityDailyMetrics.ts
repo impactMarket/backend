@@ -1,10 +1,10 @@
 import { median } from 'mathjs';
 import { col, fn, Op } from 'sequelize';
 
-import { Community } from '../db/models/community';
+import { Community } from '../../db/models/community';
 import database from '../loaders/database';
-import { CommunityDailyMetrics } from '../db/models/communityDailyMetrics';
-import { ICommunityMetrics } from '../types';
+import { CommunityDailyMetrics } from '../../db/models/communityDailyMetrics';
+import { ICommunityMetrics } from '../../types';
 
 const db = database();
 export default class CommunityDailyMetricsService {

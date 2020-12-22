@@ -1,9 +1,9 @@
 import { Response, NextFunction, Request } from 'express';
 import jwt from 'jsonwebtoken';
 
-import config from '../config';
+import config from '../../config';
 import { Logger } from '../loaders/logger';
-import { RequestWithUser, UserInRequest } from '../types';
+import { RequestWithUser, UserInRequest } from '../../types';
 
 export function authenticateToken(
     req: Request,

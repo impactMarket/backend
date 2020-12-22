@@ -1,20 +1,20 @@
 import { ethers } from 'ethers';
 import { Op } from 'sequelize';
 
-import config from '../config';
-import CommunityContractABI from '../contracts/CommunityABI.json';
-import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
+import config from '../../config';
+import CommunityContractABI from '../../contracts/CommunityABI.json';
+import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import database from '../loaders/database';
-import { Community, CommunityCreationAttributes } from '../db/models/community';
-import { ICommunityContractParams, ICommunityInfo } from '../types';
-import { notifyManagerAdded } from '../utils';
+import { Community, CommunityCreationAttributes } from '../../db/models/community';
+import { ICommunityContractParams, ICommunityInfo } from '../../types';
+import { notifyManagerAdded } from '../../utils';
 import CommunityContractService from './communityContract';
 import CommunityDailyMetricsService from './communityDailyMetrics';
 import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
 import SSIService from './ssi';
 import TransactionsService from './transactions';
-import { ICommunity, ICommunityLightDetails, IManagers, IManagersDetails } from '../types/endpoints';
+import { ICommunity, ICommunityLightDetails, IManagers, IManagersDetails } from '../../types/endpoints';
 import ManagerService from './managers';
 import BeneficiaryService from './beneficiary';
 

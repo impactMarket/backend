@@ -7,9 +7,9 @@ import moment from 'moment';
 import { Op, fn, literal, Sequelize } from 'sequelize';
 import { SHA3 } from 'sha3';
 
-import config from '../config';
-import { Community } from '../db/models/community';
-import { Transactions } from '../db/models/transactions';
+import config from '../../config';
+import { Community } from '../../db/models/community';
+import { Transactions } from '../../db/models/transactions';
 import {
     ICommunityVars,
     IRecentTxAPI,
@@ -19,8 +19,8 @@ import {
     IGlobalOutflowStatus,
     IGlobalInflowStatus,
     ICommunityInfoBeneficiary,
-} from '../types';
-import { groupBy } from '../utils';
+} from '../../types';
+import { groupBy } from '../../utils';
 import CommunityService from './community';
 import UserService from './user';
 

@@ -1,6 +1,6 @@
 import schedule from 'node-schedule';
 
-import AgendaService from '../../services/agenda';
+import AgendaService from '../../api/services/agenda';
 import { AgendaAction } from '../../types';
 
 export async function prepareAgenda(): Promise<void> {
