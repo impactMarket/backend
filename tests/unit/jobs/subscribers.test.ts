@@ -3,18 +3,22 @@ import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 
 import * as utils from '../../../src/utils';
-import BeneficiaryService from '../../../src/services/beneficiary';
-import ImMetadataService from '../../../src/services/imMetadata';
-import TransactionsService from '../../../src/services/transactions';
-import { subscribeChainEvents } from '../../../src/jobs/chainSubscribers';
+import BeneficiaryService from '../../../src/api/services/beneficiary';
+import ImMetadataService from '../../../src/api/services/imMetadata';
+import TransactionsService from '../../../src/api/services/transactions';
+import { subscribeChainEvents } from '../../../src/worker/jobs/chainSubscribers';
 import CommunityContractJSON from './Community.json';
 import cUSDContractJSON from './cUSD.json';
+import ManagerService from '../../../src/api/services/managers';
+import CommunityService from '../../../src/api/services/community';
+import { communityAddressesAndIds } from '../../fake/community';
+import { Community } from '../../../src/db/models/community';
 
 async function waitForStubCall(stub: SinonStub<any, any>, callNumber: number) {
     return new Promise((resolve) => {
         const validationInterval = setInterval(() => {
             if (stub.callCount >= callNumber) {
-                resolve();
+                resolve('');
                 clearInterval(validationInterval);
             }
         }, 1000)
@@ -29,21 +33,61 @@ describe('[jobs] subscribers', () => {
     let communitiesVisibility = new Map<string, boolean>();
     let accounts: string[] = [];
     let beneficiaryAdd: SinonStub<any, any>;
+    let getAllAddressesAndIds: SinonStub<any, any>;
+    let cUSD: ethers.Contract;
+    let communityFactory: ethers.ContractFactory;
 
     before(async () => {
+        // start provider
         provider = new ethers.providers.Web3Provider(ganache.provider());
+        // list accounts
         accounts = await provider.listAccounts();
+        // stub results
         stub(utils, 'notifyBeneficiaryAdded').returns(Promise.resolve(true));
         stub(utils, 'getBlockTime').returns(Promise.resolve(blockTimeDate));
         beneficiaryAdd = stub(BeneficiaryService, 'add')
         beneficiaryAdd.returns(Promise.resolve({} as any));
-        stub(BeneficiaryService, 'getAllAddresses').returns(Promise.resolve(accounts.slice(5, 9)));
+        // stub(BeneficiaryService, 'getAllAddresses').returns(Promise.resolve(accounts.slice(5, 9)));
+        stub(BeneficiaryService, 'getAllAddressesInPublicValidCommunities').returns(Promise.resolve([]));
         stub(ImMetadataService, 'setLastBlock').returns(Promise.resolve());
         stub(TransactionsService, 'add').returns(Promise.resolve({} as any));
-
+        stub(ManagerService, 'add').returns(Promise.resolve({} as any));
+        getAllAddressesAndIds = stub(CommunityService, 'getAllAddressesAndIds');
+        getAllAddressesAndIds.returns(Promise.resolve(communityAddressesAndIds));
+        // init factories
         const cUSDFactory = new ethers.ContractFactory(cUSDContractJSON.abi, cUSDContractJSON.bytecode, provider.getSigner(0));
-        const communityFactory = new ethers.ContractFactory(CommunityContractJSON.abi, CommunityContractJSON.bytecode, provider.getSigner(0));
-        const cUSD = await cUSDFactory.deploy();
+        communityFactory = new ethers.ContractFactory(CommunityContractJSON.abi, CommunityContractJSON.bytecode, provider.getSigner(0));
+        cUSD = await cUSDFactory.deploy();
+        // init event subscribers
+        subscribeChainEvents(provider, communities, communitiesVisibility);
+    });
+
+    after(() => {
+        provider.removeAllListeners();
+    })
+
+    it('#subscribeChainEvents()', async () => {
+        const thisCommunityId = 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd';
+        stub(CommunityService, 'getOnlyCommunityByContractAddress').returns(Promise.resolve({
+            publicId: thisCommunityId,
+            visibility: 'public',
+            // anything below, does not matter
+            city: 'Love',
+            contractAddress: '0x0',
+            country: 'Love',
+            coverImage: '',
+            currency: 'cUSD',
+            description: '',
+            email: '',
+            language: 'en',
+            name: 'Love',
+            requestByAddress: accounts[1],
+            started: new Date(),
+            status: 'valid',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        } as Community));
+        // deploy a community
         communityContract = (await communityFactory.deploy(
             accounts[1],
             '2000000000000000000',
@@ -54,22 +98,19 @@ describe('[jobs] subscribers', () => {
             cUSD.address,
             '0x0000000000000000000000000000000000000000'
         )).connect(provider.getSigner(1));
-        communities.set(communityContract.address, 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd');
+        communities.set(communityContract.address, thisCommunityId);
         communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([...communityAddressesAndIds,
+            [communityContract.address, thisCommunityId],
+        ]);
+        getAllAddressesAndIds.returns(Promise.resolve(newCommunityAddressesAndIds));
         await cUSD.connect(provider.getSigner(0)).testFakeFundAddress(communityContract.address);
-    });
-
-    after(() => {
-        provider.removeAllListeners();
-    })
-
-    it('#subscribeChainEvents()', async () => {
-        await subscribeChainEvents(provider, communities, communitiesVisibility);
+        //
         await communityContract.addBeneficiary(accounts[5]);
 
         await waitForStubCall(beneficiaryAdd, 1);
 
         assert.callCount(beneficiaryAdd, 1);
-        assert.calledWith(beneficiaryAdd.getCall(0), accounts[5], 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd', match.any);
+        assert.calledWith(beneficiaryAdd.getCall(0), accounts[5], thisCommunityId, match.any);
     });
 });

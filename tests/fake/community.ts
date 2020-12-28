@@ -15,6 +15,12 @@ export const communityIds = [
     // 'e3d59aaa-bcde-420f-88c5-77d21367fd28',
 ];
 
+export const communityAddressesAndIds = new Map([
+    ['0xFdd8bD58115FfBf04e47411c1d228eCC45E93075', 'c77a15a7-2cef-4d1e-96db-afd0b91ab71d'],
+    ['0x510Bf5D8feBCA69fCfe73d391783be01B3324c69', 'b090d41f-91c0-4f18-a809-633217590bbb'],
+    ['0x473a3be7C2A42452Ed0b521614B3b76BC59D2D1D', 'a3b4ad6e-dc8e-4861-b5b2-c1973907c515'],
+]);
+
 export const totalClaimedLast30Days = new Map<string, string>();
 totalClaimedLast30Days.set(communityIds[0], '2516000000000000000000');
 totalClaimedLast30Days.set(communityIds[1], '148000000000000000000');

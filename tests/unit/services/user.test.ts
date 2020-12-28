@@ -1,7 +1,7 @@
 import { stub } from 'sinon';
 
 import { User } from '../../../src/db/models/user';
-import UserService from '../../../src/services/user';
+import UserService from '../../../src/api/services/user';
 
 
 
