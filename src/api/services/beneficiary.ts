@@ -40,6 +40,11 @@ export default class BeneficiaryService {
     }
 
     public static async getAllAddressesInPublicValidCommunities(): Promise<string[]> {
+        // select address from beneficiary b, community c
+        // where b."communityId" = c."publicId"
+        // and c.status = 'valid'
+        // and c.visibility = 'public'
+        // and b.active = true
         const publicCommunities: string[] = (await db.models.community.findAll({
             attributes: ['publicId'],
             where: { visibility: 'public', status: 'valid' }

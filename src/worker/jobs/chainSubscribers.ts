@@ -105,7 +105,7 @@ async function subscribeChainEvents(
                 const isFromBeneficiary = beneficiariesInPublicCommunities.includes(
                     preParsedLog.args[0]
                 );
-                // transactions from or to beneficiaries
+                // TODO: remove
                 if (
                     isFromBeneficiary ||
                     beneficiariesInPublicCommunities.includes(preParsedLog.args[1])

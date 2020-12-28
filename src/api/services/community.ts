@@ -232,16 +232,13 @@ export default class CommunityService {
         return true;
     }
 
+    /**
+     * List all valid communities, both public and private
+     */
     public static async listCommunitiesStructOnly(): Promise<Community[]> {
-        return await Community.findAll({
+        return await db.models.community.findAll({
             where: {
-                status: 'valid',
-                visibility: {
-                    [Op.or]: [
-                        'public',
-                        'private'
-                    ],
-                }
+                status: 'valid'
             },
         });
     }
