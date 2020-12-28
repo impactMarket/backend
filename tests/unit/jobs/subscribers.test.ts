@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 
 import * as utils from '../../../src/utils';
+import ClaimsService from '../../../src/api/services/claim';
 import BeneficiaryService from '../../../src/api/services/beneficiary';
 import ImMetadataService from '../../../src/api/services/imMetadata';
 import TransactionsService from '../../../src/api/services/transactions';
@@ -33,9 +34,13 @@ describe('[jobs] subscribers', () => {
     let communitiesVisibility = new Map<string, boolean>();
     let accounts: string[] = [];
     let beneficiaryAdd: SinonStub<any, any>;
+    let claimAdd: SinonStub<any, any>;
+    let managerAdd: SinonStub<any, any>;
     let getAllAddressesAndIds: SinonStub<any, any>;
     let cUSD: ethers.Contract;
     let communityFactory: ethers.ContractFactory;
+    //
+    const thisCommunityId = 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd';
 
     before(async () => {
         // start provider
@@ -51,7 +56,10 @@ describe('[jobs] subscribers', () => {
         stub(BeneficiaryService, 'getAllAddressesInPublicValidCommunities').returns(Promise.resolve([]));
         stub(ImMetadataService, 'setLastBlock').returns(Promise.resolve());
         stub(TransactionsService, 'add').returns(Promise.resolve({} as any));
-        stub(ManagerService, 'add').returns(Promise.resolve({} as any));
+        claimAdd = stub(ClaimsService, 'add');
+        claimAdd.returns(Promise.resolve({} as any));
+        managerAdd = stub(ManagerService, 'add');
+        managerAdd.returns(Promise.resolve({} as any));
         getAllAddressesAndIds = stub(CommunityService, 'getAllAddressesAndIds');
         getAllAddressesAndIds.returns(Promise.resolve(communityAddressesAndIds));
         // init factories
@@ -60,14 +68,7 @@ describe('[jobs] subscribers', () => {
         cUSD = await cUSDFactory.deploy();
         // init event subscribers
         subscribeChainEvents(provider, communities, communitiesVisibility);
-    });
-
-    after(() => {
-        provider.removeAllListeners();
-    })
-
-    it('#subscribeChainEvents()', async () => {
-        const thisCommunityId = 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd';
+        //
         stub(CommunityService, 'getOnlyCommunityByContractAddress').returns(Promise.resolve({
             publicId: thisCommunityId,
             visibility: 'public',
@@ -87,6 +88,13 @@ describe('[jobs] subscribers', () => {
             createdAt: new Date(),
             updatedAt: new Date(),
         } as Community));
+    });
+
+    after(() => {
+        provider.removeAllListeners();
+    })
+
+    it('create a community', async () => {
         // deploy a community
         communityContract = (await communityFactory.deploy(
             accounts[1],
@@ -101,16 +109,66 @@ describe('[jobs] subscribers', () => {
         communities.set(communityContract.address, thisCommunityId);
         communitiesVisibility.set(communityContract.address, true);
         const newCommunityAddressesAndIds = new Map([...communityAddressesAndIds,
-            [communityContract.address, thisCommunityId],
+        [communityContract.address, thisCommunityId],
+        ]);
+        getAllAddressesAndIds.returns(Promise.resolve(newCommunityAddressesAndIds));
+        await cUSD.connect(provider.getSigner(0)).testFakeFundAddress(communityContract.address);
+        //
+        await waitForStubCall(managerAdd, 1);
+        assert.callCount(managerAdd, 1);
+        assert.calledWith(managerAdd.getCall(0), accounts[1], thisCommunityId);
+    });
+
+    it('add a beneficiary to valid community', async () => {
+        // deploy a community
+        communityContract = (await communityFactory.deploy(
+            accounts[1],
+            '2000000000000000000',
+            '1500000000000000000000',
+            86400,
+            300,
+            '0x0000000000000000000000000000000000000000',
+            cUSD.address,
+            '0x0000000000000000000000000000000000000000'
+        )).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([...communityAddressesAndIds,
+        [communityContract.address, thisCommunityId],
         ]);
         getAllAddressesAndIds.returns(Promise.resolve(newCommunityAddressesAndIds));
         await cUSD.connect(provider.getSigner(0)).testFakeFundAddress(communityContract.address);
         //
         await communityContract.addBeneficiary(accounts[5]);
-
         await waitForStubCall(beneficiaryAdd, 1);
-
         assert.callCount(beneficiaryAdd, 1);
         assert.calledWith(beneficiaryAdd.getCall(0), accounts[5], thisCommunityId, match.any);
+    });
+
+    it('beneficiary claim from valid community', async () => {
+        // deploy a community
+        communityContract = (await communityFactory.deploy(
+            accounts[1],
+            '2000000000000000000',
+            '1500000000000000000000',
+            86400,
+            300,
+            '0x0000000000000000000000000000000000000000',
+            cUSD.address,
+            '0x0000000000000000000000000000000000000000'
+        )).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([...communityAddressesAndIds,
+        [communityContract.address, thisCommunityId],
+        ]);
+        getAllAddressesAndIds.returns(Promise.resolve(newCommunityAddressesAndIds));
+        await cUSD.connect(provider.getSigner(0)).testFakeFundAddress(communityContract.address);
+        //
+        await communityContract.addBeneficiary(accounts[5]);
+        await communityContract.connect(provider.getSigner(5)).claim();
+        await waitForStubCall(claimAdd, 1);
+        assert.callCount(claimAdd, 1);
+        assert.calledWith(claimAdd.getCall(0), accounts[5], thisCommunityId, match.any, match.any, match.any);
     });
 });
