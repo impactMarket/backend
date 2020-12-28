@@ -67,6 +67,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const volume = volumeTransactionsAndAddresses.volume;
     const transactions = volumeTransactionsAndAddresses.transactions;
     const reach = volumeTransactionsAndAddresses.uniqueAddressesReached.length;
+    await ReachedAddressService.updateReachedList(volumeTransactionsAndAddresses.uniqueAddressesReached);
     // TODO: spending rate
     const spendingRate = 0;
 

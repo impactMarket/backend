@@ -8,7 +8,7 @@ interface ReachedAddressAttributes {
     createdAt: Date;
     updatedAt: Date;
 };
-interface ReachedAddressCreationAttributes {
+export interface ReachedAddressCreationAttributes {
     address: string;
     lastInteraction: Date;
 };

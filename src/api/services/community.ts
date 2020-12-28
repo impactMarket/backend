@@ -331,7 +331,6 @@ export default class CommunityService {
                     'left join communitystate cs on c."publicId" = cs."communityId" ' +
                     'where c.visibility = \'public\' and c.status = \'valid\' ' +
                     'order by (cs.raised - cs.claimed) / cm."ubiRate" / cs.beneficiaries';
-                console.log('no funds')
                 break;
 
             case 'newest':
@@ -341,7 +340,6 @@ export default class CommunityService {
                     'left join communitystate cs on c."publicId" = cs."communityId" ' +
                     'where c.visibility = \'public\' and c.status = \'valid\' ' +
                     'order by c.started desc';
-                console.log('no funds')
                 break;
 
             default:
@@ -351,7 +349,6 @@ export default class CommunityService {
                     'left join communitystate cs on c."publicId" = cs."communityId" ' +
                     'where c.visibility = \'public\' and c.status = \'valid\' ' +
                     'order by cs.beneficiaries desc';
-                console.log('other')
                 break;
         }
 

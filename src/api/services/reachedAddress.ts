@@ -1,3 +1,4 @@
+import { ReachedAddressCreationAttributes } from '@models/reachedAddress';
 import { col, fn, Op } from 'sequelize';
 import database from '../loaders/database';
 
@@ -27,5 +28,24 @@ export default class ReachedAddressService {
         });
         const existingAddresses = result[0] as any;
         return parseInt(existingAddresses.total, 10);
+    }
+
+    /**
+     * Insert all new reached addresses and update last interaction to existing ones.
+     * @param reached list of addresses reached on privious day to when global status was calculated
+     */
+    public static async updateReachedList(reached: string[]): Promise<void> {
+        const bulkReachedAdd: ReachedAddressCreationAttributes[] = [];
+
+        for (let r = 0; r < reached.length; r++) {
+            bulkReachedAdd.push({
+                address: reached[r],
+                lastInteraction: new Date(),
+            });
+        }
+
+        await db.models.reachedAddress.bulkCreate(bulkReachedAdd, {
+            updateOnDuplicate: ['lastInteraction']
+        });
     }
 }
