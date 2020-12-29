@@ -69,7 +69,7 @@ async function subscribeChainEvents(
         let parsedLog: ethers.utils.LogDescription | undefined;
         if (log.address === config.cUSDContractAddress) {
             const preParsedLog = ifaceERC20.parseLog(log);
-            // only transactions to community contracts
+            // only transactions to community contracts (donations)
             if (allCommunitiesAddresses.includes(preParsedLog.args[1])) {
                 parsedLog = preParsedLog;
                 const from = parsedLog.args[0];
