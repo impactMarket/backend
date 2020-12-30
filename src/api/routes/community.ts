@@ -38,7 +38,7 @@ export default (app: Router): void => {
         authenticateToken,
         communityController.managersDetails
     );
-    route.get('/list', communityController.list);
+    route.get('/list/light/:order?', communityController.list);
     route.get('/list/full/:order?', communityController.listFull);
     route.post(
         '/create',

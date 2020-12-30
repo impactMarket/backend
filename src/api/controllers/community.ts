@@ -60,7 +60,7 @@ const getAll = (req: Request, res: Response) => {
 }
 
 const list = (req: Request, res: Response) => {
-    CommunityService.list()
+    CommunityService.list(req.params.order, req.query)
         .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 500, res));
 }

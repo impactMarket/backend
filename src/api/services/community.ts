@@ -270,82 +270,103 @@ export default class CommunityService {
         return result;
     }
 
-    public static async list(): Promise<ICommunityLightDetails[]> {
-        // this could be much better, but byt the time of ritting, sequelize
+    public static async list(order: string | undefined, query: any): Promise<ICommunityLightDetails[]> {
+        // by the time of writting, sequelize
         // does not support eager loading with global "raw: false".
         // Please, check again, and if available, update this
         // https://github.com/sequelize/sequelize/issues/6408
-        const result: ICommunityLightDetails[] = [];
-        const communities = await db.models.community.findAll({
-            attributes: [
-                'publicId',
-                'name',
-                'city',
-                'country',
-                'coverImage',
-            ],
-            where: {
-                status: 'valid',
-                visibility: 'public',
-            },
-        });
-        const inCommunities = communities.map((c) => c.publicId);
-        const communityState = await db.models.communityState.findAll({
-            where: {
-                communityId: {
-                    [Op.in]: inCommunities
-                }
-            },
-        });
-        const communityContract = await db.models.communityContract.findAll({
-            where: {
-                communityId: {
-                    [Op.in]: inCommunities
-                }
-            },
-        });
-        for (let index = 0; index < communities.length; index++) {
-            result.push({
-                ...communities[index],
-                state: communityState.find((c) => c.communityId === communities[index].publicId)!,
-                contract: communityContract.find((c) => c.communityId === communities[index].publicId)!,
-            });
-        }
-        return result.sort((a, b) => a.state.beneficiaries > b.state.beneficiaries ? -1 : (a.state.beneficiaries < b.state.beneficiaries ? 1 : 0));
-    }
-
-    public static async listFull(order: string | undefined): Promise<ICommunity[]> {
-        // this could be much better, but byt the time of ritting, sequelize
-        // does not support eager loading with global "raw: false".
-        // Please, check again, and if available, update this
-        // https://github.com/sequelize/sequelize/issues/6408
-        let sqlQuery = '';
+        let sqlQuery = 'select "publicId", name, city, country, "coverImage", cc.*, cs.* ' +
+            'from community c ' +
+            'left join communitycontract cc on c."publicId" = cc."communityId" ' +
+            'left join communitystate cs on c."publicId" = cs."communityId" ' +
+            'where status = \'valid\' and visibility = \'public\' ';
         switch (order) {
-            case 'out_of_funds':
-                sqlQuery = 'select * from community c ' +
-                    'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
-                    'left join communitycontract cc on c."publicId" = cc."communityId" ' +
-                    'left join communitystate cs on c."publicId" = cs."communityId" ' +
-                    'where c.visibility = \'public\' and c.status = \'valid\' ' +
-                    'order by (cs.raised - cs.claimed) / cm."ubiRate" / cs.beneficiaries';
-                break;
-
-            case 'newest':
-                sqlQuery = 'select * from community c ' +
-                    'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
-                    'left join communitycontract cc on c."publicId" = cc."communityId" ' +
-                    'left join communitystate cs on c."publicId" = cs."communityId" ' +
-                    'where c.visibility = \'public\' and c.status = \'valid\' ' +
-                    'order by c.started desc';
+            case 'nearest':
+                const lat = parseInt(query.lat, 10);
+                const lng = parseInt(query.lng, 10);
+                if (typeof lat !== 'number' || typeof lng !== 'number') {
+                    throw new Error('NaN');
+                }
+                sqlQuery += 'order by (6371*acos(cos(radians(' + lat + '))*cos(radians(cast(gps->>\'latitude\' as float)))*cos(radians(cast(gps->>\'longitude\' as float))-radians(' + lng + '))+sin(radians(' + lat + '))*sin(radians(cast(gps->>\'latitude\' as float)))))';
                 break;
 
             default:
-                sqlQuery = 'select * from community c ' +
-                    'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
-                    'left join communitycontract cc on c."publicId" = cc."communityId" ' +
-                    'left join communitystate cs on c."publicId" = cs."communityId" ' +
-                    'where c.visibility = \'public\' and c.status = \'valid\' ' +
-                    'order by cs.beneficiaries desc';
+                sqlQuery += 'order by cs.beneficiaries desc';
+                break;
+        }
+
+        if (query.offset !== undefined && query.limit !== undefined) {
+            const offset = parseInt(query.offset, 10);
+            const limit = parseInt(query.limit, 10);
+            if (typeof offset !== 'number' || typeof limit !== 'number') {
+                throw new Error('NaN');
+            }
+            sqlQuery += (' offset ' + offset + ' limit ' + limit);
+        }
+
+        const rawResult: (
+            { publicId: string, name: string, city: string, country: string, coverImage: string } &
+            CommunityStateAttributes &
+            CommunityContractAttributes
+        )[] = await db.sequelize.query(sqlQuery, { type: QueryTypes.SELECT });
+
+        const results: ICommunityLightDetails[] = rawResult.map((c) => ({
+            publicId: c.publicId,
+            name: c.name,
+            city: c.city,
+            country: c.country,
+            coverImage: c.coverImage,
+            txCreationObj: null,
+            contract: {
+                baseInterval: c.baseInterval,
+                claimAmount: c.claimAmount,
+                incrementInterval: c.incrementInterval,
+                maxClaim: c.maxClaim,
+                // values below don't matter 
+                communityId: c.publicId,
+                createdAt: c.createdAt,
+                updatedAt: c.updatedAt,
+            },
+            state: {
+                backers: c.backers,
+                beneficiaries: c.beneficiaries,
+                claimed: c.claimed,
+                claims: c.claims,
+                raised: c.raised,
+                // values below don't matter 
+                communityId: c.publicId,
+                createdAt: c.createdAt,
+                updatedAt: c.updatedAt,
+            },
+            // values below don't matter 
+            createdAt: c.createdAt,
+            updatedAt: c.updatedAt,
+        }));
+
+        return results;
+    }
+
+    public static async listFull(order: string | undefined): Promise<ICommunity[]> {
+        // by the time of writting, sequelize
+        // does not support eager loading with global "raw: false".
+        // Please, check again, and if available, update this
+        // https://github.com/sequelize/sequelize/issues/6408
+        let sqlQuery = 'select * from community c ' +
+            'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
+            'left join communitycontract cc on c."publicId" = cc."communityId" ' +
+            'left join communitystate cs on c."publicId" = cs."communityId" ' +
+            'where c.visibility = \'public\' and c.status = \'valid\' ';
+        switch (order) {
+            case 'out_of_funds':
+                sqlQuery += 'order by (cs.raised - cs.claimed) / cm."ubiRate" / cs.beneficiaries';
+                break;
+
+            case 'newest':
+                sqlQuery += 'order by c.started desc';
+                break;
+
+            default:
+                sqlQuery += 'order by cs.beneficiaries desc';
                 break;
         }
 
