@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { Op, QueryTypes } from 'sequelize';
+import { Op, QueryTypes, fn, col } from 'sequelize';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
@@ -244,6 +244,22 @@ export default class CommunityService {
     }
 
     /**
+     * Count public valid communities
+     */
+    public static async countPublicCommunities(): Promise<number> {
+        const communities = (await db.models.community.findAll({
+            attributes: [
+                [fn('count', col('contractAddress')), 'total']
+            ],
+            where: {
+                status: 'valid',
+                visibility: 'public'
+            },
+        })) as any;
+        return communities[0].total;
+    }
+
+    /**
      * @deprecated
      */
     public static async getAll(
@@ -280,7 +296,11 @@ export default class CommunityService {
             'left join communitycontract cc on c."publicId" = cc."communityId" ' +
             'left join communitystate cs on c."publicId" = cs."communityId" ' +
             'where status = \'valid\' and visibility = \'public\' ';
-        switch (order) {
+        let useOrder = '';
+        if (order === undefined && query.order !== undefined) {
+            useOrder = query.order;
+        }
+        switch (useOrder) {
             case 'nearest':
                 const lat = parseInt(query.lat, 10);
                 const lng = parseInt(query.lng, 10);
@@ -301,7 +321,8 @@ export default class CommunityService {
             if (typeof offset !== 'number' || typeof limit !== 'number') {
                 throw new Error('NaN');
             }
-            sqlQuery += (' offset ' + offset + ' limit ' + limit);
+            const totalCommunities = await CommunityService.countPublicCommunities();
+            sqlQuery += (' offset ' + offset + ' limit ' + Math.min(limit, Math.max(totalCommunities - offset, 0)));
         }
 
         const rawResult: (
