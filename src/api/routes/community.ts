@@ -28,16 +28,54 @@ export default (app: Router): void => {
         '/all/:status',
         communityController.getAll
     );
+    /**
+     * @swagger
+     *
+     * /managers:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     produces:
+     *       - application/json
+     */
     route.get(
         '/managers',
         authenticateToken,
         communityController.managers
     );
+    /**
+     * @swagger
+     *
+     * /managers/details:
+     *   get:
+     *     security:
+     *      - api_auth:
+     *        - "write"
+     *        - "read"
+     *     tags:
+     *       - "community"
+     *     produces:
+     *       - application/json
+     */
     route.get(
         '/managers/details',
         authenticateToken,
         communityController.managersDetails
     );
+    /**
+     * @swagger
+     *
+     * /list/light/{order}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     produces:
+     *       - application/json
+     *     parameters:
+     *       - name: order
+     *         in: path
+     *         type: string
+     */
     route.get('/list/light/:order?', communityController.list);
     route.get('/list/full/:order?', communityController.listFull);
     route.post(

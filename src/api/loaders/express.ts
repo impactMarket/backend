@@ -4,6 +4,8 @@ import cors from 'cors';
 import express, { Request, Response } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
 
 import config from '../../config';
 import routes from '../routes';
@@ -27,6 +29,41 @@ export default ({ app }: { app: express.Application }): void => {
     app.use(Sentry.Handlers.tracingHandler());
 
     if (process.env.NODE_ENV === 'development') {
+        const options = {
+            swaggerDefinition: {
+                openapi: "3.0.0",
+                info: {
+                    description: "Swagger UI to impactMarket API",
+                    version: "0.0.1",
+                    title: "impactMarket",
+                    license: {
+                        name: "Apache 2.0",
+                        url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+                    }
+                },
+                host: "localhost:5000",
+                schemes: [
+                    "http"
+                ],
+                components: {
+                    securitySchemes: {
+                        api_auth: {
+                            type: "http",
+                            scheme: "bearer",
+                            bearerFormat: "JWT",
+                            scopes: {
+                                write: "modify",
+                                read: "read"
+                            }
+                        }
+                    }
+                }
+            },
+            apis: ['./src/api/routes/*.ts'],
+        };
+        const swaggerSpec = swaggerJsdoc(options);
+
+        app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
         app.use(morgan('combined'))
     }
 
