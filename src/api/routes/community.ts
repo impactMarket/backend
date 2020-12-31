@@ -77,6 +77,10 @@ export default (app: Router): void => {
      *         type: string
      */
     route.get('/list/light/:order?', communityController.list);
+    /**
+     * @deprecated Deprecated in mobile version 0.1.4
+     */
+    route.get('/list', communityController.list);
     route.get('/list/full/:order?', communityController.listFull);
     route.post(
         '/create',
