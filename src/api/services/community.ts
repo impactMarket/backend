@@ -291,7 +291,7 @@ export default class CommunityService {
         // does not support eager loading with global "raw: false".
         // Please, check again, and if available, update this
         // https://github.com/sequelize/sequelize/issues/6408
-        let sqlQuery = 'select "publicId", name, city, country, "coverImage", cc.*, cs.* ' +
+        let sqlQuery = 'select "publicId", "contractAddress", name, city, country, "coverImage", cc.*, cs.* ' +
             'from community c ' +
             'left join communitycontract cc on c."publicId" = cc."communityId" ' +
             'left join communitystate cs on c."publicId" = cs."communityId" ' +
@@ -326,13 +326,14 @@ export default class CommunityService {
         }
 
         const rawResult: (
-            { publicId: string, name: string, city: string, country: string, coverImage: string } &
+            { publicId: string, contractAddress: string, name: string, city: string, country: string, coverImage: string } &
             CommunityStateAttributes &
             CommunityContractAttributes
         )[] = await db.sequelize.query(sqlQuery, { type: QueryTypes.SELECT });
 
         const results: ICommunityLightDetails[] = rawResult.map((c) => ({
             publicId: c.publicId,
+            contractAddress: c.contractAddress,
             name: c.name,
             city: c.city,
             country: c.country,

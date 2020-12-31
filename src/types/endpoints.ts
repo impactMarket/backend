@@ -6,6 +6,7 @@ import { UserAttributes } from "../db/models/user";
 
 export interface ICommunityLightDetails {
     publicId: string;
+    contractAddress: string;
     name: string;
     city: string;
     country: string;
