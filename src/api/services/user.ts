@@ -183,23 +183,23 @@ export default class UserService {
         return updated[0] > 0;
     }
 
-    public static async setAge(
+    public static async setYear(
         address: string,
-        age: number
+        year: number | null
     ): Promise<boolean> {
         const updated = await db.models.user.update(
-            { age },
+            { year },
             { returning: true, where: { address } }
         );
         return updated[0] > 0;
     }
 
-    public static async setChilds(
+    public static async setChildren(
         address: string,
-        childs: number
+        children: number | null
     ): Promise<boolean> {
         const updated = await db.models.user.update(
-            { childs },
+            { children },
             { returning: true, where: { address } }
         );
         return updated[0] > 0;

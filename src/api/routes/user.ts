@@ -17,7 +17,9 @@ const route = Router();
 export default (app: Router): void => {
     app.use('/user', route);
 
-    //TODO: remove -  used until mobile-app@0.0.29
+    /**
+     * @deprecated Deprecated in mobile-app@0.1.0
+     */
     route.post(
         '/auth',
         celebrate({
@@ -56,7 +58,9 @@ export default (app: Router): void => {
         },
     );
 
-    //TODO: remove -  used until mobile-app@0.0.29
+    /**
+     * @deprecated Deprecated in mobile-app@0.1.0
+     */
     route.post(
         '/welcome',
         authenticateToken,
@@ -91,7 +95,6 @@ export default (app: Router): void => {
         },
     );
 
-    // used from mobile-app@0.1.0
     route.post(
         '/authenticate',
         celebrate({
@@ -137,7 +140,6 @@ export default (app: Router): void => {
         },
     );
 
-    // used from mobile-app@0.1.0
     route.post(
         '/hello',
         authenticateToken,
@@ -261,7 +263,7 @@ export default (app: Router): void => {
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
-                gender: Joi.string().required(),
+                gender: Joi.string().required().allow(''),
             }),
         }),
         async (req: Request, res: Response) => {
@@ -282,7 +284,7 @@ export default (app: Router): void => {
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
-                age: Joi.number().required(),
+                age: Joi.number().required().allow(null),
             }),
         }),
         async (req: Request, res: Response) => {
@@ -290,20 +292,23 @@ export default (app: Router): void => {
                 address,
                 age,
             } = req.body;
-            res.sendStatus(await UserService.setAge(
+            res.sendStatus(await UserService.setYear(
                 address,
-                age
+                new Date().getFullYear() - age
             ) ? 200 : 404);
         },
     );
 
+    /**
+     * @deprecated Deprecated in mobile-app@0.1.5
+     */
     route.post(
         '/childs',
         authenticateToken,
         celebrate({
             body: Joi.object({
                 address: Joi.string().required(),
-                childs: Joi.number().required(),
+                childs: Joi.number().required().allow('').allow(null),
             }),
         }),
         async (req: Request, res: Response) => {
@@ -311,9 +316,30 @@ export default (app: Router): void => {
                 address,
                 childs,
             } = req.body;
-            res.sendStatus(await UserService.setChilds(
+            res.sendStatus(await UserService.setChildren(
                 address,
                 childs
+            ) ? 200 : 404);
+        },
+    );
+    
+    route.post(
+        '/children',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                children: Joi.number().required().allow(null),
+            }),
+        }),
+        async (req: Request, res: Response) => {
+            const {
+                address,
+                children,
+            } = req.body;
+            res.sendStatus(await UserService.setChildren(
+                address,
+                children
             ) ? 200 : 404);
         },
     );

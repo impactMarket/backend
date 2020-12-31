@@ -7,8 +7,8 @@ export interface UserAttributes {
     currency: string;
     pushNotificationToken: string | null;
     gender: string | null;
-    age: number | null;
-    childs: number | null;
+    year: number | null;
+    children: number | null;
 
     // timestamps
     createdAt: Date;
@@ -28,8 +28,8 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     public currency!: string;
     public pushNotificationToken!: string | null;
     public gender!: string | null;
-    public age!: number | null;
-    public childs!: number | null;
+    public year!: number | null;
+    public children!: number | null;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -61,10 +61,10 @@ export function initializeUser(sequelize: Sequelize): void {
             gender: {
                 type: DataTypes.STRING(2),
             },
-            age: {
+            year: {
                 type: DataTypes.INTEGER,
             },
-            childs: {
+            children: {
                 type: DataTypes.INTEGER,
             },
             createdAt: {
