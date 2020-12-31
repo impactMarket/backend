@@ -16,8 +16,7 @@
         "precoverage": "yarn build",
         "coverage": "nyc --reporter=html mocha",
         "precoverage:ci": "yarn build",
-        "coverage:ci": "nyc --reporter=lcov mocha",
-        "postcoverage:ci": "cat coverage/lcov.info | coveralls",
+        "coverage:ci": "nyc report --reporter=text-lcov mocha | coveralls",
         "test:watch": "mocha --watch",
         "clean": "rm -rf dist coverage .nyc_output"
     },
