@@ -110,16 +110,11 @@ export default (app: Router): void => {
                 language,
                 pushNotificationToken,
             } = req.body;
-            const result = await UserService.authenticate(
+            UserService.authenticate(
                 address,
                 language,
                 pushNotificationToken,
-            );
-            if (result === undefined) {
-                res.sendStatus(403);
-                return;
-            }
-            res.send(result);
+            ).then((user) => res.send(user)).catch((e) => res.sendStatus(403));
         },
     );
 
@@ -322,7 +317,7 @@ export default (app: Router): void => {
             ) ? 200 : 404);
         },
     );
-    
+
     route.post(
         '/children',
         authenticateToken,
