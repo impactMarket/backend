@@ -129,7 +129,7 @@ export default class BeneficiaryService {
     public static async get(
         address: string,
     ): Promise<Beneficiary | null> {
-        return await db.models.beneficiary.findOne({ where: { address } });
+        return await db.models.beneficiary.findOne({ where: { address, active: true } });
     }
 
     public static async getAllAddresses(): Promise<string[]> {
