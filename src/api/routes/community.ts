@@ -8,17 +8,24 @@ const route = Router();
 export default (app: Router): void => {
     app.use('/community', route);
 
+    // deprecated
     route.get(
         '/address/:contractAddress',
         communityController.findByContractAddress
     );
+    // deprecated
     route.get(
         '/id/:publicId',
         communityController.findByPublicId
     );
+
     route.get(
         '/publicid/:publicId',
-        communityController.get
+        communityController.getByPublicId
+    );
+    route.get(
+        '/contract/:address',
+        communityController.getByContractAddress
     );
     route.get(
         '/hssi/:publicId',

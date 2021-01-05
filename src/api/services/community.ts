@@ -485,7 +485,7 @@ export default class CommunityService {
         }
     }
 
-    public static async get(
+    public static async getByPublicId(
         publicId: string
     ): Promise<ICommunity | null> {
         const community = await db.models.community.findOne({
@@ -495,6 +495,42 @@ export default class CommunityService {
         });
         if (community === null) {
             throw new Error('Not found community ' + publicId);
+        }
+        const communityState = await db.models.communityState.findOne({
+            where: {
+                communityId: community.publicId
+            },
+        });
+        const communityContract = await db.models.communityContract.findOne({
+            where: {
+                communityId: community.publicId
+            },
+        });
+        const communityDailyMetrics = await db.models.communityDailyMetrics.findAll({
+            where: {
+                communityId: community.publicId
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1
+        });
+        return {
+            ...community,
+            state: communityState!,
+            contract: communityContract!,
+            metrics: communityDailyMetrics[0]!,
+        }
+    }
+
+    public static async getByContractAddress(
+        contractAddress: string
+    ): Promise<ICommunity | null> {
+        const community = await db.models.community.findOne({
+            where: {
+                contractAddress,
+            },
+        });
+        if (community === null) {
+            throw new Error('Not found community ' + contractAddress);
         }
         const communityState = await db.models.communityState.findOne({
             where: {
@@ -571,6 +607,9 @@ export default class CommunityService {
         return await this.getCachedInfoToCommunity(community);
     }
 
+    /**
+     * @deprecated
+     */
     public static async findByContractAddress(
         contractAddress: string
     ): Promise<ICommunityInfo | null> {

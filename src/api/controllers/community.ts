@@ -9,6 +9,9 @@ const controllerLogAndFail = (e: any, status: number, res: Response) => {
     res.status(status).send(e);
 }
 
+/**
+ * @deprecated
+ */
 const findByContractAddress = (req: Request, res: Response) => {
     CommunityService.findByContractAddress(
         req.params.contractAddress
@@ -34,9 +37,20 @@ const findByPublicId = (req: Request, res: Response) => {
     }).catch((e) => controllerLogAndFail(e, 500, res));
 }
 
-const get = (req: Request, res: Response) => {
-    CommunityService.get(
+const getByPublicId = (req: Request, res: Response) => {
+    CommunityService.getByPublicId(
         req.params.publicId
+    ).then((community) => {
+        if (community === null) {
+            res.sendStatus(404);
+        }
+        res.send(community);
+    }).catch((e) => controllerLogAndFail(e, 500, res));
+}
+
+const getByContractAddress = (req: Request, res: Response) => {
+    CommunityService.getByContractAddress(
+        req.params.address
     ).then((community) => {
         if (community === null) {
             res.sendStatus(404);
@@ -167,7 +181,8 @@ const accept = (req: Request, res: Response) => {
 export default {
     findByContractAddress,
     findByPublicId,
-    get,
+    getByPublicId,
+    getByContractAddress,
     getHistoricalSSI,
     getAll,
     list,

@@ -113,7 +113,7 @@ export default class UserService {
                 ...loadedUser,
             };
         } catch (e) {
-            Logger.warn('Error while auth user ', address, e.message);
+            Logger.warn('Error while auth user ', address, e);
             throw new Error(e);
         }
     }
@@ -260,7 +260,7 @@ export default class UserService {
             communityId = manager.communityId;
         }
         if (communityId) {
-            const _community = await CommunityService.get(communityId);
+            const _community = await CommunityService.getByPublicId(communityId);
             if (_community) {
                 community = _community;
             }
@@ -269,7 +269,7 @@ export default class UserService {
                 user.address
             );
             if (_communityId !== null) {
-                const _community = await CommunityService.get(_communityId);
+                const _community = await CommunityService.getByPublicId(_communityId);
                 if (_community) {
                     isManager = true;
                     community = _community;
