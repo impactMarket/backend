@@ -107,4 +107,8 @@ export default (app: Router): void => {
         communityValidators.accept,
         communityController.accept
     );
+    route.get(
+        '/pending',
+        communityController.pending
+    );
 };

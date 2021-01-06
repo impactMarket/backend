@@ -14,6 +14,19 @@ export interface ICommunityLightDetails {
     state: CommunityStateAttributes;
     contract: CommunityContractAttributes;
 }
+export interface ICommunityPendingDetails {
+    publicId: string;
+    contractAddress: string;
+    requestByAddress: string;
+    name: string;
+    city: string;
+    country: string;
+    description: string;
+    email: string;
+    coverImage: string;
+    state: CommunityStateAttributes;
+    contract: CommunityContractAttributes;
+}
 export interface ICommunity extends CommunityAttributes {
     state: CommunityStateAttributes;
     contract: CommunityContractAttributes;

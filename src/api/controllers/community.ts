@@ -20,7 +20,7 @@ const findByContractAddress = (req: Request, res: Response) => {
             res.sendStatus(404);
         }
         res.send(community);
-    }).catch((e) => controllerLogAndFail(e, 500, res));
+    }).catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 /**
@@ -34,7 +34,7 @@ const findByPublicId = (req: Request, res: Response) => {
             res.sendStatus(404);
         }
         res.send(community);
-    }).catch((e) => controllerLogAndFail(e, 500, res));
+    }).catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 const getByPublicId = (req: Request, res: Response) => {
@@ -45,7 +45,7 @@ const getByPublicId = (req: Request, res: Response) => {
             res.sendStatus(404);
         }
         res.send(community);
-    }).catch((e) => controllerLogAndFail(e, 500, res));
+    }).catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 const getByContractAddress = (req: Request, res: Response) => {
@@ -56,7 +56,7 @@ const getByContractAddress = (req: Request, res: Response) => {
             res.sendStatus(404);
         }
         res.send(community);
-    }).catch((e) => controllerLogAndFail(e, 500, res));
+    }).catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 const getHistoricalSSI = (req: Request, res: Response) => {
@@ -64,37 +64,37 @@ const getHistoricalSSI = (req: Request, res: Response) => {
         req.params.publicId
     ).then((community) => {
         res.send(community);
-    }).catch((e) => controllerLogAndFail(e, 500, res));
+    }).catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 const getAll = (req: Request, res: Response) => {
     CommunityService.getAll(req.params.status)
         .then((r) => res.send(r))
-        .catch((e) => controllerLogAndFail(e, 500, res));
+        .catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 const list = (req: Request, res: Response) => {
     CommunityService.list(req.params.order, req.query)
         .then((r) => res.send(r))
-        .catch((e) => controllerLogAndFail(e, 500, res));
+        .catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 const listFull = (req: Request, res: Response) => {
     CommunityService.listFull(req.params.order)
         .then((r) => res.send(r))
-        .catch((e) => controllerLogAndFail(e, 500, res));
+        .catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 const managers = (req: Request, res: Response) => {
     CommunityService.managers((req as any).user.address)
         .then((r) => res.send(r))
-        .catch((e) => controllerLogAndFail(e, 500, res));
+        .catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 const managersDetails = (req: Request, res: Response) => {
     CommunityService.managersDetails((req as any).user.address)
         .then((r) => res.send(r))
-        .catch((e) => controllerLogAndFail(e, 500, res));
+        .catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 const create = (req: Request, res: Response) => {
@@ -174,8 +174,14 @@ const accept = (req: Request, res: Response) => {
         publicId,
     } = req.body;
     CommunityService.accept(acceptanceTransaction, publicId)
-        .then(() => res.sendStatus(202))
+        .then((r) => res.send({ contractAddress: r }).status(202))
         .catch((e) => controllerLogAndFail(e, 403, res));
+}
+
+const pending = (req: Request, res: Response) => {
+    CommunityService.pending()
+        .then((r) => res.send(r))
+        .catch((e) => controllerLogAndFail(e, 400, res));
 }
 
 export default {
@@ -191,5 +197,6 @@ export default {
     managersDetails,
     create,
     edit,
-    accept
+    accept,
+    pending
 }

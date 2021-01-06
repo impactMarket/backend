@@ -14,7 +14,7 @@ import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
 import SSIService from './ssi';
 import TransactionsService from './transactions';
-import { ICommunity, ICommunityLightDetails, IManagers, IManagersDetails } from '../../types/endpoints';
+import { ICommunity, ICommunityLightDetails, ICommunityPendingDetails, IManagers, IManagersDetails } from '../../types/endpoints';
 import ManagerService from './managers';
 import BeneficiaryService from './beneficiary';
 import { CommunityStateAttributes } from '@models/communityState';
@@ -181,10 +181,77 @@ export default class CommunityService {
         );
     }
 
+    public static async pending(): Promise<ICommunityPendingDetails[]> {
+        // by the time of writting, sequelize
+        // does not support eager loading with global "raw: false".
+        // Please, check again, and if available, update this
+        // https://github.com/sequelize/sequelize/issues/6408
+        let sqlQuery = 'select "publicId", "contractAddress", "requestByAddress", name, city, country, description, email, "coverImage", cc.*, cs.* ' +
+            'from community c ' +
+            'left join communitycontract cc on c."publicId" = cc."communityId" ' +
+            'left join communitystate cs on c."publicId" = cs."communityId" ' +
+            'where status = \'pending\' and visibility = \'public\' order by c."createdAt" DESC';
+
+        const rawResult: (
+            {
+                publicId: string,
+                contractAddress: string,
+                requestByAddress: string,
+                name: string,
+                city: string,
+                country: string,
+                description: string,
+                email: string,
+                coverImage: string
+            } &
+            CommunityStateAttributes &
+            CommunityContractAttributes
+        )[] = await db.sequelize.query(sqlQuery, { type: QueryTypes.SELECT });
+
+        const results: ICommunityPendingDetails[] = rawResult.map((c) => ({
+            publicId: c.publicId,
+            contractAddress: c.contractAddress,
+            requestByAddress: c.requestByAddress,
+            name: c.name,
+            city: c.city,
+            country: c.country,
+            description: c.description,
+            email: c.email,
+            coverImage: c.coverImage,
+            txCreationObj: null,
+            contract: {
+                baseInterval: c.baseInterval,
+                claimAmount: c.claimAmount,
+                incrementInterval: c.incrementInterval,
+                maxClaim: c.maxClaim,
+                // values below don't matter 
+                communityId: c.publicId,
+                createdAt: c.createdAt,
+                updatedAt: c.updatedAt,
+            },
+            state: {
+                backers: c.backers,
+                beneficiaries: c.beneficiaries,
+                claimed: c.claimed,
+                claims: c.claims,
+                raised: c.raised,
+                // values below don't matter 
+                communityId: c.publicId,
+                createdAt: c.createdAt,
+                updatedAt: c.updatedAt,
+            },
+            // values below don't matter 
+            createdAt: c.createdAt,
+            updatedAt: c.updatedAt,
+        }));
+
+        return results;
+    }
+
     public static async accept(
         acceptanceTransaction: string,
         publicId: string
-    ): Promise<boolean> {
+    ): Promise<string | null> {
         const provider = new ethers.providers.JsonRpcProvider(
             config.jsonRpcUrl
         );
@@ -195,7 +262,7 @@ export default class CommunityService {
             ImpactMarketContractABI
         );
         if (receipt.logs === undefined) {
-            return true;
+            return null;
         }
         const eventsImpactMarket: ethers.utils.LogDescription[] = [];
         for (let index = 0; index < receipt.logs.length; index++) {
@@ -225,11 +292,11 @@ export default class CommunityService {
                     dbUpdate[1][0].requestByAddress,
                     communityContractAddress
                 );
-                return true;
+                return communityContractAddress;
             }
-            return false;
+            return null;
         }
-        return true;
+        return null;
     }
 
     /**
