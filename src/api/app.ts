@@ -25,8 +25,8 @@ async function startServer() {
                         // route template here. We don't have one right now, so do some basic
                         // parameter replacements.
                         name: location.pathname
-                            .replace(/\d+/g, '<digits>')
-                            .replace(/[a-f0-9]{32}/g, '<hash>'),
+                            .replace(/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[4][0-9A-Fa-f]{3}-[89AB][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}/g, '<uuid>')
+                            .replace(/0x[a-fA-F0-9]{40}/g, '<address>'),
                     };
                 },
             }),

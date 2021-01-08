@@ -42,7 +42,7 @@ export async function getBlockTime(blockHash: string): Promise<Date> {
         const response = await axios.post<{ result: { timestamp: string } }>(config.jsonRpcUrl, requestContent, requestHeaders);
         return new Date(parseInt(response.data.result.timestamp, 16) * 1000);
     } catch (e) {
-        Logger.error('getBlockTime ' + e);
+        Logger.error(`getBlockTime "${e}" - Returning current date!`);
         return new Date();
     }
 }
