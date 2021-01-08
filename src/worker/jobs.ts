@@ -36,7 +36,7 @@ export default async (): Promise<void> => {
         Logger.error(strError);
         if (
             strError.indexOf('eth_') !== -1 && // any eth_ surely is related to the RPC
-            strError.indexOf('SERVER_ERROR') !== -1 &&
+            (strError.indexOf('figment') !== -1 || strError.indexOf('celo') !== -1) &&
             !waitingForResponseAfterCrash &&
             !waitingForResponseAfterTxRegWarn
         ) {
