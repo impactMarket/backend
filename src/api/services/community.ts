@@ -90,8 +90,8 @@ export default class CommunityService {
         try {
             const community = await db.models.community.create(createObject, { transaction: t });
             await CommunityContractService.add(community.publicId, contractParams, t);
-            await CommunityStateService.add(community.publicId, t);
-            await CommunityDailyStateService.populateNext5Days(community.publicId, t);
+            // await CommunityStateService.add(community.publicId, t);
+            // await CommunityDailyStateService.populateNext5Days(community.publicId, t);
             if (txReceipt !== undefined) {
                 await ManagerService.add(
                     managerAddress,
@@ -279,22 +279,39 @@ export default class CommunityService {
         if (index !== -1) {
             const communityContractAddress =
                 eventsImpactMarket[index].args._communityAddress;
-            const dbUpdate: [number, Community[]] = await db.models.community.update(
-                {
-                    contractAddress: communityContractAddress,
-                    status: 'valid',
-                    txCreationObj: null,
-                },
-                { returning: true, where: { publicId } }
-            );
-            if (dbUpdate[0] === 1) {
-                notifyManagerAdded(
-                    dbUpdate[1][0].requestByAddress,
-                    communityContractAddress
+
+            const t = await db.sequelize.transaction();
+            try {
+                const dbUpdate: [number, Community[]] = await db.models.community.update(
+                    {
+                        contractAddress: communityContractAddress,
+                        status: 'valid',
+                        txCreationObj: null,
+                    },
+                    { returning: true, where: { publicId }, transaction: t }
                 );
+                if (dbUpdate[0] === 1) {
+                    notifyManagerAdded(
+                        dbUpdate[1][0].requestByAddress,
+                        communityContractAddress
+                    );
+                } else {
+                    throw new Error('Did not update ' + publicId + ' after acceptance!');
+                }
+                await CommunityStateService.add(publicId, t);
+                await CommunityDailyStateService.populateNext5Days(publicId, t);
+                // If the execution reaches this line, no errors were thrown.
+                // We commit the transaction.
+                await t.commit();
                 return communityContractAddress;
+            } catch (error) {
+                // If the execution reaches this line, an error was thrown.
+                // We rollback the transaction.
+                await t.rollback();
+                // Since this is the service, we throw the error back to the controller,
+                // so the route returns an error. 
+                throw new Error(error);
             }
-            return null;
         }
         return null;
     }
