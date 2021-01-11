@@ -27,7 +27,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const communitiesContract = await CommunityContractService.getAll();
     const calculateMetrics = async (community: ICommunityInfo) => {
         // if no activity, do not calculate
-        if (community.state.claimed === '0' || community.state.raised === '0') {
+        if (
+            community.state.claimed === '0' || 
+            community.state.raised === '0' || 
+            totalClaimedLast30Days.get(community.publicId) === undefined || 
+            activeBeneficiariesLast30Days.get(community.publicId) === undefined ||
+            activeBeneficiariesLast30Days.get(community.publicId) === 0) {
             return;
         }
         const beneficiaries = await BeneficiaryService.listActiveInCommunity(
