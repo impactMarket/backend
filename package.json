@@ -41,12 +41,14 @@
         "@logger": "dist/logger"
     },
     "dependencies": {
+        "@fleekhq/fleek-storage-js": "1.0.9",
         "@sentry/node": "5.27.6",
         "@sentry/tracing": "5.27.6",
         "aws-sdk": "2.808.0",
         "axios": "0.21.1",
         "bignumber.js": "9.0.0",
         "body-parser": "1.19.0",
+        "bullmq": "1.14.0",
         "celebrate": "13.0.4",
         "cors": "2.8.5",
         "cron": "1.8.2",
