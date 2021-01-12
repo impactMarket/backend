@@ -15,14 +15,16 @@ import {
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
-import BeneficiaryService from '@services/beneficiary';
+// import BeneficiaryService from '@services/beneficiary';
 import CommunityService from '@services/community';
 import CronJobExecutedService from '@services/cronJobExecuted';
 import ImMetadataService from '@services/imMetadata';
 import { Logger } from '@logger/logger';
+import { startImagesProcess } from './jobs/images';
 
 export default async (): Promise<void> => {
-    await cron();
+    cron();
+    startImagesProcess();
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     let waitingForResponseAfterCrash = false;
     let successfullAnswersAfterCrash = 0;
@@ -191,7 +193,7 @@ async function subscribers(
  * This method starts all cron jobs. Cron jobs jave specific times to happen.
  * They all follow the API timezone, which should be UTC, same as postgresql.
  */
-async function cron() {
+function cron() {
     // multiple times a day
 
     // every three hours, update exchange rates
