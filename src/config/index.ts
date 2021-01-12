@@ -22,6 +22,11 @@ export default {
     dbUrl: process.env.DATABASE_URL!,
 
     /**
+     * Redis URL
+     */
+    redisUrl: process.env.REDIS_URL!,
+
+    /**
      * json rpc url
      */
     jsonRpcUrl: process.env.CHAIN_JSON_RPC_URL!,
@@ -104,9 +109,17 @@ export default {
     aws: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-        region: 'eu-west-3',
+        region: process.env.AWS_REGION!,
         picturesBucket: process.env.AWS_BUCKET!,
         bucketLogs: process.env.AWS_BUKET_LOGS!,
+    },
+
+    /**
+     * Fleek Storage config.
+     */
+    fleekStorage: {
+        accessKeyId: process.env.FLEEK_STORAGE_KEY_ID!,
+        secretAccessKey: process.env.FLEEK_STORAGE_ACCESS_KEY!,
     },
 
     /**
@@ -116,4 +129,9 @@ export default {
         latest: process.env.LATEST_MOBILE_APP_VERSION!,
         minimal: process.env.MINIMAL_MOBILE_APP_VERSION!,
     },
+
+    /**
+     * Placeholder image to use meanwhile community creation.
+     */
+    communityPlaceholderImageUrl: process.env.COMMUNITY_PLACEHOLDER_IMAGE_URL!,
 };
