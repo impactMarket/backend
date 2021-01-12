@@ -90,6 +90,15 @@ export default (app: Router): void => {
     route.get('/list', communityController.list);
     route.get('/list/full/:order?', communityController.listFull);
     route.post(
+        '/add',
+        authenticateToken,
+        communityValidators.add,
+        communityController.add
+    );
+    /**
+     * @deprecated Deprecated in mobile version 0.1.8
+     */
+    route.post(
         '/create',
         authenticateToken,
         communityValidators.create,

@@ -3,6 +3,7 @@ import CommunityService from '@services/community';
 import { Logger } from '@logger/logger';
 import ManagerService from '@services/managers';
 import CommunityDailyMetricsService from '@services/communityDailyMetrics';
+import config from '../../config';
 
 const controllerLogAndFail = (e: any, status: number, res: Response) => {
     Logger.error(e);
@@ -97,6 +98,44 @@ const managersDetails = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 }
 
+const add = (req: Request, res: Response) => {
+    const {
+        requestByAddress, // the address making the request (will be community manager)
+        name,
+        contractAddress,
+        description,
+        language,
+        currency,
+        city,
+        country,
+        gps,
+        email,
+        txReceipt,
+        contractParams,
+    } = req.body;
+
+    CommunityService.create(
+        requestByAddress,
+        name,
+        contractAddress,
+        description,
+        language,
+        currency,
+        city,
+        country,
+        gps,
+        email,
+        config.communityPlaceholderImageUrl,
+        txReceipt,
+        contractParams
+    )
+        .then((community) => res.status(201).send(community))
+        .catch((e) => controllerLogAndFail(e, 403, res));
+}
+
+/**
+ * @deprecated Since mobile version 0.1.8
+ */
 const create = (req: Request, res: Response) => {
     const {
         requestByAddress, // the address making the request (will be community manager)
@@ -196,6 +235,7 @@ export default {
     managers,
     managersDetails,
     create,
+    add,
     edit,
     accept,
     pending

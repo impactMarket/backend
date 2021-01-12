@@ -343,6 +343,16 @@ export default class CommunityService {
         return communities[0].total;
     }
 
+    public static async updateCoverImage(publicId: string, newPictureUrl: string): Promise<boolean> {
+        const result = await db.models.community.update(
+            {
+                coverImage: newPictureUrl,
+            },
+            { returning: true, where: { publicId } }
+        );
+        return result[0] > 0;
+    }
+
     /**
      * @deprecated
      */
