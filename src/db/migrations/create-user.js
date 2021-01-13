@@ -24,10 +24,10 @@ module.exports = {
             gender: {
                 type: Sequelize.STRING(2),
             },
-            age: {
+            year: {
                 type: Sequelize.INTEGER,
             },
-            childs: {
+            children: {
                 type: Sequelize.INTEGER,
             },
             createdAt: {
