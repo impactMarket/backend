@@ -50,7 +50,7 @@ export function initializeMobileError(sequelize: Sequelize): void {
                 allowNull: true,
             },
             error: {
-                type: DataTypes.STRING(256),
+                type: DataTypes.STRING(512),
                 allowNull: true,
             },
             createdAt: {

@@ -20,7 +20,7 @@ module.exports = {
                 allowNull: true,
             },
             error: {
-                type: Sequelize.STRING(256),
+                type: Sequelize.STRING(512),
                 allowNull: true,
             },
             createdAt: {
