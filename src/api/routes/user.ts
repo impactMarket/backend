@@ -12,10 +12,223 @@ import { authenticateToken } from '../middlewares';
 import { Logger } from '@logger/logger';
 
 
-const route = Router();
-
 export default (app: Router): void => {
+    const controllerLogAndFail = (e: any, status: number, res: Response) => {
+        Logger.error(e);
+        res.status(status).send(e);
+    }
+
+    const route = Router();
+
     app.use('/user', route);
+
+    route.post(
+        '/authenticate',
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                language: Joi.string().required(),
+                pushNotificationToken: Joi.string().required().allow(''),
+            }),
+        }),
+        (req: Request, res: Response) => {
+            const {
+                address,
+                language,
+                pushNotificationToken,
+            } = req.body;
+            UserService.authenticate(
+                address,
+                language,
+                pushNotificationToken,
+            ).then((user) => res.send(user)).catch((e) => res.sendStatus(403));
+        },
+    );
+
+    route.get(
+        '/exists/:address',
+        (req: Request, res: Response) => {
+            UserService.exists(req.params.address).then((u) => {
+                if (u === false) {
+                    res.sendStatus(404);
+                } else {
+                    res.send('OK');
+                }
+            }).catch((e) => controllerLogAndFail(e, 404, res));
+        },
+    );
+
+    route.post(
+        '/hello',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                token: Joi.string().allow(''),
+            }),
+        }),
+        (req: Request, res: Response) => {
+            const {
+                address,
+                token,
+            } = req.body;
+            if (token.length > 0) {
+                // failing to set the push notification, should not be a blocker!
+                UserService.setPushNotificationsToken(
+                    address,
+                    token
+                ).catch((e) => Logger.warn(`Error setting push notification token ` + e));
+            }
+            UserService.hello(address).then((u) => res.send(u)).catch((e) => controllerLogAndFail(e, 403, res));
+        },
+    );
+
+    route.post(
+        '/username',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                username: Joi.string().required().allow(''),
+            }),
+        }),
+        (req: Request, res: Response) => {
+            const {
+                address,
+                username,
+            } = req.body;
+            UserService.setUsername(
+                address,
+                username
+            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
+        },
+    );
+
+    route.post(
+        '/currency',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                currency: Joi.string().required(),
+            }),
+        }),
+        (req: Request, res: Response) => {
+            const {
+                address,
+                currency,
+            } = req.body;
+            UserService.setCurrency(
+                address,
+                currency
+            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
+        },
+    );
+
+    route.post(
+        '/push-notifications',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                token: Joi.string().required(),
+            }),
+        }),
+        (req: Request, res: Response) => {
+            const {
+                address,
+                token,
+            } = req.body;
+            UserService.setPushNotificationsToken(
+                address,
+                token
+            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
+        },
+    );
+
+    route.post(
+        '/language',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                language: Joi.string().required(),
+            }),
+        }),
+        (req: Request, res: Response) => {
+            const {
+                address,
+                language,
+            } = req.body;
+            UserService.setLanguage(
+                address,
+                language
+            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
+        },
+    );
+
+    route.post(
+        '/gender',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                gender: Joi.string().required().allow(''),
+            }),
+        }),
+        (req: Request, res: Response) => {
+            const {
+                address,
+                gender,
+            } = req.body;
+            UserService.setGender(
+                address,
+                gender
+            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
+        },
+    );
+
+    route.post(
+        '/age',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                age: Joi.number().required().allow(null),
+            }),
+        }),
+        (req: Request, res: Response) => {
+            const {
+                address,
+                age,
+            } = req.body;
+            UserService.setYear(
+                address,
+                new Date().getFullYear() - age
+            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
+        },
+    );
+
+    route.post(
+        '/children',
+        authenticateToken,
+        celebrate({
+            body: Joi.object({
+                address: Joi.string().required(),
+                children: Joi.number().required().allow(null),
+            }),
+        }),
+        (req: Request, res: Response) => {
+            const {
+                address,
+                children,
+            } = req.body;
+            UserService.setChildren(
+                address,
+                children
+            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
+        },
+    );
 
     /**
      * @deprecated Deprecated in mobile-app@0.1.0
@@ -45,16 +258,21 @@ export default (app: Router): void => {
                     pushNotificationToken = pushNotificationsToken;
                 }
             }
-            const result = await UserService.auth(
-                address,
-                language,
-                pushNotificationToken,
-            );
-            if (result === undefined) {
+            try {
+                const result = await UserService.auth(
+                    address,
+                    language,
+                    pushNotificationToken,
+                );
+                if (result === undefined) {
+                    res.sendStatus(403);
+                    return;
+                }
+                res.send(result);
+            } catch (e) {
+                Logger.error(e);
                 res.sendStatus(403);
-                return;
             }
-            res.send(result);
         },
     );
 
@@ -84,6 +302,7 @@ export default (app: Router): void => {
                     );
                 } catch (e) {
                     Logger.warn(e);
+                    res.sendStatus(403);
                 }
             }
             try {
@@ -92,205 +311,6 @@ export default (app: Router): void => {
                 Logger.warn(e);
                 res.sendStatus(403);
             }
-        },
-    );
-
-    route.post(
-        '/authenticate',
-        celebrate({
-            body: Joi.object({
-                address: Joi.string().required(),
-                language: Joi.string().required(),
-                pushNotificationToken: Joi.string().required().allow(''),
-            }),
-        }),
-        async (req: Request, res: Response) => {
-            const {
-                address,
-                language,
-                pushNotificationToken,
-            } = req.body;
-            UserService.authenticate(
-                address,
-                language,
-                pushNotificationToken,
-            ).then((user) => res.send(user)).catch((e) => res.sendStatus(403));
-        },
-    );
-
-    route.get(
-        '/exists/:address',
-        (req: Request, res: Response) => {
-            UserService.exists(req.params.address).then((u) => {
-                console.log('u', u);
-                if (u === false) {
-                    res.sendStatus(404);
-                } else {
-                    res.send('OK');
-                }
-            }).catch((e) => {
-                console.log(e);
-                res.sendStatus(404)
-            });
-        },
-    );
-
-    route.post(
-        '/hello',
-        authenticateToken,
-        celebrate({
-            body: Joi.object({
-                address: Joi.string().required(),
-                token: Joi.string().allow(''),
-            }),
-        }),
-        async (req: Request, res: Response) => {
-            const {
-                address,
-                token,
-            } = req.body;
-            if (token.length > 0) {
-                try {
-                    await UserService.setPushNotificationsToken(
-                        address,
-                        token
-                    );
-                } catch (e) {
-                    Logger.warn(e);
-                }
-            }
-            try {
-                res.send(await UserService.hello(address));
-            } catch (e) {
-                Logger.warn(e);
-                res.sendStatus(403);
-            }
-        },
-    );
-
-    route.post(
-        '/username',
-        authenticateToken,
-        celebrate({
-            body: Joi.object({
-                address: Joi.string().required(),
-                username: Joi.string().required().allow(''),
-            }),
-        }),
-        async (req: Request, res: Response) => {
-            const {
-                address,
-                username,
-            } = req.body;
-            res.sendStatus(await UserService.setUsername(
-                address,
-                username
-            ) ? 200 : 404);
-        },
-    );
-
-    route.post(
-        '/currency',
-        authenticateToken,
-        celebrate({
-            body: Joi.object({
-                address: Joi.string().required(),
-                currency: Joi.string().required(),
-            }),
-        }),
-        async (req: Request, res: Response) => {
-            const {
-                address,
-                currency,
-            } = req.body;
-            res.sendStatus(await UserService.setCurrency(
-                address,
-                currency
-            ) ? 200 : 404);
-        },
-    );
-
-    route.post(
-        '/push-notifications',
-        authenticateToken,
-        celebrate({
-            body: Joi.object({
-                address: Joi.string().required(),
-                token: Joi.string().required(),
-            }),
-        }),
-        async (req: Request, res: Response) => {
-            const {
-                address,
-                token,
-            } = req.body;
-            res.sendStatus(await UserService.setPushNotificationsToken(
-                address,
-                token
-            ) ? 200 : 404);
-        },
-    );
-
-    route.post(
-        '/language',
-        authenticateToken,
-        celebrate({
-            body: Joi.object({
-                address: Joi.string().required(),
-                language: Joi.string().required(),
-            }),
-        }),
-        async (req: Request, res: Response) => {
-            const {
-                address,
-                language,
-            } = req.body;
-            res.sendStatus(await UserService.setLanguage(
-                address,
-                language
-            ) ? 200 : 404);
-        },
-    );
-
-    route.post(
-        '/gender',
-        authenticateToken,
-        celebrate({
-            body: Joi.object({
-                address: Joi.string().required(),
-                gender: Joi.string().required().allow(''),
-            }),
-        }),
-        async (req: Request, res: Response) => {
-            const {
-                address,
-                gender,
-            } = req.body;
-            res.sendStatus(await UserService.setGender(
-                address,
-                gender
-            ) ? 200 : 404);
-        },
-    );
-
-    route.post(
-        '/age',
-        authenticateToken,
-        celebrate({
-            body: Joi.object({
-                address: Joi.string().required(),
-                age: Joi.number().required().allow(null),
-            }),
-        }),
-        async (req: Request, res: Response) => {
-            const {
-                address,
-                age,
-            } = req.body;
-            res.sendStatus(await UserService.setYear(
-                address,
-                new Date().getFullYear() - age
-            ) ? 200 : 404);
         },
     );
 
@@ -306,36 +326,15 @@ export default (app: Router): void => {
                 childs: Joi.number().required().allow('').allow(null),
             }),
         }),
-        async (req: Request, res: Response) => {
+        (req: Request, res: Response) => {
             const {
                 address,
                 childs,
             } = req.body;
-            res.sendStatus(await UserService.setChildren(
+            UserService.setChildren(
                 address,
                 childs
-            ) ? 200 : 404);
-        },
-    );
-
-    route.post(
-        '/children',
-        authenticateToken,
-        celebrate({
-            body: Joi.object({
-                address: Joi.string().required(),
-                children: Joi.number().required().allow(null),
-            }),
-        }),
-        async (req: Request, res: Response) => {
-            const {
-                address,
-                children,
-            } = req.body;
-            res.sendStatus(await UserService.setChildren(
-                address,
-                children
-            ) ? 200 : 404);
+            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
         },
     );
 };
