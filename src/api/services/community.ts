@@ -14,12 +14,13 @@ import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
 import SSIService from './ssi';
 import TransactionsService from './transactions';
-import { ICommunity, ICommunityLightDetails, ICommunityPendingDetails, IManagers, IManagersDetails } from '../../types/endpoints';
+import { ICommunity, ICommunityLightDetails, ICommunityPendingDetails, IManagerDetailsBeneficiary, IManagerDetailsManager, IManagers, IManagersDetails } from '../../types/endpoints';
 import ManagerService from './managers';
 import BeneficiaryService from './beneficiary';
 import { CommunityStateAttributes } from '@models/communityState';
 import { CommunityContractAttributes } from '@models/communityContract';
 import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
+import { Manager } from '@models/manager';
 
 const db = database();
 export default class CommunityService {
@@ -232,6 +233,8 @@ export default class CommunityService {
             state: {
                 backers: c.backers,
                 beneficiaries: c.beneficiaries,
+                removedBeneficiaries: c.removedBeneficiaries,
+                managers: c.managers,
                 claimed: c.claimed,
                 claims: c.claims,
                 raised: c.raised,
@@ -446,6 +449,8 @@ export default class CommunityService {
             state: {
                 backers: c.backers,
                 beneficiaries: c.beneficiaries,
+                removedBeneficiaries: c.removedBeneficiaries,
+                managers: c.managers,
                 claimed: c.claimed,
                 claims: c.claims,
                 raised: c.raised,
@@ -525,6 +530,8 @@ export default class CommunityService {
             state: {
                 backers: c.backers,
                 beneficiaries: c.beneficiaries,
+                removedBeneficiaries: c.removedBeneficiaries,
+                managers: c.managers,
                 claimed: c.claimed,
                 claims: c.claims,
                 raised: c.raised,
@@ -553,6 +560,67 @@ export default class CommunityService {
         return results;
     }
 
+    public static async listBeneficiaries(
+        managerAddress: string,
+        active: boolean,
+        offset: number,
+        limit: number,
+    ): Promise<IManagerDetailsBeneficiary[]> {
+        const manager = await ManagerService.get(managerAddress);
+        if (manager === null) {
+            throw new Error('Not a manager ' + managerAddress);
+        }
+        return BeneficiaryService.listBeneficiaries(
+            manager.communityId,
+            active,
+            offset,
+            limit,
+        );
+    }
+
+    public static async listManagers(
+        managerAddress: string,
+        offset: number,
+        limit: number,
+    ): Promise<IManagerDetailsManager[]> {
+        const manager = await ManagerService.get(managerAddress);
+        if (manager === null) {
+            throw new Error('Not a manager ' + managerAddress);
+        }
+        return ManagerService.listManagers(
+            manager.communityId,
+            offset,
+            limit,
+        );
+    }
+
+    public static async searchBeneficiary(managerAddress: string, beneficiaryQuery: string, active: boolean): Promise<IManagerDetailsBeneficiary> {
+        const manager = await ManagerService.get(managerAddress);
+        if (manager === null) {
+            throw new Error('Not a manager ' + managerAddress);
+        }
+        const beneficiary = await BeneficiaryService.search(manager.communityId, beneficiaryQuery, active);
+        if (beneficiary === null) {
+            throw new Error('Beneficiary not found!');
+        }
+        return beneficiary;
+    }
+
+    public static async searchManager(managerAddress: string, managerQuery: string): Promise<Manager> {
+        const manager = await ManagerService.get(managerAddress);
+        if (manager === null) {
+            throw new Error('Not a manager ' + managerAddress);
+        }
+        const managerResult = await ManagerService.get(managerQuery);
+        if (managerResult === null) {
+            throw new Error('Manager not found!');
+        }
+        return managerResult;
+    }
+
+    /**
+     * @deprecated Since mobile version 0.1.8
+     */
     public static async managers(managerAddress: string): Promise<IManagers> {
         const manager = await ManagerService.get(managerAddress);
         if (manager === null) {
@@ -566,12 +634,15 @@ export default class CommunityService {
         }
     }
 
+    /**
+     * @deprecated Since mobile version 0.1.8
+     */
     public static async managersDetails(managerAddress: string): Promise<IManagersDetails> {
         const manager = await ManagerService.get(managerAddress);
         if (manager === null) {
             throw new Error('Not a manager ' + managerAddress);
         }
-        const managers = await ManagerService.listManagers(manager.communityId);
+        const managers = await ManagerService.managersInCommunity(manager.communityId);
         const beneficiaries = await BeneficiaryService.listAllInCommunity(manager.communityId);
         return {
             managers,

@@ -68,6 +68,9 @@ const getHistoricalSSI = (req: Request, res: Response) => {
     }).catch((e) => controllerLogAndFail(e, 400, res));
 }
 
+/**
+ * @deprecated Since mobile version 0.1.0
+ */
 const getAll = (req: Request, res: Response) => {
     CommunityService.getAll(req.params.status)
         .then((r) => res.send(r))
@@ -86,12 +89,54 @@ const listFull = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 }
 
+const searchBeneficiary = (req: Request, res: Response) => {
+    CommunityService.searchBeneficiary(
+        (req as any).user.address,
+        req.params.beneficiaryQuery,
+        req.params.active === 'true'
+    ).then((r) => res.send(r))
+        .catch((e) => res.status(404).send(e));
+}
+
+const searchManager = (req: Request, res: Response) => {
+    CommunityService.searchManager(
+        (req as any).user.address,
+        req.params.managerQuery,
+    ).then((r) => res.send(r))
+        .catch((e) => res.status(404).send(e));
+}
+
+const listBeneficiaries = (req: Request, res: Response) => {
+    CommunityService.listBeneficiaries(
+        (req as any).user.address,
+        req.params.active === 'true',
+        parseInt(req.params.offset, 10),
+        parseInt(req.params.limit, 10),
+    ).then((r) => res.send(r))
+        .catch((e) => controllerLogAndFail(e, 400, res));
+}
+
+const listManagers = (req: Request, res: Response) => {
+    CommunityService.listManagers(
+        (req as any).user.address,
+        parseInt(req.params.offset, 10),
+        parseInt(req.params.limit, 10),
+    ).then((r) => res.send(r))
+        .catch((e) => controllerLogAndFail(e, 400, res));
+}
+
+/**
+ * @deprecated Since mobile version 0.1.8
+ */
 const managers = (req: Request, res: Response) => {
     CommunityService.managers((req as any).user.address)
         .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 400, res));
 }
 
+/**
+ * @deprecated Since mobile version 0.1.8
+ */
 const managersDetails = (req: Request, res: Response) => {
     CommunityService.managersDetails((req as any).user.address)
         .then((r) => res.send(r))
@@ -232,6 +277,10 @@ export default {
     getAll,
     list,
     listFull,
+    searchBeneficiary,
+    searchManager,
+    listBeneficiaries,
+    listManagers,
     managers,
     managersDetails,
     create,

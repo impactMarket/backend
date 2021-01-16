@@ -3,7 +3,7 @@ import { Beneficiary } from '@models/beneficiary';
 import database from '../loaders/database';
 import { Logger } from '@logger/logger';
 import { IManagerDetailsBeneficiary } from '../../types/endpoints';
-import { isUUID } from '../../utils';
+import { isUUID, isAddress } from '../../utils';
 
 
 const db = database();
@@ -71,6 +71,20 @@ export default class BeneficiaryService {
         });
     }
 
+    public static async search(
+        communityId: string,
+        address: string,
+        active: boolean,
+    ): Promise<IManagerDetailsBeneficiary | null> {
+        if (!isAddress(address)) {
+            throw new Error('Not valid address!');
+        }
+        return await db.sequelize.query("select b.address, u.username, b.\"txAt\" \"timestamp\", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join \"user\" u on b.address = u.address left join claim c on b.address = c.address where b.\"communityId\" = '" + communityId + "' and b.active = " + active + " and b.address = " + address + " group by b.address, u.username, b.\"txAt\" order by b.\"txAt\" desc", { type: QueryTypes.SELECT }) as any;
+    }
+
+    /**
+     * @deprecated Since mobile version 0.1.8
+     */
     public static async countInCommunity(
         communityId: string,
     ): Promise<{ active: number, inactive: number }> {
@@ -98,6 +112,35 @@ export default class BeneficiaryService {
         }
     }
 
+    public static async listBeneficiaries(
+        communityId: string,
+        active: boolean,
+        offset: number,
+        limit: number,
+    ): Promise<IManagerDetailsBeneficiary[]> {
+
+        // sequelize still has a bug related to eager loading when using global raw:false
+
+        // select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed
+        // from beneficiary b
+        //     left join "user" u on b.address = u.address
+        //     left join claim c on b.address = c.address
+        // where b."communityId" = 'ca16d975-4a11-4cdc-baa9-91442c534125'
+        // group by b.address, u.username, b."txAt"
+        // order by b."txAt" desc
+        // offset 0
+        // limit 10
+
+        if (!isUUID(communityId)) {
+            throw new Error('Not valid UUID ' + communityId);
+        }
+
+        return await db.sequelize.query("select b.address, u.username, b.\"txAt\" \"timestamp\", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join \"user\" u on b.address = u.address left join claim c on b.address = c.address where b.\"communityId\" = '" + communityId + "' and b.active = " + active + " group by b.address, u.username, b.\"txAt\" order by b.\"txAt\" desc offset " + offset + " limit " + limit, { type: QueryTypes.SELECT }) as any;
+    }
+
+    /**
+     * @deprecated Since mobile version 0.1.8
+     */
     public static async listAllInCommunity(
         communityId: string,
     ): Promise<{ active: IManagerDetailsBeneficiary[], inactive: IManagerDetailsBeneficiary[] }> {

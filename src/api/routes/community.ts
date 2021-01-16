@@ -3,17 +3,21 @@ import communityController from '@controllers/community';
 import communityValidators from '@validators/community';
 import { authenticateToken } from '../middlewares';
 
-const route = Router();
-
 export default (app: Router): void => {
+    const route = Router();
+
     app.use('/community', route);
 
-    // deprecated
+    /**
+     * @deprecated Deprecated in mobile-app@0.1.7
+     */
     route.get(
         '/address/:contractAddress',
         communityController.findByContractAddress
     );
-    // deprecated
+    /**
+     * @deprecated Deprecated in mobile-app@0.1.7
+     */
     route.get(
         '/id/:publicId',
         communityController.findByPublicId
@@ -32,18 +36,30 @@ export default (app: Router): void => {
         communityController.getHistoricalSSI
     );
     route.get(
+        '/beneficiaries/search/:active/:beneficiaryQuery',
+        communityController.searchBeneficiary
+    );
+    route.get(
+        '/managers/search/:managerQuery',
+        communityController.searchManager
+    );
+    route.get(
+        '/beneficiaries/list/:active/:offset/:limit',
+        communityController.listBeneficiaries
+    );
+    route.get(
+        '/managers/list/:offset/:limit',
+        communityController.listManagers
+    );
+    /**
+     * @deprecated Deprecated in mobile-app@0.1.7
+     */
+    route.get(
         '/all/:status',
         communityController.getAll
     );
     /**
-     * @swagger
-     *
-     * /managers:
-     *   get:
-     *     tags:
-     *       - "community"
-     *     produces:
-     *       - application/json
+     * @deprecated Deprecated in mobile-app@0.1.8
      */
     route.get(
         '/managers',
@@ -51,18 +67,7 @@ export default (app: Router): void => {
         communityController.managers
     );
     /**
-     * @swagger
-     *
-     * /managers/details:
-     *   get:
-     *     security:
-     *      - api_auth:
-     *        - "write"
-     *        - "read"
-     *     tags:
-     *       - "community"
-     *     produces:
-     *       - application/json
+     * @deprecated Deprecated in mobile-app@0.1.8
      */
     route.get(
         '/managers/details',

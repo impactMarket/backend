@@ -8,7 +8,9 @@ const route = Router();
 export default (app: Router): void => {
     app.use('/s3', route);
 
-    // TODO: include this under the /community/request request
+    /**
+     * @deprecated Deprecated in mobile-app@0.1.7
+     */
     route.post(
         '/upload',
         authenticateToken,

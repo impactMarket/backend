@@ -42,6 +42,9 @@ export default class ManagerService {
         return await db.models.manager.findOne({ where: { user: address } });
     }
 
+    /**
+     * @deprecated Since mobile version 0.1.8
+     */
     public static async countManagers(
         communityId: string,
     ): Promise<number> {
@@ -54,7 +57,10 @@ export default class ManagerService {
         return parseInt(managers.total, 10);
     }
 
-    public static async listManagers(
+    /**
+     * @deprecated Since mobile version 0.1.8
+     */
+    public static async managersInCommunity(
         communityId: string,
     ): Promise<IManagerDetailsManager[]> {
         // select m."user" address, u.username username, m."createdAt" "timestamp"
@@ -65,6 +71,23 @@ export default class ManagerService {
         }
 
         const managers: IManagerDetailsManager[] = await db.sequelize.query("select m.\"user\" address, u.username username, m.\"createdAt\" \"timestamp\" from manager m left join \"user\" u on u.address = m.\"user\" where m.\"communityId\" = '" + communityId + "' order by m.\"createdAt\" desc", { type: QueryTypes.SELECT });
+
+        return managers;
+    }
+
+    public static async listManagers(
+        communityId: string,
+        offset: number,
+        limit: number,
+    ): Promise<IManagerDetailsManager[]> {
+        // select m."user" address, u.username username, m."createdAt" "timestamp"
+        // from manager m left join "user" u on u.address = m."user"
+
+        if (!isUUID(communityId)) {
+            throw new Error('Not valid UUID ' + communityId);
+        }
+
+        const managers: IManagerDetailsManager[] = await db.sequelize.query("select m.\"user\" address, u.username username, m.\"createdAt\" \"timestamp\" from manager m left join \"user\" u on u.address = m.\"user\" where m.\"communityId\" = '" + communityId + "' order by m.\"createdAt\" desc offset " + offset + " limit " + limit, { type: QueryTypes.SELECT });
 
         return managers;
     }

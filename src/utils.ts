@@ -184,3 +184,8 @@ export function isUUID(s: string): boolean {
     const matchResult = s.match(/^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i);
     return matchResult ? matchResult.length > 0 : false;
 }
+
+export function isAddress(s: string): boolean {
+    const matchResult = s.match(/^0x[a-fA-F0-9]{40}$/i);
+    return matchResult ? matchResult.length > 0 : false;
+}
