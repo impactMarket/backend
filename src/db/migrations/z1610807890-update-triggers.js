@@ -75,11 +75,12 @@ EXECUTE PROCEDURE update_claim_states();`);
         IF (TG_OP = 'INSERT') THEN -- INSERT operations
             -- update overall state
             UPDATE communitystate SET managers = managers + 1 WHERE "communityId"=NEW."communityId";
+            RETURN NEW;
         ELSEIF (TG_OP = 'DELETE') THEN -- DELETE operations
             -- update overall state
-            UPDATE communitystate SET managers = managers - 1 WHERE "communityId"=NEW."communityId";
+            UPDATE communitystate SET managers = managers - 1 WHERE "communityId"=OLD."communityId";
+            RETURN OLD;
         END IF;
-        RETURN NEW;
     END;
 $$ LANGUAGE plpgsql;
 
