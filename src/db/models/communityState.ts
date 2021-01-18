@@ -4,7 +4,9 @@ export interface CommunityStateAttributes {
     communityId: string;
     claimed: string;
     claims: number;
-    beneficiaries: number;
+    beneficiaries: number; // only in community
+    removedBeneficiaries: number;
+    managers: number;
     raised: string;
     backers: number;
 
@@ -22,6 +24,8 @@ export class CommunityState extends Model<CommunityStateAttributes, CommunitySta
     public claimed!: string;
     public claims!: number;
     public beneficiaries!: number;
+    public removedBeneficiaries!: number;
+    public managers!: number;
     public raised!: string;
     public backers!: number;
 
@@ -56,6 +60,16 @@ export function initializeCommunityState(sequelize: Sequelize): void {
                 allowNull: false,
             },
             beneficiaries: {
+                type: DataTypes.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
+                allowNull: false,
+            },
+            removedBeneficiaries: {
+                type: DataTypes.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
+                allowNull: false,
+            },
+            managers: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
                 allowNull: false,

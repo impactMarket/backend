@@ -5,8 +5,9 @@ module.exports = {
     up: async (queryInterface, Sequelize) => {
         // use datagrip for better understanding + highlight
 
-        // create trigger to update total beneficiaries ina  given community, by day and since ever
         await queryInterface.sequelize.query(`
+        DROP TRIGGER update_beneficiaries_community_states ON beneficiary;
+
         CREATE OR REPLACE FUNCTION update_beneficiaries_community_states()
     RETURNS TRIGGER AS $$
     BEGIN
@@ -37,6 +38,8 @@ FOR EACH ROW
 EXECUTE PROCEDURE update_beneficiaries_community_states();`);
 
         await queryInterface.sequelize.query(`
+        DROP TRIGGER update_claim_states ON claim;
+
         CREATE OR REPLACE FUNCTION update_claim_states()
     RETURNS TRIGGER AS $$
     declare
@@ -85,34 +88,6 @@ BEFORE INSERT OR DELETE
 ON manager
 FOR EACH ROW
 EXECUTE PROCEDURE update_managers_community_state();`);
-
-        return queryInterface.sequelize.query(`
-        CREATE OR REPLACE FUNCTION update_inflow_community_states()
-    RETURNS TRIGGER AS $$
-    declare
-        state_raised numeric(29);
-        state_daily_raised numeric(29);
-        n_backer bigint;
-    BEGIN
-        -- if this address never donated, it's a new backer
-        SELECT count(*) INTO n_backer FROM inflow WHERE "from" = NEW."from" AND "communityId"=NEW."communityId";
-        IF n_backer = 0 THEN
-            UPDATE communitystate SET backers = backers + 1 WHERE "communityId"=NEW."communityId";
-        end if;
-        -- update total raised
-        SELECT SUM(raised + NEW.amount) INTO state_raised FROM communitystate WHERE "communityId"=NEW."communityId";
-        UPDATE communitystate SET raised = state_raised WHERE "communityId"=NEW."communityId";
-        SELECT SUM(raised + NEW.amount) INTO state_daily_raised FROM communitydailystate WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
-        UPDATE communitydailystate SET raised = state_daily_raised WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
-        return NEW;
-    END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_inflow_community_states
-BEFORE INSERT
-ON inflow
-FOR EACH ROW
-EXECUTE PROCEDURE update_inflow_community_states();`);
     },
 
     down(queryInterface, Sequelize) {
