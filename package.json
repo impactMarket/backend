@@ -72,6 +72,7 @@
         "sequelize": "6.3.5",
         "sequelize-cli": "6.2.0",
         "sha3": "2.1.2",
+        "sharp": "0.27.0",
         "winston": "3.2.1"
     },
     "devDependencies": {
