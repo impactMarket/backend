@@ -9,8 +9,8 @@ if (process.env.API_ENVIRONMENT && process.env.DATABASE_URL) {
     if (found.length > 3) {
         username = found[1];
         password = found[2];
-        database = found[3];
-        host = found[4];
+        host = found[3];
+        database = found[4];
     }
     console.log(found);
 }
