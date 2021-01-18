@@ -47,7 +47,7 @@ async function subscribeChainEvents(
                 // ethers.utils.id('CommunityAdded(address,address,uint256,uint256,uint256,uint256)'),
                 // ethers.utils.id('CommunityRemoved(address)'),
                 ethers.utils.id('ManagerAdded(address)'),
-                // ethers.utils.id('ManagerRemoved(address)'),
+                ethers.utils.id('ManagerRemoved(address)'),
                 ethers.utils.id('BeneficiaryAdded(address)'),
                 // ethers.utils.id('BeneficiaryLocked(address)'),
                 ethers.utils.id('BeneficiaryRemoved(address)'),
@@ -191,6 +191,13 @@ async function subscribeChainEvents(
                 const managerAddress = parsedLog.args[0];
                 const communityAddress = log.address;
                 ManagerService.add(
+                    managerAddress,
+                    allCommunities.get(communityAddress)!
+                );
+            } else if (parsedLog.name === 'ManagerRemoved') {
+                const managerAddress = parsedLog.args[0];
+                const communityAddress = log.address;
+                ManagerService.remove(
                     managerAddress,
                     allCommunities.get(communityAddress)!
                 );
@@ -382,7 +389,7 @@ async function checkCommunitiesOnChainEvents(
                 topics: [
                     [
                         ethers.utils.id('ManagerAdded(address)'),
-                        // ethers.utils.id('ManagerRemoved(address)'),
+                        ethers.utils.id('ManagerRemoved(address)'),
                         ethers.utils.id('BeneficiaryAdded(address)'),
                         // ethers.utils.id('BeneficiaryLocked(address)'),
                         ethers.utils.id('BeneficiaryRemoved(address)'),
@@ -444,6 +451,12 @@ async function checkCommunitiesOnChainEvents(
             } else if (parsedLog.name === 'ManagerAdded') {
                 const managerAddress = parsedLog.args[0];
                 await ManagerService.add(
+                    managerAddress,
+                    availableCommunities[c].publicId,
+                );
+            } else if (parsedLog.name === 'ManagerRemoved') {
+                const managerAddress = parsedLog.args[0];
+                await ManagerService.remove(
                     managerAddress,
                     availableCommunities[c].publicId,
                 );
