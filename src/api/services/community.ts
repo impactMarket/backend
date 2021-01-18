@@ -566,12 +566,8 @@ export default class CommunityService {
         offset: number,
         limit: number,
     ): Promise<IManagerDetailsBeneficiary[]> {
-        const manager = await ManagerService.get(managerAddress);
-        if (manager === null) {
-            throw new Error('Not a manager ' + managerAddress);
-        }
         return BeneficiaryService.listBeneficiaries(
-            manager.communityId,
+            managerAddress,
             active,
             offset,
             limit,
@@ -583,39 +579,15 @@ export default class CommunityService {
         offset: number,
         limit: number,
     ): Promise<IManagerDetailsManager[]> {
-        const manager = await ManagerService.get(managerAddress);
-        if (manager === null) {
-            throw new Error('Not a manager ' + managerAddress);
-        }
         return ManagerService.listManagers(
-            manager.communityId,
+            managerAddress,
             offset,
             limit,
         );
     }
 
-    public static async searchBeneficiary(managerAddress: string, beneficiaryQuery: string, active: boolean): Promise<IManagerDetailsBeneficiary> {
-        const manager = await ManagerService.get(managerAddress);
-        if (manager === null) {
-            throw new Error('Not a manager ' + managerAddress);
-        }
-        const beneficiary = await BeneficiaryService.search(manager.communityId, beneficiaryQuery, active);
-        if (beneficiary === null) {
-            throw new Error('Beneficiary not found!');
-        }
-        return beneficiary;
-    }
-
-    public static async searchManager(managerAddress: string, managerQuery: string): Promise<Manager> {
-        const manager = await ManagerService.get(managerAddress);
-        if (manager === null) {
-            throw new Error('Not a manager ' + managerAddress);
-        }
-        const managerResult = await ManagerService.get(managerQuery);
-        if (managerResult === null) {
-            throw new Error('Manager not found!');
-        }
-        return managerResult;
+    public static async searchBeneficiary(managerAddress: string, beneficiaryQuery: string, active: boolean): Promise<IManagerDetailsBeneficiary[]> {
+        return await BeneficiaryService.search(managerAddress, beneficiaryQuery, active);
     }
 
     /**

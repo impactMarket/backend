@@ -3,7 +3,7 @@ import { Manager } from '@models/manager';
 import database from '../loaders/database';
 import { Logger } from '@logger/logger';
 import { IManagerDetailsManager } from '../../types/endpoints';
-import { isUUID } from '../../utils';
+import { isAddress, isUUID } from '../../utils';
 
 
 const db = database();
@@ -70,24 +70,28 @@ export default class ManagerService {
             throw new Error('Not valid UUID ' + communityId);
         }
 
-        const managers: IManagerDetailsManager[] = await db.sequelize.query("select m.\"user\" address, u.username username, m.\"createdAt\" \"timestamp\" from manager m left join \"user\" u on u.address = m.\"user\" where m.\"communityId\" = '" + communityId + "' order by m.\"createdAt\" desc", { type: QueryTypes.SELECT });
-
-        return managers;
+        return await db.sequelize.query("select m.\"user\" address, u.username username, m.\"createdAt\" \"timestamp\" from manager m left join \"user\" u on u.address = m.\"user\" where m.\"communityId\" = '" + communityId + "' order by m.\"createdAt\" desc", { type: QueryTypes.SELECT });
     }
 
     public static async listManagers(
-        communityId: string,
+        managerAddress: string,
         offset: number,
         limit: number,
     ): Promise<IManagerDetailsManager[]> {
-        // select m."user" address, u.username username, m."createdAt" "timestamp"
-        // from manager m left join "user" u on u.address = m."user"
+        // select mq."user" address, u.username username, mq."createdAt" "timestamp"
+        // from manager m, manager mq
+        //     left join "user" u on u.address = mq."user"
+        // where m."communityId" = mq."communityId"
+        // and m."user" = '0x833961aab38d24EECdCD2129Aa5a5d41Fd86Acbf'
+        // order by mq."createdAt" desc
+        // offset 0
+        // limit 10
 
-        if (!isUUID(communityId)) {
-            throw new Error('Not valid UUID ' + communityId);
+        if (!isAddress(managerAddress)) {
+            throw new Error('Not a manager ' + managerAddress);
         }
 
-        const managers: IManagerDetailsManager[] = await db.sequelize.query("select m.\"user\" address, u.username username, m.\"createdAt\" \"timestamp\" from manager m left join \"user\" u on u.address = m.\"user\" where m.\"communityId\" = '" + communityId + "' order by m.\"createdAt\" desc offset " + offset + " limit " + limit, { type: QueryTypes.SELECT });
+        const managers: IManagerDetailsManager[] = await db.sequelize.query("select mq.\"user\" address, u.username username, mq.\"createdAt\" \"timestamp\" from manager m, manager mq left join \"user\" u on u.address = mq.\"user\" where m.\"communityId\" = mq.\"communityId\" and m.\"user\" = '" + managerAddress + "' order by mq.\"createdAt\" desc offset " + offset + " limit " + limit, { type: QueryTypes.SELECT });
 
         return managers;
     }

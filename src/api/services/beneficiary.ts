@@ -72,14 +72,51 @@ export default class BeneficiaryService {
     }
 
     public static async search(
-        communityId: string,
+        managerAddress: string,
         address: string,
         active: boolean,
-    ): Promise<IManagerDetailsBeneficiary | null> {
-        if (!isAddress(address)) {
+    ): Promise<IManagerDetailsBeneficiary[]> {
+        // select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed
+        // from beneficiary b
+        //     left join "user" u on b.address = u.address
+        //     left join claim c on b.address = c.address
+        //     left join manager m on b."communityId" = m."communityId"
+        // where m."user" = '0x833961aab38d24EECdCD2129Aa5a5d41Fd86Acbf'
+        // and b.active = true and b.address = '0x64771E37aA6cD3AeD0660fee96F6651CE4d1E3a5'
+        // group by b.address, u.username, b."txAt"
+        // order by b."txAt" desc
+
+        if (!isAddress(managerAddress) || !isAddress(address)) {
             throw new Error('Not valid address!');
         }
-        return await db.sequelize.query("select b.address, u.username, b.\"txAt\" \"timestamp\", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join \"user\" u on b.address = u.address left join claim c on b.address = c.address where b.\"communityId\" = '" + communityId + "' and b.active = " + active + " and b.address = " + address + " group by b.address, u.username, b.\"txAt\" order by b.\"txAt\" desc", { type: QueryTypes.SELECT }) as any;
+        return await db.sequelize.query("select b.address, u.username, b.\"txAt\" \"timestamp\", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join \"user\" u on b.address = u.address left join claim c on b.address = c.address left join manager m on b.\"communityId\" = m.\"communityId\" where m.\"user\" = '" + managerAddress + "' and b.active = " + active + " and b.address = '" + address + "' group by b.address, u.username, b.\"txAt\" order by b.\"txAt\" desc", { type: QueryTypes.SELECT });
+    }
+
+    public static async listBeneficiaries(
+        managerAddress: string,
+        active: boolean,
+        offset: number,
+        limit: number,
+    ): Promise<IManagerDetailsBeneficiary[]> {
+
+        // sequelize still has a bug related to eager loading when using global raw:false
+
+        // select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed
+        // from beneficiary b
+        //     left join "user" u on b.address = u.address
+        //     left join claim c on b.address = c.address
+        //     left join manager m on b."communityId" = m."communityId"
+        // where m."user" = '0x833961aab38d24EECdCD2129Aa5a5d41Fd86Acbf'
+        // group by b.address, u.username, b."txAt"
+        // order by b."txAt" desc
+        // offset 0
+        // limit 10
+
+        if (!isAddress(managerAddress)) {
+            throw new Error('Not a manager ' + managerAddress);
+        }
+
+        return await db.sequelize.query("select b.address, u.username, b.\"txAt\" \"timestamp\", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join \"user\" u on b.address = u.address left join claim c on b.address = c.address left join manager m on b.\"communityId\" = m.\"communityId\" where m.\"user\" = '" + managerAddress + "' and b.active = " + active + " group by b.address, u.username, b.\"txAt\" order by b.\"txAt\" desc offset " + offset + " limit " + limit, { type: QueryTypes.SELECT });
     }
 
     /**
@@ -110,32 +147,6 @@ export default class BeneficiaryService {
             active: parseInt(active.total, 10),
             inactive: parseInt(inactive.total, 10)
         }
-    }
-
-    public static async listBeneficiaries(
-        communityId: string,
-        active: boolean,
-        offset: number,
-        limit: number,
-    ): Promise<IManagerDetailsBeneficiary[]> {
-
-        // sequelize still has a bug related to eager loading when using global raw:false
-
-        // select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed
-        // from beneficiary b
-        //     left join "user" u on b.address = u.address
-        //     left join claim c on b.address = c.address
-        // where b."communityId" = 'ca16d975-4a11-4cdc-baa9-91442c534125'
-        // group by b.address, u.username, b."txAt"
-        // order by b."txAt" desc
-        // offset 0
-        // limit 10
-
-        if (!isUUID(communityId)) {
-            throw new Error('Not valid UUID ' + communityId);
-        }
-
-        return await db.sequelize.query("select b.address, u.username, b.\"txAt\" \"timestamp\", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join \"user\" u on b.address = u.address left join claim c on b.address = c.address where b.\"communityId\" = '" + communityId + "' and b.active = " + active + " group by b.address, u.username, b.\"txAt\" order by b.\"txAt\" desc offset " + offset + " limit " + limit, { type: QueryTypes.SELECT }) as any;
     }
 
     /**

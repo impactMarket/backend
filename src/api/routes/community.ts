@@ -37,18 +37,17 @@ export default (app: Router): void => {
     );
     route.get(
         '/beneficiaries/search/:active/:beneficiaryQuery',
+        authenticateToken,
         communityController.searchBeneficiary
     );
     route.get(
-        '/managers/search/:managerQuery',
-        communityController.searchManager
-    );
-    route.get(
         '/beneficiaries/list/:active/:offset/:limit',
+        authenticateToken,
         communityController.listBeneficiaries
     );
     route.get(
         '/managers/list/:offset/:limit',
+        authenticateToken,
         communityController.listManagers
     );
     /**
