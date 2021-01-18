@@ -20,11 +20,9 @@ import CommunityService from '@services/community';
 import CronJobExecutedService from '@services/cronJobExecuted';
 import ImMetadataService from '@services/imMetadata';
 import { Logger } from '@logger/logger';
-import { startImagesProcess } from './jobs/images';
 
 export default async (): Promise<void> => {
     cron();
-    startImagesProcess();
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     let waitingForResponseAfterCrash = false;
     let successfullAnswersAfterCrash = 0;
