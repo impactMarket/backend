@@ -98,6 +98,14 @@ const searchBeneficiary = (req: Request, res: Response) => {
         .catch((e) => res.status(404).send(e));
 }
 
+const searchManager = (req: Request, res: Response) => {
+    CommunityService.searchManager(
+        (req as any).user.address,
+        req.params.managerQuery
+    ).then((r) => res.send(r))
+        .catch((e) => res.status(404).send(e));
+}
+
 const listBeneficiaries = (req: Request, res: Response) => {
     CommunityService.listBeneficiaries(
         (req as any).user.address,
@@ -270,6 +278,7 @@ export default {
     list,
     listFull,
     searchBeneficiary,
+    searchManager,
     listBeneficiaries,
     listManagers,
     managers,

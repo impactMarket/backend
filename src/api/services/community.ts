@@ -590,6 +590,10 @@ export default class CommunityService {
         return await BeneficiaryService.search(managerAddress, beneficiaryQuery, active);
     }
 
+    public static async searchManager(managerAddress: string, beneficiaryQuery: string): Promise<IManagerDetailsManager[]> {
+        return await ManagerService.search(managerAddress, beneficiaryQuery);
+    }
+
     /**
      * @deprecated Since mobile version 0.1.8
      */
