@@ -13,7 +13,6 @@ export default (app: Router): void => {
     const route = Router();
     const storage = multer.memoryStorage();
     const upload = multer({ storage: storage });
-    console.log('1');
     new AWS.Config({
         accessKeyId: config.aws.accessKeyId,
         secretAccessKey: config.aws.secretAccessKey,
@@ -21,7 +20,6 @@ export default (app: Router): void => {
         //
         apiVersion: "2006-03-01",
     });
-    console.log('2');
 
     app.use('/storage', route);
 
@@ -29,11 +27,9 @@ export default (app: Router): void => {
         '/upload',
         (req, res) => {
             try {
-                console.log('reading');
                 upload.single('imageFile')(req, res, async (err) => {
-                    console.log('starting');
                     if (err) {
-                        Logger.error('Error during /upload ', err);
+                        Logger.error('Error during /storage/upload ', err);
                         res.sendStatus(403);
                     }
                     const imgBuffer = await sharp((req.file as any).buffer)
@@ -42,7 +38,6 @@ export default (app: Router): void => {
                             chromaSubsampling: '4:4:4'
                         })
                         .toBuffer();
-                    console.log('formatted');
                     const { communityId } = req.body;
                     const fileExtension = path.extname(req.file.originalname);
                     const today = new Date();
@@ -61,7 +56,7 @@ export default (app: Router): void => {
                         const uploadResult = await upload.promise();
                         console.log(uploadResult)
                         // update community picture
-                        CommunityService.updateCoverImage(communityId, uploadResult.Location);
+                        CommunityService.updateCoverImage(communityId, uploadResult.Key);
                     } catch (e) {
                         Logger.error('Error during worker upload_image_queue(to aws) ' + e);
                         res.sendStatus(403);
