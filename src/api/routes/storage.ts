@@ -34,6 +34,7 @@ export default (app: Router): void => {
                     console.log('starting');
                     if (err) {
                         Logger.error('Error during /upload ', err);
+                        res.sendStatus(403);
                     }
                     const imgBuffer = await sharp((req.file as any).buffer)
                         .resize({ width: 800 })
@@ -63,6 +64,7 @@ export default (app: Router): void => {
                         CommunityService.updateCoverImage(communityId, uploadResult.Location);
                     } catch (e) {
                         Logger.error('Error during worker upload_image_queue(to aws) ' + e);
+                        res.sendStatus(403);
                     }
                     try {
                         // also upload to fleek storage
@@ -75,14 +77,14 @@ export default (app: Router): void => {
                         console.log(res)
                     } catch (e) {
                         Logger.error('Error during worker upload_image_queue(to fleek) ' + e);
+                        res.sendStatus(403);
                     }
-
+                    res.sendStatus(200);
                 });
             } catch (e) {
                 Logger.error('Error during /upload ', e);
                 res.sendStatus(403);
             }
-            res.sendStatus(200);
         }
     );
 };
