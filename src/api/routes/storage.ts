@@ -34,7 +34,6 @@ export default (app: Router): void => {
                     const imgBuffer = await sharp((req.file as any).buffer)
                         .resize({ width: 800 })
                         .jpeg({
-                            quality: 100,
                             chromaSubsampling: '4:4:4'
                         })
                         .toBuffer();
