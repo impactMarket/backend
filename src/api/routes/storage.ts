@@ -32,17 +32,18 @@ export default (app: Router): void => {
                         Logger.error('Error during /storage/upload ', err);
                         res.sendStatus(403);
                     }
-                    const imgBuffer = await sharp((req.file as any).buffer)
+                    console.log(req.file)
+                    const imgBuffer = await sharp(req.file.buffer)
                         .resize({ width: 800 })
                         .jpeg({
+                            quality: req.file.size > 3500000 ? 40 : req.file.size > 1500000 ? 60 : 80,
                             chromaSubsampling: '4:4:4'
                         })
                         .toBuffer();
                     const { communityId } = req.body;
-                    const fileExtension = path.extname(req.file.originalname);
                     const today = new Date();
                     const s3FilePrefix = `${today.getFullYear()}${(today.getMonth() + 1)}/`;
-                    const s3Filename = `${Date.now().toString()}${fileExtension}`;
+                    const s3Filename = `${Date.now().toString()}.jpeg`;
                     const s3FilePath = `${s3FilePrefix}${s3Filename}`;
                     try {
                         const params: AWS.S3.PutObjectRequest = {
