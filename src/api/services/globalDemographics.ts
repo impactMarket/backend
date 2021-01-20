@@ -48,7 +48,7 @@ export default class GlobalDemographicsService {
         order by c.country`;
 
         // query data
-        const ageRange = await db.sequelize.query<{
+        const rawAgeRange = await db.sequelize.query<{
             country: string,
             ageRange1: number,
             ageRange2: number,
@@ -64,11 +64,12 @@ export default class GlobalDemographicsService {
         }>(sqlGenderQuery, { type: QueryTypes.SELECT });
 
         // format gender results for easier write
+        const countries: string[] = [];
         const gender = new Map<string, { male: number, female: number }>();
-
         for (let g = 0; g < rawGender.length; g++) {
             const element = rawGender[g];
 
+            countries.push(element.country);
             let previous = gender.get(element.country);
             if (previous === undefined) {
                 previous = { male: 0, female: 0 };
@@ -86,12 +87,34 @@ export default class GlobalDemographicsService {
             }
         }
 
-        for (let a = 0; a < ageRange.length; a++) {
-            const element = ageRange[a];
+        const ageRange = new Map<string, {
+            ageRange1: number,
+            ageRange2: number,
+            ageRange3: number,
+            ageRange4: number,
+            ageRange5: number,
+            ageRange6: number
+        }>();
+        for (let a = 0; a < rawAgeRange.length; a++) {
+            const element = rawAgeRange[a];
+            countries.push(element.country);
+            ageRange.set(element.country, {
+                ageRange1: element.ageRange1,
+                ageRange2: element.ageRange2,
+                ageRange3: element.ageRange3,
+                ageRange4: element.ageRange4,
+                ageRange5: element.ageRange5,
+                ageRange6: element.ageRange6,
+            });
+        }
+
+        const uniqueCountries = Array.from(new Set(countries));
+        for (let a = 0; a < uniqueCountries.length; a++) {
             newDemographics.push({
                 date: yesterdayDateOnly,
-                ...element,
-                ...gender.get(element.country)!
+                country: uniqueCountries[a],
+                ...ageRange.get(uniqueCountries[a])!,
+                ...gender.get(uniqueCountries[a])!
             });
         }
 

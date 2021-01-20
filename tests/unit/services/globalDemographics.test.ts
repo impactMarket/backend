@@ -124,6 +124,54 @@ const ageRangeQueryResult: {
 const results = [
     {
         date: match.any,
+        country: 'Brasil',
+        ageRange1: 937,
+        ageRange2: 1197,
+        ageRange3: 893,
+        ageRange4: 502,
+        ageRange5: 169,
+        ageRange6: 40,
+        male: 1363,
+        female: 2740
+    },
+    {
+        date: match.any,
+        country: 'Cabo Verde',
+        ageRange1: 0,
+        ageRange2: 0,
+        ageRange3: 0,
+        ageRange4: 0,
+        ageRange5: 0,
+        ageRange6: 0,
+        male: 1,
+        female: 2
+    },
+    {
+        date: match.any,
+        country: 'Ghana',
+        ageRange1: 11,
+        ageRange2: 9,
+        ageRange3: 3,
+        ageRange4: 4,
+        ageRange5: 1,
+        ageRange6: 0,
+        male: 26,
+        female: 11
+    },
+    {
+        date: match.any,
+        country: 'Philippines',
+        ageRange1: 3,
+        ageRange2: 0,
+        ageRange3: 0,
+        ageRange4: 3,
+        ageRange5: 1,
+        ageRange6: 0,
+        male: 5,
+        female: 6
+    },
+    {
+        date: match.any,
         country: 'Nigeria',
         ageRange1: 0,
         ageRange2: 0,
@@ -151,54 +199,6 @@ const results = [
         ageRange4: 0,
         ageRange5: 0,
         ageRange6: 0
-    },
-    {
-        date: match.any,
-        country: 'Ghana',
-        ageRange1: 11,
-        ageRange2: 9,
-        ageRange3: 3,
-        ageRange4: 4,
-        ageRange5: 1,
-        ageRange6: 0,
-        male: 26,
-        female: 11
-    },
-    {
-        date: match.any,
-        country: 'Brasil',
-        ageRange1: 937,
-        ageRange2: 1197,
-        ageRange3: 893,
-        ageRange4: 502,
-        ageRange5: 169,
-        ageRange6: 40,
-        male: 1363,
-        female: 2740
-    },
-    {
-        date: match.any,
-        country: 'Philippines',
-        ageRange1: 3,
-        ageRange2: 0,
-        ageRange3: 0,
-        ageRange4: 3,
-        ageRange5: 1,
-        ageRange6: 0,
-        male: 5,
-        female: 6
-    },
-    {
-        date: match.any,
-        country: 'Cabo Verde',
-        ageRange1: 0,
-        ageRange2: 0,
-        ageRange3: 0,
-        ageRange4: 0,
-        ageRange5: 0,
-        ageRange6: 0,
-        male: 1,
-        female: 2
     }
 ]
 
