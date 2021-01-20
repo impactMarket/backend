@@ -10,6 +10,9 @@ export default (app: Router): void => {
         (req, res) => res.json(new Date().getTime())
     );
 
+    /**
+     * for backwards compatibility, remove ASAP
+     */
     app.get('/global-status', async (req, res) => {
         res.send({
             monthly: await GlobalDailyStateService.getLast30Days(),

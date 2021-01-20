@@ -23,6 +23,7 @@ import { ReachedAddress } from '@models/reachedAddress';
 import { User } from '@models/user';
 import { Logger } from '@logger/logger';
 import { DbLoader } from '../../types/db';
+import { GlobalDemographics } from '@models/globalDemographics';
 
 export default (): DbLoader => {
     let logging:
@@ -39,7 +40,7 @@ export default (): DbLoader => {
         protocol: 'postgres',
         native: true,
         logging,
-        query: { raw: true }, //TODO: in order to eager loading to work, this needs to be removed
+        query: { raw: true }, // I wish, eager loading gets fixed
     };
     const sequelize = new Sequelize(config.dbUrl, dbConfig);
     initModels(sequelize);
@@ -59,6 +60,7 @@ export default (): DbLoader => {
             cronJobExecuted: sequelize.models.CronJobExecuted as ModelCtor<CronJobExecuted>,
             exchangeRates: sequelize.models.ExchangeRates as ModelCtor<ExchangeRates>,
             globalDailyState: sequelize.models.GlobalDailyState as ModelCtor<GlobalDailyState>,
+            globalDemographics: sequelize.models.GlobalDemographics as ModelCtor<GlobalDemographics>,
             imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
             inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
             manager: sequelize.models.Manager as ModelCtor<Manager>,

@@ -18,6 +18,7 @@ import { MobileError } from '@models/mobileError';
 import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { User } from '@models/user';
+import { GlobalDemographics } from '@models/globalDemographics';
 
 export interface DbModels {
     user: ModelCtor<User>;
@@ -33,6 +34,7 @@ export interface DbModels {
     cronJobExecuted: ModelCtor<CronJobExecuted>;
     exchangeRates: ModelCtor<ExchangeRates>;
     globalDailyState: ModelCtor<GlobalDailyState>;
+    globalDemographics: ModelCtor<GlobalDemographics>;
     imMetadata: ModelCtor<ImMetadata>;
     inflow: ModelCtor<Inflow>;
     manager: ModelCtor<Manager>;
