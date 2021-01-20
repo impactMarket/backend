@@ -203,10 +203,13 @@ function cron() {
         updateExchangeRates();
         new CronJob(
             '25 */3 * * *',
-            async () => {
-                await updateExchangeRates();
-                CronJobExecutedService.add('updateExchangeRates');
-                Logger.info('updateExchangeRates successfully executed!');
+            () => {
+                updateExchangeRates().then(() => {
+                    CronJobExecutedService.add('updateExchangeRates');
+                    Logger.info('updateExchangeRates successfully executed!');
+                }).catch((e) => {
+                    Logger.error('updateExchangeRates FAILED!', e);
+                });
             },
             null,
             true
@@ -216,10 +219,13 @@ function cron() {
     // every four hours, verify community funds
     new CronJob(
         '45 */4 * * *',
-        async () => {
-            await verifyCommunityFunds();
-            CronJobExecutedService.add('verifyCommunityFunds');
-            Logger.info('verifyCommunityFunds successfully executed!');
+        () => {
+            verifyCommunityFunds().then(() => {
+                CronJobExecutedService.add('verifyCommunityFunds');
+                Logger.info('verifyCommunityFunds successfully executed!');
+            }).catch((e) => {
+                Logger.error('verifyCommunityFunds FAILED!', e);
+            });
         },
         null,
         true
@@ -230,11 +236,19 @@ function cron() {
     // everyday at midnight
     new CronJob(
         '0 0 * * *',
-        async () => {
-            await calcuateCommunitiesMetrics();
-            await calcuateGlobalMetrics();
-            CronJobExecutedService.add('calcuateMetrics');
-            Logger.info('calcuateMetrics successfully executed!');
+        () => {
+            calcuateCommunitiesMetrics().then(() => {
+                CronJobExecutedService.add('calcuateCommunitiesMetrics');
+                calcuateGlobalMetrics().then(() => {
+                    CronJobExecutedService.add('calcuateGlobalMetrics');
+                    Logger.info('calcuateGlobalMetrics successfully executed!');
+                }).catch((e) => {
+                    Logger.error('calcuateGlobalMetrics FAILED!', e);
+                });
+                Logger.info('calcuateCommunitiesMetrics successfully executed!');
+            }).catch((e) => {
+                Logger.error('calcuateCommunitiesMetrics FAILED!', e);
+            });
         },
         null,
         true
@@ -243,10 +257,13 @@ function cron() {
     // at 00:00 on thursday.
     new CronJob(
         '0 0 * * 4',
-        async () => {
-            await GlobalDemographicsService.calculateDemographics();
-            CronJobExecutedService.add('calculateDemographics');
-            Logger.info('calculateDemographics successfully executed!');
+        () => {
+            GlobalDemographicsService.calculateDemographics().then(() => {
+                CronJobExecutedService.add('calculateDemographics');
+                Logger.info('calculateDemographics successfully executed!');
+            }).catch((e) => {
+                Logger.error('calculateDemographics FAILED!', e);
+            });
         },
         null,
         true
@@ -255,10 +272,13 @@ function cron() {
     // everyday at 3:35pm (odd times), insert community daily rows with 5 days in advance
     new CronJob(
         '35 15 * * *',
-        async () => {
-            await populateCommunityDailyState();
-            CronJobExecutedService.add('populateCommunityDailyState');
-            Logger.info('populateCommunityDailyState successfully executed!');
+        () => {
+            populateCommunityDailyState().then(() => {
+                CronJobExecutedService.add('populateCommunityDailyState');
+                Logger.info('populateCommunityDailyState successfully executed!');
+            }).catch((e) => {
+                Logger.error('populateCommunityDailyState FAILED!', e);
+            });
         },
         null,
         true
