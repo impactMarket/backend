@@ -20,6 +20,7 @@ import CommunityService from '@services/community';
 import CronJobExecutedService from '@services/cronJobExecuted';
 import ImMetadataService from '@services/imMetadata';
 import { Logger } from '@logger/logger';
+import GlobalDemographicsService from '@services/globalDemographics';
 
 export default async (): Promise<void> => {
     cron();
@@ -234,6 +235,18 @@ function cron() {
             await calcuateGlobalMetrics();
             CronJobExecutedService.add('calcuateMetrics');
             Logger.info('calcuateMetrics successfully executed!');
+        },
+        null,
+        true
+    );
+
+    // at 00:00 on thursday.
+    new CronJob(
+        '0 0 * * 4',
+        async () => {
+            await GlobalDemographicsService.calculateDemographics();
+            CronJobExecutedService.add('calculateDemographics');
+            Logger.info('calculateDemographics successfully executed!');
         },
         null,
         true
