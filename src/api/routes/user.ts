@@ -21,12 +21,13 @@ export default (app: Router): void => {
             body: Joi.object({
                 address: Joi.string().required(),
                 language: Joi.string().required(),
+                currency: Joi.string().optional().allow(''),
                 pushNotificationToken: Joi.string().required().allow(''),
             }),
         }),
         (req: Request, res: Response) => {
-            const { address, language, pushNotificationToken } = req.body;
-            UserService.authenticate(address, language, pushNotificationToken)
+            const { address, language, currency, pushNotificationToken } = req.body;
+            UserService.authenticate(address, language, currency, pushNotificationToken)
                 .then((user) => res.send(user))
                 .catch((e) => res.sendStatus(403));
         }

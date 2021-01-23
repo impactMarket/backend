@@ -1,5 +1,5 @@
 import { Logger } from '@logger/logger';
-import { User } from '@models/user';
+import { User, UserCreationAttributes } from '@models/user';
 import { Op } from 'sequelize';
 
 import { ICommunityInfo, IUserWelcome, IUserWelcomeAuth } from '../../types';
@@ -97,17 +97,25 @@ export default class UserService {
     public static async authenticate(
         address: string,
         language: string,
+        currency: string,
         pushNotificationToken: string
     ): Promise<IUserAuth> {
         try {
             const token = generateAccessToken(address);
             let user = await db.models.user.findOne({ where: { address } });
             if (user === null) {
-                user = await db.models.user.create({
+                let createUser: UserCreationAttributes = {
                     address,
                     language,
                     pushNotificationToken,
-                });
+                };
+                if (currency) {
+                    createUser = {
+                        ...createUser,
+                        currency,
+                    }
+                }
+                user = await db.models.user.create(createUser);
             } else {
                 await db.models.user.update(
                     { pushNotificationToken },

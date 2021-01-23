@@ -14,9 +14,10 @@ export interface UserAttributes {
     createdAt: Date;
     updatedAt: Date;
 }
-interface UserCreationAttributes {
+export interface UserCreationAttributes {
     address: string;
     language: string;
+    currency?: string;
     pushNotificationToken: string;
 }
 
