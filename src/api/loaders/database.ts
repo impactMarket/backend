@@ -1,7 +1,4 @@
-import { Sequelize, Options, ModelCtor } from 'sequelize';
-
-import config from '../../config';
-import initModels from '../../db/models';
+import { Logger } from '@logger/logger';
 import { Beneficiary } from '@models/beneficiary';
 import { BeneficiaryTransaction } from '@models/beneficiaryTransaction';
 import { Claim } from '@models/claim';
@@ -21,7 +18,10 @@ import { MobileError } from '@models/mobileError';
 import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { User } from '@models/user';
-import { Logger } from '@logger/logger';
+import { Sequelize, Options, ModelCtor } from 'sequelize';
+
+import config from '../../config';
+import initModels from '../../db/models';
 import { DbLoader } from '../../types/db';
 
 export default (): DbLoader => {

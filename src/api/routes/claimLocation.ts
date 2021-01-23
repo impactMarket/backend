@@ -1,6 +1,7 @@
-import { Router } from 'express';
 import claimLocationController from '@controllers/claimLocation';
 import claimLocationValidators from '@validators/community';
+import { Router } from 'express';
+
 import { authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {

@@ -1,5 +1,6 @@
 import { ClaimLocation } from '@models/claimLocation';
 import { Op } from 'sequelize';
+
 import database from '../loaders/database';
 
 const db = database();

@@ -1,7 +1,3 @@
-import BigNumber from 'bignumber.js';
-import { mean } from 'mathjs';
-
-import config from '../../../config';
 import { Logger } from '@logger/logger';
 import BeneficiaryTransactionService from '@services/beneficiaryTransaction';
 import ClaimService from '@services/claim';
@@ -11,6 +7,10 @@ import CommunityDailyStateService from '@services/communityDailyState';
 import GlobalDailyStateService from '@services/globalDailyState';
 import InflowService from '@services/inflow';
 import ReachedAddressService from '@services/reachedAddress';
+import BigNumber from 'bignumber.js';
+import { mean } from 'mathjs';
+
+import config from '../../../config';
 
 /**
  * As this is all calculated past midnight, everything is from yesterdayDateOnly

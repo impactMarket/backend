@@ -1,23 +1,19 @@
+import {
+    Community,
+    CommunityAttributes,
+    CommunityCreationAttributes,
+} from '@models/community';
+import { CommunityContractAttributes } from '@models/communityContract';
+import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
+import { CommunityStateAttributes } from '@models/communityState';
+import { Manager } from '@models/manager';
 import { ethers } from 'ethers';
 import { Op, QueryTypes, fn, col } from 'sequelize';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
-import database from '../loaders/database';
-import {
-    Community,
-    CommunityAttributes,
-    CommunityCreationAttributes,
-} from '@models/community';
 import { ICommunityContractParams, ICommunityInfo } from '../../types';
-import { notifyManagerAdded } from '../../utils';
-import CommunityContractService from './communityContract';
-import CommunityDailyMetricsService from './communityDailyMetrics';
-import CommunityDailyStateService from './communityDailyState';
-import CommunityStateService from './communityState';
-import SSIService from './ssi';
-import TransactionsService from './transactions';
 import {
     ICommunity,
     ICommunityLightDetails,
@@ -27,12 +23,16 @@ import {
     IManagers,
     IManagersDetails,
 } from '../../types/endpoints';
-import ManagerService from './managers';
+import { notifyManagerAdded } from '../../utils';
+import database from '../loaders/database';
 import BeneficiaryService from './beneficiary';
-import { CommunityStateAttributes } from '@models/communityState';
-import { CommunityContractAttributes } from '@models/communityContract';
-import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
-import { Manager } from '@models/manager';
+import CommunityContractService from './communityContract';
+import CommunityDailyMetricsService from './communityDailyMetrics';
+import CommunityDailyStateService from './communityDailyState';
+import CommunityStateService from './communityState';
+import ManagerService from './managers';
+import SSIService from './ssi';
+import TransactionsService from './transactions';
 
 const db = database();
 export default class CommunityService {
@@ -202,7 +202,7 @@ export default class CommunityService {
         // does not support eager loading with global "raw: false".
         // Please, check again, and if available, update this
         // https://github.com/sequelize/sequelize/issues/6408
-        let sqlQuery =
+        const sqlQuery =
             'select "publicId", "contractAddress", "requestByAddress", name, city, country, description, email, "coverImage", cc.*, cs.* ' +
             'from community c ' +
             'left join communitycontract cc on c."publicId" = cc."communityId" ' +

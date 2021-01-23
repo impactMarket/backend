@@ -1,6 +1,6 @@
-import { Request, Response } from 'express';
 import { Logger } from '@logger/logger';
 import ClaimLocationService from '@services/claimLocation';
+import { Request, Response } from 'express';
 
 const controllerLogAndFail = (e: any, status: number, res: Response) => {
     Logger.error(e);

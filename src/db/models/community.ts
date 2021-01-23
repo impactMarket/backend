@@ -1,4 +1,5 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import { ICommunityVars } from '../../types';
 
 export interface CommunityAttributes {

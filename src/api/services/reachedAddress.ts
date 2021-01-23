@@ -1,5 +1,6 @@
 import { ReachedAddressCreationAttributes } from '@models/reachedAddress';
 import { col, fn, Op } from 'sequelize';
+
 import database from '../loaders/database';
 
 const db = database();

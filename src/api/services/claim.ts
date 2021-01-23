@@ -1,8 +1,8 @@
+import { Logger } from '@logger/logger';
 import { col, fn, Op } from 'sequelize';
 
 // import { Claim } from '@models/claim';
 import database from '../loaders/database';
-import { Logger } from '@logger/logger';
 
 const db = database();
 export default class ClaimService {

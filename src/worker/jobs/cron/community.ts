@@ -1,7 +1,3 @@
-import BigNumber from 'bignumber.js';
-import { median, mean } from 'mathjs';
-
-import config from '../../../config';
 import { Logger } from '@logger/logger';
 import BeneficiaryService from '@services/beneficiary';
 import CommunityService from '@services/community';
@@ -12,6 +8,10 @@ import InflowService from '@services/inflow';
 import NotifiedBackerService from '@services/notifiedBacker';
 import SSIService from '@services/ssi';
 import UserService from '@services/user';
+import BigNumber from 'bignumber.js';
+import { median, mean } from 'mathjs';
+
+import config from '../../../config';
 import { ICommunityInfo } from '../../../types';
 import { notifyBackersCommunityLowFunds } from '../../../utils';
 

@@ -104,7 +104,7 @@ declare namespace Truffle {
     ): Deployer;
     link(
       library: Truffle.Contract<any>,
-      destinations: Array<Truffle.Contract<any>>
+      destinations: Truffle.Contract<any>[]
     ): Deployer;
     deploy<T extends any[]>(c: ContractNew<T>, ...args: T): Deployer;
   }

@@ -1,8 +1,9 @@
-import { Op } from 'sequelize';
 import {
     GlobalDailyState,
     GlobalDailyStateCreationAttributes,
 } from '@models/globalDailyState';
+import { Op } from 'sequelize';
+
 import database from '../loaders/database';
 
 const db = database();

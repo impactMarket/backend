@@ -1,6 +1,7 @@
-import { Router } from 'express';
 import communityController from '@controllers/community';
 import communityValidators from '@validators/community';
+import { Router } from 'express';
+
 import { authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {

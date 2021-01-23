@@ -1,3 +1,7 @@
+import { Logger } from '@logger/logger';
+import CommunityService from '@services/community';
+import CronJobExecutedService from '@services/cronJobExecuted';
+import ImMetadataService from '@services/imMetadata';
 import { CronJob } from 'cron';
 import { ethers } from 'ethers';
 
@@ -16,10 +20,6 @@ import {
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
 // import BeneficiaryService from '@services/beneficiary';
-import CommunityService from '@services/community';
-import CronJobExecutedService from '@services/cronJobExecuted';
-import ImMetadataService from '@services/imMetadata';
-import { Logger } from '@logger/logger';
 
 export default async (): Promise<void> => {
     cron();

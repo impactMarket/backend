@@ -1,8 +1,9 @@
-import { Request, Response } from 'express';
-import CommunityService from '@services/community';
 import { Logger } from '@logger/logger';
-import ManagerService from '@services/managers';
+import CommunityService from '@services/community';
 import CommunityDailyMetricsService from '@services/communityDailyMetrics';
+import ManagerService from '@services/managers';
+import { Request, Response } from 'express';
+
 import config from '../../config';
 
 const controllerLogAndFail = (e: any, status: number, res: Response) => {

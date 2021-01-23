@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
+import UserService from './api/services/user';
 import config from './config';
 import { Logger } from './logger/logger';
-import UserService from './api/services/user';
 import { ICommunityInfo } from './types';
 
 // Accepts the array and key
@@ -180,7 +180,7 @@ export async function sendPushNotification(
                 message,
                 requestHeaders
             );
-            return result.status === 200 ? true : false;
+            return result.status === 200;
         } catch (error) {
             Logger.error(
                 "Couldn't send notification " +

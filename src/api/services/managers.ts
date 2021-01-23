@@ -1,9 +1,10 @@
-import { col, fn, Op, QueryTypes, Transaction } from 'sequelize';
-import { Manager } from '@models/manager';
-import database from '../loaders/database';
 import { Logger } from '@logger/logger';
+import { Manager } from '@models/manager';
+import { col, fn, Op, QueryTypes, Transaction } from 'sequelize';
+
 import { IManagerDetailsManager } from '../../types/endpoints';
 import { isAddress, isUUID } from '../../utils';
+import database from '../loaders/database';
 
 const db = database();
 export default class ManagerService {

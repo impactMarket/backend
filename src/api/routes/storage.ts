@@ -1,16 +1,17 @@
+import fleekStorage from '@fleekhq/fleek-storage-js';
+import { Logger } from '@logger/logger';
+import CommunityService from '@services/community';
+import AWS from 'aws-sdk';
 import { Router } from 'express';
 import multer from 'multer';
-import { Logger } from '@logger/logger';
-import config from '../../config';
-import AWS from 'aws-sdk';
-import fleekStorage from '@fleekhq/fleek-storage-js';
-import CommunityService from '@services/community';
 import sharp from 'sharp';
+
+import config from '../../config';
 
 export default (app: Router): void => {
     const route = Router();
     const storage = multer.memoryStorage();
-    const upload = multer({ storage: storage });
+    const upload = multer({ storage });
     new AWS.Config({
         accessKeyId: config.aws.accessKeyId,
         secretAccessKey: config.aws.secretAccessKey,

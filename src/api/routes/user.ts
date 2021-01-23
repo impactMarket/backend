@@ -1,8 +1,9 @@
-import { Router, Request, Response } from 'express';
-import UserService from '../services/user';
-import { celebrate, Joi } from 'celebrate';
-import { authenticateToken } from '../middlewares';
 import { Logger } from '@logger/logger';
+import { celebrate, Joi } from 'celebrate';
+import { Router, Request, Response } from 'express';
+
+import { authenticateToken } from '../middlewares';
+import UserService from '../services/user';
 
 export default (app: Router): void => {
     const controllerLogAndFail = (e: any, status: number, res: Response) => {

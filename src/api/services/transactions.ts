@@ -1,3 +1,5 @@
+import { Community } from '@models/community';
+import { Transactions } from '@models/transactions';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
@@ -8,8 +10,6 @@ import { Op, fn, literal, Sequelize } from 'sequelize';
 import { SHA3 } from 'sha3';
 
 import config from '../../config';
-import { Community } from '@models/community';
-import { Transactions } from '@models/transactions';
 import {
     ICommunityVars,
     IRecentTxAPI,

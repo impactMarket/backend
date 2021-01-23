@@ -1,5 +1,6 @@
-import { Transaction } from 'sequelize';
 import { CommunityState } from '@models/communityState';
+import { Transaction } from 'sequelize';
+
 import database from '../loaders/database';
 
 const db = database();

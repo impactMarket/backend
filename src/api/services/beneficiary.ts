@@ -1,9 +1,10 @@
-import { Op, fn, col, QueryTypes } from 'sequelize';
-import { Beneficiary } from '@models/beneficiary';
-import database from '../loaders/database';
 import { Logger } from '@logger/logger';
+import { Beneficiary } from '@models/beneficiary';
+import { Op, fn, col, QueryTypes } from 'sequelize';
+
 import { IManagerDetailsBeneficiary } from '../../types/endpoints';
 import { isUUID, isAddress } from '../../utils';
+import database from '../loaders/database';
 
 const db = database();
 export default class BeneficiaryService {

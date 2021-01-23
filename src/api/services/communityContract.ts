@@ -1,7 +1,8 @@
-import { col, fn, Op, Transaction } from 'sequelize';
-import database from '../loaders/database';
 import { CommunityContract } from '@models/communityContract';
+import { col, fn, Op, Transaction } from 'sequelize';
+
 import { ICommunityContractParams } from '../../types';
+import database from '../loaders/database';
 
 const db = database();
 export default class CommunityContractService {

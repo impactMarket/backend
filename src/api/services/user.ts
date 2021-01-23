@@ -1,11 +1,11 @@
-import { Op } from 'sequelize';
-import { User } from '@models/user';
-
-import database from '../loaders/database';
 import { Logger } from '@logger/logger';
-import { generateAccessToken } from '../middlewares';
+import { User } from '@models/user';
+import { Op } from 'sequelize';
+
 import { ICommunityInfo, IUserWelcome, IUserWelcomeAuth } from '../../types';
 import { ICommunity, IUserHello, IUserAuth } from '../../types/endpoints';
+import database from '../loaders/database';
+import { generateAccessToken } from '../middlewares';
 import BeneficiaryService from './beneficiary';
 import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';
@@ -221,7 +221,7 @@ export default class UserService {
             where: { address },
         });
         console.log(exists);
-        return exists === null ? false : true;
+        return exists !== null;
     }
 
     public static async getAllAddresses(): Promise<string[]> {

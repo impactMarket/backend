@@ -1,10 +1,11 @@
-import { col, fn } from 'sequelize';
+import { Logger } from '@logger/logger';
 import {
     // BeneficiaryTransaction,
     BeneficiaryTransactionCreationAttributes,
 } from '@models/beneficiaryTransaction';
+import { col, fn } from 'sequelize';
+
 import database from '../loaders/database';
-import { Logger } from '@logger/logger';
 
 const db = database();
 export default class BeneficiaryTransactionService {
@@ -22,7 +23,6 @@ export default class BeneficiaryTransactionService {
                 Logger.error(e);
             }
         }
-        return;
     }
 
     public static async getAllByDay(

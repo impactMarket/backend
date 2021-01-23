@@ -100,7 +100,7 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
         },
         {
             tableName: 'beneficiary',
-            sequelize: sequelize,
+            sequelize,
         }
     );
 }

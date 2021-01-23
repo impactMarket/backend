@@ -1,9 +1,10 @@
-import moment from 'moment';
-import { Op, fn, col, Transaction } from 'sequelize';
 import {
     CommunityDailyState,
     CommunityDailyStateCreationAttributes,
 } from '@models/communityDailyState';
+import moment from 'moment';
+import { Op, fn, col, Transaction } from 'sequelize';
+
 import database from '../loaders/database';
 
 const db = database();
