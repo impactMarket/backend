@@ -90,7 +90,7 @@ module.exports = {
         });
 
         // Argentina -> AR
-        // Brazil -> BR
+        // Brasil -> BR
         // Ghana -> GH
         // Nigeria -> NG
         // Philippines -> PH
@@ -100,7 +100,7 @@ module.exports = {
         // Portugal -> PT
         const countries = new Map();
         countries.set('Argentina', 'AR');
-        countries.set('Brazil', 'BR');
+        countries.set('Brasil', 'BR');
         countries.set('Ghana', 'GH');
         countries.set('Nigeria', 'NG');
         countries.set('Philippines', 'PH');
