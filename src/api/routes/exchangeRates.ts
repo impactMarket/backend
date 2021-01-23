@@ -1,13 +1,11 @@
 import { Router, Request, Response } from 'express';
-
 import ExchangeRatesService from '../services/exchangeRates';
 
-const route = Router();
-
 export default (app: Router): void => {
+    const route = Router();
     app.use('/exchange-rates', route);
 
-    route.get('/', async (req: Request, res: Response) => {
-        return res.send(await ExchangeRatesService.get());
+    route.get('/', (req: Request, res: Response) => {
+        ExchangeRatesService.get().then((rates) => res.send(rates)).catch((r) => res.send(r).status(403));
     });
 };

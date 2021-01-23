@@ -63,7 +63,11 @@ export interface IManagersDetails {
 }
 
 export interface IUserHello {
-    exchangeRates: any; // TODO: this is not really an any
+    /**
+     * @deprecated
+     */
+    exchangeRates: any; // TODO: remove when 1.0.0 is the lowest version required
+    rates: { currency: string, rate: number }[];
     isBeneficiary: boolean;
     isManager: boolean;
     community?: ICommunity;

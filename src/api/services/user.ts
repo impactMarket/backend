@@ -77,9 +77,10 @@ export default class UserService {
                 isManager = true;
             }
         }
+        const { exchangeRates, rates } = await ExchangeRatesService.get();
         return {
             user: user as any,
-            exchangeRates: await ExchangeRatesService.get(),
+            exchangeRates,
             community: community ? community : undefined,
             isBeneficiary,
             isManager,
@@ -276,8 +277,10 @@ export default class UserService {
                 }
             }
         }
+        const { exchangeRates, rates } = await ExchangeRatesService.get();
         return {
-            exchangeRates: await ExchangeRatesService.get(),
+            exchangeRates,
+            rates,
             community: community ? community : undefined,
             isBeneficiary,
             isManager,
