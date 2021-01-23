@@ -17,9 +17,12 @@ export interface CommunityStateAttributes {
 
 interface CommunityStateCreationAttributes {
     communityId: string;
-};
+}
 
-export class CommunityState extends Model<CommunityStateAttributes, CommunityStateCreationAttributes> {
+export class CommunityState extends Model<
+    CommunityStateAttributes,
+    CommunityStateCreationAttributes
+> {
     public communityId!: string;
     public claimed!: string;
     public claims!: number;

@@ -8,13 +8,16 @@ interface CronJobExecutedAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 interface CronJobExecutedCreationAttributes {
     jobName: string;
     lastExecuted: Date;
-};
+}
 
-export class CronJobExecuted extends Model<CronJobExecutedAttributes, CronJobExecutedCreationAttributes> {
+export class CronJobExecuted extends Model<
+    CronJobExecutedAttributes,
+    CronJobExecutedCreationAttributes
+> {
     public id!: number;
     public jobName!: string;
     public lastExecuted!: Date;

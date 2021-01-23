@@ -3,7 +3,6 @@ import claimLocationController from '@controllers/claimLocation';
 import claimLocationValidators from '@validators/community';
 import { authenticateToken } from '../middlewares';
 
-
 export default (app: Router): void => {
     const route = Router();
     app.use('/claim-location', route);

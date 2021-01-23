@@ -18,23 +18,11 @@ export default (app: Router): void => {
     /**
      * @deprecated Deprecated in mobile-app@0.1.7
      */
-    route.get(
-        '/id/:publicId',
-        communityController.findByPublicId
-    );
+    route.get('/id/:publicId', communityController.findByPublicId);
 
-    route.get(
-        '/publicid/:publicId',
-        communityController.getByPublicId
-    );
-    route.get(
-        '/contract/:address',
-        communityController.getByContractAddress
-    );
-    route.get(
-        '/hssi/:publicId',
-        communityController.getHistoricalSSI
-    );
+    route.get('/publicid/:publicId', communityController.getByPublicId);
+    route.get('/contract/:address', communityController.getByContractAddress);
+    route.get('/hssi/:publicId', communityController.getHistoricalSSI);
     route.get(
         '/beneficiaries/search/:active/:beneficiaryQuery',
         authenticateToken,
@@ -58,18 +46,11 @@ export default (app: Router): void => {
     /**
      * @deprecated Deprecated in mobile-app@0.1.7
      */
-    route.get(
-        '/all/:status',
-        communityController.getAll
-    );
+    route.get('/all/:status', communityController.getAll);
     /**
      * @deprecated Deprecated in mobile-app@0.1.8
      */
-    route.get(
-        '/managers',
-        authenticateToken,
-        communityController.managers
-    );
+    route.get('/managers', authenticateToken, communityController.managers);
     /**
      * @deprecated Deprecated in mobile-app@0.1.8
      */
@@ -125,8 +106,5 @@ export default (app: Router): void => {
         communityValidators.accept,
         communityController.accept
     );
-    route.get(
-        '/pending',
-        communityController.pending
-    );
+    route.get('/pending', communityController.pending);
 };

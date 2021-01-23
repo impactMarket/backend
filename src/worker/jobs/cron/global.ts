@@ -67,7 +67,9 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const volume = volumeTransactionsAndAddresses.volume;
     const transactions = volumeTransactionsAndAddresses.transactions;
     const reach = volumeTransactionsAndAddresses.uniqueAddressesReached.length;
-    await ReachedAddressService.updateReachedList(volumeTransactionsAndAddresses.uniqueAddressesReached);
+    await ReachedAddressService.updateReachedList(
+        volumeTransactionsAndAddresses.uniqueAddressesReached
+    );
     // TODO: spending rate
     const spendingRate = 0;
 
@@ -117,6 +119,6 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         avgUbiDuration,
         totalVolume,
         totalTransactions: BigInt(totalTransactions),
-        totalReach: BigInt(totalReach)
+        totalReach: BigInt(totalReach),
     });
 }

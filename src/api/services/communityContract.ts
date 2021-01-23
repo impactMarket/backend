@@ -16,13 +16,16 @@ export default class CommunityContractService {
             baseInterval,
             incrementInterval,
         } = contractParams;
-        return await db.models.communityContract.create({
-            communityId,
-            claimAmount,
-            maxClaim,
-            baseInterval,
-            incrementInterval,
-        }, { transaction: t });
+        return await db.models.communityContract.create(
+            {
+                communityId,
+                claimAmount,
+                maxClaim,
+                baseInterval,
+                incrementInterval,
+            },
+            { transaction: t }
+        );
     }
 
     public static async get(
@@ -41,7 +44,10 @@ export default class CommunityContractService {
 
     public static async getAll(): Promise<Map<string, CommunityContract>> {
         return new Map(
-            (await db.models.communityContract.findAll()).map((c) => [c.communityId, c])
+            (await db.models.communityContract.findAll()).map((c) => [
+                c.communityId,
+                c,
+            ])
         );
     }
 
@@ -52,19 +58,21 @@ export default class CommunityContractService {
         // where c."publicId" = cc."communityId"
         // and c.status = 'valid'
         // and c.visibility = 'public'
-        const publicCommunities: string[] = (await db.models.community.findAll({
-            attributes: ['publicId'],
-            where: { visibility: 'public', status: 'valid' }
-        })).map((c) => c.publicId);
+        const publicCommunities: string[] = (
+            await db.models.community.findAll({
+                attributes: ['publicId'],
+                where: { visibility: 'public', status: 'valid' },
+            })
+        ).map((c) => c.publicId);
 
-        const result = (await db.models.communityContract.findAll({
-            attributes: [
-                [fn('avg', col('maxClaim')), 'avgComulativeUbi']
-            ],
-            where: {
-                communityId: { [Op.in]: publicCommunities },
-            }
-        }))[0];
+        const result = (
+            await db.models.communityContract.findAll({
+                attributes: [[fn('avg', col('maxClaim')), 'avgComulativeUbi']],
+                where: {
+                    communityId: { [Op.in]: publicCommunities },
+                },
+            })
+        )[0];
         return (result as any).avgComulativeUbi;
     }
 }

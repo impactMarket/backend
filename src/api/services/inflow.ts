@@ -22,7 +22,10 @@ export default class InflowService {
             await db.models.inflow.create(inflowData);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
-                Logger.error('Error inserting new Inflow. Data = ' + JSON.stringify(inflowData));
+                Logger.error(
+                    'Error inserting new Inflow. Data = ' +
+                        JSON.stringify(inflowData)
+                );
                 Logger.error(e);
             }
         }
@@ -91,7 +94,7 @@ export default class InflowService {
         todayMidnightTime.setHours(0, 0, 0, 0);
         // 30 days ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        const result: { backers: string, funding: string } = (
+        const result: { backers: string; funding: string } = (
             await db.models.inflow.findAll({
                 attributes: [
                     [fn('count', fn('distinct', col('from'))), 'backers'],

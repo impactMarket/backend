@@ -11,14 +11,14 @@ interface ClaimAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 interface ClaimCreationAttributes {
     address: string;
     communityId: string;
     amount: string;
     tx: string;
     txAt: Date;
-};
+}
 
 export class Claim extends Model<ClaimAttributes, ClaimCreationAttributes> {
     public id!: number;

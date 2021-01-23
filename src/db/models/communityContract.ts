@@ -10,7 +10,7 @@ export interface CommunityContractAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 
 interface CommunityContractCreationAttributes {
     communityId: string;
@@ -18,9 +18,12 @@ interface CommunityContractCreationAttributes {
     maxClaim: string;
     baseInterval: number;
     incrementInterval: number;
-};
+}
 
-export class CommunityContract extends Model<CommunityContractAttributes, CommunityContractCreationAttributes> {
+export class CommunityContract extends Model<
+    CommunityContractAttributes,
+    CommunityContractCreationAttributes
+> {
     public communityId!: string;
     public claimAmount!: string;
     public maxClaim!: string;

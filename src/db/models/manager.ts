@@ -8,12 +8,15 @@ interface ManagerAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 interface ManagerCreationAttributes {
     user: string;
     communityId: string;
-};
-export class Manager extends Model<ManagerAttributes, ManagerCreationAttributes> {
+}
+export class Manager extends Model<
+    ManagerAttributes,
+    ManagerCreationAttributes
+> {
     public id!: number;
     public user!: string;
     public communityId!: string;

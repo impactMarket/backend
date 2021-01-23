@@ -75,5 +75,5 @@ export default {
     create,
     add,
     edit,
-    accept
-}
+    accept,
+};

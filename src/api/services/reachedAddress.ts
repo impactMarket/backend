@@ -45,7 +45,7 @@ export default class ReachedAddressService {
         }
 
         await db.models.reachedAddress.bulkCreate(bulkReachedAdd, {
-            updateOnDuplicate: ['lastInteraction']
+            updateOnDuplicate: ['lastInteraction'],
         });
     }
 }

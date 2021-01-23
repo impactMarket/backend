@@ -2,9 +2,9 @@ import database from '../loaders/database';
 
 const db = database();
 export default class ExchangeRatesService {
-    public static async get(): Promise<{ exchangeRates: any, rates: any }> {
+    public static async get(): Promise<{ exchangeRates: any; rates: any }> {
         const rates = await db.models.exchangeRates.findAll({
-            attributes: ['currency', 'rate']
+            attributes: ['currency', 'rate'],
         });
         const mapRates = {};
         for (let index = 0; index < rates.length; index++) {

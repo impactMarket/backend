@@ -11,16 +11,19 @@ interface ClaimLocationAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 interface ClaimLocationCreationAttributes {
     communityId: string;
     gps: {
         latitude: number;
         longitude: number;
     };
-};
+}
 
-export class ClaimLocation extends Model<ClaimLocationAttributes, ClaimLocationCreationAttributes> {
+export class ClaimLocation extends Model<
+    ClaimLocationAttributes,
+    ClaimLocationCreationAttributes
+> {
     public id!: number;
     public communityId!: string;
     public gps!: {

@@ -36,7 +36,8 @@ export default async (): Promise<void> => {
         Logger.error(strError);
         if (
             strError.indexOf('eth_') !== -1 && // any eth_ surely is related to the RPC
-            (strError.indexOf('figment') !== -1 || strError.indexOf('celo') !== -1) &&
+            (strError.indexOf('figment') !== -1 ||
+                strError.indexOf('celo') !== -1) &&
             !waitingForResponseAfterCrash &&
             !waitingForResponseAfterTxRegWarn
         ) {
@@ -49,33 +50,42 @@ export default async (): Promise<void> => {
                 clearInterval(intervalWhenCrash);
             }
             intervalWhenCrash = setInterval(() => {
-                provider.getBlockNumber().then(() => {
-                    successfullAnswersAfterCrash += 1;
-                    // require 5 successfull answers, to prevent two or more crashes in row
-                    if (successfullAnswersAfterCrash < 5) {
-                        Logger.error('Got ' + successfullAnswersAfterCrash + '/5 sucessfull responses form json rpc provider...');
-                    } else {
-                        Logger.error('Reconnecting json rpc provider...');
-                        subscribers(provider);
-                        clearInterval(intervalWhenCrash!);
-                        intervalWhenCrash = undefined;
-                        waitingForResponseAfterCrash = false;
-                        // setTimeout(
-                        //     () => (waitingForResponseAfterCrash = false),
-                        //     2000
-                        // );
-                    }
-                }).catch(() => {
-                    Logger.error('Checking again if RPC is available...');
-                    successfullAnswersAfterCrash = 0;
-                });
+                provider
+                    .getBlockNumber()
+                    .then(() => {
+                        successfullAnswersAfterCrash += 1;
+                        // require 5 successfull answers, to prevent two or more crashes in row
+                        if (successfullAnswersAfterCrash < 5) {
+                            Logger.error(
+                                'Got ' +
+                                    successfullAnswersAfterCrash +
+                                    '/5 sucessfull responses form json rpc provider...'
+                            );
+                        } else {
+                            Logger.error('Reconnecting json rpc provider...');
+                            subscribers(provider);
+                            clearInterval(intervalWhenCrash!);
+                            intervalWhenCrash = undefined;
+                            waitingForResponseAfterCrash = false;
+                            // setTimeout(
+                            //     () => (waitingForResponseAfterCrash = false),
+                            //     2000
+                            // );
+                        }
+                    })
+                    .catch(() => {
+                        Logger.error('Checking again if RPC is available...');
+                        successfullAnswersAfterCrash = 0;
+                    });
             }, 2000);
         }
     });
     process.on('warning', (warning) => {
         if (warning.name === 'TxRegistryFailureWarning') {
             waitingForResponseAfterTxRegWarn = true;
-            Logger.error('Restarting provider listeners after registry failure');
+            Logger.error(
+                'Restarting provider listeners after registry failure'
+            );
             provider.removeAllListeners();
             // if a second crash happen before recovering from the first
             // it will get here again. Clear past time interval
@@ -85,33 +95,40 @@ export default async (): Promise<void> => {
             }
             intervalWhenTxRegWarn = setInterval(() => {
                 Logger.error('Checking if RPC is available');
-                provider.getBlockNumber().then(() => {
-                    successfullAnswersAfterTxRegWarn += 1;
-                    if (successfullAnswersAfterTxRegWarn < 5) {
-                        Logger.error('Got ' + successfullAnswersAfterTxRegWarn + '/5 sucessfull responses form json rpc provider...');
-                    } else {
-                        subscribers(provider);
-                        clearInterval(intervalWhenTxRegWarn!);
-                        waitingForResponseAfterTxRegWarn = false;
-                        // setTimeout(
-                        //     () => (waitingForResponseAfterTxRegWarn = false),
-                        //     2000
-                        // );
-                    }
-                }).catch(() => {
-                    Logger.error('Checking again if RPC is available...');
-                    successfullAnswersAfterTxRegWarn = 0;
-                });
+                provider
+                    .getBlockNumber()
+                    .then(() => {
+                        successfullAnswersAfterTxRegWarn += 1;
+                        if (successfullAnswersAfterTxRegWarn < 5) {
+                            Logger.error(
+                                'Got ' +
+                                    successfullAnswersAfterTxRegWarn +
+                                    '/5 sucessfull responses form json rpc provider...'
+                            );
+                        } else {
+                            subscribers(provider);
+                            clearInterval(intervalWhenTxRegWarn!);
+                            waitingForResponseAfterTxRegWarn = false;
+                            // setTimeout(
+                            //     () => (waitingForResponseAfterTxRegWarn = false),
+                            //     2000
+                            // );
+                        }
+                    })
+                    .catch(() => {
+                        Logger.error('Checking again if RPC is available...');
+                        successfullAnswersAfterTxRegWarn = 0;
+                    });
             }, 2000);
         }
-    })
+    });
     await Promise.all([prepareAgenda(), subscribers(provider)]);
 };
 
 async function subscribers(
     provider: ethers.providers.JsonRpcProvider
 ): Promise<void> {
-    const startFrom = await ImMetadataService.getLastBlock() - 5; // start 5 blocks before
+    const startFrom = (await ImMetadataService.getLastBlock()) - 5; // start 5 blocks before
     // NEW: does not make sense to recover "lost community contracts" has in this case,
     // it would have not been added in the database.
     // const fromLogs = await updateImpactMarketCache(provider, startFrom);
@@ -142,7 +159,7 @@ async function subscribers(
     checkCommunitiesOnChainEvents(
         startFrom,
         provider,
-        availableCommunities,
+        availableCommunities
         // beneficiariesInPublicCommunities
     ).then(() => {
         // wait for the next block and a second later, restart subscribers
@@ -155,18 +172,21 @@ async function subscribers(
                 subscribeChainEvents(
                     provider,
                     new Map(
-                        availableCommunities.map((c) => [c.contractAddress!, c.publicId])
+                        availableCommunities.map((c) => [
+                            c.contractAddress!,
+                            c.publicId,
+                        ])
                     ),
                     new Map(
                         availableCommunities.map((c) => [
                             c.contractAddress!,
                             c.visibility === 'public',
                         ])
-                    ),
+                    )
                     // beneficiariesInPublicCommunities
                 );
             }, 1000);
-        })
+        });
     });
     // get beneficiaries in private communities, so we don't count them
     Logger.info('Starting subscribers...');
@@ -182,7 +202,7 @@ async function subscribers(
                 c.contractAddress!,
                 c.visibility === 'public',
             ])
-        ),
+        )
         // beneficiariesInPublicCommunities
     );
 }

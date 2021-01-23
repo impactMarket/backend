@@ -7,12 +7,15 @@ interface ExchangeRatesAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 interface ExchangeRatesCreationAttributes {
     currency: string;
     rate: number;
-};
-export class ExchangeRates extends Model<ExchangeRatesAttributes, ExchangeRatesCreationAttributes> {
+}
+export class ExchangeRates extends Model<
+    ExchangeRatesAttributes,
+    ExchangeRatesCreationAttributes
+> {
     public currency!: string;
     public rate!: number;
 

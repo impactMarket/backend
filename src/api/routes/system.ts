@@ -5,10 +5,7 @@ import InflowService from '@services/inflow';
 import ReachedAddressService from '@services/reachedAddress';
 
 export default (app: Router): void => {
-    app.get(
-        '/clock',
-        (req, res) => res.json(new Date().getTime())
-    );
+    app.get('/clock', (req, res) => res.json(new Date().getTime()));
 
     app.get('/global-status', async (req, res) => {
         res.send({

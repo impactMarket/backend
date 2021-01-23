@@ -5,7 +5,11 @@ import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import database from '../loaders/database';
-import { Community, CommunityAttributes, CommunityCreationAttributes } from '@models/community';
+import {
+    Community,
+    CommunityAttributes,
+    CommunityCreationAttributes,
+} from '@models/community';
 import { ICommunityContractParams, ICommunityInfo } from '../../types';
 import { notifyManagerAdded } from '../../utils';
 import CommunityContractService from './communityContract';
@@ -14,7 +18,15 @@ import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
 import SSIService from './ssi';
 import TransactionsService from './transactions';
-import { ICommunity, ICommunityLightDetails, ICommunityPendingDetails, IManagerDetailsBeneficiary, IManagerDetailsManager, IManagers, IManagersDetails } from '../../types/endpoints';
+import {
+    ICommunity,
+    ICommunityLightDetails,
+    ICommunityPendingDetails,
+    IManagerDetailsBeneficiary,
+    IManagerDetailsManager,
+    IManagers,
+    IManagersDetails,
+} from '../../types/endpoints';
 import ManagerService from './managers';
 import BeneficiaryService from './beneficiary';
 import { CommunityStateAttributes } from '@models/communityState';
@@ -57,11 +69,13 @@ export default class CommunityService {
             visibility: 'public', // will be changed if private
             status: 'pending', // will be changed if private
             started: new Date(),
-        }
+        };
 
         // if it was submitted as private, validate the transaction first.
         if (txReceipt !== undefined) {
-            const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
+            const ifaceCommunity = new ethers.utils.Interface(
+                CommunityContractABI
+            );
             const eventsCoomunity: ethers.utils.LogDescription[] = [];
             for (let index = 0; index < txReceipt.logs.length; index++) {
                 try {
@@ -69,7 +83,7 @@ export default class CommunityService {
                         txReceipt.logs[index]
                     );
                     eventsCoomunity.push(parsedLog);
-                } catch (e) { }
+                } catch (e) {}
             }
             const index = eventsCoomunity.findIndex(
                 (event) => event !== null && event.name === 'ManagerAdded'
@@ -84,33 +98,34 @@ export default class CommunityService {
                 contractAddress: contractAddress!,
                 visibility: 'private',
                 status: 'valid',
-            }
+            };
         }
 
         const t = await db.sequelize.transaction();
         try {
-            const community = await db.models.community.create(createObject, { transaction: t });
-            await CommunityContractService.add(community.publicId, contractParams, t);
+            const community = await db.models.community.create(createObject, {
+                transaction: t,
+            });
+            await CommunityContractService.add(
+                community.publicId,
+                contractParams,
+                t
+            );
             // await CommunityStateService.add(community.publicId, t);
             // await CommunityDailyStateService.populateNext5Days(community.publicId, t);
             if (txReceipt !== undefined) {
-                await ManagerService.add(
-                    managerAddress,
-                    community.publicId,
-                    t
-                );
+                await ManagerService.add(managerAddress, community.publicId, t);
             }
             // If the execution reaches this line, no errors were thrown.
             // We commit the transaction.
             await t.commit();
             return community;
         } catch (error) {
-
             // If the execution reaches this line, an error was thrown.
             // We rollback the transaction.
             await t.rollback();
             // Since this is the service, we throw the error back to the controller,
-            // so the route returns an error. 
+            // so the route returns an error.
             throw new Error(error);
         }
     }
@@ -187,27 +202,28 @@ export default class CommunityService {
         // does not support eager loading with global "raw: false".
         // Please, check again, and if available, update this
         // https://github.com/sequelize/sequelize/issues/6408
-        let sqlQuery = 'select "publicId", "contractAddress", "requestByAddress", name, city, country, description, email, "coverImage", cc.*, cs.* ' +
+        let sqlQuery =
+            'select "publicId", "contractAddress", "requestByAddress", name, city, country, description, email, "coverImage", cc.*, cs.* ' +
             'from community c ' +
             'left join communitycontract cc on c."publicId" = cc."communityId" ' +
             'left join communitystate cs on c."publicId" = cs."communityId" ' +
-            'where status = \'pending\' and visibility = \'public\' order by c."createdAt" DESC';
+            "where status = 'pending' and visibility = 'public' order by c.\"createdAt\" DESC";
 
-        const rawResult: (
-            {
-                publicId: string,
-                contractAddress: string,
-                requestByAddress: string,
-                name: string,
-                city: string,
-                country: string,
-                description: string,
-                email: string,
-                coverImage: string
-            } &
-            CommunityStateAttributes &
-            CommunityContractAttributes
-        )[] = await db.sequelize.query(sqlQuery, { type: QueryTypes.SELECT });
+        const rawResult: ({
+            publicId: string;
+            contractAddress: string;
+            requestByAddress: string;
+            name: string;
+            city: string;
+            country: string;
+            description: string;
+            email: string;
+            coverImage: string;
+        } & CommunityStateAttributes &
+            CommunityContractAttributes)[] = await db.sequelize.query(
+            sqlQuery,
+            { type: QueryTypes.SELECT }
+        );
 
         const results: ICommunityPendingDetails[] = rawResult.map((c) => ({
             publicId: c.publicId,
@@ -225,7 +241,7 @@ export default class CommunityService {
                 claimAmount: c.claimAmount,
                 incrementInterval: c.incrementInterval,
                 maxClaim: c.maxClaim,
-                // values below don't matter 
+                // values below don't matter
                 communityId: c.publicId,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
@@ -238,12 +254,12 @@ export default class CommunityService {
                 claimed: c.claimed,
                 claims: c.claims,
                 raised: c.raised,
-                // values below don't matter 
+                // values below don't matter
                 communityId: c.publicId,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
             },
-            // values below don't matter 
+            // values below don't matter
             createdAt: c.createdAt,
             updatedAt: c.updatedAt,
         }));
@@ -274,7 +290,7 @@ export default class CommunityService {
                     receipt.logs[index]
                 );
                 eventsImpactMarket.push(parsedLog);
-            } catch (e) { }
+            } catch (e) {}
         }
         const index = eventsImpactMarket.findIndex(
             (event) => event !== null && event.name === 'CommunityAdded'
@@ -285,7 +301,10 @@ export default class CommunityService {
 
             const t = await db.sequelize.transaction();
             try {
-                const dbUpdate: [number, Community[]] = await db.models.community.update(
+                const dbUpdate: [
+                    number,
+                    Community[]
+                ] = await db.models.community.update(
                     {
                         contractAddress: communityContractAddress,
                         status: 'valid',
@@ -299,7 +318,9 @@ export default class CommunityService {
                         communityContractAddress
                     );
                 } else {
-                    throw new Error('Did not update ' + publicId + ' after acceptance!');
+                    throw new Error(
+                        'Did not update ' + publicId + ' after acceptance!'
+                    );
                 }
                 await CommunityStateService.add(publicId, t);
                 await CommunityDailyStateService.populateNext5Days(publicId, t);
@@ -312,7 +333,7 @@ export default class CommunityService {
                 // We rollback the transaction.
                 await t.rollback();
                 // Since this is the service, we throw the error back to the controller,
-                // so the route returns an error. 
+                // so the route returns an error.
                 throw new Error(error);
             }
         }
@@ -325,7 +346,7 @@ export default class CommunityService {
     public static async listCommunitiesStructOnly(): Promise<Community[]> {
         return await db.models.community.findAll({
             where: {
-                status: 'valid'
+                status: 'valid',
             },
         });
     }
@@ -335,18 +356,19 @@ export default class CommunityService {
      */
     public static async countPublicCommunities(): Promise<number> {
         const communities = (await db.models.community.findAll({
-            attributes: [
-                [fn('count', col('contractAddress')), 'total']
-            ],
+            attributes: [[fn('count', col('contractAddress')), 'total']],
             where: {
                 status: 'valid',
-                visibility: 'public'
+                visibility: 'public',
             },
         })) as any;
         return communities[0].total;
     }
 
-    public static async updateCoverImage(publicId: string, newPictureUrl: string): Promise<boolean> {
+    public static async updateCoverImage(
+        publicId: string,
+        newPictureUrl: string
+    ): Promise<boolean> {
         const result = await db.models.community.update(
             {
                 coverImage: newPictureUrl,
@@ -370,8 +392,8 @@ export default class CommunityService {
                 visibility: onlyPublic
                     ? 'public'
                     : {
-                        [Op.or]: ['public', 'private'],
-                    },
+                          [Op.or]: ['public', 'private'],
+                      },
             },
             order: [['createdAt', 'ASC']],
         });
@@ -383,16 +405,20 @@ export default class CommunityService {
         return result;
     }
 
-    public static async list(order: string | undefined, query: any): Promise<ICommunityLightDetails[]> {
+    public static async list(
+        order: string | undefined,
+        query: any
+    ): Promise<ICommunityLightDetails[]> {
         // by the time of writting, sequelize
         // does not support eager loading with global "raw: false".
         // Please, check again, and if available, update this
         // https://github.com/sequelize/sequelize/issues/6408
-        let sqlQuery = 'select "publicId", "contractAddress", name, city, country, "coverImage", cc.*, cs.* ' +
+        let sqlQuery =
+            'select "publicId", "contractAddress", name, city, country, "coverImage", cc.*, cs.* ' +
             'from community c ' +
             'left join communitycontract cc on c."publicId" = cc."communityId" ' +
             'left join communitystate cs on c."publicId" = cs."communityId" ' +
-            'where status = \'valid\' and visibility = \'public\' ';
+            "where status = 'valid' and visibility = 'public' ";
         let useOrder = '';
         if (order === undefined && query.order !== undefined) {
             useOrder = query.order;
@@ -404,7 +430,14 @@ export default class CommunityService {
                 if (typeof lat !== 'number' || typeof lng !== 'number') {
                     throw new Error('NaN');
                 }
-                sqlQuery += 'order by (6371*acos(cos(radians(' + lat + '))*cos(radians(cast(gps->>\'latitude\' as float)))*cos(radians(cast(gps->>\'longitude\' as float))-radians(' + lng + '))+sin(radians(' + lat + '))*sin(radians(cast(gps->>\'latitude\' as float)))))';
+                sqlQuery +=
+                    'order by (6371*acos(cos(radians(' +
+                    lat +
+                    "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
+                    lng +
+                    '))+sin(radians(' +
+                    lat +
+                    "))*sin(radians(cast(gps->>'latitude' as float)))))";
                 break;
 
             default:
@@ -419,14 +452,25 @@ export default class CommunityService {
                 throw new Error('NaN');
             }
             const totalCommunities = await CommunityService.countPublicCommunities();
-            sqlQuery += (' offset ' + offset + ' limit ' + Math.min(limit, Math.max(totalCommunities - offset, 0)));
+            sqlQuery +=
+                ' offset ' +
+                offset +
+                ' limit ' +
+                Math.min(limit, Math.max(totalCommunities - offset, 0));
         }
 
-        const rawResult: (
-            { publicId: string, contractAddress: string, name: string, city: string, country: string, coverImage: string } &
-            CommunityStateAttributes &
-            CommunityContractAttributes
-        )[] = await db.sequelize.query(sqlQuery, { type: QueryTypes.SELECT });
+        const rawResult: ({
+            publicId: string;
+            contractAddress: string;
+            name: string;
+            city: string;
+            country: string;
+            coverImage: string;
+        } & CommunityStateAttributes &
+            CommunityContractAttributes)[] = await db.sequelize.query(
+            sqlQuery,
+            { type: QueryTypes.SELECT }
+        );
 
         const results: ICommunityLightDetails[] = rawResult.map((c) => ({
             publicId: c.publicId,
@@ -441,7 +485,7 @@ export default class CommunityService {
                 claimAmount: c.claimAmount,
                 incrementInterval: c.incrementInterval,
                 maxClaim: c.maxClaim,
-                // values below don't matter 
+                // values below don't matter
                 communityId: c.publicId,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
@@ -454,12 +498,12 @@ export default class CommunityService {
                 claimed: c.claimed,
                 claims: c.claims,
                 raised: c.raised,
-                // values below don't matter 
+                // values below don't matter
                 communityId: c.publicId,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
             },
-            // values below don't matter 
+            // values below don't matter
             createdAt: c.createdAt,
             updatedAt: c.updatedAt,
         }));
@@ -467,19 +511,23 @@ export default class CommunityService {
         return results;
     }
 
-    public static async listFull(order: string | undefined): Promise<ICommunity[]> {
+    public static async listFull(
+        order: string | undefined
+    ): Promise<ICommunity[]> {
         // by the time of writting, sequelize
         // does not support eager loading with global "raw: false".
         // Please, check again, and if available, update this
         // https://github.com/sequelize/sequelize/issues/6408
-        let sqlQuery = 'select * from community c ' +
+        let sqlQuery =
+            'select * from community c ' +
             'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
             'left join communitycontract cc on c."publicId" = cc."communityId" ' +
             'left join communitystate cs on c."publicId" = cs."communityId" ' +
-            'where c.visibility = \'public\' and c.status = \'valid\' ';
+            "where c.visibility = 'public' and c.status = 'valid' ";
         switch (order) {
             case 'out_of_funds':
-                sqlQuery += 'order by (cs.raised - cs.claimed) / cm."ubiRate" / cs.beneficiaries';
+                sqlQuery +=
+                    'order by (cs.raised - cs.claimed) / cm."ubiRate" / cs.beneficiaries';
                 break;
 
             case 'newest':
@@ -491,12 +539,13 @@ export default class CommunityService {
                 break;
         }
 
-        const rawResult: (
-            CommunityAttributes &
+        const rawResult: (CommunityAttributes &
             CommunityStateAttributes &
             CommunityContractAttributes &
-            CommunityDailyMetricsAttributes
-        )[] = await db.sequelize.query(sqlQuery, { type: QueryTypes.SELECT });
+            CommunityDailyMetricsAttributes)[] = await db.sequelize.query(
+            sqlQuery,
+            { type: QueryTypes.SELECT }
+        );
 
         const results: ICommunity[] = rawResult.map((c) => ({
             id: c.id,
@@ -522,7 +571,7 @@ export default class CommunityService {
                 claimAmount: c.claimAmount,
                 incrementInterval: c.incrementInterval,
                 maxClaim: c.maxClaim,
-                // values below don't matter 
+                // values below don't matter
                 communityId: c.publicId,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
@@ -535,7 +584,7 @@ export default class CommunityService {
                 claimed: c.claimed,
                 claims: c.claims,
                 raised: c.raised,
-                // values below don't matter 
+                // values below don't matter
                 communityId: c.publicId,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
@@ -546,13 +595,13 @@ export default class CommunityService {
                 ssi: c.ssi,
                 ssiDayAlone: c.ssiDayAlone,
                 ubiRate: c.ubiRate,
-                // values below don't matter 
+                // values below don't matter
                 communityId: c.publicId,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
                 id: 0,
             },
-            // values below don't matter 
+            // values below don't matter
             createdAt: c.createdAt,
             updatedAt: c.updatedAt,
         }));
@@ -564,33 +613,40 @@ export default class CommunityService {
         managerAddress: string,
         active: boolean,
         offset: number,
-        limit: number,
+        limit: number
     ): Promise<IManagerDetailsBeneficiary[]> {
         return BeneficiaryService.listBeneficiaries(
             managerAddress,
             active,
             offset,
-            limit,
+            limit
         );
     }
 
     public static async listManagers(
         managerAddress: string,
         offset: number,
-        limit: number,
+        limit: number
     ): Promise<IManagerDetailsManager[]> {
-        return ManagerService.listManagers(
+        return ManagerService.listManagers(managerAddress, offset, limit);
+    }
+
+    public static async searchBeneficiary(
+        managerAddress: string,
+        beneficiaryQuery: string,
+        active: boolean
+    ): Promise<IManagerDetailsBeneficiary[]> {
+        return await BeneficiaryService.search(
             managerAddress,
-            offset,
-            limit,
+            beneficiaryQuery,
+            active
         );
     }
 
-    public static async searchBeneficiary(managerAddress: string, beneficiaryQuery: string, active: boolean): Promise<IManagerDetailsBeneficiary[]> {
-        return await BeneficiaryService.search(managerAddress, beneficiaryQuery, active);
-    }
-
-    public static async searchManager(managerAddress: string, beneficiaryQuery: string): Promise<IManagerDetailsManager[]> {
+    public static async searchManager(
+        managerAddress: string,
+        beneficiaryQuery: string
+    ): Promise<IManagerDetailsManager[]> {
         return await ManagerService.search(managerAddress, beneficiaryQuery);
     }
 
@@ -602,28 +658,38 @@ export default class CommunityService {
         if (manager === null) {
             throw new Error('Not a manager ' + managerAddress);
         }
-        const managers = await ManagerService.countManagers(manager.communityId);
-        const beneficiaries = await BeneficiaryService.countInCommunity(manager.communityId);
+        const managers = await ManagerService.countManagers(
+            manager.communityId
+        );
+        const beneficiaries = await BeneficiaryService.countInCommunity(
+            manager.communityId
+        );
         return {
             managers,
-            beneficiaries
-        }
+            beneficiaries,
+        };
     }
 
     /**
      * @deprecated Since mobile version 0.1.8
      */
-    public static async managersDetails(managerAddress: string): Promise<IManagersDetails> {
+    public static async managersDetails(
+        managerAddress: string
+    ): Promise<IManagersDetails> {
         const manager = await ManagerService.get(managerAddress);
         if (manager === null) {
             throw new Error('Not a manager ' + managerAddress);
         }
-        const managers = await ManagerService.managersInCommunity(manager.communityId);
-        const beneficiaries = await BeneficiaryService.listAllInCommunity(manager.communityId);
+        const managers = await ManagerService.managersInCommunity(
+            manager.communityId
+        );
+        const beneficiaries = await BeneficiaryService.listAllInCommunity(
+            manager.communityId
+        );
         return {
             managers,
-            beneficiaries
-        }
+            beneficiaries,
+        };
     }
 
     public static async getByPublicId(
@@ -639,27 +705,29 @@ export default class CommunityService {
         }
         const communityState = await db.models.communityState.findOne({
             where: {
-                communityId: community.publicId
+                communityId: community.publicId,
             },
         });
         const communityContract = await db.models.communityContract.findOne({
             where: {
-                communityId: community.publicId
+                communityId: community.publicId,
             },
         });
-        const communityDailyMetrics = await db.models.communityDailyMetrics.findAll({
-            where: {
-                communityId: community.publicId
-            },
-            order: [['createdAt', 'DESC']],
-            limit: 1
-        });
+        const communityDailyMetrics = await db.models.communityDailyMetrics.findAll(
+            {
+                where: {
+                    communityId: community.publicId,
+                },
+                order: [['createdAt', 'DESC']],
+                limit: 1,
+            }
+        );
         return {
             ...community,
             state: communityState!,
             contract: communityContract!,
             metrics: communityDailyMetrics[0]!,
-        }
+        };
     }
 
     public static async getByContractAddress(
@@ -675,27 +743,29 @@ export default class CommunityService {
         }
         const communityState = await db.models.communityState.findOne({
             where: {
-                communityId: community.publicId
+                communityId: community.publicId,
             },
         });
         const communityContract = await db.models.communityContract.findOne({
             where: {
-                communityId: community.publicId
+                communityId: community.publicId,
             },
         });
-        const communityDailyMetrics = await db.models.communityDailyMetrics.findAll({
-            where: {
-                communityId: community.publicId
-            },
-            order: [['createdAt', 'DESC']],
-            limit: 1
-        });
+        const communityDailyMetrics = await db.models.communityDailyMetrics.findAll(
+            {
+                where: {
+                    communityId: community.publicId,
+                },
+                order: [['createdAt', 'DESC']],
+                limit: 1,
+            }
+        );
         return {
             ...community,
             state: communityState!,
             contract: communityContract!,
             metrics: communityDailyMetrics[0]!,
-        }
+        };
     }
 
     public static async getAllAddressesAndIds(): Promise<Map<string, string>> {
@@ -703,9 +773,9 @@ export default class CommunityService {
             attributes: ['contractAddress', 'publicId'],
             where: {
                 contractAddress: {
-                    [Op.ne]: null
-                }
-            }
+                    [Op.ne]: null,
+                },
+            },
         });
         return new Map(result.map((c) => [c.contractAddress!, c.publicId]));
     }
@@ -766,7 +836,9 @@ export default class CommunityService {
     public static async getOnlyCommunityByContractAddress(
         contractAddress: string
     ): Promise<Community | null> {
-        return await db.models.community.findOne({ where: { contractAddress } });
+        return await db.models.community.findOne({
+            where: { contractAddress },
+        });
     }
 
     public static async getNamesAndFromAddresses(
@@ -848,9 +920,9 @@ export default class CommunityService {
             attributes: ['contractAddress', 'name'],
             where: {
                 contractAddress: {
-                    [Op.ne]: null
-                }
-            }
+                    [Op.ne]: null,
+                },
+            },
         });
         for (let index = 0; index < query.length; index++) {
             const element = query[index];

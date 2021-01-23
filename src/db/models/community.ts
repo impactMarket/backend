@@ -27,13 +27,13 @@ export interface CommunityAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 export interface CommunityCreationAttributes {
     requestByAddress: string;
     contractAddress?: string;
     name: string;
     description: string;
-    descriptionEn? :string;
+    descriptionEn?: string;
     language: string;
     currency: string;
     city: string;
@@ -47,9 +47,12 @@ export interface CommunityCreationAttributes {
     coverImage: string;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     started: Date;
-};
+}
 
-export class Community extends Model<CommunityAttributes, CommunityCreationAttributes> {
+export class Community extends Model<
+    CommunityAttributes,
+    CommunityCreationAttributes
+> {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public publicId!: string;
     public requestByAddress!: string;

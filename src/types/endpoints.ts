@@ -1,8 +1,8 @@
-import { CommunityAttributes } from "../db/models/community";
-import { CommunityContractAttributes } from "../db/models/communityContract";
-import { CommunityDailyMetricsAttributes } from "../db/models/communityDailyMetrics";
-import { CommunityStateAttributes } from "../db/models/communityState";
-import { UserAttributes } from "../db/models/user";
+import { CommunityAttributes } from '../db/models/community';
+import { CommunityContractAttributes } from '../db/models/communityContract';
+import { CommunityDailyMetricsAttributes } from '../db/models/communityDailyMetrics';
+import { CommunityStateAttributes } from '../db/models/communityState';
+import { UserAttributes } from '../db/models/user';
 
 export interface ICommunityLightDetails {
     publicId: string;
@@ -34,11 +34,11 @@ export interface ICommunity extends CommunityAttributes {
 }
 
 export interface IManagers {
-    managers: number,
+    managers: number;
     beneficiaries: {
-        active: number,
-        inactive: number
-    }
+        active: number;
+        inactive: number;
+    };
 }
 
 export interface IManagerDetailsManager {
@@ -55,11 +55,11 @@ export interface IManagerDetailsBeneficiary {
 }
 
 export interface IManagersDetails {
-    managers: IManagerDetailsManager[],
+    managers: IManagerDetailsManager[];
     beneficiaries: {
-        active: IManagerDetailsBeneficiary[],
-        inactive: IManagerDetailsBeneficiary[]
-    }
+        active: IManagerDetailsBeneficiary[];
+        inactive: IManagerDetailsBeneficiary[];
+    };
 }
 
 export interface IUserHello {
@@ -67,7 +67,7 @@ export interface IUserHello {
      * @deprecated
      */
     exchangeRates: any; // TODO: remove when 1.0.0 is the lowest version required
-    rates: { currency: string, rate: number }[];
+    rates: { currency: string; rate: number }[];
     isBeneficiary: boolean;
     isManager: boolean;
     community?: ICommunity;

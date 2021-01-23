@@ -22,12 +22,13 @@ export const upload = multer({
         },
         key(req, file, cb) {
             const today = new Date();
-            const s3FilePrefix = `${today.getFullYear()}${(today.getMonth() + 1)}/`;
-            const s3Filename = `${s3FilePrefix}${Date.now().toString()}${path.extname(file.originalname)}`;
-            cb(
-                null,
-                s3Filename
-            );
-        }
-    })
-})
+            const s3FilePrefix = `${today.getFullYear()}${
+                today.getMonth() + 1
+            }/`;
+            const s3Filename = `${s3FilePrefix}${Date.now().toString()}${path.extname(
+                file.originalname
+            )}`;
+            cb(null, s3Filename);
+        },
+    }),
+});

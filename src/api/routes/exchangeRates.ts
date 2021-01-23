@@ -6,6 +6,8 @@ export default (app: Router): void => {
     app.use('/exchange-rates', route);
 
     route.get('/', (req: Request, res: Response) => {
-        ExchangeRatesService.get().then((rates) => res.send(rates)).catch((r) => res.send(r).status(403));
+        ExchangeRatesService.get()
+            .then((rates) => res.send(rates))
+            .catch((r) => res.send(r).status(403));
     });
 };

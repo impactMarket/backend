@@ -28,11 +28,13 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const calculateMetrics = async (community: ICommunityInfo) => {
         // if no activity, do not calculate
         if (
-            community.state.claimed === '0' || 
-            community.state.raised === '0' || 
-            totalClaimedLast30Days.get(community.publicId) === undefined || 
-            activeBeneficiariesLast30Days.get(community.publicId) === undefined ||
-            activeBeneficiariesLast30Days.get(community.publicId) === 0) {
+            community.state.claimed === '0' ||
+            community.state.raised === '0' ||
+            totalClaimedLast30Days.get(community.publicId) === undefined ||
+            activeBeneficiariesLast30Days.get(community.publicId) ===
+                undefined ||
+            activeBeneficiariesLast30Days.get(community.publicId) === 0
+        ) {
             return;
         }
         const beneficiaries = await BeneficiaryService.listActiveInCommunity(
@@ -63,12 +65,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             const timeToWait =
                 community.contractParams.baseInterval +
                 (beneficiary.claims - 2) *
-                community.contractParams.incrementInterval;
+                    community.contractParams.incrementInterval;
             const timeWaited =
                 Math.floor(
                     (beneficiary.lastClaimAt.getTime() -
                         beneficiary.penultimateClaimAt.getTime()) /
-                    1000
+                        1000
                 ) - timeToWait;
             // console.log(beneficiary.address, beneficiary.lastClaimAt, beneficiary.penultimateClaimAt);
             beneficiariesTimeToWait.push(timeToWait);
@@ -106,7 +108,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
         let daysSinceStart = Math.round(
             (todayDateOnly.getTime() - new Date(community.started).getTime()) /
-            86400000
+                86400000
         ); // 86400000 1 days in ms
         if (daysSinceStart > 30) {
             daysSinceStart = 30;

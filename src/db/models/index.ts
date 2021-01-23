@@ -118,7 +118,7 @@ export default function initModels(sequelize: Sequelize): void {
     // sequelize.models.CommunityContract.belongsTo(sequelize.models.Community, {
     //     foreignKey: {
     //         name: 'communityId',
-    //         field: 
+    //         field:
     //     }
     //     targetKey: 'publicId', // the Community.publicId
     //     keyType: DataTypes.UUID

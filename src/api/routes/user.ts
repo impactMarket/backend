@@ -1,22 +1,14 @@
-import {
-    Router,
-    Request,
-    Response,
-} from 'express';
+import { Router, Request, Response } from 'express';
 import UserService from '../services/user';
-import {
-    celebrate,
-    Joi
-} from 'celebrate';
+import { celebrate, Joi } from 'celebrate';
 import { authenticateToken } from '../middlewares';
 import { Logger } from '@logger/logger';
-
 
 export default (app: Router): void => {
     const controllerLogAndFail = (e: any, status: number, res: Response) => {
         Logger.error(e);
         res.status(status).send(e);
-    }
+    };
 
     const route = Router();
 
@@ -32,31 +24,24 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const {
-                address,
-                language,
-                pushNotificationToken,
-            } = req.body;
-            UserService.authenticate(
-                address,
-                language,
-                pushNotificationToken,
-            ).then((user) => res.send(user)).catch((e) => res.sendStatus(403));
-        },
+            const { address, language, pushNotificationToken } = req.body;
+            UserService.authenticate(address, language, pushNotificationToken)
+                .then((user) => res.send(user))
+                .catch((e) => res.sendStatus(403));
+        }
     );
 
-    route.get(
-        '/exists/:address',
-        (req: Request, res: Response) => {
-            UserService.exists(req.params.address).then((u) => {
+    route.get('/exists/:address', (req: Request, res: Response) => {
+        UserService.exists(req.params.address)
+            .then((u) => {
                 if (u === false) {
                     res.sendStatus(404);
                 } else {
                     res.send('OK');
                 }
-            }).catch((e) => controllerLogAndFail(e, 404, res));
-        },
-    );
+            })
+            .catch((e) => controllerLogAndFail(e, 404, res));
+    });
 
     route.post(
         '/hello',
@@ -68,19 +53,20 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const {
-                address,
-                token,
-            } = req.body;
+            const { address, token } = req.body;
             if (token.length > 0) {
                 // failing to set the push notification, should not be a blocker!
                 UserService.setPushNotificationsToken(
                     address,
                     token
-                ).catch((e) => Logger.warn(`Error setting push notification token ` + e));
+                ).catch((e) =>
+                    Logger.warn(`Error setting push notification token ` + e)
+                );
             }
-            UserService.hello(address).then((u) => res.send(u)).catch((e) => controllerLogAndFail(e, 403, res));
-        },
+            UserService.hello(address)
+                .then((u) => res.send(u))
+                .catch((e) => controllerLogAndFail(e, 403, res));
+        }
     );
 
     route.post(
@@ -93,15 +79,11 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const {
-                address,
-                username,
-            } = req.body;
-            UserService.setUsername(
-                address,
-                username
-            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
-        },
+            const { address, username } = req.body;
+            UserService.setUsername(address, username)
+                .then(() => res.sendStatus(200))
+                .catch((e) => controllerLogAndFail(e, 400, res));
+        }
     );
 
     route.post(
@@ -114,15 +96,11 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const {
-                address,
-                currency,
-            } = req.body;
-            UserService.setCurrency(
-                address,
-                currency
-            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
-        },
+            const { address, currency } = req.body;
+            UserService.setCurrency(address, currency)
+                .then(() => res.sendStatus(200))
+                .catch((e) => controllerLogAndFail(e, 400, res));
+        }
     );
 
     route.post(
@@ -135,15 +113,11 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const {
-                address,
-                token,
-            } = req.body;
-            UserService.setPushNotificationsToken(
-                address,
-                token
-            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
-        },
+            const { address, token } = req.body;
+            UserService.setPushNotificationsToken(address, token)
+                .then(() => res.sendStatus(200))
+                .catch((e) => controllerLogAndFail(e, 400, res));
+        }
     );
 
     route.post(
@@ -156,15 +130,11 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const {
-                address,
-                language,
-            } = req.body;
-            UserService.setLanguage(
-                address,
-                language
-            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
-        },
+            const { address, language } = req.body;
+            UserService.setLanguage(address, language)
+                .then(() => res.sendStatus(200))
+                .catch((e) => controllerLogAndFail(e, 400, res));
+        }
     );
 
     route.post(
@@ -177,15 +147,11 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const {
-                address,
-                gender,
-            } = req.body;
-            UserService.setGender(
-                address,
-                gender
-            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
-        },
+            const { address, gender } = req.body;
+            UserService.setGender(address, gender)
+                .then(() => res.sendStatus(200))
+                .catch((e) => controllerLogAndFail(e, 400, res));
+        }
     );
 
     route.post(
@@ -198,15 +164,11 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const {
-                address,
-                age,
-            } = req.body;
-            UserService.setYear(
-                address,
-                new Date().getFullYear() - age
-            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
-        },
+            const { address, age } = req.body;
+            UserService.setYear(address, new Date().getFullYear() - age)
+                .then(() => res.sendStatus(200))
+                .catch((e) => controllerLogAndFail(e, 400, res));
+        }
     );
 
     route.post(
@@ -219,15 +181,11 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const {
-                address,
-                children,
-            } = req.body;
-            UserService.setChildren(
-                address,
-                children
-            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
-        },
+            const { address, children } = req.body;
+            UserService.setChildren(address, children)
+                .then(() => res.sendStatus(200))
+                .catch((e) => controllerLogAndFail(e, 400, res));
+        }
     );
 
     /**
@@ -251,8 +209,14 @@ export default (app: Router): void => {
                 pushNotificationsToken,
                 pushNotificationToken,
             } = req.body;
-            if (pushNotificationToken === null || pushNotificationToken === undefined) {
-                if (pushNotificationsToken === null || pushNotificationsToken === undefined) {
+            if (
+                pushNotificationToken === null ||
+                pushNotificationToken === undefined
+            ) {
+                if (
+                    pushNotificationsToken === null ||
+                    pushNotificationsToken === undefined
+                ) {
                     pushNotificationToken = '';
                 } else {
                     pushNotificationToken = pushNotificationsToken;
@@ -262,7 +226,7 @@ export default (app: Router): void => {
                 const result = await UserService.auth(
                     address,
                     language,
-                    pushNotificationToken,
+                    pushNotificationToken
                 );
                 if (result === undefined) {
                     res.sendStatus(403);
@@ -273,7 +237,7 @@ export default (app: Router): void => {
                 Logger.error(e);
                 res.sendStatus(403);
             }
-        },
+        }
     );
 
     /**
@@ -290,16 +254,10 @@ export default (app: Router): void => {
             }),
         }),
         async (req: Request, res: Response) => {
-            const {
-                address,
-                token,
-            } = req.body;
+            const { address, token } = req.body;
             if (token.length > 0) {
                 try {
-                    await UserService.setPushNotificationsToken(
-                        address,
-                        token
-                    );
+                    await UserService.setPushNotificationsToken(address, token);
                 } catch (e) {
                     Logger.warn(e);
                     res.sendStatus(403);
@@ -311,7 +269,7 @@ export default (app: Router): void => {
                 Logger.warn(e);
                 res.sendStatus(403);
             }
-        },
+        }
     );
 
     /**
@@ -327,14 +285,10 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const {
-                address,
-                childs,
-            } = req.body;
-            UserService.setChildren(
-                address,
-                childs
-            ).then(() => res.sendStatus(200)).catch((e) => controllerLogAndFail(e, 400, res));
-        },
+            const { address, childs } = req.body;
+            UserService.setChildren(address, childs)
+                .then(() => res.sendStatus(200))
+                .catch((e) => controllerLogAndFail(e, 400, res));
+        }
     );
 };

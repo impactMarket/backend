@@ -7,13 +7,16 @@ interface ImMetadataAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 interface ImMetadataCreationAttributes {
     key: string;
     value: string;
-};
+}
 
-export class ImMetadata extends Model<ImMetadataAttributes, ImMetadataCreationAttributes> {
+export class ImMetadata extends Model<
+    ImMetadataAttributes,
+    ImMetadataCreationAttributes
+> {
     public key!: string;
     public value!: string;
 

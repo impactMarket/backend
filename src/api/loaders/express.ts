@@ -31,40 +31,38 @@ export default ({ app }: { app: express.Application }): void => {
     if (process.env.NODE_ENV === 'development') {
         const options = {
             swaggerDefinition: {
-                openapi: "3.0.0",
+                openapi: '3.0.0',
                 info: {
-                    description: "Swagger UI to impactMarket API",
-                    version: "0.0.1",
-                    title: "impactMarket",
+                    description: 'Swagger UI to impactMarket API',
+                    version: '0.0.1',
+                    title: 'impactMarket',
                     license: {
-                        name: "Apache 2.0",
-                        url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-                    }
+                        name: 'Apache 2.0',
+                        url: 'http://www.apache.org/licenses/LICENSE-2.0.html',
+                    },
                 },
-                host: "localhost:5000",
-                schemes: [
-                    "http"
-                ],
+                host: 'localhost:5000',
+                schemes: ['http'],
                 components: {
                     securitySchemes: {
                         api_auth: {
-                            type: "http",
-                            scheme: "bearer",
-                            bearerFormat: "JWT",
+                            type: 'http',
+                            scheme: 'bearer',
+                            bearerFormat: 'JWT',
                             scopes: {
-                                write: "modify",
-                                read: "read"
-                            }
-                        }
-                    }
-                }
+                                write: 'modify',
+                                read: 'read',
+                            },
+                        },
+                    },
+                },
             },
             apis: ['./src/api/routes/*.ts'],
         };
         const swaggerSpec = swaggerJsdoc(options);
 
         app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-        app.use(morgan('combined'))
+        app.use(morgan('combined'));
     }
 
     // Useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)

@@ -24,7 +24,10 @@ export default class ClaimService {
             await db.models.claim.create(claimData);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
-                Logger.error('Error inserting new Claim. Data = ' + JSON.stringify(claimData));
+                Logger.error(
+                    'Error inserting new Claim. Data = ' +
+                        JSON.stringify(claimData)
+                );
                 Logger.error(e);
             }
         }

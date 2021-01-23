@@ -11,14 +11,14 @@ interface InflowAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 interface InflowCreationAttributes {
     from: string;
     communityId: string;
     amount: string;
     tx: string;
     txAt: Date;
-};
+}
 export class Inflow extends Model<InflowAttributes, InflowCreationAttributes> {
     public id!: number;
     public from!: string;

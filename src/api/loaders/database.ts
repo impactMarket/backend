@@ -48,23 +48,34 @@ export default (): DbLoader => {
         models: {
             user: sequelize.models.User as ModelCtor<User>,
             community: sequelize.models.Community as ModelCtor<Community>,
-            communityContract: sequelize.models.CommunityContract as ModelCtor<CommunityContract>,
-            communityState: sequelize.models.CommunityState as ModelCtor<CommunityState>,
-            communityDailyState: sequelize.models.CommunityDailyState as ModelCtor<CommunityDailyState>,
-            communityDailyMetrics: sequelize.models.CommunityDailyMetrics as ModelCtor<CommunityDailyMetrics>,
+            communityContract: sequelize.models
+                .CommunityContract as ModelCtor<CommunityContract>,
+            communityState: sequelize.models
+                .CommunityState as ModelCtor<CommunityState>,
+            communityDailyState: sequelize.models
+                .CommunityDailyState as ModelCtor<CommunityDailyState>,
+            communityDailyMetrics: sequelize.models
+                .CommunityDailyMetrics as ModelCtor<CommunityDailyMetrics>,
             claim: sequelize.models.Claim as ModelCtor<Claim>,
-            claimLocation: sequelize.models.ClaimLocation as ModelCtor<ClaimLocation>,
+            claimLocation: sequelize.models
+                .ClaimLocation as ModelCtor<ClaimLocation>,
             beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
-            beneficiaryTransaction: sequelize.models.BeneficiaryTransaction as ModelCtor<BeneficiaryTransaction>,
-            cronJobExecuted: sequelize.models.CronJobExecuted as ModelCtor<CronJobExecuted>,
-            exchangeRates: sequelize.models.ExchangeRates as ModelCtor<ExchangeRates>,
-            globalDailyState: sequelize.models.GlobalDailyState as ModelCtor<GlobalDailyState>,
+            beneficiaryTransaction: sequelize.models
+                .BeneficiaryTransaction as ModelCtor<BeneficiaryTransaction>,
+            cronJobExecuted: sequelize.models
+                .CronJobExecuted as ModelCtor<CronJobExecuted>,
+            exchangeRates: sequelize.models
+                .ExchangeRates as ModelCtor<ExchangeRates>,
+            globalDailyState: sequelize.models
+                .GlobalDailyState as ModelCtor<GlobalDailyState>,
             imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
             inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
             manager: sequelize.models.Manager as ModelCtor<Manager>,
             mobileError: sequelize.models.MobileError as ModelCtor<MobileError>,
-            notifiedBacker: sequelize.models.NotifiedBacker as ModelCtor<NotifiedBacker>,
-            reachedAddress: sequelize.models.ReachedAddress as ModelCtor<ReachedAddress>,
+            notifiedBacker: sequelize.models
+                .NotifiedBacker as ModelCtor<NotifiedBacker>,
+            reachedAddress: sequelize.models
+                .ReachedAddress as ModelCtor<ReachedAddress>,
         },
     };
 };
