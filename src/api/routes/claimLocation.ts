@@ -1,5 +1,5 @@
 import claimLocationController from '@controllers/claimLocation';
-import claimLocationValidators from '@validators/community';
+import claimLocationValidators from '@validators/claimLocation';
 import { Router } from 'express';
 
 import { authenticateToken } from '../middlewares';
