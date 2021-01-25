@@ -22,11 +22,6 @@ export default {
     dbUrl: process.env.DATABASE_URL!,
 
     /**
-     * Redis URL
-     */
-    redisUrl: process.env.REDIS_URL!,
-
-    /**
      * json rpc url
      */
     jsonRpcUrl: process.env.CHAIN_JSON_RPC_URL!,
@@ -111,7 +106,6 @@ export default {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
         region: process.env.AWS_REGION!,
         bucketImagesCommunity: process.env.AWS_BUCKET_IMAGES_COMMUNITY!,
-        bucketLogs: process.env.AWS_BUKET_LOGS!,
     },
 
     /**
