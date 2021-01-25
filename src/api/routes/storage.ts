@@ -63,7 +63,7 @@ export default (app: Router): void => {
                     // update community picture
                     CommunityService.updateCoverImage(
                         communityId,
-                        uploadResult.Key
+                        `${config.cloudfrontUrl}/${uploadResult.Key}`
                     );
                 } catch (e) {
                     Logger.error(

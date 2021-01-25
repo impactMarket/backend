@@ -134,4 +134,9 @@ export default {
      * Placeholder image to use meanwhile community creation.
      */
     communityPlaceholderImageUrl: process.env.COMMUNITY_PLACEHOLDER_IMAGE_URL!,
+
+    /**
+     * Cloudfront URL to be useed
+     */
+    cloudfrontUrl: process.env.CLOUDFRONT_URL!,
 };
