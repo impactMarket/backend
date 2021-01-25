@@ -263,11 +263,20 @@ const edit = (req: Request, res: Response) => {
 
 const accept = (req: Request, res: Response) => {
     const {
-        acceptanceTransaction, // the address accepting the request (must be admin)
+        acceptanceTransaction,
         publicId,
     } = req.body;
     CommunityService.accept(acceptanceTransaction, publicId)
         .then((r) => res.send({ contractAddress: r }).status(202))
+        .catch((e) => controllerLogAndFail(e, 403, res));
+};
+
+const remove = (req: Request, res: Response) => {
+    const {
+        publicId,
+    } = req.body;
+    CommunityService.remove(publicId)
+        .then((r) => res.send(r).status(200))
         .catch((e) => controllerLogAndFail(e, 403, res));
 };
 
@@ -296,5 +305,6 @@ export default {
     add,
     edit,
     accept,
+    remove,
     pending,
 };

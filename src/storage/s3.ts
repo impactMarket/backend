@@ -15,7 +15,7 @@ const s3 = new S3({
 export const upload = multer({
     storage: multerS3({
         s3,
-        bucket: config.aws.picturesBucket,
+        bucket: config.aws.bucketImagesCommunity,
         acl: 'public-read',
         metadata(req, file, cb) {
             cb(null, { fieldName: file.fieldname });

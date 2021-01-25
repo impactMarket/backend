@@ -1,6 +1,7 @@
 import fleekStorage from '@fleekhq/fleek-storage-js';
 import { Logger } from '@logger/logger';
 import CommunityService from '@services/community';
+import { uploadContentToS3 } from '@services/storage';
 import AWS from 'aws-sdk';
 import { Router } from 'express';
 import multer from 'multer';
@@ -29,7 +30,8 @@ export default (app: Router): void => {
                     Logger.error('Error during /storage/upload ', err);
                     res.sendStatus(403);
                 }
-                console.log(req.file);
+
+                // sharp the file
                 const imgBuffer = await sharp(req.file.buffer)
                     .resize({ width: 800 })
                     .jpeg({
@@ -42,24 +44,19 @@ export default (app: Router): void => {
                         chromaSubsampling: '4:4:4',
                     })
                     .toBuffer();
+
+                // content file
                 const { communityId } = req.body;
                 const today = new Date();
-                const s3FilePrefix = `${today.getFullYear()}${
+                const filePrefix = `${today.getFullYear()}${
                     today.getMonth() + 1
                 }/`;
-                const s3Filename = `${Date.now().toString()}.jpeg`;
-                const s3FilePath = `${s3FilePrefix}${s3Filename}`;
+                const filename = `${Date.now().toString()}.jpeg`;
+                const filePath = `${filePrefix}${filename}`;
+
+                // upload to aws
                 try {
-                    const params: AWS.S3.PutObjectRequest = {
-                        Bucket: config.aws.picturesBucket,
-                        Key: s3FilePath,
-                        Body: imgBuffer,
-                        ACL: 'public-read',
-                    };
-                    //
-                    const upload = new AWS.S3.ManagedUpload({ params });
-                    const uploadResult = await upload.promise();
-                    console.log(uploadResult);
+                    const uploadResult = await uploadContentToS3(filePath, imgBuffer);
                     // update community picture
                     CommunityService.updateCoverImage(
                         communityId,
@@ -71,21 +68,24 @@ export default (app: Router): void => {
                     );
                     res.sendStatus(403);
                 }
+
+                // upload to fleekstorage
                 try {
                     // also upload to fleek storage
-                    const res = await fleekStorage.upload({
+                    await fleekStorage.upload({
                         apiKey: config.fleekStorage.accessKeyId,
                         apiSecret: config.fleekStorage.secretAccessKey,
-                        key: s3FilePath,
+                        key: filePath,
                         data: imgBuffer,
                     });
-                    console.log(res);
                 } catch (e) {
                     Logger.error(
                         'Error during worker upload_image_queue(to fleek) ' + e
                     );
                     res.sendStatus(403);
                 }
+
+                // sucess
                 res.sendStatus(200);
             });
         } catch (e) {

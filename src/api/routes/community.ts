@@ -2,7 +2,7 @@ import communityController from '@controllers/community';
 import communityValidators from '@validators/community';
 import { Router } from 'express';
 
-import { authenticateToken } from '../middlewares';
+import { adminAuthentication, authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {
     const route = Router();
@@ -106,6 +106,12 @@ export default (app: Router): void => {
         '/accept',
         communityValidators.accept,
         communityController.accept
+    );
+    route.post(
+        '/remove',
+        adminAuthentication,
+        communityValidators.remove,
+        communityController.remove
     );
     route.get('/pending', communityController.pending);
 };
