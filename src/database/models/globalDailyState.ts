@@ -11,6 +11,7 @@ interface GlobalDailyStateAttributes {
     volume: string;
     transactions: number;
     reach: number;
+    reachOut: number;
     totalRaised: string;
     totalDistributed: string;
     totalBackers: number;
@@ -24,6 +25,7 @@ interface GlobalDailyStateAttributes {
     totalVolume: string;
     totalTransactions: BigInt;
     totalReach: BigInt;
+    totalReachOut: BigInt;
 
     // timestamps
     createdAt: Date;
@@ -40,6 +42,7 @@ export interface GlobalDailyStateCreationAttributes {
     volume: string;
     transactions: number;
     reach: number;
+    reachOut: number;
     totalRaised: string;
     totalDistributed: string;
     totalBackers: number;
@@ -53,6 +56,7 @@ export interface GlobalDailyStateCreationAttributes {
     totalVolume: string;
     totalTransactions: BigInt;
     totalReach: BigInt;
+    totalReachOut: BigInt;
 }
 
 export class GlobalDailyState extends Model<
@@ -69,6 +73,7 @@ export class GlobalDailyState extends Model<
     public volume!: string;
     public transactions!: number;
     public reach!: number;
+    public reachOut!: number;
     public totalRaised!: string;
     public totalDistributed!: string;
     public totalBackers!: number;
@@ -85,6 +90,7 @@ export class GlobalDailyState extends Model<
     // 9223372036854775807
     public totalTransactions!: BigInt;
     public totalReach!: BigInt;
+    public totalReachOut!: BigInt;
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -135,6 +141,10 @@ export function initializeGlobalDailyState(sequelize: Sequelize): void {
                 allowNull: false,
             },
             reach: {
+                type: DataTypes.INTEGER, // max 2,147,483,647
+                allowNull: false,
+            },
+            reachOut: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 allowNull: false,
             },
@@ -191,6 +201,10 @@ export function initializeGlobalDailyState(sequelize: Sequelize): void {
                 allowNull: false,
             },
             totalReach: {
+                type: DataTypes.BIGINT, // max 9,223,372,036,854,775,807
+                allowNull: false,
+            },
+            totalReachOut: {
                 type: DataTypes.BIGINT, // max 9,223,372,036,854,775,807
                 allowNull: false,
             },

@@ -47,6 +47,10 @@ module.exports = {
                 type: Sequelize.INTEGER, // max 2,147,483,647
                 allowNull: false,
             },
+            reachOut: {
+                type: Sequelize.INTEGER, // max 2,147,483,647
+                allowNull: false,
+            },
             totalRaised: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: Sequelize.DECIMAL(30), // max 999,999,999,999 - plus 18 decimals
@@ -100,6 +104,10 @@ module.exports = {
                 allowNull: false,
             },
             totalReach: {
+                type: Sequelize.BIGINT, // max 9,223,372,036,854,775,807
+                allowNull: false,
+            },
+            totalReachOut: {
                 type: Sequelize.BIGINT, // max 9,223,372,036,854,775,807
                 allowNull: false,
             },
