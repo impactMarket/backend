@@ -115,40 +115,44 @@ module.exports = {
 
         const bucketName = process.env.AWS_BUCKET_IMAGES_COMMUNITY;
 
-        for (let c = 0; c < 0; c++) {
-            const e = communities[c];
-            const params = {
-                Bucket: 'impactmarket.prod',
-                Key: e.coverImage.split('https://s3.eu-west-3.amazonaws.com/impactmarket.prod/')[1]
-            };
-            const rg = await oldS3.getObject(params).promise();
-
-            // sharp the file
-            const imgBuffer = await sharp(rg.Body)
-                .resize({ width: 800 })
-                .jpeg({
-                    quality: 60,
-                    chromaSubsampling: '4:4:4',
-                })
-                .toBuffer();
-
-            // content file
-            const today = new Date();
-            const filePrefix = `${today.getFullYear()}${today.getMonth() + 1
-                }/`;
-            const filename = `${Date.now().toString()}.jpeg`;
-            const filePath = `${filePrefix}${filename}`;
-
-            const paramsp = {
-                Bucket: bucketName,
-                Key: filePath,
-                Body: imgBuffer,
-                ACL: 'public-read',
-            };
-            const rp = await newS3.upload(paramsp).promise();
-
-            await Community.update({ coverImage: process.env.CLOUDFRONT_URL + '/' + rp.Key }, { where: { publicId: e.publicId } });
-            console.log('success for ' + e.publicId);
+        for (let c = 0; c < communities.length; c++) {
+            try {
+                const e = communities[c];
+                const params = {
+                    Bucket: 'impactmarket.prod',
+                    Key: e.coverImage.split('https://s3.eu-west-3.amazonaws.com/impactmarket.prod/')[1]
+                };
+                const rg = await oldS3.getObject(params).promise();
+    
+                // sharp the file
+                const imgBuffer = await sharp(rg.Body)
+                    .resize({ width: 800 })
+                    .jpeg({
+                        quality: 60,
+                        chromaSubsampling: '4:4:4',
+                    })
+                    .toBuffer();
+    
+                // content file
+                const today = new Date();
+                const filePrefix = `${today.getFullYear()}${today.getMonth() + 1
+                    }/`;
+                const filename = `${Date.now().toString()}.jpeg`;
+                const filePath = `${filePrefix}${filename}`;
+    
+                const paramsp = {
+                    Bucket: bucketName,
+                    Key: filePath,
+                    Body: imgBuffer,
+                    ACL: 'public-read',
+                };
+                const rp = await newS3.upload(paramsp).promise();
+    
+                await Community.update({ coverImage: process.env.CLOUDFRONT_URL + '/' + rp.Key }, { where: { publicId: e.publicId } });
+                console.log('success for ' + e.publicId);
+            } catch {
+                console.log('failed for ' + e.publicId);
+            }
         }
     },
 
