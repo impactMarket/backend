@@ -151,7 +151,7 @@ module.exports = {
                 await Community.update({ coverImage: process.env.CLOUDFRONT_URL + '/' + rp.Key }, { where: { publicId: e.publicId } });
                 console.log('success for ' + e.publicId);
             } catch {
-                console.log('failed for ' + e.publicId);
+                console.log('failed for ' + communities[c].publicId);
             }
         }
     },
