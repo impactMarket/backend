@@ -1,4 +1,4 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import CommunityService from '@services/community';
 import CronJobExecutedService from '@services/cronJobExecuted';
 import GlobalDemographicsService from '@services/globalDemographics';

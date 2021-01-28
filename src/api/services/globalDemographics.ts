@@ -4,19 +4,22 @@ import {
 } from '@models/globalDemographics';
 import { QueryTypes } from 'sequelize';
 
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class GlobalDemographicsService {
+    public static globalDemographics = models.globalDemographics;
+    public static sequelize = sequelize;
+
     public static async add(
         demographics: GlobalDemographicsCreationAttributes
     ): Promise<GlobalDemographics> {
-        return await db.models.globalDemographics.create(demographics);
+        return await this.globalDemographics.create(demographics);
     }
 
     public static async getLast(): Promise<GlobalDemographics[]> {
         return (
-            await db.sequelize.query<GlobalDemographics>(
+            await this.sequelize.query<GlobalDemographics>(
                 `select * from globaldemographics where date = (select date from globaldemographics order by date desc limit 1)`,
                 { type: QueryTypes.SELECT }
             )
@@ -55,7 +58,7 @@ export default class GlobalDemographicsService {
         order by c.country`;
 
         // query data
-        const rawAgeRange = await db.sequelize.query<{
+        const rawAgeRange = await this.sequelize.query<{
             country: string;
             ageRange1: number;
             ageRange2: number;
@@ -64,7 +67,7 @@ export default class GlobalDemographicsService {
             ageRange5: number;
             ageRange6: number;
         }>(sqlAgeRangeQuery, { type: QueryTypes.SELECT });
-        const rawGender = await db.sequelize.query<{
+        const rawGender = await this.sequelize.query<{
             gender: string;
             total: number;
             country: string;
@@ -128,6 +131,6 @@ export default class GlobalDemographicsService {
             });
         }
 
-        await db.models.globalDemographics.bulkCreate(newDemographics);
+        await this.globalDemographics.bulkCreate(newDemographics);
     }
 }

@@ -1,13 +1,16 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import { Manager } from '@models/manager';
 import { col, fn, Op, QueryTypes, Transaction } from 'sequelize';
 
 import { IManagerDetailsManager } from '../../types/endpoints';
-import { isAddress, isUUID } from '../../utils';
-import database from '../loaders/database';
+import { isAddress, isUUID } from '@utils/util';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class ManagerService {
+    public static manager = models.manager;
+    public static sequelize = sequelize;
+
     public static async add(
         address: string,
         communityId: string,
@@ -15,7 +18,7 @@ export default class ManagerService {
     ): Promise<boolean> {
         // if user does not exist, add to pending list
         // otherwise update
-        const user = await db.models.manager.findOne({
+        const user = await this.manager.findOne({
             where: { user: address, communityId },
         });
         if (user === null) {
@@ -24,7 +27,7 @@ export default class ManagerService {
                 communityId,
             };
             try {
-                const updated = await db.models.manager.create(managerData, {
+                const updated = await this.manager.create(managerData, {
                     transaction: t,
                 });
                 return updated[0] > 0;
@@ -43,7 +46,7 @@ export default class ManagerService {
     }
 
     public static async get(address: string): Promise<Manager | null> {
-        return await db.models.manager.findOne({ where: { user: address } });
+        return await this.manager.findOne({ where: { user: address } });
     }
 
     /**
@@ -51,7 +54,7 @@ export default class ManagerService {
      */
     public static async countManagers(communityId: string): Promise<number> {
         const managers: { total: string } = (
-            await db.models.manager.findAll({
+            await this.manager.findAll({
                 attributes: [[fn('count', col('user')), 'total']],
                 where: { communityId },
             })
@@ -72,7 +75,7 @@ export default class ManagerService {
             throw new Error('Not valid UUID ' + communityId);
         }
 
-        return await db.sequelize.query(
+        return await this.sequelize.query(
             'select m."user" address, u.username username, m."createdAt" "timestamp" from manager m left join "user" u on u.address = m."user" where m."communityId" = \'' +
                 communityId +
                 '\' order by m."createdAt" desc',
@@ -96,7 +99,7 @@ export default class ManagerService {
             throw new Error('Not a manager ' + managerAddress);
         }
 
-        return await db.sequelize.query(
+        return await this.sequelize.query(
             'select mq."user" address, u.username username, mq."createdAt" "timestamp" from manager m, manager mq left join "user" u on u.address = mq."user" where m."communityId" = mq."communityId" and m."user" = \'' +
                 managerAddress +
                 '\'  and mq."user" = \'' +
@@ -124,7 +127,7 @@ export default class ManagerService {
             throw new Error('Not a manager ' + managerAddress);
         }
 
-        return await db.sequelize.query(
+        return await this.sequelize.query(
             'select mq."user" address, u.username username, mq."createdAt" "timestamp" from manager m, manager mq left join "user" u on u.address = mq."user" where m."communityId" = mq."communityId" and m."user" = \'' +
                 managerAddress +
                 '\' order by mq."createdAt" desc offset ' +
@@ -139,7 +142,7 @@ export default class ManagerService {
         address: string,
         communityId: string
     ): Promise<void> {
-        await db.models.manager.destroy({
+        await this.manager.destroy({
             where: { user: address, communityId },
         });
     }

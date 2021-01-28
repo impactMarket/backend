@@ -1,4 +1,4 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import { celebrate, Joi } from 'celebrate';
 import { Router, Request, Response } from 'express';
 

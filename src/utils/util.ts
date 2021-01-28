@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
-import UserService from './api/services/user';
-import config from './config';
-import { Logger } from './logger/logger';
-import { ICommunityInfo } from './types';
+import UserService from '@services/user';
+import config from '../config';
+import { Logger } from './logger';
+import { ICommunityInfo } from '../types';
 
 // Accepts the array and key
 export function groupBy<T>(array: any[], key: string): Map<string, T[]> {

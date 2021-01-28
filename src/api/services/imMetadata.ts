@@ -1,17 +1,19 @@
 import config from '../../config';
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class ImMetadataService {
+    public static imMetadata = models.imMetadata;
+
     public static async setLastBlock(value: number): Promise<void> {
-        await db.models.imMetadata.update(
+        await this.imMetadata.update(
             { value: value.toString() },
             { where: { key: 'lastBlock' } }
         );
     }
 
     public static async getLastBlock(): Promise<number> {
-        const last = await db.models.imMetadata.findOne({
+        const last = await this.imMetadata.findOne({
             where: { key: 'lastBlock' },
             raw: true,
         });

@@ -1,4 +1,4 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import { Community } from '@models/community';
 // import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
 import BeneficiaryService from '@services/beneficiary';
@@ -14,7 +14,7 @@ import { ethers } from 'ethers';
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
-import { getBlockTime, notifyBeneficiaryAdded } from '../../utils';
+import { getBlockTime, notifyBeneficiaryAdded } from '@utils/util';
 
 // interface IFilterCommunityTmpData {
 //     address: string;

@@ -1,12 +1,14 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class CronJobExecutedService {
+    public static cronJobExecuted = models.cronJobExecuted;
+
     public static async add(jobName: string): Promise<void> {
         try {
-            await db.models.cronJobExecuted.create({
+            await this.cronJobExecuted.create({
                 jobName,
                 lastExecuted: new Date(),
             });

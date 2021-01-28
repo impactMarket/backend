@@ -1,13 +1,17 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import { Beneficiary } from '@models/beneficiary';
 import { Op, fn, col, QueryTypes } from 'sequelize';
 
-import { IManagerDetailsBeneficiary } from '../../types/endpoints';
-import { isUUID, isAddress } from '../../utils';
-import database from '../loaders/database';
+import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
+import { isUUID, isAddress } from '@utils/util';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class BeneficiaryService {
+    public static beneficiary = models.beneficiary;
+    public static community = models.community;
+    public static sequelize = sequelize;
+
     public static async add(
         address: string,
         communityId: string,
@@ -16,7 +20,7 @@ export default class BeneficiaryService {
     ): Promise<boolean> {
         // if user does not exist, add to pending list
         // otherwise update
-        const user = await db.models.beneficiary.findOne({
+        const user = await this.beneficiary.findOne({
             where: { address, active: false },
         });
         if (user === null) {
@@ -27,7 +31,7 @@ export default class BeneficiaryService {
                 txAt,
             };
             try {
-                await db.models.beneficiary.create(beneficiaryData);
+                await this.beneficiary.create(beneficiaryData);
             } catch (e) {
                 if (e.name !== 'SequelizeUniqueConstraintError') {
                     Logger.error(
@@ -38,7 +42,7 @@ export default class BeneficiaryService {
                 }
             }
         } else {
-            await db.models.beneficiary.update(
+            await this.beneficiary.update(
                 { active: true },
                 { where: { address } }
             );
@@ -55,14 +59,14 @@ export default class BeneficiaryService {
         // and c.visibility = 'public'
         // and b.active = true
         const publicCommunities: string[] = (
-            await db.models.community.findAll({
+            await this.community.findAll({
                 attributes: ['publicId'],
                 where: { visibility: 'public', status: 'valid' },
             })
         ).map((c) => c.publicId);
 
         return (
-            await db.models.beneficiary.findAll({
+            await this.beneficiary.findAll({
                 attributes: ['address'],
                 where: {
                     communityId: { [Op.in]: publicCommunities },
@@ -75,7 +79,7 @@ export default class BeneficiaryService {
     public static async listActiveInCommunity(
         communityId: string
     ): Promise<Beneficiary[]> {
-        return await db.models.beneficiary.findAll({
+        return await this.beneficiary.findAll({
             where: {
                 communityId,
                 active: true,
@@ -102,7 +106,7 @@ export default class BeneficiaryService {
         if (!isAddress(managerAddress) || !isAddress(address)) {
             throw new Error('Not valid address!');
         }
-        return await db.sequelize.query(
+        return await this.sequelize.query(
             'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address left join manager m on b."communityId" = m."communityId" where m."user" = \'' +
                 managerAddress +
                 "' and b.active = " +
@@ -137,7 +141,7 @@ export default class BeneficiaryService {
             throw new Error('Not a manager ' + managerAddress);
         }
 
-        return await db.sequelize.query(
+        return await this.sequelize.query(
             'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address left join manager m on b."communityId" = m."communityId" where m."user" = \'' +
                 managerAddress +
                 "' and b.active = " +
@@ -157,7 +161,7 @@ export default class BeneficiaryService {
         communityId: string
     ): Promise<{ active: number; inactive: number }> {
         const active: { total: string } = (
-            await db.models.beneficiary.findAll({
+            await this.beneficiary.findAll({
                 attributes: [[fn('count', col('address')), 'total']],
                 where: {
                     communityId,
@@ -166,7 +170,7 @@ export default class BeneficiaryService {
             })
         )[0] as any;
         const inactive: { total: string } = (
-            await db.models.beneficiary.findAll({
+            await this.beneficiary.findAll({
                 attributes: [[fn('count', col('address')), 'total']],
                 where: {
                     communityId,
@@ -203,14 +207,14 @@ export default class BeneficiaryService {
             throw new Error('Not valid UUID ' + communityId);
         }
 
-        const active: IManagerDetailsBeneficiary[] = await db.sequelize.query(
+        const active: IManagerDetailsBeneficiary[] = await this.sequelize.query(
             'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address where b."communityId" = \'' +
                 communityId +
                 '\' and b.active = true group by b.address, u.username, b."txAt" order by b."txAt" desc',
             { type: QueryTypes.SELECT }
         );
 
-        const inactive: IManagerDetailsBeneficiary[] = await db.sequelize.query(
+        const inactive: IManagerDetailsBeneficiary[] = await this.sequelize.query(
             'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address where b."communityId" = \'' +
                 communityId +
                 '\' and b.active = false group by b.address, u.username, b."txAt" order by b."txAt" desc',
@@ -224,19 +228,19 @@ export default class BeneficiaryService {
     }
 
     public static async get(address: string): Promise<Beneficiary | null> {
-        return await db.models.beneficiary.findOne({
+        return await this.beneficiary.findOne({
             where: { address, active: true },
         });
     }
 
     public static async getAllAddresses(): Promise<string[]> {
         return (
-            await db.models.beneficiary.findAll({ attributes: ['address'] })
+            await this.beneficiary.findAll({ attributes: ['address'] })
         ).map((b) => b.address);
     }
 
     public static async remove(address: string): Promise<void> {
-        await db.models.beneficiary.update(
+        await this.beneficiary.update(
             { active: false },
             { where: { address } }
         );
@@ -249,7 +253,7 @@ export default class BeneficiaryService {
         todayMidnightTime.setHours(0, 0, 0, 0);
         // a month ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        const result = await db.models.beneficiary.findAll({
+        const result = await this.beneficiary.findAll({
             attributes: [[fn('count', col('address')), 'total'], 'communityId'],
             where: {
                 lastClaimAt: {

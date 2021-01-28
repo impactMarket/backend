@@ -1,4 +1,4 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import { Beneficiary } from '@models/beneficiary';
 import { BeneficiaryTransaction } from '@models/beneficiaryTransaction';
 import { Claim } from '@models/claim';

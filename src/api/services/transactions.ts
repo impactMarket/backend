@@ -20,7 +20,7 @@ import {
     IGlobalInflowStatus,
     ICommunityInfoBeneficiary,
 } from '../../types';
-import { groupBy } from '../../utils';
+import { groupBy } from '@utils/util';
 import CommunityService from './community';
 import UserService from './user';
 

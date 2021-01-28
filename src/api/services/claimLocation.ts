@@ -1,10 +1,12 @@
 import { ClaimLocation } from '@models/claimLocation';
 import { Op } from 'sequelize';
 
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class ClaimLocationService {
+    public static claimLocation = models.claimLocation;
+
     public static async add(
         communityId: string,
         gps: {
@@ -12,7 +14,7 @@ export default class ClaimLocationService {
             longitude: number;
         }
     ): Promise<ClaimLocation> {
-        return db.models.claimLocation.create({
+        return this.claimLocation.create({
             communityId,
             gps,
         });
@@ -28,7 +30,7 @@ export default class ClaimLocationService {
         todayMidnightTime.setHours(0, 0, 0, 0);
         // a month ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        return db.models.claimLocation.findAll({
+        return this.claimLocation.findAll({
             attributes: ['gps'],
             where: {
                 createdAt: {

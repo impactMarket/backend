@@ -1,9 +1,11 @@
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class ExchangeRatesService {
+    public static exchangeRates = models.exchangeRates;
+
     public static async get(): Promise<{ exchangeRates: any; rates: any }> {
-        const rates = await db.models.exchangeRates.findAll({
+        const rates = await this.exchangeRates.findAll({
             attributes: ['currency', 'rate'],
         });
         const mapRates = {};

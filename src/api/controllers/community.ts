@@ -1,4 +1,4 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import CommunityService from '@services/community';
 import CommunityDailyMetricsService from '@services/communityDailyMetrics';
 import ManagerService from '@services/managers';

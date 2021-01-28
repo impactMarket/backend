@@ -1,5 +1,5 @@
 import fleekStorage from '@fleekhq/fleek-storage-js';
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import CommunityService from '@services/community';
 import { uploadContentToS3 } from '@services/storage';
 import AWS from 'aws-sdk';

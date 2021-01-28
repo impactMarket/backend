@@ -1,15 +1,17 @@
 import { CommunityState } from '@models/communityState';
 import { Transaction } from 'sequelize';
 
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class CommunityStateService {
+    public static communityState = models.communityState;
+
     public static async add(
         communityId: string,
         t: Transaction | undefined = undefined
     ): Promise<CommunityState> {
-        return await db.models.communityState.create(
+        return await this.communityState.create(
             {
                 communityId,
             },
@@ -18,7 +20,7 @@ export default class CommunityStateService {
     }
 
     public static async get(communityId: string): Promise<CommunityState> {
-        return (await db.models.communityState.findOne({
+        return (await this.communityState.findOne({
             attributes: ['claimed', 'raised', 'beneficiaries', 'backers'],
             where: { communityId },
         }))!;

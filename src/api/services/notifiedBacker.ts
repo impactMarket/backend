@@ -1,15 +1,17 @@
 import moment from 'moment';
 import { Op } from 'sequelize';
 
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class NotifiedBackerService {
+    public static notifiedBacker = models.notifiedBacker;
+
     public static async add(
         addresses: string[],
         communityId: string
     ): Promise<string[]> {
-        const allNotifiedBackers = await db.models.notifiedBacker.findAll({
+        const allNotifiedBackers = await this.notifiedBacker.findAll({
             where: {
                 backer: { [Op.in]: addresses },
                 communityId,
@@ -36,14 +38,14 @@ export default class NotifiedBackerService {
             longNotifiedBackers.concat(recentlyNotifiedBackers)
         );
         neverNotifiedBackers.forEach((b) => {
-            db.models.notifiedBacker.create({
+            this.notifiedBacker.create({
                 backer: b,
                 communityId,
                 at: new Date(),
             });
         });
         longNotifiedBackers.forEach((b) => {
-            db.models.notifiedBacker.update(
+            this.notifiedBacker.update(
                 { at: new Date() },
                 {
                     where: {

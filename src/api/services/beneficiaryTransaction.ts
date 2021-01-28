@@ -1,19 +1,21 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import {
     // BeneficiaryTransaction,
     BeneficiaryTransactionCreationAttributes,
 } from '@models/beneficiaryTransaction';
 import { col, fn } from 'sequelize';
 
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class BeneficiaryTransactionService {
+    public static beneficiaryTransaction = models.beneficiaryTransaction;
+
     public static async add(
         beneficiaryTx: BeneficiaryTransactionCreationAttributes
     ): Promise<void> {
         try {
-            await db.models.beneficiaryTransaction.create(beneficiaryTx);
+            await this.beneficiaryTransaction.create(beneficiaryTx);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
@@ -32,14 +34,14 @@ export default class BeneficiaryTransactionService {
         volume: string;
         transactions: number;
     }> {
-        const uniqueAddressesReached = await db.models.beneficiaryTransaction.findAll(
+        const uniqueAddressesReached = await this.beneficiaryTransaction.findAll(
             {
                 attributes: [[fn('distinct', col('withAddress')), 'addresses']],
                 where: { date },
             }
         ); // this is an array, wich can be empty (return no rows)
         const volumeAndTransactions = (
-            await db.models.beneficiaryTransaction.findAll({
+            await this.beneficiaryTransaction.findAll({
                 attributes: [
                     [fn('sum', col('amount')), 'volume'],
                     [fn('count', col('tx')), 'transactions'],

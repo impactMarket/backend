@@ -1,4 +1,4 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import BeneficiaryService from '@services/beneficiary';
 import CommunityService from '@services/community';
 import CommunityContractService from '@services/communityContract';
@@ -13,7 +13,7 @@ import { median, mean } from 'mathjs';
 
 import config from '../../../config';
 import { ICommunityInfo } from '../../../types';
-import { notifyBackersCommunityLowFunds } from '../../../utils';
+import { notifyBackersCommunityLowFunds } from '@utils/util';
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');

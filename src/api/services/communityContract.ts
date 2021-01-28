@@ -2,10 +2,13 @@ import { CommunityContract } from '@models/communityContract';
 import { col, fn, Op, Transaction } from 'sequelize';
 
 import { ICommunityContractParams } from '../../types';
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class CommunityContractService {
+    public static communityContract = models.communityContract;
+    public static community = models.community;
+
     public static async add(
         communityId: string,
         contractParams: ICommunityContractParams,
@@ -17,7 +20,7 @@ export default class CommunityContractService {
             baseInterval,
             incrementInterval,
         } = contractParams;
-        return await db.models.communityContract.create(
+        return await this.communityContract.create(
             {
                 communityId,
                 claimAmount,
@@ -32,7 +35,7 @@ export default class CommunityContractService {
     public static async get(
         communityId: string
     ): Promise<ICommunityContractParams> {
-        return (await db.models.communityContract.findOne({
+        return (await this.communityContract.findOne({
             attributes: [
                 'claimAmount',
                 'maxClaim',
@@ -45,7 +48,7 @@ export default class CommunityContractService {
 
     public static async getAll(): Promise<Map<string, CommunityContract>> {
         return new Map(
-            (await db.models.communityContract.findAll()).map((c) => [
+            (await this.communityContract.findAll()).map((c) => [
                 c.communityId,
                 c,
             ])
@@ -60,14 +63,14 @@ export default class CommunityContractService {
         // and c.status = 'valid'
         // and c.visibility = 'public'
         const publicCommunities: string[] = (
-            await db.models.community.findAll({
+            await this.community.findAll({
                 attributes: ['publicId'],
                 where: { visibility: 'public', status: 'valid' },
             })
         ).map((c) => c.publicId);
 
         const result = (
-            await db.models.communityContract.findAll({
+            await this.communityContract.findAll({
                 attributes: [[fn('avg', col('maxClaim')), 'avgComulativeUbi']],
                 where: {
                     communityId: { [Op.in]: publicCommunities },

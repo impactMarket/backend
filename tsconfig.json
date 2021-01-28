@@ -7,7 +7,7 @@
             "@validators/*": ["api/validators/*"],
             "@models/*": ["database/models/*"],
             "@ipcttypes/*": ["types/*"],
-            "@logger/*": ["logger/*"],
+            "@utils/*": ["utils/*"],
         },
         "sourceMap": true,
         "target": "es2017",

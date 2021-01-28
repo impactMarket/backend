@@ -1,4 +1,4 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import ClaimLocationService from '@services/claimLocation';
 import { Request, Response } from 'express';
 

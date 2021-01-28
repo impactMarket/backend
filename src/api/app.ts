@@ -1,11 +1,12 @@
 import 'module-alias/register';
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import * as Sentry from '@sentry/node';
 import { Integrations } from '@sentry/tracing';
 import express from 'express';
 
 import config from '../config';
-import loaders from './loaders';
+import serverLoader from './server';
+import { sequelize } from '../database';
 
 async function startServer() {
     const app = express();
@@ -36,7 +37,21 @@ async function startServer() {
         ],
         tracesSampleRate: config.sentryKey === undefined ? 1 : 0.02,
     });
-    await loaders({ expressApp: app });
+
+    if (process.env.NODE_ENV === 'development') {
+        Logger.debug('DEBUG');
+        Logger.verbose('VERBOSE');
+        Logger.info('INFO');
+        Logger.warn('WARNING');
+        Logger.error('ERROR');
+    }
+
+    await sequelize.authenticate();
+    await sequelize.sync();
+    Logger.info('🗺️  Database loaded and connected');
+
+    await serverLoader(app);
+    Logger.info('📡 Express server loaded');
 
     app.listen(config.port, () => {
         Logger.info(`

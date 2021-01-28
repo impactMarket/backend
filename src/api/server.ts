@@ -7,10 +7,10 @@ import morgan from 'morgan';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
-import config from '../../config';
-import routes from '../routes';
+import config from '../config';
+import routes from './routes';
 
-export default ({ app }: { app: express.Application }): void => {
+export default (app: express.Application): void => {
     /**
      * Health Check endpoints
      * @TODO Explain why they are here

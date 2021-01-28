@@ -4,19 +4,21 @@ import {
 } from '@models/globalDailyState';
 import { Op } from 'sequelize';
 
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class GlobalDailyStateService {
+    public static globalDailyState = models.globalDailyState;
+
     public static async add(
         state: GlobalDailyStateCreationAttributes
     ): Promise<GlobalDailyState> {
-        return await db.models.globalDailyState.create(state);
+        return await this.globalDailyState.create(state);
     }
 
     public static async getLast4AvgMedianSSI(): Promise<number[]> {
         // it was null just once at the system's begin.
-        const last = await db.models.globalDailyState.findAll({
+        const last = await this.globalDailyState.findAll({
             attributes: ['avgMedianSSI'],
             order: [['date', 'DESC']],
             limit: 4,
@@ -26,7 +28,7 @@ export default class GlobalDailyStateService {
 
     public static async getLast(): Promise<GlobalDailyState> {
         // it was null just once at the system's begin.
-        const last = await db.models.globalDailyState.findAll({
+        const last = await this.globalDailyState.findAll({
             order: [['date', 'DESC']],
             limit: 1,
         });
@@ -39,7 +41,7 @@ export default class GlobalDailyStateService {
         // 30 days ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         // it was null just once at the system's begin.
-        return await db.models.globalDailyState.findAll({
+        return await this.globalDailyState.findAll({
             where: {
                 date: {
                     [Op.lt]: todayMidnightTime,
@@ -59,7 +61,7 @@ export default class GlobalDailyStateService {
         const threeMonthsAgo = new Date(
             todayMidnightTime.getTime() - 7776000000
         ); // 90 * 24 * 60 * 60 * 1000
-        const result = await db.models.globalDailyState.findAll({
+        const result = await this.globalDailyState.findAll({
             attributes: ['date', 'avgMedianSSI'],
             where: {
                 date: {

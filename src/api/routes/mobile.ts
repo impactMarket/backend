@@ -2,10 +2,9 @@ import { celebrate, Joi } from 'celebrate';
 import { Router } from 'express';
 
 import config from '../../config';
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
 const route = Router();
-const db = database();
 
 export default (app: Router): void => {
     app.use('/mobile', route);
@@ -30,7 +29,7 @@ export default (app: Router): void => {
         }),
         (req, res) => {
             const { version, address, action, error } = req.body;
-            db.models.mobileError.create({
+            models.mobileError.create({
                 version,
                 address,
                 action,

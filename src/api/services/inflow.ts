@@ -1,10 +1,12 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import { col, fn, Op } from 'sequelize';
 
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class InflowService {
+    public static inflow = models.inflow;
+
     public static async add(
         from: string,
         communityId: string,
@@ -20,7 +22,7 @@ export default class InflowService {
             txAt,
         };
         try {
-            await db.models.inflow.create(inflowData);
+            await this.inflow.create(inflowData);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
@@ -46,7 +48,7 @@ export default class InflowService {
         // 30 days ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         const raised: { raised: string } = (
-            await db.models.inflow.findAll({
+            await this.inflow.findAll({
                 attributes: [[fn('sum', col('amount')), 'raised']],
                 where: {
                     txAt: {
@@ -62,7 +64,7 @@ export default class InflowService {
 
     public static async getAllBackers(communityId: string): Promise<string[]> {
         const backers = (
-            await db.models.inflow.findAll({
+            await this.inflow.findAll({
                 attributes: [[fn('distinct', col('from')), 'backerAddress']],
                 where: { communityId },
             })
@@ -75,7 +77,7 @@ export default class InflowService {
      */
     public static async countEvergreenBackers(): Promise<number> {
         const backers: { total: string } = (
-            await db.models.inflow.findAll({
+            await this.inflow.findAll({
                 attributes: [
                     [fn('count', fn('distinct', col('from'))), 'total'],
                 ],
@@ -96,7 +98,7 @@ export default class InflowService {
         // 30 days ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         const result: { backers: string; funding: string } = (
-            await db.models.inflow.findAll({
+            await this.inflow.findAll({
                 attributes: [
                     [fn('count', fn('distinct', col('from'))), 'backers'],
                     [fn('sum', col('amount')), 'funding'],

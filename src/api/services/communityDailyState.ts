@@ -5,10 +5,12 @@ import {
 import moment from 'moment';
 import { Op, fn, col, Transaction } from 'sequelize';
 
-import database from '../loaders/database';
+import { models, sequelize } from '../../database';
 
-const db = database();
+// const db = database();
 export default class CommunityDailyStateService {
+    public static communityDailyState = models.communityDailyState;
+
     public static async insertEmptyDailyState(
         communityId: string,
         starting: Date,
@@ -24,7 +26,7 @@ export default class CommunityDailyStateService {
             });
             starting.setTime(starting.getTime() + 24 * 60 * 60 * 1000);
         } while (--days > 0);
-        await db.models.communityDailyState.bulkCreate(emptyDays);
+        await this.communityDailyState.bulkCreate(emptyDays);
     }
 
     // TODO: change this method to have communityId as optional
@@ -36,7 +38,7 @@ export default class CommunityDailyStateService {
         const days = 5;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const resultLastDay = await db.models.communityDailyState.findAll({
+        const resultLastDay = await this.communityDailyState.findAll({
             attributes: ['date'],
             where: { communityId },
             order: [['date', 'DESC']],
@@ -63,7 +65,7 @@ export default class CommunityDailyStateService {
             });
         }
         if (emptyDays.length > 0) {
-            await db.models.communityDailyState.bulkCreate(emptyDays, {
+            await this.communityDailyState.bulkCreate(emptyDays, {
                 transaction: t,
             });
         }
@@ -72,7 +74,7 @@ export default class CommunityDailyStateService {
     public static async getAll(date: Date): Promise<CommunityDailyState[]> {
         // set to beginning day, in case by mistake it wasn't done
         date.setHours(0, 0, 0, 0);
-        return await db.models.communityDailyState.findAll({
+        return await this.communityDailyState.findAll({
             where: { date },
         });
     }
@@ -89,7 +91,7 @@ export default class CommunityDailyStateService {
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         return new Map(
             (
-                await db.models.communityDailyState.findAll({
+                await this.communityDailyState.findAll({
                     attributes: [
                         'communityId',
                         [fn('sum', col('claimed')), 'totalClaimed'],
@@ -115,7 +117,7 @@ export default class CommunityDailyStateService {
         const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
         yesterdayDateOnly.setHours(0, 0, 0, 0);
         const summedResults = (
-            await db.models.communityDailyState.findAll({
+            await this.communityDailyState.findAll({
                 attributes: [
                     [fn('sum', col('claimed')), 'totalClaimed'],
                     [fn('sum', col('claims')), 'totalClaims'],
@@ -147,7 +149,7 @@ export default class CommunityDailyStateService {
         totalRaised: string;
     }> {
         const justToday = new Date();
-        const result = await db.models.communityDailyState.findAll({
+        const result = await this.communityDailyState.findAll({
             attributes: [
                 [fn('sum', col('claimed')), 'totalClaimed'],
                 [fn('sum', col('beneficiaries')), 'totalBeneficiaries'],

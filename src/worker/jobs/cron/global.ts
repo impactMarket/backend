@@ -1,4 +1,4 @@
-import { Logger } from '@logger/logger';
+import { Logger } from '@utils/logger';
 import BeneficiaryTransactionService from '@services/beneficiaryTransaction';
 import ClaimService from '@services/claim';
 import CommunityContractService from '@services/communityContract';
