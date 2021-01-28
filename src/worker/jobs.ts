@@ -1,6 +1,7 @@
 import { Logger } from '@logger/logger';
 import CommunityService from '@services/community';
 import CronJobExecutedService from '@services/cronJobExecuted';
+import GlobalDemographicsService from '@services/globalDemographics';
 import ImMetadataService from '@services/imMetadata';
 import { CronJob } from 'cron';
 import { ethers } from 'ethers';
@@ -20,7 +21,6 @@ import {
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
 // import BeneficiaryService from '@services/beneficiary';
-import GlobalDemographicsService from '@services/globalDemographics';
 
 export default async (): Promise<void> => {
     cron();
@@ -224,12 +224,16 @@ function cron() {
         new CronJob(
             '25 */3 * * *',
             () => {
-                updateExchangeRates().then(() => {
-                    CronJobExecutedService.add('updateExchangeRates');
-                    Logger.info('updateExchangeRates successfully executed!');
-                }).catch((e) => {
-                    Logger.error('updateExchangeRates FAILED!', e);
-                });
+                updateExchangeRates()
+                    .then(() => {
+                        CronJobExecutedService.add('updateExchangeRates');
+                        Logger.info(
+                            'updateExchangeRates successfully executed!'
+                        );
+                    })
+                    .catch((e) => {
+                        Logger.error('updateExchangeRates FAILED!', e);
+                    });
             },
             null,
             true
@@ -240,12 +244,14 @@ function cron() {
     new CronJob(
         '45 */4 * * *',
         () => {
-            verifyCommunityFunds().then(() => {
-                CronJobExecutedService.add('verifyCommunityFunds');
-                Logger.info('verifyCommunityFunds successfully executed!');
-            }).catch((e) => {
-                Logger.error('verifyCommunityFunds FAILED!', e);
-            });
+            verifyCommunityFunds()
+                .then(() => {
+                    CronJobExecutedService.add('verifyCommunityFunds');
+                    Logger.info('verifyCommunityFunds successfully executed!');
+                })
+                .catch((e) => {
+                    Logger.error('verifyCommunityFunds FAILED!', e);
+                });
         },
         null,
         true
@@ -257,18 +263,26 @@ function cron() {
     new CronJob(
         '0 0 * * *',
         () => {
-            calcuateCommunitiesMetrics().then(() => {
-                CronJobExecutedService.add('calcuateCommunitiesMetrics');
-                calcuateGlobalMetrics().then(() => {
-                    CronJobExecutedService.add('calcuateGlobalMetrics');
-                    Logger.info('calcuateGlobalMetrics successfully executed!');
-                }).catch((e) => {
-                    Logger.error('calcuateGlobalMetrics FAILED!', e);
+            calcuateCommunitiesMetrics()
+                .then(() => {
+                    CronJobExecutedService.add('calcuateCommunitiesMetrics');
+                    calcuateGlobalMetrics()
+                        .then(() => {
+                            CronJobExecutedService.add('calcuateGlobalMetrics');
+                            Logger.info(
+                                'calcuateGlobalMetrics successfully executed!'
+                            );
+                        })
+                        .catch((e) => {
+                            Logger.error('calcuateGlobalMetrics FAILED!', e);
+                        });
+                    Logger.info(
+                        'calcuateCommunitiesMetrics successfully executed!'
+                    );
+                })
+                .catch((e) => {
+                    Logger.error('calcuateCommunitiesMetrics FAILED!', e);
                 });
-                Logger.info('calcuateCommunitiesMetrics successfully executed!');
-            }).catch((e) => {
-                Logger.error('calcuateCommunitiesMetrics FAILED!', e);
-            });
         },
         null,
         true
@@ -278,12 +292,14 @@ function cron() {
     new CronJob(
         '0 0 * * 4',
         () => {
-            GlobalDemographicsService.calculateDemographics().then(() => {
-                CronJobExecutedService.add('calculateDemographics');
-                Logger.info('calculateDemographics successfully executed!');
-            }).catch((e) => {
-                Logger.error('calculateDemographics FAILED!', e);
-            });
+            GlobalDemographicsService.calculateDemographics()
+                .then(() => {
+                    CronJobExecutedService.add('calculateDemographics');
+                    Logger.info('calculateDemographics successfully executed!');
+                })
+                .catch((e) => {
+                    Logger.error('calculateDemographics FAILED!', e);
+                });
         },
         null,
         true
@@ -293,12 +309,16 @@ function cron() {
     new CronJob(
         '35 15 * * *',
         () => {
-            populateCommunityDailyState().then(() => {
-                CronJobExecutedService.add('populateCommunityDailyState');
-                Logger.info('populateCommunityDailyState successfully executed!');
-            }).catch((e) => {
-                Logger.error('populateCommunityDailyState FAILED!', e);
-            });
+            populateCommunityDailyState()
+                .then(() => {
+                    CronJobExecutedService.add('populateCommunityDailyState');
+                    Logger.info(
+                        'populateCommunityDailyState successfully executed!'
+                    );
+                })
+                .catch((e) => {
+                    Logger.error('populateCommunityDailyState FAILED!', e);
+                });
         },
         null,
         true

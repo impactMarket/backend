@@ -84,7 +84,7 @@ export default class CommunityService {
                         txReceipt.logs[index]
                     );
                     eventsCoomunity.push(parsedLog);
-                } catch (e) { }
+                } catch (e) {}
             }
             const index = eventsCoomunity.findIndex(
                 (event) => event !== null && event.name === 'ManagerAdded'
@@ -222,9 +222,9 @@ export default class CommunityService {
             coverImage: string;
         } & CommunityStateAttributes &
             CommunityContractAttributes)[] = await db.sequelize.query(
-                sqlQuery,
-                { type: QueryTypes.SELECT }
-            );
+            sqlQuery,
+            { type: QueryTypes.SELECT }
+        );
 
         const results: ICommunityPendingDetails[] = rawResult.map((c) => ({
             publicId: c.publicId,
@@ -291,7 +291,7 @@ export default class CommunityService {
                     receipt.logs[index]
                 );
                 eventsImpactMarket.push(parsedLog);
-            } catch (e) { }
+            } catch (e) {}
         }
         const index = eventsImpactMarket.findIndex(
             (event) => event !== null && event.name === 'CommunityAdded'
@@ -346,25 +346,25 @@ export default class CommunityService {
             where: {
                 publicId,
                 status: 'pending',
-                visibility: 'public'
+                visibility: 'public',
             },
         });
         if (c) {
             await deleteContentFromS3(c.coverImage);
             await db.models.communityState.destroy({
                 where: {
-                    communityId: publicId
-                }
+                    communityId: publicId,
+                },
             });
             await db.models.communityContract.destroy({
                 where: {
-                    communityId: publicId
-                }
+                    communityId: publicId,
+                },
             });
             await db.models.community.destroy({
                 where: {
-                    publicId
-                }
+                    publicId,
+                },
             });
             return true;
         }
@@ -423,8 +423,8 @@ export default class CommunityService {
                 visibility: onlyPublic
                     ? 'public'
                     : {
-                        [Op.or]: ['public', 'private'],
-                    },
+                          [Op.or]: ['public', 'private'],
+                      },
             },
             order: [['createdAt', 'ASC']],
         });
@@ -499,9 +499,9 @@ export default class CommunityService {
             coverImage: string;
         } & CommunityStateAttributes &
             CommunityContractAttributes)[] = await db.sequelize.query(
-                sqlQuery,
-                { type: QueryTypes.SELECT }
-            );
+            sqlQuery,
+            { type: QueryTypes.SELECT }
+        );
 
         const results: ICommunityLightDetails[] = rawResult.map((c) => ({
             publicId: c.publicId,
@@ -574,9 +574,9 @@ export default class CommunityService {
             CommunityStateAttributes &
             CommunityContractAttributes &
             CommunityDailyMetricsAttributes)[] = await db.sequelize.query(
-                sqlQuery,
-                { type: QueryTypes.SELECT }
-            );
+            sqlQuery,
+            { type: QueryTypes.SELECT }
+        );
 
         const results: ICommunity[] = rawResult.map((c) => ({
             id: c.id,

@@ -113,7 +113,7 @@ export default class UserService {
                     createUser = {
                         ...createUser,
                         currency,
-                    }
+                    };
                 }
                 user = await db.models.user.create(createUser);
             } else {

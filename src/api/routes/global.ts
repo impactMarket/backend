@@ -1,10 +1,9 @@
-import GlobalDemographicsService from '@services/globalDemographics';
-import { Router } from 'express';
-
 import CommunityDailyStateService from '@services/communityDailyState';
 import GlobalDailyStateService from '@services/globalDailyState';
+import GlobalDemographicsService from '@services/globalDemographics';
 import InflowService from '@services/inflow';
 import ReachedAddressService from '@services/reachedAddress';
+import { Router } from 'express';
 
 const route = Router();
 

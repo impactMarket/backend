@@ -10,7 +10,4 @@ const aws = new AWS.Config({
     apiVersion: '2006-03-01',
 });
 
-export {
-    aws,
-    AWS,
-}
+export { aws, AWS };

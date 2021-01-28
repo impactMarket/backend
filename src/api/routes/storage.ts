@@ -56,7 +56,10 @@ export default (app: Router): void => {
 
                 // upload to aws
                 try {
-                    const uploadResult = await uploadContentToS3(filePath, imgBuffer);
+                    const uploadResult = await uploadContentToS3(
+                        filePath,
+                        imgBuffer
+                    );
                     // update community picture
                     CommunityService.updateCoverImage(
                         communityId,

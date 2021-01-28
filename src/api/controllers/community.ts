@@ -262,19 +262,14 @@ const edit = (req: Request, res: Response) => {
 };
 
 const accept = (req: Request, res: Response) => {
-    const {
-        acceptanceTransaction,
-        publicId,
-    } = req.body;
+    const { acceptanceTransaction, publicId } = req.body;
     CommunityService.accept(acceptanceTransaction, publicId)
         .then((r) => res.send({ contractAddress: r }).status(202))
         .catch((e) => controllerLogAndFail(e, 403, res));
 };
 
 const remove = (req: Request, res: Response) => {
-    const {
-        publicId,
-    } = req.body;
+    const { publicId } = req.body;
     CommunityService.remove(publicId)
         .then((r) => res.send(r).status(200))
         .catch((e) => controllerLogAndFail(e, 403, res));

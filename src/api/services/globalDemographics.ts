@@ -1,19 +1,26 @@
-import { QueryTypes } from 'sequelize';
 import {
     GlobalDemographics,
-    GlobalDemographicsCreationAttributes
+    GlobalDemographicsCreationAttributes,
 } from '@models/globalDemographics';
+import { QueryTypes } from 'sequelize';
+
 import database from '../loaders/database';
 
 const db = database();
 export default class GlobalDemographicsService {
-
-    public static async add(demographics: GlobalDemographicsCreationAttributes): Promise<GlobalDemographics> {
+    public static async add(
+        demographics: GlobalDemographicsCreationAttributes
+    ): Promise<GlobalDemographics> {
         return await db.models.globalDemographics.create(demographics);
     }
 
     public static async getLast(): Promise<GlobalDemographics> {
-        return (await db.sequelize.query<GlobalDemographics>(`select * from globaldemographics where date = (select date from globaldemographics order by date desc limit 1)`, { type: QueryTypes.SELECT }))[0];
+        return (
+            await db.sequelize.query<GlobalDemographics>(
+                `select * from globaldemographics where date = (select date from globaldemographics order by date desc limit 1)`,
+                { type: QueryTypes.SELECT }
+            )
+        )[0];
     }
 
     public static async calculateDemographics(): Promise<void> {
@@ -49,23 +56,23 @@ export default class GlobalDemographicsService {
 
         // query data
         const rawAgeRange = await db.sequelize.query<{
-            country: string,
-            ageRange1: number,
-            ageRange2: number,
-            ageRange3: number,
-            ageRange4: number,
-            ageRange5: number,
-            ageRange6: number
+            country: string;
+            ageRange1: number;
+            ageRange2: number;
+            ageRange3: number;
+            ageRange4: number;
+            ageRange5: number;
+            ageRange6: number;
         }>(sqlAgeRangeQuery, { type: QueryTypes.SELECT });
         const rawGender = await db.sequelize.query<{
-            gender: string,
-            total: number,
-            country: string
+            gender: string;
+            total: number;
+            country: string;
         }>(sqlGenderQuery, { type: QueryTypes.SELECT });
 
         // format gender results for easier write
         const countries: string[] = [];
-        const gender = new Map<string, { male: number, female: number }>();
+        const gender = new Map<string, { male: number; female: number }>();
         for (let g = 0; g < rawGender.length; g++) {
             const element = rawGender[g];
 
@@ -87,14 +94,17 @@ export default class GlobalDemographicsService {
             }
         }
 
-        const ageRange = new Map<string, {
-            ageRange1: number,
-            ageRange2: number,
-            ageRange3: number,
-            ageRange4: number,
-            ageRange5: number,
-            ageRange6: number
-        }>();
+        const ageRange = new Map<
+            string,
+            {
+                ageRange1: number;
+                ageRange2: number;
+                ageRange3: number;
+                ageRange4: number;
+                ageRange5: number;
+                ageRange6: number;
+            }
+        >();
         for (let a = 0; a < rawAgeRange.length; a++) {
             const element = rawAgeRange[a];
             countries.push(element.country);
@@ -114,7 +124,7 @@ export default class GlobalDemographicsService {
                 date: yesterdayDateOnly,
                 country: uniqueCountries[a],
                 ...ageRange.get(uniqueCountries[a])!,
-                ...gender.get(uniqueCountries[a])!
+                ...gender.get(uniqueCountries[a])!,
             });
         }
 

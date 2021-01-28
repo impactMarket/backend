@@ -11,6 +11,7 @@ import { CommunityState } from '@models/communityState';
 import { CronJobExecuted } from '@models/cronJobExecuted';
 import { ExchangeRates } from '@models/exchangeRates';
 import { GlobalDailyState } from '@models/globalDailyState';
+import { GlobalDemographics } from '@models/globalDemographics';
 import { ImMetadata } from '@models/imMetadata';
 import { Inflow } from '@models/inflow';
 import { Manager } from '@models/manager';
@@ -23,7 +24,6 @@ import { Sequelize, Options, ModelCtor } from 'sequelize';
 import config from '../../config';
 import initModels from '../../db/models';
 import { DbLoader } from '../../types/db';
-import { GlobalDemographics } from '@models/globalDemographics';
 
 export default (): DbLoader => {
     let logging:
@@ -61,11 +61,16 @@ export default (): DbLoader => {
             claimLocation: sequelize.models
                 .ClaimLocation as ModelCtor<ClaimLocation>,
             beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
-            beneficiaryTransaction: sequelize.models.BeneficiaryTransaction as ModelCtor<BeneficiaryTransaction>,
-            cronJobExecuted: sequelize.models.CronJobExecuted as ModelCtor<CronJobExecuted>,
-            exchangeRates: sequelize.models.ExchangeRates as ModelCtor<ExchangeRates>,
-            globalDailyState: sequelize.models.GlobalDailyState as ModelCtor<GlobalDailyState>,
-            globalDemographics: sequelize.models.GlobalDemographics as ModelCtor<GlobalDemographics>,
+            beneficiaryTransaction: sequelize.models
+                .BeneficiaryTransaction as ModelCtor<BeneficiaryTransaction>,
+            cronJobExecuted: sequelize.models
+                .CronJobExecuted as ModelCtor<CronJobExecuted>,
+            exchangeRates: sequelize.models
+                .ExchangeRates as ModelCtor<ExchangeRates>,
+            globalDailyState: sequelize.models
+                .GlobalDailyState as ModelCtor<GlobalDailyState>,
+            globalDemographics: sequelize.models
+                .GlobalDemographics as ModelCtor<GlobalDemographics>,
             imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
             inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
             manager: sequelize.models.Manager as ModelCtor<Manager>,

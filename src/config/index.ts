@@ -137,5 +137,5 @@ export default {
     /**
      *
      */
-    adminKey: process.env.ADMIN_KEY!
+    adminKey: process.env.ADMIN_KEY!,
 };

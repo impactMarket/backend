@@ -26,8 +26,18 @@ export default (app: Router): void => {
             }),
         }),
         (req: Request, res: Response) => {
-            const { address, language, currency, pushNotificationToken } = req.body;
-            UserService.authenticate(address, language, currency, pushNotificationToken)
+            const {
+                address,
+                language,
+                currency,
+                pushNotificationToken,
+            } = req.body;
+            UserService.authenticate(
+                address,
+                language,
+                currency,
+                pushNotificationToken
+            )
                 .then((user) => res.send(user))
                 .catch((e) => res.sendStatus(403));
         }

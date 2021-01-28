@@ -10,6 +10,7 @@ import { CommunityState } from '@models/communityState';
 import { CronJobExecuted } from '@models/cronJobExecuted';
 import { ExchangeRates } from '@models/exchangeRates';
 import { GlobalDailyState } from '@models/globalDailyState';
+import { GlobalDemographics } from '@models/globalDemographics';
 import { ImMetadata } from '@models/imMetadata';
 import { Inflow } from '@models/inflow';
 import { Manager } from '@models/manager';
@@ -18,7 +19,6 @@ import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { User } from '@models/user';
 import { ModelCtor, Sequelize } from 'sequelize/types';
-import { GlobalDemographics } from '@models/globalDemographics';
 
 export interface DbModels {
     user: ModelCtor<User>;

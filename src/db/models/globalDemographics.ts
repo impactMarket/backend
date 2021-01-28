@@ -16,7 +16,7 @@ interface GlobalDemographicsAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 export interface GlobalDemographicsCreationAttributes {
     date: Date;
     country: string;
@@ -28,9 +28,12 @@ export interface GlobalDemographicsCreationAttributes {
     ageRange4: number;
     ageRange5: number;
     ageRange6: number;
-};
+}
 
-export class GlobalDemographics extends Model<GlobalDemographicsAttributes, GlobalDemographicsCreationAttributes> {
+export class GlobalDemographics extends Model<
+    GlobalDemographicsAttributes,
+    GlobalDemographicsCreationAttributes
+> {
     public id!: number;
     public date!: Date;
     public country!: string;
