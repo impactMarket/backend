@@ -1,7 +1,6 @@
 import config from '../../config';
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
-// const db = database();
 export default class ImMetadataService {
     public static imMetadata = models.imMetadata;
 

@@ -5,39 +5,7 @@ import ManagerService from '@services/managers';
 import { Request, Response } from 'express';
 
 import config from '../../config';
-
-const controllerLogAndFail = (e: any, status: number, res: Response) => {
-    Logger.error(e);
-    res.status(status).send(e);
-};
-
-/**
- * @deprecated
- */
-const findByContractAddress = (req: Request, res: Response) => {
-    CommunityService.findByContractAddress(req.params.contractAddress)
-        .then((community) => {
-            if (community === null) {
-                res.sendStatus(404);
-            }
-            res.send(community);
-        })
-        .catch((e) => controllerLogAndFail(e, 400, res));
-};
-
-/**
- * @deprecated
- */
-const findByPublicId = (req: Request, res: Response) => {
-    CommunityService.findByPublicId(req.params.publicId)
-        .then((community) => {
-            if (community === null) {
-                res.sendStatus(404);
-            }
-            res.send(community);
-        })
-        .catch((e) => controllerLogAndFail(e, 400, res));
-};
+import { controllerLogAndFail } from '@utils/api';
 
 const getByPublicId = (req: Request, res: Response) => {
     CommunityService.getByPublicId(req.params.publicId)
@@ -66,15 +34,6 @@ const getHistoricalSSI = (req: Request, res: Response) => {
         .then((community) => {
             res.send(community);
         })
-        .catch((e) => controllerLogAndFail(e, 400, res));
-};
-
-/**
- * @deprecated Since mobile version 0.1.0
- */
-const getAll = (req: Request, res: Response) => {
-    CommunityService.getAll(req.params.status)
-        .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
@@ -183,45 +142,6 @@ const add = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 403, res));
 };
 
-/**
- * @deprecated Since mobile version 0.1.8
- */
-const create = (req: Request, res: Response) => {
-    const {
-        requestByAddress, // the address making the request (will be community manager)
-        name,
-        contractAddress,
-        description,
-        language,
-        currency,
-        city,
-        country,
-        gps,
-        email,
-        coverImage,
-        txReceipt,
-        contractParams,
-    } = req.body;
-
-    CommunityService.create(
-        requestByAddress,
-        name,
-        contractAddress,
-        description,
-        language,
-        currency,
-        city,
-        country,
-        gps,
-        email,
-        coverImage,
-        txReceipt,
-        contractParams
-    )
-        .then((community) => res.status(201).send(community))
-        .catch((e) => controllerLogAndFail(e, 403, res));
-};
-
 const edit = (req: Request, res: Response) => {
     const {
         publicId,
@@ -282,12 +202,9 @@ const pending = (req: Request, res: Response) => {
 };
 
 export default {
-    findByContractAddress,
-    findByPublicId,
     getByPublicId,
     getByContractAddress,
     getHistoricalSSI,
-    getAll,
     list,
     listFull,
     searchBeneficiary,
@@ -296,7 +213,6 @@ export default {
     listManagers,
     managers,
     managersDetails,
-    create,
     add,
     edit,
     accept,

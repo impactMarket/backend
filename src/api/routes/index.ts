@@ -5,7 +5,6 @@ import community from './community';
 import exchange from './exchangeRates';
 import global from './global';
 import mobile from './mobile';
-import s3 from './s3';
 import storage from './storage';
 import system from './system';
 import user from './user';
@@ -14,7 +13,6 @@ export default (): Router => {
     const app = Router();
     community(app);
     user(app);
-    s3(app);
     claimLocation(app);
     exchange(app);
     global(app);

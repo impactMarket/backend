@@ -17,11 +17,11 @@ import { Manager } from '@models/manager';
 import { MobileError } from '@models/mobileError';
 import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
-import { User } from '@models/user';
+import { UserModel } from '@models/user';
 import { ModelCtor, Sequelize } from 'sequelize/types';
 
 export interface DbModels {
-    user: ModelCtor<User>;
+    user: ModelCtor<UserModel>;
     community: ModelCtor<Community>;
     communityContract: ModelCtor<CommunityContract>;
     communityState: ModelCtor<CommunityState>;

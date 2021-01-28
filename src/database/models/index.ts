@@ -22,7 +22,7 @@ import { initializeNotifiedBacker } from './notifiedBacker';
 import { initializeReachedAddress } from './reachedAddress';
 import { initializeSSI } from './ssi';
 import { initializeTransactions } from './transactions';
-import { initializeUser } from './user';
+import initializeUser from './user';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeCommunity(sequelize);

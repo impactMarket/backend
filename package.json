@@ -38,7 +38,8 @@
         "@services": "dist/api/services",
         "@validators": "dist/api/validators",
         "@models": "dist/database/models",
-        "@utils": "dist/utils"
+        "@utils": "dist/utils",
+        "@interfaces": "dist/interfaces"
     },
     "dependencies": {
         "@fleekhq/fleek-storage-js": "1.0.9",

@@ -1,6 +1,5 @@
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
-// const db = database();
 export default class ExchangeRatesService {
     public static exchangeRates = models.exchangeRates;
 

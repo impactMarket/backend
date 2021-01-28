@@ -5,7 +5,7 @@ import {
 } from '@models/beneficiaryTransaction';
 import { col, fn } from 'sequelize';
 
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
 // const db = database();
 export default class BeneficiaryTransactionService {

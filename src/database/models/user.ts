@@ -1,19 +1,6 @@
+import { User } from '@interfaces/user';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export interface UserAttributes {
-    address: string;
-    username: string | null;
-    language: string;
-    currency: string;
-    pushNotificationToken: string | null;
-    gender: string | null;
-    year: number | null;
-    children: number | null;
-
-    // timestamps
-    createdAt: Date;
-    updatedAt: Date;
-}
 export interface UserCreationAttributes {
     address: string;
     language: string;
@@ -21,7 +8,7 @@ export interface UserCreationAttributes {
     pushNotificationToken: string;
 }
 
-export class User extends Model<UserAttributes, UserCreationAttributes> {
+export class UserModel extends Model<User, UserCreationAttributes> {
     public address!: string;
     public username!: string | null;
     public avatar!: string;
@@ -37,8 +24,8 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
     public readonly updatedAt!: Date;
 }
 
-export function initializeUser(sequelize: Sequelize): void {
-    User.init(
+export default function (sequelize: Sequelize): typeof UserModel {
+    UserModel.init(
         {
             address: {
                 type: DataTypes.STRING(44),
@@ -82,4 +69,5 @@ export function initializeUser(sequelize: Sequelize): void {
             sequelize,
         }
     );
+    return UserModel;
 }

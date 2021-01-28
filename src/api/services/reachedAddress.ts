@@ -1,9 +1,8 @@
 import { ReachedAddressCreationAttributes } from '@models/reachedAddress';
 import { col, fn, Op } from 'sequelize';
 
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
-// const db = database();
 export default class ReachedAddressService {
     public static reachedAddress = models.reachedAddress;
 

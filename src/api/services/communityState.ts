@@ -3,7 +3,6 @@ import { QueryTypes, Transaction } from 'sequelize';
 
 import { models, sequelize } from '../../database';
 
-// const db = database();
 export default class CommunityStateService {
     public static communityState = models.communityState;
     public static sequelize = sequelize;

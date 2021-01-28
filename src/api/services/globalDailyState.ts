@@ -4,9 +4,8 @@ import {
 } from '@models/globalDailyState';
 import { Op } from 'sequelize';
 
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
-// const db = database();
 export default class GlobalDailyStateService {
     public static globalDailyState = models.globalDailyState;
 

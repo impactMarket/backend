@@ -18,7 +18,7 @@ import { Manager } from '@models/manager';
 import { MobileError } from '@models/mobileError';
 import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
-import { User } from '@models/user';
+import { UserModel } from '@models/user';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
 import { DbModels } from 'types/db';
 
@@ -44,7 +44,7 @@ const dbConfig: Options = {
 const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);
 const models: DbModels = {
-    user: sequelize.models.User as ModelCtor<User>,
+    user: sequelize.models.User as ModelCtor<UserModel>,
     community: sequelize.models.Community as ModelCtor<Community>,
     communityContract: sequelize.models
         .CommunityContract as ModelCtor<CommunityContract>,
@@ -55,15 +55,13 @@ const models: DbModels = {
     communityDailyMetrics: sequelize.models
         .CommunityDailyMetrics as ModelCtor<CommunityDailyMetrics>,
     claim: sequelize.models.Claim as ModelCtor<Claim>,
-    claimLocation: sequelize.models
-        .ClaimLocation as ModelCtor<ClaimLocation>,
+    claimLocation: sequelize.models.ClaimLocation as ModelCtor<ClaimLocation>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
     beneficiaryTransaction: sequelize.models
         .BeneficiaryTransaction as ModelCtor<BeneficiaryTransaction>,
     cronJobExecuted: sequelize.models
         .CronJobExecuted as ModelCtor<CronJobExecuted>,
-    exchangeRates: sequelize.models
-        .ExchangeRates as ModelCtor<ExchangeRates>,
+    exchangeRates: sequelize.models.ExchangeRates as ModelCtor<ExchangeRates>,
     globalDailyState: sequelize.models
         .GlobalDailyState as ModelCtor<GlobalDailyState>,
     globalDemographics: sequelize.models
@@ -78,4 +76,4 @@ const models: DbModels = {
         .ReachedAddress as ModelCtor<ReachedAddress>,
 };
 
-export { sequelize, Sequelize, models }
+export { sequelize, Sequelize, models };

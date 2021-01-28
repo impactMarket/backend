@@ -6,7 +6,6 @@ import { QueryTypes } from 'sequelize';
 
 import { models, sequelize } from '../../database';
 
-// const db = database();
 export default class GlobalDemographicsService {
     public static globalDemographics = models.globalDemographics;
     public static sequelize = sequelize;

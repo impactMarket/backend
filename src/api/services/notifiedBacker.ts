@@ -1,9 +1,8 @@
 import moment from 'moment';
 import { Op } from 'sequelize';
 
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
-// const db = database();
 export default class NotifiedBackerService {
     public static notifiedBacker = models.notifiedBacker;
 

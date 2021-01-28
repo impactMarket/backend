@@ -1,100 +1,18 @@
 import { Logger } from '@utils/logger';
-import { User, UserCreationAttributes } from '@models/user';
+import { UserCreationAttributes } from '@models/user';
 import { Op } from 'sequelize';
 
-import { ICommunityInfo, IUserWelcome, IUserWelcomeAuth } from '../../types';
 import { ICommunity, IUserHello, IUserAuth } from '../../types/endpoints';
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 import { generateAccessToken } from '../middlewares';
 import BeneficiaryService from './beneficiary';
 import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';
 import ManagerService from './managers';
+import { User } from '@interfaces/user';
 
-// const db = database();
 export default class UserService {
     public static user = models.user;
-
-    public static async auth(
-        address: string,
-        language: string,
-        pushNotificationToken: string
-    ): Promise<IUserWelcomeAuth | undefined> {
-        try {
-            const token = generateAccessToken(address);
-            const user = await this.user.findOne({ where: { address } });
-            if (user === null) {
-                await this.user.create({
-                    address,
-                    language,
-                    pushNotificationToken,
-                });
-            } else {
-                await this.user.update(
-                    { pushNotificationToken },
-                    { where: { address } }
-                );
-            }
-            const welcomeUser = await UserService.welcome(address, user);
-            if (welcomeUser === undefined) {
-                return undefined;
-            }
-            return {
-                token,
-                ...welcomeUser,
-            };
-        } catch (e) {
-            Logger.warn('Error while auth user ', address, e.message);
-            return undefined;
-        }
-    }
-
-    public static async welcome(
-        address: string,
-        user: User | null = null
-    ): Promise<IUserWelcome | undefined> {
-        if (user === null) {
-            user = await this.user.findOne({ where: { address } });
-            if (user === null) {
-                return undefined;
-            }
-        }
-        const beneficiary = await BeneficiaryService.get(user.address);
-        const manager = await ManagerService.get(user.address);
-        let community: ICommunityInfo | null = null;
-        let isBeneficiary = false;
-        let isManager = false;
-        if (beneficiary !== null) {
-            community = await CommunityService.findByPublicId(
-                beneficiary.communityId
-            );
-            isBeneficiary = true;
-        }
-        if (manager !== null) {
-            community = await CommunityService.findByPublicId(
-                manager.communityId
-            );
-            isManager = true;
-        } else {
-            const rawCommunityId = await CommunityService.findByFirstManager(
-                user.address
-            );
-            if (rawCommunityId !== null) {
-                community = await CommunityService.findByPublicId(
-                    rawCommunityId
-                );
-                isManager = true;
-            }
-        }
-        const { exchangeRates, rates } = await ExchangeRatesService.get();
-        return {
-            user: user as any,
-            exchangeRates,
-            community: community ? community : undefined,
-            isBeneficiary,
-            isManager,
-        };
-    }
 
     public static async authenticate(
         address: string,
@@ -265,6 +183,9 @@ export default class UserService {
         return mapped;
     }
 
+    /**
+     * TODO: improve
+     */
     private static async loadUser(user: User): Promise<IUserHello> {
         let community: ICommunity | undefined;
         let communityId: string | undefined;

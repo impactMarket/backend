@@ -1,8 +1,7 @@
 import { Logger } from '@utils/logger';
 
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
-// const db = database();
 export default class CronJobExecutedService {
     public static cronJobExecuted = models.cronJobExecuted;
 

@@ -2,9 +2,8 @@ import { CommunityContract } from '@models/communityContract';
 import { col, fn, Op, Transaction } from 'sequelize';
 
 import { ICommunityContractParams } from '../../types';
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
-// const db = database();
 export default class CommunityContractService {
     public static communityContract = models.communityContract;
     public static community = models.community;

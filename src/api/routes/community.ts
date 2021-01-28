@@ -9,17 +9,6 @@ export default (app: Router): void => {
 
     app.use('/community', route);
 
-    /**
-     * @deprecated Deprecated in mobile-app@0.1.7
-     */
-    route.get(
-        '/address/:contractAddress',
-        communityController.findByContractAddress
-    );
-    /**
-     * @deprecated Deprecated in mobile-app@0.1.7
-     */
-    route.get('/id/:publicId', communityController.findByPublicId);
 
     route.get('/publicid/:publicId', communityController.getByPublicId);
     route.get('/contract/:address', communityController.getByContractAddress);
@@ -45,15 +34,11 @@ export default (app: Router): void => {
         communityController.listManagers
     );
     /**
-     * @deprecated Deprecated in mobile-app@0.1.7
-     */
-    route.get('/all/:status', communityController.getAll);
-    /**
-     * @deprecated Deprecated in mobile-app@0.1.8
+     * @deprecated Deprecated in mobile-app@1.0.2
      */
     route.get('/managers', authenticateToken, communityController.managers);
     /**
-     * @deprecated Deprecated in mobile-app@0.1.8
+     * @deprecated Deprecated in mobile-app@1.0.2
      */
     route.get(
         '/managers/details',
@@ -75,25 +60,12 @@ export default (app: Router): void => {
      *         type: string
      */
     route.get('/list/light/:order?', communityController.list);
-    /**
-     * @deprecated Deprecated in mobile version 0.1.4
-     */
-    route.get('/list', communityController.list);
     route.get('/list/full/:order?', communityController.listFull);
     route.post(
         '/add',
         authenticateToken,
         communityValidators.add,
         communityController.add
-    );
-    /**
-     * @deprecated Deprecated in mobile version 0.1.8
-     */
-    route.post(
-        '/create',
-        authenticateToken,
-        communityValidators.create,
-        communityController.create
     );
     route.post(
         '/edit',

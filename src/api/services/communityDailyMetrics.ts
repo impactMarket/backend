@@ -4,9 +4,8 @@ import { median } from 'mathjs';
 import { col, fn, Op } from 'sequelize';
 
 import { ICommunityMetrics } from '../../types';
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
-// const db = database();
 export default class CommunityDailyMetricsService {
     public static communityDailyMetrics = models.communityDailyMetrics;
 

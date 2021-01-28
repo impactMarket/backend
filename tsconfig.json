@@ -8,6 +8,7 @@
             "@models/*": ["database/models/*"],
             "@ipcttypes/*": ["types/*"],
             "@utils/*": ["utils/*"],
+            "@interfaces/*": ["interfaces/*"],
         },
         "sourceMap": true,
         "target": "es2017",

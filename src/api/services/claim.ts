@@ -1,10 +1,7 @@
 import { Logger } from '@utils/logger';
 import { col, fn, Op } from 'sequelize';
+import { models } from '../../database';
 
-// import { Claim } from '@models/claim';
-import { models, sequelize } from '../../database';
-
-// const db = database();
 export default class ClaimService {
     public static claim = models.claim;
 

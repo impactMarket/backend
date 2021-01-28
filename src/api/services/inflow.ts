@@ -1,9 +1,8 @@
 import { Logger } from '@utils/logger';
 import { col, fn, Op } from 'sequelize';
 
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
-// const db = database();
 export default class InflowService {
     public static inflow = models.inflow;
 

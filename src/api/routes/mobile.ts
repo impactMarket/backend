@@ -2,7 +2,7 @@ import { celebrate, Joi } from 'celebrate';
 import { Router } from 'express';
 
 import config from '../../config';
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 
 const route = Router();
 
