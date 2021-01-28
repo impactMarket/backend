@@ -3,7 +3,7 @@ import { Router } from 'express';
 import claimLocation from './claimLocation';
 import community from './community';
 import exchange from './exchangeRates';
-// import globalStatus from './globalStatus';
+import global from './global';
 import mobile from './mobile';
 import s3 from './s3';
 import storage from './storage';
@@ -17,7 +17,7 @@ export default (): Router => {
     s3(app);
     claimLocation(app);
     exchange(app);
-    // globalStatus(app);
+    global(app);
     mobile(app);
     storage(app);
     system(app);

@@ -7,6 +7,9 @@ import { Router } from 'express';
 export default (app: Router): void => {
     app.get('/clock', (req, res) => res.json(new Date().getTime()));
 
+    /**
+     * for backwards compatibility, remove ASAP
+     */
     app.get('/global-status', async (req, res) => {
         res.send({
             monthly: await GlobalDailyStateService.getLast30Days(),
