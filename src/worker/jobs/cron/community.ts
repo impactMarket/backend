@@ -6,14 +6,14 @@ import CommunityDailyMetricsService from '@services/communityDailyMetrics';
 import CommunityDailyStateService from '@services/communityDailyState';
 import InflowService from '@services/inflow';
 import NotifiedBackerService from '@services/notifiedBacker';
-import SSIService from '@services/ssi';
 import UserService from '@services/user';
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
 
 import config from '../../../config';
-import { ICommunityInfo } from '../../../types';
 import { notifyBackersCommunityLowFunds } from '@utils/util';
+import { ICommunity } from '@ipcttypes/endpoints';
+import CommunityStateService from '@services/communityState';
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
@@ -25,7 +25,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const totalClaimedLast30Days = await CommunityDailyStateService.getTotalClaimedLast30Days();
     const ssiLast4Days = await CommunityDailyMetricsService.getSSILast4Days();
     const communitiesContract = await CommunityContractService.getAll();
-    const calculateMetrics = async (community: ICommunityInfo) => {
+    const calculateMetrics = async (community: ICommunity) => {
         // if no activity, do not calculate
         if (
             community.state.claimed === '0' ||
@@ -63,9 +63,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             }
             // the first time you don't wait a single second, the second time, only base interval
             const timeToWait =
-                community.contractParams.baseInterval +
+                community.contract.baseInterval +
                 (beneficiary.claims - 2) *
-                    community.contractParams.incrementInterval;
+                    community.contract.incrementInterval;
             const timeWaited =
                 Math.floor(
                     (beneficiary.lastClaimAt.getTime() -
@@ -143,10 +143,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             // since it's calculated post-midnight, save it with yesterdayDateOnly's date
             yesterday
         );
-        // TODO: deprecated to remove (backwards compatibility)
-        await SSIService.add(community.publicId, new Date(), ssi);
     };
-    const communities = await CommunityService.getAll('valid');
+    const communities = await CommunityService.listFull();
     // for each community
     for (let index = 0; index < communities.length; index++) {
         await calculateMetrics(communities[index]);
@@ -155,26 +153,29 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
 export async function verifyCommunityFunds(): Promise<void> {
     Logger.info('Verifying community funds...');
-    const communities = await CommunityService.getAll('valid');
+    const communitiesState = await CommunityStateService.getAllCommunitiesState();
 
-    communities.forEach(async (community) => {
-        if (community.state.backers > 0 && community.state.claimed !== '0') {
+    communitiesState.forEach(async (communityState) => {
+        if (communityState.backers > 0 && communityState.claimed !== '0') {
             const isLessThan10 =
                 parseFloat(
-                    new BigNumber(community.state.claimed)
-                        .div(community.state.raised)
+                    new BigNumber(communityState.claimed)
+                        .div(communityState.raised)
                         .toString()
                 ) >= 0.9;
 
             if (isLessThan10) {
-                const backersAddresses = await NotifiedBackerService.add(
-                    await InflowService.getAllBackers(community.publicId),
-                    community.publicId
-                );
-                const pushTokens = await UserService.getPushTokensFromAddresses(
-                    backersAddresses
-                );
-                notifyBackersCommunityLowFunds(community, pushTokens);
+                const community = await CommunityService.getCommunityOnlyByPublicId(communityState.communityId);
+                if (community !== null) {
+                    const backersAddresses = await NotifiedBackerService.add(
+                        await InflowService.getAllBackers(community.publicId),
+                        community.publicId
+                    );
+                    const pushTokens = await UserService.getPushTokensFromAddresses(
+                        backersAddresses
+                    );
+                    notifyBackersCommunityLowFunds(community, pushTokens);
+                }
             }
         }
     });
@@ -182,7 +183,7 @@ export async function verifyCommunityFunds(): Promise<void> {
 
 export async function populateCommunityDailyState(): Promise<void> {
     Logger.info('Inserting community empty daily state...');
-    const communities = await CommunityService.getAll('valid');
+    const communities = await CommunityService.listCommunitiesStructOnly();
 
     communities.forEach((community) => {
         CommunityDailyStateService.populateNext5Days(community.publicId);

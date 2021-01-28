@@ -5,7 +5,6 @@ import CommunityDailyStateService from '../../../../src/api/services/communityDa
 import CommunityDailyMetricsService from '../../../../src/api/services/communityDailyMetrics';
 import CommunityContractService from '../../../../src/api/services/communityContract';
 import CommunityService from '../../../../src/api/services/community';
-import SSIService from '../../../../src/api/services/ssi';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import { activeBeneficiariesLast30Days, allBeneficiariesInCommunity } from '../../../fake/beneficiary';
 import { validNonEmptyMonthLongCommunities, communitiesContract, ssiLast4Days, totalClaimedLast30Days, communityIds } from '../../../fake/community';
@@ -22,8 +21,6 @@ describe('[jobs - cron] community', () => {
             // result doesn't matter
             dailyMetricsAdd = stub(CommunityDailyMetricsService, 'add');
             dailyMetricsAdd.returns(Promise.resolve({} as any));
-            // TODO: remove
-            stub(SSIService, 'add').returns(Promise.resolve({} as any));
 
             //
             stub(BeneficiaryService, 'getActiveBeneficiariesLast30Days').returns(Promise.resolve(activeBeneficiariesLast30Days));
@@ -37,7 +34,7 @@ describe('[jobs - cron] community', () => {
         });
 
         it('all valid, non-empty communities, 30+ days', async () => {
-            stub(CommunityService, 'getAll').returns(Promise.resolve(validNonEmptyMonthLongCommunities));
+            // stub(CommunityService, 'getAll').returns(Promise.resolve(validNonEmptyMonthLongCommunities));
 
             // run!
             await calcuateCommunitiesMetrics();

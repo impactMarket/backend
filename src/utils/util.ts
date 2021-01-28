@@ -4,7 +4,7 @@ import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 import UserService from '@services/user';
 import config from '../config';
 import { Logger } from './logger';
-import { ICommunityInfo } from '../types';
+import { Community } from '@models/community';
 
 // Accepts the array and key
 export function groupBy<T>(array: any[], key: string): Map<string, T[]> {
@@ -49,7 +49,7 @@ export async function getBlockTime(blockHash: string): Promise<Date> {
 }
 
 export async function notifyBackersCommunityLowFunds(
-    community: ICommunityInfo,
+    community: Community,
     backersPushTokens: string[]
 ) {
     // Create a new Expo SDK client

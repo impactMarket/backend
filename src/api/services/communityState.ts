@@ -1,11 +1,12 @@
 import { CommunityState } from '@models/communityState';
-import { Transaction } from 'sequelize';
+import { QueryTypes, Transaction } from 'sequelize';
 
 import { models, sequelize } from '../../database';
 
 // const db = database();
 export default class CommunityStateService {
     public static communityState = models.communityState;
+    public static sequelize = sequelize;
 
     public static async add(
         communityId: string,
@@ -24,5 +25,18 @@ export default class CommunityStateService {
             attributes: ['claimed', 'raised', 'beneficiaries', 'backers'],
             where: { communityId },
         }))!;
+    }
+
+    /**
+     * Only public valid
+     */
+    public static getAllCommunitiesState(): Promise<CommunityState[]> {
+        const query = `select "communityId", claimed, raised, beneficiaries, backers
+        from communitystate cs , community c
+        where cs."communityId" = c."publicId"
+          and c.status = 'valid'
+          and c.visibility = 'public'`;
+
+        return this.sequelize.query<CommunityState>(query, { type: QueryTypes.SELECT });
     }
 }

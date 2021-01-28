@@ -6,14 +6,13 @@ import {
 import { CommunityContractAttributes } from '@models/communityContract';
 import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
 import { CommunityStateAttributes } from '@models/communityState';
-import { Manager } from '@models/manager';
 import { ethers } from 'ethers';
 import { Op, QueryTypes, fn, col } from 'sequelize';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
-import { ICommunityContractParams, ICommunityInfo } from '../../types';
+import { ICommunityContractParams } from '../../types';
 import {
     ICommunity,
     ICommunityLightDetails,
@@ -27,15 +26,11 @@ import { notifyManagerAdded } from '@utils/util';
 import { models, sequelize } from '../../database';
 import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
-import CommunityDailyMetricsService from './communityDailyMetrics';
 import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
 import ManagerService from './managers';
-import SSIService from './ssi';
 import { deleteContentFromS3 } from './storage';
-import TransactionsService from './transactions';
 
-// const db = database();
 export default class CommunityService {
     public static community = models.community;
     public static communityContract = models.communityContract;
@@ -415,33 +410,6 @@ export default class CommunityService {
         return result[0] > 0;
     }
 
-    /**
-     * @deprecated
-     */
-    public static async getAll(
-        status: string,
-        onlyPublic: boolean = true
-    ): Promise<ICommunityInfo[]> {
-        const result: ICommunityInfo[] = [];
-        const communities = await this.community.findAll({
-            where: {
-                status,
-                visibility: onlyPublic
-                    ? 'public'
-                    : {
-                          [Op.or]: ['public', 'private'],
-                      },
-            },
-            order: [['createdAt', 'ASC']],
-        });
-        for (let index = 0; index < communities.length; index++) {
-            result.push(
-                await this.getCachedInfoToCommunity(communities[index])
-            );
-        }
-        return result;
-    }
-
     public static async list(
         order: string | undefined,
         query: any
@@ -549,7 +517,7 @@ export default class CommunityService {
     }
 
     public static async listFull(
-        order: string | undefined
+        order?: string
     ): Promise<ICommunity[]> {
         // by the time of writting, sequelize
         // does not support eager loading with global "raw: false".
@@ -767,6 +735,16 @@ export default class CommunityService {
         };
     }
 
+    public static async getCommunityOnlyByPublicId(
+        publicId: string
+    ): Promise<Community | null> {
+        return this.community.findOne({
+            where: {
+                publicId,
+            },
+        });
+    }
+
     public static async getByContractAddress(
         contractAddress: string
     ): Promise<ICommunity | null> {
@@ -835,41 +813,6 @@ export default class CommunityService {
         return null;
     }
 
-    /**
-     * @deprecated
-     */
-    public static async findByPublicId(
-        publicId: string
-    ): Promise<ICommunityInfo | null> {
-        const community = await this.community.findOne({
-            where: {
-                publicId,
-                status: {
-                    [Op.or]: ['valid', 'pending'],
-                },
-            },
-        });
-        if (community === null) {
-            return null;
-        }
-        return await this.getCachedInfoToCommunity(community);
-    }
-
-    /**
-     * @deprecated
-     */
-    public static async findByContractAddress(
-        contractAddress: string
-    ): Promise<ICommunityInfo | null> {
-        const community = await this.community.findOne({
-            where: { contractAddress },
-        });
-        if (community === null) {
-            return null;
-        }
-        return await this.getCachedInfoToCommunity(community);
-    }
-
     public static async getOnlyCommunityByContractAddress(
         contractAddress: string
     ): Promise<Community | null> {
@@ -889,66 +832,6 @@ export default class CommunityService {
                 },
             },
         });
-    }
-
-    /**
-     * @deprecated
-     */
-    private static async getCachedInfoToCommunity(
-        community: Community
-    ): Promise<ICommunityInfo> {
-        const communityState = await CommunityStateService.get(
-            community.publicId
-        );
-        const communityMetrics = await CommunityDailyMetricsService.getLastMetrics(
-            community.publicId
-        );
-        const contractParams = await CommunityContractService.get(
-            community.publicId
-        );
-        const beneficiaries = await TransactionsService.getBeneficiariesInCommunity(
-            community.contractAddress!
-        );
-        const managers = await TransactionsService.getCommunityManagersInCommunity(
-            community.contractAddress!
-        );
-        const backers = await TransactionsService.getBackersInCommunity(
-            community.contractAddress!
-        );
-        let vars;
-        // TODO: remove others
-        if (contractParams !== null) {
-            vars = {
-                _claimAmount: contractParams.claimAmount,
-                _baseInterval: contractParams.baseInterval.toString(),
-                _incrementInterval: contractParams.incrementInterval.toString(),
-                _maxClaim: contractParams.maxClaim,
-            };
-        } else if (community.visibility === 'public') {
-            vars = await TransactionsService.getCommunityVars(
-                community.contractAddress!
-            );
-        } else {
-            vars = community.txCreationObj;
-        }
-
-        const totalClaimed = communityState.claimed;
-        const totalRaised = communityState.raised;
-        const ssi = await SSIService.get(community.publicId);
-
-        return {
-            ...community,
-            backers, // TODO: to remove
-            beneficiaries,
-            managers,
-            ssi,
-            totalClaimed, // TODO: to remove
-            totalRaised, // TODO: to remove
-            vars,
-            state: communityState,
-            metrics: communityMetrics,
-            contractParams,
-        };
     }
 
     public static async mappedNames(): Promise<Map<string, string>> {
