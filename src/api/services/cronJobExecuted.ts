@@ -1,5 +1,6 @@
-import database from '../loaders/database';
 import { Logger } from '@logger/logger';
+
+import database from '../loaders/database';
 
 const db = database();
 export default class CronJobExecutedService {

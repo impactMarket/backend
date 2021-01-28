@@ -1,11 +1,11 @@
-import { Op } from 'sequelize';
-import { User } from '@models/user';
-
-import database from '../loaders/database';
 import { Logger } from '@logger/logger';
-import { generateAccessToken } from '../middlewares';
+import { User, UserCreationAttributes } from '@models/user';
+import { Op } from 'sequelize';
+
 import { ICommunityInfo, IUserWelcome, IUserWelcomeAuth } from '../../types';
 import { ICommunity, IUserHello, IUserAuth } from '../../types/endpoints';
+import database from '../loaders/database';
+import { generateAccessToken } from '../middlewares';
 import BeneficiaryService from './beneficiary';
 import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';
@@ -13,11 +13,10 @@ import ManagerService from './managers';
 
 const db = database();
 export default class UserService {
-
     public static async auth(
         address: string,
         language: string,
-        pushNotificationToken: string,
+        pushNotificationToken: string
     ): Promise<IUserWelcomeAuth | undefined> {
         try {
             const token = generateAccessToken(address);
@@ -31,7 +30,7 @@ export default class UserService {
             } else {
                 await db.models.user.update(
                     { pushNotificationToken },
-                    { where: { address } },
+                    { where: { address } }
                 );
             }
             const welcomeUser = await UserService.welcome(address, user);
@@ -40,7 +39,7 @@ export default class UserService {
             }
             return {
                 token,
-                ...welcomeUser
+                ...welcomeUser,
             };
         } catch (e) {
             Logger.warn('Error while auth user ', address, e.message);
@@ -64,22 +63,31 @@ export default class UserService {
         let isBeneficiary = false;
         let isManager = false;
         if (beneficiary !== null) {
-            community = await CommunityService.findByPublicId(beneficiary.communityId);
+            community = await CommunityService.findByPublicId(
+                beneficiary.communityId
+            );
             isBeneficiary = true;
         }
         if (manager !== null) {
-            community = await CommunityService.findByPublicId(manager.communityId);
+            community = await CommunityService.findByPublicId(
+                manager.communityId
+            );
             isManager = true;
         } else {
-            const rawCommunityId = await CommunityService.findByFirstManager(user.address);
+            const rawCommunityId = await CommunityService.findByFirstManager(
+                user.address
+            );
             if (rawCommunityId !== null) {
-                community = await CommunityService.findByPublicId(rawCommunityId);
+                community = await CommunityService.findByPublicId(
+                    rawCommunityId
+                );
                 isManager = true;
             }
         }
+        const { exchangeRates, rates } = await ExchangeRatesService.get();
         return {
             user: user as any,
-            exchangeRates: await ExchangeRatesService.get(),
+            exchangeRates,
             community: community ? community : undefined,
             isBeneficiary,
             isManager,
@@ -89,17 +97,25 @@ export default class UserService {
     public static async authenticate(
         address: string,
         language: string,
+        currency: string,
         pushNotificationToken: string
     ): Promise<IUserAuth> {
         try {
             const token = generateAccessToken(address);
             let user = await db.models.user.findOne({ where: { address } });
             if (user === null) {
-                user = await db.models.user.create({
+                let createUser: UserCreationAttributes = {
                     address,
                     language,
                     pushNotificationToken,
-                });
+                };
+                if (currency) {
+                    createUser = {
+                        ...createUser,
+                        currency,
+                    }
+                }
+                user = await db.models.user.create(createUser);
             } else {
                 await db.models.user.update(
                     { pushNotificationToken },
@@ -118,9 +134,7 @@ export default class UserService {
         }
     }
 
-    public static async hello(
-        address: string
-    ): Promise<IUserHello> {
+    public static async hello(address: string): Promise<IUserHello> {
         const user = await db.models.user.findOne({ where: { address } });
         if (user === null) {
             throw new Error(address + ' user not found!');
@@ -212,10 +226,10 @@ export default class UserService {
     public static async exists(address: string): Promise<boolean> {
         const exists = await db.models.user.findOne({
             attributes: ['address'],
-            where: { address }
+            where: { address },
         });
         console.log(exists);
-        return exists === null ? false : true;
+        return exists !== null;
     }
 
     public static async getAllAddresses(): Promise<string[]> {
@@ -231,7 +245,9 @@ export default class UserService {
             attributes: ['pushNotificationToken'],
             where: { address: { [Op.in]: addresses } },
         });
-        return users.filter((u) => u.pushNotificationToken !== null).map((u) => u.pushNotificationToken!);
+        return users
+            .filter((u) => u.pushNotificationToken !== null)
+            .map((u) => u.pushNotificationToken!);
     }
 
     public static async mappedNames(): Promise<Map<string, string>> {
@@ -239,7 +255,10 @@ export default class UserService {
         const query = await db.models.user.findAll();
         for (let index = 0; index < query.length; index++) {
             const element = query[index];
-            mapped.set(element.address, element.username ? element.username : '');
+            mapped.set(
+                element.address,
+                element.username ? element.username : ''
+            );
         }
         return mapped;
     }
@@ -260,7 +279,9 @@ export default class UserService {
             communityId = manager.communityId;
         }
         if (communityId) {
-            const _community = await CommunityService.getByPublicId(communityId);
+            const _community = await CommunityService.getByPublicId(
+                communityId
+            );
             if (_community) {
                 community = _community;
             }
@@ -269,15 +290,19 @@ export default class UserService {
                 user.address
             );
             if (_communityId !== null) {
-                const _community = await CommunityService.getByPublicId(_communityId);
+                const _community = await CommunityService.getByPublicId(
+                    _communityId
+                );
                 if (_community) {
                     isManager = true;
                     community = _community;
                 }
             }
         }
+        const { exchangeRates, rates } = await ExchangeRatesService.get();
         return {
-            exchangeRates: await ExchangeRatesService.get(),
+            exchangeRates,
+            rates,
             community: community ? community : undefined,
             isBeneficiary,
             isManager,

@@ -1,11 +1,11 @@
 import 'module-alias/register';
+import { Logger } from '@logger/logger';
 import * as Sentry from '@sentry/node';
 import { Integrations } from '@sentry/tracing';
 import express from 'express';
 
 import config from '../config';
 import loaders from './loaders';
-import { Logger } from '@logger/logger';
 
 async function startServer() {
     const app = express();
@@ -25,7 +25,10 @@ async function startServer() {
                         // route template here. We don't have one right now, so do some basic
                         // parameter replacements.
                         name: location.pathname
-                            .replace(/[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[4][0-9A-Fa-f]{3}-[89AB][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}/g, '<uuid>')
+                            .replace(
+                                /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[4][0-9A-Fa-f]{3}-[89AB][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}/g,
+                                '<uuid>'
+                            )
                             .replace(/0x[a-fA-F0-9]{40}/g, '<address>'),
                     };
                 },

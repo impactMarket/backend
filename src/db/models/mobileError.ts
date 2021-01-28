@@ -10,14 +10,17 @@ interface MobileErrorAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 interface MobileErrorCreationAttributes {
     version: string;
     address: string;
     action: string;
     error: string;
-};
-export class MobileError extends Model<MobileErrorAttributes, MobileErrorCreationAttributes> {
+}
+export class MobileError extends Model<
+    MobileErrorAttributes,
+    MobileErrorCreationAttributes
+> {
     public id!: number;
     public version!: string;
     public address!: string;

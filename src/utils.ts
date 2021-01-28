@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
+import UserService from './api/services/user';
 import config from './config';
 import { Logger } from './logger/logger';
-import UserService from './api/services/user';
 import { ICommunityInfo } from './types';
 
 // Accepts the array and key
@@ -26,20 +26,21 @@ export async function getBlockTime(blockHash: string): Promise<Date> {
             id: 0,
             jsonrpc: '2.0',
             method: 'eth_getBlockByHash',
-            params: [
-                blockHash,
-                false
-            ]
+            params: [blockHash, false],
         };
         // handle success
         const requestHeaders = {
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'Accept-encoding': 'gzip, deflate',
                 'Content-Type': 'application/json',
-            }
+            },
         };
-        const response = await axios.post<{ result: { timestamp: string } }>(config.jsonRpcUrl, requestContent, requestHeaders);
+        const response = await axios.post<{ result: { timestamp: string } }>(
+            config.jsonRpcUrl,
+            requestContent,
+            requestHeaders
+        );
         return new Date(parseInt(response.data.result.timestamp, 16) * 1000);
     } catch (e) {
         Logger.error(`getBlockTime "${e}" - Returning current date!`);
@@ -152,7 +153,11 @@ export async function sendPushNotification(
     data: any
 ): Promise<boolean> {
     const user = await UserService.get(userAddress);
-    if (user !== null && user.pushNotificationToken !== null && user.pushNotificationToken.length > 0) {
+    if (
+        user !== null &&
+        user.pushNotificationToken !== null &&
+        user.pushNotificationToken.length > 0
+    ) {
         const message = {
             to: user.pushNotificationToken,
             sound: 'default',
@@ -170,10 +175,19 @@ export async function sendPushNotification(
                     'Content-Type': 'application/json',
                 },
             };
-            const result = await axios.post('https://exp.host/--/api/v2/push/send', message, requestHeaders);
-            return result.status === 200 ? true : false;
+            const result = await axios.post(
+                'https://exp.host/--/api/v2/push/send',
+                message,
+                requestHeaders
+            );
+            return result.status === 200;
         } catch (error) {
-            Logger.error('Couldn\'t send notification ' + error + ' with request ' + JSON.stringify(message));
+            Logger.error(
+                "Couldn't send notification " +
+                    error +
+                    ' with request ' +
+                    JSON.stringify(message)
+            );
             return false;
         }
     }
@@ -181,7 +195,9 @@ export async function sendPushNotification(
 }
 
 export function isUUID(s: string): boolean {
-    const matchResult = s.match(/^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i);
+    const matchResult = s.match(
+        /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
+    );
     return matchResult ? matchResult.length > 0 : false;
 }
 

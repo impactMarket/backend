@@ -13,12 +13,13 @@ export interface UserAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
-interface UserCreationAttributes {
+}
+export interface UserCreationAttributes {
     address: string;
     language: string;
+    currency?: string;
     pushNotificationToken: string;
-};
+}
 
 export class User extends Model<UserAttributes, UserCreationAttributes> {
     public address!: string;
@@ -78,7 +79,7 @@ export function initializeUser(sequelize: Sequelize): void {
         },
         {
             tableName: 'user',
-            sequelize
+            sequelize,
         }
     );
 }

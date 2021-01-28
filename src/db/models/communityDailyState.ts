@@ -13,12 +13,15 @@ interface CommunityDailyStateAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 export interface CommunityDailyStateCreationAttributes {
     communityId: string;
     date: Date;
-};
-export class CommunityDailyState extends Model<CommunityDailyStateAttributes, CommunityDailyStateCreationAttributes> {
+}
+export class CommunityDailyState extends Model<
+    CommunityDailyStateAttributes,
+    CommunityDailyStateCreationAttributes
+> {
     public id!: number;
     public communityId!: string;
     public claimed!: string;

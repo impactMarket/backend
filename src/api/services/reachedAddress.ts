@@ -1,5 +1,6 @@
 import { ReachedAddressCreationAttributes } from '@models/reachedAddress';
 import { col, fn, Op } from 'sequelize';
+
 import database from '../loaders/database';
 
 const db = database();
@@ -45,7 +46,7 @@ export default class ReachedAddressService {
         }
 
         await db.models.reachedAddress.bulkCreate(bulkReachedAdd, {
-            updateOnDuplicate: ['lastInteraction']
+            updateOnDuplicate: ['lastInteraction'],
         });
     }
 }

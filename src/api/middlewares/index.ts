@@ -1,8 +1,8 @@
+import { Logger } from '@logger/logger';
 import { Response, NextFunction, Request } from 'express';
 import jwt from 'jsonwebtoken';
 
 import config from '../../config';
-import { Logger } from '@logger/logger';
 import { RequestWithUser, UserInRequest } from '../../types';
 
 export function authenticateToken(
@@ -44,4 +44,35 @@ export function generateAccessToken(userAddress: string): string {
         { address: userAddress, masterKey: config.masterKey } as UserInRequest,
         config.jwtSecret
     );
+}
+
+export function adminAuthentication(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): void {
+    // Gather the jwt access token from the request header
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) {
+        Logger.debug('Admin auth is not valid!');
+        res.sendStatus(401); // if there isn't any token
+        return;
+    }
+
+    jwt.verify(token, config.jwtSecret, (err, _admin) => {
+        if (err) {
+            Logger.debug(err.message);
+            res.sendStatus(403);
+            return;
+        }
+        const admin = _admin as { key: string };
+        //
+        if (config.adminKey !== admin.key) {
+            Logger.debug('NOT ALLOWED!');
+            res.sendStatus(403);
+            return;
+        }
+        next(); // pass the execution off to whatever request the client intended
+    });
 }

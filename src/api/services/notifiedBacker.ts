@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { Op } from 'sequelize';
+
 import database from '../loaders/database';
 
 const db = database();

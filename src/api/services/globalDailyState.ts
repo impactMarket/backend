@@ -1,13 +1,16 @@
-import { Op } from 'sequelize';
 import {
     GlobalDailyState,
-    GlobalDailyStateCreationAttributes
+    GlobalDailyStateCreationAttributes,
 } from '@models/globalDailyState';
+import { Op } from 'sequelize';
+
 import database from '../loaders/database';
 
 const db = database();
 export default class GlobalDailyStateService {
-    public static async add(state: GlobalDailyStateCreationAttributes): Promise<GlobalDailyState> {
+    public static async add(
+        state: GlobalDailyStateCreationAttributes
+    ): Promise<GlobalDailyState> {
         return await db.models.globalDailyState.create(state);
     }
 

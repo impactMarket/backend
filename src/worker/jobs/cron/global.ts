@@ -1,7 +1,3 @@
-import BigNumber from 'bignumber.js';
-import { mean } from 'mathjs';
-
-import config from '../../../config';
 import { Logger } from '@logger/logger';
 import BeneficiaryTransactionService from '@services/beneficiaryTransaction';
 import ClaimService from '@services/claim';
@@ -11,6 +7,10 @@ import CommunityDailyStateService from '@services/communityDailyState';
 import GlobalDailyStateService from '@services/globalDailyState';
 import InflowService from '@services/inflow';
 import ReachedAddressService from '@services/reachedAddress';
+import BigNumber from 'bignumber.js';
+import { mean } from 'mathjs';
+
+import config from '../../../config';
 
 /**
  * As this is all calculated past midnight, everything is from yesterdayDateOnly
@@ -67,7 +67,9 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const volume = volumeTransactionsAndAddresses.volume;
     const transactions = volumeTransactionsAndAddresses.transactions;
     const reach = volumeTransactionsAndAddresses.uniqueAddressesReached.length;
-    await ReachedAddressService.updateReachedList(volumeTransactionsAndAddresses.uniqueAddressesReached);
+    await ReachedAddressService.updateReachedList(
+        volumeTransactionsAndAddresses.uniqueAddressesReached
+    );
     // TODO: spending rate
     const spendingRate = 0;
 
@@ -117,6 +119,6 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         avgUbiDuration,
         totalVolume,
         totalTransactions: BigInt(totalTransactions),
-        totalReach: BigInt(totalReach)
+        totalReach: BigInt(totalReach),
     });
 }

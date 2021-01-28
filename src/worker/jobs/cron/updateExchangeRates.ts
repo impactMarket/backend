@@ -1,7 +1,7 @@
+import { Logger } from '@logger/logger';
+import { ExchangeRates } from '@models/exchangeRates';
 import axios from 'axios';
 
-import { ExchangeRates } from '@models/exchangeRates';
-import { Logger } from '@logger/logger';
 import config from '../../../config';
 
 async function updateExchangeRates(): Promise<void> {

@@ -12,7 +12,7 @@ export interface CommunityDailyMetricsAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 interface CommunityDailyMetricsCreationAttributes {
     communityId: string;
     ssiDayAlone: number;
@@ -20,9 +20,12 @@ interface CommunityDailyMetricsCreationAttributes {
     ubiRate: number;
     estimatedDuration: number;
     date: Date;
-};
+}
 
-export class CommunityDailyMetrics extends Model<CommunityDailyMetricsAttributes, CommunityDailyMetricsCreationAttributes> {
+export class CommunityDailyMetrics extends Model<
+    CommunityDailyMetricsAttributes,
+    CommunityDailyMetricsCreationAttributes
+> {
     public id!: number;
     public communityId!: string;
     public ssiDayAlone!: number;

@@ -71,9 +71,16 @@ const accept = celebrate({
     }),
 });
 
+const remove = celebrate({
+    body: Joi.object({
+        publicId: Joi.string().required(),
+    }),
+});
+
 export default {
     create,
     add,
     edit,
-    accept
-}
+    accept,
+    remove,
+};

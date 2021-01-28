@@ -2,13 +2,15 @@ import database from '../loaders/database';
 
 const db = database();
 export default class ExchangeRatesService {
-    public static async get(): Promise<any> {
-        const previousRates = await db.models.exchangeRates.findAll();
+    public static async get(): Promise<{ exchangeRates: any; rates: any }> {
+        const rates = await db.models.exchangeRates.findAll({
+            attributes: ['currency', 'rate'],
+        });
         const mapRates = {};
-        for (let index = 0; index < previousRates.length; index++) {
-            mapRates[previousRates[index].currency] = previousRates[index].rate;
+        for (let index = 0; index < rates.length; index++) {
+            mapRates[rates[index].currency] = rates[index].rate;
         }
-        const rates = {
+        const exchangeRates = {
             EUR: {
                 name: 'Euro',
                 rate: mapRates['EUR'],
@@ -50,6 +52,6 @@ export default class ExchangeRatesService {
                 rate: mapRates['PHP'],
             },
         };
-        return rates;
+        return { exchangeRates, rates };
     }
 }

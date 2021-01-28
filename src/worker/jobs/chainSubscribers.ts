@@ -1,11 +1,6 @@
-import { ethers } from 'ethers';
-
-import config from '../../config';
-import CommunityContractABI from '../../contracts/CommunityABI.json';
-import ERC20ABI from '../../contracts/ERC20ABI.json';
+import { Logger } from '@logger/logger';
 import { Community } from '@models/community';
 // import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
-import { Logger } from '@logger/logger';
 import BeneficiaryService from '@services/beneficiary';
 import BeneficiaryTransactionService from '@services/beneficiaryTransaction';
 import ClaimsService from '@services/claim';
@@ -14,6 +9,11 @@ import ImMetadataService from '@services/imMetadata';
 import InflowService from '@services/inflow';
 import ManagerService from '@services/managers';
 import TransactionsService from '@services/transactions';
+import { ethers } from 'ethers';
+
+import config from '../../config';
+import CommunityContractABI from '../../contracts/CommunityABI.json';
+import ERC20ABI from '../../contracts/ERC20ABI.json';
 import { getBlockTime, notifyBeneficiaryAdded } from '../../utils';
 
 // interface IFilterCommunityTmpData {
@@ -38,7 +38,7 @@ function asyncTxsFailure(error: any) {
 async function subscribeChainEvents(
     provider: ethers.providers.JsonRpcProvider,
     communities: Map<string, string>, // <address, publicId>
-    isCommunityPublic: Map<string, boolean>, // true if public community
+    isCommunityPublic: Map<string, boolean> // true if public community
     // beneficiariesInPublicCommunities: string[]
 ): Promise<void> {
     const filter = {
@@ -108,7 +108,9 @@ async function subscribeChainEvents(
                 // TODO: remove
                 if (
                     isFromBeneficiary ||
-                    beneficiariesInPublicCommunities.includes(preParsedLog.args[1])
+                    beneficiariesInPublicCommunities.includes(
+                        preParsedLog.args[1]
+                    )
                 ) {
                     const _parsedLog = preParsedLog; // TODO: rename to parsedLog
                     const beneficiaryAddress = isFromBeneficiary
@@ -165,12 +167,14 @@ async function subscribeChainEvents(
                 }
                 // allBeneficiaryAddressses.push(beneficiaryAddress);
                 notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
-                getBlockTime(log.blockHash).then((txAt) => BeneficiaryService.add(
-                    beneficiaryAddress,
-                    communityId!,
-                    log.transactionHash,
-                    txAt
-                ).catch(asyncTxsFailure));
+                getBlockTime(log.blockHash).then((txAt) =>
+                    BeneficiaryService.add(
+                        beneficiaryAddress,
+                        communityId!,
+                        log.transactionHash,
+                        txAt
+                    ).catch(asyncTxsFailure)
+                );
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
                 const beneficiaryAddress = parsedLog.args[0];
                 BeneficiaryService.remove(beneficiaryAddress);
@@ -187,7 +191,8 @@ async function subscribeChainEvents(
                         txAt
                     )
                 );
-            } else if (parsedLog.name === 'ManagerAdded') { // new managers in existing community
+            } else if (parsedLog.name === 'ManagerAdded') {
+                // new managers in existing community
                 const managerAddress = parsedLog.args[0];
                 const communityAddress = log.address;
                 ManagerService.add(
@@ -281,7 +286,7 @@ async function subscribeChainEvents(
                                             isCommunityPublic.set(
                                                 communityAddress,
                                                 community.visibility ===
-                                                'public'
+                                                    'public'
                                             );
                                             allCommunities.set(
                                                 _communityAddress,
@@ -362,7 +367,7 @@ async function subscribeChainEvents(
 
 /**
  * This is a critical method called only once at an important time. This is only used in case
- * there's a complete crash of the api or if some service stops working and 
+ * there's a complete crash of the api or if some service stops working and
  * @param startFromBlock where to start
  * @param provider json rpc
  * @param availableCommunities all valid communities
@@ -370,34 +375,34 @@ async function subscribeChainEvents(
 async function checkCommunitiesOnChainEvents(
     startFromBlock: number,
     provider: ethers.providers.JsonRpcProvider,
-    availableCommunities: Community[],
+    availableCommunities: Community[]
     // beneficiariesInPublicCommunities: string[]
 ): Promise<void> {
     const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
     const ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
-    const allCommunitiesAddresses = availableCommunities
-        .map((c) => c.contractAddress);
+    const allCommunitiesAddresses = availableCommunities.map(
+        (c) => c.contractAddress
+    );
     // const allBeneficiaryAddressses = await BeneficiaryService.getAllAddresses();
     const beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
     // get past community events
     for (let c = 0; c < availableCommunities.length; c++) {
-        const logsCommunity = await provider
-            .getLogs({
-                address: availableCommunities[c].contractAddress!,
-                fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
-                toBlock: 'latest',
-                topics: [
-                    [
-                        ethers.utils.id('ManagerAdded(address)'),
-                        ethers.utils.id('ManagerRemoved(address)'),
-                        ethers.utils.id('BeneficiaryAdded(address)'),
-                        // ethers.utils.id('BeneficiaryLocked(address)'),
-                        ethers.utils.id('BeneficiaryRemoved(address)'),
-                        ethers.utils.id('BeneficiaryClaim(address,uint256)'),
-                        // ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
-                    ],
+        const logsCommunity = await provider.getLogs({
+            address: availableCommunities[c].contractAddress!,
+            fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
+            toBlock: 'latest',
+            topics: [
+                [
+                    ethers.utils.id('ManagerAdded(address)'),
+                    ethers.utils.id('ManagerRemoved(address)'),
+                    ethers.utils.id('BeneficiaryAdded(address)'),
+                    // ethers.utils.id('BeneficiaryLocked(address)'),
+                    ethers.utils.id('BeneficiaryRemoved(address)'),
+                    ethers.utils.id('BeneficiaryClaim(address,uint256)'),
+                    // ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
                 ],
-            });
+            ],
+        });
 
         const orderedLogs = logsCommunity.sort((a, b) => {
             if (a.blockNumber > b.blockNumber) {
@@ -422,7 +427,9 @@ async function checkCommunitiesOnChainEvents(
                 const communityAddress = log.address;
                 // let communityId = allCommunities.get(communityAddress);
                 // notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
-                const isPublicCommunity = availableCommunities.find((c) => c.contractAddress === communityAddress);
+                const isPublicCommunity = availableCommunities.find(
+                    (c) => c.contractAddress === communityAddress
+                );
                 if (isPublicCommunity?.visibility === 'public') {
                     beneficiariesInPublicCommunities.push(beneficiaryAddress);
                 }
@@ -452,13 +459,13 @@ async function checkCommunitiesOnChainEvents(
                 const managerAddress = parsedLog.args[0];
                 await ManagerService.add(
                     managerAddress,
-                    availableCommunities[c].publicId,
+                    availableCommunities[c].publicId
                 );
             } else if (parsedLog.name === 'ManagerRemoved') {
                 const managerAddress = parsedLog.args[0];
                 await ManagerService.remove(
                     managerAddress,
-                    availableCommunities[c].publicId,
+                    availableCommunities[c].publicId
                 );
             }
             TransactionsService.add(
@@ -468,16 +475,18 @@ async function checkCommunitiesOnChainEvents(
             ).catch(catchHandlerTransactionsService);
         }
         // get past donations
-        const logsCUSD = await provider
-            .getLogs({
-                fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
-                toBlock: 'latest',
-                topics: [[ethers.utils.id('Transfer(address,address,uint256)')]],
-            });
+        const logsCUSD = await provider.getLogs({
+            fromBlock: startFromBlock, // community.block !== undefined ? Math.max(community.block, startFromBlock) : 0,
+            toBlock: 'latest',
+            topics: [[ethers.utils.id('Transfer(address,address,uint256)')]],
+        });
         const eventsCUSD = logsCUSD.map((log) => ifaceERC20.parseLog(log));
         for (let ec = 0; ec < eventsCUSD.length; ec += 1) {
             const preParsedLog = eventsCUSD[ec];
-            if (eventsCUSD[ec].args.to === availableCommunities[c].contractAddress) {
+            if (
+                eventsCUSD[ec].args.to ===
+                availableCommunities[c].contractAddress
+            ) {
                 const log = logsCUSD[ec];
                 const parsedLog = eventsCUSD[ec];
                 const from = parsedLog.args[0];
@@ -516,7 +525,9 @@ async function checkCommunitiesOnChainEvents(
                 // transactions from or to beneficiaries
                 if (
                     isFromBeneficiary ||
-                    beneficiariesInPublicCommunities.includes(preParsedLog.args[1])
+                    beneficiariesInPublicCommunities.includes(
+                        preParsedLog.args[1]
+                    )
                 ) {
                     const log = logsCUSD[ec];
                     const _parsedLog = preParsedLog; // TODO: rename to parsedLog
@@ -541,4 +552,7 @@ async function checkCommunitiesOnChainEvents(
     }
 }
 
-export { subscribeChainEvents, /** updateImpactMarketCache, */ checkCommunitiesOnChainEvents };
+export {
+    subscribeChainEvents,
+    /** updateImpactMarketCache, */ checkCommunitiesOnChainEvents,
+};

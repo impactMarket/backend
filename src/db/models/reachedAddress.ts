@@ -7,12 +7,15 @@ interface ReachedAddressAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 export interface ReachedAddressCreationAttributes {
     address: string;
     lastInteraction: Date;
-};
-export class ReachedAddress extends Model<ReachedAddressAttributes, ReachedAddressCreationAttributes> {
+}
+export class ReachedAddress extends Model<
+    ReachedAddressAttributes,
+    ReachedAddressCreationAttributes
+> {
     public address!: string;
     public lastInteraction!: Date;
 

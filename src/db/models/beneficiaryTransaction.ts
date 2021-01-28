@@ -12,7 +12,7 @@ interface BeneficiaryTransactionAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 export interface BeneficiaryTransactionCreationAttributes {
     beneficiary: string;
     withAddress: string;
@@ -20,8 +20,11 @@ export interface BeneficiaryTransactionCreationAttributes {
     isFromBeneficiary: boolean;
     tx: string;
     date: Date;
-};
-export class BeneficiaryTransaction extends Model<BeneficiaryTransactionAttributes, BeneficiaryTransactionCreationAttributes> {
+}
+export class BeneficiaryTransaction extends Model<
+    BeneficiaryTransactionAttributes,
+    BeneficiaryTransactionCreationAttributes
+> {
     public id!: number;
     public beneficiary!: string;
     public withAddress!: string;

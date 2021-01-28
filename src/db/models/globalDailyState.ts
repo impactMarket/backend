@@ -28,7 +28,7 @@ interface GlobalDailyStateAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 export interface GlobalDailyStateCreationAttributes {
     date: Date;
     avgMedianSSI: number;
@@ -53,9 +53,12 @@ export interface GlobalDailyStateCreationAttributes {
     totalVolume: string;
     totalTransactions: BigInt;
     totalReach: BigInt;
-};
+}
 
-export class GlobalDailyState extends Model<GlobalDailyStateAttributes, GlobalDailyStateCreationAttributes> {
+export class GlobalDailyState extends Model<
+    GlobalDailyStateAttributes,
+    GlobalDailyStateCreationAttributes
+> {
     public date!: Date;
     public avgMedianSSI!: number;
     public claimed!: string;

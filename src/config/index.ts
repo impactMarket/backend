@@ -22,11 +22,6 @@ export default {
     dbUrl: process.env.DATABASE_URL!,
 
     /**
-     * Redis URL
-     */
-    redisUrl: process.env.REDIS_URL!,
-
-    /**
      * json rpc url
      */
     jsonRpcUrl: process.env.CHAIN_JSON_RPC_URL!,
@@ -76,7 +71,7 @@ export default {
     /**
      * Used to query
      */
-    baseBlockScoutApiUrl: process.env.BLOCKSCOUT_API_URL,
+    baseBlockScoutApiUrl: process.env.BLOCKSCOUT_API_URL!,
 
     /**
      * Decimals in cUSD token
@@ -96,7 +91,7 @@ export default {
     /**
      * Sentry key.
      */
-    sentryKey: process.env.SENTRY_KEY,
+    sentryKey: process.env.SENTRY_KEY!,
 
     /**
      * Master internal key.
@@ -110,8 +105,7 @@ export default {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
         region: process.env.AWS_REGION!,
-        picturesBucket: process.env.AWS_BUCKET!,
-        bucketLogs: process.env.AWS_BUKET_LOGS!,
+        bucketImagesCommunity: process.env.AWS_BUCKET_IMAGES_COMMUNITY!,
     },
 
     /**
@@ -134,4 +128,14 @@ export default {
      * Placeholder image to use meanwhile community creation.
      */
     communityPlaceholderImageUrl: process.env.COMMUNITY_PLACEHOLDER_IMAGE_URL!,
+
+    /**
+     * Cloudfront URL to be useed
+     */
+    cloudfrontUrl: process.env.CLOUDFRONT_URL!,
+
+    /**
+     *
+     */
+    adminKey: process.env.ADMIN_KEY!
 };

@@ -9,13 +9,16 @@ interface NotifiedBackerAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-};
+}
 interface NotifiedBackerCreationAttributes {
     backer: string;
     communityId: string;
     at: Date;
-};
-export class NotifiedBacker extends Model<NotifiedBackerAttributes, NotifiedBackerCreationAttributes> {
+}
+export class NotifiedBacker extends Model<
+    NotifiedBackerAttributes,
+    NotifiedBackerCreationAttributes
+> {
     public id!: number;
     public backer!: string;
     public communityId!: string;

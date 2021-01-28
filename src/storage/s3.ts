@@ -14,20 +14,21 @@ const s3 = new S3({
 // Initialize multers3 with our s3 config and other options
 export const upload = multer({
     storage: multerS3({
-        s3: s3,
-        bucket: config.aws.picturesBucket,
+        s3,
+        bucket: config.aws.bucketImagesCommunity,
         acl: 'public-read',
         metadata(req, file, cb) {
             cb(null, { fieldName: file.fieldname });
         },
         key(req, file, cb) {
             const today = new Date();
-            const s3FilePrefix = `${today.getFullYear()}${(today.getMonth() + 1)}/`;
-            const s3Filename = `${s3FilePrefix}${Date.now().toString()}${path.extname(file.originalname)}`;
-            cb(
-                null,
-                s3Filename
-            );
-        }
-    })
-})
+            const s3FilePrefix = `${today.getFullYear()}${
+                today.getMonth() + 1
+            }/`;
+            const s3Filename = `${s3FilePrefix}${Date.now().toString()}${path.extname(
+                file.originalname
+            )}`;
+            cb(null, s3Filename);
+        },
+    }),
+});

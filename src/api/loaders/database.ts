@@ -1,7 +1,4 @@
-import { Sequelize, Options, ModelCtor } from 'sequelize';
-
-import config from '../../config';
-import initModels from '../../db/models';
+import { Logger } from '@logger/logger';
 import { Beneficiary } from '@models/beneficiary';
 import { BeneficiaryTransaction } from '@models/beneficiaryTransaction';
 import { Claim } from '@models/claim';
@@ -21,7 +18,10 @@ import { MobileError } from '@models/mobileError';
 import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { User } from '@models/user';
-import { Logger } from '@logger/logger';
+import { Sequelize, Options, ModelCtor } from 'sequelize';
+
+import config from '../../config';
+import initModels from '../../db/models';
 import { DbLoader } from '../../types/db';
 import { GlobalDemographics } from '@models/globalDemographics';
 
@@ -49,12 +49,17 @@ export default (): DbLoader => {
         models: {
             user: sequelize.models.User as ModelCtor<User>,
             community: sequelize.models.Community as ModelCtor<Community>,
-            communityContract: sequelize.models.CommunityContract as ModelCtor<CommunityContract>,
-            communityState: sequelize.models.CommunityState as ModelCtor<CommunityState>,
-            communityDailyState: sequelize.models.CommunityDailyState as ModelCtor<CommunityDailyState>,
-            communityDailyMetrics: sequelize.models.CommunityDailyMetrics as ModelCtor<CommunityDailyMetrics>,
+            communityContract: sequelize.models
+                .CommunityContract as ModelCtor<CommunityContract>,
+            communityState: sequelize.models
+                .CommunityState as ModelCtor<CommunityState>,
+            communityDailyState: sequelize.models
+                .CommunityDailyState as ModelCtor<CommunityDailyState>,
+            communityDailyMetrics: sequelize.models
+                .CommunityDailyMetrics as ModelCtor<CommunityDailyMetrics>,
             claim: sequelize.models.Claim as ModelCtor<Claim>,
-            claimLocation: sequelize.models.ClaimLocation as ModelCtor<ClaimLocation>,
+            claimLocation: sequelize.models
+                .ClaimLocation as ModelCtor<ClaimLocation>,
             beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
             beneficiaryTransaction: sequelize.models.BeneficiaryTransaction as ModelCtor<BeneficiaryTransaction>,
             cronJobExecuted: sequelize.models.CronJobExecuted as ModelCtor<CronJobExecuted>,
@@ -65,8 +70,10 @@ export default (): DbLoader => {
             inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
             manager: sequelize.models.Manager as ModelCtor<Manager>,
             mobileError: sequelize.models.MobileError as ModelCtor<MobileError>,
-            notifiedBacker: sequelize.models.NotifiedBacker as ModelCtor<NotifiedBacker>,
-            reachedAddress: sequelize.models.ReachedAddress as ModelCtor<ReachedAddress>,
+            notifiedBacker: sequelize.models
+                .NotifiedBacker as ModelCtor<NotifiedBacker>,
+            reachedAddress: sequelize.models
+                .ReachedAddress as ModelCtor<ReachedAddress>,
         },
     };
 };

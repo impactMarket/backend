@@ -1,6 +1,7 @@
 import { ClaimLocation } from '@models/claimLocation';
 import { Op } from 'sequelize';
-import database from "../loaders/database";
+
+import database from '../loaders/database';
 
 const db = database();
 export default class ClaimLocationService {
@@ -17,10 +18,12 @@ export default class ClaimLocationService {
         });
     }
 
-    public static async getAll(): Promise<{
-        latitude: number;
-        longitude: number;
-    }[]> {
+    public static async getAll(): Promise<
+        {
+            latitude: number;
+            longitude: number;
+        }[]
+    > {
         const todayMidnightTime = new Date();
         todayMidnightTime.setHours(0, 0, 0, 0);
         // a month ago, from todayMidnightTime
@@ -30,8 +33,8 @@ export default class ClaimLocationService {
             where: {
                 createdAt: {
                     [Op.gte]: aMonthAgo,
-                }
-            }
+                },
+            },
         }) as any;
     }
 }

@@ -1,4 +1,3 @@
-import { ModelCtor, Sequelize } from 'sequelize/types';
 import { Beneficiary } from '@models/beneficiary';
 import { BeneficiaryTransaction } from '@models/beneficiaryTransaction';
 import { Claim } from '@models/claim';
@@ -19,6 +18,7 @@ import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { User } from '@models/user';
 import { GlobalDemographics } from '@models/globalDemographics';
+import { ModelCtor, Sequelize } from 'sequelize/types';
 
 export interface DbModels {
     user: ModelCtor<User>;

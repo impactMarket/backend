@@ -12,4 +12,4 @@ const add = celebrate({
 
 export default {
     add,
-}
+};
