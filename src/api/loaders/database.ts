@@ -22,7 +22,7 @@ import { User } from '@models/user';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
 
 import config from '../../config';
-import initModels from '../../db/models';
+import initModels from '../../database/models';
 import { DbLoader } from '../../types/db';
 
 export default (): DbLoader => {

@@ -1,8 +1,8 @@
-import { CommunityAttributes } from '../db/models/community';
-import { CommunityContractAttributes } from '../db/models/communityContract';
-import { CommunityDailyMetricsAttributes } from '../db/models/communityDailyMetrics';
-import { CommunityStateAttributes } from '../db/models/communityState';
-import { UserAttributes } from '../db/models/user';
+import { CommunityAttributes } from '@models/community';
+import { CommunityContractAttributes } from '@models/communityContract';
+import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
+import { CommunityStateAttributes } from '@models/communityState';
+import { UserAttributes } from '@models/user';
 
 export interface ICommunityLightDetails {
     publicId: string;

@@ -37,7 +37,7 @@
         "@controllers": "dist/api/controllers",
         "@services": "dist/api/services",
         "@validators": "dist/api/validators",
-        "@models": "dist/db/models",
+        "@models": "dist/database/models",
         "@logger": "dist/logger"
     },
     "dependencies": {
