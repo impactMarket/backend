@@ -4,7 +4,7 @@ import {
 } from '@models/globalDailyState';
 import { Op } from 'sequelize';
 
-import { models } from '../../database';
+import { models } from '../database';
 
 export default class GlobalDailyStateService {
     public static globalDailyState = models.globalDailyState;

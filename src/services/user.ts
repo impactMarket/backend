@@ -2,9 +2,9 @@ import { Logger } from '@utils/logger';
 import { UserCreationAttributes } from '@models/user';
 import { Op } from 'sequelize';
 
-import { ICommunity, IUserHello, IUserAuth } from '../../types/endpoints';
-import { models } from '../../database';
-import { generateAccessToken } from '../middlewares';
+import { ICommunity, IUserHello, IUserAuth } from '../types/endpoints';
+import { models } from '../database';
+import { generateAccessToken } from '../api/middlewares';
 import BeneficiaryService from './beneficiary';
 import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';

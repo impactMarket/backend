@@ -3,8 +3,8 @@ import { CommunityDailyMetrics } from '@models/communityDailyMetrics';
 import { median } from 'mathjs';
 import { col, fn, Op } from 'sequelize';
 
-import { ICommunityMetrics } from '../../types';
-import { models } from '../../database';
+import { ICommunityMetrics } from '../types';
+import { models } from '../database';
 
 export default class CommunityDailyMetricsService {
     public static communityDailyMetrics = models.communityDailyMetrics;

@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { Op } from 'sequelize';
 
-import { models } from '../../database';
+import { models } from '../database';
 
 export default class NotifiedBackerService {
     public static notifiedBacker = models.notifiedBacker;

@@ -1,4 +1,4 @@
-import { models } from '../../database';
+import { models } from '../database';
 
 export default class ExchangeRatesService {
     public static exchangeRates = models.exchangeRates;

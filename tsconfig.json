@@ -3,9 +3,9 @@
         "baseUrl": "./src",
         "paths": {
             "@controllers/*": ["api/controllers/*"],
-            "@services/*": ["api/services/*"],
             "@validators/*": ["api/validators/*"],
             "@models/*": ["database/models/*"],
+            "@services/*": ["services/*"],
             "@ipcttypes/*": ["types/*"],
             "@utils/*": ["utils/*"],
             "@interfaces/*": ["interfaces/*"],

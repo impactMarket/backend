@@ -1,7 +1,7 @@
 import { Logger } from '@utils/logger';
 import { col, fn, Op } from 'sequelize';
 
-import { models } from '../../database';
+import { models } from '../database';
 
 export default class InflowService {
     public static inflow = models.inflow;

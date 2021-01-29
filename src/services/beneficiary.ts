@@ -4,7 +4,7 @@ import { Op, fn, col, QueryTypes } from 'sequelize';
 
 import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
 import { isUUID, isAddress } from '@utils/util';
-import { models, sequelize } from '../../database';
+import { models, sequelize } from '../database';
 
 // const db = database();
 export default class BeneficiaryService {

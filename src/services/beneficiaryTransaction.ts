@@ -1,11 +1,10 @@
 import { Logger } from '@utils/logger';
 import {
-    // BeneficiaryTransaction,
     BeneficiaryTransactionCreationAttributes,
 } from '@models/beneficiaryTransaction';
 import { col, fn } from 'sequelize';
 
-import { models } from '../../database';
+import { models } from '../database';
 
 // const db = database();
 export default class BeneficiaryTransactionService {

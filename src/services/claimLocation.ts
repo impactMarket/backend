@@ -1,7 +1,7 @@
 import { ClaimLocation } from '@models/claimLocation';
 import { Op } from 'sequelize';
 
-import { models } from '../../database';
+import { models } from '../database';
 
 export default class ClaimLocationService {
     public static claimLocation = models.claimLocation;

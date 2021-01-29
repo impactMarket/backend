@@ -1,5 +1,5 @@
-import config from '../../config';
-import { models } from '../../database';
+import config from '../config';
+import { models } from '../database';
 
 export default class ImMetadataService {
     public static imMetadata = models.imMetadata;

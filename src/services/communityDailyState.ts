@@ -5,7 +5,7 @@ import {
 import moment from 'moment';
 import { Op, fn, col, Transaction } from 'sequelize';
 
-import { models } from '../../database';
+import { models } from '../database';
 
 export default class CommunityDailyStateService {
     public static communityDailyState = models.communityDailyState;

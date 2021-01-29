@@ -1,6 +1,6 @@
 import { Logger } from '@utils/logger';
 
-import { models } from '../../database';
+import { models } from '../database';
 
 export default class CronJobExecutedService {
     public static cronJobExecuted = models.cronJobExecuted;

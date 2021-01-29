@@ -35,9 +35,9 @@
     },
     "_moduleAliases": {
         "@controllers": "dist/api/controllers",
-        "@services": "dist/api/services",
         "@validators": "dist/api/validators",
         "@models": "dist/database/models",
+        "@services": "dist/services",
         "@utils": "dist/utils",
         "@interfaces": "dist/interfaces"
     },

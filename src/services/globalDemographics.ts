@@ -4,7 +4,7 @@ import {
 } from '@models/globalDemographics';
 import { QueryTypes } from 'sequelize';
 
-import { models, sequelize } from '../../database';
+import { models, sequelize } from '../database';
 
 export default class GlobalDemographicsService {
     public static globalDemographics = models.globalDemographics;

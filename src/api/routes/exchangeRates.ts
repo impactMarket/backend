@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 
-import ExchangeRatesService from '../services/exchangeRates';
+import ExchangeRatesService from '@services/exchangeRates';
 
 export default (app: Router): void => {
     const route = Router();

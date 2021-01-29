@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
 
-import config from '../../../config';
+import config from '../../config';
 
 const aws = new AWS.Config({
     accessKeyId: config.aws.accessKeyId,

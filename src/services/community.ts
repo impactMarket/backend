@@ -9,10 +9,10 @@ import { CommunityStateAttributes } from '@models/communityState';
 import { ethers } from 'ethers';
 import { Op, QueryTypes, fn, col } from 'sequelize';
 
-import config from '../../config';
-import CommunityContractABI from '../../contracts/CommunityABI.json';
-import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
-import { ICommunityContractParams } from '../../types';
+import config from '../config';
+import CommunityContractABI from '../contracts/CommunityABI.json';
+import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
+import { ICommunityContractParams } from '../types';
 import {
     ICommunity,
     ICommunityLightDetails,
@@ -21,9 +21,9 @@ import {
     IManagerDetailsManager,
     IManagers,
     IManagersDetails,
-} from '../../types/endpoints';
+} from '../types/endpoints';
 import { notifyManagerAdded } from '@utils/util';
-import { models, sequelize } from '../../database';
+import { models, sequelize } from '../database';
 import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
 import CommunityDailyStateService from './communityDailyState';
