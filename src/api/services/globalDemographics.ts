@@ -14,13 +14,13 @@ export default class GlobalDemographicsService {
         return await db.models.globalDemographics.create(demographics);
     }
 
-    public static async getLast(): Promise<GlobalDemographics> {
+    public static async getLast(): Promise<GlobalDemographics[]> {
         return (
             await db.sequelize.query<GlobalDemographics>(
                 `select * from globaldemographics where date = (select date from globaldemographics order by date desc limit 1)`,
                 { type: QueryTypes.SELECT }
             )
-        )[0];
+        );
     }
 
     public static async calculateDemographics(): Promise<void> {
