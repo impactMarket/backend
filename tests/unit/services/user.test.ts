@@ -1,13 +1,13 @@
 import { stub } from 'sinon';
 
-import { User } from '../../../src/db/models/user';
-import UserService from '../../../src/api/services/user';
+import { UserModel } from '../../../src/database/models/user';
+import UserService from '../../../src/services/user';
 
 
 
 describe('user', () => {
 
-    const userFindOneStub = stub(User, 'findOne');
+    const userFindOneStub = stub(UserModel, 'findOne');
 
     describe('#welcome(address)', () => {
         // it('should return -1 when the value is not present', () => {

@@ -2,18 +2,18 @@ import { stub, assert, match, SinonStub } from 'sinon';
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 
-import * as utils from '../../../src/utils';
-import ClaimsService from '../../../src/api/services/claim';
-import BeneficiaryService from '../../../src/api/services/beneficiary';
-import ImMetadataService from '../../../src/api/services/imMetadata';
-import TransactionsService from '../../../src/api/services/transactions';
+import * as utils from '../../../src/utils/util';
+import ClaimsService from '../../../src/services/claim';
+import BeneficiaryService from '../../../src/services/beneficiary';
+import ImMetadataService from '../../../src/services/imMetadata';
+import TransactionsService from '../../../src/services/transactions';
 import { subscribeChainEvents } from '../../../src/worker/jobs/chainSubscribers';
 import CommunityContractJSON from './Community.json';
 import cUSDContractJSON from './cUSD.json';
-import ManagerService from '../../../src/api/services/managers';
-import CommunityService from '../../../src/api/services/community';
+import ManagerService from '../../../src/services/managers';
+import CommunityService from '../../../src/services/community';
 import { communityAddressesAndIds } from '../../fake/community';
-import { Community } from '../../../src/db/models/community';
+import { Community } from '../../../src/database/models/community';
 
 async function waitForStubCall(stub: SinonStub<any, any>, callNumber: number) {
     return new Promise((resolve) => {

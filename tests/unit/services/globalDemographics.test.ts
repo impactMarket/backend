@@ -1,6 +1,6 @@
 import { stub, assert, match, SinonStub } from 'sinon';
 
-import GlobalDemographicsService from '../../../src/api/services/globalDemographics';
+import GlobalDemographicsService from '../../../src/services/globalDemographics';
 
 // import * as database from '../../../src/api/loaders/database';
 
@@ -227,8 +227,8 @@ describe('globalDemographics', () => {
     //     },
     // });
 
-    // const dbSequelizeQueryStub = stub(GlobalDemographicsService.db.sequelize, 'query');
-    // const dbGlobalDemographicsInsertStub = stub(GlobalDemographicsService.db.models.globalDemographics, 'bulkCreate');
+    const dbSequelizeQueryStub = stub(GlobalDemographicsService.sequelize, 'query');
+    const dbGlobalDemographicsInsertStub = stub(GlobalDemographicsService.globalDemographics, 'bulkCreate');
 
     dbSequelizeQueryStub.withArgs(match(/current_date_year/)).returns(Promise.resolve(ageRangeQueryResult as any));
     dbSequelizeQueryStub.withArgs(match(/gender/)).returns(Promise.resolve(genderQueryResult as any));

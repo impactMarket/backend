@@ -1,10 +1,10 @@
 import { stub, assert, match } from 'sinon';
 
-import BeneficiaryService from '../../../../src/api/services/beneficiary';
-import CommunityDailyStateService from '../../../../src/api/services/communityDailyState';
-import CommunityDailyMetricsService from '../../../../src/api/services/communityDailyMetrics';
-import CommunityContractService from '../../../../src/api/services/communityContract';
-import CommunityService from '../../../../src/api/services/community';
+import BeneficiaryService from '../../../../src/services/beneficiary';
+import CommunityDailyStateService from '../../../../src/services/communityDailyState';
+import CommunityDailyMetricsService from '../../../../src/services/communityDailyMetrics';
+import CommunityContractService from '../../../../src/services/communityContract';
+import CommunityService from '../../../../src/services/community';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import { activeBeneficiariesLast30Days, allBeneficiariesInCommunity } from '../../../fake/beneficiary';
 import { validNonEmptyMonthLongCommunities, communitiesContract, ssiLast4Days, totalClaimedLast30Days, communityIds } from '../../../fake/community';
@@ -34,7 +34,7 @@ describe('[jobs - cron] community', () => {
         });
 
         it('all valid, non-empty communities, 30+ days', async () => {
-            // stub(CommunityService, 'getAll').returns(Promise.resolve(validNonEmptyMonthLongCommunities));
+            stub(CommunityService, 'listFull').returns(Promise.resolve(validNonEmptyMonthLongCommunities));
 
             // run!
             await calcuateCommunitiesMetrics();

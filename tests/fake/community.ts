@@ -60,7 +60,7 @@ export const validNonEmptyMonthLongCommunities: any[] = [
             claimed: '3946000000000000000000',
             raised: '4340003115106414976421',
         },
-        contractParams: {
+        contract: {
             baseInterval: 86400,
             incrementInterval: 600,
         },
@@ -72,7 +72,7 @@ export const validNonEmptyMonthLongCommunities: any[] = [
             claimed: '163000000000000000000',
             raised: '200000000000000000000',
         },
-        contractParams: {
+        contract: {
             baseInterval: 86400,
             incrementInterval: 300,
         },
@@ -84,7 +84,7 @@ export const validNonEmptyMonthLongCommunities: any[] = [
             claimed: '2068500000000000000000',
             raised: '2780008138099262974802',
         },
-        contractParams: {
+        contract: {
             baseInterval: 86400,
             incrementInterval: 900,
         },
