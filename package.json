@@ -73,9 +73,9 @@
         "sequelize-cli": "6.2.0",
         "sha3": "2.1.2",
         "sharp": "0.27.0",
-        "winston": "3.2.1",
         "swagger-jsdoc": "6.0.0",
-        "swagger-ui-express": "4.1.6"
+        "swagger-ui-express": "4.1.6",
+        "winston": "3.2.1"
     },
     "devDependencies": {
         "@istanbuljs/nyc-config-typescript": "1.0.1",
@@ -100,6 +100,7 @@
         "eslint": "7.3.1",
         "eslint-config-prettier": "6.11.0",
         "eslint-config-universe": "4.0.0",
+        "faker": "5.2.0",
         "ganache-cli": "6.12.1",
         "mocha": "8.2.1",
         "nodemon": "2.0.6",
