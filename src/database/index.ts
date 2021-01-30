@@ -20,7 +20,7 @@ import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { UserModel } from '@models/user';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
-import { DbModels } from 'types/db';
+import { DbModels } from '../types/db';
 
 import config from '../config';
 import initModels from './models';

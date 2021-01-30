@@ -76,16 +76,18 @@ export default class BeneficiaryService {
         ).map((b) => b.address);
     }
 
-    public static async listActiveInCommunity(
+    public static listActiveInCommunity(
         communityId: string
-    ): Promise<Beneficiary[]> {
-        return await this.beneficiary.findAll({
+    ): Promise<
+        { claims: number; lastClaimAt: Date; penultimateClaimAt: Date }[]
+    > {
+        return (this.beneficiary.findAll({
+            attributes: ['claims', 'lastClaimAt', 'penultimateClaimAt'],
             where: {
                 communityId,
                 active: true,
             },
-            order: [['txAt', 'DESC']],
-        });
+        }) as any);
     }
 
     public static async search(

@@ -3,12 +3,13 @@ import {
     CommunityDailyStateCreationAttributes,
 } from '@models/communityDailyState';
 import moment from 'moment';
-import { Op, fn, col, Transaction } from 'sequelize';
+import { Op, fn, col, Transaction, QueryTypes } from 'sequelize';
 
-import { models } from '../database';
+import { models, sequelize } from '../database';
 
 export default class CommunityDailyStateService {
     public static communityDailyState = models.communityDailyState;
+    public static sequelize = sequelize;
 
     public static async insertEmptyDailyState(
         communityId: string,
@@ -113,28 +114,32 @@ export default class CommunityDailyStateService {
         totalBeneficiaries: number;
         totalRaised: string;
     }> {
-        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
-        yesterdayDateOnly.setHours(0, 0, 0, 0);
-        const summedResults = (
-            await this.communityDailyState.findAll({
-                attributes: [
-                    [fn('sum', col('claimed')), 'totalClaimed'],
-                    [fn('sum', col('claims')), 'totalClaims'],
-                    [fn('sum', col('beneficiaries')), 'totalBeneficiaries'],
-                    [fn('sum', col('raised')), 'totalRaised'],
-                ],
-                where: {
-                    date: yesterdayDateOnly,
-                },
-            })
-        )[0];
+        const yesterdayDateOnly = new Date();
+        yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
+        const query = `select sum(cs.claimed) totalClaimed,
+                        sum(cs.claims) totalClaims,
+                        sum(cs.beneficiaries) totalBeneficiaries,
+                        sum(cs.raised) totalRaised
+                from communitydailystate cs, community c
+                where cs."communityId" = c."publicId"
+                and c.status = 'valid'
+                and c.visibility = 'public'
+                and cs.date = '${
+                    yesterdayDateOnly.toISOString().split('T')[0]
+                }'`;
+
+        const result = await this.sequelize.query<{
+            totalClaimed: string;
+            totalClaims: number;
+            totalBeneficiaries: number;
+            totalRaised: string;
+        }>(query, { type: QueryTypes.SELECT });
+
         return {
-            totalClaimed: (summedResults as any).totalClaimed,
-            totalClaims: parseInt((summedResults as any).totalClaims),
-            totalBeneficiaries: parseInt(
-                (summedResults as any).totalBeneficiaries
-            ),
-            totalRaised: (summedResults as any).totalRaised,
+            totalClaimed: result[0].totalClaimed,
+            totalClaims: result[0].totalClaims,
+            totalBeneficiaries: result[0].totalBeneficiaries,
+            totalRaised: result[0].totalRaised,
         };
     }
 

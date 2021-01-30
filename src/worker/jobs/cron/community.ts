@@ -18,13 +18,15 @@ import CommunityStateService from '@services/communityState';
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     Logger.info('Calculating community metrics...');
     // this should run post-midnight (well, at midnight)
-    const yesterday = new Date(new Date().getTime() - 86400000);
     const todayDateOnly = new Date();
     todayDateOnly.setHours(0, 0, 0, 0);
+    const yesterday = todayDateOnly;
+    yesterday.setDate(todayDateOnly.getDate() - 1);
     const activeBeneficiariesLast30Days = await BeneficiaryService.getActiveBeneficiariesLast30Days();
     const totalClaimedLast30Days = await CommunityDailyStateService.getTotalClaimedLast30Days();
     const ssiLast4Days = await CommunityDailyMetricsService.getSSILast4Days();
     const communitiesContract = await CommunityContractService.getAll();
+    //
     const calculateMetrics = async (community: ICommunity) => {
         // if no activity, do not calculate
         if (
@@ -133,7 +135,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 .dividedBy(30)
                 .toFixed(2, 1)
         );
-
         await CommunityDailyMetricsService.add(
             community.publicId,
             ssiDayAlone,
@@ -145,10 +146,13 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         );
     };
     const communities = await CommunityService.listFull();
+    const pending: Promise<void>[] = [];
     // for each community
     for (let index = 0; index < communities.length; index++) {
-        await calculateMetrics(communities[index]);
+        pending.push(calculateMetrics(communities[index]));
+        // await calculateMetrics(communities[index]);
     }
+    await Promise.all(pending);
 }
 
 export async function verifyCommunityFunds(): Promise<void> {
