@@ -16,7 +16,6 @@ import { ICommunity } from '@ipcttypes/endpoints';
 import CommunityStateService from '@services/communityState';
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
-    Logger.info('Calculating community metrics...');
     // this should run post-midnight (well, at midnight)
     const todayDateOnly = new Date();
     todayDateOnly.setHours(0, 0, 0, 0);
@@ -79,33 +78,34 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             beneficiariesTimeWaited.push(timeWaited);
         }
         if (
-            beneficiariesTimeToWait.length > 1 &&
-            beneficiariesTimeWaited.length > 1
+            beneficiariesTimeToWait.length < 2 ||
+            beneficiariesTimeWaited.length < 2
         ) {
-            // calculate ssi day alone
-            const meanTimeToWait = mean(beneficiariesTimeToWait);
-            const madTimeWaited = median(beneficiariesTimeWaited);
-            // console.log(community.name, madTimeWaited, meanTimeToWait);
-            ssiDayAlone = parseFloat(
-                ((madTimeWaited / meanTimeToWait) * 50) /* aka, 100 / 2 */
-                    .toFixed(2)
-            );
+            return;
+        }
+        // calculate ssi day alone
+        const meanTimeToWait = mean(beneficiariesTimeToWait);
+        const madTimeWaited = median(beneficiariesTimeWaited);
+        // console.log(community.name, madTimeWaited, meanTimeToWait);
+        ssiDayAlone = parseFloat(
+            ((madTimeWaited / meanTimeToWait) * 50) /* aka, 100 / 2 */
+                .toFixed(2)
+        );
 
-            // ssi
-            const ssisAvailable = ssiLast4Days.get(community.publicId);
-            if (ssisAvailable === undefined) {
-                ssi = ssiDayAlone;
-            } else {
-                const sumSSI =
-                    ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) +
-                    ssiDayAlone;
-                ssi =
-                    Math.round(
-                        parseFloat(
-                            (sumSSI / (ssisAvailable.length + 1)).toFixed(2)
-                        ) * 100
-                    ) / 100;
-            }
+        // ssi
+        const ssisAvailable = ssiLast4Days.get(community.publicId);
+        if (ssisAvailable === undefined) {
+            ssi = ssiDayAlone;
+        } else {
+            const sumSSI =
+                ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) +
+                ssiDayAlone;
+            ssi =
+                Math.round(
+                    parseFloat(
+                        (sumSSI / (ssisAvailable.length + 1)).toFixed(2)
+                    ) * 100
+                ) / 100;
         }
 
         let daysSinceStart = Math.round(
