@@ -37,7 +37,7 @@ export function initializeManager(sequelize: Sequelize): void {
             user: {
                 type: DataTypes.STRING(44),
                 references: {
-                    model: sequelize.models.User,
+                    model: sequelize.models.UserModel,
                     key: 'address',
                 },
                 onDelete: 'RESTRICT',

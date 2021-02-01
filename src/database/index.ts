@@ -44,7 +44,7 @@ const dbConfig: Options = {
 const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);
 const models: DbModels = {
-    user: sequelize.models.User as ModelCtor<UserModel>,
+    user: sequelize.models.UserModel as ModelCtor<UserModel>,
     community: sequelize.models.Community as ModelCtor<Community>,
     communityContract: sequelize.models
         .CommunityContract as ModelCtor<CommunityContract>,
