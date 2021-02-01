@@ -1,4 +1,3 @@
-import { Community } from '@models/community';
 import { CommunityDailyMetrics } from '@models/communityDailyMetrics';
 import { median } from 'mathjs';
 import { col, fn, Op } from 'sequelize';
@@ -7,6 +6,7 @@ import { ICommunityMetrics } from '../types';
 import { models } from '../database';
 
 export default class CommunityDailyMetricsService {
+    public static community = models.community;
     public static communityDailyMetrics = models.communityDailyMetrics;
 
     public static async add(
@@ -114,18 +114,16 @@ export default class CommunityDailyMetricsService {
         return result;
     }
 
-    public static async getCommunitiesAvgYesterday(): Promise<{
+    public static async getCommunitiesAvg(date: Date): Promise<{
         medianSSI: number;
         avgUbiRate: number;
         avgEstimatedDuration: number;
     }> {
-        const yesterdayDateOnly = new Date(new Date().getTime() - 86400000);
-        yesterdayDateOnly.setHours(0, 0, 0, 0);
-        const fiveDaysAgo = new Date(new Date().getTime() - 432000000);
-        fiveDaysAgo.setHours(0, 0, 0, 0);
+        const fiveDaysAgo = date;
+        fiveDaysAgo.setDate(date.getDate() - 5);
 
         const onlyPublicValidCommunities = (
-            await Community.findAll({
+            await this.community.findAll({
                 attributes: ['publicId'],
                 where: {
                     visibility: 'public',
@@ -137,18 +135,41 @@ export default class CommunityDailyMetricsService {
             })
         ).map((c) => c.publicId);
 
+        // select cm.ssi from communitydailymetrics cm, community c, communitystate cs
+        // where cm.date = '2021-01-30'
+        // and cm."communityId" = c."publicId"
+        // and cs."communityId" = c."publicId"
+        // and c.status = 'valid'
+        // and c.visibility = 'public'
+        // and c.started < '2021-01-25'
+        // and cs.beneficiaries > 1
+        // and cs.claimed > 1
+
+
         // TODO: only communities with more that 5 days
         const medianSSI = median(
             (
                 await this.communityDailyMetrics.findAll({
                     attributes: ['ssi'],
                     where: {
-                        date: yesterdayDateOnly,
+                        date: date,
                         communityId: { [Op.in]: onlyPublicValidCommunities },
                     },
                 })
             ).map((m) => m.ssi)
         );
+
+        // select avg(cm."ubiRate") avgUbiRate, avg(cm."estimatedDuration") avgEstimatedDuration
+        // from communitydailymetrics cm, community c, communitystate cs
+        // where cm.date = '2021-01-30'
+        // and cm."communityId" = c."publicId"
+        // and cs."communityId" = c."publicId"
+        // and c.status = 'valid'
+        // and c.visibility = 'public'
+        // and c.started < '2021-01-25'
+        // and cs.beneficiaries > 1
+        // and cs.claimed > 1
+
 
         const raw = (
             await this.communityDailyMetrics.findAll({
@@ -160,7 +181,7 @@ export default class CommunityDailyMetricsService {
                     ],
                 ],
                 where: {
-                    date: yesterdayDateOnly,
+                    date: date,
                     communityId: { [Op.in]: onlyPublicValidCommunities },
                 },
             })

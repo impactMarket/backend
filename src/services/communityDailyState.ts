@@ -108,14 +108,14 @@ export default class CommunityDailyStateService {
         );
     }
 
-    public static async getYesterdayCommunitiesSum(): Promise<{
+    public static async getPublicCommunitiesSum(
+        date: Date
+    ): Promise<{
         totalClaimed: string;
         totalClaims: number;
         totalBeneficiaries: number;
         totalRaised: string;
     }> {
-        const yesterdayDateOnly = new Date();
-        yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
         const query = `select sum(cs.claimed) totalClaimed,
                         sum(cs.claims) totalClaims,
                         sum(cs.beneficiaries) totalBeneficiaries,
@@ -124,9 +124,7 @@ export default class CommunityDailyStateService {
                 where cs."communityId" = c."publicId"
                 and c.status = 'valid'
                 and c.visibility = 'public'
-                and cs.date = '${
-                    yesterdayDateOnly.toISOString().split('T')[0]
-                }'`;
+                and cs.date = '${date.toISOString().split('T')[0]}'`;
 
         const result = await this.sequelize.query<{
             totalClaimed: string;
@@ -152,22 +150,25 @@ export default class CommunityDailyStateService {
         totalBeneficiaries: number;
         totalRaised: string;
     }> {
-        const justToday = new Date();
-        const result = await this.communityDailyState.findAll({
-            attributes: [
-                [fn('sum', col('claimed')), 'totalClaimed'],
-                [fn('sum', col('beneficiaries')), 'totalBeneficiaries'],
-                [fn('sum', col('raised')), 'totalRaised'],
-            ],
-            where: {
-                date: justToday,
-            },
-        });
+        const query = `select sum(cs.claimed) totalClaimed,
+                        sum(cs.beneficiaries) totalBeneficiaries,
+                        sum(cs.raised) totalRaised
+                from communitydailystate cs, community c
+                where cs."communityId" = c."publicId"
+                and c.status = 'valid'
+                and c.visibility = 'public'
+                and cs.date = '${new Date().toISOString().split('T')[0]}'`;
+
+        const result = await this.sequelize.query<{
+            totalClaimed: string;
+            totalBeneficiaries: number;
+            totalRaised: string;
+        }>(query, { type: QueryTypes.SELECT });
         // it was null just once at the system's begin.
-        const g = result[0] as any;
+        const g = result[0];
         return {
             totalClaimed: g.totalClaimed,
-            totalBeneficiaries: parseInt(g.totalBeneficiaries, 10),
+            totalBeneficiaries: g.totalBeneficiaries,
             totalRaised: g.totalRaised,
         };
     }

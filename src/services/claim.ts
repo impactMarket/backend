@@ -40,31 +40,31 @@ export default class ClaimService {
      *
      * @returns string
      */
-    public static async getMonthlyClaimed(): Promise<string> {
-        const todayMidnightTime = new Date(new Date().getTime());
-        todayMidnightTime.setHours(0, 0, 0, 0);
+    public static async getMonthlyClaimed(from: Date): Promise<string> {
         // 30 days ago, from todayMidnightTime
-        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        const claimed = (
+        const aMonthAgo = from;
+        aMonthAgo.setDate(from.getDate() - 30);
+        //
+        const claimed: { claimed: string } = (
             await this.claim.findAll({
                 attributes: [[fn('sum', col('amount')), 'claimed']],
                 where: {
                     txAt: {
-                        [Op.lt]: todayMidnightTime,
+                        [Op.lt]: from,
                         [Op.gte]: aMonthAgo,
                     },
                 },
             })
-        )[0];
+        )[0] as any;
         // there will always be claimed.lenght > 0 (were only zero at the begining)
-        return (claimed as any).claimed;
+        return claimed.claimed;
     }
 
     public static async uniqueBeneficiariesAndClaimedLast7Days(): Promise<{
         beneficiaries: number;
         claimed: string;
     }> {
-        const todayMidnightTime = new Date(new Date().getTime());
+        const todayMidnightTime = new Date();
         todayMidnightTime.setHours(0, 0, 0, 0);
         // seven days ago, from todayMidnightTime
         const sevenDaysAgo = new Date(todayMidnightTime.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000

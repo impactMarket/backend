@@ -41,17 +41,16 @@ export default class InflowService {
      *
      * @returns string
      */
-    public static async getMonthlyRaised(): Promise<string> {
-        const todayMidnightTime = new Date(new Date().getTime());
-        todayMidnightTime.setHours(0, 0, 0, 0);
+    public static async getMonthlyRaised(from: Date): Promise<string> {
         // 30 days ago, from todayMidnightTime
-        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const aMonthAgo = from;
+        aMonthAgo.setDate(from.getDate() - 30);
         const raised: { raised: string } = (
             await this.inflow.findAll({
                 attributes: [[fn('sum', col('amount')), 'raised']],
                 where: {
                     txAt: {
-                        [Op.lt]: todayMidnightTime,
+                        [Op.lt]: from,
                         [Op.gte]: aMonthAgo,
                     },
                 },
@@ -88,14 +87,13 @@ export default class InflowService {
     /**
      * Count unique backers and total funded in the last 30 days-
      */
-    public static async uniqueBackersAndFundingLast30Days(): Promise<{
+    public static async uniqueBackersAndFundingLast30Days(from: Date): Promise<{
         backers: number;
         funding: string;
     }> {
-        const todayMidnightTime = new Date(new Date().getTime() - 86400000);
-        todayMidnightTime.setHours(0, 0, 0, 0);
         // 30 days ago, from todayMidnightTime
-        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const aMonthAgo = from;
+        aMonthAgo.setDate(from.getDate() - 30);
         const result: { backers: string; funding: string } = (
             await this.inflow.findAll({
                 attributes: [
@@ -104,7 +102,7 @@ export default class InflowService {
                 ],
                 where: {
                     txAt: {
-                        [Op.lt]: todayMidnightTime,
+                        [Op.lt]: from,
                         [Op.gte]: aMonthAgo,
                     },
                 },
