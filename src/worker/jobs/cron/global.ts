@@ -1,4 +1,3 @@
-import { Logger } from '@utils/logger';
 import BeneficiaryTransactionService from '@services/beneficiaryTransaction';
 import ClaimService from '@services/claim';
 import CommunityContractService from '@services/communityContract';
@@ -12,23 +11,37 @@ import { mean } from 'mathjs';
 
 import config from '../../../config';
 
+BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
 /**
  * As this is all calculated past midnight, everything is from yesterdayDateOnly
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
-    Logger.info('Calculating global metrics...');
-    const yesterdayDateOnly = new Date(new Date().getTime() - 86400000); // yesterdayDateOnly
+    const todayMidnightTime = new Date();
+    todayMidnightTime.setHours(0, 0, 0, 0);
+    const yesterdayDateOnly = new Date(); // yesterdayDateOnly
+    yesterdayDateOnly.setHours(0, 0, 0, 0);
+    yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
     const lastGlobalMetrics = await GlobalDailyStateService.getLast();
     const last4DaysAvgSSI = await GlobalDailyStateService.getLast4AvgMedianSSI();
-    const communitiesYesterday = await CommunityDailyStateService.getYesterdayCommunitiesSum();
+    const communitiesYesterday = await CommunityDailyStateService.getPublicCommunitiesSum(
+        yesterdayDateOnly
+    );
     const volumeTransactionsAndAddresses = await BeneficiaryTransactionService.getAllByDay(
         yesterdayDateOnly
     );
-    const backersAndFunding = await InflowService.uniqueBackersAndFundingLast30Days();
-    const communitiesAvgYesterday = await CommunityDailyMetricsService.getCommunitiesAvgYesterday();
+    const backersAndFunding = await InflowService.uniqueBackersAndFundingLast30Days(
+        todayMidnightTime
+    );
+    const communitiesAvgYesterday = await CommunityDailyMetricsService.getCommunitiesAvg(
+        yesterdayDateOnly
+    );
 
-    const monthlyClaimed = await ClaimService.getMonthlyClaimed();
-    const monthlyRaised = await InflowService.getMonthlyRaised();
+    const monthlyClaimed = await ClaimService.getMonthlyClaimed(
+        todayMidnightTime
+    );
+    const monthlyRaised = await InflowService.getMonthlyRaised(
+        todayMidnightTime
+    );
 
     // inflow / outflow
     const totalRaised = new BigNumber(lastGlobalMetrics.totalRaised)

@@ -263,9 +263,11 @@ function cron() {
     new CronJob(
         '0 0 * * *',
         () => {
+            Logger.info('Calculating community metrics...');
             calcuateCommunitiesMetrics()
                 .then(() => {
                     CronJobExecutedService.add('calcuateCommunitiesMetrics');
+                    Logger.info('Calculating global metrics...');
                     calcuateGlobalMetrics()
                         .then(() => {
                             CronJobExecutedService.add('calcuateGlobalMetrics');
