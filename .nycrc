@@ -1,12 +1,12 @@
 {
     "extends": "@istanbuljs/nyc-config-typescript",
     "exclude": [
-        "src/utils.ts",
         "src/config",
-        "src/db",
-        "src/loaders",
-        "src/middlewares",
-        "src/services",
+        "src/database",
+        "src/api/middlewares",
+        "src/services/storage",
+        "src/utils/logger.ts",
+        "src/services/transactions.ts",
         "tests"
     ]
 }
