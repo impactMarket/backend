@@ -1,12 +1,19 @@
 os: linux
-dist: xenial
+dist: focal
 language: node_js
 node_js: 14.15.1
 services:
   - postgresql
 addons:
   postgresql: "12"
-before_script:
+  apt:
+    packages:
+    - postgresql-12
+    - postgresql-client-12
+env:
+  global:
+  - PGPORT=5433
+before_install:
   - psql -c 'create database impactmarkettest;' -U postgres
 install: yarn
 script: yarn coverage:ci
