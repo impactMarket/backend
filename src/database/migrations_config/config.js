@@ -16,6 +16,14 @@ if (process.env.API_ENVIRONMENT && process.env.DATABASE_URL) {
 }
 
 module.exports = {
+    test: {
+        username: 'postgres',
+        password: 'mysecretpassword',
+        database: 'impactmarkettest',
+        host: 'localhost',
+        port: 5432,
+        dialect: 'postgres',
+    },
     development: {
         username: 'postgres',
         password: 'mysecretpassword',

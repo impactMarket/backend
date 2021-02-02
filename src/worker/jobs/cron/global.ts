@@ -79,9 +79,12 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     // economic activity
     const volume = volumeTransactionsAndAddresses.volume;
     const transactions = volumeTransactionsAndAddresses.transactions;
-    const reach = volumeTransactionsAndAddresses.uniqueAddressesReached.length;
+    const reach = volumeTransactionsAndAddresses.reach.length;
+    const reachOut = volumeTransactionsAndAddresses.reachOut.length;
     await ReachedAddressService.updateReachedList(
-        volumeTransactionsAndAddresses.uniqueAddressesReached
+        volumeTransactionsAndAddresses.reach.concat(
+            volumeTransactionsAndAddresses.reachOut
+        )
     );
     // TODO: spending rate
     const spendingRate = 0;
@@ -103,7 +106,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     )
         .plus(transactions)
         .toString();
-    const totalReach = await ReachedAddressService.getAllReachedEver();
+    const allReachEver = await ReachedAddressService.getAllReachedEver();
 
     const avgMedianSSI = mean(
         last4DaysAvgSSI.concat([communitiesAvgYesterday.medianSSI])
@@ -120,6 +123,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         volume,
         transactions,
         reach,
+        reachOut,
         totalRaised,
         totalDistributed,
         totalBackers,
@@ -132,6 +136,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         avgUbiDuration,
         totalVolume,
         totalTransactions: BigInt(totalTransactions),
-        totalReach: BigInt(totalReach),
+        totalReach: BigInt(allReachEver.reach),
+        totalReachOut: BigInt(allReachEver.reachOut),
     });
 }

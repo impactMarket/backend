@@ -1,12 +1,9 @@
 import { Logger } from '@utils/logger';
-import {
-    BeneficiaryTransactionCreationAttributes,
-} from '@models/beneficiaryTransaction';
-import { col, fn } from 'sequelize';
+import { BeneficiaryTransactionCreationAttributes } from '@models/beneficiaryTransaction';
+import { col, fn, Op } from 'sequelize';
 
-import { models } from '../database';
+import { models, Sequelize } from '../database';
 
-// const db = database();
 export default class BeneficiaryTransactionService {
     public static beneficiaryTransaction = models.beneficiaryTransaction;
 
@@ -29,7 +26,8 @@ export default class BeneficiaryTransactionService {
     public static async getAllByDay(
         date: Date
     ): Promise<{
-        uniqueAddressesReached: string[];
+        reach: string[];
+        reachOut: string[];
         volume: string;
         transactions: number;
     }> {
@@ -37,6 +35,19 @@ export default class BeneficiaryTransactionService {
             {
                 attributes: [[fn('distinct', col('withAddress')), 'addresses']],
                 where: { date },
+            }
+        ); // this is an array, wich can be empty (return no rows)
+        const uniqueAddressesReachedOut = await this.beneficiaryTransaction.findAll(
+            {
+                attributes: [[fn('distinct', col('withAddress')), 'addresses']],
+                where: {
+                    date,
+                    withAddress: {
+                        [Op.notIn]: Sequelize.literal(
+                            'select distinct address from beneficiary'
+                        ),
+                    },
+                },
             }
         ); // this is an array, wich can be empty (return no rows)
         const volumeAndTransactions = (
@@ -51,10 +62,14 @@ export default class BeneficiaryTransactionService {
         // result is { volume: null, transactions: '0' } if nothing has happened
         console.log(volumeAndTransactions);
         return {
-            uniqueAddressesReached:
+            reach:
                 uniqueAddressesReached.length === 0
                     ? []
                     : uniqueAddressesReached.map((a: any) => a.addresses),
+            reachOut:
+                uniqueAddressesReachedOut.length === 0
+                    ? []
+                    : uniqueAddressesReachedOut.map((a: any) => a.addresses),
             volume:
                 volumeAndTransactions.volume === null
                     ? '0'

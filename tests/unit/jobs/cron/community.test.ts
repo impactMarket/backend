@@ -61,8 +61,8 @@ describe('[jobs - cron] community', () => {
 
             // assert
             assert.callCount(dailyMetricsAdd, validNonEmptyLessThanMonthLongCommunities.length);
-            assert.calledWith(dailyMetricsAdd.getCall(0), validNonEmptyLessThanMonthLongCommunities[0].publicId, 2.03, 1.43, 1.13, 8.84, match.any);
-            assert.calledWith(dailyMetricsAdd.getCall(1), validNonEmptyLessThanMonthLongCommunities[1].publicId, 2.45, 0.91, 0.16, 62.5, match.any);
+            assert.calledWith(dailyMetricsAdd.getCall(0), validNonEmptyLessThanMonthLongCommunities[0].publicId, 2.03, 1.43, 1.08, 9.25, match.any);
+            assert.calledWith(dailyMetricsAdd.getCall(1), validNonEmptyLessThanMonthLongCommunities[1].publicId, 2.45, 0.91, 0.14, 71.42, match.any);
         });
 
         it('all valid, empty communities', async () => {

@@ -24,6 +24,7 @@ const getLastStub = new GlobalDailyState({
     volume: '5369920072262451756585',
     transactions: 379,
     reach: 92,
+    reachOut: 92,
     totalRaised: '211233480572099278505565',
     totalDistributed: '186740600000000000000000',
     totalBackers: 67,
@@ -37,6 +38,7 @@ const getLastStub = new GlobalDailyState({
     totalVolume: '184102698397357417421594',
     totalTransactions: BigInt(7559),
     totalReach: BigInt(665),
+    totalReachOut: BigInt(665),
 });
 const getLast4AvgMedianSSIStub = [3.78, 3.74, 3.68, 3.58];
 
@@ -48,7 +50,7 @@ const getPublicCommunitiesSumStub = {
 };
 
 const getAllByDayStub = {
-    uniqueAddressesReached: [
+    reach: [
         '0x00149D44b8CEf75edaeE02bdCF13024593DE9B26',
         '0x01CB0ECBB069746d940B164b19Dc6BE64E1d880c',
         '0x02185D68B3eFf0CD24027E0DF628F3Fd73223A87',
@@ -56,6 +58,8 @@ const getAllByDayStub = {
         '0x089e351DF4E71A8bB534c3703F7f2f7Adb024f27',
         '0x0b645CEd834760589cCA93bf0A90585B7266da79',
         '0x154FA1F87a67199fE721082d239145337879b50f',
+    ],
+    reachOut: [
         '0x1901b925462E7A5DC37D460618761eAeC04c96Cb',
         '0x28c03376e6182d8633F7076179acd62Eb8648704',
         '0x2A863742ce2B5e07629895d487d454B053C61e49',
@@ -87,20 +91,18 @@ describe('[jobs - cron] global', () => {
             stub(GlobalDailyStateService, 'getLast4AvgMedianSSI').returns(
                 Promise.resolve(getLast4AvgMedianSSIStub)
             );
-            stub(
-                CommunityDailyStateService,
-                'getPublicCommunitiesSum'
-            ).returns(Promise.resolve(getPublicCommunitiesSumStub));
+            stub(CommunityDailyStateService, 'getPublicCommunitiesSum').returns(
+                Promise.resolve(getPublicCommunitiesSumStub)
+            );
             stub(BeneficiaryTransactionService, 'getAllByDay').returns(
                 Promise.resolve(getAllByDayStub)
             );
             stub(InflowService, 'uniqueBackersAndFundingLast30Days').returns(
                 Promise.resolve(uniqueBackersAndFundingLast30DaysStub)
             );
-            stub(
-                CommunityDailyMetricsService,
-                'getCommunitiesAvg'
-            ).returns(Promise.resolve(getCommunitiesAvgStub));
+            stub(CommunityDailyMetricsService, 'getCommunitiesAvg').returns(
+                Promise.resolve(getCommunitiesAvgStub)
+            );
             stub(ClaimService, 'getMonthlyClaimed').returns(
                 Promise.resolve('143745800000000000000000')
             );
@@ -117,7 +119,7 @@ describe('[jobs - cron] global', () => {
                 Promise.resolve({} as any)
             );
             stub(ReachedAddressService, 'getAllReachedEver').returns(
-                Promise.resolve(665)
+                Promise.resolve({ reach: 665, reachOut: 665 })
             );
         });
 
@@ -138,7 +140,8 @@ describe('[jobs - cron] global', () => {
                 backers: 35,
                 volume: '3697272742970310062948',
                 transactions: 237,
-                reach: 10,
+                reach: 7,
+                reachOut: 3,
                 totalRaised: '211734043645163738531565',
                 totalDistributed: '191926300000000000000000',
                 totalBackers: 69,
@@ -152,6 +155,7 @@ describe('[jobs - cron] global', () => {
                 totalVolume: '187799971140327727484542',
                 totalTransactions: BigInt(7796),
                 totalReach: BigInt(665),
+                totalReachOut: BigInt(665),
             });
         });
     });

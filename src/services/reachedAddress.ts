@@ -1,18 +1,21 @@
 import { ReachedAddressCreationAttributes } from '@models/reachedAddress';
 import { col, fn, Op } from 'sequelize';
 
-import { models } from '../database';
+import { models, Sequelize } from '../database';
 
 export default class ReachedAddressService {
     public static reachedAddress = models.reachedAddress;
 
-    public static async getAllReachedLast30Days(): Promise<number> {
+    public static async getAllReachedLast30Days(): Promise<{
+        reach: number;
+        reachOut: number;
+    }> {
         const todayMidnightTime = new Date();
         todayMidnightTime.setHours(0, 0, 0, 0);
         // a month ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        const result = await this.reachedAddress.findAll({
-            attributes: [[fn('count', col('address')), 'total']],
+        const rReachLast30Days = await this.reachedAddress.count({
+            // attributes: [[fn('count', col('address')), 'total']],
             where: {
                 lastInteraction: {
                     [Op.lt]: todayMidnightTime,
@@ -20,16 +23,48 @@ export default class ReachedAddressService {
                 },
             },
         });
-        const reachedAddressesLast30Days = result[0] as any;
-        return parseInt(reachedAddressesLast30Days.total, 10);
+        const rReachOutLast30Days = await this.reachedAddress.count({
+            // attributes: [[fn('count', col('address')), 'total']],
+            where: {
+                lastInteraction: {
+                    [Op.lt]: todayMidnightTime,
+                    [Op.gte]: aMonthAgo,
+                },
+                address: {
+                    [Op.notIn]: Sequelize.literal(
+                        '(select distinct address from beneficiary)'
+                    ),
+                },
+            },
+        });
+        return {
+            reach: rReachLast30Days,
+            reachOut: rReachOutLast30Days,
+        };
     }
 
-    public static async getAllReachedEver(): Promise<number> {
-        const result = await this.reachedAddress.findAll({
-            attributes: [[fn('count', col('address')), 'total']],
+    public static async getAllReachedEver(): Promise<{
+        reach: number;
+        reachOut: number;
+    }> {
+        console.log(this.reachedAddress);
+        const rReach = await this.reachedAddress.count({
+            where: {}
         });
-        const existingAddresses = result[0] as any;
-        return parseInt(existingAddresses.total, 10);
+        const rReachOut = await this.reachedAddress.count({
+            // attributes: [[fn('count', col('address')), 'total']],
+            where: {
+                address: {
+                    [Op.notIn]: Sequelize.literal(
+                        '(select distinct address from beneficiary)'
+                    ),
+                },
+            },
+        });
+        return {
+            reach: rReach,
+            reachOut: rReachOut,
+        };
     }
 
     /**
