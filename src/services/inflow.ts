@@ -43,7 +43,7 @@ export default class InflowService {
      */
     public static async getMonthlyRaised(from: Date): Promise<string> {
         // 30 days ago, from todayMidnightTime
-        const aMonthAgo = from;
+        const aMonthAgo = new Date();
         aMonthAgo.setDate(from.getDate() - 30);
         const raised: { raised: string } = (
             await this.inflow.findAll({
@@ -92,7 +92,7 @@ export default class InflowService {
         funding: string;
     }> {
         // 30 days ago, from todayMidnightTime
-        const aMonthAgo = from;
+        const aMonthAgo = new Date();
         aMonthAgo.setDate(from.getDate() - 30);
         const result: { backers: string; funding: string } = (
             await this.inflow.findAll({

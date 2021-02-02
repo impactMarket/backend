@@ -19,7 +19,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     // this should run post-midnight (well, at midnight)
     const todayDateOnly = new Date();
     todayDateOnly.setHours(0, 0, 0, 0);
-    const yesterday = todayDateOnly;
+    const yesterday = new Date();
     yesterday.setDate(todayDateOnly.getDate() - 1);
     const activeBeneficiariesLast30Days = await BeneficiaryService.getActiveBeneficiariesLast30Days();
     const totalClaimedLast30Days = await CommunityDailyStateService.getTotalClaimedLast30Days();

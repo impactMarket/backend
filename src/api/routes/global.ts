@@ -8,6 +8,7 @@ import { Router } from 'express';
 const route = Router();
 
 export default (app: Router): void => {
+    const reachedAddressService = new ReachedAddressService();
     app.use('/global', route);
 
     route.get('/status', async (req, res) => {
@@ -16,7 +17,7 @@ export default (app: Router): void => {
             lastQuarterAvgSSI: await GlobalDailyStateService.last90DaysAvgSSI(),
             today: await CommunityDailyStateService.notYetCountedToday(),
             totalBackers: await InflowService.countEvergreenBackers(),
-            reachedLastMonth: await ReachedAddressService.getAllReachedLast30Days(),
+            reachedLastMonth: await reachedAddressService.getAllReachedLast30Days(),
         });
     });
 

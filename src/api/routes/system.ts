@@ -5,6 +5,7 @@ import ReachedAddressService from '@services/reachedAddress';
 import { Router } from 'express';
 
 export default (app: Router): void => {
+    const reachedAddressService = new ReachedAddressService();
     app.get('/clock', (req, res) => res.json(new Date().getTime()));
 
     /**
@@ -16,7 +17,7 @@ export default (app: Router): void => {
             lastQuarterAvgSSI: await GlobalDailyStateService.last90DaysAvgSSI(),
             today: await CommunityDailyStateService.notYetCountedToday(),
             totalBackers: await InflowService.countEvergreenBackers(),
-            reachedLastMonth: await ReachedAddressService.getAllReachedLast30Days(),
+            reachedLastMonth: await reachedAddressService.getAllReachedLast30Days(),
         });
     });
 };

@@ -12,11 +12,10 @@
         "postinstall": "yarn build",
         "prettier": "prettier --write \"./**/*.ts\"",
         "eslint": "eslint --fix \"./**/*.ts\"",
-        "pretest": "sequelize db:migrate --env test --to z1605204805-create-beneficiaryTransaction.js",
+        "test-db-migrate": "sequelize db:migrate --env test --to z1605204805-create-beneficiaryTransaction.js",
         "test": "mocha",
-        "precoverage": "yarn build",
         "coverage": "nyc --reporter=html mocha",
-        "precoverage:ci": "yarn build",
+        "precoverage:ci": "yarn test-db-migrate",
         "coverage:ci": "nyc --reporter=text-lcov mocha | coveralls",
         "test:watch": "mocha --watch",
         "clean": "rm -rf dist coverage .nyc_output"

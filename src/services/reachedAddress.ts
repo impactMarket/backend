@@ -1,24 +1,27 @@
 import { ReachedAddressCreationAttributes } from '@models/reachedAddress';
-import { col, fn, Op } from 'sequelize';
+import { Op } from 'sequelize';
 
 import { models, Sequelize } from '../database';
 
 export default class ReachedAddressService {
-    public static reachedAddress = models.reachedAddress;
+    public reachedAddress = models.reachedAddress;
 
-    public static async getAllReachedLast30Days(): Promise<{
+    /**
+     * Last 30 days, today excluded.
+     */
+    public async getAllReachedLast30Days(): Promise<{
         reach: number;
         reachOut: number;
     }> {
-        const todayMidnightTime = new Date();
-        todayMidnightTime.setHours(0, 0, 0, 0);
+        const today = new Date();
         // a month ago, from todayMidnightTime
-        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const aMonthAgo = new Date();
+        aMonthAgo.setDate(aMonthAgo.getDate() - 30);
         const rReachLast30Days = await this.reachedAddress.count({
             // attributes: [[fn('count', col('address')), 'total']],
             where: {
                 lastInteraction: {
-                    [Op.lt]: todayMidnightTime,
+                    [Op.lt]: today,
                     [Op.gte]: aMonthAgo,
                 },
             },
@@ -27,7 +30,7 @@ export default class ReachedAddressService {
             // attributes: [[fn('count', col('address')), 'total']],
             where: {
                 lastInteraction: {
-                    [Op.lt]: todayMidnightTime,
+                    [Op.lt]: today,
                     [Op.gte]: aMonthAgo,
                 },
                 address: {
@@ -43,13 +46,12 @@ export default class ReachedAddressService {
         };
     }
 
-    public static async getAllReachedEver(): Promise<{
+    public async getAllReachedEver(): Promise<{
         reach: number;
         reachOut: number;
     }> {
-        console.log(this.reachedAddress);
         const rReach = await this.reachedAddress.count({
-            where: {}
+            where: {},
         });
         const rReachOut = await this.reachedAddress.count({
             // attributes: [[fn('count', col('address')), 'total']],
@@ -71,7 +73,7 @@ export default class ReachedAddressService {
      * Insert all new reached addresses and update last interaction to existing ones.
      * @param reached list of addresses reached on privious day to when global status was calculated
      */
-    public static async updateReachedList(reached: string[]): Promise<void> {
+    public async updateReachedList(reached: string[]): Promise<void> {
         const bulkReachedAdd: ReachedAddressCreationAttributes[] = [];
 
         for (let r = 0; r < reached.length; r++) {

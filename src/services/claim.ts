@@ -42,7 +42,7 @@ export default class ClaimService {
      */
     public static async getMonthlyClaimed(from: Date): Promise<string> {
         // 30 days ago, from todayMidnightTime
-        const aMonthAgo = from;
+        const aMonthAgo = new Date();
         aMonthAgo.setDate(from.getDate() - 30);
         //
         const claimed: { claimed: string } = (

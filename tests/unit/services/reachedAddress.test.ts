@@ -1,25 +1,23 @@
-import { stub, assert, match, SinonStub } from 'sinon';
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { Sequelize } from 'sequelize';
 
 import ReachedAddressService from '../../../src/services/reachedAddress';
 import { initializeReachedAddress } from '../../../src/database/models/reachedAddress';
 import { initializeBeneficiary } from '../../../src/database/models/beneficiary';
 import { initializeCommunity } from '../../../src/database/models/community';
-
-// Setup the mock database connection
-
-// this works if run individually
+import { assert } from 'chai';
 
 describe('reachedAddress', () => {
-    it('#getAllReachedEver()', async () => {
+    let sequelize;
+    before(async () => {
         const dbConfig: any = {
             dialect: 'postgres',
             protocol: 'postgres',
             native: true,
+            logging: false,
             query: { raw: true }, // I wish, eager loading gets fixed
         };
-        const sequelize = new Sequelize(
-            'postgresql://postgres:mysecretpassword@localhost/impactmarkettest',
+        sequelize = new Sequelize(
+            'postgresql://postgres:@localhost/impactmarkettest',
             dbConfig
         );
 
@@ -27,34 +25,39 @@ describe('reachedAddress', () => {
         initializeBeneficiary(sequelize);
         initializeCommunity(sequelize);
 
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const twoMonthsAgo = new Date();
+        twoMonthsAgo.setDate(twoMonthsAgo.getDate() - 60);
+
         await sequelize.models.ReachedAddress.bulkCreate([
             {
                 address: '0x0Bcc4EdE0112bd7CC24DFf1442aC87BA1141e807',
-                lastInteraction: '2021-01-02',
+                lastInteraction: yesterday,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
                 address: '0xe9e3AbFEc337A2C71e13eb3AC0f40D36Ca8355B2',
-                lastInteraction: '2020-11-19',
+                lastInteraction: twoMonthsAgo,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
                 address: '0xd55Fae4769e3240FfFf4c17cd2CC03143e55E420',
-                lastInteraction: '2020-11-04',
+                lastInteraction: yesterday,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
                 address: '0x404724c5d216A93a8c31eE848f4012dCDa1D7333',
-                lastInteraction: '2020-11-13',
+                lastInteraction: yesterday,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
             {
                 address: '0x002D33893983E187814Be1bdBe9852299829C554',
-                lastInteraction: '2020-11-18',
+                lastInteraction: twoMonthsAgo,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -80,7 +83,7 @@ describe('reachedAddress', () => {
                 currency: '',
                 descriptionEn: null,
                 language: '',
-                started: '2020-12-16',
+                started: twoMonthsAgo,
             },
         ]);
 
@@ -112,13 +115,9 @@ describe('reachedAddress', () => {
                 updatedAt: new Date(),
             },
         ]);
+    });
 
-        // const x = await us.findAll({ attributes: ['address'] });
-        // const r = await sequelize.models.UserModel.findAll({ attributes: ['address'] });
-        const s = await ReachedAddressService.getAllReachedEver();
-        // console.log(r, s, x);
-        console.log(s);
-
+    after(async () => {
         await sequelize.models.ReachedAddress.destroy({
             where: {},
         });
@@ -128,9 +127,29 @@ describe('reachedAddress', () => {
         await sequelize.models.Community.destroy({
             where: {},
         });
-        //
-        // await waitForStubCall(dbGlobalDemographicsInsertStub, 1);
-        // assert.callCount(dbGlobalDemographicsInsertStub, 1);
-        // assert.calledWith(dbGlobalDemographicsInsertStub.getCall(0), results);
+    });
+
+    it('#getAllReachedLast30Days()', async () => {
+        const reachedAddressService = new ReachedAddressService();
+        const s = await reachedAddressService.getAllReachedLast30Days();
+        assert.deepEqual(s, { reach: 3, reachOut: 2 });
+    });
+
+    it('#getAllReachedEver()', async () => {
+        const reachedAddressService = new ReachedAddressService();
+        const s = await reachedAddressService.getAllReachedEver();
+        assert.deepEqual(s, { reach: 5, reachOut: 3 });
+    });
+
+    it('#updateReachedList()', async () => {
+        //this test will change data and it assumes that the ones before
+        // didn't change anything. It is not good practice.
+        const reachedAddressService = new ReachedAddressService();
+        await reachedAddressService.updateReachedList([
+            '0x002D33893983E187814Be1bdBe9852299829C554',
+            '0x404724c5d216A93a8c31eE848f4012dCDa1D7333',
+        ]);
+        const s = await reachedAddressService.getAllReachedLast30Days();
+        assert.deepEqual(s, { reach: 2, reachOut: 1 });
     });
 });

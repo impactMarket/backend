@@ -119,7 +119,7 @@ export default class CommunityDailyMetricsService {
         avgUbiRate: number;
         avgEstimatedDuration: number;
     }> {
-        const fiveDaysAgo = date;
+        const fiveDaysAgo = new Date();
         fiveDaysAgo.setDate(date.getDate() - 5);
 
         const onlyPublicValidCommunities = (

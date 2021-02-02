@@ -16,6 +16,7 @@ BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
  * As this is all calculated past midnight, everything is from yesterdayDateOnly
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
+    const reachedAddressService = new ReachedAddressService();
     const todayMidnightTime = new Date();
     todayMidnightTime.setHours(0, 0, 0, 0);
     const yesterdayDateOnly = new Date(); // yesterdayDateOnly
@@ -81,7 +82,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const transactions = volumeTransactionsAndAddresses.transactions;
     const reach = volumeTransactionsAndAddresses.reach.length;
     const reachOut = volumeTransactionsAndAddresses.reachOut.length;
-    await ReachedAddressService.updateReachedList(
+    await reachedAddressService.updateReachedList(
         volumeTransactionsAndAddresses.reach.concat(
             volumeTransactionsAndAddresses.reachOut
         )
@@ -106,7 +107,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     )
         .plus(transactions)
         .toString();
-    const allReachEver = await ReachedAddressService.getAllReachedEver();
+    const allReachEver = await reachedAddressService.getAllReachedEver();
 
     const avgMedianSSI = mean(
         last4DaysAvgSSI.concat([communitiesAvgYesterday.medianSSI])
