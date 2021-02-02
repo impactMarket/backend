@@ -1,5 +1,5 @@
 os: linux
-dist: focal
+dist: xenial
 language: node_js
 node_js: 14.15.1
 services:
