@@ -17,6 +17,3 @@ before_install:
   - psql -c 'create database impactmarkettest;' -U postgres
 install: yarn
 script: yarn coverage:ci
-env:
-  global:
-  - PGPORT=5432
