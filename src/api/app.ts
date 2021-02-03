@@ -35,7 +35,7 @@ async function startServer() {
                 },
             }),
         ],
-        tracesSampleRate: config.sentryKey === undefined ? 1 : 0.02,
+        tracesSampleRate: config.tracesSampleRate,
     });
 
     if (process.env.NODE_ENV === 'development') {

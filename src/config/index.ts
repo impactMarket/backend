@@ -135,6 +135,11 @@ export default {
     cloudfrontUrl: process.env.CLOUDFRONT_URL!,
 
     /**
+     * tracesSampleRate used in sentry.
+     */
+    tracesSampleRate: parseInt(process.env.SENTRY_TRACE_SAMPLES_RATE!, 10),
+
+    /**
      *
      */
     adminKey: process.env.ADMIN_KEY!,
