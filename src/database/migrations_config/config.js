@@ -16,6 +16,14 @@ if (process.env.API_ENVIRONMENT && process.env.DATABASE_URL) {
 }
 
 module.exports = {
+    ci: {
+        username: 'postgres',
+        password: '',
+        database: 'impactmarkettest',
+        host: 'localhost',
+        port: 5433,
+        dialect: 'postgres',
+    },
     test: {
         username: 'postgres',
         password: 'mysecretpassword',
@@ -41,9 +49,9 @@ module.exports = {
         dialect: 'postgres',
         dialectOptions: {
             ssl: {
-                rejectUnauthorized: false
-            }
-        }
+                rejectUnauthorized: false,
+            },
+        },
     },
     production: {
         username,
@@ -54,8 +62,8 @@ module.exports = {
         dialect: 'postgres',
         dialectOptions: {
             ssl: {
-                rejectUnauthorized: false
-            }
-        }
-    }
+                rejectUnauthorized: false,
+            },
+        },
+    },
 };

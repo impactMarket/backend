@@ -15,7 +15,7 @@
         "test-db-migrate": "sequelize db:migrate --env test --to z1605204805-create-beneficiaryTransaction.js",
         "test": "mocha",
         "coverage": "nyc --reporter=html mocha",
-        "precoverage:ci": "yarn test-db-migrate",
+        "precoverage:ci": "sequelize db:migrate --env ci --to z1605204805-create-beneficiaryTransaction.js",
         "coverage:ci": "nyc --reporter=text-lcov mocha | coveralls",
         "test:watch": "mocha --watch",
         "clean": "rm -rf dist coverage .nyc_output"
