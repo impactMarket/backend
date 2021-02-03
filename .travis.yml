@@ -14,6 +14,7 @@ env:
   - PGPORT=5433
 before_install:
   - psql -c 'create database impactmarkettest;'
-  - apt-get update && apt-get install -y build-essential git python3 curl
+  - sudo apt-get update
+  - sudo apt-get install -y build-essential git python3 curl
 install: yarn
 script: yarn coverage:ci
