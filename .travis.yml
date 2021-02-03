@@ -14,6 +14,7 @@ env:
   global:
   - PGPORT=5433
 before_install:
-  - psql -c 'create database impactmarkettest;' -U postgres
+  - sudo -u postgres psql --command '\password postgres'
+  - psql -c 'create database impactmarkettest;' -U postgres -p postgres
 install: yarn
 script: yarn coverage:ci
