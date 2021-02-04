@@ -2,7 +2,7 @@ import {
     GlobalDailyState,
     GlobalDailyStateCreationAttributes,
 } from '@models/globalDailyState';
-import { Op } from 'sequelize';
+import { col, fn, Model, Op } from 'sequelize';
 
 import { models } from '../database';
 
@@ -32,6 +32,45 @@ export default class GlobalDailyStateService {
             limit: 1,
         });
         return last[0];
+    }
+
+    public static async sumLast30Days(
+        from: Date
+    ): Promise<{
+        tClaimed: string;
+        tClaims: number;
+        tBeneficiaries: number;
+        tRaised: string;
+        tBackers: number;
+        fundingRate: number;
+        tVolume: string;
+        tTransactions: string;
+        tReach: string;
+        tReachOut: string;
+    }> {
+        // it was null just once at the system's begin.
+        const aMonthAgo = new Date(from.getTime());
+        aMonthAgo.setDate(aMonthAgo.getDate() - 30);
+        const result = await this.globalDailyState.findOne<any>({
+            attributes: [
+                [fn('sum', col('claimed')), 'tClaimed'],
+                [fn('sum', col('claims')), 'tClaims'],
+                [fn('sum', col('beneficiaries')), 'tBeneficiaries'],
+                [fn('sum', col('raised')), 'tRaised'],
+                [fn('sum', col('backers')), 'tBackers'],
+                'fundingRate',
+                [fn('sum', col('transactions')), 'tTransactions'],
+                [fn('sum', col('reach')), 'tReach'],
+                [fn('sum', col('reachOut')), 'tReachOut'],
+            ],
+            where: {
+                date: {
+                    [Op.lt]: from,
+                    [Op.gte]: aMonthAgo,
+                },
+            },
+        });
+        return result!;
     }
 
     public static async getLast30Days(): Promise<GlobalDailyState[]> {

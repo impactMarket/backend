@@ -3,6 +3,7 @@ import ClaimService from '@services/claim';
 import CommunityContractService from '@services/communityContract';
 import CommunityDailyMetricsService from '@services/communityDailyMetrics';
 import CommunityDailyStateService from '@services/communityDailyState';
+import GlobalDailyGrowthService from '@services/globalDailyGrowth';
 import GlobalDailyStateService from '@services/globalDailyState';
 import InflowService from '@services/inflow';
 import ReachedAddressService from '@services/reachedAddress';
@@ -12,6 +13,62 @@ import { mean } from 'mathjs';
 import config from '../../../config';
 
 BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
+
+function calculateGrowth(
+    past: string | BigInt | number,
+    now: string | BigInt | number
+): number {
+    if (typeof past === 'string' && typeof now === 'string') {
+        return new BigNumber(now)
+            .minus(new BigNumber(past))
+            .dividedBy(new BigNumber(past))
+            .multipliedBy(100)
+            .toNumber();
+    } else if (past instanceof BigInt && now instanceof BigInt) {
+        return Number(
+            ((BigInt(now) - BigInt(past)) / BigInt(past)) * BigInt(100)
+        );
+    } else if (typeof past === 'number' && typeof now === 'number') {
+        return ((now - past) / past) * 100;
+    }
+    throw new Error('Invalid input!');
+}
+
+async function calculateMtricsGrowth() {
+    const globalDailyGrowthService = new GlobalDailyGrowthService();
+
+    const todayMidnightTime = new Date();
+    const yesterdayDateOnly = new Date();
+    yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
+    const aMonthAgo = new Date();
+    aMonthAgo.setDate(yesterdayDateOnly.getDate() - 30);
+
+    const present = await GlobalDailyStateService.sumLast30Days(
+        todayMidnightTime
+    );
+    const past = await GlobalDailyStateService.sumLast30Days(aMonthAgo);
+
+    await globalDailyGrowthService.add({
+        date: yesterdayDateOnly,
+        claimed: calculateGrowth(past.tClaimed, present.tClaimed),
+        claims: calculateGrowth(past.tClaims, present.tClaims),
+        beneficiaries: calculateGrowth(
+            past.tBeneficiaries,
+            present.tBeneficiaries
+        ),
+        raised: calculateGrowth(past.tRaised, present.tRaised),
+        backers: calculateGrowth(past.tBackers, present.tBackers),
+        fundingRate: calculateGrowth(past.fundingRate, present.fundingRate),
+        volume: calculateGrowth(past.tVolume, present.tVolume),
+        transactions: calculateGrowth(
+            past.tTransactions,
+            present.tTransactions
+        ),
+        reach: calculateGrowth(past.tReach, present.tReach),
+        reachOut: calculateGrowth(past.tReachOut, present.tReachOut),
+    });
+}
+
 /**
  * As this is all calculated past midnight, everything is from yesterdayDateOnly
  */
@@ -140,4 +197,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         totalReach: BigInt(allReachEver.reach),
         totalReachOut: BigInt(allReachEver.reachOut),
     });
+
+    // calculate global growth
+    await calculateMtricsGrowth();
 }
