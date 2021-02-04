@@ -12,6 +12,7 @@ import { initializeCommunityDailyState } from './communityDailyState';
 import { initializeCommunityState } from './communityState';
 import { initializeCronJobExecuted } from './cronJobExecuted';
 import { initializeExchangeRates } from './exchangeRates';
+import { initializeGlobalDailyGrowth } from './globalDailyGrowth';
 import { initializeGlobalDailyState } from './globalDailyState';
 import { initializeGlobalDemographics } from './globalDemographics';
 import { initializeImMetadata } from './imMetadata';
@@ -48,6 +49,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeCronJobExecuted(sequelize);
     initializeBeneficiaryTransaction(sequelize);
     initializeGlobalDemographics(sequelize);
+    initializeGlobalDailyGrowth(sequelize);
 
     // this actually works, but eager loading not so much!
     // sequelize.models.Manager.belongsTo(sequelize.models.User, {

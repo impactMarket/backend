@@ -24,6 +24,7 @@ import { DbModels } from '../types/db';
 
 import config from '../config';
 import initModels from './models';
+import { GlobalDailyGrowthModel } from '@models/globalDailyGrowth';
 
 let logging:
     | boolean
@@ -66,6 +67,8 @@ const models: DbModels = {
         .GlobalDailyState as ModelCtor<GlobalDailyState>,
     globalDemographics: sequelize.models
         .GlobalDemographics as ModelCtor<GlobalDemographics>,
+    globalDailyGrowth: sequelize.models
+        .GlobalDailyGrowthModel as ModelCtor<GlobalDailyGrowthModel>,
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager>,
