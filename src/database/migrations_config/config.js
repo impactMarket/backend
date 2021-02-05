@@ -17,8 +17,8 @@ if (process.env.API_ENVIRONMENT && process.env.DATABASE_URL) {
 
 module.exports = {
     ci: {
-        username: 'postgres',
-        password: '',
+        username: 'citest',
+        password: 'test101',
         database: 'impactmarkettest',
         host: 'localhost',
         port: 5433,
