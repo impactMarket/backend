@@ -1,5 +1,5 @@
 'use strict';
-const { ethers } = require("ethers");
+const { ethers } = require('ethers');
 
 // eslint-disable-next-line no-undef
 module.exports = {
@@ -21,20 +21,25 @@ module.exports = {
             updatedAt: {
                 type: Sequelize.DATE,
                 allowNull: false,
-            }
+            },
         });
-        const provider = new ethers.providers.JsonRpcProvider(process.env.CHAIN_JSON_RPC_URL);
-        const blockNumber = await provider.getBlockNumber();
+        let blockNumber = 0;
+        try {
+            const provider = new ethers.providers.JsonRpcProvider(
+                process.env.CHAIN_JSON_RPC_URL
+            );
+            blockNumber = await provider.getBlockNumber();
+        } catch (e) {}
         return queryInterface.bulkInsert('immetadata', [
             {
                 key: 'lastBlock',
                 value: blockNumber.toString(),
                 createdAt: new Date(),
-                updatedAt: new Date()
-            }
+                updatedAt: new Date(),
+            },
         ]);
     },
     down: (queryInterface) => {
         return queryInterface.dropTable('immetadata');
-    }
+    },
 };

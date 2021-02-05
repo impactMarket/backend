@@ -17,7 +17,7 @@ describe('reachedAddress', () => {
             query: { raw: true }, // I wish, eager loading gets fixed
         };
         sequelize = new Sequelize(
-            'postgresql://postgres:@localhost/impactmarkettest',
+            'postgresql://citest:test101@localhost/impactmarkettest',
             dbConfig
         );
 
