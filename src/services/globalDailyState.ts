@@ -58,7 +58,6 @@ export default class GlobalDailyStateService {
                 [fn('sum', col('beneficiaries')), 'tBeneficiaries'],
                 [fn('sum', col('raised')), 'tRaised'],
                 [fn('sum', col('backers')), 'tBackers'],
-                'fundingRate',
                 [fn('sum', col('transactions')), 'tTransactions'],
                 [fn('sum', col('reach')), 'tReach'],
                 [fn('sum', col('reachOut')), 'tReachOut'],
@@ -70,7 +69,15 @@ export default class GlobalDailyStateService {
                 },
             },
         });
-        return result!;
+        const frDate = new Date();
+        frDate.setDate(from.getDate() - 1);
+        const fr = await this.globalDailyState.findOne<any>({
+            attributes: ['fundingRate'],
+            where: {
+                date: frDate,
+            },
+        });
+        return { ...result!, fundingRate: fr.fundingRate };
     }
 
     public static async getLast30Days(): Promise<GlobalDailyState[]> {

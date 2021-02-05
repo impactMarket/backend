@@ -10,6 +10,7 @@ import ClaimService from '../../../../src/services/claim';
 import ReachedAddressService from '../../../../src/services/reachedAddress';
 import { calcuateGlobalMetrics } from '../../../../src/worker/jobs/cron/global';
 import { GlobalDailyState } from '../../../../src/database/models/globalDailyState';
+import GlobalDailyGrowthService from '../../../../src/services/globalDailyGrowth';
 
 const twoDaysAgo = new Date();
 twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
@@ -118,6 +119,47 @@ describe('[jobs - cron] global', () => {
             );
             stub(ReachedAddressService.prototype, 'getAllReachedEver').returns(
                 Promise.resolve({ reach: 665, reachOut: 665 })
+            );
+            const stubSumLast30Days = stub(
+                GlobalDailyStateService,
+                'sumLast30Days'
+            );
+            const yesterday = new Date();
+            yesterday.setHours(0, 0, 0, 0);
+            yesterday.setDate(yesterday.getDate() - 1);
+            stubSumLast30Days.withArgs(yesterday).returns(
+                Promise.resolve({
+                    tClaims: 52421,
+                    tClaimed: '79464400000000000000000',
+                    tBeneficiaries: 6763,
+                    tRaised: '86384403789187482153516',
+                    tBackers: 375,
+                    fundingRate: 5.8,
+                    tVolume: '80975441365828470343681',
+                    tTransactions: '2735',
+                    tReach: '686',
+                    tReachOut: '130',
+                })
+            );
+            const aMonthFromYesterday = new Date();
+            aMonthFromYesterday.setHours(0, 0, 0, 0);
+            aMonthFromYesterday.setDate(yesterday.getDate() - 30);
+            stubSumLast30Days.withArgs(aMonthFromYesterday).returns(
+                Promise.resolve({
+                    tClaims: 24900,
+                    tClaimed: '39049100000000000000000',
+                    tBeneficiaries: 2124,
+                    tRaised: '41909001281644819448514',
+                    tBackers: 474,
+                    fundingRate: 4.2,
+                    tVolume: '18098665364949858856154',
+                    tTransactions: '673',
+                    tReach: '235',
+                    tReachOut: '32',
+                })
+            );
+            stub(GlobalDailyGrowthService.prototype, 'add').returns(
+                Promise.resolve({} as any)
             );
         });
 

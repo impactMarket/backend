@@ -34,17 +34,20 @@ function calculateGrowth(
     throw new Error('Invalid input!');
 }
 
-async function calculateMtricsGrowth() {
+async function calculateMetricsGrowth() {
     const globalDailyGrowthService = new GlobalDailyGrowthService();
 
     const todayMidnightTime = new Date();
+    todayMidnightTime.setHours(0, 0, 0, 0);
     const yesterdayDateOnly = new Date();
-    yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
+    yesterdayDateOnly.setHours(0, 0, 0, 0);
+    yesterdayDateOnly.setDate(todayMidnightTime.getDate() - 1);
     const aMonthAgo = new Date();
+    aMonthAgo.setHours(0, 0, 0, 0);
     aMonthAgo.setDate(yesterdayDateOnly.getDate() - 30);
 
     const present = await GlobalDailyStateService.sumLast30Days(
-        todayMidnightTime
+        yesterdayDateOnly
     );
     const past = await GlobalDailyStateService.sumLast30Days(aMonthAgo);
 
@@ -199,5 +202,5 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     });
 
     // calculate global growth
-    await calculateMtricsGrowth();
+    await calculateMetricsGrowth();
 }
