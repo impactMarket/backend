@@ -92,7 +92,7 @@ export default class BeneficiaryService {
 
     public static async search(
         managerAddress: string,
-        address: string,
+        searchInput: string,
         active: boolean
     ): Promise<IManagerDetailsBeneficiary[]> {
         // select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed
@@ -105,19 +105,37 @@ export default class BeneficiaryService {
         // group by b.address, u.username, b."txAt"
         // order by b."txAt" desc
 
-        if (!isAddress(managerAddress) || !isAddress(address)) {
+        let query = '';
+        if (!isAddress(managerAddress)) {
             throw new Error('Not valid address!');
         }
-        return await this.sequelize.query(
-            'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address left join manager m on b."communityId" = m."communityId" where m."user" = \'' +
+        if (isAddress(searchInput)) {
+            query =
+                'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address left join manager m on b."communityId" = m."communityId" where m."user" = \'' +
                 managerAddress +
                 "' and b.active = " +
                 active +
                 " and b.address = '" +
-                address +
-                '\' group by b.address, u.username, b."txAt" order by b."txAt" desc',
-            { type: QueryTypes.SELECT }
-        );
+                searchInput +
+                '\' group by b.address, u.username, b."txAt" order by b."txAt" desc';
+        } else if (
+            searchInput.toLowerCase().indexOf('drop') === -1 &&
+            searchInput.toLowerCase().indexOf('delete') === -1 &&
+            searchInput.toLowerCase().indexOf('update') === -1 &&
+            searchInput.length < 16
+        ) {
+            query =
+                'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address left join manager m on b."communityId" = m."communityId" where m."user" = \'' +
+                managerAddress +
+                "' and b.active = " +
+                active +
+                " and u.username like '%" +
+                searchInput +
+                '%\' group by b.address, u.username, b."txAt" order by b."txAt" desc';
+        } else {
+            throw new Error('Not valid search!');
+        }
+        return await this.sequelize.query(query, { type: QueryTypes.SELECT });
     }
 
     public static async listBeneficiaries(
