@@ -1,11 +1,6 @@
 import ClaimLocationService from '@services/claimLocation';
-import { Logger } from '@utils/logger';
+import { controllerLogAndFail } from '@utils/api';
 import { Request, Response } from 'express';
-
-const controllerLogAndFail = (e: any, status: number, res: Response) => {
-    Logger.error(e);
-    res.status(status).send(e);
-};
 
 const getAll = (req: Request, res: Response) => {
     ClaimLocationService.getAll()
