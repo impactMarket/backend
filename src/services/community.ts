@@ -6,12 +6,14 @@ import {
 import { CommunityContractAttributes } from '@models/communityContract';
 import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
 import { CommunityStateAttributes } from '@models/communityState';
+import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
 import { Op, QueryTypes, fn, col } from 'sequelize';
 
 import config from '../config';
 import CommunityContractABI from '../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
+import { models, sequelize } from '../database';
 import { ICommunityContractParams } from '../types';
 import {
     ICommunity,
@@ -22,8 +24,6 @@ import {
     IManagers,
     IManagersDetails,
 } from '../types/endpoints';
-import { notifyManagerAdded } from '@utils/util';
-import { models, sequelize } from '../database';
 import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
 import CommunityDailyStateService from './communityDailyState';
@@ -516,9 +516,7 @@ export default class CommunityService {
         return results;
     }
 
-    public static async listFull(
-        order?: string
-    ): Promise<ICommunity[]> {
+    public static async listFull(order?: string): Promise<ICommunity[]> {
         // by the time of writting, sequelize
         // does not support eager loading with global "raw: false".
         // Please, check again, and if available, update this
@@ -718,15 +716,13 @@ export default class CommunityService {
                 communityId: community.publicId,
             },
         });
-        const communityDailyMetrics = await this.communityDailyMetrics.findAll(
-            {
-                where: {
-                    communityId: community.publicId,
-                },
-                order: [['createdAt', 'DESC']],
-                limit: 1,
-            }
-        );
+        const communityDailyMetrics = await this.communityDailyMetrics.findAll({
+            where: {
+                communityId: community.publicId,
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1,
+        });
         return {
             ...community,
             state: communityState!,
@@ -766,15 +762,13 @@ export default class CommunityService {
                 communityId: community.publicId,
             },
         });
-        const communityDailyMetrics = await this.communityDailyMetrics.findAll(
-            {
-                where: {
-                    communityId: community.publicId,
-                },
-                order: [['createdAt', 'DESC']],
-                limit: 1,
-            }
-        );
+        const communityDailyMetrics = await this.communityDailyMetrics.findAll({
+            where: {
+                communityId: community.publicId,
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1,
+        });
         return {
             ...community,
             state: communityState!,

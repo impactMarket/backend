@@ -1,9 +1,9 @@
-import { Logger } from '@utils/logger';
+import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
 import { Beneficiary } from '@models/beneficiary';
+import { Logger } from '@utils/logger';
+import { isUUID, isAddress } from '@utils/util';
 import { Op, fn, col, QueryTypes } from 'sequelize';
 
-import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
-import { isUUID, isAddress } from '@utils/util';
 import { models, sequelize } from '../database';
 
 // const db = database();
@@ -81,13 +81,13 @@ export default class BeneficiaryService {
     ): Promise<
         { claims: number; lastClaimAt: Date; penultimateClaimAt: Date }[]
     > {
-        return (this.beneficiary.findAll({
+        return this.beneficiary.findAll({
             attributes: ['claims', 'lastClaimAt', 'penultimateClaimAt'],
             where: {
                 communityId,
                 active: true,
             },
-        }) as any);
+        }) as any;
     }
 
     public static async search(

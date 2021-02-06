@@ -17,11 +17,9 @@ export default class GlobalDemographicsService {
     }
 
     public static async getLast(): Promise<GlobalDemographics[]> {
-        return (
-            await this.sequelize.query<GlobalDemographics>(
-                `select * from globaldemographics where date = (select date from globaldemographics order by date desc limit 1)`,
-                { type: QueryTypes.SELECT }
-            )
+        return await this.sequelize.query<GlobalDemographics>(
+            `select * from globaldemographics where date = (select date from globaldemographics order by date desc limit 1)`,
+            { type: QueryTypes.SELECT }
         );
     }
 

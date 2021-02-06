@@ -9,7 +9,6 @@ export default (app: Router): void => {
 
     app.use('/community', route);
 
-
     route.get('/publicid/:publicId', communityController.getByPublicId);
     route.get('/contract/:address', communityController.getByContractAddress);
     route.get('/hssi/:publicId', communityController.getHistoricalSSI);

@@ -1,19 +1,19 @@
-import { Logger } from '@utils/logger';
+import { ICommunity } from '@ipcttypes/endpoints';
 import BeneficiaryService from '@services/beneficiary';
 import CommunityService from '@services/community';
 import CommunityContractService from '@services/communityContract';
 import CommunityDailyMetricsService from '@services/communityDailyMetrics';
 import CommunityDailyStateService from '@services/communityDailyState';
+import CommunityStateService from '@services/communityState';
 import InflowService from '@services/inflow';
 import NotifiedBackerService from '@services/notifiedBacker';
 import UserService from '@services/user';
+import { Logger } from '@utils/logger';
+import { notifyBackersCommunityLowFunds } from '@utils/util';
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
 
 import config from '../../../config';
-import { notifyBackersCommunityLowFunds } from '@utils/util';
-import { ICommunity } from '@ipcttypes/endpoints';
-import CommunityStateService from '@services/communityState';
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     // this should run post-midnight (well, at midnight)
@@ -65,8 +65,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             // the first time you don't wait a single second, the second time, only base interval
             const timeToWait =
                 community.contract.baseInterval +
-                (beneficiary.claims - 2) *
-                    community.contract.incrementInterval;
+                (beneficiary.claims - 2) * community.contract.incrementInterval;
             const timeWaited =
                 Math.floor(
                     (beneficiary.lastClaimAt.getTime() -
@@ -169,7 +168,9 @@ export async function verifyCommunityFunds(): Promise<void> {
                 ) >= 0.9;
 
             if (isLessThan10) {
-                const community = await CommunityService.getCommunityOnlyByPublicId(communityState.communityId);
+                const community = await CommunityService.getCommunityOnlyByPublicId(
+                    communityState.communityId
+                );
                 if (community !== null) {
                     const backersAddresses = await NotifiedBackerService.add(
                         await InflowService.getAllBackers(community.publicId),

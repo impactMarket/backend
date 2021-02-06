@@ -2,6 +2,7 @@ import {
     GlobalDailyGrowth,
     GlobalDailyGrowthCreation,
 } from '@interfaces/globalDailyGrowth';
+
 import { models } from '../database';
 
 export default class GlobalDailyGrowthService {

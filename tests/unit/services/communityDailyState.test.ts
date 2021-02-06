@@ -1,5 +1,5 @@
-import { stub } from 'sinon';
 import SequelizeMock from 'sequelize-mock';
+import { stub } from 'sinon';
 
 import CommunityDailyStateService from '../../../src/services/communityDailyState';
 
@@ -70,7 +70,6 @@ describe('communityDailyState', () => {
                     status: 'pending',
                 },
             ]);
-            
 
             // stub(CommunityDailyStateService, 'sequelize').returns(DBConnectionMock);
 

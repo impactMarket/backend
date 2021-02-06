@@ -1,16 +1,16 @@
 import { stub, assert, match } from 'sinon';
 
-import CommunityDailyStateService from '../../../../src/services/communityDailyState';
-import CommunityDailyMetricsService from '../../../../src/services/communityDailyMetrics';
-import CommunityContractService from '../../../../src/services/communityContract';
-import GlobalDailyStateService from '../../../../src/services/globalDailyState';
+import { GlobalDailyState } from '../../../../src/database/models/globalDailyState';
 import BeneficiaryTransactionService from '../../../../src/services/beneficiaryTransaction';
-import InflowService from '../../../../src/services/inflow';
 import ClaimService from '../../../../src/services/claim';
+import CommunityContractService from '../../../../src/services/communityContract';
+import CommunityDailyMetricsService from '../../../../src/services/communityDailyMetrics';
+import CommunityDailyStateService from '../../../../src/services/communityDailyState';
+import GlobalDailyGrowthService from '../../../../src/services/globalDailyGrowth';
+import GlobalDailyStateService from '../../../../src/services/globalDailyState';
+import InflowService from '../../../../src/services/inflow';
 import ReachedAddressService from '../../../../src/services/reachedAddress';
 import { calcuateGlobalMetrics } from '../../../../src/worker/jobs/cron/global';
-import { GlobalDailyState } from '../../../../src/database/models/globalDailyState';
-import GlobalDailyGrowthService from '../../../../src/services/globalDailyGrowth';
 
 const twoDaysAgo = new Date();
 twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);

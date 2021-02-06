@@ -1,5 +1,5 @@
-import { Logger } from '@utils/logger';
 import { BeneficiaryTransactionCreationAttributes } from '@models/beneficiaryTransaction';
+import { Logger } from '@utils/logger';
 import { col, fn, Op } from 'sequelize';
 
 import { models, Sequelize } from '../database';

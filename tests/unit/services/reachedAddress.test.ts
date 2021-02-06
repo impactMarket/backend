@@ -1,10 +1,10 @@
+import { assert } from 'chai';
 import { Sequelize } from 'sequelize';
 
-import ReachedAddressService from '../../../src/services/reachedAddress';
-import { initializeReachedAddress } from '../../../src/database/models/reachedAddress';
 import { initializeBeneficiary } from '../../../src/database/models/beneficiary';
 import { initializeCommunity } from '../../../src/database/models/community';
-import { assert } from 'chai';
+import { initializeReachedAddress } from '../../../src/database/models/reachedAddress';
+import ReachedAddressService from '../../../src/services/reachedAddress';
 
 describe('reachedAddress', () => {
     let sequelize;

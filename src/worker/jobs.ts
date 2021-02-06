@@ -1,8 +1,8 @@
-import { Logger } from '@utils/logger';
 import CommunityService from '@services/community';
 import CronJobExecutedService from '@services/cronJobExecuted';
 import GlobalDemographicsService from '@services/globalDemographics';
 import ImMetadataService from '@services/imMetadata';
+import { Logger } from '@utils/logger';
 import { CronJob } from 'cron';
 import { ethers } from 'ethers';
 

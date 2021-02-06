@@ -87,7 +87,9 @@ export default class InflowService {
     /**
      * Count unique backers and total funded in the last 30 days-
      */
-    public static async uniqueBackersAndFundingLast30Days(from: Date): Promise<{
+    public static async uniqueBackersAndFundingLast30Days(
+        from: Date
+    ): Promise<{
         backers: number;
         funding: string;
     }> {

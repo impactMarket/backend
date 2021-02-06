@@ -1,10 +1,10 @@
+import { Community } from '@models/community';
+import UserService from '@services/user';
 import axios from 'axios';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
-import UserService from '@services/user';
 import config from '../config';
 import { Logger } from './logger';
-import { Community } from '@models/community';
 
 // Accepts the array and key
 export function groupBy<T>(array: any[], key: string): Map<string, T[]> {

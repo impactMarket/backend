@@ -1,5 +1,4 @@
-import { communityIds, now, nowTimestamp } from "./community";
-
+import { communityIds, now, nowTimestamp } from './community';
 
 export const activeBeneficiariesLast30Days = new Map<string, number>();
 activeBeneficiariesLast30Days.set(communityIds[0], 71);
@@ -15,7 +14,9 @@ export const allBeneficiariesInCommunity: any[][] = [
         {
             claims: 6,
             lastClaimAt: now,
-            penultimateClaimAt: new Date(nowTimestamp - (86400 + 600 * 4 + 3094) * 1000),
+            penultimateClaimAt: new Date(
+                nowTimestamp - (86400 + 600 * 4 + 3094) * 1000
+            ),
         },
         {
             claims: 2,
@@ -25,14 +26,18 @@ export const allBeneficiariesInCommunity: any[][] = [
         {
             claims: 9,
             lastClaimAt: now,
-            penultimateClaimAt: new Date(nowTimestamp - (86400 + 600 * 7 + 9128) * 1000),
+            penultimateClaimAt: new Date(
+                nowTimestamp - (86400 + 600 * 7 + 9128) * 1000
+            ),
         },
     ],
     [
         {
             claims: 6,
             lastClaimAt: now,
-            penultimateClaimAt: new Date(nowTimestamp - (86400 + 600 * 4 + 3094) * 1000),
+            penultimateClaimAt: new Date(
+                nowTimestamp - (86400 + 600 * 4 + 3094) * 1000
+            ),
         },
         {
             claims: 2,
@@ -42,7 +47,9 @@ export const allBeneficiariesInCommunity: any[][] = [
         {
             claims: 9,
             lastClaimAt: now,
-            penultimateClaimAt: new Date(nowTimestamp - (86400 + 600 * 7 + 9128) * 1000),
+            penultimateClaimAt: new Date(
+                nowTimestamp - (86400 + 600 * 7 + 9128) * 1000
+            ),
         },
         {
             claims: 1,
@@ -54,7 +61,9 @@ export const allBeneficiariesInCommunity: any[][] = [
         {
             claims: 6,
             lastClaimAt: now,
-            penultimateClaimAt: new Date(nowTimestamp - (86400 + 600 * 4 + 3094) * 1000),
+            penultimateClaimAt: new Date(
+                nowTimestamp - (86400 + 600 * 4 + 3094) * 1000
+            ),
         },
         {
             claims: 2,
@@ -64,7 +73,9 @@ export const allBeneficiariesInCommunity: any[][] = [
         {
             claims: 9,
             lastClaimAt: now,
-            penultimateClaimAt: new Date(nowTimestamp - (86400 + 600 * 7 + 9128) * 1000),
+            penultimateClaimAt: new Date(
+                nowTimestamp - (86400 + 600 * 7 + 9128) * 1000
+            ),
         },
         {
             claims: 0,
@@ -76,7 +87,9 @@ export const allBeneficiariesInCommunity: any[][] = [
         {
             claims: 2,
             lastClaimAt: now,
-            penultimateClaimAt: new Date(nowTimestamp - (86400 + 600 * 4 + 3094) * 1000),
+            penultimateClaimAt: new Date(
+                nowTimestamp - (86400 + 600 * 4 + 3094) * 1000
+            ),
         },
         {
             claims: 2,
@@ -88,7 +101,9 @@ export const allBeneficiariesInCommunity: any[][] = [
         {
             claims: 4,
             lastClaimAt: now,
-            penultimateClaimAt: new Date(nowTimestamp - (86400 + 600 * 4 + 3094) * 1000),
+            penultimateClaimAt: new Date(
+                nowTimestamp - (86400 + 600 * 4 + 3094) * 1000
+            ),
         },
         {
             claims: 5,
@@ -98,7 +113,9 @@ export const allBeneficiariesInCommunity: any[][] = [
         {
             claims: 3,
             lastClaimAt: now,
-            penultimateClaimAt: new Date(nowTimestamp - (86400 + 600 * 7 + 9128) * 1000),
+            penultimateClaimAt: new Date(
+                nowTimestamp - (86400 + 600 * 7 + 9128) * 1000
+            ),
         },
     ],
     [],

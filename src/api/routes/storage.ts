@@ -1,7 +1,7 @@
 import fleekStorage from '@fleekhq/fleek-storage-js';
-import { Logger } from '@utils/logger';
 import CommunityService from '@services/community';
 import { uploadContentToS3 } from '@services/storage';
+import { Logger } from '@utils/logger';
 import AWS from 'aws-sdk';
 import { Router } from 'express';
 import multer from 'multer';

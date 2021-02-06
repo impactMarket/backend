@@ -1,5 +1,5 @@
-import { Logger } from '@utils/logger';
 import { ExchangeRates } from '@models/exchangeRates';
+import { Logger } from '@utils/logger';
 import axios from 'axios';
 
 import config from '../../../config';

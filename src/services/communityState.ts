@@ -36,6 +36,8 @@ export default class CommunityStateService {
           and c.status = 'valid'
           and c.visibility = 'public'`;
 
-        return this.sequelize.query<CommunityState>(query, { type: QueryTypes.SELECT });
+        return this.sequelize.query<CommunityState>(query, {
+            type: QueryTypes.SELECT,
+        });
     }
 }

@@ -1,8 +1,8 @@
+import { User } from '@interfaces/user';
 import { CommunityAttributes } from '@models/community';
 import { CommunityContractAttributes } from '@models/communityContract';
 import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
 import { CommunityStateAttributes } from '@models/communityState';
-import { User } from '@interfaces/user';
 
 export interface ICommunityLightDetails {
     publicId: string;

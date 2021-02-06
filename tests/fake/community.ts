@@ -1,6 +1,4 @@
-import {
-    CommunityContract,
-} from '../../src/database/models/communityContract';
+import { CommunityContract } from '../../src/database/models/communityContract';
 
 export const now = new Date();
 export const nowTimestamp = now.getTime();
@@ -168,8 +166,8 @@ export const validEmptyCommunities: any[] = [
 ];
 
 export const communityAddressesAndIds = new Map(
-    validNonEmptyMonthLongCommunities.concat(validNonEmptyLessThanMonthLongCommunities).concat(validEmptyCommunities).map((c) => [
-        c.contractAddress,
-        c.publicId,
-    ])
+    validNonEmptyMonthLongCommunities
+        .concat(validNonEmptyLessThanMonthLongCommunities)
+        .concat(validEmptyCommunities)
+        .map((c) => [c.contractAddress, c.publicId])
 );

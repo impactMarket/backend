@@ -13,7 +13,7 @@ class UserController {
             pushNotificationToken
         )
             .then((user) => res.send(user))
-            .catch((e) => res.sendStatus(403));
+            .catch((e) => res.sendStatus(403).send(e));
     };
 
     public hello = (req: Request, res: Response) => {
@@ -60,28 +60,28 @@ class UserController {
         UserService.setPushNotificationsToken(address, token)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
-    }
+    };
 
     public updateLanguage = (req: Request, res: Response) => {
         const { address, language } = req.body;
         UserService.setLanguage(address, language)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
-    }
+    };
 
     public updateGender = (req: Request, res: Response) => {
         const { address, gender } = req.body;
         UserService.setGender(address, gender)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
-    }
+    };
 
     public updateAge = (req: Request, res: Response) => {
         const { address, age } = req.body;
         UserService.setYear(address, new Date().getFullYear() - age)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
-    }
+    };
 
     /**
      * don't even dare! They'll update you first
@@ -91,7 +91,7 @@ class UserController {
         UserService.setChildren(address, children)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
-    }
+    };
 }
 
 export default UserController;

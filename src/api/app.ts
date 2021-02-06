@@ -1,12 +1,12 @@
 import 'module-alias/register';
-import { Logger } from '@utils/logger';
 import * as Sentry from '@sentry/node';
 import { Integrations } from '@sentry/tracing';
+import { Logger } from '@utils/logger';
 import express from 'express';
 
 import config from '../config';
-import serverLoader from './server';
 import { sequelize } from '../database';
+import serverLoader from './server';
 
 async function startServer() {
     const app = express();

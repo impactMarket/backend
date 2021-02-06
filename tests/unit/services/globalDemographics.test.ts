@@ -6,120 +6,120 @@ import GlobalDemographicsService from '../../../src/services/globalDemographics'
 
 const genderQueryResult = [
     {
-        "gender": "f",
-        "total": 2740,
-        "country": "Brasil"
+        gender: 'f',
+        total: 2740,
+        country: 'Brasil',
     },
     {
-        "gender": "m",
-        "total": 1363,
-        "country": "Brasil"
+        gender: 'm',
+        total: 1363,
+        country: 'Brasil',
     },
     {
-        "gender": "m",
-        "total": 1,
-        "country": "Cabo Verde"
+        gender: 'm',
+        total: 1,
+        country: 'Cabo Verde',
     },
     {
-        "gender": "f",
-        "total": 2,
-        "country": "Cabo Verde"
+        gender: 'f',
+        total: 2,
+        country: 'Cabo Verde',
     },
     {
-        "gender": "f",
-        "total": 11,
-        "country": "Ghana"
+        gender: 'f',
+        total: 11,
+        country: 'Ghana',
     },
     {
-        "gender": "m",
-        "total": 26,
-        "country": "Ghana"
+        gender: 'm',
+        total: 26,
+        country: 'Ghana',
     },
     {
-        "gender": "f",
-        "total": 6,
-        "country": "Philippines"
+        gender: 'f',
+        total: 6,
+        country: 'Philippines',
     },
     {
-        "gender": "m",
-        "total": 5,
-        "country": "Philippines"
-    }
+        gender: 'm',
+        total: 5,
+        country: 'Philippines',
+    },
 ];
 
 const ageRangeQueryResult: {
-    country: string,
-    ageRange1: number,
-    ageRange2: number,
-    ageRange3: number,
-    ageRange4: number,
-    ageRange5: number,
-    ageRange6: number
+    country: string;
+    ageRange1: number;
+    ageRange2: number;
+    ageRange3: number;
+    ageRange4: number;
+    ageRange5: number;
+    ageRange6: number;
 }[] = [
-        {
-            "country": "Nigeria",
-            "ageRange1": 0,
-            "ageRange2": 0,
-            "ageRange3": 0,
-            "ageRange4": 0,
-            "ageRange5": 0,
-            "ageRange6": 0
-        },
-        {
-            "country": "Venezuela",
-            "ageRange1": 0,
-            "ageRange2": 0,
-            "ageRange3": 0,
-            "ageRange4": 0,
-            "ageRange5": 0,
-            "ageRange6": 0
-        },
-        {
-            "country": "Honduras",
-            "ageRange1": 0,
-            "ageRange2": 0,
-            "ageRange3": 0,
-            "ageRange4": 0,
-            "ageRange5": 0,
-            "ageRange6": 0
-        },
-        {
-            "country": "Ghana",
-            "ageRange1": 11,
-            "ageRange2": 9,
-            "ageRange3": 3,
-            "ageRange4": 4,
-            "ageRange5": 1,
-            "ageRange6": 0
-        },
-        {
-            "country": "Brasil",
-            "ageRange1": 937,
-            "ageRange2": 1197,
-            "ageRange3": 893,
-            "ageRange4": 502,
-            "ageRange5": 169,
-            "ageRange6": 40
-        },
-        {
-            "country": "Philippines",
-            "ageRange1": 3,
-            "ageRange2": 0,
-            "ageRange3": 0,
-            "ageRange4": 3,
-            "ageRange5": 1,
-            "ageRange6": 0
-        },
-        {
-            "country": "Cabo Verde",
-            "ageRange1": 0,
-            "ageRange2": 0,
-            "ageRange3": 0,
-            "ageRange4": 0,
-            "ageRange5": 0,
-            "ageRange6": 0
-        }
-    ];
+    {
+        country: 'Nigeria',
+        ageRange1: 0,
+        ageRange2: 0,
+        ageRange3: 0,
+        ageRange4: 0,
+        ageRange5: 0,
+        ageRange6: 0,
+    },
+    {
+        country: 'Venezuela',
+        ageRange1: 0,
+        ageRange2: 0,
+        ageRange3: 0,
+        ageRange4: 0,
+        ageRange5: 0,
+        ageRange6: 0,
+    },
+    {
+        country: 'Honduras',
+        ageRange1: 0,
+        ageRange2: 0,
+        ageRange3: 0,
+        ageRange4: 0,
+        ageRange5: 0,
+        ageRange6: 0,
+    },
+    {
+        country: 'Ghana',
+        ageRange1: 11,
+        ageRange2: 9,
+        ageRange3: 3,
+        ageRange4: 4,
+        ageRange5: 1,
+        ageRange6: 0,
+    },
+    {
+        country: 'Brasil',
+        ageRange1: 937,
+        ageRange2: 1197,
+        ageRange3: 893,
+        ageRange4: 502,
+        ageRange5: 169,
+        ageRange6: 40,
+    },
+    {
+        country: 'Philippines',
+        ageRange1: 3,
+        ageRange2: 0,
+        ageRange3: 0,
+        ageRange4: 3,
+        ageRange5: 1,
+        ageRange6: 0,
+    },
+    {
+        country: 'Cabo Verde',
+        ageRange1: 0,
+        ageRange2: 0,
+        ageRange3: 0,
+        ageRange4: 0,
+        ageRange5: 0,
+        ageRange6: 0,
+    },
+];
 
 const results = [
     {
@@ -132,7 +132,7 @@ const results = [
         ageRange5: 169,
         ageRange6: 40,
         male: 1363,
-        female: 2740
+        female: 2740,
     },
     {
         date: match.any,
@@ -144,7 +144,7 @@ const results = [
         ageRange5: 0,
         ageRange6: 0,
         male: 1,
-        female: 2
+        female: 2,
     },
     {
         date: match.any,
@@ -156,7 +156,7 @@ const results = [
         ageRange5: 1,
         ageRange6: 0,
         male: 26,
-        female: 11
+        female: 11,
     },
     {
         date: match.any,
@@ -168,7 +168,7 @@ const results = [
         ageRange5: 1,
         ageRange6: 0,
         male: 5,
-        female: 6
+        female: 6,
     },
     {
         date: match.any,
@@ -178,7 +178,7 @@ const results = [
         ageRange3: 0,
         ageRange4: 0,
         ageRange5: 0,
-        ageRange6: 0
+        ageRange6: 0,
     },
     {
         date: match.any,
@@ -188,7 +188,7 @@ const results = [
         ageRange3: 0,
         ageRange4: 0,
         ageRange5: 0,
-        ageRange6: 0
+        ageRange6: 0,
     },
     {
         date: match.any,
@@ -198,9 +198,9 @@ const results = [
         ageRange3: 0,
         ageRange4: 0,
         ageRange5: 0,
-        ageRange6: 0
-    }
-]
+        ageRange6: 0,
+    },
+];
 
 async function waitForStubCall(stub: SinonStub<any, any>, callNumber: number) {
     return new Promise((resolve) => {
@@ -209,12 +209,11 @@ async function waitForStubCall(stub: SinonStub<any, any>, callNumber: number) {
                 resolve('');
                 clearInterval(validationInterval);
             }
-        }, 1000)
+        }, 1000);
     });
 }
 
 describe('globalDemographics', () => {
-
     // TODO: fix whats in comment to work
     // stub(database, 'database').returns({
     //     sequelize: {
@@ -227,11 +226,21 @@ describe('globalDemographics', () => {
     //     },
     // });
 
-    const dbSequelizeQueryStub = stub(GlobalDemographicsService.sequelize, 'query');
-    const dbGlobalDemographicsInsertStub = stub(GlobalDemographicsService.globalDemographics, 'bulkCreate');
+    const dbSequelizeQueryStub = stub(
+        GlobalDemographicsService.sequelize,
+        'query'
+    );
+    const dbGlobalDemographicsInsertStub = stub(
+        GlobalDemographicsService.globalDemographics,
+        'bulkCreate'
+    );
 
-    dbSequelizeQueryStub.withArgs(match(/current_date_year/)).returns(Promise.resolve(ageRangeQueryResult as any));
-    dbSequelizeQueryStub.withArgs(match(/gender/)).returns(Promise.resolve(genderQueryResult as any));
+    dbSequelizeQueryStub
+        .withArgs(match(/current_date_year/))
+        .returns(Promise.resolve(ageRangeQueryResult as any));
+    dbSequelizeQueryStub
+        .withArgs(match(/gender/))
+        .returns(Promise.resolve(genderQueryResult as any));
 
     it('#calculateDemographics()', async () => {
         await GlobalDemographicsService.calculateDemographics();

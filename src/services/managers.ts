@@ -1,10 +1,10 @@
-import { Logger } from '@utils/logger';
 import { Manager } from '@models/manager';
+import { Logger } from '@utils/logger';
+import { isAddress, isUUID } from '@utils/util';
 import { col, fn, QueryTypes, Transaction } from 'sequelize';
 
-import { IManagerDetailsManager } from '../types/endpoints';
-import { isAddress, isUUID } from '@utils/util';
 import { models, sequelize } from '../database';
+import { IManagerDetailsManager } from '../types/endpoints';
 
 export default class ManagerService {
     public static manager = models.manager;

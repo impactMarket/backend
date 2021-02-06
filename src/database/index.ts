@@ -1,4 +1,3 @@
-import { Logger } from '@utils/logger';
 import { Beneficiary } from '@models/beneficiary';
 import { BeneficiaryTransaction } from '@models/beneficiaryTransaction';
 import { Claim } from '@models/claim';
@@ -10,6 +9,7 @@ import { CommunityDailyState } from '@models/communityDailyState';
 import { CommunityState } from '@models/communityState';
 import { CronJobExecuted } from '@models/cronJobExecuted';
 import { ExchangeRates } from '@models/exchangeRates';
+import { GlobalDailyGrowthModel } from '@models/globalDailyGrowth';
 import { GlobalDailyState } from '@models/globalDailyState';
 import { GlobalDemographics } from '@models/globalDemographics';
 import { ImMetadata } from '@models/imMetadata';
@@ -19,12 +19,12 @@ import { MobileError } from '@models/mobileError';
 import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { UserModel } from '@models/user';
+import { Logger } from '@utils/logger';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
-import { DbModels } from '../types/db';
 
 import config from '../config';
+import { DbModels } from '../types/db';
 import initModels from './models';
-import { GlobalDailyGrowthModel } from '@models/globalDailyGrowth';
 
 let logging:
     | boolean

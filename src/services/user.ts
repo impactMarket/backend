@@ -1,15 +1,15 @@
-import { Logger } from '@utils/logger';
+import { User } from '@interfaces/user';
 import { UserCreationAttributes } from '@models/user';
+import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
 
-import { ICommunity, IUserHello, IUserAuth } from '../types/endpoints';
-import { models } from '../database';
 import { generateAccessToken } from '../api/middlewares';
+import { models } from '../database';
+import { ICommunity, IUserHello, IUserAuth } from '../types/endpoints';
 import BeneficiaryService from './beneficiary';
 import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';
 import ManagerService from './managers';
-import { User } from '@interfaces/user';
 
 export default class UserService {
     public static user = models.user;

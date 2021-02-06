@@ -2,8 +2,8 @@ import { CommunityDailyMetrics } from '@models/communityDailyMetrics';
 import { median } from 'mathjs';
 import { col, fn, Op } from 'sequelize';
 
-import { ICommunityMetrics } from '../types';
 import { models } from '../database';
+import { ICommunityMetrics } from '../types';
 
 export default class CommunityDailyMetricsService {
     public static community = models.community;
@@ -114,7 +114,9 @@ export default class CommunityDailyMetricsService {
         return result;
     }
 
-    public static async getCommunitiesAvg(date: Date): Promise<{
+    public static async getCommunitiesAvg(
+        date: Date
+    ): Promise<{
         medianSSI: number;
         avgUbiRate: number;
         avgEstimatedDuration: number;
@@ -145,14 +147,13 @@ export default class CommunityDailyMetricsService {
         // and cs.beneficiaries > 1
         // and cs.claimed > 1
 
-
         // TODO: only communities with more that 5 days
         const medianSSI = median(
             (
                 await this.communityDailyMetrics.findAll({
                     attributes: ['ssi'],
                     where: {
-                        date: date,
+                        date,
                         communityId: { [Op.in]: onlyPublicValidCommunities },
                     },
                 })
@@ -170,7 +171,6 @@ export default class CommunityDailyMetricsService {
         // and cs.beneficiaries > 1
         // and cs.claimed > 1
 
-
         const raw = (
             await this.communityDailyMetrics.findAll({
                 attributes: [
@@ -181,7 +181,7 @@ export default class CommunityDailyMetricsService {
                     ],
                 ],
                 where: {
-                    date: date,
+                    date,
                     communityId: { [Op.in]: onlyPublicValidCommunities },
                 },
             })

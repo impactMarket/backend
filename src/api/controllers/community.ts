@@ -1,11 +1,11 @@
-import { Logger } from '@utils/logger';
 import CommunityService from '@services/community';
 import CommunityDailyMetricsService from '@services/communityDailyMetrics';
 import ManagerService from '@services/managers';
+import { controllerLogAndFail } from '@utils/api';
+import { Logger } from '@utils/logger';
 import { Request, Response } from 'express';
 
 import config from '../../config';
-import { controllerLogAndFail } from '@utils/api';
 
 const getByPublicId = (req: Request, res: Response) => {
     CommunityService.getByPublicId(req.params.publicId)
