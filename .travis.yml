@@ -12,11 +12,14 @@ env:
   global:
   - PGVER=12
   - PGPORT=5433
-before_install:
-  - psql -c 'create database impactmarkettest;'
-  - psql -c "CREATE USER citest WITH PASSWORD 'test101';"
-  - psql -c "GRANT ALL PRIVILEGES ON DATABASE impactmarkettest TO citest;"
-  - sudo apt-get update
-  - sudo apt-get install -y build-essential git python3 curl
-install: yarn
-script: yarn coverage:ci
+jobs:
+  exclude:
+    - if: branch = staging
+  before_install:
+    - psql -c 'create database impactmarkettest;'
+    - psql -c "CREATE USER citest WITH PASSWORD 'test101';"
+    - psql -c "GRANT ALL PRIVILEGES ON DATABASE impactmarkettest TO citest;"
+    - sudo apt-get update
+    - sudo apt-get install -y build-essential git python3 curl
+  install: yarn
+  script: yarn coverage:ci
