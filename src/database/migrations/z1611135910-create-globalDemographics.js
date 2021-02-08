@@ -4,13 +4,10 @@
 module.exports = {
     up(queryInterface, Sequelize) {
         return queryInterface.createTable('globaldemographics', {
-            id: {
-                type: Sequelize.INTEGER,
-                autoIncrement: true,
-                primaryKey: true,
-            },
             date: {
                 type: Sequelize.DATEONLY,
+                primaryKey: true,
+                unique: true,
                 allowNull: false,
             },
             country: {
@@ -59,15 +56,15 @@ module.exports = {
             },
             createdAt: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
             },
             updatedAt: {
                 allowNull: false,
-                type: Sequelize.DATE
-            }
+                type: Sequelize.DATE,
+            },
         });
     },
     down: (queryInterface) => {
         return queryInterface.dropTable('globaldemographics');
-    }
+    },
 };
