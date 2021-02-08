@@ -16,10 +16,7 @@ describe('reachedAddress', () => {
             logging: false,
             query: { raw: true }, // I wish, eager loading gets fixed
         };
-        sequelize = new Sequelize(
-            'postgresql://citest:test101@localhost/impactmarkettest',
-            dbConfig
-        );
+        sequelize = new Sequelize(process.env.DB_TESTCI_URL!, dbConfig);
 
         initializeReachedAddress(sequelize);
         initializeBeneficiary(sequelize);
