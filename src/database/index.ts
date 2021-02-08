@@ -9,7 +9,7 @@ import { CommunityDailyState } from '@models/communityDailyState';
 import { CommunityState } from '@models/communityState';
 import { CronJobExecuted } from '@models/cronJobExecuted';
 import { ExchangeRates } from '@models/exchangeRates';
-import { GlobalDailyGrowthModel } from '@models/globalDailyGrowth';
+import { GlobalGrowthModel } from '@models/globalGrowth';
 import { GlobalDailyState } from '@models/globalDailyState';
 import { GlobalDemographics } from '@models/globalDemographics';
 import { ImMetadata } from '@models/imMetadata';
@@ -67,8 +67,8 @@ const models: DbModels = {
         .GlobalDailyState as ModelCtor<GlobalDailyState>,
     globalDemographics: sequelize.models
         .GlobalDemographics as ModelCtor<GlobalDemographics>,
-    globalDailyGrowth: sequelize.models
-        .GlobalDailyGrowthModel as ModelCtor<GlobalDailyGrowthModel>,
+    globalGrowth: sequelize.models
+        .GlobalGrowthModel as ModelCtor<GlobalGrowthModel>,
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager>,

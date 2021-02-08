@@ -1,4 +1,4 @@
-export interface GlobalDailyGrowth {
+export interface GlobalGrowth {
     date: Date;
     claimed: number;
     claims: number;
@@ -16,7 +16,7 @@ export interface GlobalDailyGrowth {
     updatedAt: Date;
 }
 
-export interface GlobalDailyGrowthCreation {
+export interface GlobalGrowthCreation {
     date: Date;
     claimed: number;
     claims: number;

@@ -6,7 +6,7 @@ import ClaimService from '../../../../src/services/claim';
 import CommunityContractService from '../../../../src/services/communityContract';
 import CommunityDailyMetricsService from '../../../../src/services/communityDailyMetrics';
 import CommunityDailyStateService from '../../../../src/services/communityDailyState';
-import GlobalDailyGrowthService from '../../../../src/services/globalDailyGrowth';
+import GlobalGrowthService from '../../../../src/services/globalGrowth';
 import GlobalDailyStateService from '../../../../src/services/globalDailyState';
 import InflowService from '../../../../src/services/inflow';
 import ReachedAddressService from '../../../../src/services/reachedAddress';
@@ -158,7 +158,7 @@ describe('[jobs - cron] global', () => {
                     tReachOut: '32',
                 })
             );
-            stub(GlobalDailyGrowthService.prototype, 'add').returns(
+            stub(GlobalGrowthService.prototype, 'add').returns(
                 Promise.resolve({} as any)
             );
         });

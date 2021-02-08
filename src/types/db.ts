@@ -9,7 +9,7 @@ import { CommunityDailyState } from '@models/communityDailyState';
 import { CommunityState } from '@models/communityState';
 import { CronJobExecuted } from '@models/cronJobExecuted';
 import { ExchangeRates } from '@models/exchangeRates';
-import { GlobalDailyGrowthModel } from '@models/globalDailyGrowth';
+import { GlobalGrowthModel } from '@models/globalGrowth';
 import { GlobalDailyState } from '@models/globalDailyState';
 import { GlobalDemographics } from '@models/globalDemographics';
 import { ImMetadata } from '@models/imMetadata';
@@ -36,7 +36,7 @@ export interface DbModels {
     exchangeRates: ModelCtor<ExchangeRates>;
     globalDailyState: ModelCtor<GlobalDailyState>;
     globalDemographics: ModelCtor<GlobalDemographics>;
-    globalDailyGrowth: ModelCtor<GlobalDailyGrowthModel>;
+    globalGrowth: ModelCtor<GlobalGrowthModel>;
     imMetadata: ModelCtor<ImMetadata>;
     inflow: ModelCtor<Inflow>;
     manager: ModelCtor<Manager>;

@@ -1,12 +1,9 @@
-import {
-    GlobalDailyGrowth,
-    GlobalDailyGrowthCreation,
-} from '@interfaces/globalDailyGrowth';
+import { GlobalGrowth, GlobalGrowthCreation } from '@interfaces/globalGrowth';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class GlobalDailyGrowthModel extends Model<
-    GlobalDailyGrowth,
-    GlobalDailyGrowthCreation
+export class GlobalGrowthModel extends Model<
+    GlobalGrowth,
+    GlobalGrowthCreation
 > {
     public date!: Date;
     public claimed!: number;
@@ -24,10 +21,10 @@ export class GlobalDailyGrowthModel extends Model<
     public readonly updatedAt!: Date;
 }
 
-export function initializeGlobalDailyGrowth(
+export function initializeGlobalGrowth(
     sequelize: Sequelize
-): typeof GlobalDailyGrowthModel {
-    GlobalDailyGrowthModel.init(
+): typeof GlobalGrowthModel {
+    GlobalGrowthModel.init(
         {
             date: {
                 type: DataTypes.DATEONLY,
@@ -89,5 +86,5 @@ export function initializeGlobalDailyGrowth(
             sequelize,
         }
     );
-    return GlobalDailyGrowthModel;
+    return GlobalGrowthModel;
 }

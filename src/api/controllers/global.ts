@@ -1,5 +1,5 @@
 import CommunityDailyStateService from '@services/communityDailyState';
-import GlobalDailyGrowthService from '@services/globalDailyGrowth';
+import GlobalGrowthService from '@services/globalGrowth';
 import GlobalDailyStateService from '@services/globalDailyState';
 import GlobalDemographicsService from '@services/globalDemographics';
 import InflowService from '@services/inflow';
@@ -8,7 +8,7 @@ import { controllerLogAndFail } from '@utils/api';
 import { Request, Response } from 'express';
 
 const reachedAddressService = new ReachedAddressService();
-const globalDailyGrowth = new GlobalDailyGrowthService();
+const globalGrowth = new GlobalGrowthService();
 
 const globalStatus = (req: Request, res: Response) => {
     const waitForResult = new Promise(async (resolve, reject) => {
@@ -19,7 +19,7 @@ const globalStatus = (req: Request, res: Response) => {
                 today: await CommunityDailyStateService.notYetCountedToday(),
                 totalBackers: await InflowService.countEvergreenBackers(),
                 reachedLastMonth: await reachedAddressService.getAllReachedLast30Days(),
-                growth: await globalDailyGrowth.getLast(),
+                growth: await globalGrowth.getLast(),
             });
         } catch (e) {
             reject(e);

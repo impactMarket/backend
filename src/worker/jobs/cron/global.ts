@@ -3,7 +3,7 @@ import ClaimService from '@services/claim';
 import CommunityContractService from '@services/communityContract';
 import CommunityDailyMetricsService from '@services/communityDailyMetrics';
 import CommunityDailyStateService from '@services/communityDailyState';
-import GlobalDailyGrowthService from '@services/globalDailyGrowth';
+import GlobalGrowthService from '@services/globalGrowth';
 import GlobalDailyStateService from '@services/globalDailyState';
 import InflowService from '@services/inflow';
 import ReachedAddressService from '@services/reachedAddress';
@@ -35,7 +35,7 @@ function calculateGrowth(
 }
 
 async function calculateMetricsGrowth() {
-    const globalDailyGrowthService = new GlobalDailyGrowthService();
+    const globalGrowthService = new GlobalGrowthService();
 
     const todayMidnightTime = new Date();
     todayMidnightTime.setHours(0, 0, 0, 0);
@@ -51,7 +51,7 @@ async function calculateMetricsGrowth() {
     );
     const past = await GlobalDailyStateService.sumLast30Days(aMonthAgo);
 
-    await globalDailyGrowthService.add({
+    await globalGrowthService.add({
         date: yesterdayDateOnly,
         claimed: calculateGrowth(past.tClaimed, present.tClaimed),
         claims: calculateGrowth(past.tClaims, present.tClaims),
