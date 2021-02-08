@@ -17,6 +17,7 @@ interface GlobalDemographicsAttributes {
     updatedAt: Date;
 }
 export interface GlobalDemographicsCreationAttributes {
+    date: Date;
     country: string;
     male: number;
     female: number;
