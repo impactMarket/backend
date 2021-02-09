@@ -150,9 +150,9 @@ export default class CommunityDailyStateService {
         totalBeneficiaries: number;
         totalRaised: string;
     }> {
-        const query = `select sum(cs.claimed) totalClaimed,
-                        sum(cs.beneficiaries) totalBeneficiaries,
-                        sum(cs.raised) totalRaised
+        const query = `select sum(cs.claimed) "totalClaimed",
+                        sum(cs.beneficiaries) "totalBeneficiaries",
+                        sum(cs.raised) "totalRaised"
                 from communitydailystate cs, community c
                 where cs."communityId" = c."publicId"
                 and c.status = 'valid'
