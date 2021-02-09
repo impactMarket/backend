@@ -82,7 +82,7 @@ export function initializeGlobalGrowth(
             },
         },
         {
-            tableName: 'globaldailygrowth',
+            tableName: 'globalgrowth',
             sequelize,
         }
     );
