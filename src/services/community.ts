@@ -592,18 +592,23 @@ export default class CommunityService {
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
             },
-            metrics: {
-                date: c.date,
-                estimatedDuration: c.estimatedDuration,
-                ssi: c.ssi,
-                ssiDayAlone: c.ssiDayAlone,
-                ubiRate: c.ubiRate,
-                // values below don't matter
-                communityId: c.publicId,
-                createdAt: c.createdAt,
-                updatedAt: c.updatedAt,
-                id: 0,
-            },
+            metrics:
+                c.ssi !== null &&
+                c.ubiRate !== null &&
+                c.estimatedDuration !== null
+                    ? {
+                          date: c.date,
+                          estimatedDuration: c.estimatedDuration,
+                          ssi: c.ssi,
+                          ssiDayAlone: c.ssiDayAlone,
+                          ubiRate: c.ubiRate,
+                          // values below don't matter
+                          communityId: c.publicId,
+                          createdAt: c.createdAt,
+                          updatedAt: c.updatedAt,
+                          id: 0,
+                      }
+                    : undefined,
             // values below don't matter
             createdAt: c.createdAt,
             updatedAt: c.updatedAt,

@@ -30,7 +30,7 @@ export interface ICommunityPendingDetails {
 export interface ICommunity extends CommunityAttributes {
     state: CommunityStateAttributes;
     contract: CommunityContractAttributes;
-    metrics: CommunityDailyMetricsAttributes;
+    metrics?: CommunityDailyMetricsAttributes;
 }
 
 export interface IManagers {
