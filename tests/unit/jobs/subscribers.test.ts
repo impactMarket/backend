@@ -5,6 +5,7 @@ import { stub, assert, match, SinonStub } from 'sinon';
 
 import { Community } from '../../../src/database/models/community';
 import BeneficiaryService from '../../../src/services/beneficiary';
+import BeneficiaryTransactionService from '../../../src/services/beneficiaryTransaction';
 import ClaimsService from '../../../src/services/claim';
 import CommunityService from '../../../src/services/community';
 import InflowService from '../../../src/services/inflow';
@@ -26,6 +27,7 @@ describe('[jobs] subscribers', () => {
     const communitiesVisibility = new Map<string, boolean>();
     let accounts: string[] = [];
     let beneficiaryAdd: SinonStub<any, any>;
+    let beneficiaryTransactionAdd: SinonStub<any, any>;
     let beneficiaryRemove: SinonStub<any, any>;
     let claimAdd: SinonStub<any, any>;
     let managerAdd: SinonStub<any, any>;
@@ -75,6 +77,8 @@ describe('[jobs] subscribers', () => {
         stub(utils, 'getBlockTime').returns(Promise.resolve(blockTimeDate));
         beneficiaryAdd = stub(BeneficiaryService, 'add');
         beneficiaryAdd.returns(Promise.resolve(true));
+        beneficiaryTransactionAdd = stub(BeneficiaryTransactionService, 'add');
+        beneficiaryTransactionAdd.returns(Promise.resolve());
         beneficiaryRemove = stub(BeneficiaryService, 'remove');
         beneficiaryRemove.returns(Promise.resolve());
         inflowAdd = stub(InflowService, 'add');
@@ -423,6 +427,59 @@ describe('[jobs] subscribers', () => {
                 match.any,
                 match.any
             );
+        });
+    });
+
+    context('beneficiary transaction', () => {
+        it('to a non beneficiary user', async () => {
+            managerAdd.reset();
+            managerRemove.reset();
+            inflowAdd.reset();
+            // deploy a community
+            communityContract = (
+                await communityFactory.deploy(
+                    accounts[1],
+                    '2000000000000000000',
+                    '1500000000000000000000',
+                    86400,
+                    300,
+                    '0x0000000000000000000000000000000000000000',
+                    cUSD.address,
+                    '0x0000000000000000000000000000000000000000'
+                )
+            ).connect(provider.getSigner(1));
+            communities.set(communityContract.address, thisCommunityId);
+            communitiesVisibility.set(communityContract.address, true);
+            const newCommunityAddressesAndIds = new Map([
+                ...communityAddressesAndIds,
+                [communityContract.address, thisCommunityId],
+            ]);
+            getAllAddressesAndIds.returns(
+                Promise.resolve(newCommunityAddressesAndIds)
+            );
+            await cUSD
+                .connect(provider.getSigner(0))
+                .testFakeFundAddress(communityContract.address);
+            // this line below counts as a beneficiary transaction
+            await cUSD
+                .connect(provider.getSigner(0))
+                .testFakeFundAddress(accounts[5]);
+            //
+            await communityContract.addBeneficiary(accounts[5]);
+            await waitForStubCall(beneficiaryAdd, 1);
+            await cUSD
+                .connect(provider.getSigner(5))
+                .transfer(accounts[6], '2000000000000000000');
+            await waitForStubCall(beneficiaryTransactionAdd, 1);
+            assert.callCount(beneficiaryTransactionAdd, 2);
+            assert.calledWith(beneficiaryTransactionAdd.getCall(1), {
+                beneficiary: accounts[5],
+                withAddress: accounts[6],
+                amount: '2000000000000000000',
+                isFromBeneficiary: true,
+                tx: match.any,
+                date: match.any,
+            });
         });
     });
 });
