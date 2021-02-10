@@ -4,10 +4,14 @@
 module.exports = {
     up(queryInterface, Sequelize) {
         return queryInterface.createTable('globaldemographics', {
+            id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+            },
             date: {
                 type: Sequelize.DATEONLY,
-                primaryKey: true,
-                unique: true,
                 allowNull: false,
             },
             country: {

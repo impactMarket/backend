@@ -1,6 +1,7 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 interface GlobalDemographicsAttributes {
+    id: number;
     date: Date;
     country: string;
     male: number;
@@ -33,7 +34,8 @@ export class GlobalDemographics extends Model<
     GlobalDemographicsAttributes,
     GlobalDemographicsCreationAttributes
 > {
-    public date!: Date;
+    public id!: number;
+    public date!: Date; // date isn't unique
     public country!: string;
     public male!: number;
     public female!: number;
@@ -52,10 +54,14 @@ export class GlobalDemographics extends Model<
 export function initializeGlobalDemographics(sequelize: Sequelize): void {
     GlobalDemographics.init(
         {
+            id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+            },
             date: {
                 type: DataTypes.DATEONLY,
-                primaryKey: true,
-                unique: true,
                 allowNull: false,
             },
             country: {
