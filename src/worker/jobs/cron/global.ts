@@ -18,18 +18,20 @@ function calculateGrowth(
     past: string | BigInt | number,
     now: string | BigInt | number
 ): number {
+    let r: number | undefined = undefined;
     if (typeof past === 'string' && typeof now === 'string') {
-        return new BigNumber(now)
+        r = new BigNumber(now)
             .minus(new BigNumber(past))
             .dividedBy(new BigNumber(past))
             .multipliedBy(100)
             .toNumber();
     } else if (past instanceof BigInt && now instanceof BigInt) {
-        return Number(
-            ((BigInt(now) - BigInt(past)) / BigInt(past)) * BigInt(100)
-        );
+        r = Number(((BigInt(now) - BigInt(past)) / BigInt(past)) * BigInt(100));
     } else if (typeof past === 'number' && typeof now === 'number') {
-        return ((now - past) / past) * 100;
+        r = ((now - past) / past) * 100;
+    }
+    if (r !== undefined) {
+        return Math.round(r * 10) / 10;
     }
     throw new Error('Invalid input!');
 }
@@ -51,7 +53,7 @@ async function calculateMetricsGrowth() {
     );
     const past = await GlobalDailyStateService.sumLast30Days(aMonthAgo);
 
-    await globalGrowthService.add({
+    const growthToAdd = {
         date: yesterdayDateOnly,
         claimed: calculateGrowth(past.tClaimed, present.tClaimed),
         claims: calculateGrowth(past.tClaims, present.tClaims),
@@ -69,7 +71,8 @@ async function calculateMetricsGrowth() {
         ),
         reach: calculateGrowth(past.tReach, present.tReach),
         reachOut: calculateGrowth(past.tReachOut, present.tReachOut),
-    });
+    };
+    await globalGrowthService.add(growthToAdd);
 }
 
 /**
@@ -143,9 +146,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const reach = volumeTransactionsAndAddresses.reach.length;
     const reachOut = volumeTransactionsAndAddresses.reachOut.length;
     await reachedAddressService.updateReachedList(
-        volumeTransactionsAndAddresses.reach.concat(
-            volumeTransactionsAndAddresses.reachOut
-        )
+        volumeTransactionsAndAddresses.reach // no need to concat reachOut. reach as all new addresses
     );
     // TODO: spending rate
     const spendingRate = 0;
