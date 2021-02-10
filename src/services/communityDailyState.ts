@@ -116,10 +116,10 @@ export default class CommunityDailyStateService {
         totalBeneficiaries: number;
         totalRaised: string;
     }> {
-        const query = `select sum(cs.claimed) totalClaimed,
-                        sum(cs.claims) totalClaims,
-                        sum(cs.beneficiaries) totalBeneficiaries,
-                        sum(cs.raised) totalRaised
+        const query = `select sum(cs.claimed) "totalClaimed",
+                        sum(cs.claims) "totalClaims",
+                        sum(cs.beneficiaries) "totalBeneficiaries",
+                        sum(cs.raised) "totalRaised"
                 from communitydailystate cs, community c
                 where cs."communityId" = c."publicId"
                 and c.status = 'valid'
@@ -128,15 +128,15 @@ export default class CommunityDailyStateService {
 
         const result = await this.sequelize.query<{
             totalClaimed: string;
-            totalClaims: number;
-            totalBeneficiaries: number;
+            totalClaims: string;
+            totalBeneficiaries: string;
             totalRaised: string;
         }>(query, { type: QueryTypes.SELECT });
 
         return {
             totalClaimed: result[0].totalClaimed,
-            totalClaims: result[0].totalClaims,
-            totalBeneficiaries: result[0].totalBeneficiaries,
+            totalClaims: parseInt(result[0].totalClaims, 10),
+            totalBeneficiaries: parseInt(result[0].totalBeneficiaries, 10),
             totalRaised: result[0].totalRaised,
         };
     }
@@ -161,14 +161,14 @@ export default class CommunityDailyStateService {
 
         const result = await this.sequelize.query<{
             totalClaimed: string;
-            totalBeneficiaries: number;
+            totalBeneficiaries: string;
             totalRaised: string;
         }>(query, { type: QueryTypes.SELECT });
         // it was null just once at the system's begin.
         const g = result[0];
         return {
             totalClaimed: g.totalClaimed,
-            totalBeneficiaries: g.totalBeneficiaries,
+            totalBeneficiaries: parseInt(g.totalBeneficiaries, 10),
             totalRaised: g.totalRaised,
         };
     }

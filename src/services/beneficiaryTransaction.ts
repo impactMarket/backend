@@ -44,7 +44,7 @@ export default class BeneficiaryTransactionService {
                     date,
                     withAddress: {
                         [Op.notIn]: Sequelize.literal(
-                            'select distinct address from beneficiary'
+                            '(select distinct address from beneficiary)'
                         ),
                     },
                 },

@@ -2,7 +2,7 @@ import {
     GlobalDailyState,
     GlobalDailyStateCreationAttributes,
 } from '@models/globalDailyState';
-import { col, fn, Model, Op } from 'sequelize';
+import { col, fn, Op } from 'sequelize';
 
 import { models } from '../database';
 
@@ -59,6 +59,7 @@ export default class GlobalDailyStateService {
                 [fn('sum', col('raised')), 'tRaised'],
                 [fn('sum', col('backers')), 'tBackers'],
                 [fn('sum', col('transactions')), 'tTransactions'],
+                [fn('sum', col('volume')), 'tVolume'],
                 [fn('sum', col('reach')), 'tReach'],
                 [fn('sum', col('reachOut')), 'tReachOut'],
             ],
@@ -77,7 +78,18 @@ export default class GlobalDailyStateService {
                 date: frDate,
             },
         });
-        return { ...result!, fundingRate: fr.fundingRate };
+        return {
+            tClaimed: result.tClaimed,
+            tClaims: parseInt(result.tClaims, 10),
+            tBeneficiaries: parseInt(result.tBeneficiaries, 10),
+            tRaised: result.tRaised,
+            tBackers: parseInt(result.tBackers, 10),
+            fundingRate: parseInt(fr.fundingRate, 10),
+            tVolume: result.tVolume,
+            tTransactions: result.tTransactions,
+            tReach: result.tReach,
+            tReachOut: result.tReachOut,
+        };
     }
 
     public static async getLast30Days(): Promise<GlobalDailyState[]> {

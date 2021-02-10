@@ -33,12 +33,12 @@ export default class GlobalDemographicsService {
             values (EXTRACT(YEAR from now()))
          )
          select c.country
-              , count(*) FILTER (WHERE current_year-u.year BETWEEN 18 AND 24) AS ageRange1
-              , count(*) FILTER (WHERE current_year-u.year BETWEEN 25 AND 34) AS ageRange2
-              , count(*) FILTER (WHERE current_year-u.year BETWEEN 35 AND 44) AS ageRange3
-              , count(*) FILTER (WHERE current_year-u.year BETWEEN 45 AND 54) AS ageRange4
-              , count(*) FILTER (WHERE current_year-u.year BETWEEN 55 AND 64) AS ageRange5
-              , count(*) FILTER (WHERE current_year-u.year BETWEEN 65 AND 120) AS ageRange6
+              , count(*) FILTER (WHERE current_year-u.year BETWEEN 18 AND 24) AS "ageRange1"
+              , count(*) FILTER (WHERE current_year-u.year BETWEEN 25 AND 34) AS "ageRange2"
+              , count(*) FILTER (WHERE current_year-u.year BETWEEN 35 AND 44) AS "ageRange3"
+              , count(*) FILTER (WHERE current_year-u.year BETWEEN 45 AND 54) AS "ageRange4"
+              , count(*) FILTER (WHERE current_year-u.year BETWEEN 55 AND 64) AS "ageRange5"
+              , count(*) FILTER (WHERE current_year-u.year BETWEEN 65 AND 120) AS "ageRange6"
          from "user" u, "current_date_year", beneficiary b, community c
          where u.address = b.address
          and b."communityId" = c."publicId"
