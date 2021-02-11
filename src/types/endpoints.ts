@@ -77,3 +77,9 @@ export interface IUserAuth extends IUserHello {
     user: User;
     token: string;
 }
+
+export interface IAddStory {
+    communityId?: string;
+    media?: string;
+    message?: string;
+}

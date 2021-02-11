@@ -25,6 +25,9 @@ import { Sequelize, Options, ModelCtor } from 'sequelize';
 import config from '../config';
 import { DbModels } from '../types/db';
 import initModels from './models';
+import { StoriesEngagementModel } from '@models/stories/storiesEngagement';
+import { StoriesCommunityModel } from '@models/stories/storiesCommunity';
+import { StoriesContentModel } from '@models/stories/storiesContent';
 
 let logging:
     | boolean
@@ -77,6 +80,13 @@ const models: DbModels = {
         .NotifiedBacker as ModelCtor<NotifiedBacker>,
     reachedAddress: sequelize.models
         .ReachedAddress as ModelCtor<ReachedAddress>,
+    // stories
+    storyContent: sequelize.models
+        .StoriesContentModel as ModelCtor<StoriesContentModel>,
+    storyCommunity: sequelize.models
+        .StoriesCommunityModel as ModelCtor<StoriesCommunityModel>,
+    storyEngagement: sequelize.models
+        .StoriesEngagementModel as ModelCtor<StoriesEngagementModel>,
 };
 
 export { sequelize, Sequelize, models };

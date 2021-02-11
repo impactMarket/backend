@@ -1,6 +1,6 @@
 export interface StoriesCommunity {
     contentId: number;
-    communityId: number;
+    communityId: string;
 
     // timestamps
     createdAt: Date;
@@ -9,5 +9,5 @@ export interface StoriesCommunity {
 
 export interface StoriesCommunityCreation {
     contentId: number;
-    communityId: number;
+    communityId: string;
 }
