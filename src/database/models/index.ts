@@ -24,6 +24,9 @@ import { initializeReachedAddress } from './reachedAddress';
 import { initializeSSI } from './ssi';
 import { initializeTransactions } from './transactions';
 import initializeUser from './user';
+import { initializeStoriesContent } from './stories/storiesContent';
+import { initializeStoriesCommunity } from './stories/storiesCommunity';
+import { initializeStoriesEngagement } from './stories/storiesEngagement';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeCommunity(sequelize);
@@ -50,6 +53,11 @@ export default function initModels(sequelize: Sequelize): void {
     initializeBeneficiaryTransaction(sequelize);
     initializeGlobalDemographics(sequelize);
     initializeGlobalGrowth(sequelize);
+
+    // stories
+    initializeStoriesContent(sequelize);
+    initializeStoriesCommunity(sequelize);
+    initializeStoriesEngagement(sequelize);
 
     // this actually works, but eager loading not so much!
     // sequelize.models.Manager.belongsTo(sequelize.models.User, {
