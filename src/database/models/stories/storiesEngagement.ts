@@ -8,6 +8,7 @@ export class StoriesEngagementModel extends Model<
     StoriesEngagement,
     StoriesEngagementCreation
 > {
+    public id!: number;
     public contentId!: number;
     public likes!: number;
     // timestamps!
@@ -20,6 +21,12 @@ export function initializeStoriesEngagement(
 ): typeof StoriesEngagementModel {
     StoriesEngagementModel.init(
         {
+            id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+            },
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {

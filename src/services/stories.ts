@@ -24,6 +24,7 @@ export default class StoriesService {
             }
             const newStory = await this.storyContent.create(
                 {
+                    ...storyContentToAdd,
                     postedAt: new Date(),
                 },
                 {

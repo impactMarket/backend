@@ -8,6 +8,7 @@ export class StoriesCommunityModel extends Model<
     StoriesCommunity,
     StoriesCommunityCreation
 > {
+    public id!: number;
     public contentId!: number;
     public communityId!: number;
     // timestamps!
@@ -20,6 +21,12 @@ export function initializeStoriesCommunity(
 ): typeof StoriesCommunityModel {
     StoriesCommunityModel.init(
         {
+            id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+            },
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {

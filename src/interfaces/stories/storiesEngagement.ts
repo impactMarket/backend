@@ -1,4 +1,5 @@
 export interface StoriesEngagement {
+    id: number;
     contentId: number;
     likes: number;
 

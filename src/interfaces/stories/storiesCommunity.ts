@@ -1,4 +1,5 @@
 export interface StoriesCommunity {
+    id: number;
     contentId: number;
     communityId: string;
 

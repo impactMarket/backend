@@ -4,6 +4,12 @@
 module.exports = {
     up(queryInterface, Sequelize) {
         return queryInterface.createTable('StoriesCommunity', {
+            id: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+            },
             contentId: {
                 type: Sequelize.INTEGER,
                 references: {
