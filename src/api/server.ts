@@ -27,6 +27,19 @@ export default (app: express.Application): void => {
     app.use(Sentry.Handlers.requestHandler());
     // TracingHandler creates a trace for every incoming request
     app.use(Sentry.Handlers.tracingHandler());
+    app.use((req, res, next) => {
+        const transaction = (res as any).__sentry_transaction;
+        transaction.name = transaction.name
+            .replace(
+                /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[4][0-9A-Fa-f]{3}-[89AB][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}/g,
+                '<uuid>'
+            )
+            .replace(/0x[a-fA-F0-9]{40}/g, '<address>')
+            .replace(/true|false/g, '<boolean>')
+            .replace(/\d/g, '<digit>');
+        (res as any).__sentry_transaction = transaction;
+        next();
+    });
 
     if (process.env.NODE_ENV === 'development') {
         const options = {
