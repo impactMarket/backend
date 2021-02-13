@@ -11,9 +11,6 @@ export class StoriesEngagementModel extends Model<
     public id!: number;
     public contentId!: number;
     public likes!: number;
-    // timestamps!
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
 }
 
 export function initializeStoriesEngagement(
@@ -30,7 +27,7 @@ export function initializeStoriesEngagement(
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'storiesContent',
+                    model: 'StoriesContent',
                     key: 'id',
                 },
                 onDelete: 'RESTRICT',
@@ -41,18 +38,11 @@ export function initializeStoriesEngagement(
                 defaultValue: 0,
                 allowNull: false,
             },
-            createdAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
         },
         {
             tableName: 'StoriesEngagement',
             sequelize,
+            timestamps: false,
         }
     );
     return StoriesEngagementModel;

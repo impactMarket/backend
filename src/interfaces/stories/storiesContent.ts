@@ -3,10 +3,6 @@ export interface StoriesContent {
     media?: number;
     message?: number;
     postedAt: Date;
-
-    // timestamps
-    createdAt: Date;
-    updatedAt: Date;
 }
 
 export interface StoriesContentCreation {

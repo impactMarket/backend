@@ -12,9 +12,6 @@ export class StoriesContentModel extends Model<
     public media!: string;
     public message!: string;
     public postedAt!: Date;
-    // timestamps!
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
 }
 
 export function initializeStoriesContent(
@@ -40,18 +37,11 @@ export function initializeStoriesContent(
                 type: DataTypes.DATE,
                 allowNull: false,
             },
-            createdAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
         },
         {
             tableName: 'StoriesContent',
             sequelize,
+            timestamps: false,
         }
     );
     return StoriesContentModel;

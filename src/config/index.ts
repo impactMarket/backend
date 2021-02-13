@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 
+const envFound = dotenv.config();
 if (process.env.NODE_ENV === 'development') {
-    const envFound = dotenv.config();
     if (!envFound) {
         // This error should crash whole process
 

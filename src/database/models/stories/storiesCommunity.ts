@@ -11,9 +11,6 @@ export class StoriesCommunityModel extends Model<
     public id!: number;
     public contentId!: number;
     public communityId!: number;
-    // timestamps!
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
 }
 
 export function initializeStoriesCommunity(
@@ -30,32 +27,26 @@ export function initializeStoriesCommunity(
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'storiesContent',
+                    model: 'StoriesContent',
                     key: 'id',
-                },
-                allowNull: false,
-            },
-            communityId: {
-                type: DataTypes.UUID,
-                references: {
-                    model: 'community',
-                    key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false,
             },
-            createdAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: DataTypes.DATE,
+            communityId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'community',
+                    key: 'id',
+                },
+                onDelete: 'RESTRICT',
                 allowNull: false,
             },
         },
         {
             tableName: 'StoriesCommunity',
             sequelize,
+            timestamps: false,
         }
     );
     return StoriesCommunityModel;

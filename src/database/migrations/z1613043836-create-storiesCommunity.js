@@ -20,21 +20,13 @@ module.exports = {
                 allowNull: false,
             },
             communityId: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'publicId',
+                    key: 'id',
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false,
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
             },
         });
     },
