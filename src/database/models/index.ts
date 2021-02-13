@@ -59,6 +59,39 @@ export default function initModels(sequelize: Sequelize): void {
     initializeStoriesCommunity(sequelize);
     initializeStoriesEngagement(sequelize);
 
+    sequelize.models.Community.hasMany(sequelize.models.StoriesCommunityModel, {
+        foreignKey: 'communityId',
+    });
+    // used to query from the community with incude
+    sequelize.models.StoriesCommunityModel.belongsTo(
+        sequelize.models.StoriesContentModel,
+        {
+            foreignKey: 'contentId',
+        }
+    );
+    // used to post from the content with incude
+    sequelize.models.StoriesContentModel.hasOne(
+        sequelize.models.StoriesCommunityModel,
+        {
+            foreignKey: 'contentId',
+        }
+    );
+
+    // used to query from the community with incude
+    sequelize.models.StoriesEngagementModel.belongsTo(
+        sequelize.models.StoriesContentModel,
+        {
+            foreignKey: 'contentId',
+        }
+    );
+    // used to post from the content with incude
+    sequelize.models.StoriesContentModel.hasOne(
+        sequelize.models.StoriesEngagementModel,
+        {
+            foreignKey: 'contentId',
+        }
+    );
+
     // this actually works, but eager loading not so much!
     // sequelize.models.Manager.belongsTo(sequelize.models.User, {
     //     foreignKey: 'user',
