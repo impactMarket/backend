@@ -43,7 +43,7 @@ const dbConfig: Options = {
     protocol: 'postgres',
     native: true,
     logging,
-    query: { raw: true }, // I wish, eager loading gets fixed
+    // query: { raw: true }, // I wish, eager loading gets fixed
 };
 const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);

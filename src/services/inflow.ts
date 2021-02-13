@@ -54,6 +54,7 @@ export default class InflowService {
                         [Op.gte]: aMonthAgo,
                     },
                 },
+                raw: true,
             })
         )[0] as any;
         // there will always be raised.lenght > 0 (were only zero at the begining)
@@ -65,6 +66,7 @@ export default class InflowService {
             await this.inflow.findAll({
                 attributes: [[fn('distinct', col('from')), 'backerAddress']],
                 where: { communityId },
+                raw: true,
             })
         ).map((b: any) => b.backerAddress);
         return backers;
@@ -79,6 +81,7 @@ export default class InflowService {
                 attributes: [
                     [fn('count', fn('distinct', col('from'))), 'total'],
                 ],
+                raw: true,
             })
         )[0] as any;
         return parseInt(backers.total, 10);
@@ -108,6 +111,7 @@ export default class InflowService {
                         [Op.gte]: aMonthAgo,
                     },
                 },
+                raw: true,
             })
         )[0] as any;
         return {

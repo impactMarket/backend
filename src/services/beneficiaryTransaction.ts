@@ -35,6 +35,7 @@ export default class BeneficiaryTransactionService {
             {
                 attributes: [[fn('distinct', col('withAddress')), 'addresses']],
                 where: { date },
+                raw: true,
             }
         ); // this is an array, wich can be empty (return no rows)
         const uniqueAddressesReachedOut = await this.beneficiaryTransaction.findAll(
@@ -48,6 +49,7 @@ export default class BeneficiaryTransactionService {
                         ),
                     },
                 },
+                raw: true,
             }
         ); // this is an array, wich can be empty (return no rows)
         const volumeAndTransactions = (
@@ -57,6 +59,7 @@ export default class BeneficiaryTransactionService {
                     [fn('count', col('tx')), 'transactions'],
                 ],
                 where: { date },
+                raw: true,
             })
         )[0] as any; // this is a single result, that, if there's nothing, the result is zero
         // result is { volume: null, transactions: '0' } if nothing has happened

@@ -22,7 +22,10 @@ export default class UserService {
     ): Promise<IUserAuth> {
         try {
             const token = generateAccessToken(address);
-            let user = await this.user.findOne({ where: { address } });
+            let user = await this.user.findOne({
+                where: { address },
+                raw: true,
+            });
             if (user === null) {
                 let createUser: UserCreationAttributes = {
                     address,
@@ -55,7 +58,7 @@ export default class UserService {
     }
 
     public static async hello(address: string): Promise<IUserHello> {
-        const user = await this.user.findOne({ where: { address } });
+        const user = await this.user.findOne({ where: { address }, raw: true });
         if (user === null) {
             throw new Error(address + ' user not found!');
         }
@@ -140,22 +143,23 @@ export default class UserService {
     }
 
     public static async get(address: string): Promise<User | null> {
-        return this.user.findOne({ where: { address } });
+        return this.user.findOne({ where: { address }, raw: true });
     }
 
     public static async exists(address: string): Promise<boolean> {
         const exists = await this.user.findOne({
             attributes: ['address'],
             where: { address },
+            raw: true,
         });
         console.log(exists);
         return exists !== null;
     }
 
     public static async getAllAddresses(): Promise<string[]> {
-        return (await this.user.findAll({ attributes: ['address'] })).map(
-            (u) => u.address
-        );
+        return (
+            await this.user.findAll({ attributes: ['address'], raw: true })
+        ).map((u) => u.address);
     }
 
     public static async getPushTokensFromAddresses(
@@ -164,6 +168,7 @@ export default class UserService {
         const users = await this.user.findAll({
             attributes: ['pushNotificationToken'],
             where: { address: { [Op.in]: addresses } },
+            raw: true,
         });
         return users
             .filter((u) => u.pushNotificationToken !== null)
@@ -172,7 +177,7 @@ export default class UserService {
 
     public static async mappedNames(): Promise<Map<string, string>> {
         const mapped = new Map<string, string>();
-        const query = await this.user.findAll();
+        const query = await this.user.findAll({ raw: true });
         for (let index = 0; index < query.length; index++) {
             const element = query[index];
             mapped.set(

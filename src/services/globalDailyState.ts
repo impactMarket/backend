@@ -21,6 +21,7 @@ export default class GlobalDailyStateService {
             attributes: ['avgMedianSSI'],
             order: [['date', 'DESC']],
             limit: 4,
+            raw: true,
         });
         return last.map((g) => g.avgMedianSSI);
     }
@@ -30,6 +31,7 @@ export default class GlobalDailyStateService {
         const last = await this.globalDailyState.findAll({
             order: [['date', 'DESC']],
             limit: 1,
+            raw: true,
         });
         return last[0];
     }
@@ -69,6 +71,7 @@ export default class GlobalDailyStateService {
                     [Op.gte]: aMonthAgo,
                 },
             },
+            raw: true,
         });
         const frDate = new Date();
         frDate.setDate(from.getDate() - 1);
@@ -77,6 +80,7 @@ export default class GlobalDailyStateService {
             where: {
                 date: frDate,
             },
+            raw: true,
         });
         return {
             tClaimed: result.tClaimed,
@@ -106,6 +110,7 @@ export default class GlobalDailyStateService {
                 },
             },
             order: [['date', 'DESC']],
+            raw: true,
         });
     }
 
@@ -127,6 +132,7 @@ export default class GlobalDailyStateService {
                 },
             },
             order: [['date', 'DESC']],
+            raw: true,
         });
         // it was null just once at the system's begin.
         return result.map((g) => ({

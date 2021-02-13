@@ -22,6 +22,7 @@ export default class BeneficiaryService {
         // otherwise update
         const user = await this.beneficiary.findOne({
             where: { address, active: false },
+            raw: true,
         });
         if (user === null) {
             const beneficiaryData = {
@@ -62,6 +63,7 @@ export default class BeneficiaryService {
             await this.community.findAll({
                 attributes: ['publicId'],
                 where: { visibility: 'public', status: 'valid' },
+                raw: true,
             })
         ).map((c) => c.publicId);
 
@@ -72,6 +74,7 @@ export default class BeneficiaryService {
                     communityId: { [Op.in]: publicCommunities },
                     active: true,
                 },
+                raw: true,
             })
         ).map((b) => b.address);
     }
@@ -87,6 +90,7 @@ export default class BeneficiaryService {
                 communityId,
                 active: true,
             },
+            raw: true,
         }) as any;
     }
 
@@ -187,6 +191,7 @@ export default class BeneficiaryService {
                     communityId,
                     active: true,
                 },
+                raw: true,
             })
         )[0] as any;
         const inactive: { total: string } = (
@@ -196,6 +201,7 @@ export default class BeneficiaryService {
                     communityId,
                     active: false,
                 },
+                raw: true,
             })
         )[0] as any;
         return {
@@ -250,12 +256,16 @@ export default class BeneficiaryService {
     public static async get(address: string): Promise<Beneficiary | null> {
         return await this.beneficiary.findOne({
             where: { address, active: true },
+            raw: true,
         });
     }
 
     public static async getAllAddresses(): Promise<string[]> {
         return (
-            await this.beneficiary.findAll({ attributes: ['address'] })
+            await this.beneficiary.findAll({
+                attributes: ['address'],
+                raw: true,
+            })
         ).map((b) => b.address);
     }
 
@@ -282,6 +292,7 @@ export default class BeneficiaryService {
                 },
             },
             group: 'communityId',
+            raw: true,
         });
         return new Map(result.map((c: any) => [c.communityId, c.total]));
     }

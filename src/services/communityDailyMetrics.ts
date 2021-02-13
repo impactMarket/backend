@@ -37,6 +37,7 @@ export default class CommunityDailyMetricsService {
             },
             order: [['date', 'DESC']],
             limit: 15,
+            raw: true,
         })) as any[];
         if (historical.length < 5) {
             // at least 5 days until showing data
@@ -55,6 +56,7 @@ export default class CommunityDailyMetricsService {
                 },
                 order: [['date', 'DESC']],
                 limit: 1,
+                raw: true,
             })
         )[0] as any;
         return {
@@ -76,6 +78,7 @@ export default class CommunityDailyMetricsService {
             },
             order: [['date', 'DESC']],
             limit: 15,
+            raw: true,
         });
         if (historical.length < 5) {
             // at least 5 days until showing data
@@ -98,6 +101,7 @@ export default class CommunityDailyMetricsService {
                     [Op.gte]: fiveDaysAgo,
                 },
             },
+            raw: true,
         });
         for (let index = 0; index < raw.length; index++) {
             const element = raw[index];
@@ -134,6 +138,7 @@ export default class CommunityDailyMetricsService {
                         [Op.lt]: fiveDaysAgo,
                     },
                 },
+                raw: true,
             })
         ).map((c) => c.publicId);
 
@@ -156,6 +161,7 @@ export default class CommunityDailyMetricsService {
                         date,
                         communityId: { [Op.in]: onlyPublicValidCommunities },
                     },
+                    raw: true,
                 })
             ).map((m) => m.ssi)
         );
@@ -184,6 +190,7 @@ export default class CommunityDailyMetricsService {
                     date,
                     communityId: { [Op.in]: onlyPublicValidCommunities },
                 },
+                raw: true,
             })
         )[0];
         return {
