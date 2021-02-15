@@ -3,13 +3,13 @@ import { IAddStory } from '@ipcttypes/endpoints';
 import { CommunityAttributes } from '@models/community';
 
 export default class StoriesService {
-    public static storyContent = models.storyContent;
-    public static storyCommunity = models.storyCommunity;
-    public static storyEngagement = models.storyEngagement;
-    public static community = models.community;
-    public static sequelize = sequelize;
+    public storyContent = models.storyContent;
+    public storyCommunity = models.storyCommunity;
+    public storyEngagement = models.storyEngagement;
+    public community = models.community;
+    public sequelize = sequelize;
 
-    public static async add(story: IAddStory) {
+    public async add(story: IAddStory): Promise<boolean> {
         let storyContentToAdd = {};
         let storyCommunityToAdd = {};
         if (story.media !== undefined) {
@@ -50,7 +50,14 @@ export default class StoriesService {
         return true;
     }
 
-    public static async getByOrder(order: string | undefined, query: any) {
+    public async has(address: string): Promise<boolean> {
+        const result = await this.storyContent.count({
+            where: { byAddress: address },
+        });
+        return result !== 0;
+    }
+
+    public async getByOrder(order: string | undefined, query: any) {
         const r = await this.community.findAll({
             include: [
                 {
@@ -80,7 +87,7 @@ export default class StoriesService {
         return stories;
     }
 
-    public static async love(contentId: number) {
+    public async love(contentId: number) {
         //
     }
 }
