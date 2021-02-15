@@ -36,6 +36,7 @@ export default class StoriesService {
             {
                 ...storyContentToAdd,
                 ...storyCommunityToAdd,
+                byAddress: story.byAddress,
                 postedAt: new Date(),
                 StoriesEngagementModel: [],
             },
@@ -68,10 +69,11 @@ export default class StoriesService {
             return {
                 id: community.id,
                 name: community.name,
-                stories: community.StoriesCommunityModels?.map((s: any) => ({
-                    media: s.StoriesContentModel.media,
-                    message: s.StoriesContentModel.message,
-                    love: s.StoriesContentModel.StoriesEngagementModel?.love,
+                stories: community.StoriesCommunityModels?.map((s) => ({
+                    id: s.StoriesContentModel?.id,
+                    media: s.StoriesContentModel?.media,
+                    message: s.StoriesContentModel?.message,
+                    love: s.StoriesContentModel?.StoriesEngagementModel?.love,
                 })),
             };
         });

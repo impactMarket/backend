@@ -1,7 +1,11 @@
+import { StoriesContent } from './storiesContent';
+
 export interface StoriesCommunity {
     id: number;
     contentId: number;
     communityId: number;
+
+    StoriesContentModel?: StoriesContent;
 }
 
 export interface StoriesCommunityCreation {

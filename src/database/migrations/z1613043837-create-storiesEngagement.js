@@ -19,7 +19,7 @@ module.exports = {
                 onDelete: 'RESTRICT',
                 allowNull: false,
             },
-            likes: {
+            love: {
                 type: Sequelize.INTEGER,
                 defaultValue: 0,
                 allowNull: false,

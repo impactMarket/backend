@@ -1,7 +1,7 @@
 export interface StoriesEngagement {
     id: number;
     contentId: number;
-    likes: number;
+    love: number;
 }
 
 export interface StoriesEngagementCreation {

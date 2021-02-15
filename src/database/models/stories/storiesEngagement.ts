@@ -10,7 +10,7 @@ export class StoriesEngagementModel extends Model<
 > {
     public id!: number;
     public contentId!: number;
-    public likes!: number;
+    public love!: number;
 }
 
 export function initializeStoriesEngagement(
@@ -33,7 +33,7 @@ export function initializeStoriesEngagement(
                 onDelete: 'RESTRICT',
                 allowNull: false,
             },
-            likes: {
+            love: {
                 type: DataTypes.INTEGER,
                 defaultValue: 0,
                 allowNull: false,

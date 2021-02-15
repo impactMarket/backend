@@ -2,6 +2,7 @@ import { celebrate, Joi } from 'celebrate';
 
 const add = celebrate({
     body: Joi.object({
+        byAddress: Joi.string().required(),
         communityId: Joi.number().optional(),
         media: Joi.string().optional(),
         message: Joi.string().optional(),

@@ -79,6 +79,7 @@ export interface IUserAuth extends IUserHello {
 }
 
 export interface IAddStory {
+    byAddress: string;
     communityId?: number;
     media?: string;
     message?: string;
