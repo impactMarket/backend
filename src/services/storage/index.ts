@@ -1,5 +1,44 @@
 import config from '../../config';
 import { AWS } from './aws';
+import sharp from 'sharp';
+import fleekStorage from '@fleekhq/fleek-storage-js';
+
+const sharpAndUpload = async (file: Express.Multer.File) => {
+    // sharp the file
+    const imgBuffer = await sharp(file.buffer)
+        .resize({ width: 800 })
+        .jpeg({
+            quality:
+                // if bigger than 3.5MB, reduce quality to 40%
+                file.size > 3500000
+                    ? 40
+                    : // if bigger than 1.5MB, reduce quality to 60%
+                    file.size > 1500000
+                    ? 60
+                    : // otherwise, reduce quality to 80%
+                      80,
+            chromaSubsampling: '4:4:4',
+        })
+        .toBuffer();
+
+    // content file
+    const today = new Date();
+    const filePrefix = `${today.getFullYear()}${today.getMonth() + 1}/`;
+    const filename = `${Date.now().toString()}.jpeg`;
+    const filePath = `${filePrefix}${filename}`;
+
+    // upload to aws
+    const uploadResult = await uploadContentToS3(filePath, imgBuffer);
+    // also upload to fleek storage (test phase)
+    fleekStorage.upload({
+        apiKey: config.fleekStorage.accessKeyId,
+        apiSecret: config.fleekStorage.secretAccessKey,
+        key: filePath,
+        data: imgBuffer,
+    });
+
+    return uploadResult;
+};
 
 const uploadContentToS3 = async (
     filePath: string,
@@ -25,12 +64,10 @@ const deleteContentFromS3 = async (filePath: string) => {
         Bucket: config.aws.bucketImagesCommunity,
         Key: filePath.split(`${config.cloudfrontUrl}/`)[1],
     };
-
+    //
     const s3 = new AWS.S3();
-
-    const r = await s3.deleteObject(params).promise();
-    console.log(r);
+    await s3.deleteObject(params).promise();
     return true;
 };
 
-export { uploadContentToS3, deleteContentFromS3 };
+export { sharpAndUpload, uploadContentToS3, deleteContentFromS3 };
