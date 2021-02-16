@@ -18,6 +18,14 @@ module.exports = {
                 type: Sequelize.STRING(256),
                 allowNull: true,
             },
+            byAddress: {
+                type: Sequelize.STRING(44),
+                allowNull: false,
+            },
+            isPublic: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
+            },
             postedAt: {
                 allowNull: false,
                 type: Sequelize.DATE,

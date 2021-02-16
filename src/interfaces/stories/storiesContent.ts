@@ -9,6 +9,7 @@ export interface StoriesContent {
     media: string | null;
     message: string | null;
     byAddress: string;
+    isPublic: boolean;
     postedAt: Date;
 
     StoriesEngagementModel?: StoriesEngagement;

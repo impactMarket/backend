@@ -12,6 +12,7 @@ export class StoriesContentModel extends Model<
     public media!: string;
     public message!: string;
     public byAddress!: string;
+    public isPublic!: boolean;
     public postedAt!: Date;
 }
 
@@ -37,6 +38,10 @@ export function initializeStoriesContent(
             byAddress: {
                 type: DataTypes.STRING(44),
                 allowNull: false,
+            },
+            isPublic: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
             },
             postedAt: {
                 type: DataTypes.DATE,
