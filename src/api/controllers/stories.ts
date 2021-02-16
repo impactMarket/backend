@@ -7,7 +7,7 @@ const storiesService = new StoriesService();
 
 const add = (req: Request, res: Response) => {
     storiesService
-        .add(req.body)
+        .add(req.file, req.body)
         .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };

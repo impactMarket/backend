@@ -1,6 +1,8 @@
 import { models, sequelize } from '../database';
 import { IAddStory } from '@ipcttypes/endpoints';
 import { CommunityAttributes } from '@models/community';
+import { sharpAndUpload } from './storage';
+import config from '../config';
 
 export default class StoriesService {
     public storyContent = models.storyContent;
@@ -9,14 +11,23 @@ export default class StoriesService {
     public community = models.community;
     public sequelize = sequelize;
 
-    public async add(story: IAddStory): Promise<boolean> {
+    public async add(
+        file: Express.Multer.File | undefined,
+        story: IAddStory
+    ): Promise<boolean> {
         let storyContentToAdd = {};
-        let storyCommunityToAdd = {};
-        if (story.media !== undefined) {
+        if (file) {
+            const media = await sharpAndUpload(file);
             storyContentToAdd = {
-                media: story.media,
+                media: `${config.cloudfrontUrl}/${media.Key}`,
             };
         }
+        let storyCommunityToAdd = {};
+        // if (story.media !== undefined) {
+        //     storyContentToAdd = {
+        //         media: story.media,
+        //     };
+        // }
         if (story.message !== undefined) {
             storyContentToAdd = {
                 ...storyContentToAdd,
