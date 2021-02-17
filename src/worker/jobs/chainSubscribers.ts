@@ -484,7 +484,7 @@ async function checkCommunitiesOnChainEvents(
         for (let ec = 0; ec < eventsCUSD.length; ec += 1) {
             const preParsedLog = eventsCUSD[ec];
             if (
-                eventsCUSD[ec].args.to ===
+                eventsCUSD[ec].args[1] ===
                 availableCommunities[c].contractAddress
             ) {
                 const log = logsCUSD[ec];
