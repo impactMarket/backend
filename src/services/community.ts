@@ -782,6 +782,17 @@ export default class CommunityService {
         };
     }
 
+    public static async existsByContractAddress(
+        contractAddress: string
+    ): Promise<boolean> {
+        const community = await this.community.count({
+            where: {
+                contractAddress,
+            },
+        });
+        return community !== 0;
+    }
+
     public static async getAllAddressesAndIds(): Promise<Map<string, string>> {
         const result = await this.community.findAll({
             attributes: ['contractAddress', 'publicId'],
