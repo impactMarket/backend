@@ -21,18 +21,359 @@ import ERC20ABI from '../../contracts/ERC20ABI.json';
 //     block?: number;
 // }
 
-function catchHandlerTransactionsService(error: any) {
-    // that's fine if it is a SequelizeUniqueConstraintError
-    // it's already there 👌
-    if (error.name !== 'SequelizeUniqueConstraintError') {
-        Logger.error('catchHandlerTransactionsService ' + error);
-    }
-}
+// function catchHandlerTransactionsService(error: any) {
+//     // that's fine if it is a SequelizeUniqueConstraintError
+//     // it's already there 👌
+//     if (error.name !== 'SequelizeUniqueConstraintError') {
+//         Logger.error('catchHandlerTransactionsService ' + error);
+//     }
+// }
 
 function asyncTxsFailure(error: any) {
     Logger.error('asyncTxsFailure ' + error);
     // should this restart the subscribers?
     process.emitWarning(error, 'TxRegistryFailureWarning');
+}
+
+class ChainSubscribers {
+    ifaceERC20: ethers.utils.Interface;
+    ifaceCommunity: ethers.utils.Interface;
+    allCommunitiesAddresses: string[];
+    communities: Map<string, string>;
+    beneficiariesInPublicCommunities: string[];
+    isCommunityPublic: Map<string, boolean>;
+    filterTopics: string[][];
+
+    constructor(
+        provider: ethers.providers.JsonRpcProvider,
+        communities: Map<string, string>, // <address, publicId>
+        beneficiariesInPublicCommunities: string[],
+        isCommunityPublic: Map<string, boolean> // true if public community
+    ) {
+        this.ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
+        this.ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
+
+        this.beneficiariesInPublicCommunities = beneficiariesInPublicCommunities;
+        this.communities = communities;
+        this.allCommunitiesAddresses = Array.from(communities.keys());
+        this.isCommunityPublic = isCommunityPublic;
+        this.filterTopics = [
+            [
+                // ethers.utils.id('CommunityAdded(address,address,uint256,uint256,uint256,uint256)'),
+                // ethers.utils.id('CommunityRemoved(address)'),
+                ethers.utils.id('ManagerAdded(address)'),
+                ethers.utils.id('ManagerRemoved(address)'),
+                ethers.utils.id('BeneficiaryAdded(address)'),
+                // ethers.utils.id('BeneficiaryLocked(address)'),
+                ethers.utils.id('BeneficiaryRemoved(address)'),
+                ethers.utils.id('BeneficiaryClaim(address,uint256)'),
+                // ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
+                ethers.utils.id('Transfer(address,address,uint256)'),
+            ],
+        ];
+        ImMetadataService.getLastBlock().then((block) =>
+            this._runRecoveryTxs(block, provider).then(() =>
+                this._setupListener(provider)
+            )
+        );
+    }
+
+    async _runRecoveryTxs(
+        startFromBlock: number,
+        provider: ethers.providers.JsonRpcProvider
+    ) {
+        const rawLogs = await provider.getLogs({
+            fromBlock: startFromBlock,
+            toBlock: 'latest',
+            topics: this.filterTopics,
+        });
+
+        const logs = rawLogs.sort((a, b) => {
+            if (a.blockNumber > b.blockNumber) {
+                return 1;
+            }
+            if (a.blockNumber < b.blockNumber) {
+                return -1;
+            }
+            // a must be equal to b
+            return 0;
+        });
+
+        // iterate
+        for (let x = 0; x < logs.length; x += 1) {
+            // verify if cusd or community
+            // do things
+        }
+    }
+
+    _setupListener(provider: ethers.providers.JsonRpcProvider) {
+        const filter = {
+            topics: this.filterTopics,
+        };
+
+        provider.on(filter, async (log: ethers.providers.Log) => {
+            let parsedLog: ethers.utils.LogDescription | undefined;
+            if (log.address === config.cUSDContractAddress) {
+                parsedLog = this._processCUSDEvents(log);
+            } else if (this.allCommunitiesAddresses.includes(log.address)) {
+                parsedLog = await this._processCommunityEvents(log);
+            } else {
+                await this._processOtherEvents(log);
+            }
+            if (parsedLog !== undefined) {
+                TransactionsService.add(provider, log, parsedLog);
+            }
+            ImMetadataService.setLastBlock(log.blockNumber);
+        });
+    }
+
+    _processCUSDEvents(
+        log: ethers.providers.Log
+    ): ethers.utils.LogDescription | undefined {
+        const parsedLog = this.ifaceERC20.parseLog(log);
+        let result: ethers.utils.LogDescription | undefined = undefined;
+        // only transactions to community contracts (donations)
+        if (this.allCommunitiesAddresses.includes(parsedLog.args[1])) {
+            const from = parsedLog.args[0];
+            const toCommunityAddress = parsedLog.args[1];
+            const communityId = this.communities.get(toCommunityAddress)!;
+            const amount = parsedLog.args[2].toString();
+            getBlockTime(log.blockHash).then((txAt) =>
+                InflowService.add(
+                    from,
+                    communityId,
+                    amount,
+                    log.transactionHash,
+                    txAt
+                ).catch(asyncTxsFailure)
+            );
+            result = parsedLog;
+        } else if (
+            // do not count from communities [eg. claims]
+            !this.allCommunitiesAddresses.includes(parsedLog.args[0]) &&
+            // beneficiary in public community (both from or to)
+            (this.beneficiariesInPublicCommunities.includes(
+                parsedLog.args[0]
+            ) ||
+                this.beneficiariesInPublicCommunities.includes(
+                    parsedLog.args[1]
+                )) &&
+            // ignore AttestationProxy
+            parsedLog.args[1] !== config.attestationProxyAddress &&
+            // yeah, people without knowing make transactions to themselves! 🕊️
+            parsedLog.args[0] !== parsedLog.args[1] &&
+            // any values >0.0009cUSD (999999999999999) [eg. cUSD fees]
+            parsedLog.args[2].toString().length > 15
+        ) {
+            const isFromBeneficiary = this.beneficiariesInPublicCommunities.includes(
+                parsedLog.args[0]
+            );
+            const beneficiaryAddress = isFromBeneficiary
+                ? parsedLog.args[0]
+                : parsedLog.args[1];
+            const withAddress = isFromBeneficiary
+                ? parsedLog.args[1]
+                : parsedLog.args[0];
+            // save to table to calculate txs and volume
+            BeneficiaryTransactionService.add({
+                beneficiary: beneficiaryAddress,
+                withAddress,
+                amount: parsedLog.args[2].toString(),
+                isFromBeneficiary,
+                tx: log.transactionHash,
+                date: new Date(), // date only
+            }).catch(asyncTxsFailure);
+            result = parsedLog;
+        }
+        return result;
+    }
+
+    async _processCommunityEvents(
+        log: ethers.providers.Log
+    ): Promise<ethers.utils.LogDescription | undefined> {
+        const parsedLog = this.ifaceCommunity.parseLog(log);
+        let result: ethers.utils.LogDescription | undefined = undefined;
+        if (parsedLog.name === 'BeneficiaryAdded') {
+            const beneficiaryAddress = parsedLog.args[0];
+            const communityAddress = log.address;
+            let communityId = this.communities.get(communityAddress);
+            if (communityId === undefined) {
+                // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
+                const community = await CommunityService.getOnlyCommunityByContractAddress(
+                    communityAddress
+                );
+                if (community === null) {
+                    Logger.error(
+                        `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
+                    );
+                } else {
+                    this.isCommunityPublic.set(
+                        communityAddress,
+                        community.visibility === 'public'
+                    );
+                    this.communities.set(communityAddress, community.publicId);
+                    this.allCommunitiesAddresses.push(communityAddress);
+                    communityId = community.publicId;
+                }
+            }
+            const isThisCommunityPublic = this.isCommunityPublic.get(
+                communityAddress
+            );
+            if (isThisCommunityPublic) {
+                this.beneficiariesInPublicCommunities.push(beneficiaryAddress);
+            }
+            // allBeneficiaryAddressses.push(beneficiaryAddress);
+            notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
+            getBlockTime(log.blockHash).then((txAt) =>
+                BeneficiaryService.add(
+                    beneficiaryAddress,
+                    communityId!,
+                    log.transactionHash,
+                    txAt
+                ).catch(asyncTxsFailure)
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'BeneficiaryRemoved') {
+            const beneficiaryAddress = parsedLog.args[0];
+            BeneficiaryService.remove(beneficiaryAddress);
+            result = parsedLog;
+        } else if (parsedLog.name === 'BeneficiaryClaim') {
+            const beneficiaryAddress = parsedLog.args[0];
+            const amount = parsedLog.args[1];
+            const communityId = this.communities.get(log.address)!;
+            getBlockTime(log.blockHash).then((txAt) =>
+                ClaimsService.add(
+                    beneficiaryAddress,
+                    communityId,
+                    amount,
+                    log.transactionHash,
+                    txAt
+                )
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'ManagerAdded') {
+            // new managers in existing community
+            const managerAddress = parsedLog.args[0];
+            const communityAddress = log.address;
+            ManagerService.add(
+                managerAddress,
+                this.communities.get(communityAddress)!
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'ManagerRemoved') {
+            const managerAddress = parsedLog.args[0];
+            const communityAddress = log.address;
+            ManagerService.remove(
+                managerAddress,
+                this.communities.get(communityAddress)!
+            );
+            result = parsedLog;
+        }
+        return result;
+    }
+
+    async _processOtherEvents(log: ethers.providers.Log): Promise<void> {
+        try {
+            const parsedLog = this.ifaceCommunity.parseLog(log);
+            if (parsedLog.name === 'ManagerAdded') {
+                const managerAddress = parsedLog.args[0];
+                const communityAddress = log.address;
+                if (this.allCommunitiesAddresses.includes(communityAddress)) {
+                    ManagerService.add(
+                        managerAddress,
+                        this.communities.get(communityAddress)!
+                    );
+                } else {
+                    const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
+                    if (
+                        Array.from(communityAddressesAndIds.keys()).includes(
+                            communityAddress
+                        )
+                    ) {
+                        // in case new manager means new community
+                        const communityId = communityAddressesAndIds.get(
+                            communityAddress
+                        )!;
+                        ManagerService.add(managerAddress, communityId);
+                        const community = await CommunityService.getOnlyCommunityByContractAddress(
+                            communityAddress
+                        );
+                        if (community === null) {
+                            Logger.error(
+                                `Community with address ${communityAddress} wasn't found at "ManagerAdded"`
+                            );
+                        } else {
+                            this.isCommunityPublic.set(
+                                communityAddress,
+                                community.visibility === 'public'
+                            );
+                            this.communities.set(communityAddress, communityId);
+                            this.allCommunitiesAddresses.push(communityAddress);
+                        }
+                    } else {
+                        // if for some reason (mainly timing), the community wasn't in the database, try again in 4 secs
+                        const cancelTimeout = setInterval(
+                            async (
+                                _managerAddress: string,
+                                _communityAddress: string
+                            ) => {
+                                Logger.warn(
+                                    `Community ${_communityAddress} was not in the database when "ManagerAdded".`
+                                );
+                                const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
+                                if (
+                                    Array.from(
+                                        communityAddressesAndIds.keys()
+                                    ).includes(_communityAddress) &&
+                                    !this.allCommunitiesAddresses.includes(
+                                        _communityAddress
+                                    )
+                                ) {
+                                    // new community
+                                    const communityId = communityAddressesAndIds.get(
+                                        communityAddress
+                                    )!;
+                                    ManagerService.add(
+                                        _managerAddress,
+                                        communityId
+                                    );
+                                    const community = await CommunityService.getOnlyCommunityByContractAddress(
+                                        communityAddress
+                                    );
+                                    if (community === null) {
+                                        Logger.error(
+                                            `Community with address ${communityAddress} wasn't found at "ManagerAdded"`
+                                        );
+                                    } else {
+                                        this.isCommunityPublic.set(
+                                            communityAddress,
+                                            community.visibility === 'public'
+                                        );
+                                        this.communities.set(
+                                            _communityAddress,
+                                            communityId
+                                        );
+                                        this.allCommunitiesAddresses.push(
+                                            _communityAddress
+                                        );
+                                    }
+                                    clearInterval(cancelTimeout);
+                                }
+                            },
+                            4000,
+                            managerAddress,
+                            communityAddress
+                        );
+                    }
+                }
+            }
+        } catch (e) {
+            // as this else catch events from anywhere, it might catch unwanted events
+            if (e.reason !== 'no matching event') {
+                Logger.error(e);
+            }
+        }
+    }
 }
 
 async function subscribeChainEvents(
@@ -68,255 +409,14 @@ async function subscribeChainEvents(
     provider.on(filter, async (log: ethers.providers.Log) => {
         let parsedLog: ethers.utils.LogDescription | undefined;
         if (log.address === config.cUSDContractAddress) {
-            const preParsedLog = ifaceERC20.parseLog(log);
-            // only transactions to community contracts (donations)
-            if (allCommunitiesAddresses.includes(preParsedLog.args[1])) {
-                parsedLog = preParsedLog;
-                const from = parsedLog.args[0];
-                const toCommunityAddress = parsedLog.args[1];
-                const communityId = allCommunities.get(toCommunityAddress)!;
-                const amount = parsedLog.args[2].toString();
-                getBlockTime(log.blockHash).then((txAt) =>
-                    InflowService.add(
-                        from,
-                        communityId,
-                        amount,
-                        log.transactionHash,
-                        txAt
-                    ).catch(asyncTxsFailure)
-                );
-            } else if (
-                // do not count from communities [eg. claims]
-                !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
-                // beneficiary in public community (both from or to)
-                (beneficiariesInPublicCommunities.includes(
-                    preParsedLog.args[0]
-                ) ||
-                    beneficiariesInPublicCommunities.includes(
-                        preParsedLog.args[1]
-                    )) &&
-                // ignore AttestationProxy
-                preParsedLog.args[1] !== config.attestationProxyAddress &&
-                // yeah, people without knowing make transactions to themselves! 🕊️
-                preParsedLog.args[0] !== preParsedLog.args[1] &&
-                // any values >0.0009cUSD (999999999999999) [eg. cUSD fees]
-                preParsedLog.args[2].toString().length > 15
-            ) {
-                const isFromBeneficiary = beneficiariesInPublicCommunities.includes(
-                    preParsedLog.args[0]
-                );
-                // TODO: remove
-                if (
-                    isFromBeneficiary ||
-                    beneficiariesInPublicCommunities.includes(
-                        preParsedLog.args[1]
-                    )
-                ) {
-                    const _parsedLog = preParsedLog; // TODO: rename to parsedLog
-                    const beneficiaryAddress = isFromBeneficiary
-                        ? _parsedLog.args[0]
-                        : _parsedLog.args[1];
-                    const withAddress = isFromBeneficiary
-                        ? _parsedLog.args[1]
-                        : _parsedLog.args[0];
-                    // save to table to calculate txs and volume
-                    BeneficiaryTransactionService.add({
-                        beneficiary: beneficiaryAddress,
-                        withAddress,
-                        amount: _parsedLog.args[2].toString(),
-                        isFromBeneficiary,
-                        tx: log.transactionHash,
-                        date: new Date(), // date only
-                    }).catch(asyncTxsFailure);
-                }
-            }
-            //
+            // _processCUSDEvents
         } else if (allCommunitiesAddresses.includes(log.address)) {
-            parsedLog = ifaceCommunity.parseLog(log);
-            if (parsedLog.name === 'BeneficiaryAdded') {
-                const beneficiaryAddress = parsedLog.args[0];
-                const communityAddress = log.address;
-                let communityId = allCommunities.get(communityAddress);
-                if (communityId === undefined) {
-                    // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
-                    const community = await CommunityService.getOnlyCommunityByContractAddress(
-                        communityAddress
-                    );
-                    if (community === null) {
-                        Logger.error(
-                            `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
-                        );
-                    } else {
-                        isCommunityPublic.set(
-                            communityAddress,
-                            community.visibility === 'public'
-                        );
-                        allCommunities.set(
-                            communityAddress,
-                            community.publicId
-                        );
-                        allCommunitiesAddresses.push(communityAddress);
-                        communityId = community.publicId;
-                    }
-                }
-                const isThisCommunityPublic = isCommunityPublic.get(
-                    communityAddress
-                );
-                if (isThisCommunityPublic) {
-                    beneficiariesInPublicCommunities.push(beneficiaryAddress);
-                }
-                // allBeneficiaryAddressses.push(beneficiaryAddress);
-                notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
-                getBlockTime(log.blockHash).then((txAt) =>
-                    BeneficiaryService.add(
-                        beneficiaryAddress,
-                        communityId!,
-                        log.transactionHash,
-                        txAt
-                    ).catch(asyncTxsFailure)
-                );
-            } else if (parsedLog.name === 'BeneficiaryRemoved') {
-                const beneficiaryAddress = parsedLog.args[0];
-                BeneficiaryService.remove(beneficiaryAddress);
-            } else if (parsedLog.name === 'BeneficiaryClaim') {
-                const beneficiaryAddress = parsedLog.args[0];
-                const amount = parsedLog.args[1];
-                const communityId = allCommunities.get(log.address)!;
-                getBlockTime(log.blockHash).then((txAt) =>
-                    ClaimsService.add(
-                        beneficiaryAddress,
-                        communityId,
-                        amount,
-                        log.transactionHash,
-                        txAt
-                    )
-                );
-            } else if (parsedLog.name === 'ManagerAdded') {
-                // new managers in existing community
-                const managerAddress = parsedLog.args[0];
-                const communityAddress = log.address;
-                ManagerService.add(
-                    managerAddress,
-                    allCommunities.get(communityAddress)!
-                );
-            } else if (parsedLog.name === 'ManagerRemoved') {
-                const managerAddress = parsedLog.args[0];
-                const communityAddress = log.address;
-                ManagerService.remove(
-                    managerAddress,
-                    allCommunities.get(communityAddress)!
-                );
-            }
+            // _processCommunityEvents
         } else {
-            try {
-                parsedLog = ifaceCommunity.parseLog(log);
-                if (parsedLog.name === 'ManagerAdded') {
-                    const managerAddress = parsedLog.args[0];
-                    const communityAddress = log.address;
-                    if (allCommunitiesAddresses.includes(communityAddress)) {
-                        ManagerService.add(
-                            managerAddress,
-                            allCommunities.get(communityAddress)!
-                        );
-                    } else {
-                        const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
-                        if (
-                            Array.from(
-                                communityAddressesAndIds.keys()
-                            ).includes(communityAddress)
-                        ) {
-                            // in case new manager means new community
-                            const communityId = communityAddressesAndIds.get(
-                                communityAddress
-                            )!;
-                            ManagerService.add(managerAddress, communityId);
-                            const community = await CommunityService.getOnlyCommunityByContractAddress(
-                                communityAddress
-                            );
-                            if (community === null) {
-                                Logger.error(
-                                    `Community with address ${communityAddress} wasn't found at "ManagerAdded"`
-                                );
-                            } else {
-                                isCommunityPublic.set(
-                                    communityAddress,
-                                    community.visibility === 'public'
-                                );
-                                allCommunities.set(
-                                    communityAddress,
-                                    communityId
-                                );
-                                allCommunitiesAddresses.push(communityAddress);
-                            }
-                        } else {
-                            // if for some reason (mainly timing), the community wasn't in the database, try again in 4 secs
-                            const cancelTimeout = setInterval(
-                                async (
-                                    _managerAddress: string,
-                                    _communityAddress: string
-                                ) => {
-                                    Logger.warn(
-                                        `Community ${_communityAddress} was not in the database when "ManagerAdded".`
-                                    );
-                                    const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
-                                    if (
-                                        Array.from(
-                                            communityAddressesAndIds.keys()
-                                        ).includes(_communityAddress) &&
-                                        !allCommunitiesAddresses.includes(
-                                            _communityAddress
-                                        )
-                                    ) {
-                                        // new community
-                                        const communityId = communityAddressesAndIds.get(
-                                            communityAddress
-                                        )!;
-                                        ManagerService.add(
-                                            _managerAddress,
-                                            communityId
-                                        );
-                                        const community = await CommunityService.getOnlyCommunityByContractAddress(
-                                            communityAddress
-                                        );
-                                        if (community === null) {
-                                            Logger.error(
-                                                `Community with address ${communityAddress} wasn't found at "ManagerAdded"`
-                                            );
-                                        } else {
-                                            isCommunityPublic.set(
-                                                communityAddress,
-                                                community.visibility ===
-                                                    'public'
-                                            );
-                                            allCommunities.set(
-                                                _communityAddress,
-                                                communityId
-                                            );
-                                            allCommunitiesAddresses.push(
-                                                _communityAddress
-                                            );
-                                        }
-                                        clearInterval(cancelTimeout);
-                                    }
-                                },
-                                4000,
-                                managerAddress,
-                                communityAddress
-                            );
-                        }
-                    }
-                }
-            } catch (e) {
-                // as this else catch events from anywhere, it might catch unwanted events
-                if (e.reason !== 'no matching event') {
-                    Logger.error(e);
-                }
-            }
+            // _processOtherEvents
         }
         if (parsedLog !== undefined) {
-            TransactionsService.add(provider, log, parsedLog).catch(
-                catchHandlerTransactionsService
-            );
+            TransactionsService.add(provider, log, parsedLog);
         }
         ImMetadataService.setLastBlock(log.blockNumber);
     });
@@ -472,7 +572,7 @@ async function checkCommunitiesOnChainEvents(
                 provider,
                 logsCommunity[ec],
                 eventsCommunity[ec]
-            ).catch(catchHandlerTransactionsService);
+            );
         }
         // get past donations
         const logsCUSD = await provider.getLogs({
@@ -501,11 +601,7 @@ async function checkCommunitiesOnChainEvents(
                     log.transactionHash,
                     txAt
                 );
-                TransactionsService.add(
-                    provider,
-                    logsCUSD[ec],
-                    eventsCUSD[ec]
-                ).catch(catchHandlerTransactionsService);
+                TransactionsService.add(provider, logsCUSD[ec], eventsCUSD[ec]);
             } else if (
                 // same as in subscribe
                 !allCommunitiesAddresses.includes(preParsedLog.args[0]) &&
