@@ -110,7 +110,10 @@ export default class BeneficiaryService {
         if (!isAddress(managerAddress)) {
             throw new Error('Not valid address!');
         }
-        if ((await CommunityService.existsByContractAddress(managerAddress)) !== null) {
+        if (
+            (await CommunityService.existsByContractAddress(managerAddress)) ===
+            true
+        ) {
             throw new Error('Not valid address!');
         }
         if (isAddress(searchInput)) {
