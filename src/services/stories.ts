@@ -3,6 +3,7 @@ import { IAddStory } from '@ipcttypes/endpoints';
 import { CommunityAttributes } from '@models/community';
 import { sharpAndUpload } from './storage';
 import config from '../config';
+import { Op } from 'sequelize';
 
 export default class StoriesService {
     public storyContent = models.storyContent;
@@ -79,8 +80,15 @@ export default class StoriesService {
                             include: [sequelize.models.StoriesEngagementModel],
                         },
                     ],
+                    where: {
+                        contentId: { [Op.not]: null },
+                    },
                 },
             ],
+            where: {
+                visibility: 'public',
+                status: 'valid',
+            },
         });
         const stories = r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
