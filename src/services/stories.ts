@@ -68,7 +68,7 @@ export default class StoriesService {
         return result !== 0;
     }
 
-    public async getByOrder(order: string | undefined, query: any) {
+    public async listByOrder(order: string | undefined, query: any) {
         const r = await this.community.findAll({
             include: [
                 {
@@ -96,6 +96,45 @@ export default class StoriesService {
             };
         });
         return stories;
+    }
+
+    public async getByCommunity(
+        communityId: number,
+        order: string | undefined,
+        query: any
+    ) {
+        const r = await this.community.findAll({
+            include: [
+                {
+                    model: sequelize.models.StoriesCommunityModel,
+                    include: [
+                        {
+                            model: sequelize.models.StoriesContentModel,
+                            include: [sequelize.models.StoriesEngagementModel],
+                        },
+                    ],
+                },
+            ],
+            where: {
+                id: communityId,
+            },
+        });
+        const stories = r.map((c) => {
+            const community = c.toJSON() as CommunityAttributes;
+            return {
+                id: community.id,
+                name: community.name,
+                city: community.city,
+                country: community.country,
+                stories: community.StoriesCommunityModels?.map((s) => ({
+                    id: s.StoriesContentModel?.id,
+                    media: s.StoriesContentModel?.media,
+                    message: s.StoriesContentModel?.message,
+                    love: s.StoriesContentModel?.StoriesEngagementModel?.love,
+                })),
+            };
+        });
+        return stories[0];
     }
 
     public async love(contentId: number) {

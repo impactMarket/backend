@@ -23,6 +23,7 @@ export default (app: Router): void => {
         storiesController.add
     );
     route.post('/has', authenticateToken, storiesController.has);
-    route.get('/get/:order?', storiesController.getByOrder);
+    route.get('/list/:order?', storiesController.listByOrder);
+    route.get('/community/:id/:order?', storiesController.getByCommunity);
     route.post('/love', storiesValidators.love, storiesController.love);
 };

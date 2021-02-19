@@ -23,9 +23,20 @@ const has = (req: RequestWithUser, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
-const getByOrder = (req: Request, res: Response) => {
+const listByOrder = (req: Request, res: Response) => {
     storiesService
-        .getByOrder(req.params.order, req.query)
+        .listByOrder(req.params.order, req.query)
+        .then((r) => res.send(r))
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
+const getByCommunity = (req: Request, res: Response) => {
+    storiesService
+        .getByCommunity(
+            parseInt(req.params.id, 10),
+            req.params.order,
+            req.query
+        )
         .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
@@ -37,4 +48,4 @@ const love = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
-export default { add, has, getByOrder, love };
+export default { add, has, listByOrder, getByCommunity, love };
