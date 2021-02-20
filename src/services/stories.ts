@@ -3,7 +3,7 @@ import { IAddStory } from '@ipcttypes/endpoints';
 import { CommunityAttributes } from '@models/community';
 import { sharpAndUpload } from './storage';
 import config from '../config';
-import { Op } from 'sequelize';
+import { col, fn, literal, Op } from 'sequelize';
 
 export default class StoriesService {
     public storyContent = models.storyContent;
@@ -71,6 +71,7 @@ export default class StoriesService {
 
     public async listByOrder(order: string | undefined, query: any) {
         const r = await this.community.findAll({
+            attributes: ['id', 'name'],
             include: [
                 {
                     model: sequelize.models.StoriesCommunityModel,
@@ -78,6 +79,9 @@ export default class StoriesService {
                         {
                             model: sequelize.models.StoriesContentModel,
                             include: [sequelize.models.StoriesEngagementModel],
+                            where: {
+                                byAddress: { [Op.not]: null },
+                            },
                         },
                     ],
                     where: {
@@ -88,19 +92,33 @@ export default class StoriesService {
             where: {
                 visibility: 'public',
                 status: 'valid',
-            },
+                '$StoriesCommunityModels->StoriesContentModel.postedAt$': {
+                    [Op.eq]: literal(`(select max("postedAt")
+                        from "StoriesContent" sc, "StoriesCommunity" sm
+                        where sc.id = sm."contentId" and sm."communityId"="Community".id)`),
+                },
+            } as any, // does not recognize the string as a variable
+            order: [
+                [
+                    sequelize.models.StoriesCommunityModel,
+                    sequelize.models.StoriesContentModel,
+                    'postedAt',
+                    'DESC',
+                ],
+            ],
         });
         const stories = r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
             return {
                 id: community.id,
                 name: community.name,
-                stories: community.StoriesCommunityModels?.map((s) => ({
-                    id: s.StoriesContentModel?.id,
-                    media: s.StoriesContentModel?.media,
-                    message: s.StoriesContentModel?.message,
-                    love: s.StoriesContentModel?.StoriesEngagementModel?.love,
-                })),
+                // we can use ! because it's filtered on the query
+                stories: community.StoriesCommunityModels!.map((s) => ({
+                    id: s.StoriesContentModel!.id,
+                    media: s.StoriesContentModel!.media,
+                    message: s.StoriesContentModel!.message,
+                    love: s.StoriesContentModel!.StoriesEngagementModel?.love,
+                }))[0],
             };
         });
         return stories;
@@ -126,6 +144,14 @@ export default class StoriesService {
             where: {
                 id: communityId,
             },
+            order: [
+                [
+                    sequelize.models.StoriesCommunityModel,
+                    sequelize.models.StoriesContentModel,
+                    'postedAt',
+                    'DESC',
+                ],
+            ],
         });
         const stories = r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
