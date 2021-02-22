@@ -84,3 +84,27 @@ export interface IAddStory {
     // media?: string;
     message?: string;
 }
+
+export interface ICommunityStory {
+    id: number;
+    media: string | null;
+    message: string | null;
+    love: number;
+}
+
+export interface ICommunitiesListStories {
+    id: number;
+    name: string;
+    coverImage: string;
+    stories: ICommunityStory;
+}
+
+export interface ICommunityStories {
+    id: number;
+    publicId: string; // temporary
+    name: string;
+    city: string;
+    country: string;
+    coverImage: string;
+    stories: ICommunityStory[];
+}

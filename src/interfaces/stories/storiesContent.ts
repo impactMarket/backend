@@ -12,12 +12,14 @@ export interface StoriesContent {
     isPublic: boolean;
     postedAt: Date;
 
-    StoriesEngagementModel?: StoriesEngagement;
+    storyEngage?: StoriesEngagement;
 }
 
 export interface StoriesContentCreation {
     byAddress: string;
     postedAt: Date;
-    StoriesCommunityModel?: StoriesCommunityCreationEager[];
-    StoriesEngagementModel?: StoriesEngagementCreation[];
+    media?: string;
+    message?: string;
+    storyCommunity?: StoriesCommunityCreationEager[];
+    storyEngage?: StoriesEngagementCreation[];
 }

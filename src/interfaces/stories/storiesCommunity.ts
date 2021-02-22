@@ -5,7 +5,7 @@ export interface StoriesCommunity {
     contentId: number;
     communityId: number;
 
-    StoriesContentModel?: StoriesContent;
+    storyContent?: StoriesContent;
 }
 
 export interface StoriesCommunityCreation {
