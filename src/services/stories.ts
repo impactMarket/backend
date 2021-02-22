@@ -1,9 +1,14 @@
 import { models, sequelize } from '../database';
-import { IAddStory } from '@ipcttypes/endpoints';
+import {
+    IAddStory,
+    ICommunitiesListStories,
+    ICommunityStories,
+} from '@ipcttypes/endpoints';
 import { CommunityAttributes } from '@models/community';
 import { sharpAndUpload } from './storage';
 import config from '../config';
-import { col, fn, literal, Op } from 'sequelize';
+import { literal, Op, where } from 'sequelize';
+import { StoriesCommunityCreationEager } from '@interfaces/stories/storiesCommunity';
 
 export default class StoriesService {
     public storyContent = models.storyContent;
@@ -16,19 +21,16 @@ export default class StoriesService {
         file: Express.Multer.File | undefined,
         story: IAddStory
     ): Promise<boolean> {
-        let storyContentToAdd = {};
+        let storyContentToAdd: { media?: string; message?: string } = {};
         if (file) {
             const media = await sharpAndUpload(file);
             storyContentToAdd = {
                 media: `${config.cloudfrontUrl}/${media.Key}`,
             };
         }
-        let storyCommunityToAdd = {};
-        // if (story.media !== undefined) {
-        //     storyContentToAdd = {
-        //         media: story.media,
-        //     };
-        // }
+        let storyCommunityToAdd: {
+            storyCommunity?: StoriesCommunityCreationEager[];
+        } = {};
         if (story.message !== undefined) {
             storyContentToAdd = {
                 ...storyContentToAdd,
@@ -37,7 +39,7 @@ export default class StoriesService {
         }
         if (story.communityId !== undefined) {
             storyCommunityToAdd = {
-                StoriesCommunityModel: [
+                storyCommunity: [
                     {
                         communityId: story.communityId,
                     },
@@ -50,12 +52,12 @@ export default class StoriesService {
                 ...storyCommunityToAdd,
                 byAddress: story.byAddress,
                 postedAt: new Date(),
-                StoriesEngagementModel: [],
+                storyEngage: [],
             },
             {
                 include: [
-                    sequelize.models.StoriesCommunityModel,
-                    sequelize.models.StoriesEngagementModel,
+                    { model: this.storyCommunity, as: 'storyCommunity' },
+                    { model: this.storyEngagement, as: 'storyEngage' },
                 ],
             }
         );
@@ -69,16 +71,26 @@ export default class StoriesService {
         return result !== 0;
     }
 
-    public async listByOrder(order: string | undefined, query: any) {
+    public async listByOrder(
+        order: string | undefined,
+        query: any
+    ): Promise<ICommunitiesListStories[]> {
         const r = await this.community.findAll({
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'coverImage'],
             include: [
                 {
-                    model: sequelize.models.StoriesCommunityModel,
+                    model: this.storyCommunity,
+                    as: 'storyCommunity',
                     include: [
                         {
-                            model: sequelize.models.StoriesContentModel,
-                            include: [sequelize.models.StoriesEngagementModel],
+                            model: this.storyContent,
+                            as: 'storyContent',
+                            include: [
+                                {
+                                    model: this.storyEngagement,
+                                    as: 'storyEngage',
+                                },
+                            ],
                             where: {
                                 byAddress: { [Op.not]: null },
                             },
@@ -92,32 +104,26 @@ export default class StoriesService {
             where: {
                 visibility: 'public',
                 status: 'valid',
-                '$StoriesCommunityModels->StoriesContentModel.postedAt$': {
+                '$storyCommunity->storyContent.postedAt$': {
                     [Op.eq]: literal(`(select max("postedAt")
                         from "StoriesContent" sc, "StoriesCommunity" sm
                         where sc.id = sm."contentId" and sm."communityId"="Community".id)`),
                 },
             } as any, // does not recognize the string as a variable
-            order: [
-                [
-                    sequelize.models.StoriesCommunityModel,
-                    sequelize.models.StoriesContentModel,
-                    'postedAt',
-                    'DESC',
-                ],
-            ],
+            order: [['storyCommunity', 'storyContent', 'postedAt', 'DESC']],
         });
         const stories = r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
             return {
                 id: community.id,
                 name: community.name,
+                coverImage: community.coverImage,
                 // we can use ! because it's filtered on the query
-                stories: community.StoriesCommunityModels!.map((s) => ({
-                    id: s.StoriesContentModel!.id,
-                    media: s.StoriesContentModel!.media,
-                    message: s.StoriesContentModel!.message,
-                    love: s.StoriesContentModel!.StoriesEngagementModel?.love,
+                stories: community.storyCommunity!.map((s) => ({
+                    id: s.storyContent!.id,
+                    media: s.storyContent!.media,
+                    message: s.storyContent!.message,
+                    love: s.storyContent!.storyEngage!.love,
                 }))[0],
             };
         });
@@ -128,15 +134,22 @@ export default class StoriesService {
         communityId: number,
         order: string | undefined,
         query: any
-    ) {
+    ): Promise<ICommunityStories> {
         const r = await this.community.findAll({
             include: [
                 {
-                    model: sequelize.models.StoriesCommunityModel,
+                    model: this.storyCommunity,
+                    as: 'storyCommunity',
                     include: [
                         {
-                            model: sequelize.models.StoriesContentModel,
-                            include: [sequelize.models.StoriesEngagementModel],
+                            model: this.storyContent,
+                            as: 'storyContent',
+                            include: [
+                                {
+                                    model: this.storyEngagement,
+                                    as: 'storyEngage',
+                                },
+                            ],
                         },
                     ],
                 },
@@ -144,34 +157,30 @@ export default class StoriesService {
             where: {
                 id: communityId,
             },
-            order: [
-                [
-                    sequelize.models.StoriesCommunityModel,
-                    sequelize.models.StoriesContentModel,
-                    'postedAt',
-                    'DESC',
-                ],
-            ],
+            order: [['storyCommunity', 'storyContent', 'postedAt', 'DESC']],
         });
         const stories = r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
             return {
                 id: community.id,
+                publicId: community.publicId,
                 name: community.name,
                 city: community.city,
                 country: community.country,
-                stories: community.StoriesCommunityModels?.map((s) => ({
-                    id: s.StoriesContentModel?.id,
-                    media: s.StoriesContentModel?.media,
-                    message: s.StoriesContentModel?.message,
-                    love: s.StoriesContentModel?.StoriesEngagementModel?.love,
+                coverImage: community.coverImage,
+                // we can use ! because it's filtered on the query
+                stories: community.storyCommunity!.map((s) => ({
+                    id: s.storyContent!.id,
+                    media: s.storyContent!.media,
+                    message: s.storyContent!.message,
+                    love: s.storyContent!.storyEngage!.love,
                 })),
             };
         });
-        return stories[0];
+        return stories[0]; // there's only one community
     }
 
     public async love(contentId: number) {
-        //
+        return this.storyEngagement.increment('love', { where: { contentId } });
     }
 }
