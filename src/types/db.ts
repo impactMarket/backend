@@ -20,9 +20,10 @@ import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { UserModel } from '@models/user';
 import { ModelCtor, Sequelize } from 'sequelize/types';
-import { StoriesContentModel } from '@models/stories/storiesContent';
-import { StoriesCommunityModel } from '@models/stories/storiesCommunity';
-import { StoriesEngagementModel } from '@models/stories/storiesEngagement';
+import { StoryContentModel } from '@models/story/storyContent';
+import { StoryCommunityModel } from '@models/story/storyCommunity';
+import { StoryEngagementModel } from '@models/story/storyEngagement';
+import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 
 export interface DbModels {
     user: ModelCtor<UserModel>;
@@ -47,9 +48,10 @@ export interface DbModels {
     notifiedBacker: ModelCtor<NotifiedBacker>;
     reachedAddress: ModelCtor<ReachedAddress>;
     //
-    storyContent: ModelCtor<StoriesContentModel>;
-    storyCommunity: ModelCtor<StoriesCommunityModel>;
-    storyEngagement: ModelCtor<StoriesEngagementModel>;
+    storyContent: ModelCtor<StoryContentModel>;
+    storyCommunity: ModelCtor<StoryCommunityModel>;
+    storyEngagement: ModelCtor<StoryEngagementModel>;
+    storyUserEngagement: ModelCtor<StoryUserEngagementModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;
