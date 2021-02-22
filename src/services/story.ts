@@ -7,13 +7,14 @@ import {
 import { CommunityAttributes } from '@models/community';
 import { sharpAndUpload } from './storage';
 import config from '../config';
-import { literal, Op, where } from 'sequelize';
-import { StoryCommunityCreationEager } from '@interfaces/stories/storyCommunity';
+import { literal, Op } from 'sequelize';
+import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
 
 export default class StoryService {
     public storyContent = models.storyContent;
     public storyCommunity = models.storyCommunity;
     public storyEngagement = models.storyEngagement;
+    public storyUserEngagement = models.storyUserEngagement;
     public community = models.community;
     public sequelize = sequelize;
 
@@ -52,12 +53,12 @@ export default class StoryService {
                 ...storyCommunityToAdd,
                 byAddress: story.byAddress,
                 postedAt: new Date(),
-                storyEngage: [],
+                storyEngagement: [],
             },
             {
                 include: [
                     { model: this.storyCommunity, as: 'storyCommunity' },
-                    { model: this.storyEngagement, as: 'storyEngage' },
+                    { model: this.storyEngagement, as: 'storyEngagement' },
                 ],
             }
         );
@@ -88,7 +89,7 @@ export default class StoryService {
                             include: [
                                 {
                                     model: this.storyEngagement,
-                                    as: 'storyEngage',
+                                    as: 'storyEngagement',
                                 },
                             ],
                             where: {
@@ -123,7 +124,6 @@ export default class StoryService {
                     id: s.storyContent!.id,
                     media: s.storyContent!.media,
                     message: s.storyContent!.message,
-                    love: s.storyContent!.storyEngage!.love,
                 }))[0],
             };
         });
@@ -131,6 +131,7 @@ export default class StoryService {
     }
 
     public async getByCommunity(
+        userAddress: string,
         communityId: number,
         order: string | undefined,
         query: any
@@ -147,7 +148,14 @@ export default class StoryService {
                             include: [
                                 {
                                     model: this.storyEngagement,
-                                    as: 'storyEngage',
+                                    as: 'storyEngagement',
+                                },
+                                {
+                                    model: this.storyUserEngagement,
+                                    as: 'storyUserEngagement',
+                                    where: {
+                                        address: userAddress,
+                                    },
                                 },
                             ],
                         },
@@ -173,14 +181,25 @@ export default class StoryService {
                     id: s.storyContent!.id,
                     media: s.storyContent!.media,
                     message: s.storyContent!.message,
-                    love: s.storyContent!.storyEngage!.love,
+                    loves: s.storyContent!.storyEngagement!.loves,
+                    userLoved:
+                        s.storyContent!.storyUserEngagement!.length !== 0,
                 })),
             };
         });
         return stories[0]; // there's only one community
     }
 
-    public async love(contentId: number) {
-        return this.storyEngagement.increment('love', { where: { contentId } });
+    public async love(userAddress: string, contentId: number) {
+        try {
+            return this.storyUserEngagement.create({
+                contentId,
+                address: userAddress,
+            });
+        } catch (e) {
+            return this.storyUserEngagement.destroy({
+                where: { contentId, address: userAddress },
+            });
+        }
     }
 }

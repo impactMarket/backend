@@ -31,9 +31,14 @@ class StoryController {
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
-    getByCommunity = (req: Request, res: Response) => {
+    getByCommunity = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
         this.storyService
             .getByCommunity(
+                req.user.address,
                 parseInt(req.params.id, 10),
                 req.params.order,
                 req.query
@@ -42,9 +47,13 @@ class StoryController {
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
-    love = (req: Request, res: Response) => {
+    love = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
         this.storyService
-            .love(req.body.contentId)
+            .love(req.user.address, req.body.contentId)
             .then((r) => res.send(r))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };

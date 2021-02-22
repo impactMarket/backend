@@ -11,7 +11,7 @@ export default (app: Router): void => {
     const route = Router();
     const storage = multer.memoryStorage();
     const upload = multer({ storage });
-    app.use('/stories', route);
+    app.use('/story', route);
 
     route.post(
         '/add',
