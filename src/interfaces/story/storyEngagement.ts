@@ -1,7 +1,7 @@
 export interface StoryEngagement {
     id: number;
     contentId: number;
-    love: number;
+    loves: number;
 }
 
 export interface StoryEngagementCreation {

@@ -1,5 +1,6 @@
 import { StoryCommunityCreationEager } from './storyCommunity';
 import { StoryEngagement, StoryEngagementCreation } from './storyEngagement';
+import { StoryUserEngagement } from './storyUserEngagement';
 
 export interface StoryContent {
     id: number;
@@ -9,7 +10,8 @@ export interface StoryContent {
     isPublic: boolean;
     postedAt: Date;
 
-    storyEngage?: StoryEngagement;
+    storyEngagement?: StoryEngagement;
+    storyUserEngagement?: StoryUserEngagement[];
 }
 
 export interface StoryContentCreation {
@@ -18,5 +20,5 @@ export interface StoryContentCreation {
     media?: string;
     message?: string;
     storyCommunity?: StoryCommunityCreationEager[];
-    storyEngage?: StoryEngagementCreation[];
+    storyEngagement?: StoryEngagementCreation[];
 }
