@@ -1,22 +1,22 @@
 import {
-    StoriesCommunity,
-    StoriesCommunityCreation,
-} from '@interfaces/stories/storiesCommunity';
+    StoryCommunity,
+    StoryCommunityCreation,
+} from '@interfaces/stories/storyCommunity';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class StoriesCommunityModel extends Model<
-    StoriesCommunity,
-    StoriesCommunityCreation
+export class StoryCommunityModel extends Model<
+    StoryCommunity,
+    StoryCommunityCreation
 > {
     public id!: number;
     public contentId!: number;
     public communityId!: number;
 }
 
-export function initializeStoriesCommunity(
+export function initializeStoryCommunity(
     sequelize: Sequelize
-): typeof StoriesCommunityModel {
-    StoriesCommunityModel.init(
+): typeof StoryCommunityModel {
+    StoryCommunityModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -27,7 +27,7 @@ export function initializeStoriesCommunity(
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'StoriesContent',
+                    model: 'StoryContent',
                     key: 'id',
                 },
                 onDelete: 'RESTRICT',
@@ -44,10 +44,10 @@ export function initializeStoriesCommunity(
             },
         },
         {
-            tableName: 'StoriesCommunity',
+            tableName: 'StoryCommunity',
             sequelize,
             timestamps: false,
         }
     );
-    return StoriesCommunityModel;
+    return StoryCommunityModel;
 }

@@ -1,9 +1,9 @@
-export interface StoriesEngagement {
+export interface StoryEngagement {
     id: number;
     contentId: number;
     love: number;
 }
 
-export interface StoriesEngagementCreation {
+export interface StoryEngagementCreation {
     contentId: number;
 }

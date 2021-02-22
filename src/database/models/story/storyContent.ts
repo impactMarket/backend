@@ -1,12 +1,12 @@
 import {
-    StoriesContent,
-    StoriesContentCreation,
-} from '@interfaces/stories/storiesContent';
+    StoryContent,
+    StoryContentCreation,
+} from '@interfaces/stories/storyContent';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class StoriesContentModel extends Model<
-    StoriesContent,
-    StoriesContentCreation
+export class StoryContentModel extends Model<
+    StoryContent,
+    StoryContentCreation
 > {
     public id!: number;
     public media!: string;
@@ -16,10 +16,10 @@ export class StoriesContentModel extends Model<
     public postedAt!: Date;
 }
 
-export function initializeStoriesContent(
+export function initializeStoryContent(
     sequelize: Sequelize
-): typeof StoriesContentModel {
-    StoriesContentModel.init(
+): typeof StoryContentModel {
+    StoryContentModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -49,10 +49,10 @@ export function initializeStoriesContent(
             },
         },
         {
-            tableName: 'StoriesContent',
+            tableName: 'StoryContent',
             sequelize,
             timestamps: false,
         }
     );
-    return StoriesContentModel;
+    return StoryContentModel;
 }

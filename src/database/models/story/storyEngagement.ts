@@ -1,22 +1,22 @@
 import {
-    StoriesEngagement,
-    StoriesEngagementCreation,
-} from '@interfaces/stories/storiesEngagement';
+    StoryEngagement,
+    StoryEngagementCreation,
+} from '@interfaces/stories/storyEngagement';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class StoriesEngagementModel extends Model<
-    StoriesEngagement,
-    StoriesEngagementCreation
+export class StoryEngagementModel extends Model<
+    StoryEngagement,
+    StoryEngagementCreation
 > {
     public id!: number;
     public contentId!: number;
     public love!: number;
 }
 
-export function initializeStoriesEngagement(
+export function initializeStoryEngagement(
     sequelize: Sequelize
-): typeof StoriesEngagementModel {
-    StoriesEngagementModel.init(
+): typeof StoryEngagementModel {
+    StoryEngagementModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -27,7 +27,7 @@ export function initializeStoriesEngagement(
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'StoriesContent',
+                    model: 'StoryContent',
                     key: 'id',
                 },
                 onDelete: 'RESTRICT',
@@ -40,10 +40,10 @@ export function initializeStoriesEngagement(
             },
         },
         {
-            tableName: 'StoriesEngagement',
+            tableName: 'StoryEngagement',
             sequelize,
             timestamps: false,
         }
     );
-    return StoriesEngagementModel;
+    return StoryEngagementModel;
 }

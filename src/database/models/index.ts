@@ -24,9 +24,9 @@ import { initializeReachedAddress } from './reachedAddress';
 import { initializeSSI } from './ssi';
 import { initializeTransactions } from './transactions';
 import initializeUser from './user';
-import { initializeStoriesContent } from './stories/storiesContent';
-import { initializeStoriesCommunity } from './stories/storiesCommunity';
-import { initializeStoriesEngagement } from './stories/storiesEngagement';
+import { initializeStoryContent } from './story/storyContent';
+import { initializeStoryCommunity } from './story/storyCommunity';
+import { initializeStoryEngagement } from './story/storyEngagement';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeCommunity(sequelize);
@@ -54,26 +54,26 @@ export default function initModels(sequelize: Sequelize): void {
     initializeGlobalDemographics(sequelize);
     initializeGlobalGrowth(sequelize);
 
-    // stories
-    initializeStoriesContent(sequelize);
-    initializeStoriesCommunity(sequelize);
-    initializeStoriesEngagement(sequelize);
+    // story
+    initializeStoryContent(sequelize);
+    initializeStoryCommunity(sequelize);
+    initializeStoryEngagement(sequelize);
 
-    sequelize.models.Community.hasMany(sequelize.models.StoriesCommunityModel, {
+    sequelize.models.Community.hasMany(sequelize.models.StoryCommunityModel, {
         foreignKey: 'communityId',
         as: 'storyCommunity',
     });
     // used to query from the community with incude
-    sequelize.models.StoriesCommunityModel.belongsTo(
-        sequelize.models.StoriesContentModel,
+    sequelize.models.StoryCommunityModel.belongsTo(
+        sequelize.models.StoryContentModel,
         {
             foreignKey: 'contentId',
             as: 'storyContent',
         }
     );
     // used to post from the content with incude
-    sequelize.models.StoriesContentModel.hasOne(
-        sequelize.models.StoriesCommunityModel,
+    sequelize.models.StoryContentModel.hasOne(
+        sequelize.models.StoryCommunityModel,
         {
             foreignKey: 'contentId',
             as: 'storyContent',
@@ -81,16 +81,16 @@ export default function initModels(sequelize: Sequelize): void {
     );
 
     // used to query from the community with incude
-    sequelize.models.StoriesEngagementModel.belongsTo(
-        sequelize.models.StoriesContentModel,
+    sequelize.models.StoryEngagementModel.belongsTo(
+        sequelize.models.StoryContentModel,
         {
             foreignKey: 'contentId',
             as: 'storyEngage',
         }
     );
     // used to post from the content with incude
-    sequelize.models.StoriesContentModel.hasOne(
-        sequelize.models.StoriesEngagementModel,
+    sequelize.models.StoryContentModel.hasOne(
+        sequelize.models.StoryEngagementModel,
         {
             foreignKey: 'contentId',
             as: 'storyEngage',

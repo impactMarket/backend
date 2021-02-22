@@ -8,9 +8,9 @@ import { CommunityAttributes } from '@models/community';
 import { sharpAndUpload } from './storage';
 import config from '../config';
 import { literal, Op, where } from 'sequelize';
-import { StoriesCommunityCreationEager } from '@interfaces/stories/storiesCommunity';
+import { StoryCommunityCreationEager } from '@interfaces/stories/storyCommunity';
 
-export default class StoriesService {
+export default class StoryService {
     public storyContent = models.storyContent;
     public storyCommunity = models.storyCommunity;
     public storyEngagement = models.storyEngagement;
@@ -29,7 +29,7 @@ export default class StoriesService {
             };
         }
         let storyCommunityToAdd: {
-            storyCommunity?: StoriesCommunityCreationEager[];
+            storyCommunity?: StoryCommunityCreationEager[];
         } = {};
         if (story.message !== undefined) {
             storyContentToAdd = {
@@ -106,7 +106,7 @@ export default class StoriesService {
                 status: 'valid',
                 '$storyCommunity->storyContent.postedAt$': {
                     [Op.eq]: literal(`(select max("postedAt")
-                        from "StoriesContent" sc, "StoriesCommunity" sm
+                        from "StoryContent" sc, "StoryCommunity" sm
                         where sc.id = sm."contentId" and sm."communityId"="Community".id)`),
                 },
             } as any, // does not recognize the string as a variable
@@ -119,7 +119,7 @@ export default class StoriesService {
                 name: community.name,
                 coverImage: community.coverImage,
                 // we can use ! because it's filtered on the query
-                stories: community.storyCommunity!.map((s) => ({
+                story: community.storyCommunity!.map((s) => ({
                     id: s.storyContent!.id,
                     media: s.storyContent!.media,
                     message: s.storyContent!.message,
