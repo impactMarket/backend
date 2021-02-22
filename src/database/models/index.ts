@@ -61,12 +61,14 @@ export default function initModels(sequelize: Sequelize): void {
 
     sequelize.models.Community.hasMany(sequelize.models.StoriesCommunityModel, {
         foreignKey: 'communityId',
+        as: 'storyCommunity',
     });
     // used to query from the community with incude
     sequelize.models.StoriesCommunityModel.belongsTo(
         sequelize.models.StoriesContentModel,
         {
             foreignKey: 'contentId',
+            as: 'storyContent',
         }
     );
     // used to post from the content with incude
@@ -74,6 +76,7 @@ export default function initModels(sequelize: Sequelize): void {
         sequelize.models.StoriesCommunityModel,
         {
             foreignKey: 'contentId',
+            as: 'storyContent',
         }
     );
 
@@ -82,6 +85,7 @@ export default function initModels(sequelize: Sequelize): void {
         sequelize.models.StoriesContentModel,
         {
             foreignKey: 'contentId',
+            as: 'storyEngage',
         }
     );
     // used to post from the content with incude
@@ -89,6 +93,7 @@ export default function initModels(sequelize: Sequelize): void {
         sequelize.models.StoriesEngagementModel,
         {
             foreignKey: 'contentId',
+            as: 'storyEngage',
         }
     );
 

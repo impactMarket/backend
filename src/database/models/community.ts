@@ -30,7 +30,7 @@ export interface CommunityAttributes {
     createdAt: Date;
     updatedAt: Date;
 
-    StoriesCommunityModels?: StoriesCommunity[];
+    storyCommunity?: StoriesCommunity[];
 }
 export interface CommunityCreationAttributes {
     requestByAddress: string;
