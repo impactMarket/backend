@@ -27,6 +27,7 @@ import initializeUser from './user';
 import { initializeStoryContent } from './story/storyContent';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryEngagement } from './story/storyEngagement';
+import { initializeStoryUserEngagement } from './story/storyUserEngagement';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeCommunity(sequelize);
@@ -58,6 +59,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeStoryContent(sequelize);
     initializeStoryCommunity(sequelize);
     initializeStoryEngagement(sequelize);
+    initializeStoryUserEngagement(sequelize);
 
     sequelize.models.Community.hasMany(sequelize.models.StoryCommunityModel, {
         foreignKey: 'communityId',
@@ -76,7 +78,7 @@ export default function initModels(sequelize: Sequelize): void {
         sequelize.models.StoryCommunityModel,
         {
             foreignKey: 'contentId',
-            as: 'storyContent',
+            as: 'storyCommunity',
         }
     );
 
@@ -85,7 +87,7 @@ export default function initModels(sequelize: Sequelize): void {
         sequelize.models.StoryContentModel,
         {
             foreignKey: 'contentId',
-            as: 'storyEngage',
+            as: 'storyContent',
         }
     );
     // used to post from the content with incude
@@ -93,7 +95,24 @@ export default function initModels(sequelize: Sequelize): void {
         sequelize.models.StoryEngagementModel,
         {
             foreignKey: 'contentId',
-            as: 'storyEngage',
+            as: 'storyEngagement',
+        }
+    );
+
+    // used to query from the community with incude
+    sequelize.models.StoryUserEngagementModel.belongsTo(
+        sequelize.models.StoryContentModel,
+        {
+            foreignKey: 'contentId',
+            as: 'storyContent',
+        }
+    );
+    // used to post from the content with incude
+    sequelize.models.StoryContentModel.hasMany(
+        sequelize.models.StoryUserEngagementModel,
+        {
+            foreignKey: 'contentId',
+            as: 'storyUserEngagement',
         }
     );
 

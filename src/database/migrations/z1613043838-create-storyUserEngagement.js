@@ -2,8 +2,8 @@
 
 // eslint-disable-next-line no-undef
 module.exports = {
-    up(queryInterface, Sequelize) {
-        return queryInterface.createTable('StoryEngagement', {
+    async up(queryInterface, Sequelize) {
+        await queryInterface.createTable('StoryUserEngagement', {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -19,14 +19,16 @@ module.exports = {
                 onDelete: 'RESTRICT',
                 allowNull: false,
             },
-            loves: {
-                type: Sequelize.INTEGER,
-                defaultValue: 0,
+            address: {
+                type: Sequelize.STRING(44),
                 allowNull: false,
             },
         });
+        return queryInterface.sequelize.query(
+            `ALTER TABLE StoryUserEngagement ADD CONSTRAINT one_love_per_story_key UNIQUE ("contentId", address);`
+        );
     },
     down: (queryInterface) => {
-        return queryInterface.dropTable('StoryEngagement');
+        return queryInterface.dropTable('StoryUserEngagement');
     },
 };

@@ -25,9 +25,10 @@ import { Sequelize, Options, ModelCtor } from 'sequelize';
 import config from '../config';
 import { DbModels } from '../types/db';
 import initModels from './models';
-import { StoriesEngagementModel } from '@models/stories/storiesEngagement';
-import { StoriesCommunityModel } from '@models/stories/storiesCommunity';
-import { StoriesContentModel } from '@models/stories/storiesContent';
+import { StoryCommunityModel } from '@models/story/storyCommunity';
+import { StoryContentModel } from '@models/story/storyContent';
+import { StoryEngagementModel } from '@models/story/storyEngagement';
+import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 
 let logging:
     | boolean
@@ -82,11 +83,13 @@ const models: DbModels = {
         .ReachedAddress as ModelCtor<ReachedAddress>,
     // stories
     storyContent: sequelize.models
-        .StoriesContentModel as ModelCtor<StoriesContentModel>,
+        .StoryContentModel as ModelCtor<StoryContentModel>,
     storyCommunity: sequelize.models
-        .StoriesCommunityModel as ModelCtor<StoriesCommunityModel>,
+        .StoryCommunityModel as ModelCtor<StoryCommunityModel>,
     storyEngagement: sequelize.models
-        .StoriesEngagementModel as ModelCtor<StoriesEngagementModel>,
+        .StoryEngagementModel as ModelCtor<StoryEngagementModel>,
+    storyUserEngagement: sequelize.models
+        .StoryUserEngagementModel as ModelCtor<StoryUserEngagementModel>,
 };
 
 export { sequelize, Sequelize, models };
