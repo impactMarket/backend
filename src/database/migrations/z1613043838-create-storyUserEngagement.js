@@ -25,7 +25,7 @@ module.exports = {
             },
         });
         return queryInterface.sequelize.query(
-            `ALTER TABLE StoryUserEngagement ADD CONSTRAINT one_love_per_story_key UNIQUE ("contentId", address);`
+            `ALTER TABLE "StoryUserEngagement" ADD CONSTRAINT one_love_per_story_key UNIQUE ("contentId", address);`
         );
     },
     down: (queryInterface) => {
