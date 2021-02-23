@@ -26,6 +26,19 @@ export default (app: Router): void => {
     );
     route.post('/has', authenticateToken, storyController.has);
     route.get('/list/:order?', storyController.listByOrder);
-    route.get('/community/:id/:order?', storyController.getByCommunity);
-    route.post('/love', storyValidator.love, storyController.love);
+    route.get(
+        '/community/:id/:order?',
+        (req, res, next) => {
+            (req as any).authTokenIsOptional = true;
+            next();
+        },
+        authenticateToken,
+        storyController.getByCommunity
+    );
+    route.post(
+        '/love',
+        authenticateToken,
+        storyValidator.love,
+        storyController.love
+    );
 };

@@ -15,6 +15,10 @@ export function authenticateToken(
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null) {
         // Logger.debug('User auth token is not valid!');
+        if ((req as any).authTokenIsOptional) {
+            next();
+            return;
+        }
         res.sendStatus(401); // if there isn't any token
         return;
     }

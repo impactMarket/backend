@@ -32,16 +32,12 @@ class StoryController {
     };
 
     getByCommunity = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
-            return;
-        }
         this.storyService
             .getByCommunity(
-                req.user.address,
                 parseInt(req.params.id, 10),
                 req.params.order,
-                req.query
+                req.query,
+                req.user?.address
             )
             .then((r) => res.send(r))
             .catch((e) => controllerLogAndFail(e, 400, res));

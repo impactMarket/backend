@@ -7,7 +7,7 @@ import {
 import { CommunityAttributes } from '@models/community';
 import { sharpAndUpload } from './storage';
 import config from '../config';
-import { literal, Op } from 'sequelize';
+import { Includeable, literal, Op } from 'sequelize';
 import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
 
 export default class StoryService {
@@ -131,11 +131,35 @@ export default class StoryService {
     }
 
     public async getByCommunity(
-        userAddress: string,
         communityId: number,
         order: string | undefined,
-        query: any
+        query: any,
+        userAddress?: string
     ): Promise<ICommunityStories> {
+        let subInclude: Includeable[];
+        if (userAddress) {
+            subInclude = [
+                {
+                    model: this.storyEngagement,
+                    as: 'storyEngagement',
+                },
+                {
+                    model: this.storyUserEngagement,
+                    as: 'storyUserEngagement',
+                    required: false,
+                    where: {
+                        address: userAddress,
+                    },
+                },
+            ];
+        } else {
+            subInclude = [
+                {
+                    model: this.storyEngagement,
+                    as: 'storyEngagement',
+                },
+            ];
+        }
         const r = await this.community.findAll({
             include: [
                 {
@@ -145,19 +169,7 @@ export default class StoryService {
                         {
                             model: this.storyContent,
                             as: 'storyContent',
-                            include: [
-                                {
-                                    model: this.storyEngagement,
-                                    as: 'storyEngagement',
-                                },
-                                {
-                                    model: this.storyUserEngagement,
-                                    as: 'storyUserEngagement',
-                                    where: {
-                                        address: userAddress,
-                                    },
-                                },
-                            ],
+                            include: subInclude,
                         },
                     ],
                 },
@@ -169,6 +181,7 @@ export default class StoryService {
         });
         const stories = r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
+            console.log(community.storyCommunity);
             return {
                 id: community.id,
                 publicId: community.publicId,
@@ -182,8 +195,9 @@ export default class StoryService {
                     media: s.storyContent!.media,
                     message: s.storyContent!.message,
                     loves: s.storyContent!.storyEngagement!.loves,
-                    userLoved:
-                        s.storyContent!.storyUserEngagement!.length !== 0,
+                    userLoved: userAddress
+                        ? s.storyContent!.storyUserEngagement!.length !== 0
+                        : false,
                 })),
             };
         });
@@ -192,12 +206,12 @@ export default class StoryService {
 
     public async love(userAddress: string, contentId: number) {
         try {
-            return this.storyUserEngagement.create({
+            await this.storyUserEngagement.create({
                 contentId,
                 address: userAddress,
             });
         } catch (e) {
-            return this.storyUserEngagement.destroy({
+            await this.storyUserEngagement.destroy({
                 where: { contentId, address: userAddress },
             });
         }
