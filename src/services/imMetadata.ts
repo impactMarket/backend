@@ -21,4 +21,36 @@ export default class ImMetadataService {
         }
         return parseInt(last.value);
     }
+
+    public static async setRecoverBlockUsingLastBlock(): Promise<void> {
+        const value = await ImMetadataService.getLastBlock();
+        try {
+            // if the key already exists, it might be because it's failing
+            // a couple times in a row. It should not update to the last block
+            // or will lose blocks, since the system is already syncing
+            await this.imMetadata.create({
+                value: value.toString(),
+                key: 'recoverBlock',
+            });
+        } catch (e) {
+            //
+        }
+    }
+
+    public static async getRecoverBlock(): Promise<number> {
+        const last = await this.imMetadata.findOne({
+            where: { key: 'recoverBlock' },
+            raw: true,
+        });
+        if (last === null) {
+            return await ImMetadataService.getLastBlock();
+        }
+        return parseInt(last.value);
+    }
+
+    public static async removeRecoverBlock(): Promise<void> {
+        await this.imMetadata.destroy({
+            where: { key: 'recoverBlock' },
+        });
+    }
 }
