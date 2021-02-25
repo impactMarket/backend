@@ -1,18 +1,13 @@
+import BeneficiaryService from '@services/beneficiary';
 import CommunityService from '@services/community';
 import CronJobExecutedService from '@services/cronJobExecuted';
 import GlobalDemographicsService from '@services/globalDemographics';
-import ImMetadataService from '@services/imMetadata';
 import { Logger } from '@utils/logger';
 import { CronJob } from 'cron';
 import { ethers } from 'ethers';
 
 import config from '../config';
-import { prepareAgenda } from './jobs/agenda';
-import {
-    // updateImpactMarketCache,
-    checkCommunitiesOnChainEvents,
-    subscribeChainEvents,
-} from './jobs/chainSubscribers';
+import { ChainSubscribers } from './jobs/chainSubscribers';
 import {
     calcuateCommunitiesMetrics,
     populateCommunityDailyState,
@@ -20,7 +15,6 @@ import {
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
-// import BeneficiaryService from '@services/beneficiary';
 
 export default async (): Promise<void> => {
     cron();
@@ -31,6 +25,23 @@ export default async (): Promise<void> => {
     let intervalWhenCrash: NodeJS.Timeout | undefined = undefined;
     let intervalWhenTxRegWarn: NodeJS.Timeout | undefined = undefined;
     let waitingForResponseAfterTxRegWarn = false;
+
+    const availableCommunities = await CommunityService.listCommunitiesStructOnly();
+    const beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
+    const subscribers = new ChainSubscribers(
+        provider,
+        beneficiariesInPublicCommunities,
+        new Map(
+            availableCommunities.map((c) => [c.contractAddress!, c.publicId])
+        ),
+        new Map(
+            availableCommunities.map((c) => [
+                c.contractAddress!,
+                c.visibility === 'public',
+            ])
+        )
+    );
+
     process.on('unhandledRejection', (error: any) => {
         // close all RPC connections and restart when available again
         const strError = JSON.stringify(error);
@@ -43,7 +54,7 @@ export default async (): Promise<void> => {
             !waitingForResponseAfterTxRegWarn
         ) {
             waitingForResponseAfterCrash = true;
-            provider.removeAllListeners();
+            subscribers.stop();
             // if a second crash happen before recovering from the first
             // it will get here again. Clear past time interval
             // and start again.
@@ -64,14 +75,10 @@ export default async (): Promise<void> => {
                             );
                         } else {
                             Logger.error('Reconnecting json rpc provider...');
-                            subscribers(provider);
+                            subscribers.recover();
                             clearInterval(intervalWhenCrash!);
                             intervalWhenCrash = undefined;
                             waitingForResponseAfterCrash = false;
-                            // setTimeout(
-                            //     () => (waitingForResponseAfterCrash = false),
-                            //     2000
-                            // );
                         }
                     })
                     .catch(() => {
@@ -87,7 +94,7 @@ export default async (): Promise<void> => {
             Logger.error(
                 'Restarting provider listeners after registry failure'
             );
-            provider.removeAllListeners();
+            subscribers.stop();
             // if a second crash happen before recovering from the first
             // it will get here again. Clear past time interval
             // and start again.
@@ -107,13 +114,9 @@ export default async (): Promise<void> => {
                                     '/5 sucessfull responses form json rpc provider...'
                             );
                         } else {
-                            subscribers(provider);
+                            subscribers.recover();
                             clearInterval(intervalWhenTxRegWarn!);
                             waitingForResponseAfterTxRegWarn = false;
-                            // setTimeout(
-                            //     () => (waitingForResponseAfterTxRegWarn = false),
-                            //     2000
-                            // );
                         }
                     })
                     .catch(() => {
@@ -123,90 +126,7 @@ export default async (): Promise<void> => {
             }, 2000);
         }
     });
-    await Promise.all([prepareAgenda(), subscribers(provider)]);
 };
-
-async function subscribers(
-    provider: ethers.providers.JsonRpcProvider
-): Promise<void> {
-    const startFrom = (await ImMetadataService.getLastBlock()) - 5; // start 5 blocks before
-    // NEW: does not make sense to recover "lost community contracts" has in this case,
-    // it would have not been added in the database.
-    // const fromLogs = await updateImpactMarketCache(provider, startFrom);
-    // fromLogs.forEach((community) =>
-    //     updateCommunityCache(
-    //         startFrom,
-    //         provider,
-    //         community
-    //     )
-    // );
-    // Because we are filtering events by address
-    // when the community is created, the first manager
-    // is actually added by impactmarket in an internal transaction.
-    // This means that it's necessary to filter ManagerAdded with
-    // impactmarket address.
-    // NEW: this also does not apply
-    // updateCommunityCache(
-    //     startFrom,
-    //     provider,
-    //     config.impactMarketContractAddress
-    // );
-
-    // get all available communities
-    const availableCommunities = await CommunityService.listCommunitiesStructOnly();
-    // let beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
-    // starting 10 blocks in the past, check if they have lost transactions
-    Logger.info('Recovering past events...');
-    checkCommunitiesOnChainEvents(
-        startFrom,
-        provider,
-        availableCommunities
-        // beneficiariesInPublicCommunities
-    ).then(() => {
-        // wait for the next block and a second later, restart subscribers
-        provider.once('block', () => {
-            setTimeout(async () => {
-                Logger.info('Restarting subscribers...');
-                provider.removeAllListeners();
-                // beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
-                // start subscribers
-                subscribeChainEvents(
-                    provider,
-                    new Map(
-                        availableCommunities.map((c) => [
-                            c.contractAddress!,
-                            c.publicId,
-                        ])
-                    ),
-                    new Map(
-                        availableCommunities.map((c) => [
-                            c.contractAddress!,
-                            c.visibility === 'public',
-                        ])
-                    )
-                    // beneficiariesInPublicCommunities
-                );
-            }, 1000);
-        });
-    });
-    // get beneficiaries in private communities, so we don't count them
-    Logger.info('Starting subscribers...');
-    // beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
-    // start subscribers
-    subscribeChainEvents(
-        provider,
-        new Map(
-            availableCommunities.map((c) => [c.contractAddress!, c.publicId])
-        ),
-        new Map(
-            availableCommunities.map((c) => [
-                c.contractAddress!,
-                c.visibility === 'public',
-            ])
-        )
-        // beneficiariesInPublicCommunities
-    );
-}
 
 /**
  * This method starts all cron jobs. Cron jobs jave specific times to happen.
