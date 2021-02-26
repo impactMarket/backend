@@ -57,6 +57,8 @@ describe('[jobs] subscribers', () => {
     //     Promise<void>
     // >;
     let getAllAddressesAndIds: SinonStub<any, any>;
+    let getLastBlockStub: SinonStub<any, any>;
+    let getRecoverBlockStub: SinonStub<any, any>;
     let cUSD: ethers.Contract;
     let communityFactory: ethers.ContractFactory;
     let subscribers: ChainSubscribers;
@@ -67,6 +69,7 @@ describe('[jobs] subscribers', () => {
     });
     //
     const thisCommunityId = 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd';
+    let lastBlock = 0;
 
     before(async () => {
         // start provider
@@ -89,7 +92,16 @@ describe('[jobs] subscribers', () => {
             BeneficiaryService,
             'getAllAddressesInPublicValidCommunities'
         ).returns(Promise.resolve([]));
-        stub(ImMetadataService, 'setLastBlock').returns(Promise.resolve());
+        stub(ImMetadataService, 'setLastBlock').callsFake(async (v) => {
+            lastBlock = v;
+        });
+        stub(ImMetadataService, 'setRecoverBlockUsingLastBlock').returns(
+            Promise.resolve()
+        );
+        getLastBlockStub = stub(ImMetadataService, 'getLastBlock');
+        getRecoverBlockStub = stub(ImMetadataService, 'getRecoverBlock');
+        getLastBlockStub.returns(Promise.resolve(lastBlock));
+        getRecoverBlockStub.returns(Promise.resolve(lastBlock));
         stub(TransactionsService, 'add').returns(Promise.resolve({} as any));
         claimAdd = stub(ClaimsService, 'add');
         claimAdd.returns(Promise.resolve());
@@ -149,6 +161,9 @@ describe('[jobs] subscribers', () => {
     });
 
     beforeEach(() => {
+        // needs to be updated, otherwise will start from zero
+        getLastBlockStub.returns(Promise.resolve(lastBlock));
+        getRecoverBlockStub.returns(Promise.resolve(lastBlock));
         // stop previous listeners
         subscribers.stop();
         // create new object
@@ -530,13 +545,13 @@ describe('[jobs] subscribers', () => {
             getAllAddressesAndIds.returns(
                 Promise.resolve(newCommunityAddressesAndIds)
             );
+            subscribers.stop();
             await cUSD
                 .connect(provider.getSigner(0))
                 .testFakeFundAddress(communityContract.address);
             await cUSD
                 .connect(provider.getSigner(0))
                 .testFakeFundAddress(accounts[5]);
-            subscribers.stop();
             await communityContract.addBeneficiary(accounts[5]);
             await cUSD
                 .connect(provider.getSigner(5))
