@@ -16,6 +16,7 @@ import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
 
+/* istanbul ignore next */
 function asyncTxsFailure(error: any) {
     Logger.error('asyncTxsFailure ' + error);
     // should this restart the subscribers?
@@ -324,6 +325,8 @@ class ChainSubscribers {
                         }
                     } else {
                         // if for some reason (mainly timing), the community wasn't in the database, try again in 4 secs
+                        // try only 5 times
+                        let triesToRecover = 5;
                         const cancelTimeout = setInterval(
                             async (
                                 _managerAddress: string,
@@ -369,6 +372,10 @@ class ChainSubscribers {
                                             _communityAddress
                                         );
                                     }
+                                    clearInterval(cancelTimeout);
+                                }
+                                triesToRecover--;
+                                if (triesToRecover === 0) {
                                     clearInterval(cancelTimeout);
                                 }
                             },
