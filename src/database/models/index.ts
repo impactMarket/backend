@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize';
 
 import { initializeAgenda } from './agenda';
+import { initializeSubscribers } from './app/subscribers';
 import { initializeBeneficiary } from './beneficiary';
 import { initializeBeneficiaryTransaction } from './beneficiaryTransaction';
 import { initializeClaim } from './claim';
@@ -26,6 +27,7 @@ import { initializeTransactions } from './transactions';
 import initializeUser from './user';
 
 export default function initModels(sequelize: Sequelize): void {
+    initializeSubscribers(sequelize);
     initializeCommunity(sequelize);
     initializeSSI(sequelize);
     initializeTransactions(sequelize);

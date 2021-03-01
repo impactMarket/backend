@@ -1,3 +1,4 @@
+import { SubscribersModel } from '@models/app/subscribers';
 import { Beneficiary } from '@models/beneficiary';
 import { BeneficiaryTransaction } from '@models/beneficiaryTransaction';
 import { Claim } from '@models/claim';
@@ -41,6 +42,7 @@ export interface DbModels {
     inflow: ModelCtor<Inflow>;
     manager: ModelCtor<Manager>;
     mobileError: ModelCtor<MobileError>;
+    subscribers: ModelCtor<SubscribersModel>;
     notifiedBacker: ModelCtor<NotifiedBacker>;
     reachedAddress: ModelCtor<ReachedAddress>;
 }
