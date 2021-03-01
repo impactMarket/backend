@@ -1,3 +1,4 @@
+import { SubscribersModel } from '@models/app/subscribers';
 import { Beneficiary } from '@models/beneficiary';
 import { BeneficiaryTransaction } from '@models/beneficiaryTransaction';
 import { Claim } from '@models/claim';
@@ -73,6 +74,8 @@ const models: DbModels = {
     inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager>,
     mobileError: sequelize.models.MobileError as ModelCtor<MobileError>,
+    subscribers: sequelize.models
+        .SubscribersModel as ModelCtor<SubscribersModel>,
     notifiedBacker: sequelize.models
         .NotifiedBacker as ModelCtor<NotifiedBacker>,
     reachedAddress: sequelize.models
