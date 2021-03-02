@@ -15,7 +15,7 @@ export class UserModel extends Model<User, UserCreationAttributes> {
     public language!: string;
     public currency!: string;
     public pushNotificationToken!: string | null;
-    public gender!: string | null;
+    public gender!: string;
     public year!: number | null;
     public children!: number | null;
 
@@ -48,6 +48,7 @@ export default function (sequelize: Sequelize): typeof UserModel {
             },
             gender: {
                 type: DataTypes.STRING(2),
+                defaultValue: 'u',
             },
             year: {
                 type: DataTypes.INTEGER,

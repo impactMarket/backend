@@ -49,6 +49,7 @@ export default class GlobalDemographicsService {
         const sqlGenderQuery = `select u.gender, count(u.gender) total, c.country
         from "user" u, beneficiary b, community c
         where u.address = b.address
+        and b.active = true
         and b."communityId" = c."publicId"
         and c.visibility = 'public'
         and c.status = 'valid'
@@ -66,8 +67,8 @@ export default class GlobalDemographicsService {
             ageRange6: number;
         }>(sqlAgeRangeQuery, { type: QueryTypes.SELECT });
         const rawGender = await this.sequelize.query<{
-            gender: string | null;
-            total: number;
+            gender: string;
+            total: string;
             country: string;
         }>(sqlGenderQuery, { type: QueryTypes.SELECT });
 
@@ -85,6 +86,7 @@ export default class GlobalDemographicsService {
         for (let g = 0; g < rawGender.length; g++) {
             const element = rawGender[g];
 
+            const gTotal = parseInt(element.total, 10);
             countries.push(element.country);
             let previous = gender.get(element.country);
             if (previous === undefined) {
@@ -98,28 +100,28 @@ export default class GlobalDemographicsService {
             if (element.gender === 'f') {
                 gender.set(element.country, {
                     ...previous,
-                    totalGender: previous.totalGender + element.total,
-                    female: element.total,
+                    totalGender: previous.totalGender + gTotal,
+                    female: gTotal,
                 });
             } else if (element.gender === 'm') {
                 gender.set(element.country, {
                     ...previous,
-                    totalGender: previous.totalGender + element.total,
-                    male: element.total,
+                    totalGender: previous.totalGender + gTotal,
+                    male: gTotal,
                 });
             } else if (element.gender === 'o') {
                 const p = previous.undisclosed;
                 gender.set(element.country, {
                     ...previous,
-                    totalGender: previous.totalGender + element.total,
-                    undisclosed: p + element.total,
+                    totalGender: previous.totalGender + gTotal,
+                    undisclosed: p + gTotal,
                 });
-            } else if (element.gender === null) {
+            } else if (element.gender === 'u') {
                 const p = previous.undisclosed;
                 gender.set(element.country, {
                     ...previous,
-                    totalGender: previous.totalGender + element.total,
-                    undisclosed: p + element.total,
+                    totalGender: previous.totalGender + gTotal,
+                    undisclosed: p + gTotal,
                 });
             }
         }

@@ -4,7 +4,7 @@ export interface User {
     language: string;
     currency: string;
     pushNotificationToken: string | null;
-    gender: string | null;
+    gender: string;
     year: number | null;
     children: number | null;
 
