@@ -16,7 +16,7 @@ const genderQueryResult = [
         country: 'Brasil',
     },
     {
-        gender: null,
+        gender: 'u',
         total: 100,
         country: 'Brasil',
     },
@@ -31,7 +31,7 @@ const genderQueryResult = [
         country: 'Cabo Verde',
     },
     {
-        gender: null,
+        gender: 'u',
         total: 10,
         country: 'Cabo Verde',
     },
@@ -66,7 +66,7 @@ const genderQueryResult = [
         country: 'Philippines',
     },
     {
-        gender: null,
+        gender: 'u',
         total: 0,
         country: 'Philippines',
     },
