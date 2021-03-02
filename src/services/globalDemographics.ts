@@ -48,9 +48,10 @@ export default class GlobalDemographicsService {
 
         const sqlGenderQuery = `select u.gender, count(u.gender) total, c.country
         from "user" u, beneficiary b, community c
-        where (u.gender = 'f' or u.gender = 'm')
-        and u.address = b.address
+        where u.address = b.address
         and b."communityId" = c."publicId"
+        and c.visibility = 'public'
+        and c.status = 'valid'
         group by c.country, u.gender
         order by c.country`;
 
@@ -65,31 +66,60 @@ export default class GlobalDemographicsService {
             ageRange6: number;
         }>(sqlAgeRangeQuery, { type: QueryTypes.SELECT });
         const rawGender = await this.sequelize.query<{
-            gender: string;
+            gender: string | null;
             total: number;
             country: string;
         }>(sqlGenderQuery, { type: QueryTypes.SELECT });
 
         // format gender results for easier write
         const countries: string[] = [];
-        const gender = new Map<string, { male: number; female: number }>();
+        const gender = new Map<
+            string,
+            {
+                male: number;
+                female: number;
+                undisclosed: number;
+                totalGender: number;
+            }
+        >();
         for (let g = 0; g < rawGender.length; g++) {
             const element = rawGender[g];
 
             countries.push(element.country);
             let previous = gender.get(element.country);
             if (previous === undefined) {
-                previous = { male: 0, female: 0 };
+                previous = {
+                    male: 0,
+                    female: 0,
+                    undisclosed: 0,
+                    totalGender: 0,
+                };
             }
             if (element.gender === 'f') {
                 gender.set(element.country, {
                     ...previous,
+                    totalGender: previous.totalGender + element.total,
                     female: element.total,
                 });
             } else if (element.gender === 'm') {
                 gender.set(element.country, {
                     ...previous,
+                    totalGender: previous.totalGender + element.total,
                     male: element.total,
+                });
+            } else if (element.gender === 'o') {
+                const p = previous.undisclosed;
+                gender.set(element.country, {
+                    ...previous,
+                    totalGender: previous.totalGender + element.total,
+                    undisclosed: p + element.total,
+                });
+            } else if (element.gender === null) {
+                const p = previous.undisclosed;
+                gender.set(element.country, {
+                    ...previous,
+                    totalGender: previous.totalGender + element.total,
+                    undisclosed: p + element.total,
                 });
             }
         }

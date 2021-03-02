@@ -16,6 +16,11 @@ const genderQueryResult = [
         country: 'Brasil',
     },
     {
+        gender: null,
+        total: 100,
+        country: 'Brasil',
+    },
+    {
         gender: 'm',
         total: 1,
         country: 'Cabo Verde',
@@ -23,6 +28,16 @@ const genderQueryResult = [
     {
         gender: 'f',
         total: 2,
+        country: 'Cabo Verde',
+    },
+    {
+        gender: null,
+        total: 10,
+        country: 'Cabo Verde',
+    },
+    {
+        gender: 'o',
+        total: 10,
         country: 'Cabo Verde',
     },
     {
@@ -36,6 +51,11 @@ const genderQueryResult = [
         country: 'Ghana',
     },
     {
+        gender: 'o',
+        total: 10,
+        country: 'Ghana',
+    },
+    {
         gender: 'f',
         total: 6,
         country: 'Philippines',
@@ -43,6 +63,11 @@ const genderQueryResult = [
     {
         gender: 'm',
         total: 5,
+        country: 'Philippines',
+    },
+    {
+        gender: null,
+        total: 0,
         country: 'Philippines',
     },
 ];
@@ -133,6 +158,8 @@ const results = [
         ageRange6: 40,
         male: 1363,
         female: 2740,
+        undisclosed: 100,
+        totalGender: 4203,
     },
     {
         date: match.any,
@@ -145,6 +172,8 @@ const results = [
         ageRange6: 0,
         male: 1,
         female: 2,
+        undisclosed: 20,
+        totalGender: 23,
     },
     {
         date: match.any,
@@ -157,6 +186,8 @@ const results = [
         ageRange6: 0,
         male: 26,
         female: 11,
+        undisclosed: 10,
+        totalGender: 47,
     },
     {
         date: match.any,
@@ -169,6 +200,8 @@ const results = [
         ageRange6: 0,
         male: 5,
         female: 6,
+        undisclosed: 0,
+        totalGender: 11,
     },
     {
         date: match.any,
@@ -179,6 +212,7 @@ const results = [
         ageRange4: 0,
         ageRange5: 0,
         ageRange6: 0,
+        // there are default values
     },
     {
         date: match.any,
@@ -189,6 +223,7 @@ const results = [
         ageRange4: 0,
         ageRange5: 0,
         ageRange6: 0,
+        // there are default values
     },
     {
         date: match.any,
@@ -199,6 +234,7 @@ const results = [
         ageRange4: 0,
         ageRange5: 0,
         ageRange6: 0,
+        // there are default values
     },
 ];
 
