@@ -14,8 +14,9 @@ export default (app: Router): void => {
         const { email } = req.body;
         SubscribersModel.create({
             email,
-        });
-        res.sendStatus(200);
+        })
+            .then(() => res.sendStatus(200))
+            .catch(() => res.sendStatus(400));
     });
 
     /**
