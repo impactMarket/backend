@@ -6,6 +6,8 @@ interface GlobalDemographicsAttributes {
     country: string;
     male: number;
     female: number;
+    undisclosed: number;
+    totalGender: number;
     ageRange1: number;
     ageRange2: number;
     ageRange3: number;
@@ -22,6 +24,8 @@ export interface GlobalDemographicsCreationAttributes {
     country: string;
     male: number;
     female: number;
+    undisclosed: number;
+    totalGender: number;
     ageRange1: number;
     ageRange2: number;
     ageRange3: number;
@@ -39,6 +43,8 @@ export class GlobalDemographics extends Model<
     public country!: string;
     public male!: number;
     public female!: number;
+    public undisclosed!: number;
+    public totalGender!: number;
     public ageRange1!: number;
     public ageRange2!: number;
     public ageRange3!: number;
@@ -74,6 +80,16 @@ export function initializeGlobalDemographics(sequelize: Sequelize): void {
                 allowNull: false,
             },
             female: {
+                type: DataTypes.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
+                allowNull: false,
+            },
+            undisclosed: {
+                type: DataTypes.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
+                allowNull: false,
+            },
+            totalGender: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
                 allowNull: false,
