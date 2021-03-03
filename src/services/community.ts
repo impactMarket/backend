@@ -113,6 +113,11 @@ export default class CommunityService {
                 contractParams,
                 t
             );
+            if (createObject.visibility === 'private') {
+                // in case it's public, will be added when accepted
+                await CommunityStateService.add(community.publicId, t);
+                // private communities don't need daily state
+            }
             // await CommunityStateService.add(community.publicId, t);
             // await CommunityDailyStateService.populateNext5Days(community.publicId, t);
             if (txReceipt !== undefined) {
@@ -349,6 +354,7 @@ export default class CommunityService {
                 status: 'pending',
                 visibility: 'public',
             },
+            raw: true,
         });
         if (c) {
             await deleteContentFromS3(c.coverImage);
@@ -380,6 +386,7 @@ export default class CommunityService {
             where: {
                 status: 'valid',
             },
+            raw: true,
         });
     }
 
@@ -393,6 +400,7 @@ export default class CommunityService {
                 status: 'valid',
                 visibility: 'public',
             },
+            raw: true,
         })) as any;
         return communities[0].total;
     }
@@ -707,6 +715,7 @@ export default class CommunityService {
             where: {
                 publicId,
             },
+            raw: true,
         });
         if (community === null) {
             throw new Error('Not found community ' + publicId);
@@ -715,11 +724,13 @@ export default class CommunityService {
             where: {
                 communityId: community.publicId,
             },
+            raw: true,
         });
         const communityContract = await this.communityContract.findOne({
             where: {
                 communityId: community.publicId,
             },
+            raw: true,
         });
         const communityDailyMetrics = await this.communityDailyMetrics.findAll({
             where: {
@@ -727,6 +738,7 @@ export default class CommunityService {
             },
             order: [['createdAt', 'DESC']],
             limit: 1,
+            raw: true,
         });
         return {
             ...community,
@@ -743,6 +755,7 @@ export default class CommunityService {
             where: {
                 publicId,
             },
+            raw: true,
         });
     }
 
@@ -753,6 +766,7 @@ export default class CommunityService {
             where: {
                 contractAddress,
             },
+            raw: true,
         });
         if (community === null) {
             throw new Error('Not found community ' + contractAddress);
@@ -761,11 +775,13 @@ export default class CommunityService {
             where: {
                 communityId: community.publicId,
             },
+            raw: true,
         });
         const communityContract = await this.communityContract.findOne({
             where: {
                 communityId: community.publicId,
             },
+            raw: true,
         });
         const communityDailyMetrics = await this.communityDailyMetrics.findAll({
             where: {
@@ -773,6 +789,7 @@ export default class CommunityService {
             },
             order: [['createdAt', 'DESC']],
             limit: 1,
+            raw: true,
         });
         return {
             ...community,
@@ -801,6 +818,7 @@ export default class CommunityService {
                     [Op.ne]: null,
                 },
             },
+            raw: true,
         });
         return new Map(result.map((c) => [c.contractAddress!, c.publicId]));
     }
@@ -816,6 +834,7 @@ export default class CommunityService {
                     [Op.or]: ['valid', 'pending'],
                 },
             },
+            raw: true,
         });
         if (community) {
             return community.publicId;
@@ -828,6 +847,7 @@ export default class CommunityService {
     ): Promise<Community | null> {
         return await this.community.findOne({
             where: { contractAddress },
+            raw: true,
         });
     }
 
@@ -841,6 +861,7 @@ export default class CommunityService {
                     [Op.in]: addresses,
                 },
             },
+            raw: true,
         });
     }
 
@@ -853,6 +874,7 @@ export default class CommunityService {
                     [Op.ne]: null,
                 },
             },
+            raw: true,
         });
         for (let index = 0; index < query.length; index++) {
             const element = query[index];
