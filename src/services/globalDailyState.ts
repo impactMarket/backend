@@ -7,15 +7,15 @@ import { col, fn, Op } from 'sequelize';
 import { models } from '../database';
 
 export default class GlobalDailyStateService {
-    public static globalDailyState = models.globalDailyState;
+    public globalDailyState = models.globalDailyState;
 
-    public static async add(
+    public add(
         state: GlobalDailyStateCreationAttributes
     ): Promise<GlobalDailyState> {
-        return await this.globalDailyState.create(state);
+        return this.globalDailyState.create(state);
     }
 
-    public static async getLast4AvgMedianSSI(): Promise<number[]> {
+    public async getLast4AvgMedianSSI(): Promise<number[]> {
         // it was null just once at the system's begin.
         const last = await this.globalDailyState.findAll({
             attributes: ['avgMedianSSI'],
@@ -25,7 +25,7 @@ export default class GlobalDailyStateService {
         return last.map((g) => g.avgMedianSSI);
     }
 
-    public static async getLast(): Promise<GlobalDailyState> {
+    public async getLast(): Promise<GlobalDailyState> {
         // it was null just once at the system's begin.
         const last = await this.globalDailyState.findAll({
             order: [['date', 'DESC']],
@@ -34,7 +34,7 @@ export default class GlobalDailyStateService {
         return last[0];
     }
 
-    public static async sumLast30Days(
+    public async sumLast30Days(
         from: Date
     ): Promise<{
         tClaimed: string;
@@ -92,13 +92,13 @@ export default class GlobalDailyStateService {
         };
     }
 
-    public static async getLast30Days(): Promise<GlobalDailyState[]> {
+    public getLast30Days(): Promise<GlobalDailyState[]> {
         const todayMidnightTime = new Date();
         todayMidnightTime.setHours(0, 0, 0, 0);
         // 30 days ago, from todayMidnightTime
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         // it was null just once at the system's begin.
-        return await this.globalDailyState.findAll({
+        return this.globalDailyState.findAll({
             where: {
                 date: {
                     [Op.lt]: todayMidnightTime,
@@ -109,7 +109,7 @@ export default class GlobalDailyStateService {
         });
     }
 
-    public static async last90DaysAvgSSI(): Promise<
+    public async last90DaysAvgSSI(): Promise<
         { date: Date; avgMedianSSI: number }[]
     > {
         const todayMidnightTime = new Date();

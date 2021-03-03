@@ -9,13 +9,14 @@ import { Request, Response } from 'express';
 
 const reachedAddressService = new ReachedAddressService();
 const globalGrowth = new GlobalGrowthService();
+const globalDailyStateService = new GlobalDailyStateService();
 
 const globalStatus = (req: Request, res: Response) => {
     const waitForResult = new Promise(async (resolve, reject) => {
         try {
             resolve({
-                monthly: await GlobalDailyStateService.getLast30Days(),
-                lastQuarterAvgSSI: await GlobalDailyStateService.last90DaysAvgSSI(),
+                monthly: await globalDailyStateService.getLast30Days(),
+                lastQuarterAvgSSI: await globalDailyStateService.last90DaysAvgSSI(),
                 today: await CommunityDailyStateService.notYetCountedToday(),
                 totalBackers: await InflowService.countEvergreenBackers(),
                 reachedLastMonth: await reachedAddressService.getAllReachedLast30Days(),

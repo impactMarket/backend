@@ -8,6 +8,7 @@ import { Router } from 'express';
 
 export default (app: Router): void => {
     const reachedAddressService = new ReachedAddressService();
+    const globalDailyStateService = new GlobalDailyStateService();
     app.get('/clock', (req, res) => res.json(new Date().getTime()));
 
     app.post('/subscribe', systemValidators.subscribe, (req, res) => {
@@ -24,8 +25,8 @@ export default (app: Router): void => {
      */
     app.get('/global-status', async (req, res) => {
         res.send({
-            monthly: await GlobalDailyStateService.getLast30Days(),
-            lastQuarterAvgSSI: await GlobalDailyStateService.last90DaysAvgSSI(),
+            monthly: await globalDailyStateService.getLast30Days(),
+            lastQuarterAvgSSI: await globalDailyStateService.last90DaysAvgSSI(),
             today: await CommunityDailyStateService.notYetCountedToday(),
             totalBackers: await InflowService.countEvergreenBackers(),
             reachedLastMonth: await reachedAddressService.getAllReachedLast30Days(),
