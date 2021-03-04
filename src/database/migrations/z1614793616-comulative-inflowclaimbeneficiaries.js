@@ -53,6 +53,10 @@ module.exports = {
                     type: Sequelize.INTEGER, // max 2,147,483,647
                     allowNull: false,
                 },
+                reachOut: {
+                    type: Sequelize.INTEGER, // max 2,147,483,647
+                    allowNull: false,
+                },
                 totalRaised: {
                     // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                     type: Sequelize.DECIMAL(30), // max 999,999,999,999 - plus 18 decimals
@@ -109,6 +113,10 @@ module.exports = {
                     type: Sequelize.BIGINT, // max 9,223,372,036,854,775,807
                     allowNull: false,
                 },
+                totalReachOut: {
+                    type: Sequelize.BIGINT, // max 9,223,372,036,854,775,807
+                    allowNull: false,
+                },
                 createdAt: {
                     allowNull: false,
                     type: Sequelize.DATE,
@@ -125,52 +133,36 @@ module.exports = {
         );
 
         let records;
+        const dateToCount = new Date(1600859659000);
+        dateToCount.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         //
-        records = (
-            await queryInterface.sequelize.query(
-                `select date, sum(raised) traised, sum(claimed) tclaimed, sum(beneficiaries) tbeneficiaries, sum(backers) tbackers
-        from communitydailystate cds, community c
-        where c."publicId" = cds."communityId"
-          and c.visibility = 'public'
-          and c.status = 'valid'
-          and date < '` +
-                    new Date().toISOString().split('T')[0] +
-                    "' group by date order by date asc",
-                { raw: true }
-            )
-        )[0];
 
-        const comulative = [records[0]];
-        for (let index = 1; index < records.length; index++) {
-            const previousElement = comulative[index - 1];
-            const element = records[index];
-            comulative.push({
-                date: element.date,
-                traised: new BigNumber(element.traised)
-                    .plus(previousElement.traised)
-                    .toString(),
-                tclaimed: new BigNumber(element.tclaimed)
-                    .plus(previousElement.tclaimed)
-                    .toString(),
-                tbeneficiaries: new BigNumber(element.tbeneficiaries)
-                    .plus(previousElement.tbeneficiaries)
-                    .toNumber(),
-                tbackers: new BigNumber(element.tbackers)
-                    .plus(previousElement.tbackers)
-                    .toNumber(),
-            });
-        }
-
-        for (let x = 0; x < comulative.length; x += 1) {
+        while (dateToCount <= today) {
+            records = (
+                await queryInterface.sequelize.query(
+                    `select sum(raised) traised, sum(claimed) tclaimed, sum(beneficiaries) tbeneficiaries
+            from communitydailystate cds, community c
+            where c."publicId" = cds."communityId"
+              and c.visibility = 'public'
+              and c.status = 'valid'
+              and date <= '` +
+                        dateToCount.toISOString().split('T')[0] +
+                        "'",
+                    { raw: true }
+                )
+            )[0];
+            console.log(dateToCount.toISOString().split('T')[0], records);
             await GlobalDailyState.update(
                 {
-                    totalRaised: comulative[x].traised,
-                    totalClaimed: comulative[x].tclaimed,
-                    totalBeneficiaries: comulative[x].tbeneficiaries,
-                    totalBackers: comulative[x].tbackers,
+                    totalRaised: records[0].traised,
+                    totalDistributed: records[0].tclaimed,
+                    totalBeneficiaries: records[0].tbeneficiaries,
                 },
-                { where: { date: new Date(comulative[x].date) } }
+                { where: { date: dateToCount.toISOString().split('T')[0] } }
             );
+            dateToCount.setDate(dateToCount.getDate() + 1);
         }
     },
 
