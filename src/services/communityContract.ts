@@ -31,6 +31,27 @@ export default class CommunityContractService {
         );
     }
 
+    public static update(
+        communityId: string,
+        contractParams: ICommunityContractParams
+    ): Promise<[number, CommunityContract[]]> {
+        const {
+            claimAmount,
+            maxClaim,
+            baseInterval,
+            incrementInterval,
+        } = contractParams;
+        return this.communityContract.update(
+            {
+                claimAmount,
+                maxClaim,
+                baseInterval,
+                incrementInterval,
+            },
+            { where: { communityId } }
+        );
+    }
+
     public static async get(
         communityId: string
     ): Promise<ICommunityContractParams> {

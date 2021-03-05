@@ -4,6 +4,7 @@ import BeneficiaryService from '@services/beneficiary';
 import BeneficiaryTransactionService from '@services/beneficiaryTransaction';
 import ClaimsService from '@services/claim';
 import CommunityService from '@services/community';
+import CommunityContractService from '@services/communityContract';
 import ImMetadataService from '@services/imMetadata';
 import InflowService from '@services/inflow';
 import ManagerService from '@services/managers';
@@ -57,7 +58,9 @@ class ChainSubscribers {
                 // ethers.utils.id('BeneficiaryLocked(address)'),
                 ethers.utils.id('BeneficiaryRemoved(address)'),
                 ethers.utils.id('BeneficiaryClaim(address,uint256)'),
-                // ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
+                ethers.utils.id(
+                    'CommunityEdited(uint256,uint256,uint256,uint256)'
+                ),
                 ethers.utils.id('Transfer(address,address,uint256)'),
             ],
         ];
@@ -279,6 +282,18 @@ class ChainSubscribers {
             ManagerService.remove(
                 managerAddress,
                 this.communities.get(communityAddress)!
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'CommunityEdited') {
+            const communityAddress = log.address;
+            CommunityContractService.update(
+                this.communities.get(communityAddress)!,
+                {
+                    claimAmount: parsedLog.args[0],
+                    maxClaim: parsedLog.args[1],
+                    baseInterval: parsedLog.args[2],
+                    incrementInterval: parsedLog.args[3],
+                }
             );
             result = parsedLog;
         }
