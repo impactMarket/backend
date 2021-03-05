@@ -7,6 +7,15 @@ import { Request, Response } from 'express';
 
 import config from '../../config';
 
+const getResquestChangeUbiParams = (req: Request, res: Response) => {
+    CommunityService.getResquestChangeUbiParams(req.params.publicId)
+        .then((community) => {
+            // doesn't matter if it's null
+            res.send(community);
+        })
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
 const getByPublicId = (req: Request, res: Response) => {
     CommunityService.getByPublicId(req.params.publicId)
         .then((community) => {
@@ -202,6 +211,7 @@ const pending = (req: Request, res: Response) => {
 };
 
 export default {
+    getResquestChangeUbiParams,
     getByPublicId,
     getByContractAddress,
     getHistoricalSSI,

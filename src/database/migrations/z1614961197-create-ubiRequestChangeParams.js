@@ -10,10 +10,10 @@ module.exports = {
                 primaryKey: true,
             },
             communityId: {
-                type: Sequelize.INTEGER,
+                type: Sequelize.UUIDV4,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false,
