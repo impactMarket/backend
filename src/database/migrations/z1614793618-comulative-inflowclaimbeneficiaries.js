@@ -146,7 +146,6 @@ module.exports = {
             from communitydailystate cds, community c
             where c."publicId" = cds."communityId"
               and c.visibility = 'public'
-              and c.status = 'valid'
               and date <= '` +
                         dateToCount.toISOString().split('T')[0] +
                         "'",
