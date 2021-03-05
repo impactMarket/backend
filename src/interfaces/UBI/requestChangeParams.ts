@@ -1,13 +1,13 @@
 export interface UbiRequestChangeParams {
     id: number;
-    communityId: number;
+    communityId: string;
     claimAmount: string;
     maxClaim: string;
     baseInterval: number;
     incrementInterval: number;
 }
 export interface UbiRequestChangeParamsCreation {
-    communityId: number;
+    communityId: string;
     claimAmount: string;
     maxClaim: string;
     baseInterval: number;

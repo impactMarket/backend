@@ -9,7 +9,7 @@ export class UbiRequestChangeParamsModel extends Model<
     UbiRequestChangeParamsCreation
 > {
     public id!: number;
-    public communityId!: number;
+    public communityId!: string;
     public claimAmount!: string;
     public maxClaim!: string;
     public baseInterval!: number;
@@ -25,10 +25,10 @@ export function initializeUbiRequestChangeParams(sequelize: Sequelize): void {
                 primaryKey: true,
             },
             communityId: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.UUIDV4,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false,

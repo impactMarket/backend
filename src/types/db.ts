@@ -21,6 +21,7 @@ import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { UserModel } from '@models/user';
 import { ModelCtor, Sequelize } from 'sequelize/types';
+import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
 
 export interface DbModels {
     user: ModelCtor<UserModel>;
@@ -29,6 +30,7 @@ export interface DbModels {
     communityState: ModelCtor<CommunityState>;
     communityDailyState: ModelCtor<CommunityDailyState>;
     communityDailyMetrics: ModelCtor<CommunityDailyMetrics>;
+    ubiRequestChangeParams: ModelCtor<UbiRequestChangeParamsModel>;
     claim: ModelCtor<Claim>;
     claimLocation: ModelCtor<ClaimLocation>;
     beneficiary: ModelCtor<Beneficiary>;
