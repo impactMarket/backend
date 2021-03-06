@@ -21,6 +21,7 @@ import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { UserModel } from '@models/user';
 import { ModelCtor, Sequelize } from 'sequelize/types';
+import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 
 export interface DbModels {
     user: ModelCtor<UserModel>;
@@ -32,6 +33,7 @@ export interface DbModels {
     claim: ModelCtor<Claim>;
     claimLocation: ModelCtor<ClaimLocation>;
     beneficiary: ModelCtor<Beneficiary>;
+    anonymousReport: ModelCtor<AppAnonymousReportModel>;
     beneficiaryTransaction: ModelCtor<BeneficiaryTransaction>;
     cronJobExecuted: ModelCtor<CronJobExecuted>;
     exchangeRates: ModelCtor<ExchangeRates>;

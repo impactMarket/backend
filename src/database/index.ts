@@ -26,6 +26,7 @@ import { Sequelize, Options, ModelCtor } from 'sequelize';
 import config from '../config';
 import { DbModels } from '../types/db';
 import initModels from './models';
+import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 
 let logging:
     | boolean
@@ -59,6 +60,8 @@ const models: DbModels = {
     claim: sequelize.models.Claim as ModelCtor<Claim>,
     claimLocation: sequelize.models.ClaimLocation as ModelCtor<ClaimLocation>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
+    anonymousReport: sequelize.models
+        .AppAnonymousReportModel as ModelCtor<AppAnonymousReportModel>,
     beneficiaryTransaction: sequelize.models
         .BeneficiaryTransaction as ModelCtor<BeneficiaryTransaction>,
     cronJobExecuted: sequelize.models
