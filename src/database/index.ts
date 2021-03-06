@@ -26,6 +26,7 @@ import { Sequelize, Options, ModelCtor } from 'sequelize';
 import config from '../config';
 import { DbModels } from '../types/db';
 import initModels from './models';
+import { AppUserDeviceModel } from '@models/app/userDevice';
 
 let logging:
     | boolean
@@ -70,6 +71,8 @@ const models: DbModels = {
         .GlobalDemographics as ModelCtor<GlobalDemographics>,
     globalGrowth: sequelize.models
         .GlobalGrowthModel as ModelCtor<GlobalGrowthModel>,
+    userDevice: sequelize.models
+        .AppUserDeviceModel as ModelCtor<AppUserDeviceModel>,
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager>,

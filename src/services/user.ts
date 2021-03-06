@@ -1,3 +1,4 @@
+import { AppUserDeviceCreation } from '@interfaces/appUserDevice';
 import { User } from '@interfaces/user';
 import { UserCreationAttributes } from '@models/user';
 import { Logger } from '@utils/logger';
@@ -13,6 +14,7 @@ import ManagerService from './managers';
 
 export default class UserService {
     public static user = models.user;
+    public static userDevice = models.userDevice;
 
     public static async authenticate(
         address: string,
@@ -137,6 +139,24 @@ export default class UserService {
             { returning: true, where: { address } }
         );
         return updated[0] > 0;
+    }
+
+    public static async setDevice(
+        deviceInfo: AppUserDeviceCreation
+    ): Promise<boolean> {
+        try {
+            await this.userDevice.create(deviceInfo);
+            return true;
+        } catch (e) {
+            if (e.name !== 'SequelizeUniqueConstraintError') {
+                await this.userDevice.update(
+                    { lastLogin: new Date() },
+                    { where: { userAddress: deviceInfo.userAddress } }
+                );
+                return true;
+            }
+        }
+        return false;
     }
 
     public static async get(address: string): Promise<User | null> {

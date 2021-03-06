@@ -92,6 +92,20 @@ class UserController {
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
+
+    public device = (req: Request, res: Response) => {
+        const { phone, identifier, device, wifi } = req.body;
+        UserService.setDevice({
+            userAddress: (req as any).user.address,
+            phone,
+            identifier,
+            device,
+            wifi,
+            lastLogin: new Date(),
+        })
+            .then(() => res.sendStatus(200))
+            .catch(() => res.sendStatus(400));
+    };
 }
 
 export default UserController;
