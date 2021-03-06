@@ -4,6 +4,13 @@ import { Logger } from '@utils/logger';
 import { Request, Response } from 'express';
 
 class UserController {
+    public report = (req: Request, res: Response) => {
+        const { communityId, message } = req.body;
+        UserService.report(communityId, message)
+            .then((user) => res.send(user))
+            .catch((e) => res.sendStatus(403).send(e));
+    };
+
     public authenticate = (req: Request, res: Response) => {
         const { address, language, currency, pushNotificationToken } = req.body;
         UserService.authenticate(

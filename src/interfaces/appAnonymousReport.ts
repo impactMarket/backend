@@ -4,6 +4,6 @@ export interface AppAnonymousReport {
     message: string;
 }
 export interface AppAnonymousReportCreation {
-    communityId: string;
+    communityId?: string;
     message: string;
 }
