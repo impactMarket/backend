@@ -10,7 +10,7 @@ import config from '../../config';
 const getResquestChangeUbiParams = (req: Request, res: Response) => {
     CommunityService.getResquestChangeUbiParams(req.params.publicId)
         .then((community) => {
-            // doesn't matter if it's null
+            // if it's null, doesn't exist, there's no request
             res.send(community);
         })
         .catch((e) => controllerLogAndFail(e, 400, res));
