@@ -16,6 +16,7 @@ import { initializeExchangeRates } from './exchangeRates';
 import { initializeGlobalGrowth } from './globalGrowth';
 import { initializeGlobalDailyState } from './globalDailyState';
 import { initializeGlobalDemographics } from './globalDemographics';
+import { initializeAppUserDevice } from './app/userDevice';
 import { initializeImMetadata } from './imMetadata';
 import { initializeInflow } from './inflow';
 import { initializeManager } from './manager';
@@ -32,6 +33,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeSSI(sequelize);
     initializeTransactions(sequelize);
     initializeUser(sequelize);
+    initializeAppUserDevice(sequelize);
     initializeAgenda(sequelize);
     initializeClaimLocation(sequelize);
     initializeExchangeRates(sequelize);
