@@ -25,7 +25,7 @@ export function initializeUbiRequestChangeParams(sequelize: Sequelize): void {
                 primaryKey: true,
             },
             communityId: {
-                type: DataTypes.UUIDV4,
+                type: DataTypes.UUID,
                 references: {
                     model: 'community',
                     key: 'publicId',

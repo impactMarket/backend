@@ -10,7 +10,7 @@ module.exports = {
                 primaryKey: true,
             },
             communityId: {
-                type: Sequelize.UUIDV4,
+                type: Sequelize.UUID,
                 references: {
                     model: 'community',
                     key: 'publicId',

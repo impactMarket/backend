@@ -11,6 +11,7 @@ import { initializeCommunityContract } from './communityContract';
 import { initializeCommunityDailyMetrics } from './communityDailyMetrics';
 import { initializeCommunityDailyState } from './communityDailyState';
 import { initializeCommunityState } from './communityState';
+import { initializeUbiRequestChangeParams } from './UBI/requestChangeParams';
 import { initializeCronJobExecuted } from './cronJobExecuted';
 import { initializeExchangeRates } from './exchangeRates';
 import { initializeGlobalGrowth } from './globalGrowth';
@@ -28,6 +29,7 @@ import initializeUser from './user';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeSubscribers(sequelize);
+    initializeUbiRequestChangeParams(sequelize);
     initializeCommunity(sequelize);
     initializeSSI(sequelize);
     initializeTransactions(sequelize);
