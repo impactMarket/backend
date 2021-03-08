@@ -1,12 +1,14 @@
 import { CommunityContract } from '@models/communityContract';
 import { col, fn, Op, Transaction } from 'sequelize';
 
-import { models } from '../database';
+import { models, sequelize } from '../database';
 import { ICommunityContractParams } from '../types';
 
 export default class CommunityContractService {
     public static communityContract = models.communityContract;
+    public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static community = models.community;
+    public static sequelize = sequelize;
 
     public static async add(
         communityId: string,
@@ -29,6 +31,45 @@ export default class CommunityContractService {
             },
             { transaction: t }
         );
+    }
+
+    public static async update(
+        communityId: string,
+        contractParams: ICommunityContractParams
+    ): Promise<boolean> {
+        const {
+            claimAmount,
+            maxClaim,
+            baseInterval,
+            incrementInterval,
+        } = contractParams;
+
+        try {
+            await sequelize.transaction(async (t) => {
+                await this.communityContract.update(
+                    {
+                        claimAmount,
+                        maxClaim,
+                        baseInterval,
+                        incrementInterval,
+                    },
+                    { where: { communityId }, transaction: t }
+                );
+
+                await this.ubiRequestChangeParams.destroy({
+                    where: { communityId },
+                    transaction: t,
+                });
+            });
+            return true;
+
+            // If the execution reaches this line, the transaction has been committed successfully
+            // `result` is whatever was returned from the transaction callback (the `user`, in this case)
+        } catch (error) {
+            // If the execution reaches this line, an error occurred.
+            // The transaction has already been rolled back automatically by Sequelize!
+            return false;
+        }
     }
 
     public static async get(

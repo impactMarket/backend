@@ -22,6 +22,8 @@ import { ReachedAddress } from '@models/reachedAddress';
 import { UserModel } from '@models/user';
 import { ModelCtor, Sequelize } from 'sequelize/types';
 import { AppUserDeviceModel } from '@models/app/userDevice';
+import { AppAnonymousReportModel } from '@models/app/anonymousReport';
+import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
 
 export interface DbModels {
     user: ModelCtor<UserModel>;
@@ -30,9 +32,11 @@ export interface DbModels {
     communityState: ModelCtor<CommunityState>;
     communityDailyState: ModelCtor<CommunityDailyState>;
     communityDailyMetrics: ModelCtor<CommunityDailyMetrics>;
+    ubiRequestChangeParams: ModelCtor<UbiRequestChangeParamsModel>;
     claim: ModelCtor<Claim>;
     claimLocation: ModelCtor<ClaimLocation>;
     beneficiary: ModelCtor<Beneficiary>;
+    anonymousReport: ModelCtor<AppAnonymousReportModel>;
     beneficiaryTransaction: ModelCtor<BeneficiaryTransaction>;
     cronJobExecuted: ModelCtor<CronJobExecuted>;
     exchangeRates: ModelCtor<ExchangeRates>;

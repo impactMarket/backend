@@ -16,6 +16,13 @@ export default (app: Router): void => {
         userController.authenticate
     );
 
+    route.post(
+        '/report',
+        authenticateToken,
+        UserValidators.report,
+        userController.report
+    );
+
     route.get('/exists/:address', userController.userExists);
 
     route.post(

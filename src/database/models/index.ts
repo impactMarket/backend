@@ -11,6 +11,7 @@ import { initializeCommunityContract } from './communityContract';
 import { initializeCommunityDailyMetrics } from './communityDailyMetrics';
 import { initializeCommunityDailyState } from './communityDailyState';
 import { initializeCommunityState } from './communityState';
+import { initializeUbiRequestChangeParams } from './UBI/requestChangeParams';
 import { initializeCronJobExecuted } from './cronJobExecuted';
 import { initializeExchangeRates } from './exchangeRates';
 import { initializeGlobalGrowth } from './globalGrowth';
@@ -26,9 +27,11 @@ import { initializeReachedAddress } from './reachedAddress';
 import { initializeSSI } from './ssi';
 import { initializeTransactions } from './transactions';
 import initializeUser from './user';
+import { initializeAppAnonymousReport } from './app/anonymousReport';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeSubscribers(sequelize);
+    initializeUbiRequestChangeParams(sequelize);
     initializeCommunity(sequelize);
     initializeSSI(sequelize);
     initializeTransactions(sequelize);
@@ -40,6 +43,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeNotifiedBacker(sequelize);
     initializeImMetadata(sequelize);
     initializeBeneficiary(sequelize);
+    initializeAppAnonymousReport(sequelize);
     initializeManager(sequelize);
     initializeClaim(sequelize);
     initializeInflow(sequelize);
