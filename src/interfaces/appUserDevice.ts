@@ -1,9 +1,10 @@
 export interface AppUserDevice {
+    id: number;
     userAddress: string;
     phone: string;
     identifier: string;
     device: string;
-    wifi: string;
+    network: string;
     lastLogin: Date;
 }
 export interface AppUserDeviceCreation {
@@ -11,6 +12,6 @@ export interface AppUserDeviceCreation {
     phone: string;
     identifier: string;
     device: string;
-    wifi: string;
+    network: string;
     lastLogin: Date;
 }

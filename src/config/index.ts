@@ -146,6 +146,11 @@ export default {
     tracesSampleRate: parseInt(process.env.SENTRY_TRACE_SAMPLES_RATE!, 10),
 
     /**
+     * Key used to hash
+     */
+    hashKey: process.env.HASH_KEY!,
+
+    /**
      *
      */
     adminKey: process.env.ADMIN_KEY!,

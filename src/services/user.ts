@@ -148,10 +148,17 @@ export default class UserService {
             await this.userDevice.create(deviceInfo);
             return true;
         } catch (e) {
-            if (e.name !== 'SequelizeUniqueConstraintError') {
+            if (e.name === 'SequelizeUniqueConstraintError') {
                 await this.userDevice.update(
                     { lastLogin: new Date() },
-                    { where: { userAddress: deviceInfo.userAddress } }
+                    {
+                        where: {
+                            userAddress: deviceInfo.userAddress,
+                            identifier: deviceInfo.identifier,
+                            network: deviceInfo.network,
+                            device: deviceInfo.device,
+                        },
+                    }
                 );
                 return true;
             }

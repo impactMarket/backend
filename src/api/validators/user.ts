@@ -70,7 +70,7 @@ const device = celebrate({
         phone: Joi.string().required(),
         identifier: Joi.string().required(),
         device: Joi.string().required(),
-        wifi: Joi.string().required(),
+        network: Joi.string().required(),
     }),
 });
 

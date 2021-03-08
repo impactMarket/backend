@@ -8,17 +8,23 @@ export class AppUserDeviceModel extends Model<
     AppUserDevice,
     AppUserDeviceCreation
 > {
+    public id!: number;
     public userAddress!: string;
     public phone!: string;
     public identifier!: string;
     public device!: string;
-    public wifi!: string;
+    public network!: string;
     public lastLogin!: Date;
 }
 
 export function initializeAppUserDevice(sequelize: Sequelize): void {
     AppUserDeviceModel.init(
         {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+            },
             userAddress: {
                 type: DataTypes.STRING(44),
                 references: {
@@ -29,7 +35,7 @@ export function initializeAppUserDevice(sequelize: Sequelize): void {
                 allowNull: false,
             },
             phone: {
-                type: DataTypes.STRING(128),
+                type: DataTypes.STRING(64),
                 allowNull: false,
             },
             identifier: {
@@ -40,7 +46,7 @@ export function initializeAppUserDevice(sequelize: Sequelize): void {
                 type: DataTypes.STRING(64),
                 allowNull: false,
             },
-            wifi: {
+            network: {
                 type: DataTypes.STRING(64),
                 allowNull: false,
             },

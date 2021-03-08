@@ -1,7 +1,12 @@
 'use strict';
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('AppUserDevice', {
+        await queryInterface.createTable('AppUserDevice', {
+            id: {
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+            },
             userAddress: {
                 type: Sequelize.STRING(44),
                 references: {
@@ -12,7 +17,7 @@ module.exports = {
                 allowNull: false,
             },
             phone: {
-                type: Sequelize.STRING(128),
+                type: Sequelize.STRING(64),
                 allowNull: false,
             },
             identifier: {
@@ -23,7 +28,7 @@ module.exports = {
                 type: Sequelize.STRING(64),
                 allowNull: false,
             },
-            wifi: {
+            network: {
                 type: Sequelize.STRING(64),
                 allowNull: false,
             },
@@ -32,6 +37,7 @@ module.exports = {
                 allowNull: false,
             },
         });
+        return queryInterface.sequelize.query(`ALTER TABLE "AppUserDevice" ADD CONSTRAINT one_user_per_device_key UNIQUE ("userAddress", phone, identifier, device, network);`)
     },
     down(queryInterface, Sequelize) {
         return queryInterface.dropTable('AppUserDevice');
