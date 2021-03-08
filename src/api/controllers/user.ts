@@ -10,7 +10,7 @@ class UserController {
         const { communityId, message } = req.body;
         UserService.report(communityId, message)
             .then((user) => res.send(user))
-            .catch((e) => res.sendStatus(403).send(e));
+            .catch((e) => res.status(403).send(e));
     };
 
     public authenticate = (req: Request, res: Response) => {
@@ -22,7 +22,7 @@ class UserController {
             pushNotificationToken
         )
             .then((user) => res.send(user))
-            .catch((e) => res.sendStatus(403).send(e));
+            .catch((e) => res.status(403).send(e));
     };
 
     public hello = (req: Request, res: Response) => {
