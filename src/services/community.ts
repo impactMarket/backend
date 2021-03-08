@@ -1,3 +1,4 @@
+import { UbiRequestChangeParams } from '@interfaces/UBI/requestChangeParams';
 import {
     Community,
     CommunityAttributes,
@@ -36,6 +37,7 @@ export default class CommunityService {
     public static communityContract = models.communityContract;
     public static communityState = models.communityState;
     public static communityDailyMetrics = models.communityDailyMetrics;
+    public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static sequelize = sequelize;
 
     public static async create(
@@ -706,6 +708,14 @@ export default class CommunityService {
             managers,
             beneficiaries,
         };
+    }
+
+    public static getResquestChangeUbiParams(
+        publicId: string
+    ): Promise<UbiRequestChangeParams | null> {
+        return this.ubiRequestChangeParams.findOne({
+            where: { communityId: publicId },
+        });
     }
 
     public static async getByPublicId(

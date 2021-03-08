@@ -27,6 +27,7 @@ import config from '../config';
 import { DbModels } from '../types/db';
 import initModels from './models';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
+import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
 
 let logging:
     | boolean
@@ -57,6 +58,8 @@ const models: DbModels = {
         .CommunityDailyState as ModelCtor<CommunityDailyState>,
     communityDailyMetrics: sequelize.models
         .CommunityDailyMetrics as ModelCtor<CommunityDailyMetrics>,
+    ubiRequestChangeParams: sequelize.models
+        .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParamsModel>,
     claim: sequelize.models.Claim as ModelCtor<Claim>,
     claimLocation: sequelize.models.ClaimLocation as ModelCtor<ClaimLocation>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
