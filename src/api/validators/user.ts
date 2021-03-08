@@ -72,6 +72,15 @@ const updateChildren = celebrate({
     }),
 });
 
+const device = celebrate({
+    body: Joi.object({
+        phone: Joi.string().required(),
+        identifier: Joi.string().required(),
+        device: Joi.string().required(),
+        network: Joi.string().required(),
+    }),
+});
+
 export default {
     report,
     authenticate,
@@ -83,4 +92,5 @@ export default {
     updateGender,
     updateAge,
     updateChildren,
+    device,
 };

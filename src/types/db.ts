@@ -21,6 +21,7 @@ import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { UserModel } from '@models/user';
 import { ModelCtor, Sequelize } from 'sequelize/types';
+import { AppUserDeviceModel } from '@models/app/userDevice';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
 
@@ -42,6 +43,7 @@ export interface DbModels {
     globalDailyState: ModelCtor<GlobalDailyState>;
     globalDemographics: ModelCtor<GlobalDemographics>;
     globalGrowth: ModelCtor<GlobalGrowthModel>;
+    userDevice: ModelCtor<AppUserDeviceModel>;
     imMetadata: ModelCtor<ImMetadata>;
     inflow: ModelCtor<Inflow>;
     manager: ModelCtor<Manager>;

@@ -1,5 +1,5 @@
 import UserController from '@controllers/user';
-import UserValidators from '@validators/user';
+import userValidators from '@validators/user';
 import { Router } from 'express';
 
 import { authenticateToken } from '../middlewares';
@@ -12,7 +12,7 @@ export default (app: Router): void => {
 
     route.post(
         '/authenticate',
-        UserValidators.authenticate,
+        userValidators.authenticate,
         userController.authenticate
     );
 
@@ -28,56 +28,63 @@ export default (app: Router): void => {
     route.post(
         '/hello',
         authenticateToken,
-        UserValidators.hello,
+        userValidators.hello,
         userController.hello
     );
 
     route.post(
         '/username',
         authenticateToken,
-        UserValidators.updateUsername,
+        userValidators.updateUsername,
         userController.updateUsername
     );
 
     route.post(
         '/currency',
         authenticateToken,
-        UserValidators.updateCurrency,
+        userValidators.updateCurrency,
         userController.updateCurrency
     );
 
     route.post(
         '/push-notifications',
         authenticateToken,
-        UserValidators.updatePushNotificationsToken,
+        userValidators.updatePushNotificationsToken,
         userController.updatePushNotificationsToken
     );
 
     route.post(
         '/language',
         authenticateToken,
-        UserValidators.updateLanguage,
+        userValidators.updateLanguage,
         userController.updateLanguage
     );
 
     route.post(
         '/gender',
         authenticateToken,
-        UserValidators.updateGender,
+        userValidators.updateGender,
         userController.updateGender
     );
 
     route.post(
         '/age',
         authenticateToken,
-        UserValidators.updateAge,
+        userValidators.updateAge,
         userController.updateAge
     );
 
     route.post(
         '/children',
         authenticateToken,
-        UserValidators.updateChildren,
+        userValidators.updateChildren,
         userController.updateChildren
+    );
+
+    route.post(
+        '/device',
+        authenticateToken,
+        userValidators.device,
+        userController.device
     );
 };
