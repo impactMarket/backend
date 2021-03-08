@@ -19,7 +19,7 @@ export default (app: Router): void => {
     route.post(
         '/report',
         authenticateToken,
-        UserValidators.report,
+        userValidators.report,
         userController.report
     );
 
