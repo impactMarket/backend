@@ -26,6 +26,7 @@ import { initializeReachedAddress } from './reachedAddress';
 import { initializeSSI } from './ssi';
 import { initializeTransactions } from './transactions';
 import initializeUser from './user';
+import { initializeAppAnonymousReport } from './app/anonymousReport';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeSubscribers(sequelize);
@@ -40,6 +41,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeNotifiedBacker(sequelize);
     initializeImMetadata(sequelize);
     initializeBeneficiary(sequelize);
+    initializeAppAnonymousReport(sequelize);
     initializeManager(sequelize);
     initializeClaim(sequelize);
     initializeInflow(sequelize);
