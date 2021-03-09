@@ -539,8 +539,9 @@ export default class CommunityService {
             "where c.visibility = 'public' and c.status = 'valid' ";
         switch (order) {
             case 'out_of_funds':
+                // we can't devide by zero! ubiRate is never zero
                 sqlQuery +=
-                    'order by (cs.raised - cs.claimed) / cm."ubiRate" / cs.beneficiaries';
+                    'and cs.beneficiaries != 0 order by (cs.raised - cs.claimed) / cm."ubiRate" / cs.beneficiaries';
                 break;
 
             case 'newest':
