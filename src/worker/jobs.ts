@@ -135,14 +135,14 @@ export default async (): Promise<void> => {
 function cron() {
     // multiple times a day
 
-    // every three hours, update exchange rates
+    // every hour, update exchange rates
     if (
         config.currenciesApiKey !== undefined &&
         config.currenciesApiKey.length > 0
     ) {
         updateExchangeRates();
         new CronJob(
-            '25 */3 * * *',
+            '25 * * * *',
             () => {
                 updateExchangeRates()
                     .then(() => {
@@ -160,9 +160,9 @@ function cron() {
         );
     }
 
-    // every four hours, verify community funds
+    // every eight hours, verify community funds
     new CronJob(
-        '45 */4 * * *',
+        '45 */8 * * *',
         () => {
             verifyCommunityFunds()
                 .then(() => {
@@ -210,9 +210,8 @@ function cron() {
         true
     );
 
-    // at 00:00 on thursday.
     new CronJob(
-        '0 0 * * 4',
+        '0 0 * * *',
         () => {
             GlobalDemographicsService.calculateDemographics()
                 .then(() => {
