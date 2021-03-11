@@ -25,7 +25,12 @@ export default (app: Router): void => {
         storyController.add
     );
     route.post('/has', authenticateToken, storyController.has);
-    route.post('/remove', authenticateToken, storyController.remove);
+    route.post(
+        '/remove',
+        authenticateToken,
+        storyValidator.remove,
+        storyController.remove
+    );
     route.get('/me', authenticateToken, storyController.listUserOnly);
     route.get('/list/:order?', storyController.listByOrder);
     route.get(
