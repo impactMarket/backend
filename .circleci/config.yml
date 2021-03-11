@@ -6,10 +6,10 @@ jobs:
       - image: circleci/node:14.15.1
     steps:
       - checkout
-      - run: npm install
+      - run: yarn
       - run:
           name: "Run Jest and Collect Coverage Reports"
-          command: jest --collectCoverage=true
+          command: yarn coverage
       - store_artifacts:
           path: coverage
 
