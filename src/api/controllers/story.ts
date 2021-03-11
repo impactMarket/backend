@@ -24,6 +24,28 @@ class StoryController {
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
+    remove = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        this.storyService
+            .remove(req.body.contentId, req.user.address)
+            .then((r) => (r === 0 ? res.sendStatus(400) : res.sendStatus(200)))
+            .catch((e) => controllerLogAndFail(e, 400, res));
+    };
+
+    listUserOnly = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        this.storyService
+            .listByOrder(req.params.order, req.query, req.user.address)
+            .then((r) => res.send(r))
+            .catch((e) => controllerLogAndFail(e, 400, res));
+    };
+
     listByOrder = (req: Request, res: Response) => {
         this.storyService
             .listByOrder(req.params.order, req.query)

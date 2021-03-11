@@ -30,7 +30,7 @@ export function initializeStoryEngagement(
                     model: 'StoryContent',
                     key: 'id',
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             loves: {

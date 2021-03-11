@@ -30,7 +30,7 @@ export function initializeStoryCommunity(
                     model: 'StoryContent',
                     key: 'id',
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             communityId: {

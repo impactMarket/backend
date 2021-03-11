@@ -5,7 +5,7 @@ import {
     ICommunityStories,
 } from '@ipcttypes/endpoints';
 import { CommunityAttributes } from '@models/community';
-import { sharpAndUpload } from './storage';
+import { deleteContentFromS3, sharpAndUpload } from './storage';
 import config from '../config';
 import { Includeable, literal, Op } from 'sequelize';
 import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
@@ -72,10 +72,34 @@ export default class StoryService {
         return result !== 0;
     }
 
+    public async remove(storyId: number, userAddress: string): Promise<number> {
+        const contentPath = await this.storyContent.findOne({
+            where: { id: storyId },
+        });
+        if (contentPath === null) {
+            return 0;
+        }
+        const destroyed = await this.storyContent.destroy({
+            where: { id: storyId, byAddress: userAddress },
+        });
+        if (destroyed > 0) {
+            deleteContentFromS3(contentPath.media);
+        }
+        return destroyed;
+    }
+
     public async listByOrder(
         order: string | undefined,
-        query: any
+        query: any,
+        onlyFromAddress?: string
     ): Promise<ICommunitiesListStories[]> {
+        let queryByUser = {};
+        if (onlyFromAddress) {
+            queryByUser = {
+                '$storyCommunity->storyContent.byAddress$': onlyFromAddress,
+            };
+        }
+        console.log(queryByUser);
         const r = await this.community.findAll({
             attributes: ['id', 'name', 'coverImage'],
             include: [
@@ -110,6 +134,7 @@ export default class StoryService {
                         from "StoryContent" sc, "StoryCommunity" sm
                         where sc.id = sm."contentId" and sm."communityId"="Community".id)`),
                 },
+                ...queryByUser,
             } as any, // does not recognize the string as a variable
             order: [['storyCommunity', 'storyContent', 'postedAt', 'DESC']],
         });

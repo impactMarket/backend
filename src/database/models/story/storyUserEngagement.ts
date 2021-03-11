@@ -30,7 +30,7 @@ export function initializeStoryUserEngagement(
                     model: 'StoryContent',
                     key: 'id',
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             address: {

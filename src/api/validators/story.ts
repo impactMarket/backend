@@ -10,6 +10,12 @@ class StoryValidator {
         }),
     });
 
+    remove = celebrate({
+        body: Joi.object({
+            contentId: Joi.number().required(),
+        }),
+    });
+
     love = celebrate({
         body: Joi.object({
             contentId: Joi.number().required(),
