@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build:
+  coverage:
     docker:
       - image: circleci/node:14.15.1
       - image: circleci/postgres:12-alpine
@@ -14,8 +14,13 @@ jobs:
       - run:
           name: "Run Tests and do Coverage Reports"
           command: yarn coverage:ci
+          environment:
+            DATABASE_URL: postgresql://citest@localhost/impactmarkettest
       - store_artifacts:
           path: coverage
-        environment:
-          DATABASE_URL: postgresql://citest@localhost/impactmarkettest
 
+workflows:
+  version: 2
+  test:
+    jobs:
+      - coverage
