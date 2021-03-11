@@ -8,6 +8,7 @@ jobs:
         environment:
           POSTGRES_USER: citest
           POSTGRES_DB: impactmarkettest
+          POSTGRES_PASSWORD: test101
     steps:
       - checkout
       - run: yarn
@@ -15,7 +16,7 @@ jobs:
           name: "Run Tests and do Coverage Reports"
           command: yarn coverage:ci
           environment:
-            DATABASE_URL: postgresql://citest@localhost/impactmarkettest
+            DATABASE_URL: postgresql://citest:test101@localhost:5432/impactmarkettest
       - store_artifacts:
           path: coverage
 
