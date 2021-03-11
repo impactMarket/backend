@@ -4,12 +4,18 @@ jobs:
   build:
     docker:
       - image: circleci/node:14.15.1
+      - image: circleci/postgres:12-alpine
+        environment:
+          POSTGRES_USER: citest
+          POSTGRES_DB: impactmarkettest
     steps:
       - checkout
       - run: yarn
       - run:
-          name: "Run Jest and Collect Coverage Reports"
-          command: yarn coverage
+          name: "Run Tests and do Coverage Reports"
+          command: yarn coverage:ci
       - store_artifacts:
           path: coverage
+        environment:
+          DATABASE_URL: postgresql://citest@localhost/impactmarkettest
 
