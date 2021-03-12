@@ -41,7 +41,7 @@ class StoryController {
             return;
         }
         this.storyService
-            .listByOrder(req.params.order, req.query, req.user.address)
+            .listByUser(req.params.order, req.query, req.user.address)
             .then((r) => res.send(r))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };

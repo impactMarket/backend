@@ -54,12 +54,54 @@ export default (app: express.Application): void => {
                         url: 'http://www.apache.org/licenses/LICENSE-2.0.html',
                     },
                 },
+                tags: {
+                    name: 'user',
+                    description: 'Everything about your users',
+                },
                 host: 'localhost:5000',
+                // basePath: '/api',
                 schemes: ['http'],
                 components: {
                     securitySchemes: {
                         api_auth: {
                             type: 'http',
+                            scheme: 'bearer',
+                            bearerFormat: 'JWT',
+                            scopes: {
+                                write: 'modify',
+                                read: 'read',
+                            },
+                        },
+                    },
+                },
+            },
+            apis: ['./src/api/routes/*.ts'],
+        };
+        const swaggerSpec = swaggerJsdoc(options);
+
+        console.log(swaggerSpec);
+
+        app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+        app.use(morgan('combined'));
+    } else {
+        const options = {
+            swaggerDefinition: {
+                openapi: '3.0.0',
+                info: {
+                    description: 'Swagger UI to impactMarket API',
+                    version: '0.0.1',
+                    title: 'impactMarket',
+                    license: {
+                        name: 'Apache 2.0',
+                        url: 'http://www.apache.org/licenses/LICENSE-2.0.html',
+                    },
+                },
+                host: process.env.HEROKU_APP_NAME + '.herokuapp.com',
+                schemes: ['https'],
+                components: {
+                    securitySchemes: {
+                        api_auth: {
+                            type: 'https',
                             scheme: 'bearer',
                             bearerFormat: 'JWT',
                             scopes: {
