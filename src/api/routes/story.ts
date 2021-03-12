@@ -44,12 +44,18 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /story/me:
+     * /api/story/me:
      *   get:
      *     tags:
-     *       - "story"
+     *     - "story"
      *     produces:
      *       - application/json
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *     security:
+     *     - api_auth:
+     *       - "read:user":
      */
     route.get('/me', authenticateToken, storyController.listUserOnly);
     route.get('/list/:order?', storyController.listByOrder);
