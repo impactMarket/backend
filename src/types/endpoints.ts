@@ -113,3 +113,10 @@ export interface ICommunityStories {
     coverImage: string;
     stories: ICommunityStory[];
 }
+
+export interface UserStory {
+    id: number;
+    media: string | null;
+    message: string | null;
+    loves: number;
+}

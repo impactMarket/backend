@@ -3,12 +3,14 @@ import {
     IAddStory,
     ICommunitiesListStories,
     ICommunityStories,
+    UserStory,
 } from '@ipcttypes/endpoints';
 import { CommunityAttributes } from '@models/community';
 import { deleteContentFromS3, sharpAndUpload } from './storage';
 import config from '../config';
 import { Includeable, literal, Op } from 'sequelize';
 import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
+import { StoryContent } from '@interfaces/story/storyContent';
 
 export default class StoryService {
     public storyContent = models.storyContent;
@@ -88,18 +90,37 @@ export default class StoryService {
         return destroyed;
     }
 
-    public async listByOrder(
+    public async listByUser(
         order: string | undefined,
         query: any,
-        onlyFromAddress?: string
-    ): Promise<ICommunitiesListStories[]> {
-        let queryByUser = {};
-        if (onlyFromAddress) {
-            queryByUser = {
-                '$storyCommunity->storyContent.byAddress$': onlyFromAddress,
+        onlyFromAddress: string
+    ): Promise<UserStory[]> {
+        const r = await this.storyContent.findAll({
+            include: [
+                {
+                    model: this.storyEngagement,
+                    as: 'storyEngagement',
+                },
+            ],
+            where: { byAddress: onlyFromAddress },
+            order: [['postedAt', 'DESC']],
+        });
+        const stories = r.map((c) => {
+            const content = c.toJSON() as StoryContent;
+            return {
+                id: content.id,
+                media: content.media,
+                message: content.message,
+                loves: content.storyEngagement!.loves,
             };
-        }
-        console.log(queryByUser);
+        });
+        return stories;
+    }
+
+    public async listByOrder(
+        order: string | undefined,
+        query: any
+    ): Promise<ICommunitiesListStories[]> {
         const r = await this.community.findAll({
             attributes: ['id', 'name', 'coverImage'],
             include: [
@@ -134,7 +155,6 @@ export default class StoryService {
                         from "StoryContent" sc, "StoryCommunity" sm
                         where sc.id = sm."contentId" and sm."communityId"="Community".id)`),
                 },
-                ...queryByUser,
             } as any, // does not recognize the string as a variable
             order: [['storyCommunity', 'storyContent', 'postedAt', 'DESC']],
         });
