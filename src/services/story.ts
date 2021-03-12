@@ -22,6 +22,7 @@ export default class StoryService {
 
     public async add(
         file: Express.Multer.File | undefined,
+        fromAddress: string,
         story: IAddStory
     ): Promise<boolean> {
         let storyContentToAdd: { media?: string; message?: string } = {};
@@ -53,7 +54,7 @@ export default class StoryService {
             {
                 ...storyContentToAdd,
                 ...storyCommunityToAdd,
-                byAddress: story.byAddress,
+                byAddress: fromAddress,
                 postedAt: new Date(),
                 storyEngagement: [],
             },

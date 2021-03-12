@@ -41,10 +41,28 @@ export default (app: express.Application): void => {
         next();
     });
 
+    let swaggerServers: {
+        url: string;
+    }[] = [];
+    let urlSchema = 'http';
     if (process.env.NODE_ENV === 'development') {
+        swaggerServers = [
+            {
+                url: 'http://localhost:5000/api',
+            },
+        ];
+    } else {
+        swaggerServers = [
+            {
+                url: process.env.HEROKU_APP_NAME + '.herokuapp.com/api',
+            },
+        ];
+        urlSchema = 'https';
+    }
+    if (swaggerServers.length > 0) {
         const options = {
             swaggerDefinition: {
-                openapi: '3.0.0',
+                openapi: '3.0.1',
                 info: {
                     description: 'Swagger UI to impactMarket API',
                     version: '0.0.1',
@@ -54,17 +72,22 @@ export default (app: express.Application): void => {
                         url: 'http://www.apache.org/licenses/LICENSE-2.0.html',
                     },
                 },
-                tags: {
-                    name: 'user',
-                    description: 'Everything about your users',
-                },
-                host: 'localhost:5000',
-                // basePath: '/api',
-                schemes: ['http'],
+                tags: [
+                    {
+                        name: 'user',
+                        description: 'Everything about your users',
+                    },
+                    {
+                        name: 'story',
+                        description: 'Manage stories',
+                    },
+                ],
+                servers: swaggerServers,
+                schemes: [urlSchema],
                 components: {
                     securitySchemes: {
                         api_auth: {
-                            type: 'http',
+                            type: urlSchema,
                             scheme: 'bearer',
                             bearerFormat: 'JWT',
                             scopes: {
@@ -80,41 +103,6 @@ export default (app: express.Application): void => {
         const swaggerSpec = swaggerJsdoc(options);
 
         console.log(swaggerSpec);
-
-        app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-        app.use(morgan('combined'));
-    } else {
-        const options = {
-            swaggerDefinition: {
-                openapi: '3.0.0',
-                info: {
-                    description: 'Swagger UI to impactMarket API',
-                    version: '0.0.1',
-                    title: 'impactMarket',
-                    license: {
-                        name: 'Apache 2.0',
-                        url: 'http://www.apache.org/licenses/LICENSE-2.0.html',
-                    },
-                },
-                host: process.env.HEROKU_APP_NAME + '.herokuapp.com',
-                schemes: ['https'],
-                components: {
-                    securitySchemes: {
-                        api_auth: {
-                            type: 'https',
-                            scheme: 'bearer',
-                            bearerFormat: 'JWT',
-                            scopes: {
-                                write: 'modify',
-                                read: 'read',
-                            },
-                        },
-                    },
-                },
-            },
-            apis: ['./src/api/routes/*.ts'],
-        };
-        const swaggerSpec = swaggerJsdoc(options);
 
         app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
         app.use(morgan('combined'));

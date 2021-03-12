@@ -13,7 +13,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /api/user/authenticate:
+     * /user/authenticate:
      *   post:
      *     tags:
      *     - "user"
@@ -35,7 +35,7 @@ export default (app: Router): void => {
      *               pushNotificationToken:
      *                 type: "string"
      *             example:
-     *               address: "0x7110b4Df915cb92F53Bc01cC9Ab15F51e5DBb52F"
+     *               address: "0x8770b4Df915cb92F53Bc01cC9Ab15F51e5DBb52f"
      *               language: "pt"
      *               pushNotificationToken: ""
      *     responses:
