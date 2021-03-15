@@ -52,7 +52,9 @@ export default (app: Router): void => {
         storyValidator.add,
         storyController.add
     );
+
     route.post('/has', authenticateToken, storyController.has);
+
     /**
      * @swagger
      *
@@ -76,6 +78,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.delete('/:id', authenticateToken, storyController.remove);
+
     /**
      * @swagger
      *
@@ -83,7 +86,7 @@ export default (app: Router): void => {
      *   get:
      *     tags:
      *       - "story"
-     *     summary: List user stories
+     *     summary: List user stories only
      *     produces:
      *       - application/json
      *     responses:
@@ -94,6 +97,31 @@ export default (app: Router): void => {
      *       - "read:read":
      */
     route.get('/me', authenticateToken, storyController.listUserOnly);
+
+    /**
+     * @swagger
+     *
+     * /story/impactmarket:
+     *   get:
+     *     tags:
+     *       - "story"
+     *     summary: List impactmarket stories only
+     *     produces:
+     *       - application/json
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     */
+    route.get(
+        '/impactmarket',
+        (req, res, next) => {
+            (req as any).authTokenIsOptional = true;
+            next();
+        },
+        authenticateToken,
+        storyController.listImpactMarketOnly
+    );
+
     /**
      * @swagger
      *
@@ -114,6 +142,7 @@ export default (app: Router): void => {
      *         description: OK
      */
     route.get('/list/:order?', storyController.listByOrder);
+
     /**
      * @swagger
      *
@@ -148,6 +177,7 @@ export default (app: Router): void => {
         authenticateToken,
         storyController.getByCommunity
     );
+
     /**
      * @swagger
      *

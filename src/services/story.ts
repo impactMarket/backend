@@ -118,6 +118,61 @@ export default class StoryService {
         return stories;
     }
 
+    public async listImpactMarketOnly(
+        userAddress?: string
+    ): Promise<ICommunityStories> {
+        let subInclude: Includeable[];
+        if (userAddress) {
+            subInclude = [
+                {
+                    model: this.storyEngagement,
+                    as: 'storyEngagement',
+                },
+                {
+                    model: this.storyUserEngagement,
+                    as: 'storyUserEngagement',
+                    required: false,
+                    where: {
+                        address: userAddress,
+                    },
+                },
+            ];
+        } else {
+            subInclude = [
+                {
+                    model: this.storyEngagement,
+                    as: 'storyEngagement',
+                },
+            ];
+        }
+        const r = await this.storyContent.findAll({
+            include: subInclude,
+            where: { byAddress: config.impactMarketContractAddress },
+            order: [['postedAt', 'DESC']],
+        });
+        const stories = r.map((c) => {
+            const content = c.toJSON() as StoryContent;
+            return {
+                id: content.id,
+                media: content.media,
+                message: content.message,
+                loves: content.storyEngagement!.loves,
+                userLoved: userAddress
+                    ? content.storyUserEngagement!.length !== 0
+                    : false,
+            };
+        });
+        return {
+            id: 0,
+            publicId: 'impact-market',
+            name: '',
+            city: '',
+            country: '',
+            coverImage: '',
+            stories,
+        };
+    }
+
     public async listByOrder(
         order: string | undefined,
         query: any
@@ -227,7 +282,6 @@ export default class StoryService {
         });
         const stories = r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
-            console.log(community.storyCommunity);
             return {
                 id: community.id,
                 publicId: community.publicId,

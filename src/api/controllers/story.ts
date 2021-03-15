@@ -50,6 +50,13 @@ class StoryController {
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
+    listImpactMarketOnly = (req: RequestWithUser, res: Response) => {
+        this.storyService
+            .listImpactMarketOnly(req.user?.address)
+            .then((r) => res.send(r))
+            .catch((e) => controllerLogAndFail(e, 400, res));
+    };
+
     listByOrder = (req: Request, res: Response) => {
         this.storyService
             .listByOrder(req.params.order, req.query)
