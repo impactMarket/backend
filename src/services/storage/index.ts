@@ -3,7 +3,11 @@ import { AWS } from './aws';
 import sharp from 'sharp';
 import fleekStorage from '@fleekhq/fleek-storage-js';
 
-const sharpAndUpload = async (file: Express.Multer.File) => {
+const sharpAndUpload = async (
+    file: Express.Multer.File,
+    category: string,
+    includeFleek?: boolean
+) => {
     // sharp the file
     const imgBuffer = await sharp(file.buffer)
         .resize({ width: 800 })
@@ -28,24 +32,27 @@ const sharpAndUpload = async (file: Express.Multer.File) => {
     const filePath = `${filePrefix}${filename}`;
 
     // upload to aws
-    const uploadResult = await uploadContentToS3(filePath, imgBuffer);
+    const uploadResult = await uploadContentToS3(category, filePath, imgBuffer);
     // also upload to fleek storage (test phase)
-    fleekStorage.upload({
-        apiKey: config.fleekStorage.accessKeyId,
-        apiSecret: config.fleekStorage.secretAccessKey,
-        key: filePath,
-        data: imgBuffer,
-    });
+    if (includeFleek) {
+        fleekStorage.upload({
+            apiKey: config.fleekStorage.accessKeyId,
+            apiSecret: config.fleekStorage.secretAccessKey,
+            key: `${category}/${filePath}`,
+            data: imgBuffer,
+        });
+    }
 
     return uploadResult;
 };
 
 const uploadContentToS3 = async (
+    category: string,
     filePath: string,
     fileBuffer: Buffer
 ): Promise<AWS.S3.ManagedUpload.SendData> => {
     const params: AWS.S3.PutObjectRequest = {
-        Bucket: config.aws.bucketImagesCommunity,
+        Bucket: category,
         Key: filePath,
         Body: fileBuffer,
         ACL: 'public-read',
@@ -59,9 +66,9 @@ const uploadContentToS3 = async (
 /**
  * @param filePath complete file url
  */
-const deleteContentFromS3 = async (filePath: string) => {
+const deleteContentFromS3 = async (category: string, filePath: string) => {
     const params: AWS.S3.DeleteObjectRequest = {
-        Bucket: config.aws.bucketImagesCommunity,
+        Bucket: category,
         Key: filePath.split(`${config.cloudfrontUrl}/`)[1],
     };
     //

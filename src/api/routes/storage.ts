@@ -56,6 +56,7 @@ export default (app: Router): void => {
                 // upload to aws
                 try {
                     const uploadResult = await uploadContentToS3(
+                        config.aws.bucketImagesCommunity,
                         filePath,
                         imgBuffer
                     );
@@ -72,21 +73,21 @@ export default (app: Router): void => {
                     res.sendStatus(403);
                 }
 
-                // upload to fleekstorage
-                try {
-                    // also upload to fleek storage
-                    await fleekStorage.upload({
-                        apiKey: config.fleekStorage.accessKeyId,
-                        apiSecret: config.fleekStorage.secretAccessKey,
-                        key: filePath,
-                        data: imgBuffer,
-                    });
-                } catch (e) {
-                    Logger.error(
-                        'Error during worker upload_image_queue(to fleek) ' + e
-                    );
-                    res.sendStatus(403);
-                }
+                // // upload to fleekstorage
+                // try {
+                //     // also upload to fleek storage
+                //     await fleekStorage.upload({
+                //         apiKey: config.fleekStorage.accessKeyId,
+                //         apiSecret: config.fleekStorage.secretAccessKey,
+                //         key: filePath,
+                //         data: imgBuffer,
+                //     });
+                // } catch (e) {
+                //     Logger.error(
+                //         'Error during worker upload_image_queue(to fleek) ' + e
+                //     );
+                //     res.sendStatus(403);
+                // }
 
                 // sucess
                 res.sendStatus(200);

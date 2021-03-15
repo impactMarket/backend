@@ -112,6 +112,7 @@ export default {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
         region: process.env.AWS_REGION!,
         bucketImagesCommunity: process.env.AWS_BUCKET_IMAGES_COMMUNITY!,
+        bucketImagesStory: process.env.AWS_BUCKET_IMAGES_STORY!,
     },
 
     /**

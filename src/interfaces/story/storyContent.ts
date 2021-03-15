@@ -19,6 +19,7 @@ export interface StoryContentCreation {
     postedAt: Date;
     media?: string;
     message?: string;
+    isPublic?: boolean;
     storyCommunity?: StoryCommunityCreationEager[];
     storyEngagement?: StoryEngagementCreation[];
 }

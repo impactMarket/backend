@@ -27,7 +27,10 @@ export default class StoryService {
     ): Promise<boolean> {
         let storyContentToAdd: { media?: string; message?: string } = {};
         if (file) {
-            const media = await sharpAndUpload(file);
+            const media = await sharpAndUpload(
+                file,
+                config.aws.bucketImagesStory
+            );
             storyContentToAdd = {
                 media: `${config.cloudfrontUrl}/${media.Key}`,
             };
@@ -55,6 +58,7 @@ export default class StoryService {
                 ...storyContentToAdd,
                 ...storyCommunityToAdd,
                 byAddress: fromAddress,
+                isPublic: true,
                 postedAt: new Date(),
                 storyEngagement: [],
             },
@@ -86,7 +90,10 @@ export default class StoryService {
             where: { id: storyId, byAddress: userAddress },
         });
         if (destroyed > 0) {
-            deleteContentFromS3(contentPath.media);
+            deleteContentFromS3(
+                config.aws.bucketImagesStory,
+                contentPath.media
+            );
         }
         return destroyed;
     }
@@ -103,7 +110,7 @@ export default class StoryService {
                     as: 'storyEngagement',
                 },
             ],
-            where: { byAddress: onlyFromAddress },
+            where: { byAddress: onlyFromAddress, isPublic: true },
             order: [['postedAt', 'DESC']],
         });
         const stories = r.map((c) => {
@@ -147,7 +154,10 @@ export default class StoryService {
         }
         const r = await this.storyContent.findAll({
             include: subInclude,
-            where: { byAddress: config.impactMarketContractAddress },
+            where: {
+                byAddress: config.impactMarketContractAddress,
+                isPublic: true,
+            },
             order: [['postedAt', 'DESC']],
         });
         const stories = r.map((c) => {
@@ -195,6 +205,7 @@ export default class StoryService {
                             ],
                             where: {
                                 byAddress: { [Op.not]: null },
+                                isPublic: true,
                             },
                         },
                     ],
@@ -209,7 +220,7 @@ export default class StoryService {
                 '$storyCommunity->storyContent.postedAt$': {
                     [Op.eq]: literal(`(select max("postedAt")
                         from "StoryContent" sc, "StoryCommunity" sm
-                        where sc.id = sm."contentId" and sm."communityId"="Community".id)`),
+                        where sc.id = sm."contentId" and sm."communityId"="Community".id and sc."isPublic" = true)`),
                 },
             } as any, // does not recognize the string as a variable
             order: [['storyCommunity', 'storyContent', 'postedAt', 'DESC']],
@@ -270,6 +281,7 @@ export default class StoryService {
                         {
                             model: this.storyContent,
                             as: 'storyContent',
+                            where: { isPublic: true },
                             include: subInclude,
                         },
                     ],
