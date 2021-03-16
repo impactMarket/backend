@@ -1,47 +1,33 @@
-import dotenv from 'dotenv';
+import validateEnv from './validatenv';
 
-if (process.env.NODE_ENV === 'development') {
-    const envFound = dotenv.config();
-    if (!envFound) {
-        // This error should crash whole process
-
-        throw new Error("⚠️  Couldn't find .env file  ⚠️");
-    }
-} else if (process.env.NODE_ENV === 'test') {
-    const envFound = dotenv.config({ path: '.env.test' });
-    if (!envFound) {
-        // This error should crash whole process
-
-        throw new Error("⚠️  Couldn't find .env file  ⚠️");
-    }
-}
+const validatedEnv = validateEnv();
 
 export default {
     /**
      * Your favorite port
      */
-    port: parseInt(process.env.PORT!, 10),
+    port: validatedEnv.PORT,
 
     /**
      * Database access config
      */
-    dbUrl: process.env.DATABASE_URL!,
+    dbUrl: validatedEnv.DATABASE_URL,
 
     /**
      * json rpc url
      */
-    jsonRpcUrl: process.env.CHAIN_JSON_RPC_URL!,
+    jsonRpcUrl: validatedEnv.CHAIN_JSON_RPC_URL,
 
     /**
      * Your secret sauce
      */
-    jwtSecret: process.env.JWT_SECRET!,
+    jwtSecret: validatedEnv.JWT_SECRET,
 
     /**
      * Used by winston logger
      */
     logs: {
-        level: process.env.LOG_LEVEL || 'verbose',
+        level: validatedEnv.LOG_LEVEL,
     },
 
     /**
@@ -54,30 +40,22 @@ export default {
     /**
      * Address to the attestation proxy contract
      */
-    attestationProxyAddress: process.env.ATTESTATION_PROXY_ADDRESS!,
+    attestationProxyAddress: validatedEnv.ATTESTATION_PROXY_ADDRESS,
 
     /**
      * Contract Address to use in dev
      */
-    cUSDContractAddress: process.env.CUSD_CONTRACT_ADDRESS!,
+    cUSDContractAddress: validatedEnv.CUSD_CONTRACT_ADDRESS,
 
     /**
      * Contract Address to use in dev
      */
-    impactMarketContractAddress: process.env.IMPACT_MARKET_CONTRACT_ADDRESS!,
+    impactMarketContractAddress: validatedEnv.IMPACT_MARKET_CONTRACT_ADDRESS,
 
     /**
      * Contract Address to use in dev
      */
-    impactMarketContractBlockNumber: parseInt(
-        process.env.IMPACT_MARKET_CONTRACT_BLOCK!,
-        10
-    ),
-
-    /**
-     * Used to query
-     */
-    baseBlockScoutApiUrl: process.env.BLOCKSCOUT_API_URL!,
+    impactMarketContractBlockNumber: validatedEnv.IMPACT_MARKET_CONTRACT_BLOCK,
 
     /**
      * Decimals in cUSD token
@@ -87,71 +65,71 @@ export default {
     /**
      * Fixer API to get currency rates.
      */
-    currenciesApiBaseUrl: process.env.CURRENCIES_API_BASE_URL!,
+    currenciesApiBaseUrl: validatedEnv.CURRENCIES_API_BASE_URL,
 
     /**
      * Fixer API to get currency rates.
      */
-    currenciesApiKey: process.env.CURRENCIES_API_KEY!,
+    currenciesApiKey: validatedEnv.CURRENCIES_API_KEY,
 
     /**
      * Sentry key.
      */
-    sentryKey: process.env.SENTRY_KEY!,
+    sentryKey: validatedEnv.SENTRY_KEY,
 
     /**
      * Master internal key.
      */
-    masterKey: process.env.MASTER_KEY!,
+    masterKey: validatedEnv.MASTER_KEY,
 
     /**
      * AWS config.
      */
     aws: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-        region: process.env.AWS_REGION!,
-        bucketImagesCommunity: process.env.AWS_BUCKET_IMAGES_COMMUNITY!,
+        accessKeyId: validatedEnv.AWS_ACCESS_KEY_ID,
+        secretAccessKey: validatedEnv.AWS_SECRET_ACCESS_KEY,
+        region: validatedEnv.AWS_REGION,
+        bucketImagesCommunity: validatedEnv.AWS_BUCKET_IMAGES_COMMUNITY,
     },
 
     /**
      * Fleek Storage config.
      */
     fleekStorage: {
-        accessKeyId: process.env.FLEEK_STORAGE_KEY_ID!,
-        secretAccessKey: process.env.FLEEK_STORAGE_ACCESS_KEY!,
+        accessKeyId: validatedEnv.FLEEK_STORAGE_KEY_ID,
+        secretAccessKey: validatedEnv.FLEEK_STORAGE_ACCESS_KEY,
     },
 
     /**
      * Mobile versions.
      */
     mobileVersion: {
-        latest: process.env.LATEST_MOBILE_APP_VERSION!,
-        minimal: process.env.MINIMAL_MOBILE_APP_VERSION!,
+        latest: validatedEnv.LATEST_MOBILE_APP_VERSION,
+        minimal: validatedEnv.MINIMAL_MOBILE_APP_VERSION,
     },
 
     /**
      * Placeholder image to use meanwhile community creation.
      */
-    communityPlaceholderImageUrl: process.env.COMMUNITY_PLACEHOLDER_IMAGE_URL!,
+    communityPlaceholderImageUrl: validatedEnv.COMMUNITY_PLACEHOLDER_IMAGE_URL,
 
     /**
      * Cloudfront URL to be useed
      */
-    cloudfrontUrl: process.env.CLOUDFRONT_URL!,
+    cloudfrontUrl: validatedEnv.CLOUDFRONT_URL,
 
     /**
      * tracesSampleRate used in sentry.
      */
-    tracesSampleRate: parseInt(process.env.SENTRY_TRACE_SAMPLES_RATE!, 10),
+    tracesSampleRate: validatedEnv.SENTRY_TRACE_SAMPLES_RATE,
 
     /**
      * Key used to hash
      */
-    hashKey: process.env.HASH_KEY!,
+    hashKey: validatedEnv.HASH_KEY,
 
     /**
      *
      */
-    adminKey: process.env.ADMIN_KEY!,
+    adminKey: validatedEnv.ADMIN_KEY,
 };
