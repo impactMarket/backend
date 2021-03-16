@@ -19,6 +19,7 @@ import {
     verifyCommunityFunds,
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
+import { verifyStoriesLifecycle } from './jobs/cron/stories';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
 // import BeneficiaryService from '@services/beneficiary';
 
@@ -284,6 +285,26 @@ function cron() {
                 })
                 .catch((e) => {
                     Logger.error('calcuateCommunitiesMetrics FAILED!', e);
+                });
+        },
+        null,
+        true
+    );
+
+    // everyday at 1am
+    new CronJob(
+        '0 1 * * *',
+        () => {
+            Logger.info('Calculating community metrics...');
+            verifyStoriesLifecycle()
+                .then(() => {
+                    CronJobExecutedService.add('verifyStoriesLifecycle');
+                    Logger.info(
+                        'verifyStoriesLifecycle successfully executed!'
+                    );
+                })
+                .catch((e) => {
+                    Logger.error('verifyStoriesLifecycle FAILED!', e);
                 });
         },
         null,

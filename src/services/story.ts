@@ -8,7 +8,7 @@ import {
 import { CommunityAttributes } from '@models/community';
 import { deleteContentFromS3, sharpAndUpload } from './storage';
 import config from '../config';
-import { Includeable, literal, Op } from 'sequelize';
+import { Includeable, literal, Op, QueryTypes } from 'sequelize';
 import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
 import { StoryContent } from '@interfaces/story/storyContent';
 
@@ -338,5 +338,37 @@ export default class StoryService {
                 where: { contentId, address: userAddress },
             });
         }
+    }
+
+    public async deleteOlderStories() {
+        const tenDaysAgo = new Date();
+        tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+        //
+        const storiesToDelete = await this.sequelize.query(
+            `select SC."contentId"
+            from community c,
+            (select "communityId" from "StoryCommunity" group by "communityId" having count("contentId") > 1) SC1,
+            (select max("postedAt") r from "StoryContent") recent,
+            "StoryCommunity" SC,
+            "StoryContent" ST
+            where date(ST."postedAt") < ${
+                tenDaysAgo.toISOString().split('T')[0]
+            }
+            and ST."postedAt" != recent.r
+            and c.id = SC1."communityId"
+            and c.id = SC."communityId"
+            and ST.id = SC."contentId"`,
+            { raw: true, type: QueryTypes.SELECT }
+        );
+
+        await this.storyContent.destroy({
+            where: {
+                id: {
+                    [Op.in]: storiesToDelete.map((s: any) =>
+                        parseInt(s.contentId, 10)
+                    ),
+                },
+            },
+        });
     }
 }
