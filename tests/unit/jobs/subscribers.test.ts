@@ -13,7 +13,7 @@ import ImMetadataService from '../../../src/services/imMetadata';
 import ManagerService from '../../../src/services/managers';
 import TransactionsService from '../../../src/services/transactions';
 import * as utils from '../../../src/utils/util';
-import { subscribeChainEvents } from '../../../src/worker/jobs/chainSubscribers';
+import { ChainSubscribers } from '../../../src/worker/jobs/chainSubscribers';
 import { communityAddressesAndIds } from '../../fake/community';
 import CommunityContractJSON from './Community.json';
 import cUSDContractJSON from './cUSD.json';
@@ -57,8 +57,11 @@ describe('[jobs] subscribers', () => {
     //     Promise<void>
     // >;
     let getAllAddressesAndIds: SinonStub<any, any>;
+    let getLastBlockStub: SinonStub<any, any>;
+    let getRecoverBlockStub: SinonStub<any, any>;
     let cUSD: ethers.Contract;
     let communityFactory: ethers.ContractFactory;
+    let subscribers: ChainSubscribers;
 
     const ganacheProvider = ganache.provider({
         mnemonic:
@@ -66,6 +69,7 @@ describe('[jobs] subscribers', () => {
     });
     //
     const thisCommunityId = 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd';
+    let lastBlock = 0;
 
     before(async () => {
         // start provider
@@ -88,7 +92,16 @@ describe('[jobs] subscribers', () => {
             BeneficiaryService,
             'getAllAddressesInPublicValidCommunities'
         ).returns(Promise.resolve([]));
-        stub(ImMetadataService, 'setLastBlock').returns(Promise.resolve());
+        stub(ImMetadataService, 'setLastBlock').callsFake(async (v) => {
+            lastBlock = v;
+        });
+        stub(ImMetadataService, 'setRecoverBlockUsingLastBlock').returns(
+            Promise.resolve()
+        );
+        getLastBlockStub = stub(ImMetadataService, 'getLastBlock');
+        getRecoverBlockStub = stub(ImMetadataService, 'getRecoverBlock');
+        getLastBlockStub.returns(Promise.resolve(lastBlock));
+        getRecoverBlockStub.returns(Promise.resolve(lastBlock));
         stub(TransactionsService, 'add').returns(Promise.resolve({} as any));
         claimAdd = stub(ClaimsService, 'add');
         claimAdd.returns(Promise.resolve());
@@ -113,7 +126,12 @@ describe('[jobs] subscribers', () => {
         );
         cUSD = await cUSDFactory.deploy();
         // init event subscribers
-        subscribeChainEvents(provider, communities, communitiesVisibility);
+        subscribers = new ChainSubscribers(
+            provider,
+            [],
+            communities,
+            communitiesVisibility
+        );
         //
         stub(CommunityService, 'getOnlyCommunityByContractAddress').returns(
             Promise.resolve({
@@ -140,6 +158,21 @@ describe('[jobs] subscribers', () => {
 
     after(() => {
         provider.removeAllListeners();
+    });
+
+    beforeEach(() => {
+        // needs to be updated, otherwise will start from zero
+        getLastBlockStub.returns(Promise.resolve(lastBlock));
+        getRecoverBlockStub.returns(Promise.resolve(lastBlock));
+        // stop previous listeners
+        subscribers.stop();
+        // create new object
+        subscribers = new ChainSubscribers(
+            provider,
+            [],
+            communities,
+            communitiesVisibility
+        );
     });
 
     it('create a community', async () => {
@@ -460,7 +493,6 @@ describe('[jobs] subscribers', () => {
             await cUSD
                 .connect(provider.getSigner(0))
                 .testFakeFundAddress(communityContract.address);
-            // this line below counts as a beneficiary transaction
             await cUSD
                 .connect(provider.getSigner(0))
                 .testFakeFundAddress(accounts[5]);
@@ -471,8 +503,64 @@ describe('[jobs] subscribers', () => {
                 .connect(provider.getSigner(5))
                 .transfer(accounts[6], '2000000000000000000');
             await waitForStubCall(beneficiaryTransactionAdd, 1);
-            assert.callCount(beneficiaryTransactionAdd, 2);
-            assert.calledWith(beneficiaryTransactionAdd.getCall(1), {
+            assert.callCount(beneficiaryTransactionAdd, 1);
+            assert.calledWith(beneficiaryTransactionAdd.getCall(0), {
+                beneficiary: accounts[5],
+                withAddress: accounts[6],
+                amount: '2000000000000000000',
+                isFromBeneficiary: true,
+                tx: match.any,
+                date: match.any,
+            });
+        });
+    });
+
+    context('recover missing transactions', () => {
+        it('to a non beneficiary user', async () => {
+            managerAdd.reset();
+            managerRemove.reset();
+            inflowAdd.reset();
+            beneficiaryTransactionAdd.reset();
+            communities.clear();
+            communitiesVisibility.clear();
+            // deploy a community
+            communityContract = (
+                await communityFactory.deploy(
+                    accounts[1],
+                    '2000000000000000000',
+                    '1500000000000000000000',
+                    86400,
+                    300,
+                    '0x0000000000000000000000000000000000000000',
+                    cUSD.address,
+                    '0x0000000000000000000000000000000000000000'
+                )
+            ).connect(provider.getSigner(1));
+            communities.set(communityContract.address, thisCommunityId);
+            communitiesVisibility.set(communityContract.address, true);
+            const newCommunityAddressesAndIds = new Map([
+                ...communityAddressesAndIds,
+                [communityContract.address, thisCommunityId],
+            ]);
+            getAllAddressesAndIds.returns(
+                Promise.resolve(newCommunityAddressesAndIds)
+            );
+            subscribers.stop();
+            await cUSD
+                .connect(provider.getSigner(0))
+                .testFakeFundAddress(communityContract.address);
+            await cUSD
+                .connect(provider.getSigner(0))
+                .testFakeFundAddress(accounts[5]);
+            await communityContract.addBeneficiary(accounts[5]);
+            await cUSD
+                .connect(provider.getSigner(5))
+                .transfer(accounts[6], '2000000000000000000');
+            subscribers.recover();
+            await waitForStubCall(beneficiaryAdd, 1);
+            await waitForStubCall(beneficiaryTransactionAdd, 1);
+            assert.callCount(beneficiaryTransactionAdd, 1);
+            assert.calledWith(beneficiaryTransactionAdd.getCall(0), {
                 beneficiary: accounts[5],
                 withAddress: accounts[6],
                 amount: '2000000000000000000',

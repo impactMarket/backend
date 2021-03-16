@@ -1,3 +1,4 @@
+import { SubscribersModel } from '@models/app/subscribers';
 import { Beneficiary } from '@models/beneficiary';
 import { BeneficiaryTransaction } from '@models/beneficiaryTransaction';
 import { Claim } from '@models/claim';
@@ -24,6 +25,9 @@ import { StoryContentModel } from '@models/story/storyContent';
 import { StoryCommunityModel } from '@models/story/storyCommunity';
 import { StoryEngagementModel } from '@models/story/storyEngagement';
 import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
+import { AppUserDeviceModel } from '@models/app/userDevice';
+import { AppAnonymousReportModel } from '@models/app/anonymousReport';
+import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
 
 export interface DbModels {
     user: ModelCtor<UserModel>;
@@ -32,19 +36,23 @@ export interface DbModels {
     communityState: ModelCtor<CommunityState>;
     communityDailyState: ModelCtor<CommunityDailyState>;
     communityDailyMetrics: ModelCtor<CommunityDailyMetrics>;
+    ubiRequestChangeParams: ModelCtor<UbiRequestChangeParamsModel>;
     claim: ModelCtor<Claim>;
     claimLocation: ModelCtor<ClaimLocation>;
     beneficiary: ModelCtor<Beneficiary>;
+    anonymousReport: ModelCtor<AppAnonymousReportModel>;
     beneficiaryTransaction: ModelCtor<BeneficiaryTransaction>;
     cronJobExecuted: ModelCtor<CronJobExecuted>;
     exchangeRates: ModelCtor<ExchangeRates>;
     globalDailyState: ModelCtor<GlobalDailyState>;
     globalDemographics: ModelCtor<GlobalDemographics>;
     globalGrowth: ModelCtor<GlobalGrowthModel>;
+    userDevice: ModelCtor<AppUserDeviceModel>;
     imMetadata: ModelCtor<ImMetadata>;
     inflow: ModelCtor<Inflow>;
     manager: ModelCtor<Manager>;
     mobileError: ModelCtor<MobileError>;
+    subscribers: ModelCtor<SubscribersModel>;
     notifiedBacker: ModelCtor<NotifiedBacker>;
     reachedAddress: ModelCtor<ReachedAddress>;
     //

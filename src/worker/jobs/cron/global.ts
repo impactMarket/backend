@@ -11,6 +11,7 @@ import BigNumber from 'bignumber.js';
 import { mean } from 'mathjs';
 
 import config from '../../../config';
+import { Logger } from '@utils/logger';
 
 BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
 
@@ -36,7 +37,9 @@ function calculateGrowth(
     throw new Error('Invalid input!');
 }
 
-async function calculateMetricsGrowth() {
+async function calculateMetricsGrowth(
+    globalDailyStateService: GlobalDailyStateService
+) {
     const globalGrowthService = new GlobalGrowthService();
 
     const todayMidnightTime = new Date();
@@ -48,10 +51,10 @@ async function calculateMetricsGrowth() {
     aMonthAgo.setHours(0, 0, 0, 0);
     aMonthAgo.setDate(yesterdayDateOnly.getDate() - 30);
 
-    const present = await GlobalDailyStateService.sumLast30Days(
+    const present = await globalDailyStateService.sumLast30Days(
         yesterdayDateOnly
     );
-    const past = await GlobalDailyStateService.sumLast30Days(aMonthAgo);
+    const past = await globalDailyStateService.sumLast30Days(aMonthAgo);
 
     const growthToAdd = {
         date: yesterdayDateOnly,
@@ -80,16 +83,18 @@ async function calculateMetricsGrowth() {
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
     const reachedAddressService = new ReachedAddressService();
+    const globalDailyStateService = new GlobalDailyStateService();
     const todayMidnightTime = new Date();
     todayMidnightTime.setHours(0, 0, 0, 0);
     const yesterdayDateOnly = new Date(); // yesterdayDateOnly
     yesterdayDateOnly.setHours(0, 0, 0, 0);
     yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
-    const lastGlobalMetrics = await GlobalDailyStateService.getLast();
-    const last4DaysAvgSSI = await GlobalDailyStateService.getLast4AvgMedianSSI();
+    const lastGlobalMetrics = await globalDailyStateService.getLast();
+    const last4DaysAvgSSI = await globalDailyStateService.getLast4AvgMedianSSI();
     const communitiesYesterday = await CommunityDailyStateService.getPublicCommunitiesSum(
         yesterdayDateOnly
     );
+    Logger.error(JSON.stringify(communitiesYesterday));
     const volumeTransactionsAndAddresses = await BeneficiaryTransactionService.getAllByDay(
         yesterdayDateOnly
     );
@@ -174,7 +179,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         last4DaysAvgSSI.concat([communitiesAvgYesterday.medianSSI])
     );
     // register new global daily state
-    await GlobalDailyStateService.add({
+    await globalDailyStateService.add({
         date: yesterdayDateOnly,
         avgMedianSSI: Math.round(avgMedianSSI * 100) / 100,
         claimed: communitiesYesterday.totalClaimed,
@@ -203,5 +208,5 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     });
 
     // calculate global growth
-    await calculateMetricsGrowth();
+    await calculateMetricsGrowth(globalDailyStateService);
 }

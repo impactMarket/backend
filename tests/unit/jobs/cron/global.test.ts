@@ -84,12 +84,13 @@ describe('[jobs - cron] global', () => {
     describe('#calcuateGlobalMetrics()', () => {
         before(() => {
             //
-            stub(GlobalDailyStateService, 'getLast').returns(
+            stub(GlobalDailyStateService.prototype, 'getLast').returns(
                 Promise.resolve(getLastStub)
             );
-            stub(GlobalDailyStateService, 'getLast4AvgMedianSSI').returns(
-                Promise.resolve(getLast4AvgMedianSSIStub)
-            );
+            stub(
+                GlobalDailyStateService.prototype,
+                'getLast4AvgMedianSSI'
+            ).returns(Promise.resolve(getLast4AvgMedianSSIStub));
             stub(CommunityDailyStateService, 'getPublicCommunitiesSum').returns(
                 Promise.resolve(getPublicCommunitiesSumStub)
             );
@@ -121,7 +122,7 @@ describe('[jobs - cron] global', () => {
                 Promise.resolve({ reach: 665, reachOut: 665 })
             );
             const stubSumLast30Days = stub(
-                GlobalDailyStateService,
+                GlobalDailyStateService.prototype,
                 'sumLast30Days'
             );
             const yesterday = new Date();
@@ -164,7 +165,10 @@ describe('[jobs - cron] global', () => {
         });
 
         it('all valid, non-empty communities, 30+ days', async () => {
-            const globalAddStub = stub(GlobalDailyStateService, 'add');
+            const globalAddStub = stub(
+                GlobalDailyStateService.prototype,
+                'add'
+            );
             // run!
             await calcuateGlobalMetrics();
 

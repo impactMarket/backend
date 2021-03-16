@@ -33,7 +33,7 @@ export default (app: Router): void => {
                 version,
                 address,
                 action,
-                error,
+                error: error.substr(0, 512),
             });
             res.sendStatus(200);
         }

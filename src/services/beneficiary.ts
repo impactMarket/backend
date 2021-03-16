@@ -5,6 +5,7 @@ import { isUUID, isAddress } from '@utils/util';
 import { Op, fn, col, QueryTypes } from 'sequelize';
 
 import { models, sequelize } from '../database';
+import CommunityService from './community';
 
 // const db = database();
 export default class BeneficiaryService {
@@ -111,6 +112,12 @@ export default class BeneficiaryService {
 
         let query = '';
         if (!isAddress(managerAddress)) {
+            throw new Error('Not valid address!');
+        }
+        if (
+            (await CommunityService.existsByContractAddress(managerAddress)) ===
+            true
+        ) {
             throw new Error('Not valid address!');
         }
         if (isAddress(searchInput)) {

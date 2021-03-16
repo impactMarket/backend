@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize';
 
 import { initializeAgenda } from './agenda';
+import { initializeSubscribers } from './app/subscribers';
 import { initializeBeneficiary } from './beneficiary';
 import { initializeBeneficiaryTransaction } from './beneficiaryTransaction';
 import { initializeClaim } from './claim';
@@ -10,11 +11,13 @@ import { initializeCommunityContract } from './communityContract';
 import { initializeCommunityDailyMetrics } from './communityDailyMetrics';
 import { initializeCommunityDailyState } from './communityDailyState';
 import { initializeCommunityState } from './communityState';
+import { initializeUbiRequestChangeParams } from './UBI/requestChangeParams';
 import { initializeCronJobExecuted } from './cronJobExecuted';
 import { initializeExchangeRates } from './exchangeRates';
 import { initializeGlobalGrowth } from './globalGrowth';
 import { initializeGlobalDailyState } from './globalDailyState';
 import { initializeGlobalDemographics } from './globalDemographics';
+import { initializeAppUserDevice } from './app/userDevice';
 import { initializeImMetadata } from './imMetadata';
 import { initializeInflow } from './inflow';
 import { initializeManager } from './manager';
@@ -28,18 +31,23 @@ import { initializeStoryContent } from './story/storyContent';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryEngagement } from './story/storyEngagement';
 import { initializeStoryUserEngagement } from './story/storyUserEngagement';
+import { initializeAppAnonymousReport } from './app/anonymousReport';
 
 export default function initModels(sequelize: Sequelize): void {
+    initializeSubscribers(sequelize);
+    initializeUbiRequestChangeParams(sequelize);
     initializeCommunity(sequelize);
     initializeSSI(sequelize);
     initializeTransactions(sequelize);
     initializeUser(sequelize);
+    initializeAppUserDevice(sequelize);
     initializeAgenda(sequelize);
     initializeClaimLocation(sequelize);
     initializeExchangeRates(sequelize);
     initializeNotifiedBacker(sequelize);
     initializeImMetadata(sequelize);
     initializeBeneficiary(sequelize);
+    initializeAppAnonymousReport(sequelize);
     initializeManager(sequelize);
     initializeClaim(sequelize);
     initializeInflow(sequelize);

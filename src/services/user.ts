@@ -1,3 +1,5 @@
+import { AppUserDeviceCreation } from '@interfaces/appUserDevice';
+import { AppAnonymousReport } from '@interfaces/appAnonymousReport';
 import { User } from '@interfaces/user';
 import { UserCreationAttributes } from '@models/user';
 import { Logger } from '@utils/logger';
@@ -12,7 +14,9 @@ import ExchangeRatesService from './exchangeRates';
 import ManagerService from './managers';
 
 export default class UserService {
+    public static anonymousReport = models.anonymousReport;
     public static user = models.user;
+    public static userDevice = models.userDevice;
 
     public static async authenticate(
         address: string,
@@ -142,8 +146,42 @@ export default class UserService {
         return updated[0] > 0;
     }
 
+    public static async setDevice(
+        deviceInfo: AppUserDeviceCreation
+    ): Promise<boolean> {
+        try {
+            await this.userDevice.create(deviceInfo);
+            return true;
+        } catch (e) {
+            if (e.name === 'SequelizeUniqueConstraintError') {
+                await this.userDevice.update(
+                    { lastLogin: new Date() },
+                    {
+                        where: {
+                            userAddress: deviceInfo.userAddress,
+                            identifier: deviceInfo.identifier,
+                            network: deviceInfo.network,
+                            device: deviceInfo.device,
+                        },
+                    }
+                );
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static async get(address: string): Promise<User | null> {
         return this.user.findOne({ where: { address }, raw: true });
+    }
+
+    public static report(
+        communityId: string | undefined,
+        message: string
+    ): Promise<AppAnonymousReport> {
+        return this.anonymousReport.create(
+            communityId ? { communityId, message } : { message }
+        );
     }
 
     public static async exists(address: string): Promise<boolean> {

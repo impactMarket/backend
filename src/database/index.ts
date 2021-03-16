@@ -1,3 +1,4 @@
+import { SubscribersModel } from '@models/app/subscribers';
 import { Beneficiary } from '@models/beneficiary';
 import { BeneficiaryTransaction } from '@models/beneficiaryTransaction';
 import { Claim } from '@models/claim';
@@ -29,6 +30,9 @@ import { StoryCommunityModel } from '@models/story/storyCommunity';
 import { StoryContentModel } from '@models/story/storyContent';
 import { StoryEngagementModel } from '@models/story/storyEngagement';
 import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
+import { AppUserDeviceModel } from '@models/app/userDevice';
+import { AppAnonymousReportModel } from '@models/app/anonymousReport';
+import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
 
 let logging:
     | boolean
@@ -59,9 +63,13 @@ const models: DbModels = {
         .CommunityDailyState as ModelCtor<CommunityDailyState>,
     communityDailyMetrics: sequelize.models
         .CommunityDailyMetrics as ModelCtor<CommunityDailyMetrics>,
+    ubiRequestChangeParams: sequelize.models
+        .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParamsModel>,
     claim: sequelize.models.Claim as ModelCtor<Claim>,
     claimLocation: sequelize.models.ClaimLocation as ModelCtor<ClaimLocation>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
+    anonymousReport: sequelize.models
+        .AppAnonymousReportModel as ModelCtor<AppAnonymousReportModel>,
     beneficiaryTransaction: sequelize.models
         .BeneficiaryTransaction as ModelCtor<BeneficiaryTransaction>,
     cronJobExecuted: sequelize.models
@@ -73,10 +81,14 @@ const models: DbModels = {
         .GlobalDemographics as ModelCtor<GlobalDemographics>,
     globalGrowth: sequelize.models
         .GlobalGrowthModel as ModelCtor<GlobalGrowthModel>,
+    userDevice: sequelize.models
+        .AppUserDeviceModel as ModelCtor<AppUserDeviceModel>,
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager>,
     mobileError: sequelize.models.MobileError as ModelCtor<MobileError>,
+    subscribers: sequelize.models
+        .SubscribersModel as ModelCtor<SubscribersModel>,
     notifiedBacker: sequelize.models
         .NotifiedBacker as ModelCtor<NotifiedBacker>,
     reachedAddress: sequelize.models

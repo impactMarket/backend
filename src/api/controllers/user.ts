@@ -2,8 +2,17 @@ import UserService from '@services/user';
 import { controllerLogAndFail } from '@utils/api';
 import { Logger } from '@utils/logger';
 import { Request, Response } from 'express';
+import crypto from 'crypto';
+import config from '../../config';
 
 class UserController {
+    public report = (req: Request, res: Response) => {
+        const { communityId, message } = req.body;
+        UserService.report(communityId, message)
+            .then((user) => res.send(user))
+            .catch((e) => res.status(403).send(e));
+    };
+
     public authenticate = (req: Request, res: Response) => {
         const { address, language, currency, pushNotificationToken } = req.body;
         UserService.authenticate(
@@ -13,7 +22,7 @@ class UserController {
             pushNotificationToken
         )
             .then((user) => res.send(user))
-            .catch((e) => res.sendStatus(403).send(e));
+            .catch((e) => res.status(403).send(e));
     };
 
     public hello = (req: Request, res: Response) => {
@@ -91,6 +100,29 @@ class UserController {
         UserService.setChildren(address, children)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
+    };
+
+    public device = (req: Request, res: Response) => {
+        const { phone, identifier, device, network } = req.body;
+        const hashPhone = crypto
+            .createHmac('sha256', config.hashKey)
+            .update(phone)
+            .digest('hex');
+        const hashNetwork = crypto
+            .createHmac('sha256', config.hashKey)
+            .update(network)
+            .digest('hex');
+
+        UserService.setDevice({
+            userAddress: (req as any).user.address,
+            phone: hashPhone,
+            identifier,
+            device,
+            network: hashNetwork,
+            lastLogin: new Date(),
+        })
+            .then(() => res.sendStatus(200))
+            .catch(() => res.sendStatus(400));
     };
 }
 

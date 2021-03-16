@@ -84,7 +84,7 @@ export default class TransactionsService {
         provider: ethers.providers.JsonRpcProvider,
         logs: ethers.providers.Log,
         events: LogDescription
-    ): Promise<Transactions> {
+    ): Promise<void> {
         const tx = logs.transactionHash!;
         const txReceipt = await provider.getTransactionReceipt(tx);
         const from = txReceipt.from!;
@@ -113,17 +113,21 @@ export default class TransactionsService {
         contractAddress: string,
         event: string,
         values: unknown // values from events can have multiple forms
-    ): Promise<Transactions> {
-        const hash = new SHA3(256);
-        hash.update(tx).update(JSON.stringify(values));
-        return Transactions.create({
-            uid: hash.digest('hex'),
-            tx,
-            txAt,
-            from,
-            contractAddress,
-            event,
-            values,
-        });
+    ): Promise<void> {
+        try {
+            const hash = new SHA3(256);
+            hash.update(tx).update(JSON.stringify(values));
+            await Transactions.create({
+                uid: hash.digest('hex'),
+                tx,
+                txAt,
+                from,
+                contractAddress,
+                event,
+                values,
+            });
+        } catch (e) {
+            //e
+        }
     }
 }

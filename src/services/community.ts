@@ -1,3 +1,4 @@
+import { UbiRequestChangeParams } from '@interfaces/UBI/requestChangeParams';
 import {
     Community,
     CommunityAttributes,
@@ -36,6 +37,7 @@ export default class CommunityService {
     public static communityContract = models.communityContract;
     public static communityState = models.communityState;
     public static communityDailyMetrics = models.communityDailyMetrics;
+    public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static sequelize = sequelize;
 
     public static async create(
@@ -113,6 +115,11 @@ export default class CommunityService {
                 contractParams,
                 t
             );
+            if (createObject.visibility === 'private') {
+                // in case it's public, will be added when accepted
+                await CommunityStateService.add(community.publicId, t);
+                // private communities don't need daily state
+            }
             // await CommunityStateService.add(community.publicId, t);
             // await CommunityDailyStateService.populateNext5Days(community.publicId, t);
             if (txReceipt !== undefined) {
@@ -535,8 +542,9 @@ export default class CommunityService {
             "where c.visibility = 'public' and c.status = 'valid' ";
         switch (order) {
             case 'out_of_funds':
+                // we can't devide by zero! ubiRate is never zero
                 sqlQuery +=
-                    'order by (cs.raised - cs.claimed) / cm."ubiRate" / cs.beneficiaries';
+                    'and cs.beneficiaries != 0 order by (cs.raised - cs.claimed) / cm."ubiRate" / cs.beneficiaries';
                 break;
 
             case 'newest':
@@ -706,6 +714,14 @@ export default class CommunityService {
         };
     }
 
+    public static getResquestChangeUbiParams(
+        publicId: string
+    ): Promise<UbiRequestChangeParams | null> {
+        return this.ubiRequestChangeParams.findOne({
+            where: { communityId: publicId },
+        });
+    }
+
     public static async getByPublicId(
         publicId: string
     ): Promise<ICommunity | null> {
@@ -795,6 +811,17 @@ export default class CommunityService {
             contract: communityContract!,
             metrics: communityDailyMetrics[0]!,
         };
+    }
+
+    public static async existsByContractAddress(
+        contractAddress: string
+    ): Promise<boolean> {
+        const community = await this.community.count({
+            where: {
+                contractAddress,
+            },
+        });
+        return community !== 0;
     }
 
     public static async getAllAddressesAndIds(): Promise<Map<string, string>> {

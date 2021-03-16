@@ -1,5 +1,12 @@
 import { celebrate, Joi } from 'celebrate';
 
+const report = celebrate({
+    body: Joi.object({
+        communityId: Joi.string().optional(),
+        message: Joi.string().required(),
+    }),
+});
+
 const authenticate = celebrate({
     body: Joi.object({
         address: Joi.string().required(),
@@ -65,7 +72,17 @@ const updateChildren = celebrate({
     }),
 });
 
+const device = celebrate({
+    body: Joi.object({
+        phone: Joi.string().required(),
+        identifier: Joi.string().required(),
+        device: Joi.string().required(),
+        network: Joi.string().required(),
+    }),
+});
+
 export default {
+    report,
     authenticate,
     hello,
     updateUsername,
@@ -75,4 +92,5 @@ export default {
     updateGender,
     updateAge,
     updateChildren,
+    device,
 };
