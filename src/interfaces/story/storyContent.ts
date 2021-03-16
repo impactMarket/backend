@@ -1,6 +1,7 @@
 import { StoryCommunity, StoryCommunityCreationEager } from './storyCommunity';
 import { StoryEngagement, StoryEngagementCreation } from './storyEngagement';
 import { StoryUserEngagement } from './storyUserEngagement';
+import { StoryUserReport } from './storyUserReport';
 
 export interface StoryContent {
     id: number;
@@ -13,6 +14,7 @@ export interface StoryContent {
     storyCommunity?: StoryCommunity;
     storyEngagement?: StoryEngagement;
     storyUserEngagement?: StoryUserEngagement[];
+    storyUserReport?: StoryUserReport[];
 }
 
 export interface StoryContentCreation {

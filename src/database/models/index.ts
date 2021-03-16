@@ -32,6 +32,7 @@ import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryEngagement } from './story/storyEngagement';
 import { initializeStoryUserEngagement } from './story/storyUserEngagement';
 import { initializeAppAnonymousReport } from './app/anonymousReport';
+import { initializeStoryUserReport } from './story/storyUserReport';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeSubscribers(sequelize);
@@ -68,6 +69,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeStoryCommunity(sequelize);
     initializeStoryEngagement(sequelize);
     initializeStoryUserEngagement(sequelize);
+    initializeStoryUserReport(sequelize);
 
     // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.StoryCommunityModel, {
@@ -128,6 +130,23 @@ export default function initModels(sequelize: Sequelize): void {
         {
             foreignKey: 'contentId',
             as: 'storyUserEngagement',
+        }
+    );
+
+    // used to query from the community with incude
+    sequelize.models.StoryUserReportModel.belongsTo(
+        sequelize.models.StoryContentModel,
+        {
+            foreignKey: 'contentId',
+            as: 'storyContent',
+        }
+    );
+    // used to post from the content with incude
+    sequelize.models.StoryContentModel.hasMany(
+        sequelize.models.StoryUserReportModel,
+        {
+            foreignKey: 'contentId',
+            as: 'storyUserReport',
         }
     );
 

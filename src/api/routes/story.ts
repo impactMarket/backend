@@ -206,4 +206,32 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.put('/love/:id', authenticateToken, storyController.love);
+
+    /**
+     * @swagger
+     *
+     * /story/inapropriate/{id}:
+     *   put:
+     *     tags:
+     *       - "story"
+     *     summary: Mark if consider story inapropriate
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id to report
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put(
+        '/inapropriate/:id',
+        authenticateToken,
+        storyController.inapropriate
+    );
 };

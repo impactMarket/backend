@@ -33,6 +33,7 @@ import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 import { AppUserDeviceModel } from '@models/app/userDevice';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
+import { StoryUserReportModel } from '@models/story/storyUserReport';
 
 let logging:
     | boolean
@@ -102,6 +103,8 @@ const models: DbModels = {
         .StoryEngagementModel as ModelCtor<StoryEngagementModel>,
     storyUserEngagement: sequelize.models
         .StoryUserEngagementModel as ModelCtor<StoryUserEngagementModel>,
+    storyUserReport: sequelize.models
+        .StoryUserReportModel as ModelCtor<StoryUserReportModel>,
 };
 
 export { sequelize, Sequelize, models };

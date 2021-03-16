@@ -3,6 +3,7 @@ import {
     IAddStory,
     ICommunitiesListStories,
     ICommunityStories,
+    ICommunityStory,
     UserStory,
 } from '@ipcttypes/endpoints';
 import { CommunityAttributes } from '@models/community';
@@ -22,6 +23,7 @@ export default class StoryService {
     public storyCommunity = models.storyCommunity;
     public storyEngagement = models.storyEngagement;
     public storyUserEngagement = models.storyUserEngagement;
+    public storyUserReport = models.storyUserReport;
     public community = models.community;
     public sequelize = sequelize;
 
@@ -154,6 +156,14 @@ export default class StoryService {
                         address: userAddress,
                     },
                 },
+                {
+                    model: this.storyUserReport,
+                    as: 'storyUserReport',
+                    required: false,
+                    where: {
+                        address: userAddress,
+                    },
+                },
             ];
         } else {
             subInclude = [
@@ -171,7 +181,7 @@ export default class StoryService {
             },
             order: [['postedAt', 'DESC']],
         });
-        const stories = r.map((c) => {
+        const stories: ICommunityStory[] = r.map((c) => {
             const content = c.toJSON() as StoryContent;
             return {
                 id: content.id,
@@ -180,6 +190,9 @@ export default class StoryService {
                 loves: content.storyEngagement!.loves,
                 userLoved: userAddress
                     ? content.storyUserEngagement!.length !== 0
+                    : false,
+                userReported: userAddress
+                    ? content.storyUserReport!.length !== 0
                     : false,
             };
         });
@@ -276,6 +289,14 @@ export default class StoryService {
                         address: userAddress,
                     },
                 },
+                {
+                    model: this.storyUserReport,
+                    as: 'storyUserReport',
+                    required: false,
+                    where: {
+                        address: userAddress,
+                    },
+                },
             ];
         } else {
             subInclude = [
@@ -327,6 +348,9 @@ export default class StoryService {
                     userLoved: userAddress
                         ? content.storyUserEngagement!.length !== 0
                         : false,
+                    userReported: userAddress
+                        ? content.storyUserReport!.length !== 0
+                        : false,
                 };
             }),
         };
@@ -340,6 +364,19 @@ export default class StoryService {
             });
         } catch (e) {
             await this.storyUserEngagement.destroy({
+                where: { contentId, address: userAddress },
+            });
+        }
+    }
+
+    public async inapropriate(userAddress: string, contentId: number) {
+        try {
+            await this.storyUserReport.create({
+                contentId,
+                address: userAddress,
+            });
+        } catch (e) {
+            await this.storyUserReport.destroy({
                 where: { contentId, address: userAddress },
             });
         }

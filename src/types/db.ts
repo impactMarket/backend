@@ -28,6 +28,7 @@ import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 import { AppUserDeviceModel } from '@models/app/userDevice';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
+import { StoryUserReportModel } from '@models/story/storyUserReport';
 
 export interface DbModels {
     user: ModelCtor<UserModel>;
@@ -60,6 +61,7 @@ export interface DbModels {
     storyCommunity: ModelCtor<StoryCommunityModel>;
     storyEngagement: ModelCtor<StoryEngagementModel>;
     storyUserEngagement: ModelCtor<StoryUserEngagementModel>;
+    storyUserReport: ModelCtor<StoryUserReportModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;

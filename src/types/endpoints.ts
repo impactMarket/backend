@@ -91,6 +91,7 @@ export interface ICommunityStory {
     message: string | null;
     loves: number;
     userLoved: boolean;
+    userReported: boolean;
 }
 
 export interface ICommunitiesListStories {

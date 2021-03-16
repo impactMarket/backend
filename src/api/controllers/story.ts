@@ -86,6 +86,17 @@ class StoryController {
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
+
+    inapropriate = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        this.storyService
+            .inapropriate(req.user.address, parseInt(req.params.id, 10))
+            .then(() => res.sendStatus(200))
+            .catch((e) => controllerLogAndFail(e, 400, res));
+    };
 }
 
 export default StoryController;
