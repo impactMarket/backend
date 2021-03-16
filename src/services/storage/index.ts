@@ -77,4 +77,30 @@ const deleteContentFromS3 = async (category: string, filePath: string) => {
     return true;
 };
 
-export { sharpAndUpload, uploadContentToS3, deleteContentFromS3 };
+/**
+ * @param filePath complete file url
+ */
+const deleteBulkContentFromS3 = async (
+    category: string,
+    filePath: string[]
+) => {
+    const params: AWS.S3.DeleteObjectsRequest = {
+        Bucket: category,
+        Delete: {
+            Objects: filePath.map((f) => ({
+                Key: f.split(`${config.cloudfrontUrl}/`)[1],
+            })),
+        },
+    };
+    //
+    const s3 = new AWS.S3();
+    await s3.deleteObjects(params).promise();
+    return true;
+};
+
+export {
+    sharpAndUpload,
+    uploadContentToS3,
+    deleteContentFromS3,
+    deleteBulkContentFromS3,
+};

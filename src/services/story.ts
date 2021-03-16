@@ -6,11 +6,16 @@ import {
     UserStory,
 } from '@ipcttypes/endpoints';
 import { CommunityAttributes } from '@models/community';
-import { deleteContentFromS3, sharpAndUpload } from './storage';
+import {
+    deleteBulkContentFromS3,
+    deleteContentFromS3,
+    sharpAndUpload,
+} from './storage';
 import config from '../config';
 import { Includeable, literal, Op, QueryTypes } from 'sequelize';
 import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
 import { StoryContent } from '@interfaces/story/storyContent';
+import { Logger } from '@utils/logger';
 
 export default class StoryService {
     public storyContent = models.storyContent;
@@ -345,7 +350,7 @@ export default class StoryService {
         tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
         //
         const storiesToDelete = await this.sequelize.query(
-            `select SC."contentId"
+            `select SC."contentId", ST.media
             from community c,
             (select "communityId" from "StoryCommunity" group by "communityId" having count("contentId") > 1) SC1,
             (select max("postedAt") r from "StoryContent") recent,
@@ -360,6 +365,11 @@ export default class StoryService {
             and ST.id = SC."contentId"`,
             { raw: true, type: QueryTypes.SELECT }
         );
+
+        deleteBulkContentFromS3(
+            config.aws.bucketImagesStory,
+            storiesToDelete.map((s: any) => s.media)
+        ).catch(Logger.error);
 
         await this.storyContent.destroy({
             where: {
