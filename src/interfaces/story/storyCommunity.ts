@@ -1,3 +1,4 @@
+import { CommunityAttributes } from '@models/community';
 import { StoryContent } from './storyContent';
 
 export interface StoryCommunity {
@@ -5,6 +6,7 @@ export interface StoryCommunity {
     contentId: number;
     communityId: number;
 
+    community?: CommunityAttributes;
     storyContent?: StoryContent;
 }
 

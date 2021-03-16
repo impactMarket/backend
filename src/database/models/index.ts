@@ -61,10 +61,17 @@ export default function initModels(sequelize: Sequelize): void {
     initializeStoryEngagement(sequelize);
     initializeStoryUserEngagement(sequelize);
 
+    // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.StoryCommunityModel, {
         foreignKey: 'communityId',
         as: 'storyCommunity',
     });
+    // used to query from the sotry community with incude
+    sequelize.models.StoryCommunityModel.belongsTo(sequelize.models.Community, {
+        foreignKey: 'communityId',
+        as: 'community',
+    });
+
     // used to query from the community with incude
     sequelize.models.StoryCommunityModel.belongsTo(
         sequelize.models.StoryContentModel,

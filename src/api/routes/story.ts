@@ -87,8 +87,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "story"
      *     summary: List user stories only
-     *     produces:
-     *       - application/json
+     *     parameters:
+     *       - in: path
+     *         name: order
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: Stories' order (not using any order yet) (eg. ?offset=0&limit=5)
      *     responses:
      *       "200":
      *         description: "Success"
@@ -136,7 +141,7 @@ export default (app: Router): void => {
      *         schema:
      *           type: string
      *         required: false
-     *         description: Stories' order (no functionality yet)
+     *         description: Stories' order (not using any order yet) (eg. ?offset=0&limit=5)
      *     responses:
      *       "200":
      *         description: OK
@@ -163,7 +168,7 @@ export default (app: Router): void => {
      *         schema:
      *           type: string
      *         required: false
-     *         description: Stories' order (no functionality yet)
+     *         description: Stories' order (not using any order yet) (eg. ?offset=0&limit=5)
      *     responses:
      *       "200":
      *         description: OK

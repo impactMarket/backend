@@ -1,4 +1,4 @@
-import { StoryCommunityCreationEager } from './storyCommunity';
+import { StoryCommunity, StoryCommunityCreationEager } from './storyCommunity';
 import { StoryEngagement, StoryEngagementCreation } from './storyEngagement';
 import { StoryUserEngagement } from './storyUserEngagement';
 
@@ -10,6 +10,7 @@ export interface StoryContent {
     isPublic: boolean;
     postedAt: Date;
 
+    storyCommunity?: StoryCommunity;
     storyEngagement?: StoryEngagement;
     storyUserEngagement?: StoryUserEngagement[];
 }

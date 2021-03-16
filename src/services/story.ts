@@ -26,6 +26,9 @@ export default class StoryService {
         story: IAddStory
     ): Promise<boolean> {
         let storyContentToAdd: { media?: string; message?: string } = {};
+        if (file === undefined || story.message === undefined) {
+            throw new Error('Story needs at least media or message.');
+        }
         if (file) {
             const media = await sharpAndUpload(
                 file,
@@ -100,7 +103,7 @@ export default class StoryService {
 
     public async listByUser(
         order: string | undefined,
-        query: any,
+        query: { offset?: string; limit?: string },
         onlyFromAddress: string
     ): Promise<UserStory[]> {
         const r = await this.storyContent.findAll({
@@ -108,10 +111,13 @@ export default class StoryService {
                 {
                     model: this.storyEngagement,
                     as: 'storyEngagement',
+                    duplicating: false,
                 },
             ],
             where: { byAddress: onlyFromAddress, isPublic: true },
             order: [['postedAt', 'DESC']],
+            offset: query.offset ? parseInt(query.offset, 10) : undefined,
+            limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
         const stories = r.map((c) => {
             const content = c.toJSON() as StoryContent;
@@ -185,7 +191,7 @@ export default class StoryService {
 
     public async listByOrder(
         order: string | undefined,
-        query: any
+        query: { offset?: string; limit?: string }
     ): Promise<ICommunitiesListStories[]> {
         const r = await this.community.findAll({
             attributes: ['id', 'name', 'coverImage'],
@@ -193,6 +199,7 @@ export default class StoryService {
                 {
                     model: this.storyCommunity,
                     as: 'storyCommunity',
+                    duplicating: false,
                     include: [
                         {
                             model: this.storyContent,
@@ -205,7 +212,6 @@ export default class StoryService {
                             ],
                             where: {
                                 byAddress: { [Op.not]: null },
-                                isPublic: true,
                             },
                         },
                     ],
@@ -219,11 +225,13 @@ export default class StoryService {
                 status: 'valid',
                 '$storyCommunity->storyContent.postedAt$': {
                     [Op.eq]: literal(`(select max("postedAt")
-                        from "StoryContent" sc, "StoryCommunity" sm
-                        where sc.id = sm."contentId" and sm."communityId"="Community".id and sc."isPublic" = true)`),
+                    from "StoryContent" sc, "StoryCommunity" sm
+                    where sc.id=sm."contentId" and sm."communityId"="Community".id and sc."isPublic"=true)`),
                 },
             } as any, // does not recognize the string as a variable
             order: [['storyCommunity', 'storyContent', 'postedAt', 'DESC']],
+            offset: query.offset ? parseInt(query.offset, 10) : undefined,
+            limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
         const stories = r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
@@ -245,7 +253,7 @@ export default class StoryService {
     public async getByCommunity(
         communityId: number,
         order: string | undefined,
-        query: any,
+        query: { offset?: string; limit?: string },
         userAddress?: string
     ): Promise<ICommunityStories> {
         let subInclude: Includeable[];
@@ -272,48 +280,51 @@ export default class StoryService {
                 },
             ];
         }
-        const r = await this.community.findAll({
+        const r = await this.storyContent.findAll({
             include: [
                 {
                     model: this.storyCommunity,
                     as: 'storyCommunity',
                     include: [
                         {
-                            model: this.storyContent,
-                            as: 'storyContent',
-                            where: { isPublic: true },
-                            include: subInclude,
+                            model: this.community,
+                            as: 'community',
                         },
                     ],
+                    where: { communityId },
                 },
+                ...subInclude,
             ],
-            where: {
-                id: communityId,
-            },
-            order: [['storyCommunity', 'storyContent', 'postedAt', 'DESC']],
+            where: { isPublic: true },
+            offset: query.offset ? parseInt(query.offset, 10) : undefined,
+            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+            order: [['postedAt', 'DESC']],
         });
-        const stories = r.map((c) => {
-            const community = c.toJSON() as CommunityAttributes;
-            return {
-                id: community.id,
-                publicId: community.publicId,
-                name: community.name,
-                city: community.city,
-                country: community.country,
-                coverImage: community.coverImage,
-                // we can use ! because it's filtered on the query
-                stories: community.storyCommunity!.map((s) => ({
-                    id: s.storyContent!.id,
-                    media: s.storyContent!.media,
-                    message: s.storyContent!.message,
-                    loves: s.storyContent!.storyEngagement!.loves,
+
+        // at this point, this is not null
+        const community = (r[0].toJSON() as StoryContent).storyCommunity!
+            .community!;
+        return {
+            id: community.id,
+            publicId: community.publicId,
+            name: community.name,
+            city: community.city,
+            country: community.country,
+            coverImage: community.coverImage,
+            // we can use ! because it's filtered on the query
+            stories: r.map((s) => {
+                const content = s.toJSON() as StoryContent;
+                return {
+                    id: content.id,
+                    media: content.media,
+                    message: content.message,
+                    loves: content.storyEngagement!.loves,
                     userLoved: userAddress
-                        ? s.storyContent!.storyUserEngagement!.length !== 0
+                        ? content.storyUserEngagement!.length !== 0
                         : false,
-                })),
-            };
-        });
-        return stories[0]; // there's only one community
+                };
+            }),
+        };
     }
 
     public async love(userAddress: string, contentId: number) {
