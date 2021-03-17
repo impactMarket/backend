@@ -21,7 +21,7 @@ module.exports = {
         password: 'test101',
         database: 'impactmarkettest',
         host: 'localhost',
-        port: 5433,
+        port: 5432,
         dialect: 'postgres',
     },
     test: {

@@ -16,7 +16,7 @@
         "test": "NODE_ENV=test mocha",
         "coverage": "NODE_ENV=test nyc --reporter=html mocha",
         "precoverage:ci": "sequelize db:migrate --env ci --to z1605204805-create-beneficiaryTransaction.js",
-        "coverage:ci": "NODE_ENV=test nyc --reporter=text-lcov mocha | coveralls",
+        "coverage:ci": "NODE_ENV=test nyc --reporter=text-lcov mocha",
         "test:watch": "mocha --watch",
         "clean": "rm -rf dist coverage .nyc_output"
     },
