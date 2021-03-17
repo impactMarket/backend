@@ -19,37 +19,33 @@ export default class BeneficiaryService {
         tx: string,
         txAt: Date
     ): Promise<boolean> {
-        // if user does not exist, add to pending list
-        // otherwise update
-        const user = await this.beneficiary.findOne({
-            where: { address, active: false },
-            raw: true,
-        });
-        if (user === null) {
-            const beneficiaryData = {
-                address,
-                communityId,
-                tx,
-                txAt,
-            };
-            try {
-                await this.beneficiary.create(beneficiaryData);
-            } catch (e) {
-                if (e.name !== 'SequelizeUniqueConstraintError') {
-                    Logger.error(
-                        'Error inserting new Beneficiary. Data = ' +
-                            JSON.stringify(beneficiaryData)
-                    );
-                    Logger.error(e);
-                }
+        const beneficiaryData = {
+            address,
+            communityId,
+            tx,
+            txAt,
+        };
+        try {
+            await this.beneficiary.create(beneficiaryData);
+        } catch (e) {
+            if (e.name !== 'SequelizeUniqueConstraintError') {
+                Logger.error(
+                    'Error inserting new Beneficiary. Data = ' +
+                        JSON.stringify(beneficiaryData)
+                );
+                Logger.error(e);
             }
-        } else {
-            await this.beneficiary.update(
-                { active: true },
-                { where: { address } }
-            );
         }
         return true;
+    }
+
+    public static findByAddress(
+        address: string,
+        active?: boolean
+    ): Promise<Beneficiary | null> {
+        return this.beneficiary.findOne({
+            where: { address, active },
+        });
     }
 
     public static async getAllAddressesInPublicValidCommunities(): Promise<
@@ -258,13 +254,6 @@ export default class BeneficiaryService {
             active,
             inactive,
         };
-    }
-
-    public static async get(address: string): Promise<Beneficiary | null> {
-        return await this.beneficiary.findOne({
-            where: { address, active: true },
-            raw: true,
-        });
     }
 
     public static async getAllAddresses(): Promise<string[]> {
