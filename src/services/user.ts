@@ -49,7 +49,7 @@ export default class UserService {
                     { where: { address } }
                 );
             }
-            const loadedUser = await UserService.loadUser(user);
+            const loadedUser = await UserService.loadUser(user.address);
             return {
                 user,
                 token,
@@ -66,7 +66,7 @@ export default class UserService {
         if (user === null) {
             throw new Error(address + ' user not found!');
         }
-        return await UserService.loadUser(user);
+        return await UserService.loadUser(user.address);
     }
 
     public static async setUsername(
@@ -229,17 +229,20 @@ export default class UserService {
     /**
      * TODO: improve
      */
-    private static async loadUser(user: User): Promise<IUserHello> {
+    private static async loadUser(userAddress: string): Promise<IUserHello> {
         let community: ICommunity | undefined;
         let communityId: string | undefined;
         let isBeneficiary = false;
         let isManager = false;
-        const beneficiary = await BeneficiaryService.get(user.address);
+        const beneficiary = await BeneficiaryService.findByAddress(
+            userAddress,
+            true
+        );
         if (beneficiary) {
             isBeneficiary = true;
             communityId = beneficiary.communityId;
         }
-        const manager = await ManagerService.get(user.address);
+        const manager = await ManagerService.get(userAddress);
         if (manager) {
             isManager = true;
             communityId = manager.communityId;
@@ -253,7 +256,7 @@ export default class UserService {
             }
         } else {
             const _communityId = await CommunityService.findByFirstManager(
-                user.address
+                userAddress
             );
             if (_communityId !== null) {
                 const _community = await CommunityService.getByPublicId(

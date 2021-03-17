@@ -1,3 +1,4 @@
+import BeneficiaryService from '@services/beneficiary';
 import CommunityService from '@services/community';
 import CommunityDailyMetricsService from '@services/communityDailyMetrics';
 import ManagerService from '@services/managers';
@@ -56,6 +57,12 @@ const listFull = (req: Request, res: Response) => {
     CommunityService.listFull(req.params.order)
         .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
+const findBeneficiaryByAddress = (req: Request, res: Response) => {
+    BeneficiaryService.findByAddress(req.params.address)
+        .then((r) => res.send(r))
+        .catch((e) => res.status(404).send(e));
 };
 
 const searchBeneficiary = (req: Request, res: Response) => {
@@ -217,6 +224,7 @@ export default {
     getHistoricalSSI,
     list,
     listFull,
+    findBeneficiaryByAddress,
     searchBeneficiary,
     searchManager,
     listBeneficiaries,

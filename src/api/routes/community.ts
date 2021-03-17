@@ -17,6 +17,11 @@ export default (app: Router): void => {
     route.get('/contract/:address', communityController.getByContractAddress);
     route.get('/hssi/:publicId', communityController.getHistoricalSSI);
     route.get(
+        '/beneficiaries/find/:address',
+        authenticateToken,
+        communityController.findBeneficiaryByAddress
+    );
+    route.get(
         '/beneficiaries/search/:active/:beneficiaryQuery',
         authenticateToken,
         communityController.searchBeneficiary
