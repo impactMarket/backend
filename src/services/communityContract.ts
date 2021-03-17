@@ -83,12 +83,13 @@ export default class CommunityContractService {
                 'incrementInterval',
             ],
             where: { communityId },
+            raw: true,
         }))!;
     }
 
     public static async getAll(): Promise<Map<string, CommunityContract>> {
         return new Map(
-            (await this.communityContract.findAll()).map((c) => [
+            (await this.communityContract.findAll({ raw: true })).map((c) => [
                 c.communityId,
                 c,
             ])
@@ -106,6 +107,7 @@ export default class CommunityContractService {
             await this.community.findAll({
                 attributes: ['publicId'],
                 where: { visibility: 'public', status: 'valid' },
+                raw: true,
             })
         ).map((c) => c.publicId);
 
@@ -115,6 +117,7 @@ export default class CommunityContractService {
                 where: {
                     communityId: { [Op.in]: publicCommunities },
                 },
+                raw: true,
             })
         )[0];
         return (result as any).avgComulativeUbi;

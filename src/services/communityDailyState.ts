@@ -43,6 +43,7 @@ export default class CommunityDailyStateService {
             where: { communityId },
             order: [['date', 'DESC']],
             limit: 1,
+            raw: true,
         });
         let lastDay: Date;
         if (resultLastDay.length === 0) {
@@ -76,6 +77,7 @@ export default class CommunityDailyStateService {
         date.setHours(0, 0, 0, 0);
         return await this.communityDailyState.findAll({
             where: { date },
+            raw: true,
         });
     }
 
@@ -103,6 +105,7 @@ export default class CommunityDailyStateService {
                         },
                     },
                     group: 'communityId',
+                    raw: true,
                 })
             ).map((c: any) => [c.communityId, c.totalClaimed])
         );

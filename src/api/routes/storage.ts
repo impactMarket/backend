@@ -2,7 +2,7 @@ import fleekStorage from '@fleekhq/fleek-storage-js';
 import CommunityService from '@services/community';
 import { uploadContentToS3 } from '@services/storage';
 import { Logger } from '@utils/logger';
-import AWS from 'aws-sdk';
+// import AWS from 'aws-sdk';
 import { Router } from 'express';
 import multer from 'multer';
 import sharp from 'sharp';
@@ -13,13 +13,13 @@ export default (app: Router): void => {
     const route = Router();
     const storage = multer.memoryStorage();
     const upload = multer({ storage });
-    new AWS.Config({
-        accessKeyId: config.aws.accessKeyId,
-        secretAccessKey: config.aws.secretAccessKey,
-        region: config.aws.region,
-        //
-        apiVersion: '2006-03-01',
-    });
+    // new AWS.Config({
+    //     accessKeyId: config.aws.accessKeyId,
+    //     secretAccessKey: config.aws.secretAccessKey,
+    //     region: config.aws.region,
+    //     //
+    //     apiVersion: '2006-03-01',
+    // });
 
     app.use('/storage', route);
 
@@ -46,7 +46,6 @@ export default (app: Router): void => {
                     .toBuffer();
 
                 // content file
-                const { communityId } = req.body;
                 const today = new Date();
                 const filePrefix = `${today.getFullYear()}${
                     today.getMonth() + 1
@@ -57,10 +56,12 @@ export default (app: Router): void => {
                 // upload to aws
                 try {
                     const uploadResult = await uploadContentToS3(
+                        config.aws.bucketImagesCommunity,
                         filePath,
                         imgBuffer
                     );
                     // update community picture
+                    const { communityId } = req.body;
                     CommunityService.updateCoverImage(
                         communityId,
                         `${config.cloudfrontUrl}/${uploadResult.Key}`
@@ -72,21 +73,21 @@ export default (app: Router): void => {
                     res.sendStatus(403);
                 }
 
-                // upload to fleekstorage
-                try {
-                    // also upload to fleek storage
-                    await fleekStorage.upload({
-                        apiKey: config.fleekStorage.accessKeyId,
-                        apiSecret: config.fleekStorage.secretAccessKey,
-                        key: filePath,
-                        data: imgBuffer,
-                    });
-                } catch (e) {
-                    Logger.error(
-                        'Error during worker upload_image_queue(to fleek) ' + e
-                    );
-                    res.sendStatus(403);
-                }
+                // // upload to fleekstorage
+                // try {
+                //     // also upload to fleek storage
+                //     await fleekStorage.upload({
+                //         apiKey: config.fleekStorage.accessKeyId,
+                //         apiSecret: config.fleekStorage.secretAccessKey,
+                //         key: filePath,
+                //         data: imgBuffer,
+                //     });
+                // } catch (e) {
+                //     Logger.error(
+                //         'Error during worker upload_image_queue(to fleek) ' + e
+                //     );
+                //     res.sendStatus(403);
+                // }
 
                 // sucess
                 res.sendStatus(200);

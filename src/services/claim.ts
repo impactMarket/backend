@@ -55,6 +55,7 @@ export default class ClaimService {
                         [Op.gte]: aMonthAgo,
                     },
                 },
+                raw: true,
             })
         )[0] as any;
         // there will always be claimed.lenght > 0 (were only zero at the begining)
@@ -84,6 +85,7 @@ export default class ClaimService {
                         [Op.gte]: sevenDaysAgo,
                     },
                 },
+                raw: true,
             })
         )[0];
         return {

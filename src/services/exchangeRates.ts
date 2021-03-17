@@ -6,6 +6,7 @@ export default class ExchangeRatesService {
     public static async get(): Promise<{ exchangeRates: any; rates: any }> {
         const rates = await this.exchangeRates.findAll({
             attributes: ['currency', 'rate'],
+            raw: true,
         });
         const mapRates = {};
         for (let index = 0; index < rates.length; index++) {

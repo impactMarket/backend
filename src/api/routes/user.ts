@@ -10,6 +10,40 @@ export default (app: Router): void => {
 
     app.use('/user', route);
 
+    /**
+     * @swagger
+     *
+     * /user/authenticate:
+     *   post:
+     *     tags:
+     *     - "user"
+     *     summary: "Authenticate user"
+     *     requestBody:
+     *       description: Optional description in *Markdown*
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: "object"
+     *             properties:
+     *               address:
+     *                 type: "string"
+     *               language:
+     *                 type: "string"
+     *               currency:
+     *                 type: "string"
+     *               pushNotificationToken:
+     *                 type: "string"
+     *             example:
+     *               address: "0x8770b4Df915cb92F53Bc01cC9Ab15F51e5DBb52f"
+     *               language: "pt"
+     *               pushNotificationToken: ""
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     */
     route.post(
         '/authenticate',
         userValidators.authenticate,

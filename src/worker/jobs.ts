@@ -14,6 +14,7 @@ import {
     verifyCommunityFunds,
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
+import { verifyStoriesLifecycle } from './jobs/cron/stories';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
 
 export default async (): Promise<void> => {
@@ -210,6 +211,27 @@ function cron() {
         true
     );
 
+    // everyday at 1am
+    new CronJob(
+        '0 1 * * *',
+        () => {
+            Logger.info('Calculating community metrics...');
+            verifyStoriesLifecycle()
+                .then(() => {
+                    CronJobExecutedService.add('verifyStoriesLifecycle');
+                    Logger.info(
+                        'verifyStoriesLifecycle successfully executed!'
+                    );
+                })
+                .catch((e) => {
+                    Logger.error('verifyStoriesLifecycle FAILED!', e);
+                });
+        },
+        null,
+        true
+    );
+
+    // at 00:00 on thursday.
     new CronJob(
         '0 0 * * *',
         () => {

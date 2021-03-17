@@ -86,7 +86,7 @@ ON manager
 FOR EACH ROW
 EXECUTE PROCEDURE update_managers_community_state();`);
 
-        return queryInterface.sequelize.query(`
+        await queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_inflow_community_states()
     RETURNS TRIGGER AS $$
     declare
@@ -113,8 +113,26 @@ BEFORE INSERT
 ON inflow
 FOR EACH ROW
 EXECUTE PROCEDURE update_inflow_community_states();`);
+
+        return queryInterface.sequelize.query(`
+        CREATE OR REPLACE FUNCTION update_loves_stories()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        IF (TG_OP = 'INSERT') THEN -- INSERT operations
+            UPDATE "StoryEngagement" SET loves = loves + 1 WHERE "contentId"=NEW."contentId";
+        ELSEIF (TG_OP = 'DELETE') THEN -- DELETE operations
+            UPDATE "StoryEngagement" SET loves = loves - 1 WHERE "contentId"=NEW."contentId";
+        END IF;
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_loves_stories
+BEFORE INSERT OR DELETE
+ON "StoryUserEngagement"
+FOR EACH ROW
+EXECUTE PROCEDURE update_loves_stories();`);
     },
 
-    down(queryInterface, Sequelize) {
-    }
-}
+    down(queryInterface, Sequelize) {},
+};

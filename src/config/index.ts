@@ -90,6 +90,7 @@ export default {
         secretAccessKey: validatedEnv.AWS_SECRET_ACCESS_KEY,
         region: validatedEnv.AWS_REGION,
         bucketImagesCommunity: validatedEnv.AWS_BUCKET_IMAGES_COMMUNITY,
+        bucketImagesStory: validatedEnv.AWS_BUCKET_IMAGES_STORY,
     },
 
     /**

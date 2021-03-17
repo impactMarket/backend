@@ -1,3 +1,4 @@
+import { StoryCommunity } from '@interfaces/story/storyCommunity';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { ICommunityVars } from '../../types';
@@ -28,6 +29,8 @@ export interface CommunityAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
+
+    storyCommunity?: StoryCommunity[];
 }
 export interface CommunityCreationAttributes {
     requestByAddress: string;

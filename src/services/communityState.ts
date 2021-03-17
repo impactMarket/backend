@@ -23,6 +23,7 @@ export default class CommunityStateService {
         return (await this.communityState.findOne({
             attributes: ['claimed', 'raised', 'beneficiaries', 'backers'],
             where: { communityId },
+            raw: true,
         }))!;
     }
 

@@ -19,6 +19,7 @@ export default class ManagerService {
         // otherwise update
         const user = await this.manager.findOne({
             where: { user: address, communityId },
+            raw: true,
         });
         if (user === null) {
             const managerData = {
@@ -45,7 +46,10 @@ export default class ManagerService {
     }
 
     public static async get(address: string): Promise<Manager | null> {
-        return await this.manager.findOne({ where: { user: address } });
+        return await this.manager.findOne({
+            where: { user: address },
+            raw: true,
+        });
     }
 
     /**
@@ -56,6 +60,7 @@ export default class ManagerService {
             await this.manager.findAll({
                 attributes: [[fn('count', col('user')), 'total']],
                 where: { communityId },
+                raw: true,
             })
         )[0] as any;
         return parseInt(managers.total, 10);

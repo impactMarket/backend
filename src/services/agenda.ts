@@ -14,7 +14,7 @@ export default class AgendaService {
     }
 
     public static async get(): Promise<Agenda[]> {
-        return Agenda.findAll();
+        return Agenda.findAll({ raw: true });
     }
 
     public static async remove(id: number): Promise<number> {
