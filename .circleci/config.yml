@@ -1,0 +1,30 @@
+version: 2.1
+
+orbs:
+  coveralls: coveralls/coveralls@1.0.4
+
+jobs:
+  coverage:
+    docker:
+      - image: circleci/node:14.15.1
+      - image: circleci/postgres:12-alpine
+        environment:
+          POSTGRES_USER: citest
+          POSTGRES_DB: impactmarkettest
+          POSTGRES_PASSWORD: test101
+    steps:
+      - checkout
+      - run: yarn
+      - run:
+          name: "Run Tests and do Coverage Reports"
+          command: yarn coverage:ci
+          environment:
+            DATABASE_URL: postgresql://citest:test101@localhost:5432/impactmarkettest
+      - store_artifacts:
+          path: coverage
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - coverage
