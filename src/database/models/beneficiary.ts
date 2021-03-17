@@ -5,6 +5,7 @@ interface BeneficiaryAttributes {
     address: string;
     communityId: string;
     active: boolean;
+    blocked: boolean;
     tx: string;
     txAt: Date;
     claims: number;
@@ -30,6 +31,7 @@ export class Beneficiary extends Model<
     public address!: string;
     public communityId!: string;
     public active!: boolean;
+    public blocked!: boolean;
     public tx!: string;
     public txAt!: Date;
     public claims!: number;
@@ -51,6 +53,11 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
             },
             address: {
                 type: DataTypes.STRING(44),
+                references: {
+                    model: 'user',
+                    key: 'address',
+                },
+                onDelete: 'RESTRICT', // delete only if active = false, separately
                 allowNull: false,
             },
             communityId: {
@@ -65,7 +72,10 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
             active: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: true,
-                allowNull: false,
+            },
+            blocked: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: true,
             },
             tx: {
                 type: DataTypes.STRING(68),

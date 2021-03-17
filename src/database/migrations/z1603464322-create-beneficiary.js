@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await  queryInterface.createTable('beneficiary', {
+        await queryInterface.createTable('beneficiary', {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
@@ -9,6 +9,11 @@ module.exports = {
             },
             address: {
                 type: Sequelize.STRING(44),
+                references: {
+                    model: 'user',
+                    key: 'address',
+                },
+                onDelete: 'RESTRICT', // delete only if active = false, separately
                 allowNull: false,
             },
             communityId: {
@@ -18,12 +23,15 @@ module.exports = {
                     key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
-                allowNull: false
+                allowNull: false,
             },
             active: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: true,
-                allowNull: false,
+            },
+            blocked: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
             },
             tx: {
                 type: Sequelize.STRING(68),
@@ -54,11 +62,13 @@ module.exports = {
             updatedAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
-            }
+            },
         });
-        return queryInterface.sequelize.query(`ALTER TABLE beneficiary ADD CONSTRAINT one_beneficiary_per_community_key UNIQUE (address, "communityId");`)
+        return queryInterface.sequelize.query(
+            `ALTER TABLE beneficiary ADD CONSTRAINT one_beneficiary_per_community_key UNIQUE (address, "communityId");`
+        );
     },
     down: (queryInterface, Sequelize) => {
         return queryInterface.dropTable('beneficiary');
-    }
+    },
 };

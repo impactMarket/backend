@@ -29,9 +29,13 @@ import { AppUserDeviceModel } from '@models/app/userDevice';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
 import { StoryUserReportModel } from '@models/story/storyUserReport';
+import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
+import { AppUserTrustModel } from '@models/app/appUserTrust';
 
 export interface DbModels {
     user: ModelCtor<UserModel>;
+    appUserTrust: ModelCtor<AppUserTrustModel>;
+    appUserThroughTrust: ModelCtor<AppUserThroughTrustModel>;
     community: ModelCtor<Community>;
     communityContract: ModelCtor<CommunityContract>;
     communityState: ModelCtor<CommunityState>;
