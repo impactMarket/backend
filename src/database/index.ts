@@ -34,13 +34,15 @@ import { AppUserDeviceModel } from '@models/app/userDevice';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
 import { StoryUserReportModel } from '@models/story/storyUserReport';
+import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
+import { AppUserTrustModel } from '@models/app/appUserTrust';
 
 let logging:
     | boolean
     | ((sql: string, timing?: number | undefined) => void)
     | undefined;
 if (process.env.NODE_ENV === 'development') {
-    logging = (msg) => false;
+    logging = (msg) => console.log(msg);
 } else {
     logging = (msg) => Logger.verbose(msg);
 }
@@ -55,6 +57,10 @@ const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);
 const models: DbModels = {
     user: sequelize.models.UserModel as ModelCtor<UserModel>,
+    appUserTrust: sequelize.models
+        .AppUserTrustModel as ModelCtor<AppUserTrustModel>,
+    appUserThroughTrust: sequelize.models
+        .AppUserThroughTrustModel as ModelCtor<AppUserThroughTrustModel>,
     community: sequelize.models.Community as ModelCtor<Community>,
     communityContract: sequelize.models
         .CommunityContract as ModelCtor<CommunityContract>,

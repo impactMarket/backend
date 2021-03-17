@@ -7,6 +7,7 @@ export interface User {
     gender: string;
     year: number | null;
     children: number | null;
+    lastLogin: Date;
 
     // timestamps
     createdAt: Date;

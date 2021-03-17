@@ -11,7 +11,7 @@ module.exports = {
                 type: Sequelize.STRING(128),
             },
             language: {
-                type:Sequelize.STRING(8),
+                type: Sequelize.STRING(8),
                 allowNull: false,
             },
             currency: {
@@ -30,6 +30,11 @@ module.exports = {
             children: {
                 type: Sequelize.INTEGER,
             },
+            lastLogin: {
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.fn('now'),
+                allowNull: false,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -37,10 +42,10 @@ module.exports = {
             updatedAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
-            }
+            },
         });
     },
     down: (queryInterface, Sequelize) => {
         return queryInterface.dropTable('user');
-    }
+    },
 };

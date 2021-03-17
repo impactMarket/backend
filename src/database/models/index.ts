@@ -33,6 +33,9 @@ import { initializeStoryEngagement } from './story/storyEngagement';
 import { initializeStoryUserEngagement } from './story/storyUserEngagement';
 import { initializeAppAnonymousReport } from './app/anonymousReport';
 import { initializeStoryUserReport } from './story/storyUserReport';
+import { userAssociation } from './associations/user';
+import { initializeAppUserThroughTrust } from './app/appUserThroughTrust';
+import { initializeAppUserTrust } from './app/appUserTrust';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeSubscribers(sequelize);
@@ -41,6 +44,8 @@ export default function initModels(sequelize: Sequelize): void {
     initializeSSI(sequelize);
     initializeTransactions(sequelize);
     initializeUser(sequelize);
+    initializeAppUserTrust(sequelize);
+    initializeAppUserThroughTrust(sequelize);
     initializeAppUserDevice(sequelize);
     initializeAgenda(sequelize);
     initializeClaimLocation(sequelize);
@@ -149,6 +154,36 @@ export default function initModels(sequelize: Sequelize): void {
             as: 'storyUserReport',
         }
     );
+
+    userAssociation(sequelize);
+
+    // sequelize.models.AppUserTrustModel.create({
+    //     phone:
+    //         'b96000f4543a5c7c3d75e72626324e785270e078c5a25013a15895097bd1d818',
+    // }).then(async (newTrust) => {
+    //     const user = await sequelize.models.UserModel.findOne({
+    //         where: {
+    //             address: '0x7110b4Df915cb92F53Bc01cC9Ab15F51e5DBb52F',
+    //         },
+    //     });
+    //     await (user as any).addAppUserTrustModel(newTrust);
+    // });
+
+    sequelize.models.UserModel.findOne({
+        include: [
+            {
+                model: sequelize.models.Beneficiary,
+                as: 'beneficiary',
+            },
+            {
+                model: sequelize.models.AppUserTrustModel,
+                as: 'throughTrust',
+            },
+        ],
+        where: {
+            address: '0x7110b4Df915cb92F53Bc01cC9Ab15F51e5DBb52F',
+        },
+    }).then(console.log);
 
     // this actually works, but eager loading not so much!
     // sequelize.models.Manager.belongsTo(sequelize.models.User, {

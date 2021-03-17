@@ -18,6 +18,7 @@ export class UserModel extends Model<User, UserCreationAttributes> {
     public gender!: string;
     public year!: number | null;
     public children!: number | null;
+    public readonly lastLogin!: Date;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -55,6 +56,11 @@ export default function (sequelize: Sequelize): typeof UserModel {
             },
             children: {
                 type: DataTypes.INTEGER,
+            },
+            lastLogin: {
+                type: DataTypes.DATE,
+                defaultValue: Sequelize.fn('now'),
+                allowNull: false,
             },
             createdAt: {
                 type: DataTypes.DATE,

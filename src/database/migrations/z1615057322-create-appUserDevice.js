@@ -13,7 +13,7 @@ module.exports = {
                     model: 'user',
                     key: 'address',
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             phone: {
