@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 
+const envFound = dotenv.config();
 if (process.env.NODE_ENV === 'development') {
-    const envFound = dotenv.config();
     if (!envFound) {
         // This error should crash whole process
 
@@ -112,6 +112,7 @@ export default {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
         region: process.env.AWS_REGION!,
         bucketImagesCommunity: process.env.AWS_BUCKET_IMAGES_COMMUNITY!,
+        bucketImagesStory: process.env.AWS_BUCKET_IMAGES_STORY!,
     },
 
     /**

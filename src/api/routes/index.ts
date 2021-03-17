@@ -6,6 +6,7 @@ import exchange from './exchangeRates';
 import global from './global';
 import mobile from './mobile';
 import storage from './storage';
+import story from './story';
 import system from './system';
 import user from './user';
 
@@ -19,6 +20,7 @@ export default (): Router => {
     mobile(app);
     storage(app);
     system(app);
+    story(app);
 
     return app;
 };

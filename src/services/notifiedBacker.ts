@@ -15,6 +15,7 @@ export default class NotifiedBackerService {
                 backer: { [Op.in]: addresses },
                 communityId,
             },
+            raw: true,
         });
         const recentlyNotifiedBackers = allNotifiedBackers
             .filter((n) => moment().diff(n.at, 'days') < 3)

@@ -26,9 +26,14 @@ import { Sequelize, Options, ModelCtor } from 'sequelize';
 import config from '../config';
 import { DbModels } from '../types/db';
 import initModels from './models';
+import { StoryCommunityModel } from '@models/story/storyCommunity';
+import { StoryContentModel } from '@models/story/storyContent';
+import { StoryEngagementModel } from '@models/story/storyEngagement';
+import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 import { AppUserDeviceModel } from '@models/app/userDevice';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
+import { StoryUserReportModel } from '@models/story/storyUserReport';
 
 let logging:
     | boolean
@@ -44,7 +49,7 @@ const dbConfig: Options = {
     protocol: 'postgres',
     native: true,
     logging,
-    query: { raw: true }, // I wish, eager loading gets fixed
+    // query: { raw: true }, // I wish, eager loading gets fixed
 };
 const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);
@@ -89,6 +94,17 @@ const models: DbModels = {
         .NotifiedBacker as ModelCtor<NotifiedBacker>,
     reachedAddress: sequelize.models
         .ReachedAddress as ModelCtor<ReachedAddress>,
+    // stories
+    storyContent: sequelize.models
+        .StoryContentModel as ModelCtor<StoryContentModel>,
+    storyCommunity: sequelize.models
+        .StoryCommunityModel as ModelCtor<StoryCommunityModel>,
+    storyEngagement: sequelize.models
+        .StoryEngagementModel as ModelCtor<StoryEngagementModel>,
+    storyUserEngagement: sequelize.models
+        .StoryUserEngagementModel as ModelCtor<StoryUserEngagementModel>,
+    storyUserReport: sequelize.models
+        .StoryUserReportModel as ModelCtor<StoryUserReportModel>,
 };
 
 export { sequelize, Sequelize, models };

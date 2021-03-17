@@ -77,3 +77,47 @@ export interface IUserAuth extends IUserHello {
     user: User;
     token: string;
 }
+
+export interface IAddStory {
+    byAddress: string;
+    communityId?: number;
+    // media?: string;
+    message?: string;
+}
+
+export interface ICommunityStory {
+    id: number;
+    media: string | null;
+    message: string | null;
+    loves: number;
+    userLoved: boolean;
+    userReported: boolean;
+}
+
+export interface ICommunitiesListStories {
+    id: number;
+    name: string;
+    coverImage: string;
+    story: {
+        id: number;
+        media: string | null;
+        message: string | null;
+    }; // most recent
+}
+
+export interface ICommunityStories {
+    id: number;
+    publicId: string; // temporary
+    name: string;
+    city: string;
+    country: string;
+    coverImage: string;
+    stories: ICommunityStory[];
+}
+
+export interface UserStory {
+    id: number;
+    media: string | null;
+    message: string | null;
+    loves: number;
+}

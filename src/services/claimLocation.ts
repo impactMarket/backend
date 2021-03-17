@@ -36,6 +36,7 @@ export default class ClaimLocationService {
                     [Op.gte]: aMonthAgo,
                 },
             },
+            raw: true,
         }) as any;
     }
 }

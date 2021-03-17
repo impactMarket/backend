@@ -14,6 +14,7 @@ export default class GlobalGrowthService {
         const last = await this.globalGrowth.findAll({
             order: [['date', 'DESC']],
             limit: 1,
+            raw: true,
         });
         return last[0];
     }

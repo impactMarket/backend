@@ -1,0 +1,20 @@
+import { CommunityAttributes } from '@models/community';
+import { StoryContent } from './storyContent';
+
+export interface StoryCommunity {
+    id: number;
+    contentId: number;
+    communityId: number;
+
+    community?: CommunityAttributes;
+    storyContent?: StoryContent;
+}
+
+export interface StoryCommunityCreation {
+    contentId: number;
+    communityId: number;
+}
+export interface StoryCommunityCreationEager {
+    // contentId: number;
+    communityId: number;
+}

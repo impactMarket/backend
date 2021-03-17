@@ -21,9 +21,14 @@ import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
 import { UserModel } from '@models/user';
 import { ModelCtor, Sequelize } from 'sequelize/types';
+import { StoryContentModel } from '@models/story/storyContent';
+import { StoryCommunityModel } from '@models/story/storyCommunity';
+import { StoryEngagementModel } from '@models/story/storyEngagement';
+import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 import { AppUserDeviceModel } from '@models/app/userDevice';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
+import { StoryUserReportModel } from '@models/story/storyUserReport';
 
 export interface DbModels {
     user: ModelCtor<UserModel>;
@@ -51,6 +56,12 @@ export interface DbModels {
     subscribers: ModelCtor<SubscribersModel>;
     notifiedBacker: ModelCtor<NotifiedBacker>;
     reachedAddress: ModelCtor<ReachedAddress>;
+    //
+    storyContent: ModelCtor<StoryContentModel>;
+    storyCommunity: ModelCtor<StoryCommunityModel>;
+    storyEngagement: ModelCtor<StoryEngagementModel>;
+    storyUserEngagement: ModelCtor<StoryUserEngagementModel>;
+    storyUserReport: ModelCtor<StoryUserReportModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;

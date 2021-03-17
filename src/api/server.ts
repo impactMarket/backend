@@ -27,11 +27,42 @@ export default (app: express.Application): void => {
     app.use(Sentry.Handlers.requestHandler());
     // TracingHandler creates a trace for every incoming request
     app.use(Sentry.Handlers.tracingHandler());
+    app.use((req, res, next) => {
+        const transaction = (res as any).__sentry_transaction;
+        transaction.name = transaction.name
+            .replace(
+                /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[4][0-9A-Fa-f]{3}-[89AB][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}/g,
+                '<uuid>'
+            )
+            .replace(/0x[a-fA-F0-9]{40}/g, '<address>')
+            .replace(/true|false/g, '<boolean>')
+            .replace(/\d/g, '<digit>');
+        (res as any).__sentry_transaction = transaction;
+        next();
+    });
 
+    let swaggerServers: {
+        url: string;
+    }[] = [];
+    let urlSchema = 'http';
     if (process.env.NODE_ENV === 'development') {
+        swaggerServers = [
+            {
+                url: 'http://localhost:5000/api',
+            },
+        ];
+    } else {
+        swaggerServers = [
+            {
+                url: process.env.HEROKU_APP_NAME + '.herokuapp.com/api',
+            },
+        ];
+        urlSchema = 'https';
+    }
+    if (swaggerServers.length > 0) {
         const options = {
             swaggerDefinition: {
-                openapi: '3.0.0',
+                openapi: '3.0.1',
                 info: {
                     description: 'Swagger UI to impactMarket API',
                     version: '0.0.1',
@@ -41,12 +72,22 @@ export default (app: express.Application): void => {
                         url: 'http://www.apache.org/licenses/LICENSE-2.0.html',
                     },
                 },
-                host: 'localhost:5000',
-                schemes: ['http'],
+                tags: [
+                    {
+                        name: 'user',
+                        description: 'Everything about your users',
+                    },
+                    {
+                        name: 'story',
+                        description: 'Manage stories',
+                    },
+                ],
+                servers: swaggerServers,
+                schemes: [urlSchema],
                 components: {
                     securitySchemes: {
                         api_auth: {
-                            type: 'http',
+                            type: urlSchema,
                             scheme: 'bearer',
                             bearerFormat: 'JWT',
                             scopes: {
@@ -60,6 +101,8 @@ export default (app: express.Application): void => {
             apis: ['./src/api/routes/*.ts'],
         };
         const swaggerSpec = swaggerJsdoc(options);
+
+        console.log(swaggerSpec);
 
         app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
         app.use(morgan('combined'));
