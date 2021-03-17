@@ -31,6 +31,7 @@ function validateEnv() {
         AWS_ACCESS_KEY_ID: str(),
         AWS_SECRET_ACCESS_KEY: str(),
         AWS_BUCKET_IMAGES_COMMUNITY: str(),
+        AWS_BUCKET_IMAGES_STORY: str(),
         AWS_REGION: str(),
         CURRENCIES_API_BASE_URL: str(),
         CURRENCIES_API_KEY: str(),
