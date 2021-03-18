@@ -1,9 +1,17 @@
+import { User } from '@interfaces/user';
 import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
 import { Beneficiary, BeneficiaryAttributes } from '@models/beneficiary';
 import { Logger } from '@utils/logger';
 import { isUUID, isAddress } from '@utils/util';
-import { Op, fn, col, QueryTypes, OrderItem } from 'sequelize';
-import { Col, Fn, Literal } from 'sequelize/types/lib/utils';
+import {
+    Op,
+    fn,
+    col,
+    QueryTypes,
+    OrderItem,
+    WhereAttributeHash,
+} from 'sequelize';
+import { Col, Fn, Literal, Where } from 'sequelize/types/lib/utils';
 
 import { models, sequelize } from '../database';
 import CommunityService from './community';
@@ -98,19 +106,9 @@ export default class BeneficiaryService {
     public static async search(
         managerAddress: string,
         searchInput: string,
-        active: boolean
+        active?: boolean
     ): Promise<IManagerDetailsBeneficiary[]> {
-        // select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed
-        // from beneficiary b
-        //     left join "user" u on b.address = u.address
-        //     left join claim c on b.address = c.address
-        //     left join manager m on b."communityId" = m."communityId"
-        // where m."user" = '0x833961aab38d24EECdCD2129Aa5a5d41Fd86Acbf'
-        // and b.active = true and b.address = '0x64771E37aA6cD3AeD0660fee96F6651CE4d1E3a5'
-        // group by b.address, u.username, b."txAt"
-        // order by b."txAt" desc
-
-        let query = '';
+        let whereSearchCondition: Where | WhereAttributeHash<User>;
         if (!isAddress(managerAddress)) {
             throw new Error('Not valid address!');
         }
@@ -121,32 +119,78 @@ export default class BeneficiaryService {
             throw new Error('Not valid address!');
         }
         if (isAddress(searchInput)) {
-            query =
-                'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address left join manager m on b."communityId" = m."communityId" where m."user" = \'' +
-                managerAddress +
-                "' and b.active = " +
-                active +
-                " and b.address = '" +
-                searchInput +
-                '\' group by b.address, u.username, b."txAt" order by b."txAt" desc';
+            whereSearchCondition = {
+                address: searchInput,
+            };
         } else if (
             searchInput.toLowerCase().indexOf('drop') === -1 &&
             searchInput.toLowerCase().indexOf('delete') === -1 &&
             searchInput.toLowerCase().indexOf('update') === -1 &&
             searchInput.length < 16
         ) {
-            query =
-                'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address left join manager m on b."communityId" = m."communityId" where m."user" = \'' +
-                managerAddress +
-                "' and b.active = " +
-                active +
-                " and u.username like '%" +
-                searchInput +
-                '%\' group by b.address, u.username, b."txAt" order by b."txAt" desc';
+            whereSearchCondition = {
+                username: { [Op.like]: `%${searchInput}%` },
+            };
         } else {
             throw new Error('Not valid search!');
         }
-        return await this.sequelize.query(query, { type: QueryTypes.SELECT });
+
+        const order: string | Literal | Fn | Col | OrderItem[] | undefined = [
+            ['txAt', 'DESC'],
+        ]; // it's default order for now.
+
+        const x = await this.beneficiary.findAll({
+            where: { active },
+            include: [
+                {
+                    model: this.manager,
+                    as: 'manager',
+                    where: {
+                        user: managerAddress,
+                    },
+                },
+                {
+                    model: this.user,
+                    as: 'user',
+                    where: whereSearchCondition,
+                    include: [
+                        {
+                            model: this.appUserTrust,
+                            as: 'throughTrust',
+                            include: [
+                                {
+                                    model: this.appUserTrust,
+                                    as: 'selfTrust',
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            order,
+        });
+        if (x === null) {
+            return [];
+        }
+        const result: IManagerDetailsBeneficiary[] = x.map((r) => {
+            const b = r.toJSON() as BeneficiaryAttributes;
+            return {
+                address: b.address,
+                username: b.user ? b.user!.username : null,
+                timestamp: b.txAt.getTime(),
+                claimed: b.claimed,
+                blocked: b.blocked,
+                verifiedPN:
+                    b.user?.throughTrust?.length !== 0
+                        ? b.user?.throughTrust![0].verifiedPhoneNumber
+                        : undefined,
+                repeatedPN:
+                    b.user?.throughTrust?.length !== 0
+                        ? b.user?.throughTrust![0].selfTrust?.length
+                        : undefined,
+            };
+        });
+        return result;
     }
 
     public static async listBeneficiaries(
@@ -172,8 +216,9 @@ export default class BeneficiaryService {
             throw new Error('Not a manager ' + managerAddress);
         }
 
-        let order: string | Literal | Fn | Col | OrderItem[] | undefined;
-        order = [['txAt', 'DESC']]; // it's default order for now.
+        const order: string | Literal | Fn | Col | OrderItem[] | undefined = [
+            ['txAt', 'DESC'],
+        ]; // it's default order for now.
 
         const x = await this.beneficiary.findAll({
             where: { active },

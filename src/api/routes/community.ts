@@ -16,11 +16,46 @@ export default (app: Router): void => {
     route.get('/publicid/:publicId', communityController.getByPublicId);
     route.get('/contract/:address', communityController.getByContractAddress);
     route.get('/hssi/:publicId', communityController.getHistoricalSSI);
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries/find/{beneficiaryQuery}/{active}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Find a beneficiary in manager's community
+     *     parameters:
+     *       - in: path
+     *         name: beneficiaryQuery
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: Address or (part of) name
+     *       - in: path
+     *         name: active
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: Active, inactive or irrelevante (not defined)
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
     route.get(
-        '/beneficiaries/find/:address',
+        '/beneficiaries/find/:beneficiaryQuery/:active?',
         authenticateToken,
-        communityController.findBeneficiaryByAddress
+        communityController.searchBeneficiary
     );
+
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries/search/{active}/beneficiaryQuery:
+     *   deprecated: true
+     */
     route.get(
         '/beneficiaries/search/:active/:beneficiaryQuery',
         authenticateToken,
@@ -53,20 +88,6 @@ export default (app: Router): void => {
         authenticateToken,
         communityController.managersDetails
     );
-    /**
-     * @swagger
-     *
-     * /list/light/{order}:
-     *   get:
-     *     tags:
-     *       - "community"
-     *     produces:
-     *       - application/json
-     *     parameters:
-     *       - name: order
-     *         in: path
-     *         type: string
-     */
     route.get('/list/light/:order?', communityController.list);
     route.get('/list/full/:order?', communityController.listFull);
     route.post(

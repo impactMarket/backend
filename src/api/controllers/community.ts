@@ -1,3 +1,4 @@
+import { RequestWithUser } from '@ipcttypes/core';
 import BeneficiaryService from '@services/beneficiary';
 import CommunityService from '@services/community';
 import CommunityDailyMetricsService from '@services/communityDailyMetrics';
@@ -65,28 +66,37 @@ const findBeneficiaryByAddress = (req: Request, res: Response) => {
         .catch((e) => res.status(404).send(e));
 };
 
-const searchBeneficiary = (req: Request, res: Response) => {
+const searchBeneficiary = (req: RequestWithUser, res: Response) => {
+    if (req.user === undefined) {
+        controllerLogAndFail('User not identified!', 400, res);
+        return;
+    }
     CommunityService.searchBeneficiary(
-        (req as any).user.address,
+        req.user.address,
         req.params.beneficiaryQuery,
-        req.params.active === 'true'
+        req.params.active ? req.params.active === 'true' : undefined
     )
         .then((r) => res.send(r))
         .catch((e) => res.status(404).send(e));
 };
 
-const searchManager = (req: Request, res: Response) => {
-    CommunityService.searchManager(
-        (req as any).user.address,
-        req.params.managerQuery
-    )
+const searchManager = (req: RequestWithUser, res: Response) => {
+    if (req.user === undefined) {
+        controllerLogAndFail('User not identified!', 400, res);
+        return;
+    }
+    CommunityService.searchManager(req.user.address, req.params.managerQuery)
         .then((r) => res.send(r))
         .catch((e) => res.status(404).send(e));
 };
 
-const listBeneficiaries = (req: Request, res: Response) => {
+const listBeneficiaries = (req: RequestWithUser, res: Response) => {
+    if (req.user === undefined) {
+        controllerLogAndFail('User not identified!', 400, res);
+        return;
+    }
     CommunityService.listBeneficiaries(
-        (req as any).user.address,
+        req.user.address,
         req.params.active === 'true',
         parseInt(req.params.offset, 10),
         parseInt(req.params.limit, 10)
@@ -95,9 +105,13 @@ const listBeneficiaries = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
-const listManagers = (req: Request, res: Response) => {
+const listManagers = (req: RequestWithUser, res: Response) => {
+    if (req.user === undefined) {
+        controllerLogAndFail('User not identified!', 400, res);
+        return;
+    }
     CommunityService.listManagers(
-        (req as any).user.address,
+        req.user.address,
         parseInt(req.params.offset, 10),
         parseInt(req.params.limit, 10)
     )

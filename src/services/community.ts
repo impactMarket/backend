@@ -656,7 +656,7 @@ export default class CommunityService {
     public static async searchBeneficiary(
         managerAddress: string,
         beneficiaryQuery: string,
-        active: boolean
+        active?: boolean
     ): Promise<IManagerDetailsBeneficiary[]> {
         return await BeneficiaryService.search(
             managerAddress,
