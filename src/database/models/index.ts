@@ -157,40 +157,6 @@ export default function initModels(sequelize: Sequelize): void {
 
     userAssociation(sequelize);
 
-    // sequelize.models.AppUserTrustModel.create({
-    //     phone:
-    //         'b96000f4543a5c7c3d75e72626324e785270e078c5a25013a15895097bd1d818',
-    // }).then(async (newTrust) => {
-    //     const user = await sequelize.models.UserModel.findOne({
-    //         where: {
-    //             address: '0x7110b4Df915cb92F53Bc01cC9Ab15F51e5DBb52F',
-    //         },
-    //     });
-    //     await (user as any).addAppUserTrustModel(newTrust);
-    // });
-
-    sequelize.models.UserModel.findOne({
-        include: [
-            {
-                model: sequelize.models.Beneficiary,
-                as: 'beneficiary',
-            },
-            {
-                model: sequelize.models.AppUserTrustModel,
-                as: 'throughTrust',
-                include: [
-                    {
-                        model: sequelize.models.AppUserTrustModel,
-                        as: 'selfTrust',
-                    },
-                ],
-            },
-        ],
-        where: {
-            address: '0x7110b4Df915cb92F53Bc01cC9Ab15F51e5DBb52F',
-        },
-    }).then((x: any) => console.log(x?.toJSON()?.throughTrust));
-
     // this actually works, but eager loading not so much!
     // sequelize.models.Manager.belongsTo(sequelize.models.User, {
     //     foreignKey: 'user',
