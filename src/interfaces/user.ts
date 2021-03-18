@@ -1,3 +1,5 @@
+import { AppUserTrust } from './app/appUserTrust';
+
 export interface User {
     address: string;
     username: string | null;
@@ -12,4 +14,6 @@ export interface User {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
+
+    throughTrust?: AppUserTrust[];
 }

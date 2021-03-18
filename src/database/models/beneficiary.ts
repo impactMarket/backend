@@ -1,6 +1,7 @@
+import { User } from '@interfaces/user';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-interface BeneficiaryAttributes {
+export interface BeneficiaryAttributes {
     id: number;
     address: string;
     communityId: string;
@@ -9,12 +10,15 @@ interface BeneficiaryAttributes {
     tx: string;
     txAt: Date;
     claims: number;
+    claimed: string;
     lastClaimAt: Date | null;
     penultimateClaimAt: Date | null;
 
     // timestamps
     createdAt: Date;
     updatedAt: Date;
+
+    user?: User;
 }
 interface BeneficiaryCreationAttributes {
     address: string;
@@ -35,6 +39,7 @@ export class Beneficiary extends Model<
     public tx!: string;
     public txAt!: Date;
     public claims!: number;
+    public claimed!: string;
     public lastClaimAt!: Date | null;
     public penultimateClaimAt!: Date | null;
 
@@ -89,7 +94,10 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
             claims: {
                 type: DataTypes.INTEGER,
                 defaultValue: 0,
-                allowNull: false,
+            },
+            claimed: {
+                type: DataTypes.DECIMAL(22), // max 9,999 - plus 18 decimals
+                defaultValue: 0,
             },
             lastClaimAt: {
                 type: DataTypes.DATE,

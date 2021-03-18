@@ -1,8 +1,9 @@
 import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
-import { Beneficiary } from '@models/beneficiary';
+import { Beneficiary, BeneficiaryAttributes } from '@models/beneficiary';
 import { Logger } from '@utils/logger';
 import { isUUID, isAddress } from '@utils/util';
-import { Op, fn, col, QueryTypes } from 'sequelize';
+import { Op, fn, col, QueryTypes, OrderItem } from 'sequelize';
+import { Col, Fn, Literal } from 'sequelize/types/lib/utils';
 
 import { models, sequelize } from '../database';
 import CommunityService from './community';
@@ -10,6 +11,9 @@ import CommunityService from './community';
 // const db = database();
 export default class BeneficiaryService {
     public static beneficiary = models.beneficiary;
+    public static manager = models.manager;
+    public static appUserTrust = models.appUserTrust;
+    public static user = models.user;
     public static community = models.community;
     public static sequelize = sequelize;
 
@@ -168,17 +172,62 @@ export default class BeneficiaryService {
             throw new Error('Not a manager ' + managerAddress);
         }
 
-        return await this.sequelize.query(
-            'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address left join manager m on b."communityId" = m."communityId" where m."user" = \'' +
-                managerAddress +
-                "' and b.active = " +
-                active +
-                ' group by b.address, u.username, b."txAt" order by b."txAt" desc offset ' +
-                offset +
-                ' limit ' +
-                limit,
-            { type: QueryTypes.SELECT }
-        );
+        let order: string | Literal | Fn | Col | OrderItem[] | undefined;
+        order = [['txAt', 'DESC']]; // it's default order for now.
+
+        const x = await this.beneficiary.findAll({
+            where: { active },
+            include: [
+                {
+                    model: this.manager,
+                    as: 'manager',
+                    where: {
+                        user: managerAddress,
+                    },
+                },
+                {
+                    model: this.user,
+                    as: 'user',
+                    include: [
+                        {
+                            model: this.appUserTrust,
+                            as: 'throughTrust',
+                            include: [
+                                {
+                                    model: this.appUserTrust,
+                                    as: 'selfTrust',
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            order,
+            offset,
+            limit,
+        });
+        if (x === null) {
+            return [];
+        }
+        const result: IManagerDetailsBeneficiary[] = x.map((r) => {
+            const b = r.toJSON() as BeneficiaryAttributes;
+            return {
+                address: b.address,
+                username: b.user ? b.user!.username : null,
+                timestamp: b.txAt.getTime(),
+                claimed: b.claimed,
+                blocked: b.blocked,
+                verifiedPN:
+                    b.user?.throughTrust?.length !== 0
+                        ? b.user?.throughTrust![0].verifiedPhoneNumber
+                        : undefined,
+                repeatedPN:
+                    b.user?.throughTrust?.length !== 0
+                        ? b.user?.throughTrust![0].selfTrust?.length
+                        : undefined,
+            };
+        });
+        return result;
     }
 
     /**

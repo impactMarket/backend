@@ -52,6 +52,9 @@ export interface IManagerDetailsBeneficiary {
     username: string | null;
     timestamp: number;
     claimed: string;
+    blocked: boolean;
+    verifiedPN: boolean | undefined;
+    repeatedPN: number | undefined;
 }
 
 export interface IManagersDetails {
