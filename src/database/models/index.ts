@@ -178,12 +178,18 @@ export default function initModels(sequelize: Sequelize): void {
             {
                 model: sequelize.models.AppUserTrustModel,
                 as: 'throughTrust',
+                include: [
+                    {
+                        model: sequelize.models.AppUserTrustModel,
+                        as: 'selfTrust',
+                    },
+                ],
             },
         ],
         where: {
             address: '0x7110b4Df915cb92F53Bc01cC9Ab15F51e5DBb52F',
         },
-    }).then(console.log);
+    }).then((x: any) => console.log(x?.toJSON()?.throughTrust));
 
     // this actually works, but eager loading not so much!
     // sequelize.models.Manager.belongsTo(sequelize.models.User, {

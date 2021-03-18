@@ -9,7 +9,7 @@ export class AppUserThroughTrustModel extends Model<
     AppUserThroughTrustCreation
 > {
     public userAddress!: string;
-    public appUserTrustPhone!: string;
+    public appUserTrustId!: string;
 }
 
 export function initializeAppUserThroughTrust(sequelize: Sequelize): void {
@@ -24,13 +24,13 @@ export function initializeAppUserThroughTrust(sequelize: Sequelize): void {
                 onDelete: 'CASCADE',
                 allowNull: false,
             },
-            appUserTrustPhone: {
-                type: DataTypes.STRING(64),
-                // references: {
-                //     model: 'AppUserTrust',
-                //     key: 'phone',
-                // },
-                // onDelete: 'CASCADE',
+            appUserTrustId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'AppUserTrust',
+                    key: 'id',
+                },
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
         },

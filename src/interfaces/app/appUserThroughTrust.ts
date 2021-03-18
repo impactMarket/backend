@@ -1,5 +1,5 @@
 export interface AppUserThroughTrust {
     userAddress: string;
-    appUserTrustPhone: number;
+    appUserTrustId: number;
 }
 export interface AppUserThroughTrustCreation {}
