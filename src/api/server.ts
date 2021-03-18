@@ -81,6 +81,10 @@ export default (app: express.Application): void => {
                         name: 'story',
                         description: 'Manage stories',
                     },
+                    {
+                        name: 'community',
+                        description: 'UBI communities',
+                    },
                 ],
                 servers: swaggerServers,
                 schemes: [urlSchema],
