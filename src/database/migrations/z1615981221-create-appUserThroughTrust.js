@@ -11,13 +11,13 @@ module.exports = {
                 onDelete: 'CASCADE',
                 allowNull: false,
             },
-            appUserTrustPhone: {
-                type: Sequelize.STRING(64),
-                // references: {
-                //     model: 'AppUserTrust',
-                //     key: 'phone',
-                // },
-                // onDelete: 'CASCADE',
+            appUserTrustId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'AppUserTrust',
+                    key: 'id',
+                },
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
         });

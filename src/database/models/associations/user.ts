@@ -32,9 +32,17 @@ export function userAssociation(sequelize: Sequelize) {
         sequelize.models.UserModel,
         {
             through: sequelize.models.AppUserThroughTrustModel,
-            foreignKey: 'appUserTrustPhone',
-            sourceKey: 'phone',
+            foreignKey: 'appUserTrustId',
+            sourceKey: 'id',
             as: 'throughTrust',
+        }
+    );
+    sequelize.models.AppUserTrustModel.hasMany(
+        sequelize.models.AppUserTrustModel,
+        {
+            foreignKey: 'phone',
+            sourceKey: 'phone',
+            as: 'selfTrust',
         }
     );
 }
