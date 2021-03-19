@@ -16,6 +16,10 @@ module.exports = {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false,
             },
+            suspect: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
+            },
         });
     },
     down(queryInterface, Sequelize) {

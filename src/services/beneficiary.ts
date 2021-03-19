@@ -184,9 +184,12 @@ export default class BeneficiaryService {
                     b.user?.throughTrust?.length !== 0
                         ? b.user?.throughTrust![0].verifiedPhoneNumber
                         : undefined,
-                repeatedPN:
+                suspect:
                     b.user?.throughTrust?.length !== 0
-                        ? b.user?.throughTrust![0].selfTrust?.length
+                        ? b.user?.throughTrust![0].selfTrust
+                            ? b.user?.throughTrust![0].selfTrust?.length > 1 ||
+                              b.user?.throughTrust![0].suspect
+                            : undefined
                         : undefined,
             };
         });
@@ -266,9 +269,12 @@ export default class BeneficiaryService {
                     b.user?.throughTrust?.length !== 0
                         ? b.user?.throughTrust![0].verifiedPhoneNumber
                         : undefined,
-                repeatedPN:
+                suspect:
                     b.user?.throughTrust?.length !== 0
-                        ? b.user?.throughTrust![0].selfTrust?.length
+                        ? b.user?.throughTrust![0].selfTrust
+                            ? b.user?.throughTrust![0].selfTrust?.length > 1 ||
+                              b.user?.throughTrust![0].suspect
+                            : undefined
                         : undefined,
             };
         });
