@@ -53,8 +53,9 @@ export interface IManagerDetailsBeneficiary {
     timestamp: number;
     claimed: string;
     blocked: boolean;
+    // to users not yet registered, the values below do not exist
     verifiedPN: boolean | undefined;
-    repeatedPN: number | undefined;
+    suspect: boolean | undefined;
 }
 
 export interface IManagersDetails {

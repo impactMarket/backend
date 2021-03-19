@@ -11,6 +11,7 @@ export class AppUserTrustModel extends Model<
     public id!: number;
     public phone!: string;
     public verifiedPhoneNumber!: boolean;
+    public suspect!: boolean;
 }
 
 export function initializeAppUserTrust(sequelize: Sequelize): void {
@@ -27,6 +28,10 @@ export function initializeAppUserTrust(sequelize: Sequelize): void {
                 allowNull: false,
             },
             verifiedPhoneNumber: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
+            },
+            suspect: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: false,
             },
