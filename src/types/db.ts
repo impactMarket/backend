@@ -31,12 +31,14 @@ import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
 import { StoryUserReportModel } from '@models/story/storyUserReport';
 import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
 import { AppUserTrustModel } from '@models/app/appUserTrust';
+import { UbiCommunitySuspectModel } from '@models/UBI/ubiCommunitySuspect';
 
 export interface DbModels {
     user: ModelCtor<UserModel>;
     appUserTrust: ModelCtor<AppUserTrustModel>;
     appUserThroughTrust: ModelCtor<AppUserThroughTrustModel>;
     community: ModelCtor<Community>;
+    ubiCommunitySuspect: ModelCtor<UbiCommunitySuspectModel>;
     communityContract: ModelCtor<CommunityContract>;
     communityState: ModelCtor<CommunityState>;
     communityDailyState: ModelCtor<CommunityDailyState>;

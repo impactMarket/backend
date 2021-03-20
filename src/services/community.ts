@@ -38,6 +38,7 @@ export default class CommunityService {
     public static communityState = models.communityState;
     public static communityDailyMetrics = models.communityDailyMetrics;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
+    public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static sequelize = sequelize;
 
     public static async create(
@@ -725,12 +726,19 @@ export default class CommunityService {
     public static async getByPublicId(
         publicId: string
     ): Promise<ICommunity | null> {
-        const community = await this.community.findOne({
+        const rawCommunity = await this.community.findAll({
+            include: [
+                {
+                    model: this.ubiCommunitySuspect,
+                    as: 'suspect',
+                    // TODO: just the most recent, in this case
+                },
+            ],
             where: {
                 publicId,
             },
-            raw: true,
         });
+        const community = rawCommunity[0].toJSON() as CommunityAttributes;
         if (community === null) {
             throw new Error('Not found community ' + publicId);
         }

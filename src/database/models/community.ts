@@ -1,4 +1,5 @@
 import { StoryCommunity } from '@interfaces/story/storyCommunity';
+import { UbiCommunitySuspect } from '@interfaces/UBI/ubiCommunitySuspect';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { ICommunityVars } from '../../types';
@@ -31,6 +32,7 @@ export interface CommunityAttributes {
     updatedAt: Date;
 
     storyCommunity?: StoryCommunity[];
+    suspect?: UbiCommunitySuspect[];
 }
 export interface CommunityCreationAttributes {
     requestByAddress: string;
