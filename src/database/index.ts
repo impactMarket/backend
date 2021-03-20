@@ -36,6 +36,7 @@ import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
 import { StoryUserReportModel } from '@models/story/storyUserReport';
 import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
 import { AppUserTrustModel } from '@models/app/appUserTrust';
+import { UbiCommunitySuspectModel } from '@models/UBI/ubiCommunitySuspect';
 
 let logging:
     | boolean
@@ -62,6 +63,8 @@ const models: DbModels = {
     appUserThroughTrust: sequelize.models
         .AppUserThroughTrustModel as ModelCtor<AppUserThroughTrustModel>,
     community: sequelize.models.Community as ModelCtor<Community>,
+    ubiCommunitySuspect: sequelize.models
+        .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspectModel>,
     communityContract: sequelize.models
         .CommunityContract as ModelCtor<CommunityContract>,
     communityState: sequelize.models

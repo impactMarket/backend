@@ -36,11 +36,14 @@ import { initializeStoryUserReport } from './story/storyUserReport';
 import { userAssociation } from './associations/user';
 import { initializeAppUserThroughTrust } from './app/appUserThroughTrust';
 import { initializeAppUserTrust } from './app/appUserTrust';
+import { communityAssociation } from './associations/community';
+import { initializeUbiCommunitySuspect } from './UBI/ubiCommunitySuspect';
 
 export default function initModels(sequelize: Sequelize): void {
     initializeSubscribers(sequelize);
-    initializeUbiRequestChangeParams(sequelize);
     initializeCommunity(sequelize);
+    initializeUbiCommunitySuspect(sequelize);
+    initializeUbiRequestChangeParams(sequelize);
     initializeSSI(sequelize);
     initializeTransactions(sequelize);
     initializeUser(sequelize);
@@ -156,6 +159,7 @@ export default function initModels(sequelize: Sequelize): void {
     );
 
     userAssociation(sequelize);
+    communityAssociation(sequelize);
 
     // this actually works, but eager loading not so much!
     // sequelize.models.Manager.belongsTo(sequelize.models.User, {
