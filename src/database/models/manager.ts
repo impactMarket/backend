@@ -1,6 +1,6 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-interface ManagerAttributes {
+export interface ManagerAttributes {
     id: number;
     user: string;
     communityId: string;

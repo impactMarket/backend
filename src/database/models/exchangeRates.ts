@@ -1,6 +1,6 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-interface ExchangeRatesAttributes {
+export interface ExchangeRatesAttributes {
     currency: string;
     rate: number;
 
