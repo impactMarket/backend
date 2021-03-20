@@ -3,6 +3,7 @@ import { CommunityAttributes } from '@models/community';
 import { CommunityContractAttributes } from '@models/communityContract';
 import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
 import { CommunityStateAttributes } from '@models/communityState';
+import { ExchangeRatesAttributes } from '@models/exchangeRates';
 
 export interface ICommunityLightDetails {
     publicId: string;
@@ -67,14 +68,14 @@ export interface IManagersDetails {
 }
 
 export interface IUserHello {
-    /**
-     * @deprecated
-     */
-    exchangeRates: any; // TODO: remove when 1.0.0 is the lowest version required
-    rates: { currency: string; rate: number }[];
+    rates: ExchangeRatesAttributes[];
     isBeneficiary: boolean;
     isManager: boolean;
     community?: ICommunity;
+    blocked: boolean;
+    // to users not yet registered, the values below do not exist
+    verifiedPN: boolean | undefined;
+    suspect: boolean | undefined;
 }
 
 export interface IUserAuth extends IUserHello {

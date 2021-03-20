@@ -1,12 +1,5 @@
-import { User } from '@interfaces/user';
+import { User, UserCreationAttributes } from '@interfaces/user';
 import { Sequelize, DataTypes, Model } from 'sequelize';
-
-export interface UserCreationAttributes {
-    address: string;
-    language: string;
-    currency?: string;
-    pushNotificationToken: string;
-}
 
 export class UserModel extends Model<User, UserCreationAttributes> {
     public address!: string;
@@ -18,7 +11,7 @@ export class UserModel extends Model<User, UserCreationAttributes> {
     public gender!: string;
     public year!: number | null;
     public children!: number | null;
-    public readonly lastLogin!: Date;
+    public lastLogin!: Date;
 
     // timestamps!
     public readonly createdAt!: Date;

@@ -1,28 +1,31 @@
 import { AppUserDeviceCreation } from '@interfaces/appUserDevice';
 import { AppAnonymousReport } from '@interfaces/appAnonymousReport';
-import { User } from '@interfaces/user';
-import { UserCreationAttributes } from '@models/user';
+import { User, UserCreationAttributes } from '@interfaces/user';
 import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
 
 import { generateAccessToken } from '../api/middlewares';
 import { models } from '../database';
 import { ICommunity, IUserHello, IUserAuth } from '../types/endpoints';
-import BeneficiaryService from './beneficiary';
 import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';
-import ManagerService from './managers';
+import { AppUserTrustCreation } from '@interfaces/app/appUserTrust';
 
 export default class UserService {
     public static anonymousReport = models.anonymousReport;
     public static user = models.user;
+    public static beneficiary = models.beneficiary;
+    public static manager = models.manager;
+    public static appUserTrust = models.appUserTrust;
+    public static appUserThroughTrust = models.appUserThroughTrust;
     public static userDevice = models.userDevice;
 
     public static async authenticate(
         address: string,
         language: string,
         currency: string,
-        pushNotificationToken: string
+        pushNotificationToken: string,
+        phone?: string // until the user updates to new version, this can be undefined
     ): Promise<IUserAuth> {
         try {
             const token = generateAccessToken(address);
@@ -31,10 +34,19 @@ export default class UserService {
                 raw: true,
             });
             if (user === null) {
+                let throughTrust: AppUserTrustCreation[] | undefined;
+                if (phone) {
+                    throughTrust = [
+                        {
+                            phone,
+                        },
+                    ];
+                }
                 let createUser: UserCreationAttributes = {
                     address,
                     language,
                     pushNotificationToken,
+                    throughTrust,
                 };
                 if (currency) {
                     createUser = {
@@ -49,14 +61,14 @@ export default class UserService {
                     { where: { address } }
                 );
             }
-            const loadedUser = await UserService.loadUser(user.address);
+            const userHello = await this.loadUser(user.address);
             return {
-                user,
                 token,
-                ...loadedUser,
+                user,
+                ...userHello,
             };
         } catch (e) {
-            Logger.warn('Error while auth user ', address, e);
+            Logger.warn(`Error while auth user ${address} ${e}`);
             throw new Error(e);
         }
     }
@@ -230,51 +242,73 @@ export default class UserService {
      * TODO: improve
      */
     private static async loadUser(userAddress: string): Promise<IUserHello> {
-        let community: ICommunity | undefined;
-        let communityId: string | undefined;
-        let isBeneficiary = false;
-        let isManager = false;
-        const beneficiary = await BeneficiaryService.findByAddress(
-            userAddress,
-            true
-        );
-        if (beneficiary) {
-            isBeneficiary = true;
-            communityId = beneficiary.communityId;
+        let user = await this.user.findOne({
+            include: [
+                {
+                    model: this.beneficiary,
+                    as: 'beneficiary',
+                    required: false,
+                },
+                {
+                    model: this.manager,
+                    as: 'manager',
+                    required: false,
+                },
+                {
+                    model: this.appUserTrust,
+                    as: 'throughTrust',
+                    include: [
+                        {
+                            model: this.appUserTrust,
+                            as: 'selfTrust',
+                        },
+                    ],
+                },
+            ],
+            where: { address: userAddress },
+            // raw: true,
+        });
+        if (user === null) {
+            throw new Error('User is null?');
         }
-        const manager = await ManagerService.get(userAddress);
-        if (manager) {
-            isManager = true;
-            communityId = manager.communityId;
-        }
-        if (communityId) {
-            const _community = await CommunityService.getByPublicId(
-                communityId
+        const fUser = user.toJSON() as User;
+        let community: ICommunity | null = null;
+        if (fUser.beneficiary!.length > 0) {
+            community = await CommunityService.getByPublicId(
+                fUser.beneficiary![0].communityId
             );
-            if (_community) {
-                community = _community;
-            }
+        } else if (fUser.manager!.length > 0) {
+            community = await CommunityService.getByPublicId(
+                fUser.manager![0].communityId
+            );
         } else {
-            const _communityId = await CommunityService.findByFirstManager(
-                userAddress
+            const communityId = await CommunityService.findByFirstManager(
+                fUser.address
             );
-            if (_communityId !== null) {
-                const _community = await CommunityService.getByPublicId(
-                    _communityId
-                );
-                if (_community) {
-                    isManager = true;
-                    community = _community;
-                }
+            if (communityId) {
+                community = await CommunityService.getByPublicId(communityId);
             }
         }
-        const { exchangeRates, rates } = await ExchangeRatesService.get();
         return {
-            exchangeRates,
-            rates,
+            isBeneficiary: fUser.beneficiary!.length > 0,
+            isManager: fUser.manager!.length > 0,
+            blocked:
+                fUser.beneficiary!.length > 0
+                    ? fUser.beneficiary![0].blocked
+                    : false,
+            verifiedPN:
+                fUser?.throughTrust?.length !== 0
+                    ? fUser?.throughTrust![0].verifiedPhoneNumber
+                    : undefined,
+            suspect:
+                fUser?.throughTrust?.length !== 0
+                    ? fUser?.throughTrust![0].selfTrust
+                        ? fUser?.throughTrust![0].selfTrust?.length > 1 ||
+                          fUser?.throughTrust![0].suspect
+                        : undefined
+                    : undefined,
+            rates: await ExchangeRatesService.get(),
             community: community ? community : undefined,
-            isBeneficiary,
-            isManager,
         };
     }
 }

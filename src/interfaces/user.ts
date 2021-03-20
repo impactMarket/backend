@@ -1,4 +1,6 @@
-import { AppUserTrust } from './app/appUserTrust';
+import { BeneficiaryAttributes } from '@models/beneficiary';
+import { ManagerAttributes } from '@models/manager';
+import { AppUserTrust, AppUserTrustCreation } from './app/appUserTrust';
 
 export interface User {
     address: string;
@@ -16,4 +18,15 @@ export interface User {
     updatedAt: Date;
 
     throughTrust?: AppUserTrust[];
+    beneficiary?: BeneficiaryAttributes[];
+    manager?: ManagerAttributes[];
+}
+
+export interface UserCreationAttributes {
+    address: string;
+    language: string;
+    currency?: string;
+    pushNotificationToken: string;
+
+    throughTrust?: AppUserTrustCreation[];
 }

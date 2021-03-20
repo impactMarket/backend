@@ -13,6 +13,7 @@ const authenticate = celebrate({
         language: Joi.string().required(),
         currency: Joi.string().optional().allow(''),
         pushNotificationToken: Joi.string().required().allow(''),
+        phone: Joi.string().optional(),
     }),
 });
 

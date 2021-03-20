@@ -18,12 +18,19 @@ class UserController {
     };
 
     public authenticate = (req: Request, res: Response) => {
-        const { address, language, currency, pushNotificationToken } = req.body;
+        const {
+            address,
+            language,
+            currency,
+            pushNotificationToken,
+            phone,
+        } = req.body;
         UserService.authenticate(
             address,
             language,
             currency,
-            pushNotificationToken
+            pushNotificationToken,
+            phone
         )
             .then((user) => res.send(user))
             .catch((e) => res.status(403).send(e));
