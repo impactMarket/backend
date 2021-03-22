@@ -27,6 +27,4 @@ export interface UserCreationAttributes {
     language: string;
     currency?: string;
     pushNotificationToken: string;
-
-    throughTrust?: AppUserTrustCreation[];
 }

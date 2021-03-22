@@ -33,14 +33,14 @@ class UserController {
     };
 
     public hello = (req: Request, res: Response) => {
-        const { address, token } = req.body;
+        const { address, token, phone } = req.body;
         if (token.length > 0) {
             // failing to set the push notification, should not be a blocker!
             UserService.setPushNotificationsToken(address, token).catch((e) =>
                 Logger.warn(`Error setting push notification token ` + e)
             );
         }
-        UserService.hello(address)
+        UserService.hello(address, phone)
             .then((u) => res.send(u))
             .catch((e) => controllerLogAndFail(e, 403, res));
     };

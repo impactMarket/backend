@@ -1,3 +1,5 @@
+import { AppUserThroughTrustCreation } from './appUserThroughTrust';
+
 export interface AppUserTrust {
     id: number;
     phone: string;
@@ -8,4 +10,5 @@ export interface AppUserTrust {
 }
 export interface AppUserTrustCreation {
     phone: string;
+    throughTrust?: AppUserThroughTrustCreation;
 }

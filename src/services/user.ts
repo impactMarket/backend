@@ -5,13 +5,13 @@ import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
 
 import { generateAccessToken } from '../api/middlewares';
-import { models } from '../database';
+import { models, sequelize } from '../database';
 import { ICommunity, IUserHello, IUserAuth } from '../types/endpoints';
 import CommunityService from './community';
 import ExchangeRatesService from './exchangeRates';
-import { AppUserTrustCreation } from '@interfaces/app/appUserTrust';
 
 export default class UserService {
+    public static sequelize = sequelize;
     public static anonymousReport = models.anonymousReport;
     public static user = models.user;
     public static beneficiary = models.beneficiary;
@@ -23,7 +23,7 @@ export default class UserService {
     public static async authenticate(
         address: string,
         language: string,
-        currency: string,
+        currency: string | undefined,
         pushNotificationToken: string,
         phone?: string // until the user updates to new version, this can be undefined
     ): Promise<IUserAuth> {
@@ -34,32 +34,49 @@ export default class UserService {
                 raw: true,
             });
             if (user === null) {
-                let throughTrust: AppUserTrustCreation[] | undefined;
-                if (phone) {
-                    throughTrust = [
-                        {
-                            phone,
-                        },
-                    ];
+                try {
+                    await this.sequelize.transaction(async (t) => {
+                        let createUser: UserCreationAttributes = {
+                            address,
+                            language,
+                            pushNotificationToken,
+                        };
+                        if (currency) {
+                            createUser = {
+                                ...createUser,
+                                currency,
+                            };
+                        }
+                        user = await this.user.create(createUser, {
+                            transaction: t,
+                        });
+                        if (phone) {
+                            const userTrust = await this.appUserTrust.create(
+                                {
+                                    phone,
+                                },
+                                { transaction: t }
+                            );
+                            await this.appUserThroughTrust.create(
+                                {
+                                    userAddress: address,
+                                    appUserTrustId: userTrust.id,
+                                },
+                                { transaction: t }
+                            );
+                        }
+                    });
+                } catch (e) {
+                    Logger.error('creating account ' + e);
                 }
-                let createUser: UserCreationAttributes = {
-                    address,
-                    language,
-                    pushNotificationToken,
-                    throughTrust,
-                };
-                if (currency) {
-                    createUser = {
-                        ...createUser,
-                        currency,
-                    };
-                }
-                user = await this.user.create(createUser);
             } else {
                 await this.user.update(
                     { pushNotificationToken },
                     { where: { address } }
                 );
+            }
+            if (user === null) {
+                throw new Error('User was not defined!');
             }
             const userHello = await this.loadUser(user.address);
             return {
@@ -73,10 +90,57 @@ export default class UserService {
         }
     }
 
-    public static async hello(address: string): Promise<IUserHello> {
-        const user = await this.user.findOne({ where: { address }, raw: true });
+    public static async hello(
+        address: string,
+        phone?: string
+    ): Promise<IUserHello> {
+        const user = await this.user.findOne({
+            include: [
+                {
+                    model: this.appUserTrust,
+                    as: 'throughTrust',
+                    include: [
+                        {
+                            model: this.appUserTrust,
+                            as: 'selfTrust',
+                        },
+                    ],
+                },
+            ],
+            where: { address },
+        });
         if (user === null) {
             throw new Error(address + ' user not found!');
+        }
+        if (phone) {
+            const uu = user.toJSON() as User;
+            const userTrustId =
+                uu.throughTrust && uu.throughTrust.length > 0
+                    ? uu.throughTrust[0].id
+                    : undefined;
+            if (userTrustId === undefined) {
+                try {
+                    await this.sequelize.transaction(async (t) => {
+                        const userTrust = await this.appUserTrust.create(
+                            {
+                                phone,
+                            },
+                            { transaction: t }
+                        );
+                        await this.appUserThroughTrust.create(
+                            {
+                                userAddress: address,
+                                appUserTrustId: userTrust.id,
+                            },
+                            { transaction: t }
+                        );
+                    });
+                } catch (e) {
+                    Logger.error(
+                        'creating trust profile to existing account ' + e
+                    );
+                }
+            }
         }
         return await UserService.loadUser(user.address);
     }
