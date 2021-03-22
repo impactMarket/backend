@@ -27,7 +27,7 @@ export default (app: Router): void => {
         try {
             upload.single('imageFile')(req, res, async (err) => {
                 if (err) {
-                    Logger.error('Error during /storage/upload ', err);
+                    Logger.error('Error during /storage/upload ' + err);
                     res.sendStatus(403);
                 }
 
@@ -93,7 +93,7 @@ export default (app: Router): void => {
                 res.sendStatus(200);
             });
         } catch (e) {
-            Logger.error('Error during /upload ', e);
+            Logger.error('Error during /upload ' + e);
             res.sendStatus(403);
         }
     });
