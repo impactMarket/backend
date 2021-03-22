@@ -9,7 +9,7 @@ import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
 import { CommunityStateAttributes } from '@models/communityState';
 import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
-import { Op, QueryTypes, fn, col } from 'sequelize';
+import { Op, QueryTypes, fn, col, literal } from 'sequelize';
 
 import config from '../config';
 import CommunityContractABI from '../contracts/CommunityABI.json';
@@ -726,12 +726,23 @@ export default class CommunityService {
     public static async getByPublicId(
         publicId: string
     ): Promise<ICommunity | null> {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
         const rawCommunity = await this.community.findAll({
             include: [
                 {
                     model: this.ubiCommunitySuspect,
                     as: 'suspect',
-                    // TODO: just the most recent, in this case
+                    required: false,
+                    where: {
+                        createdAt: {
+                            [Op.eq]: literal(
+                                '(select max("createdAt") from ubi_community_suspect where "communityId" = "suspect"."communityId" and "createdAt" > \'' +
+                                    yesterday.toISOString().split('T')[0] +
+                                    "')"
+                            ),
+                        },
+                    },
                 },
             ],
             where: {

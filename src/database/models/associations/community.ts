@@ -9,4 +9,10 @@ export function communityAssociation(sequelize: Sequelize) {
             as: 'suspect',
         }
     );
+    // used to query from the community with incude
+    sequelize.models.Community.hasMany(sequelize.models.Beneficiary, {
+        foreignKey: 'communityId',
+        sourceKey: 'publicId',
+        as: 'beneficiaries',
+    });
 }

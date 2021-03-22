@@ -3,6 +3,7 @@ import { UbiCommunitySuspect } from '@interfaces/UBI/ubiCommunitySuspect';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { ICommunityVars } from '../../types';
+import { BeneficiaryAttributes } from './beneficiary';
 
 export interface CommunityAttributes {
     id: number; // Note that the `null assertion` `!` is required in strict mode.
@@ -33,6 +34,7 @@ export interface CommunityAttributes {
 
     storyCommunity?: StoryCommunity[];
     suspect?: UbiCommunitySuspect[];
+    beneficiaries?: BeneficiaryAttributes[];
 }
 export interface CommunityCreationAttributes {
     requestByAddress: string;

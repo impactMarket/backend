@@ -11,9 +11,67 @@ import UserService from '@services/user';
 import { Logger } from '@utils/logger';
 import { notifyBackersCommunityLowFunds } from '@utils/util';
 import BigNumber from 'bignumber.js';
+import { models } from '../../../database';
 import { median, mean } from 'mathjs';
 
 import config from '../../../config';
+import { CommunityAttributes } from '@models/community';
+
+export async function verifyCommunitySuspectActivity(): Promise<void> {
+    //
+    const communities = await models.community.findAll({
+        include: [
+            {
+                model: models.beneficiary,
+                as: 'beneficiaries',
+                include: [
+                    {
+                        model: models.user,
+                        as: 'user',
+                        include: [
+                            {
+                                model: models.appUserTrust,
+                                as: 'throughTrust',
+                                include: [
+                                    {
+                                        model: models.appUserTrust,
+                                        as: 'selfTrust',
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    });
+    for (let c = 0; c < communities.length; c++) {
+        const community = communities[c].toJSON() as CommunityAttributes;
+        if (community.beneficiaries!.length > 0) {
+            const suspectBeneficiaries = community.beneficiaries!.filter((b) =>
+                b.user && b.user.throughTrust && b.user!.throughTrust.length > 0
+                    ? b.user.throughTrust?.length > 1 ||
+                      b.user.throughTrust[0].suspect
+                    : false
+            );
+            if (suspectBeneficiaries.length === 0) {
+                continue;
+            }
+            const ps =
+                (suspectBeneficiaries.length /
+                    (community.beneficiaries!.length -
+                        suspectBeneficiaries.length)) *
+                100;
+            const y = 2 ** (0.4 * ps) - 1;
+            const suspectLevel = Math.round(Math.min(y, 100) / 10);
+            // save suspect level
+            models.ubiCommunitySuspect.create({
+                communityId: community.id,
+                suspect: suspectLevel,
+            });
+        }
+    }
+}
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     // this should run post-midnight (well, at midnight)
