@@ -12,6 +12,7 @@ import {
     calcuateCommunitiesMetrics,
     populateCommunityDailyState,
     verifyCommunityFunds,
+    verifyCommunitySuspectActivity,
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { verifyStoriesLifecycle } from './jobs/cron/stories';
@@ -153,7 +154,7 @@ function cron() {
                         );
                     })
                     .catch((e) => {
-                        Logger.error('updateExchangeRates FAILED!', e);
+                        Logger.error('updateExchangeRates FAILED! ' + e);
                     });
             },
             null,
@@ -171,7 +172,7 @@ function cron() {
                     Logger.info('verifyCommunityFunds successfully executed!');
                 })
                 .catch((e) => {
-                    Logger.error('verifyCommunityFunds FAILED!', e);
+                    Logger.error('verifyCommunityFunds FAILED! ' + e);
                 });
         },
         null,
@@ -197,14 +198,30 @@ function cron() {
                             );
                         })
                         .catch((e) => {
-                            Logger.error('calcuateGlobalMetrics FAILED!', e);
+                            Logger.error('calcuateGlobalMetrics FAILED! ' + e);
                         });
                     Logger.info(
                         'calcuateCommunitiesMetrics successfully executed!'
                     );
                 })
                 .catch((e) => {
-                    Logger.error('calcuateCommunitiesMetrics FAILED!', e);
+                    Logger.error('calcuateCommunitiesMetrics FAILED! ' + e);
+                });
+        },
+        null,
+        true
+    );
+
+    new CronJob(
+        '0 0 * * *',
+        () => {
+            GlobalDemographicsService.calculateDemographics()
+                .then(() => {
+                    CronJobExecutedService.add('calculateDemographics');
+                    Logger.info('calculateDemographics successfully executed!');
+                })
+                .catch((e) => {
+                    Logger.error('calculateDemographics FAILED! ' + e);
                 });
         },
         null,
@@ -215,7 +232,7 @@ function cron() {
     new CronJob(
         '0 1 * * *',
         () => {
-            Logger.info('Calculating community metrics...');
+            Logger.info('Verify stories...');
             verifyStoriesLifecycle()
                 .then(() => {
                     CronJobExecutedService.add('verifyStoriesLifecycle');
@@ -224,24 +241,29 @@ function cron() {
                     );
                 })
                 .catch((e) => {
-                    Logger.error('verifyStoriesLifecycle FAILED!', e);
+                    Logger.error('verifyStoriesLifecycle FAILED! ' + e);
                 });
         },
         null,
         true
     );
 
-    // at 00:00 on thursday.
+    // at 5:12 am.
     new CronJob(
-        '0 0 * * *',
+        '12 5 * * *',
         () => {
-            GlobalDemographicsService.calculateDemographics()
+            Logger.info('Verify community suspicious activity...');
+            verifyCommunitySuspectActivity()
                 .then(() => {
-                    CronJobExecutedService.add('calculateDemographics');
-                    Logger.info('calculateDemographics successfully executed!');
+                    CronJobExecutedService.add(
+                        'verifyCommunitySuspectActivity'
+                    );
+                    Logger.info(
+                        'verifyCommunitySuspectActivity successfully executed!'
+                    );
                 })
                 .catch((e) => {
-                    Logger.error('calculateDemographics FAILED!', e);
+                    Logger.error('verifyCommunitySuspectActivity FAILED! ' + e);
                 });
         },
         null,
@@ -260,7 +282,7 @@ function cron() {
                     );
                 })
                 .catch((e) => {
-                    Logger.error('populateCommunityDailyState FAILED!', e);
+                    Logger.error('populateCommunityDailyState FAILED! ' + e);
                 });
         },
         null,

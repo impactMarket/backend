@@ -4,4 +4,7 @@ export interface UbiCommunitySuspect {
     suspect: number;
     createdAt: boolean;
 }
-export interface UbiCommunitySuspectCreation {}
+export interface UbiCommunitySuspectCreation {
+    communityId: number;
+    suspect: number;
+}
