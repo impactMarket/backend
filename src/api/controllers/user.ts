@@ -8,8 +8,12 @@ import config from '../../config';
 class UserController {
     public report = (req: Request, res: Response) => {
         const { communityId, message } = req.body;
+        if (message.length === 0) {
+            res.sendStatus(200); // TODO: it's not ok. Will be removed, see validator step
+            return;
+        }
         UserService.report(communityId, message)
-            .then((user) => res.send(user))
+            .then((r) => res.send(r))
             .catch((e) => res.status(403).send(e));
     };
 
