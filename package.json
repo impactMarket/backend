@@ -54,7 +54,7 @@
         "cron": "1.8.2",
         "dotenv": "8.2.0",
         "envalid": "7.0.0",
-        "ethers": "5.0.24",
+        "ethers": "5.0.32",
         "expo-server-sdk": "3.6.0",
         "express": "4.17.1",
         "helmet": "4.4.1",
@@ -111,8 +111,6 @@
         "sinon": "9.2.1",
         "source-map-support": "0.5.19",
         "ts-node": "9.0.0",
-        "typescript": "3.8.3",
-        "web3": "1.2.9",
-        "web3-eth-contract": "1.2.9"
+        "typescript": "3.8.3"
     }
 }
