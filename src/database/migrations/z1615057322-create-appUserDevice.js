@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('AppUserDevice', {
+        await queryInterface.createTable('app_user_device', {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
@@ -38,10 +38,10 @@ module.exports = {
             },
         });
         return queryInterface.sequelize.query(
-            `ALTER TABLE "AppUserDevice" ADD CONSTRAINT one_user_per_device_key UNIQUE ("userAddress", phone, identifier, device, network);`
+            `ALTER TABLE app_user_device ADD CONSTRAINT one_user_per_device_key UNIQUE ("userAddress", phone, identifier, device, network);`
         );
     },
     down(queryInterface, Sequelize) {
-        return queryInterface.dropTable('AppUserDevice');
+        return queryInterface.dropTable('app_user_device');
     },
 };

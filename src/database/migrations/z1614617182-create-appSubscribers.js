@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('AppSubscribers', {
+        return queryInterface.createTable('app_subscribers', {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
@@ -14,6 +14,6 @@ module.exports = {
         });
     },
     down(queryInterface, Sequelize) {
-        return queryInterface.dropTable('AppSubscribers');
+        return queryInterface.dropTable('app_subscribers');
     },
 };

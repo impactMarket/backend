@@ -53,7 +53,7 @@ export function initializeUbiRequestChangeParams(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'UbiRequestChangeParams',
+            tableName: 'ubi_request_changeParams',
             timestamps: false,
             sequelize,
         }
