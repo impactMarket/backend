@@ -36,7 +36,7 @@ export function initializeAppAnonymousReport(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'AppAnonymousReport',
+            tableName: 'app_anonymous_report',
             timestamps: false,
             sequelize,
         }

@@ -56,7 +56,7 @@ export function initializeAppUserDevice(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'AppUserDevice',
+            tableName: 'app_user_device',
             timestamps: false,
             sequelize,
         }

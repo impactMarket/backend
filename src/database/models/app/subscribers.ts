@@ -26,7 +26,7 @@ export function initializeSubscribers(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'AppSubscribers',
+            tableName: 'app_subscribers',
             timestamps: false,
             sequelize,
         }

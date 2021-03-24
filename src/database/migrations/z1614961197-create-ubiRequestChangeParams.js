@@ -3,7 +3,7 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('UbiRequestChangeParams', {
+        return queryInterface.createTable('ubi_request_changeParams', {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
@@ -39,6 +39,6 @@ module.exports = {
         });
     },
     down: (queryInterface) => {
-        return queryInterface.dropTable('UbiRequestChangeParams');
+        return queryInterface.dropTable('ubi_request_changeParams');
     },
 };
