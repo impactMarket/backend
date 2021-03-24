@@ -4,7 +4,7 @@ module.exports = {
         await queryInterface.renameTable('AppSubscribers', 'app_subscribers');
         await queryInterface.renameTable(
             'UbiRequestChangeParams',
-            'ubi_request_changeParams'
+            'ubi_request_change_params'
         );
         await queryInterface.renameTable('AppUserDevice', 'app_user_device');
         await queryInterface.renameTable(
