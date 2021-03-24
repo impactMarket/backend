@@ -27,7 +27,7 @@ export function initializeAppUserThroughTrust(sequelize: Sequelize): void {
             appUserTrustId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'AppUserTrust',
+                    model: 'app_user_trust',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -35,7 +35,7 @@ export function initializeAppUserThroughTrust(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'AppUserThroughTrust',
+            tableName: 'app_user_through_trust',
             timestamps: false,
             sequelize,
         }
