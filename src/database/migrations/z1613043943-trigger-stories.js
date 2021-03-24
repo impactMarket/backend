@@ -10,10 +10,10 @@ module.exports = {
     RETURNS TRIGGER AS $$
     BEGIN
         IF (TG_OP = 'INSERT') THEN -- INSERT operations
-            UPDATE "StoryEngagement" SET loves = loves + 1 WHERE "contentId"=NEW."contentId";
+            UPDATE story_engagement SET loves = loves + 1 WHERE "contentId"=NEW."contentId";
             RETURN NEW;
         ELSEIF (TG_OP = 'DELETE') THEN -- DELETE operations
-            UPDATE "StoryEngagement" SET loves = loves - 1 WHERE "contentId"=OLD."contentId";
+            UPDATE story_engagement SET loves = loves - 1 WHERE "contentId"=OLD."contentId";
             RETURN OLD;
         END IF;
     END;
@@ -21,7 +21,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_loves_stories
 BEFORE INSERT OR DELETE
-ON "StoryUserEngagement"
+ON story_user_engagement
 FOR EACH ROW
 EXECUTE PROCEDURE update_loves_stories();`);
     },

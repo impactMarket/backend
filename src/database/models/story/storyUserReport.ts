@@ -27,7 +27,7 @@ export function initializeStoryUserReport(
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'StoryContent',
+                    model: 'story_content',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -39,7 +39,7 @@ export function initializeStoryUserReport(
             },
         },
         {
-            tableName: 'StoryUserReport',
+            tableName: 'story_user_report',
             sequelize,
             timestamps: false,
         }
