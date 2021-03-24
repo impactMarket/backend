@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('AppUserThroughTrust', {
+        return queryInterface.createTable('app_user_through_trust', {
             userAddress: {
                 type: Sequelize.STRING(44),
                 references: {
@@ -14,7 +14,7 @@ module.exports = {
             appUserTrustId: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: 'AppUserTrust',
+                    model: 'app_user_trust',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -23,6 +23,6 @@ module.exports = {
         });
     },
     down(queryInterface, Sequelize) {
-        return queryInterface.dropTable('AppUserThroughTrust');
+        return queryInterface.dropTable('app_user_through_trust');
     },
 };

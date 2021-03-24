@@ -37,7 +37,7 @@ export function initializeAppUserTrust(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'AppUserTrust',
+            tableName: 'app_user_trust',
             timestamps: false,
             sequelize,
         }
