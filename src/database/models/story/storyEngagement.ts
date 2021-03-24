@@ -27,7 +27,7 @@ export function initializeStoryEngagement(
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'StoryContent',
+                    model: 'story_content',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -40,7 +40,7 @@ export function initializeStoryEngagement(
             },
         },
         {
-            tableName: 'StoryEngagement',
+            tableName: 'story_engagement',
             sequelize,
             timestamps: false,
         }

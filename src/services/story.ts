@@ -243,7 +243,7 @@ export default class StoryService {
                 status: 'valid',
                 '$storyCommunity->storyContent.postedAt$': {
                     [Op.eq]: literal(`(select max("postedAt")
-                    from "StoryContent" sc, "StoryCommunity" sm
+                    from story_content sc, story_community sm
                     where sc.id=sm."contentId" and sm."communityId"="Community".id and sc."isPublic"=true)`),
                 },
             } as any, // does not recognize the string as a variable
@@ -389,10 +389,10 @@ export default class StoryService {
         const storiesToDelete = await this.sequelize.query(
             `select SC."contentId", ST.media
             from community c,
-            (select "communityId" from "StoryCommunity" group by "communityId" having count("contentId") > 1) SC1,
-            (select max("postedAt") r from "StoryContent") recent,
-            "StoryCommunity" SC,
-            "StoryContent" ST
+            (select "communityId" from story_community group by "communityId" having count("contentId") > 1) SC1,
+            (select max("postedAt") r from story_content) recent,
+            story_community SC,
+            story_content ST
             where date(ST."postedAt") < ${
                 tenDaysAgo.toISOString().split('T')[0]
             }

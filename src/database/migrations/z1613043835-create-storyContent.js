@@ -3,7 +3,7 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('StoryContent', {
+        return queryInterface.createTable('story_content', {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -33,6 +33,6 @@ module.exports = {
         });
     },
     down: (queryInterface) => {
-        return queryInterface.dropTable('StoryContent');
+        return queryInterface.dropTable('story_content');
     },
 };

@@ -49,7 +49,7 @@ export function initializeStoryContent(
             },
         },
         {
-            tableName: 'StoryContent',
+            tableName: 'story_content',
             sequelize,
             timestamps: false,
         }
