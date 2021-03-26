@@ -10,6 +10,7 @@ export class UbiCommunitySuspectModel extends Model<
 > {
     public id!: number;
     public communityId!: number;
+    public percentage!: number;
     public suspect!: number;
     public createdAt!: Date;
 }
@@ -29,6 +30,10 @@ export function initializeUbiCommunitySuspect(sequelize: Sequelize): void {
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
+                allowNull: false,
+            },
+            percentage: {
+                type: DataTypes.FLOAT,
                 allowNull: false,
             },
             suspect: {

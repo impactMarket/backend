@@ -62,11 +62,12 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
                     (community.beneficiaries!.length -
                         suspectBeneficiaries.length)) *
                 100;
-            const y = 2 ** (0.4 * ps) - 1;
+            const y = 60 * Math.log(ps);
             const suspectLevel = Math.round(Math.min(y, 100) / 10);
             // save suspect level
             models.ubiCommunitySuspect.create({
                 communityId: community.id,
+                percentage: ps,
                 suspect: suspectLevel,
             });
         }

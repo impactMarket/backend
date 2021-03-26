@@ -16,6 +16,10 @@ module.exports = {
                 onDelete: 'CASCADE',
                 allowNull: false,
             },
+            percentage: {
+                type: Sequelize.FLOAT,
+                allowNull: false,
+            },
             suspect: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
