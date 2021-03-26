@@ -109,9 +109,11 @@ export default class BeneficiaryService {
         active?: boolean
     ): Promise<IManagerDetailsBeneficiary[]> {
         let whereSearchCondition: Where | WhereAttributeHash<User>;
+        let whereActive: Where | WhereAttributeHash<BeneficiaryAttributes> = {};
         if (!isAddress(managerAddress)) {
             throw new Error('Not valid address!');
         }
+        // prevent add community contracts as beneficiaries
         if (
             (await CommunityService.existsByContractAddress(managerAddress)) ===
             true
@@ -135,12 +137,16 @@ export default class BeneficiaryService {
             throw new Error('Not valid search!');
         }
 
+        if (active !== undefined) {
+            whereActive = { active };
+        }
+
         const order: string | Literal | Fn | Col | OrderItem[] | undefined = [
             ['user', 'throughTrust', 'suspect', 'DESC'],
         ]; // it's default order for now.
 
         const x = await this.beneficiary.findAll({
-            where: { active },
+            where: whereActive,
             include: [
                 {
                     model: this.manager,
@@ -169,6 +175,7 @@ export default class BeneficiaryService {
             ],
             order,
         });
+
         if (x === null) {
             return [];
         }
