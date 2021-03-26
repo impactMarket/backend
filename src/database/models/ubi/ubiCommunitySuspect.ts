@@ -1,7 +1,7 @@
 import {
     UbiCommunitySuspect,
     UbiCommunitySuspectCreation,
-} from '@interfaces/UBI/ubiCommunitySuspect';
+} from '@interfaces/ubi/ubiCommunitySuspect';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiCommunitySuspectModel extends Model<

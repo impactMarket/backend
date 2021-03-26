@@ -1,4 +1,4 @@
-import { User } from '@interfaces/user';
+import { User } from '@interfaces/app/user';
 import { CommunityAttributes } from '@models/ubi/community';
 import { CommunityContractAttributes } from '@models/ubi/communityContract';
 import { CommunityDailyMetricsAttributes } from '@models/ubi/communityDailyMetrics';

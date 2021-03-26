@@ -1,4 +1,7 @@
-import { GlobalGrowth, GlobalGrowthCreation } from '@interfaces/globalGrowth';
+import {
+    GlobalGrowth,
+    GlobalGrowthCreation,
+} from '@interfaces/global/globalGrowth';
 
 import { models } from '../database';
 

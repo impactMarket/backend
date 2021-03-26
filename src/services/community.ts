@@ -1,4 +1,4 @@
-import { UbiRequestChangeParams } from '@interfaces/UBI/requestChangeParams';
+import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import {
     Community,
     CommunityAttributes,

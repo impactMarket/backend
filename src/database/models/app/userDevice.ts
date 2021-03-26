@@ -1,7 +1,7 @@
 import {
     AppUserDevice,
     AppUserDeviceCreation,
-} from '@interfaces/appUserDevice';
+} from '@interfaces/app/appUserDevice';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class AppUserDeviceModel extends Model<

@@ -1,6 +1,6 @@
-import { AppUserDeviceCreation } from '@interfaces/appUserDevice';
-import { AppAnonymousReport } from '@interfaces/appAnonymousReport';
-import { User, UserCreationAttributes } from '@interfaces/user';
+import { AppUserDeviceCreation } from '@interfaces/app/appUserDevice';
+import { AppAnonymousReport } from '@interfaces/app/appAnonymousReport';
+import { User, UserCreationAttributes } from '@interfaces/app/user';
 import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
 

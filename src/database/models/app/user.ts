@@ -1,4 +1,4 @@
-import { User, UserCreationAttributes } from '@interfaces/user';
+import { User, UserCreationAttributes } from '@interfaces/app/user';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UserModel extends Model<User, UserCreationAttributes> {

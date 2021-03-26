@@ -1,7 +1,7 @@
 import {
     UbiRequestChangeParams,
     UbiRequestChangeParamsCreation,
-} from '@interfaces/UBI/requestChangeParams';
+} from '@interfaces/ubi/requestChangeParams';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiRequestChangeParamsModel extends Model<

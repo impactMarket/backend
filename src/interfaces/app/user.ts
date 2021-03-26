@@ -1,6 +1,6 @@
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
-import { AppUserTrust, AppUserTrustCreation } from './app/appUserTrust';
+import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
 
 export interface User {
     address: string;

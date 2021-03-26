@@ -1,4 +1,4 @@
-import { User } from '@interfaces/user';
+import { User } from '@interfaces/app/user';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export interface BeneficiaryAttributes {
