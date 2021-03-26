@@ -136,7 +136,7 @@ export default class BeneficiaryService {
         }
 
         const order: string | Literal | Fn | Col | OrderItem[] | undefined = [
-            ['txAt', 'DESC'],
+            ['user', 'throughTrust', 'suspect', 'DESC'],
         ]; // it's default order for now.
 
         const x = await this.beneficiary.findAll({
@@ -220,7 +220,7 @@ export default class BeneficiaryService {
         }
 
         const order: string | Literal | Fn | Col | OrderItem[] | undefined = [
-            ['txAt', 'DESC'],
+            ['user', 'throughTrust', 'suspect', 'DESC'],
         ]; // it's default order for now.
 
         const x = await this.beneficiary.findAll({
