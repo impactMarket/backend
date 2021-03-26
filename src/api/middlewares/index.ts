@@ -1,9 +1,9 @@
 // import { Logger } from '@utils/logger';
+import { RequestWithUser, UserInRequest } from '@ipcttypes/core';
 import { Response, NextFunction, Request } from 'express';
 import jwt from 'jsonwebtoken';
 
 import config from '../../config';
-import { RequestWithUser, UserInRequest } from '@ipcttypes/core';
 
 export function authenticateToken(
     req: RequestWithUser,

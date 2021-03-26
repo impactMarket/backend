@@ -3,15 +3,15 @@ import ClaimService from '@services/claim';
 import CommunityContractService from '@services/communityContract';
 import CommunityDailyMetricsService from '@services/communityDailyMetrics';
 import CommunityDailyStateService from '@services/communityDailyState';
-import GlobalGrowthService from '@services/globalGrowth';
 import GlobalDailyStateService from '@services/globalDailyState';
+import GlobalGrowthService from '@services/globalGrowth';
 import InflowService from '@services/inflow';
 import ReachedAddressService from '@services/reachedAddress';
+import { Logger } from '@utils/logger';
 import BigNumber from 'bignumber.js';
 import { mean } from 'mathjs';
 
 import config from '../../../config';
-import { Logger } from '@utils/logger';
 
 BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
 

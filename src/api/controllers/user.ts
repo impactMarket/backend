@@ -1,8 +1,9 @@
 import UserService from '@services/user';
 import { controllerLogAndFail } from '@utils/api';
 import { Logger } from '@utils/logger';
-import { Request, Response } from 'express';
 import crypto from 'crypto';
+import { Request, Response } from 'express';
+
 import config from '../../config';
 
 class UserController {

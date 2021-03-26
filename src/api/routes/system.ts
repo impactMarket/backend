@@ -4,6 +4,7 @@ import InflowService from '@services/inflow';
 import ReachedAddressService from '@services/reachedAddress';
 import systemValidators from '@validators/system';
 import { Router } from 'express';
+
 import { models } from '../../database';
 
 export default (app: Router): void => {

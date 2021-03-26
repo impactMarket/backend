@@ -4,5 +4,4 @@ export async function verifyStoriesLifecycle(): Promise<void> {
     //
     const stories = new StoryService();
     await stories.deleteOlderStories();
-    return;
 }

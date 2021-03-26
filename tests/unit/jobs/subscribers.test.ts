@@ -8,16 +8,16 @@ import BeneficiaryService from '../../../src/services/beneficiary';
 import BeneficiaryTransactionService from '../../../src/services/beneficiaryTransaction';
 import ClaimsService from '../../../src/services/claim';
 import CommunityService from '../../../src/services/community';
-import InflowService from '../../../src/services/inflow';
 import ImMetadataService from '../../../src/services/imMetadata';
+import InflowService from '../../../src/services/inflow';
 import ManagerService from '../../../src/services/managers';
 import TransactionsService from '../../../src/services/transactions';
 import * as utils from '../../../src/utils/util';
 import { ChainSubscribers } from '../../../src/worker/jobs/chainSubscribers';
 import { communityAddressesAndIds } from '../../fake/community';
+import { waitForStubCall } from '../../utils';
 import CommunityContractJSON from './Community.json';
 import cUSDContractJSON from './cUSD.json';
-import { waitForStubCall } from '../../utils';
 
 describe('[jobs] subscribers', () => {
     const blockTimeDate = new Date();

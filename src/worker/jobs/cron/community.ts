@@ -1,4 +1,5 @@
 import { ICommunity } from '@ipcttypes/endpoints';
+import { CommunityAttributes } from '@models/ubi/community';
 import BeneficiaryService from '@services/beneficiary';
 import CommunityService from '@services/community';
 import CommunityContractService from '@services/communityContract';
@@ -11,11 +12,10 @@ import UserService from '@services/user';
 import { Logger } from '@utils/logger';
 import { notifyBackersCommunityLowFunds } from '@utils/util';
 import BigNumber from 'bignumber.js';
-import { models } from '../../../database';
 import { median, mean } from 'mathjs';
 
 import config from '../../../config';
-import { CommunityAttributes } from '@models/ubi/community';
+import { models } from '../../../database';
 
 export async function verifyCommunitySuspectActivity(): Promise<void> {
     //

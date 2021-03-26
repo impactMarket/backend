@@ -1,9 +1,9 @@
 import { User } from '@interfaces/app/user';
+import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
 import { CommunityAttributes } from '@models/ubi/community';
 import { CommunityContractAttributes } from '@models/ubi/communityContract';
 import { CommunityDailyMetricsAttributes } from '@models/ubi/communityDailyMetrics';
 import { CommunityStateAttributes } from '@models/ubi/communityState';
-import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
 
 export interface ICommunityLightDetails {
     publicId: string;

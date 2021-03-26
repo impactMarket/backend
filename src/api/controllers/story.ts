@@ -1,7 +1,7 @@
+import { RequestWithUser } from '@ipcttypes/core';
+import StoryService from '@services/story';
 import { controllerLogAndFail } from '@utils/api';
 import { Request, Response } from 'express';
-import StoryService from '@services/story';
-import { RequestWithUser } from '@ipcttypes/core';
 
 class StoryController {
     storyService = new StoryService();

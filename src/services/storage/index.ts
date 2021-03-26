@@ -1,7 +1,8 @@
+import fleekStorage from '@fleekhq/fleek-storage-js';
+import sharp from 'sharp';
+
 import config from '../../config';
 import { AWS } from './aws';
-import sharp from 'sharp';
-import fleekStorage from '@fleekhq/fleek-storage-js';
 
 const sharpAndUpload = async (
     file: Express.Multer.File,

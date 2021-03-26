@@ -1,8 +1,8 @@
+import StoryController from '@controllers/story';
+import StoryValidator from '@validators/story';
 import { Router } from 'express';
 import multer from 'multer';
 
-import StoryController from '@controllers/story';
-import StoryValidator from '@validators/story';
 import { authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {

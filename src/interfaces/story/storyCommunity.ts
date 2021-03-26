@@ -1,4 +1,5 @@
 import { CommunityAttributes } from '@models/ubi/community';
+
 import { StoryContent } from './storyContent';
 
 export interface StoryCommunity {

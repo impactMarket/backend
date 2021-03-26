@@ -1,5 +1,5 @@
-import { cleanEnv, num, port, str, testOnly } from 'envalid';
 import dotenv from 'dotenv';
+import { cleanEnv, num, port, str, testOnly } from 'envalid';
 
 if (process.env.NODE_ENV === 'development') {
     const envFound = dotenv.config();

@@ -1,4 +1,5 @@
-import { models, sequelize } from '../database';
+import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
+import { StoryContent } from '@interfaces/story/storyContent';
 import {
     IAddStory,
     ICommunitiesListStories,
@@ -7,16 +8,16 @@ import {
     UserStory,
 } from '@ipcttypes/endpoints';
 import { CommunityAttributes } from '@models/ubi/community';
+import { Logger } from '@utils/logger';
+import { Includeable, literal, Op, QueryTypes } from 'sequelize';
+
+import config from '../config';
+import { models, sequelize } from '../database';
 import {
     deleteBulkContentFromS3,
     deleteContentFromS3,
     sharpAndUpload,
 } from './storage';
-import config from '../config';
-import { Includeable, literal, Op, QueryTypes } from 'sequelize';
-import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
-import { StoryContent } from '@interfaces/story/storyContent';
-import { Logger } from '@utils/logger';
 
 export default class StoryService {
     public storyContent = models.storyContent;

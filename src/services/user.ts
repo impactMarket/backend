@@ -1,5 +1,5 @@
-import { AppUserDeviceCreation } from '@interfaces/app/appUserDevice';
 import { AppAnonymousReport } from '@interfaces/app/appAnonymousReport';
+import { AppUserDeviceCreation } from '@interfaces/app/appUserDevice';
 import { User, UserCreationAttributes } from '@interfaces/app/user';
 import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
@@ -306,7 +306,7 @@ export default class UserService {
      * TODO: improve
      */
     private static async loadUser(userAddress: string): Promise<IUserHello> {
-        let user = await this.user.findOne({
+        const user = await this.user.findOne({
             include: [
                 {
                     model: this.beneficiary,

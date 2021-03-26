@@ -1,7 +1,7 @@
 import CommunityDailyStateService from '@services/communityDailyState';
-import GlobalGrowthService from '@services/globalGrowth';
 import GlobalDailyStateService from '@services/globalDailyState';
 import GlobalDemographicsService from '@services/globalDemographics';
+import GlobalGrowthService from '@services/globalGrowth';
 import InflowService from '@services/inflow';
 import ReachedAddressService from '@services/reachedAddress';
 import { controllerLogAndFail } from '@utils/api';
