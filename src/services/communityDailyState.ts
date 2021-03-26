@@ -1,7 +1,7 @@
 import {
     CommunityDailyState,
     CommunityDailyStateCreationAttributes,
-} from '@models/communityDailyState';
+} from '@models/ubi/communityDailyState';
 import moment from 'moment';
 import { Op, fn, col, Transaction, QueryTypes } from 'sequelize';
 

@@ -1,25 +1,25 @@
 import { SubscribersModel } from '@models/app/subscribers';
-import { Beneficiary } from '@models/beneficiary';
-import { BeneficiaryTransaction } from '@models/beneficiaryTransaction';
-import { Claim } from '@models/claim';
-import { ClaimLocation } from '@models/claimLocation';
-import { Community } from '@models/community';
-import { CommunityContract } from '@models/communityContract';
-import { CommunityDailyMetrics } from '@models/communityDailyMetrics';
-import { CommunityDailyState } from '@models/communityDailyState';
-import { CommunityState } from '@models/communityState';
-import { CronJobExecuted } from '@models/cronJobExecuted';
-import { ExchangeRates } from '@models/exchangeRates';
-import { GlobalGrowthModel } from '@models/globalGrowth';
-import { GlobalDailyState } from '@models/globalDailyState';
-import { GlobalDemographics } from '@models/globalDemographics';
-import { ImMetadata } from '@models/imMetadata';
-import { Inflow } from '@models/inflow';
-import { Manager } from '@models/manager';
-import { MobileError } from '@models/mobileError';
+import { Beneficiary } from '@models/ubi/beneficiary';
+import { BeneficiaryTransaction } from '@models/ubi/beneficiaryTransaction';
+import { Claim } from '@models/ubi/claim';
+import { ClaimLocation } from '@models/ubi/claimLocation';
+import { Community } from '@models/ubi/community';
+import { CommunityContract } from '@models/ubi/communityContract';
+import { CommunityDailyMetrics } from '@models/ubi/communityDailyMetrics';
+import { CommunityDailyState } from '@models/ubi/communityDailyState';
+import { CommunityState } from '@models/ubi/communityState';
+import { CronJobExecuted } from '@models/app/cronJobExecuted';
+import { ExchangeRates } from '@models/app/exchangeRates';
+import { GlobalGrowthModel } from '@models/global/globalGrowth';
+import { GlobalDailyState } from '@models/global/globalDailyState';
+import { GlobalDemographics } from '@models/global/globalDemographics';
+import { ImMetadata } from '@models/app/imMetadata';
+import { Inflow } from '@models/ubi/inflow';
+import { Manager } from '@models/ubi/manager';
+import { MobileError } from '@models/app/mobileError';
 import { NotifiedBacker } from '@models/notifiedBacker';
 import { ReachedAddress } from '@models/reachedAddress';
-import { UserModel } from '@models/user';
+import { UserModel } from '@models/app/user';
 import { Logger } from '@utils/logger';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
 
@@ -32,11 +32,11 @@ import { StoryEngagementModel } from '@models/story/storyEngagement';
 import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 import { AppUserDeviceModel } from '@models/app/userDevice';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
-import { UbiRequestChangeParamsModel } from '@models/UBI/requestChangeParams';
+import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
 import { StoryUserReportModel } from '@models/story/storyUserReport';
 import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
 import { AppUserTrustModel } from '@models/app/appUserTrust';
-import { UbiCommunitySuspectModel } from '@models/UBI/ubiCommunitySuspect';
+import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
 
 let logging:
     | boolean

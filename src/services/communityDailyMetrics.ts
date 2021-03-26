@@ -1,4 +1,4 @@
-import { CommunityDailyMetrics } from '@models/communityDailyMetrics';
+import { CommunityDailyMetrics } from '@models/ubi/communityDailyMetrics';
 import { median } from 'mathjs';
 import { col, fn, Op } from 'sequelize';
 

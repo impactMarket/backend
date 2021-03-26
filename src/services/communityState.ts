@@ -1,4 +1,4 @@
-import { CommunityState } from '@models/communityState';
+import { CommunityState } from '@models/ubi/communityState';
 import { QueryTypes, Transaction } from 'sequelize';
 
 import { models, sequelize } from '../database';

@@ -2,7 +2,7 @@ import { StoryCommunity } from '@interfaces/story/storyCommunity';
 import { UbiCommunitySuspect } from '@interfaces/UBI/ubiCommunitySuspect';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-import { ICommunityVars } from '../../types';
+import { ICommunityVars } from '../../../types';
 import { BeneficiaryAttributes } from './beneficiary';
 
 export interface CommunityAttributes {

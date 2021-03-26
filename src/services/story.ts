@@ -6,7 +6,7 @@ import {
     ICommunityStory,
     UserStory,
 } from '@ipcttypes/endpoints';
-import { CommunityAttributes } from '@models/community';
+import { CommunityAttributes } from '@models/ubi/community';
 import {
     deleteBulkContentFromS3,
     deleteContentFromS3,

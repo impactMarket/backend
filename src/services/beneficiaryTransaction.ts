@@ -1,4 +1,4 @@
-import { BeneficiaryTransactionCreationAttributes } from '@models/beneficiaryTransaction';
+import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
 import { Logger } from '@utils/logger';
 import { col, fn, Op } from 'sequelize';
 

@@ -1,6 +1,6 @@
 import { User } from '@interfaces/user';
 import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
-import { Beneficiary, BeneficiaryAttributes } from '@models/beneficiary';
+import { Beneficiary, BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { Logger } from '@utils/logger';
 import { isUUID, isAddress } from '@utils/util';
 import {

@@ -1,4 +1,4 @@
-import { ClaimLocation } from '@models/claimLocation';
+import { ClaimLocation } from '@models/ubi/claimLocation';
 import { Op } from 'sequelize';
 
 import { models } from '../database';

@@ -1,4 +1,4 @@
-import { Community } from '@models/community';
+import { Community } from '@models/ubi/community';
 import UserService from '@services/user';
 import axios from 'axios';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';

@@ -15,7 +15,7 @@ import { models } from '../../../database';
 import { median, mean } from 'mathjs';
 
 import config from '../../../config';
-import { CommunityAttributes } from '@models/community';
+import { CommunityAttributes } from '@models/ubi/community';
 
 export async function verifyCommunitySuspectActivity(): Promise<void> {
     //

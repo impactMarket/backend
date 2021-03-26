@@ -1,7 +1,7 @@
 import {
     GlobalDailyState,
     GlobalDailyStateCreationAttributes,
-} from '@models/globalDailyState';
+} from '@models/global/globalDailyState';
 import { col, fn, Op } from 'sequelize';
 
 import { models } from '../database';

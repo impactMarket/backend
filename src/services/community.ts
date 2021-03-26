@@ -3,10 +3,10 @@ import {
     Community,
     CommunityAttributes,
     CommunityCreationAttributes,
-} from '@models/community';
-import { CommunityContractAttributes } from '@models/communityContract';
-import { CommunityDailyMetricsAttributes } from '@models/communityDailyMetrics';
-import { CommunityStateAttributes } from '@models/communityState';
+} from '@models/ubi/community';
+import { CommunityContractAttributes } from '@models/ubi/communityContract';
+import { CommunityDailyMetricsAttributes } from '@models/ubi/communityDailyMetrics';
+import { CommunityStateAttributes } from '@models/ubi/communityState';
 import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
 import { Op, QueryTypes, fn, col, literal } from 'sequelize';

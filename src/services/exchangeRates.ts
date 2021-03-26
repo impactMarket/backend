@@ -1,4 +1,4 @@
-import { ExchangeRatesAttributes } from '@models/exchangeRates';
+import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
 import { models } from '../database';
 
 export default class ExchangeRatesService {

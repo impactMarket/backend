@@ -1,5 +1,3 @@
-import { Community } from '@models/community';
-// import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
 import BeneficiaryService from '@services/beneficiary';
 import BeneficiaryTransactionService from '@services/beneficiaryTransaction';
 import ClaimsService from '@services/claim';

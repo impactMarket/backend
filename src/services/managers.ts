@@ -1,4 +1,4 @@
-import { Manager } from '@models/manager';
+import { Manager } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isAddress, isUUID } from '@utils/util';
 import { col, fn, QueryTypes, Transaction } from 'sequelize';

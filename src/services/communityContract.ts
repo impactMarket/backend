@@ -1,4 +1,4 @@
-import { CommunityContract } from '@models/communityContract';
+import { CommunityContract } from '@models/ubi/communityContract';
 import { col, fn, Op, Transaction } from 'sequelize';
 
 import { models, sequelize } from '../database';

@@ -1,4 +1,4 @@
-import { ExchangeRates } from '@models/exchangeRates';
+import { ExchangeRates } from '@models/app/exchangeRates';
 import { Logger } from '@utils/logger';
 import axios from 'axios';
 

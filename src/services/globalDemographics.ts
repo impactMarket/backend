@@ -1,7 +1,7 @@
 import {
     GlobalDemographics,
     GlobalDemographicsCreationAttributes,
-} from '@models/globalDemographics';
+} from '@models/global/globalDemographics';
 import { QueryTypes } from 'sequelize';
 
 import { models, sequelize } from '../database';
