@@ -1,4 +1,4 @@
-import { CommunityContract } from '../../src/database/models/communityContract';
+import { CommunityContract } from '../../src/database/models/ubi/communityContract';
 
 export const now = new Date();
 export const nowTimestamp = now.getTime();

@@ -11,11 +11,11 @@ import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
 import { Op, QueryTypes, fn, col, literal } from 'sequelize';
 
-import config from '../config';
-import CommunityContractABI from '../contracts/CommunityABI.json';
-import ImpactMarketContractABI from '../contracts/ImpactMarketABI.json';
-import { models, sequelize } from '../database';
-import { ICommunityContractParams } from '../types';
+import config from '../../config';
+import CommunityContractABI from '../../contracts/CommunityABI.json';
+import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
+import { models, sequelize } from '../../database';
+import { ICommunityContractParams } from '../../types';
 import {
     ICommunity,
     ICommunityLightDetails,
@@ -24,13 +24,13 @@ import {
     IManagerDetailsManager,
     IManagers,
     IManagersDetails,
-} from '../types/endpoints';
+} from '../../types/endpoints';
+import { deleteContentFromS3 } from '../storage';
 import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
 import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
 import ManagerService from './managers';
-import { deleteContentFromS3 } from './storage';
 
 export default class CommunityService {
     public static community = models.community;

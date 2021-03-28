@@ -2,8 +2,8 @@ import { CommunityDailyMetrics } from '@models/ubi/communityDailyMetrics';
 import { median } from 'mathjs';
 import { col, fn, Op } from 'sequelize';
 
-import { models } from '../database';
-import { ICommunityMetrics } from '../types';
+import { models } from '../../database';
+import { ICommunityMetrics } from '../../types';
 
 export default class CommunityDailyMetricsService {
     public static community = models.community;

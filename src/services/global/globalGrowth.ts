@@ -3,7 +3,7 @@ import {
     GlobalGrowthCreation,
 } from '@interfaces/global/globalGrowth';
 
-import { models } from '../database';
+import { models } from '../../database';
 
 export default class GlobalGrowthService {
     public globalGrowth = models.globalGrowth;

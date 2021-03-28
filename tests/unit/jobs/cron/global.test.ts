@@ -1,15 +1,15 @@
 import { stub, assert, match } from 'sinon';
 
-import { GlobalDailyState } from '../../../../src/database/models/globalDailyState';
-import BeneficiaryTransactionService from '../../../../src/services/beneficiaryTransaction';
-import ClaimService from '../../../../src/services/claim';
-import CommunityContractService from '../../../../src/services/communityContract';
-import CommunityDailyMetricsService from '../../../../src/services/communityDailyMetrics';
-import CommunityDailyStateService from '../../../../src/services/communityDailyState';
-import GlobalDailyStateService from '../../../../src/services/globalDailyState';
-import GlobalGrowthService from '../../../../src/services/globalGrowth';
-import InflowService from '../../../../src/services/inflow';
+import { GlobalDailyState } from '../../../../src/database/models/global/globalDailyState';
+import GlobalDailyStateService from '../../../../src/services/global/globalDailyState';
+import GlobalGrowthService from '../../../../src/services/global/globalGrowth';
 import ReachedAddressService from '../../../../src/services/reachedAddress';
+import BeneficiaryTransactionService from '../../../../src/services/ubi/beneficiaryTransaction';
+import ClaimService from '../../../../src/services/ubi/claim';
+import CommunityContractService from '../../../../src/services/ubi/communityContract';
+import CommunityDailyMetricsService from '../../../../src/services/ubi/communityDailyMetrics';
+import CommunityDailyStateService from '../../../../src/services/ubi/communityDailyState';
+import InflowService from '../../../../src/services/ubi/inflow';
 import { calcuateGlobalMetrics } from '../../../../src/worker/jobs/cron/global';
 
 const twoDaysAgo = new Date();

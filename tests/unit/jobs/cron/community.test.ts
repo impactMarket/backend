@@ -1,10 +1,10 @@
 import { stub, assert, match } from 'sinon';
 
-import BeneficiaryService from '../../../../src/services/beneficiary';
-import CommunityService from '../../../../src/services/community';
-import CommunityContractService from '../../../../src/services/communityContract';
-import CommunityDailyMetricsService from '../../../../src/services/communityDailyMetrics';
-import CommunityDailyStateService from '../../../../src/services/communityDailyState';
+import BeneficiaryService from '../../../../src/services/ubi/beneficiary';
+import CommunityService from '../../../../src/services/ubi/community';
+import CommunityContractService from '../../../../src/services/ubi/communityContract';
+import CommunityDailyMetricsService from '../../../../src/services/ubi/communityDailyMetrics';
+import CommunityDailyStateService from '../../../../src/services/ubi/communityDailyState';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import {
     activeBeneficiariesLast30Days,

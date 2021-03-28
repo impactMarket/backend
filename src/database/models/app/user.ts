@@ -18,7 +18,7 @@ export class UserModel extends Model<User, UserCreationAttributes> {
     public readonly updatedAt!: Date;
 }
 
-export default function (sequelize: Sequelize): typeof UserModel {
+export function initializeUser(sequelize: Sequelize): typeof UserModel {
     UserModel.init(
         {
             address: {

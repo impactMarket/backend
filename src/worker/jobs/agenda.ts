@@ -1,4 +1,4 @@
-import AgendaService from '@services/agenda';
+import AgendaService from '@services/app/agenda';
 import schedule from 'node-schedule';
 
 import { AgendaAction } from '../../types';

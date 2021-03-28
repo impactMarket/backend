@@ -47,6 +47,10 @@ module.exports = {
                 defaultValue: 0,
                 allowNull: false,
             },
+            claimed: {
+                type: Sequelize.DECIMAL(22), // max 9,999 - plus 18 decimals
+                defaultValue: 0,
+            },
             lastClaimAt: {
                 type: Sequelize.DATE,
                 allowNull: true,

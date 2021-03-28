@@ -1,9 +1,10 @@
 import { assert } from 'chai';
 import { Sequelize } from 'sequelize';
 
-import { initializeBeneficiary } from '../../../src/database/models/beneficiary';
-import { initializeCommunity } from '../../../src/database/models/community';
+import { initializeUser } from '../../../src/database/models/app/user';
 import { initializeReachedAddress } from '../../../src/database/models/reachedAddress';
+import { initializeBeneficiary } from '../../../src/database/models/ubi/beneficiary';
+import { initializeCommunity } from '../../../src/database/models/ubi/community';
 import ReachedAddressService from '../../../src/services/reachedAddress';
 
 describe('reachedAddress', () => {
@@ -18,6 +19,7 @@ describe('reachedAddress', () => {
         };
         sequelize = new Sequelize(process.env.DB_TESTCI_URL!, dbConfig);
 
+        initializeUser(sequelize);
         initializeReachedAddress(sequelize);
         initializeBeneficiary(sequelize);
         initializeCommunity(sequelize);
@@ -84,6 +86,27 @@ describe('reachedAddress', () => {
             },
         ]);
 
+        await sequelize.models.UserModel.bulkCreate([
+            {
+                address: '0xd55Fae4769e3240FfFf4c17cd2CC03143e55E420',
+                username: 'x1',
+                language: 'pt',
+                currency: 'BTC',
+                pushNotificationToken: '',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                address: '0x002D33893983E187814Be1bdBe9852299829C554',
+                username: 'x1',
+                language: 'pt',
+                currency: 'BTC',
+                pushNotificationToken: '',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        ]);
+
         await sequelize.models.Beneficiary.bulkCreate([
             {
                 address: '0xd55Fae4769e3240FfFf4c17cd2CC03143e55E420',
@@ -93,6 +116,7 @@ describe('reachedAddress', () => {
                 lastClaimAt: null,
                 penultimateClaimAt: null,
                 active: true,
+                blocked: false,
                 tx:
                     '0xb56148b8a8c559bc52e438a8d50afc5c1f68201a07c6c67615d1e2da00999f5b',
                 createdAt: new Date(),
@@ -106,6 +130,7 @@ describe('reachedAddress', () => {
                 lastClaimAt: null,
                 penultimateClaimAt: null,
                 active: false,
+                blocked: false,
                 tx:
                     '0xef364783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
                 createdAt: new Date(),
@@ -119,6 +144,9 @@ describe('reachedAddress', () => {
             where: {},
         });
         await sequelize.models.Beneficiary.destroy({
+            where: {},
+        });
+        await sequelize.models.UserModel.destroy({
             where: {},
         });
         await sequelize.models.Community.destroy({

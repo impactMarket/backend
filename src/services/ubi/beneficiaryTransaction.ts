@@ -2,7 +2,7 @@ import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiar
 import { Logger } from '@utils/logger';
 import { col, fn, Op } from 'sequelize';
 
-import { models, Sequelize } from '../database';
+import { models, Sequelize } from '../../database';
 
 export default class BeneficiaryTransactionService {
     public static beneficiaryTransaction = models.beneficiaryTransaction;

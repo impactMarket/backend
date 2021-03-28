@@ -1,6 +1,6 @@
 import { stub, assert, match, SinonStub } from 'sinon';
 
-import GlobalDemographicsService from '../../../src/services/globalDemographics';
+import GlobalDemographicsService from '../../../src/services/global/globalDemographics';
 
 // import * as database from '../../../src/api/loaders/database';
 

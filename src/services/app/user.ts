@@ -4,10 +4,10 @@ import { User, UserCreationAttributes } from '@interfaces/app/user';
 import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
 
-import { generateAccessToken } from '../api/middlewares';
-import { models, sequelize } from '../database';
-import { ICommunity, IUserHello, IUserAuth } from '../types/endpoints';
-import CommunityService from './community';
+import { generateAccessToken } from '../../api/middlewares';
+import { models, sequelize } from '../../database';
+import { ICommunity, IUserHello, IUserAuth } from '../../types/endpoints';
+import CommunityService from '../ubi/community';
 import ExchangeRatesService from './exchangeRates';
 
 export default class UserService {

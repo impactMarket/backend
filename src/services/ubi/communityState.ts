@@ -1,7 +1,7 @@
 import { CommunityState } from '@models/ubi/communityState';
 import { QueryTypes, Transaction } from 'sequelize';
 
-import { models, sequelize } from '../database';
+import { models, sequelize } from '../../database';
 
 export default class CommunityStateService {
     public static communityState = models.communityState;

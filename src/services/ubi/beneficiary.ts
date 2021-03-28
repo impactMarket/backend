@@ -13,7 +13,7 @@ import {
 } from 'sequelize';
 import { Col, Fn, Literal, Where } from 'sequelize/types/lib/utils';
 
-import { models, sequelize } from '../database';
+import { models, sequelize } from '../../database';
 import CommunityService from './community';
 
 // const db = database();

@@ -3,8 +3,8 @@ import { Logger } from '@utils/logger';
 import { isAddress, isUUID } from '@utils/util';
 import { col, fn, QueryTypes, Transaction } from 'sequelize';
 
-import { models, sequelize } from '../database';
-import { IManagerDetailsManager } from '../types/endpoints';
+import { models, sequelize } from '../../database';
+import { IManagerDetailsManager } from '../../types/endpoints';
 
 export default class ManagerService {
     public static manager = models.manager;

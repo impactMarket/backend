@@ -1,7 +1,7 @@
-import BeneficiaryService from '@services/beneficiary';
-import CommunityService from '@services/community';
-import CronJobExecutedService from '@services/cronJobExecuted';
-import GlobalDemographicsService from '@services/globalDemographics';
+import CronJobExecutedService from '@services/app/cronJobExecuted';
+import GlobalDemographicsService from '@services/global/globalDemographics';
+import BeneficiaryService from '@services/ubi/beneficiary';
+import CommunityService from '@services/ubi/community';
 import { Logger } from '@utils/logger';
 import { CronJob } from 'cron';
 import { ethers } from 'ethers';
@@ -143,6 +143,7 @@ function cron() {
         config.currenciesApiKey.length > 0
     ) {
         updateExchangeRates();
+        // eslint-disable-next-line no-new
         new CronJob(
             '25 */4 * * *',
             () => {
@@ -163,6 +164,7 @@ function cron() {
     }
 
     // every eight hours, verify community funds
+    // eslint-disable-next-line no-new
     new CronJob(
         '45 */8 * * *',
         () => {
@@ -182,6 +184,7 @@ function cron() {
     // once a day
 
     // everyday at midnight
+    // eslint-disable-next-line no-new
     new CronJob(
         '0 0 * * *',
         () => {
@@ -212,6 +215,7 @@ function cron() {
         true
     );
 
+    // eslint-disable-next-line no-new
     new CronJob(
         '0 0 * * *',
         () => {
@@ -229,6 +233,7 @@ function cron() {
     );
 
     // everyday at 1am
+    // eslint-disable-next-line no-new
     new CronJob(
         '0 1 * * *',
         () => {
@@ -249,6 +254,7 @@ function cron() {
     );
 
     // at 5:12 am.
+    // eslint-disable-next-line no-new
     new CronJob(
         '12 5 * * *',
         () => {
@@ -271,6 +277,7 @@ function cron() {
     );
 
     // everyday at 3:35pm (odd times), insert community daily rows with 5 days in advance
+    // eslint-disable-next-line no-new
     new CronJob(
         '35 15 * * *',
         () => {

@@ -9,7 +9,7 @@ import { initializeExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
 import { initializeMobileError } from './app/mobileError';
 import { initializeSubscribers } from './app/subscribers';
-import initializeUser from './app/user';
+import { initializeUser } from './app/user';
 import { initializeAppUserDevice } from './app/userDevice';
 import { communityAssociation } from './associations/community';
 import { storyAssociation } from './associations/story';

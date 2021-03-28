@@ -1,5 +1,5 @@
 import { Community } from '@models/ubi/community';
-import UserService from '@services/user';
+import UserService from '@services/app/user';
 import axios from 'axios';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
@@ -12,9 +12,11 @@ export function groupBy<T>(array: any[], key: string): Map<string, T[]> {
     return array.reduce((result, currentValue) => {
         let content = result.get(currentValue[key]);
         // If an array already present for key, push it to the array. Else create an array and push the object
-        content === undefined
-            ? (content = [currentValue])
-            : content.push(currentValue);
+        if (content === undefined) {
+            content = [currentValue];
+        } else {
+            content.push(currentValue);
+        }
         // Return the current iteration `result` value, this will be taken as next iteration `result` value and accumulate
         return result.set(currentValue[key], content);
     }, new Map<string, T[]>()); // empty map is the initial value for result object
