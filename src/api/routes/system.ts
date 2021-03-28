@@ -1,7 +1,7 @@
-import CommunityDailyStateService from '@services/communityDailyState';
 import GlobalDailyStateService from '@services/global/globalDailyState';
-import InflowService from '@services/ubi/inflow';
 import ReachedAddressService from '@services/reachedAddress';
+import CommunityDailyStateService from '@services/ubi/communityDailyState';
+import InflowService from '@services/ubi/inflow';
 import systemValidators from '@validators/system';
 import { Router } from 'express';
 

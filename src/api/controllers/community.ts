@@ -1,8 +1,8 @@
 import { RequestWithUser } from '@ipcttypes/core';
-import BeneficiaryService from '@services/beneficiary';
-import CommunityService from '@services/community';
-import CommunityDailyMetricsService from '@services/communityDailyMetrics';
-import ManagerService from '@services/managers';
+import BeneficiaryService from '@services/ubi/beneficiary';
+import CommunityService from '@services/ubi/community';
+import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
+import ManagerService from '@services/ubi/managers';
 import { controllerLogAndFail } from '@utils/api';
 import { Logger } from '@utils/logger';
 import { Request, Response } from 'express';

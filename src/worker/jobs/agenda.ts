@@ -11,7 +11,7 @@ export async function prepareAgenda(): Promise<void> {
             return;
         }
         if (element.action === AgendaAction.notification) {
-            const j = schedule.scheduleJob(element.when, () => {
+            schedule.scheduleJob(element.when, () => {
                 // console.log('The world is going to end today.');
                 // TODO: throw user notification
             });

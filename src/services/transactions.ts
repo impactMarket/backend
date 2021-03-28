@@ -2,6 +2,7 @@ import { Transactions } from '@models/transactions';
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { LogDescription } from 'ethers/lib/utils';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import _ from 'lodash';
 import { SHA3 } from 'sha3';
 

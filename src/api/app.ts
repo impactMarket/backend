@@ -26,6 +26,7 @@ async function startServer() {
                         // You could use your UI's routing library to find the matching
                         // route template here. We don't have one right now, so do some basic
                         // parameter replacements.
+                        // eslint-disable-next-line no-undef
                         name: location.pathname
                             .replace(
                                 /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[4][0-9A-Fa-f]{3}-[89AB][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}/g,

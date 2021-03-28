@@ -1,4 +1,4 @@
-import ClaimLocationService from '@services/claimLocation';
+import ClaimLocationService from '@services/ubi/claimLocation';
 import { controllerLogAndFail } from '@utils/api';
 import { Request, Response } from 'express';
 

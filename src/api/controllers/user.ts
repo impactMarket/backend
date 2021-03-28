@@ -1,4 +1,4 @@
-import UserService from '@services/user';
+import UserService from '@services/app/user';
 import { controllerLogAndFail } from '@utils/api';
 import { Logger } from '@utils/logger';
 import crypto from 'crypto';

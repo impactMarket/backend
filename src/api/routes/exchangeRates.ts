@@ -1,4 +1,4 @@
-import ExchangeRatesService from '@services/exchangeRates';
+import ExchangeRatesService from '@services/app/exchangeRates';
 import { Router, Request, Response } from 'express';
 
 export default (app: Router): void => {

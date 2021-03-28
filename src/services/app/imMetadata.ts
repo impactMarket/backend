@@ -19,7 +19,7 @@ export default class ImMetadataService {
         if (last === null) {
             return config.impactMarketContractBlockNumber;
         }
-        return parseInt(last.value);
+        return parseInt(last.value, 10);
     }
 
     public static async setRecoverBlockUsingLastBlock(): Promise<void> {
@@ -45,7 +45,7 @@ export default class ImMetadataService {
         if (last === null) {
             return await ImMetadataService.getLastBlock();
         }
-        return parseInt(last.value);
+        return parseInt(last.value, 10);
     }
 
     public static async removeRecoverBlock(): Promise<void> {

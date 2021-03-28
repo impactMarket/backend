@@ -1,6 +1,6 @@
-import fleekStorage from '@fleekhq/fleek-storage-js';
-import CommunityService from '@services/community';
+// import fleekStorage from '@fleekhq/fleek-storage-js';
 import { uploadContentToS3 } from '@services/storage';
+import CommunityService from '@services/ubi/community';
 import { Logger } from '@utils/logger';
 // import AWS from 'aws-sdk';
 import { Router } from 'express';

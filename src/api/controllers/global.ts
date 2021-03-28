@@ -1,9 +1,9 @@
-import CommunityDailyStateService from '@services/communityDailyState';
 import GlobalDailyStateService from '@services/global/globalDailyState';
-import GlobalDemographicsService from '@services/globalDemographics';
-import GlobalGrowthService from '@services/globalGrowth';
-import InflowService from '@services/ubi/inflow';
+import GlobalDemographicsService from '@services/global/globalDemographics';
+import GlobalGrowthService from '@services/global/globalGrowth';
 import ReachedAddressService from '@services/reachedAddress';
+import CommunityDailyStateService from '@services/ubi/communityDailyState';
+import InflowService from '@services/ubi/inflow';
 import { controllerLogAndFail } from '@utils/api';
 import { Request, Response } from 'express';
 

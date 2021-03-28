@@ -443,7 +443,7 @@ export default class CommunityService {
             useOrder = query.order;
         }
         switch (useOrder) {
-            case 'nearest':
+            case 'nearest': {
                 const lat = parseInt(query.lat, 10);
                 const lng = parseInt(query.lng, 10);
                 if (typeof lat !== 'number' || typeof lng !== 'number') {
@@ -458,7 +458,7 @@ export default class CommunityService {
                     lat +
                     "))*sin(radians(cast(gps->>'latitude' as float)))))";
                 break;
-
+            }
             default:
                 sqlQuery += 'order by cs.beneficiaries desc';
                 break;

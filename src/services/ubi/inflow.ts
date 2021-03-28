@@ -115,7 +115,7 @@ export default class InflowService {
             })
         )[0] as any;
         return {
-            backers: parseInt(result.backers),
+            backers: parseInt(result.backers, 10),
             funding: result.funding,
         };
     }
