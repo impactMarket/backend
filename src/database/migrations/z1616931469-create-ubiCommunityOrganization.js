@@ -2,7 +2,7 @@
 module.exports = {
     up(queryInterface, Sequelize) {
         return queryInterface.createTable('ubi_community_organization', {
-            id: {
+            organizationId: {
                 type: Sequelize.INTEGER,
                 references: {
                     model: 'ubi_organization',

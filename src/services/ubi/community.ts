@@ -39,6 +39,7 @@ export default class CommunityService {
     public static communityDailyMetrics = models.communityDailyMetrics;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
+    public static ubiOrganization = models.ubiOrganization;
     public static sequelize = sequelize;
 
     public static async create(
@@ -743,6 +744,11 @@ export default class CommunityService {
                             ),
                         },
                     },
+                },
+                {
+                    model: this.ubiOrganization,
+                    as: 'organization',
+                    required: false,
                 },
             ],
             where: {

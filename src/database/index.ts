@@ -31,6 +31,7 @@ import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
 import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
+import { UbiOrganizationModel } from '@models/ubi/ubiOrganization';
 import { Logger } from '@utils/logger';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
 
@@ -65,6 +66,8 @@ const models: DbModels = {
     community: sequelize.models.Community as ModelCtor<Community>,
     ubiCommunitySuspect: sequelize.models
         .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspectModel>,
+    ubiOrganization: sequelize.models
+        .UbiOrganizationModel as ModelCtor<UbiOrganizationModel>,
     communityContract: sequelize.models
         .CommunityContract as ModelCtor<CommunityContract>,
     communityState: sequelize.models

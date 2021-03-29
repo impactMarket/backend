@@ -22,6 +22,17 @@ export function communityAssociation(sequelize: Sequelize) {
         sequelize.models.UbiOrganizationModel,
         {
             through: sequelize.models.UbiCommunityOrganizationModel,
+            sourceKey: 'id',
+            foreignKey: 'communityId',
+            as: 'organization',
+        }
+    );
+    sequelize.models.UbiOrganizationModel.belongsToMany(
+        sequelize.models.Community,
+        {
+            through: sequelize.models.UbiCommunityOrganizationModel,
+            sourceKey: 'id',
+            foreignKey: 'organizationId',
             as: 'organization',
         }
     );

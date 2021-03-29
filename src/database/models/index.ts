@@ -38,7 +38,9 @@ import { initializeCommunityState } from './ubi/communityState';
 import { initializeInflow } from './ubi/inflow';
 import { initializeManager } from './ubi/manager';
 import { initializeUbiRequestChangeParams } from './ubi/requestChangeParams';
+import { initializeUbiCommunityOrganization } from './ubi/ubiCommunityOrganization';
 import { initializeUbiCommunitySuspect } from './ubi/ubiCommunitySuspect';
+import { initializeUbiOrganization } from './ubi/ubiOrganization';
 
 export default function initModels(sequelize: Sequelize): void {
     // app
@@ -68,6 +70,8 @@ export default function initModels(sequelize: Sequelize): void {
     initializeBeneficiaryTransaction(sequelize);
     initializeClaim(sequelize);
     initializeInflow(sequelize);
+    initializeUbiCommunityOrganization(sequelize);
+    initializeUbiOrganization(sequelize);
 
     // others
     initializeNotifiedBacker(sequelize);
