@@ -31,6 +31,7 @@ import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
 import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
+import { UbiOrganizationModel } from '@models/ubi/ubiOrganization';
 import { ModelCtor, Sequelize } from 'sequelize/types';
 
 export interface DbModels {
@@ -39,6 +40,7 @@ export interface DbModels {
     appUserThroughTrust: ModelCtor<AppUserThroughTrustModel>;
     community: ModelCtor<Community>;
     ubiCommunitySuspect: ModelCtor<UbiCommunitySuspectModel>;
+    ubiOrganization: ModelCtor<UbiOrganizationModel>;
     communityContract: ModelCtor<CommunityContract>;
     communityState: ModelCtor<CommunityState>;
     communityDailyState: ModelCtor<CommunityDailyState>;
