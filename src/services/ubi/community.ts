@@ -1,4 +1,5 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
+import { UbiOrganization } from '@interfaces/ubi/ubiOrganization';
 import {
     Community,
     CommunityAttributes,
@@ -729,7 +730,7 @@ export default class CommunityService {
     ): Promise<ICommunity | null> {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const rawCommunity = await this.community.findAll({
+        const rawCommunity = await this.community.findOne({
             include: [
                 {
                     model: this.ubiCommunitySuspect,
@@ -755,10 +756,10 @@ export default class CommunityService {
                 publicId,
             },
         });
-        const community = rawCommunity[0].toJSON() as CommunityAttributes;
-        if (community === null) {
+        if (rawCommunity === null) {
             throw new Error('Not found community ' + publicId);
         }
+        const community = rawCommunity.toJSON() as CommunityAttributes;
         const communityState = await this.communityState.findOne({
             where: {
                 communityId: community.publicId,
@@ -779,8 +780,19 @@ export default class CommunityService {
             limit: 1,
             raw: true,
         });
+
+        // because organization as a many-to-many (see association file)
+        // needs to be broken
+        let organization: UbiOrganization | undefined = undefined;
+        if (
+            community.organization &&
+            (community.organization as any).length > 0
+        ) {
+            organization = (community.organization as any)[0];
+        }
         return {
             ...community,
+            organization,
             state: communityState!,
             contract: communityContract!,
             metrics: communityDailyMetrics[0]!,
