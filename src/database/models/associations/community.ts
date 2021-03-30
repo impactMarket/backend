@@ -10,6 +10,14 @@ export function communityAssociation(sequelize: Sequelize) {
         }
     );
     // used to query from the community with incude
+    sequelize.models.Community.hasOne(
+        sequelize.models.UbiCommunityContractModel,
+        {
+            foreignKey: 'communityId',
+            as: 'contract',
+        }
+    );
+    // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.Beneficiary, {
         foreignKey: 'communityId',
         sourceKey: 'publicId',

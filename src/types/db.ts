@@ -23,7 +23,7 @@ import { BeneficiaryTransaction } from '@models/ubi/beneficiaryTransaction';
 import { Claim } from '@models/ubi/claim';
 import { ClaimLocation } from '@models/ubi/claimLocation';
 import { Community } from '@models/ubi/community';
-import { CommunityContract } from '@models/ubi/communityContract';
+import { UbiCommunityContractModel } from '@models/ubi/communityContract';
 import { CommunityDailyMetrics } from '@models/ubi/communityDailyMetrics';
 import { CommunityDailyState } from '@models/ubi/communityDailyState';
 import { CommunityState } from '@models/ubi/communityState';
@@ -39,7 +39,7 @@ export interface DbModels {
     appUserThroughTrust: ModelCtor<AppUserThroughTrustModel>;
     community: ModelCtor<Community>;
     ubiCommunitySuspect: ModelCtor<UbiCommunitySuspectModel>;
-    communityContract: ModelCtor<CommunityContract>;
+    ubiCommunityContract: ModelCtor<UbiCommunityContractModel>;
     communityState: ModelCtor<CommunityState>;
     communityDailyState: ModelCtor<CommunityDailyState>;
     communityDailyMetrics: ModelCtor<CommunityDailyMetrics>;

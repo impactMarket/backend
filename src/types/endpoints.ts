@@ -1,7 +1,7 @@
 import { User } from '@interfaces/app/user';
+import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
 import { CommunityAttributes } from '@models/ubi/community';
-import { CommunityContractAttributes } from '@models/ubi/communityContract';
 import { CommunityDailyMetricsAttributes } from '@models/ubi/communityDailyMetrics';
 import { CommunityStateAttributes } from '@models/ubi/communityState';
 
@@ -13,7 +13,7 @@ export interface ICommunityLightDetails {
     country: string;
     coverImage: string;
     state: CommunityStateAttributes;
-    contract: CommunityContractAttributes;
+    contract: UbiCommunityContract;
 }
 export interface ICommunityPendingDetails {
     publicId: string;
@@ -26,11 +26,11 @@ export interface ICommunityPendingDetails {
     email: string;
     coverImage: string;
     state: CommunityStateAttributes;
-    contract: CommunityContractAttributes;
+    contract: UbiCommunityContract;
 }
 export interface ICommunity extends CommunityAttributes {
     state: CommunityStateAttributes;
-    contract: CommunityContractAttributes;
+    contract?: UbiCommunityContract;
     metrics?: CommunityDailyMetricsAttributes;
 }
 

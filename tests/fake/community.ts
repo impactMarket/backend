@@ -1,4 +1,4 @@
-import { CommunityContract } from '../../src/database/models/ubi/communityContract';
+import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
 
 export const now = new Date();
 export const nowTimestamp = now.getTime();
@@ -31,10 +31,10 @@ ssiLast4Days.set(communityIds[3], [1.0, 1.2, 1.8, 1.1]);
 ssiLast4Days.set(communityIds[4], [0.7, 0.5, 0.4, 0.5]);
 ssiLast4Days.set(communityIds[5], []);
 
-export const communitiesContract = new Map<string, CommunityContract>();
+export const communitiesContract = new Map<string, UbiCommunityContractModel>();
 communitiesContract.set(
     communityIds[0],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[0],
         claimAmount: '2000000000000000000',
         maxClaim: '1500000000000000000000',
@@ -44,7 +44,7 @@ communitiesContract.set(
 );
 communitiesContract.set(
     communityIds[1],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[1],
         claimAmount: '1000000000000000000',
         maxClaim: '600000000000000000000',
@@ -54,7 +54,7 @@ communitiesContract.set(
 );
 communitiesContract.set(
     communityIds[2],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[2],
         claimAmount: '1500000000000000000',
         maxClaim: '300000000000000000000',
@@ -64,7 +64,7 @@ communitiesContract.set(
 );
 communitiesContract.set(
     communityIds[3],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[3],
         claimAmount: '1500000000000000000',
         maxClaim: '300000000000000000000',
@@ -74,7 +74,7 @@ communitiesContract.set(
 );
 communitiesContract.set(
     communityIds[4],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[4],
         claimAmount: '1000000000000000000',
         maxClaim: '300000000000000000000',
@@ -84,7 +84,7 @@ communitiesContract.set(
 );
 communitiesContract.set(
     communityIds[5],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[5],
         claimAmount: '1000000000000000000',
         maxClaim: '300000000000000000000',

@@ -31,7 +31,7 @@ import { initializeBeneficiaryTransaction } from './ubi/beneficiaryTransaction';
 import { initializeClaim } from './ubi/claim';
 import { initializeClaimLocation } from './ubi/claimLocation';
 import { initializeCommunity } from './ubi/community';
-import { initializeCommunityContract } from './ubi/communityContract';
+import { initializeUbiCommunityContract } from './ubi/communityContract';
 import { initializeCommunityDailyMetrics } from './ubi/communityDailyMetrics';
 import { initializeCommunityDailyState } from './ubi/communityDailyState';
 import { initializeCommunityState } from './ubi/communityState';
@@ -57,7 +57,7 @@ export default function initModels(sequelize: Sequelize): void {
     // ubi
     initializeCommunity(sequelize);
     initializeCommunityState(sequelize);
-    initializeCommunityContract(sequelize);
+    initializeUbiCommunityContract(sequelize);
     initializeCommunityDailyState(sequelize);
     initializeCommunityDailyMetrics(sequelize);
     initializeUbiCommunitySuspect(sequelize);

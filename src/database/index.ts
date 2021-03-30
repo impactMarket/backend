@@ -23,7 +23,7 @@ import { BeneficiaryTransaction } from '@models/ubi/beneficiaryTransaction';
 import { Claim } from '@models/ubi/claim';
 import { ClaimLocation } from '@models/ubi/claimLocation';
 import { Community } from '@models/ubi/community';
-import { CommunityContract } from '@models/ubi/communityContract';
+import { UbiCommunityContractModel } from '@models/ubi/communityContract';
 import { CommunityDailyMetrics } from '@models/ubi/communityDailyMetrics';
 import { CommunityDailyState } from '@models/ubi/communityDailyState';
 import { CommunityState } from '@models/ubi/communityState';
@@ -65,8 +65,8 @@ const models: DbModels = {
     community: sequelize.models.Community as ModelCtor<Community>,
     ubiCommunitySuspect: sequelize.models
         .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspectModel>,
-    communityContract: sequelize.models
-        .CommunityContract as ModelCtor<CommunityContract>,
+    ubiCommunityContract: sequelize.models
+        .UbiCommunityContractModel as ModelCtor<UbiCommunityContractModel>,
     communityState: sequelize.models
         .CommunityState as ModelCtor<CommunityState>,
     communityDailyState: sequelize.models

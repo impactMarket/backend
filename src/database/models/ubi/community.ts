@@ -1,4 +1,5 @@
 import { StoryCommunity } from '@interfaces/story/storyCommunity';
+import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
@@ -32,6 +33,7 @@ export interface CommunityAttributes {
     createdAt: Date;
     updatedAt: Date;
 
+    contract?: UbiCommunityContract;
     storyCommunity?: StoryCommunity[];
     suspect?: UbiCommunitySuspect[];
     beneficiaries?: BeneficiaryAttributes[];

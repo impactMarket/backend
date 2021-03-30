@@ -1,11 +1,11 @@
-import { CommunityContract } from '@models/ubi/communityContract';
+import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { col, fn, Op, Transaction } from 'sequelize';
 
 import { models, sequelize } from '../../database';
 import { ICommunityContractParams } from '../../types';
 
 export default class CommunityContractService {
-    public static communityContract = models.communityContract;
+    public static ubiCommunityContract = models.ubiCommunityContract;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static community = models.community;
     public static sequelize = sequelize;
@@ -14,14 +14,14 @@ export default class CommunityContractService {
         communityId: string,
         contractParams: ICommunityContractParams,
         t: Transaction | undefined = undefined
-    ): Promise<CommunityContract> {
+    ): Promise<UbiCommunityContract> {
         const {
             claimAmount,
             maxClaim,
             baseInterval,
             incrementInterval,
         } = contractParams;
-        return await this.communityContract.create(
+        return await this.ubiCommunityContract.create(
             {
                 communityId,
                 claimAmount,
@@ -46,7 +46,7 @@ export default class CommunityContractService {
 
         try {
             await sequelize.transaction(async (t) => {
-                await this.communityContract.update(
+                await this.ubiCommunityContract.update(
                     {
                         claimAmount,
                         maxClaim,
@@ -75,7 +75,7 @@ export default class CommunityContractService {
     public static async get(
         communityId: string
     ): Promise<ICommunityContractParams> {
-        return (await this.communityContract.findOne({
+        return (await this.ubiCommunityContract.findOne({
             attributes: [
                 'claimAmount',
                 'maxClaim',
@@ -87,12 +87,11 @@ export default class CommunityContractService {
         }))!;
     }
 
-    public static async getAll(): Promise<Map<string, CommunityContract>> {
+    public static async getAll(): Promise<Map<string, UbiCommunityContract>> {
         return new Map(
-            (await this.communityContract.findAll({ raw: true })).map((c) => [
-                c.communityId,
-                c,
-            ])
+            (
+                await this.ubiCommunityContract.findAll({ raw: true })
+            ).map((c) => [c.communityId, c])
         );
     }
 
@@ -112,7 +111,7 @@ export default class CommunityContractService {
         ).map((c) => c.publicId);
 
         const result = (
-            await this.communityContract.findAll({
+            await this.ubiCommunityContract.findAll({
                 attributes: [[fn('avg', col('maxClaim')), 'avgComulativeUbi']],
                 where: {
                     communityId: { [Op.in]: publicCommunities },

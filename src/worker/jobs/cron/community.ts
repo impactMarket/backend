@@ -122,6 +122,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 continue;
             }
             // the first time you don't wait a single second, the second time, only base interval
+            if (community.contract === undefined) {
+                continue;
+            }
             const timeToWait =
                 community.contract.baseInterval +
                 (beneficiary.claims - 2) * community.contract.incrementInterval;
