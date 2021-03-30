@@ -99,7 +99,7 @@ export default class CommunityContractService {
     public static async avgComulativeUbi(): Promise<string> {
         // TODO: use a script instead
         // select avg(cc."maxClaim")
-        // from communitycontract cc, community c
+        // from ubi_community_contract cc, community c
         // where c."publicId" = cc."communityId"
         // and c.status = 'valid'
         // and c.visibility = 'public'

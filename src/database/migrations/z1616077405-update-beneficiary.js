@@ -16,8 +16,7 @@ module.exports = {
             await queryInterface.sequelize.query(
                 `update beneficiary set claimed = cast('${e.claimed}' as decimal)
                 where address = '${e.address}'
-                and "communityId" = '${e.communityId}'`,
-                { raw: true, type: Sequelize.QueryTypes.SELECT }
+                and "communityId" = '${e.communityId}'`
             );
         }
     },

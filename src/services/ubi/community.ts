@@ -215,7 +215,7 @@ export default class CommunityService {
         const sqlQuery =
             'select "publicId", "contractAddress", "requestByAddress", name, city, country, description, email, "coverImage", cc.*, cs.* ' +
             'from community c ' +
-            'left join communitycontract cc on c."publicId" = cc."communityId" ' +
+            'left join ubi_community_contract cc on c."publicId" = cc."communityId" ' +
             'left join communitystate cs on c."publicId" = cs."communityId" ' +
             "where status = 'pending' and visibility = 'public' order by c.\"createdAt\" DESC";
 
@@ -435,7 +435,7 @@ export default class CommunityService {
         let sqlQuery =
             'select "publicId", "contractAddress", name, city, country, "coverImage", cc.*, cs.* ' +
             'from community c ' +
-            'left join communitycontract cc on c."publicId" = cc."communityId" ' +
+            'left join ubi_community_contract cc on c."publicId" = cc."communityId" ' +
             'left join communitystate cs on c."publicId" = cs."communityId" ' +
             "where status = 'valid' and visibility = 'public' ";
         let useOrder = '';
@@ -538,7 +538,7 @@ export default class CommunityService {
         let sqlQuery =
             'select * from community c ' +
             'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
-            'left join communitycontract cc on c."publicId" = cc."communityId" ' +
+            'left join ubi_community_contract cc on c."publicId" = cc."communityId" ' +
             'left join communitystate cs on c."publicId" = cs."communityId" ' +
             "where c.visibility = 'public' and c.status = 'valid' ";
         switch (order) {

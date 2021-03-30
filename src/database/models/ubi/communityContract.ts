@@ -77,7 +77,7 @@ export function initializeCommunityContract(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'communitycontract',
+            tableName: 'ubi_community_contract',
             sequelize,
         }
     );
