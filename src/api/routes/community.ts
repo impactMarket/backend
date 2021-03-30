@@ -14,6 +14,7 @@ export default (app: Router): void => {
         communityController.getResquestChangeUbiParams
     );
     route.get('/publicid/:publicId', communityController.getByPublicId);
+    route.get('/id/:id', communityController.findById);
     route.get('/contract/:address', communityController.getByContractAddress);
     route.get('/hssi/:publicId', communityController.getHistoricalSSI);
     /**

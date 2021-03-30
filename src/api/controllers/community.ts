@@ -18,8 +18,22 @@ const getResquestChangeUbiParams = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
+/**
+ * @deprecated
+ */
 const getByPublicId = (req: Request, res: Response) => {
     CommunityService.getByPublicId(req.params.publicId)
+        .then((community) => {
+            if (community === null) {
+                res.sendStatus(404);
+            }
+            res.send(community);
+        })
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
+const findById = (req: Request, res: Response) => {
+    CommunityService.findById(parseInt(req.params.id, 10))
         .then((community) => {
             if (community === null) {
                 res.sendStatus(404);
@@ -234,6 +248,7 @@ const pending = (req: Request, res: Response) => {
 export default {
     getResquestChangeUbiParams,
     getByPublicId,
+    findById,
     getByContractAddress,
     getHistoricalSSI,
     list,
