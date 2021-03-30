@@ -18,7 +18,7 @@ module.exports = {
         UPDATE communitystate SET claims = claims + 1 WHERE "communityId"=NEW."communityId";
         UPDATE communitydailystate SET claims = claims + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
         -- update beneficiary table as well
-        SELECT "lastClaimAt", SUM(claimed + NEW.amount) INTO beneficiary_last_claim_at, beneficiary_claimed FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address;
+        SELECT "lastClaimAt", SUM(claimed + NEW.amount) INTO beneficiary_last_claim_at, beneficiary_claimed FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address group by "lastClaimAt";
         UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt", claimed = beneficiary_claimed WHERE "communityId"=NEW."communityId" AND address=NEW.address;
         -- update total claimed
         SELECT SUM(claimed + NEW.amount) INTO state_claimed FROM communitystate WHERE "communityId"=NEW."communityId";
