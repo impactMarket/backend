@@ -68,6 +68,10 @@ module.exports = {
             }
         );
 
+        await queryInterface.sequelize.query(
+            'alter table ubi_community_contract alter column "communityId" drop default;'
+        );
+
         await queryInterface.removeColumn(
             'ubi_community_contract',
             'communityPublicId'
