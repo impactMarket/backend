@@ -1,5 +1,5 @@
 export interface UbiCommunityContract {
-    communityId: string;
+    communityId: number;
     claimAmount: string;
     maxClaim: string;
     baseInterval: number;
@@ -11,7 +11,7 @@ export interface UbiCommunityContract {
 }
 
 export interface UbiCommunityContractCreation {
-    communityId: string;
+    communityId: number;
     claimAmount: string;
     maxClaim: string;
     baseInterval: number;

@@ -8,7 +8,7 @@ export class UbiCommunityContractModel extends Model<
     UbiCommunityContract,
     UbiCommunityContractCreation
 > {
-    public communityId!: string;
+    public communityId!: number;
     public claimAmount!: string;
     public maxClaim!: string;
     public baseInterval!: number;

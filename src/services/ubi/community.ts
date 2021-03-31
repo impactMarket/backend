@@ -1,12 +1,12 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
+import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import {
     Community,
     CommunityAttributes,
     CommunityCreationAttributes,
 } from '@models/ubi/community';
 import { CommunityDailyMetricsAttributes } from '@models/ubi/communityDailyMetrics';
-import { CommunityStateAttributes } from '@models/ubi/communityState';
 import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
 import { Op, QueryTypes, fn, col, literal } from 'sequelize';
@@ -35,7 +35,7 @@ import ManagerService from './managers';
 export default class CommunityService {
     public static community = models.community;
     public static ubiCommunityContract = models.ubiCommunityContract;
-    public static communityState = models.communityState;
+    public static ubiCommunityState = models.ubiCommunityState;
     public static communityDailyMetrics = models.communityDailyMetrics;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
@@ -111,14 +111,10 @@ export default class CommunityService {
             const community = await this.community.create(createObject, {
                 transaction: t,
             });
-            await CommunityContractService.add(
-                community.publicId,
-                contractParams,
-                t
-            );
+            await CommunityContractService.add(community.id, contractParams, t);
             if (createObject.visibility === 'private') {
                 // in case it's public, will be added when accepted
-                await CommunityStateService.add(community.publicId, t);
+                await CommunityStateService.add(community.id, t);
                 // private communities don't need daily state
             }
             // await CommunityStateService.add(community.publicId, t);
@@ -175,8 +171,8 @@ export default class CommunityService {
             status: 'pending',
             started: new Date(),
         });
-        await CommunityContractService.add(community.publicId, contractParams);
-        await CommunityStateService.add(community.publicId);
+        await CommunityContractService.add(community.id, contractParams);
+        await CommunityStateService.add(community.id);
         await CommunityDailyStateService.populateNext5Days(community.publicId);
         return community;
     }
@@ -213,13 +209,14 @@ export default class CommunityService {
         // Please, check again, and if available, update this
         // https://github.com/sequelize/sequelize/issues/6408
         const sqlQuery =
-            'select "publicId", "contractAddress", "requestByAddress", name, city, country, description, email, "coverImage", cc.*, cs.* ' +
+            'select id, "publicId", "contractAddress", "requestByAddress", name, city, country, description, email, "coverImage", cc.*, cs.* ' +
             'from community c ' +
             'left join ubi_community_contract cc on c."publicId" = cc."communityId" ' +
-            'left join communitystate cs on c."publicId" = cs."communityId" ' +
+            'left join ubi_community_state cs on c."publicId" = cs."communityId" ' +
             "where status = 'pending' and visibility = 'public' order by c.\"createdAt\" DESC";
 
         const rawResult: ({
+            id: number;
             publicId: string;
             contractAddress: string;
             requestByAddress: string;
@@ -229,12 +226,13 @@ export default class CommunityService {
             description: string;
             email: string;
             coverImage: string;
-        } & CommunityStateAttributes &
+        } & UbiCommunityState &
             UbiCommunityContract)[] = await this.sequelize.query(sqlQuery, {
             type: QueryTypes.SELECT,
         });
 
         const results: ICommunityPendingDetails[] = rawResult.map((c) => ({
+            id: c.id,
             publicId: c.publicId,
             contractAddress: c.contractAddress,
             requestByAddress: c.requestByAddress,
@@ -251,7 +249,7 @@ export default class CommunityService {
                 incrementInterval: c.incrementInterval,
                 maxClaim: c.maxClaim,
                 // values below don't matter
-                communityId: c.publicId,
+                communityId: c.id,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
             },
@@ -264,7 +262,7 @@ export default class CommunityService {
                 claims: c.claims,
                 raised: c.raised,
                 // values below don't matter
-                communityId: c.publicId,
+                communityId: c.id,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
             },
@@ -331,7 +329,7 @@ export default class CommunityService {
                         'Did not update ' + publicId + ' after acceptance!'
                     );
                 }
-                await CommunityStateService.add(publicId, t);
+                await CommunityStateService.add(dbUpdate[1][0].id, t);
                 await CommunityDailyStateService.populateNext5Days(publicId, t);
                 // If the execution reaches this line, no errors were thrown.
                 // We commit the transaction.
@@ -363,7 +361,7 @@ export default class CommunityService {
                 config.aws.bucketImagesCommunity,
                 c.coverImage
             );
-            await this.communityState.destroy({
+            await this.ubiCommunityState.destroy({
                 where: {
                     communityId: publicId,
                 },
@@ -432,10 +430,10 @@ export default class CommunityService {
         // Please, check again, and if available, update this
         // https://github.com/sequelize/sequelize/issues/6408
         let sqlQuery =
-            'select "publicId", "contractAddress", name, city, country, "coverImage", cc.*, cs.* ' +
+            'select id, "publicId", "contractAddress", name, city, country, "coverImage", cc.*, cs.* ' +
             'from community c ' +
             'left join ubi_community_contract cc on c."publicId" = cc."communityId" ' +
-            'left join communitystate cs on c."publicId" = cs."communityId" ' +
+            'left join ubi_community_state cs on c."publicId" = cs."communityId" ' +
             "where status = 'valid' and visibility = 'public' ";
         let useOrder = '';
         if (order === undefined && query.order !== undefined) {
@@ -478,18 +476,20 @@ export default class CommunityService {
         }
 
         const rawResult: ({
+            id: number;
             publicId: string;
             contractAddress: string;
             name: string;
             city: string;
             country: string;
             coverImage: string;
-        } & CommunityStateAttributes &
+        } & UbiCommunityState &
             UbiCommunityContract)[] = await this.sequelize.query(sqlQuery, {
             type: QueryTypes.SELECT,
         });
 
         const results: ICommunityLightDetails[] = rawResult.map((c) => ({
+            id: c.id,
             publicId: c.publicId,
             contractAddress: c.contractAddress,
             name: c.name,
@@ -503,7 +503,7 @@ export default class CommunityService {
                 incrementInterval: c.incrementInterval,
                 maxClaim: c.maxClaim,
                 // values below don't matter
-                communityId: c.publicId,
+                communityId: c.id,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
             },
@@ -516,7 +516,7 @@ export default class CommunityService {
                 claims: c.claims,
                 raised: c.raised,
                 // values below don't matter
-                communityId: c.publicId,
+                communityId: c.id,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
             },
@@ -537,7 +537,7 @@ export default class CommunityService {
             'select * from community c ' +
             'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
             'left join ubi_community_contract cc on c."publicId" = cc."communityId" ' +
-            'left join communitystate cs on c."publicId" = cs."communityId" ' +
+            'left join ubi_community_state cs on c."publicId" = cs."communityId" ' +
             "where c.visibility = 'public' and c.status = 'valid' ";
         switch (order) {
             case 'out_of_funds':
@@ -556,7 +556,7 @@ export default class CommunityService {
         }
 
         const rawResult: (CommunityAttributes &
-            CommunityStateAttributes &
+            UbiCommunityState &
             UbiCommunityContract &
             CommunityDailyMetricsAttributes)[] = await this.sequelize.query(
             sqlQuery,
@@ -588,7 +588,7 @@ export default class CommunityService {
                 incrementInterval: c.incrementInterval,
                 maxClaim: c.maxClaim,
                 // values below don't matter
-                communityId: c.publicId,
+                communityId: c.id,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
             },
@@ -601,7 +601,7 @@ export default class CommunityService {
                 claims: c.claims,
                 raised: c.raised,
                 // values below don't matter
-                communityId: c.publicId,
+                communityId: c.id,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
             },
@@ -754,7 +754,7 @@ export default class CommunityService {
         if (community === null) {
             throw new Error('Not found community ' + publicId);
         }
-        const communityState = await this.communityState.findOne({
+        const communityState = await this.ubiCommunityState.findOne({
             where: {
                 communityId: community.publicId,
             },
@@ -777,12 +777,14 @@ export default class CommunityService {
         return {
             ...community,
             state: communityState!,
-            contract: communityContract!,
+            contract: communityContract
+                ? (communityContract as any)
+                : undefined,
             metrics: communityDailyMetrics[0]!,
         };
     }
 
-    public static async findById(id: number): Promise<ICommunity | null> {
+    public static async findById(id: number): Promise<CommunityAttributes> {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const rawCommunity = await this.community.findOne({
@@ -805,6 +807,10 @@ export default class CommunityService {
                     model: this.ubiCommunityContract,
                     as: 'contract',
                 },
+                {
+                    model: this.ubiCommunityState,
+                    as: 'state',
+                },
             ],
             where: {
                 id,
@@ -814,24 +820,17 @@ export default class CommunityService {
             throw new Error('Not found community ' + id);
         }
         const community = rawCommunity.toJSON() as CommunityAttributes;
-        const communityState = await this.communityState.findOne({
-            where: {
-                communityId: community.publicId,
-            },
-            raw: true,
-        });
-        const communityDailyMetrics = await this.communityDailyMetrics.findAll({
-            where: {
-                communityId: community.publicId,
-            },
-            order: [['createdAt', 'DESC']],
-            limit: 1,
-            raw: true,
-        });
+        // const communityDailyMetrics = await this.communityDailyMetrics.findAll({
+        //     where: {
+        //         communityId: community.publicId,
+        //     },
+        //     order: [['createdAt', 'DESC']],
+        //     limit: 1,
+        //     raw: true,
+        // });
         return {
             ...community,
-            state: communityState!,
-            metrics: communityDailyMetrics[0]!,
+            // metrics: communityDailyMetrics[0]!,
         };
     }
 
@@ -841,6 +840,17 @@ export default class CommunityService {
         return this.community.findOne({
             where: {
                 publicId,
+            },
+            raw: true,
+        });
+    }
+
+    public static async getCommunityOnlyById(
+        id: number
+    ): Promise<Community | null> {
+        return this.community.findOne({
+            where: {
+                id,
             },
             raw: true,
         });
@@ -858,7 +868,7 @@ export default class CommunityService {
         if (community === null) {
             throw new Error('Not found community ' + contractAddress);
         }
-        const communityState = await this.communityState.findOne({
+        const communityState = await this.ubiCommunityState.findOne({
             where: {
                 communityId: community.publicId,
             },

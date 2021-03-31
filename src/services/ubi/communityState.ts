@@ -1,17 +1,17 @@
-import { CommunityState } from '@models/ubi/communityState';
+import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { QueryTypes, Transaction } from 'sequelize';
 
 import { models, sequelize } from '../../database';
 
 export default class CommunityStateService {
-    public static communityState = models.communityState;
+    public static ubiCommunityState = models.ubiCommunityState;
     public static sequelize = sequelize;
 
     public static async add(
-        communityId: string,
+        communityId: number,
         t: Transaction | undefined = undefined
-    ): Promise<CommunityState> {
-        return await this.communityState.create(
+    ): Promise<UbiCommunityState> {
+        return await this.ubiCommunityState.create(
             {
                 communityId,
             },
@@ -19,8 +19,8 @@ export default class CommunityStateService {
         );
     }
 
-    public static async get(communityId: string): Promise<CommunityState> {
-        return (await this.communityState.findOne({
+    public static async get(communityId: number): Promise<UbiCommunityState> {
+        return (await this.ubiCommunityState.findOne({
             attributes: ['claimed', 'raised', 'beneficiaries', 'backers'],
             where: { communityId },
             raw: true,
@@ -30,14 +30,14 @@ export default class CommunityStateService {
     /**
      * Only public valid
      */
-    public static getAllCommunitiesState(): Promise<CommunityState[]> {
+    public static getAllCommunitiesState(): Promise<UbiCommunityState[]> {
         const query = `select "communityId", claimed, raised, beneficiaries, backers
-        from communitystate cs , community c
+        from ubi_community_state cs , community c
         where cs."communityId" = c."publicId"
           and c.status = 'valid'
           and c.visibility = 'public'`;
 
-        return this.sequelize.query<CommunityState>(query, {
+        return this.sequelize.query<UbiCommunityState>(query, {
             type: QueryTypes.SELECT,
         });
     }

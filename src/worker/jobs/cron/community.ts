@@ -190,7 +190,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
         // calculate estimatedDuration
         estimatedDuration = parseFloat(
-            new BigNumber(communitiesContract.get(community.publicId)!.maxClaim)
+            new BigNumber(communitiesContract.get(community.id)!.maxClaim)
                 .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                 .dividedBy(ubiRate)
                 .dividedBy(30)
@@ -230,7 +230,7 @@ export async function verifyCommunityFunds(): Promise<void> {
                 ) >= 0.9;
 
             if (isLessThan10) {
-                const community = await CommunityService.getCommunityOnlyByPublicId(
+                const community = await CommunityService.getCommunityOnlyById(
                     communityState.communityId
                 );
                 if (community !== null) {

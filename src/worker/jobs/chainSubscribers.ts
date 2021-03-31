@@ -285,7 +285,9 @@ class ChainSubscribers {
         } else if (parsedLog.name === 'CommunityEdited') {
             const communityAddress = log.address;
             CommunityContractService.update(
-                this.communities.get(communityAddress)!,
+                (await CommunityService.getCommunityOnlyByPublicId(
+                    this.communities.get(communityAddress)!
+                ))!.id,
                 {
                     claimAmount: parsedLog.args[0],
                     maxClaim: parsedLog.args[1],

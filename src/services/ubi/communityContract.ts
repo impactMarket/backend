@@ -11,7 +11,7 @@ export default class CommunityContractService {
     public static sequelize = sequelize;
 
     public static async add(
-        communityId: string,
+        communityId: number,
         contractParams: ICommunityContractParams,
         t: Transaction | undefined = undefined
     ): Promise<UbiCommunityContract> {
@@ -34,7 +34,7 @@ export default class CommunityContractService {
     }
 
     public static async update(
-        communityId: string,
+        communityId: number,
         contractParams: ICommunityContractParams
     ): Promise<boolean> {
         const {
@@ -87,7 +87,7 @@ export default class CommunityContractService {
         }))!;
     }
 
-    public static async getAll(): Promise<Map<string, UbiCommunityContract>> {
+    public static async getAll(): Promise<Map<number, UbiCommunityContract>> {
         return new Map(
             (
                 await this.ubiCommunityContract.findAll({ raw: true })

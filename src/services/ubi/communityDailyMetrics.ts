@@ -142,7 +142,7 @@ export default class CommunityDailyMetricsService {
             })
         ).map((c) => c.publicId);
 
-        // select cm.ssi from communitydailymetrics cm, community c, communitystate cs
+        // select cm.ssi from communitydailymetrics cm, community c, ubi_community_state cs
         // where cm.date = '2021-01-30'
         // and cm."communityId" = c."publicId"
         // and cs."communityId" = c."publicId"
@@ -167,7 +167,7 @@ export default class CommunityDailyMetricsService {
         );
 
         // select avg(cm."ubiRate") avgUbiRate, avg(cm."estimatedDuration") avgEstimatedDuration
-        // from communitydailymetrics cm, community c, communitystate cs
+        // from communitydailymetrics cm, community c, ubi_community_state cs
         // where cm.date = '2021-01-30'
         // and cm."communityId" = c."publicId"
         // and cs."communityId" = c."publicId"
