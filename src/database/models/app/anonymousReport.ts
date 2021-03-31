@@ -11,6 +11,7 @@ export class AppAnonymousReportModel extends Model<
     public id!: number;
     public communityId!: string;
     public message!: string;
+    public createdAt!: Date;
 }
 
 export function initializeAppAnonymousReport(sequelize: Sequelize): void {
@@ -33,6 +34,10 @@ export function initializeAppAnonymousReport(sequelize: Sequelize): void {
             message: {
                 type: DataTypes.STRING(512),
                 allowNull: false,
+            },
+            createdAt: {
+                type: DataTypes.DATEONLY,
+                defaultValue: Sequelize.fn('now'),
             },
         },
         {
