@@ -368,16 +368,6 @@ export default class CommunityService {
                 config.aws.bucketImagesCommunity,
                 c.coverImage
             );
-            await this.ubiCommunityState.destroy({
-                where: {
-                    communityId: publicId,
-                },
-            });
-            await this.ubiCommunityContract.destroy({
-                where: {
-                    communityId: publicId,
-                },
-            });
             await this.community.destroy({
                 where: {
                     publicId,
@@ -765,28 +755,22 @@ export default class CommunityService {
             throw new Error('Not found community ' + publicId);
         }
         const community = rawCommunity.toJSON() as CommunityAttributes;
-        const communityState = await this.communityState.findOne({
+        const communityState = await this.ubiCommunityState.findOne({
             where: {
-                communityId: community.publicId,
-            },
-            raw: true,
-        });
-        const communityContract = await this.communityContract.findOne({
-            where: {
-                communityId: community.publicId,
+                communityId: community.id,
             },
             raw: true,
         });
         const communityContract = await this.ubiCommunityContract.findOne({
             where: {
-                communityId: community.publicId,
+                communityId: community.id,
             },
             raw: true,
         });
         const communityDailyMetrics = await this.ubiCommunityDailyMetrics.findAll(
             {
                 where: {
-                    communityId: community.publicId,
+                    communityId: community.id,
                 },
                 order: [['createdAt', 'DESC']],
                 limit: 1,
@@ -853,6 +837,11 @@ export default class CommunityService {
                         },
                     },
                 },
+                {
+                    model: this.ubiOrganization,
+                    as: 'organization',
+                    required: false,
+                },
             ],
             where: {
                 id,
@@ -900,20 +889,20 @@ export default class CommunityService {
         }
         const communityState = await this.ubiCommunityState.findOne({
             where: {
-                communityId: community.publicId,
+                communityId: community.id,
             },
             raw: true,
         });
         const communityContract = await this.ubiCommunityContract.findOne({
             where: {
-                communityId: community.publicId,
+                communityId: community.id,
             },
             raw: true,
         });
         const communityDailyMetrics = await this.ubiCommunityDailyMetrics.findAll(
             {
                 where: {
-                    communityId: community.publicId,
+                    communityId: community.id,
                 },
                 order: [['createdAt', 'DESC']],
                 limit: 1,
