@@ -328,6 +328,10 @@ export default class StoryService {
             order: [['postedAt', 'DESC']],
         });
 
+        if (r.length === 0) {
+            throw new Error('No stories for community ' + communityId);
+        }
+
         // at this point, this is not null
         const community = (r[0].toJSON() as StoryContent).storyCommunity!
             .community!;

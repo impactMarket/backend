@@ -49,7 +49,7 @@ EXECUTE PROCEDURE update_beneficiaries_community_states();`);
         UPDATE ubi_community_state SET claims = claims + 1 WHERE "communityId"=NEW."communityId";
         UPDATE ubi_community_daily_state SET claims = claims + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
         -- update beneficiary table as well
-        SELECT "lastClaimAt", SUM(claimed + NEW.amount) INTO beneficiary_last_claim_at, beneficiary_claimed FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address;
+        SELECT "lastClaimAt", SUM(claimed + NEW.amount) INTO beneficiary_last_claim_at, beneficiary_claimed FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address group by "lastClaimAt";
         UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt", claimed = beneficiary_claimed WHERE "communityId"=NEW."communityId" AND address=NEW.address;
         -- update total claimed
         SELECT SUM(claimed + NEW.amount) INTO state_claimed FROM ubi_community_state WHERE "communityId"=NEW."communityId";

@@ -2,6 +2,7 @@ import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
+import { UbiOrganization } from '@interfaces/ubi/ubiOrganization';
 import {
     Community,
     CommunityAttributes,
@@ -39,6 +40,7 @@ export default class CommunityService {
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
+    public static ubiOrganization = models.ubiOrganization;
     public static sequelize = sequelize;
 
     public static async create(
@@ -733,7 +735,7 @@ export default class CommunityService {
     ): Promise<ICommunity | null> {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const rawCommunity = await this.community.findAll({
+        const rawCommunity = await this.community.findOne({
             include: [
                 {
                     model: this.ubiCommunitySuspect,
@@ -749,16 +751,27 @@ export default class CommunityService {
                         },
                     },
                 },
+                {
+                    model: this.ubiOrganization,
+                    as: 'organization',
+                    required: false,
+                },
             ],
             where: {
                 publicId,
             },
         });
-        const community = rawCommunity[0].toJSON() as CommunityAttributes;
-        if (community === null) {
+        if (rawCommunity === null) {
             throw new Error('Not found community ' + publicId);
         }
-        const communityState = await this.ubiCommunityState.findOne({
+        const community = rawCommunity.toJSON() as CommunityAttributes;
+        const communityState = await this.communityState.findOne({
+            where: {
+                communityId: community.publicId,
+            },
+            raw: true,
+        });
+        const communityContract = await this.communityContract.findOne({
             where: {
                 communityId: community.publicId,
             },
@@ -780,8 +793,19 @@ export default class CommunityService {
                 raw: true,
             }
         );
+
+        // because organization as a many-to-many (see association file)
+        // needs to be broken
+        let organization: UbiOrganization | undefined = undefined;
+        if (
+            community.organization &&
+            (community.organization as any).length > 0
+        ) {
+            organization = (community.organization as any)[0];
+        }
         return {
             ...community,
+            organization,
             state: communityState!,
             contract: communityContract
                 ? (communityContract as any)

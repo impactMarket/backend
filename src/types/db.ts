@@ -31,6 +31,7 @@ import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
 import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
+import { UbiOrganizationModel } from '@models/ubi/ubiOrganization';
 import { ModelCtor, Sequelize } from 'sequelize/types';
 
 export interface DbModels {
@@ -43,6 +44,7 @@ export interface DbModels {
     ubiCommunityState: ModelCtor<UbiCommunityStateModel>;
     ubiCommunityDailyState: ModelCtor<UbiCommunityDailyStateModel>;
     ubiCommunityDailyMetrics: ModelCtor<UbiCommunityDailyMetricsModel>;
+    ubiOrganization: ModelCtor<UbiOrganizationModel>;
     ubiRequestChangeParams: ModelCtor<UbiRequestChangeParamsModel>;
     claim: ModelCtor<Claim>;
     claimLocation: ModelCtor<ClaimLocation>;
