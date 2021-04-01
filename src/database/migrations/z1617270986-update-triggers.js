@@ -6,19 +6,12 @@ module.exports = {
         // use datagrip for better understanding + highlight
 
         await queryInterface.sequelize.query(`
-        DROP TRIGGER update_beneficiaries_community_states ON beneficiary;
-
         CREATE OR REPLACE FUNCTION update_beneficiaries_community_states()
     RETURNS TRIGGER AS $$
     BEGIN
-        IF (TG_OP = 'INSERT') THEN -- INSERT operations (first added)
+        IF (TG_OP = 'INSERT') THEN -- beneficiary being added to a community
             -- update overall state
             UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId";
-            -- update daily state
-            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
-        ELSEIF (OLD.active IS FALSE AND NEW.active IS TRUE) THEN -- beneficiary being added back to community
-            -- update overall state
-            UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1, "removedBeneficiaries" = "removedBeneficiaries" - 1 WHERE "communityId"=NEW."communityId";
             -- update daily state
             UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
         ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN -- beneficiary being removed from community
@@ -29,17 +22,9 @@ module.exports = {
         END IF;
         RETURN NEW;
     END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_beneficiaries_community_states
-BEFORE INSERT OR UPDATE
-ON beneficiary
-FOR EACH ROW
-EXECUTE PROCEDURE update_beneficiaries_community_states();`);
+$$ LANGUAGE plpgsql;`);
 
         await queryInterface.sequelize.query(`
-        DROP TRIGGER update_claim_states ON claim;
-
         CREATE OR REPLACE FUNCTION update_claim_states()
     RETURNS TRIGGER AS $$
     declare
@@ -60,13 +45,7 @@ EXECUTE PROCEDURE update_beneficiaries_community_states();`);
         UPDATE ubi_community_daily_state SET claimed = state_daily_claimed WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
         return NEW;
     END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_claim_states
-BEFORE INSERT
-ON claim
-FOR EACH ROW
-EXECUTE PROCEDURE update_claim_states();`);
+$$ LANGUAGE plpgsql;`);
 
         await queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_managers_community_state()
@@ -82,13 +61,7 @@ EXECUTE PROCEDURE update_claim_states();`);
             RETURN OLD;
         END IF;
     END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_managers_community_state
-BEFORE INSERT OR DELETE
-ON manager
-FOR EACH ROW
-EXECUTE PROCEDURE update_managers_community_state();`);
+$$ LANGUAGE plpgsql;`);
     },
 
     down(queryInterface, Sequelize) {},

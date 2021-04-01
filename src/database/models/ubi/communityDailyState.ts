@@ -1,29 +1,15 @@
+import {
+    UbiCommunityDailyState,
+    UbiCommunityDailyStateCreation,
+} from '@interfaces/ubi/ubiCommunityDailyState';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-interface CommunityDailyStateAttributes {
-    id: number;
-    communityId: string;
-    claimed: string;
-    claims: number;
-    beneficiaries: number;
-    raised: string;
-    backers: number;
-    date: Date;
-
-    // timestamps
-    createdAt: Date;
-    updatedAt: Date;
-}
-export interface CommunityDailyStateCreationAttributes {
-    communityId: string;
-    date: Date;
-}
-export class CommunityDailyState extends Model<
-    CommunityDailyStateAttributes,
-    CommunityDailyStateCreationAttributes
+export class UbiCommunityDailyStateModel extends Model<
+    UbiCommunityDailyState,
+    UbiCommunityDailyStateCreation
 > {
     public id!: number;
-    public communityId!: string;
+    public communityId!: number;
     public claimed!: string;
     public claims!: number;
     public beneficiaries!: number;
@@ -36,8 +22,8 @@ export class CommunityDailyState extends Model<
     public readonly updatedAt!: Date;
 }
 
-export function initializeCommunityDailyState(sequelize: Sequelize): void {
-    CommunityDailyState.init(
+export function initializeUbiCommunityDailyState(sequelize: Sequelize): void {
+    UbiCommunityDailyStateModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -46,12 +32,12 @@ export function initializeCommunityDailyState(sequelize: Sequelize): void {
                 primaryKey: true,
             },
             communityId: {
-                type: DataTypes.UUID,
+                type: DataTypes.INTEGER,
                 references: {
                     model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                    key: 'id', // key in Target model that we're referencing
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             claimed: {
@@ -95,7 +81,7 @@ export function initializeCommunityDailyState(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'communitydailystate',
+            tableName: 'ubi_community_daily_state',
             sequelize,
         }
     );

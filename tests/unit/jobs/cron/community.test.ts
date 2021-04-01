@@ -18,6 +18,7 @@ import {
     communityIds,
     validNonEmptyLessThanMonthLongCommunities,
     validEmptyCommunities,
+    communityPublicIds,
 } from '../../../fake/community';
 
 describe('[jobs - cron] community', () => {
@@ -48,7 +49,7 @@ describe('[jobs - cron] community', () => {
             );
             for (let x = 0; x < communityIds.length; x += 1) {
                 allInCommunity
-                    .withArgs(communityIds[x])
+                    .withArgs(communityPublicIds[x])
                     .returns(Promise.resolve(allBeneficiariesInCommunity[x]));
             }
         });
@@ -78,7 +79,7 @@ describe('[jobs - cron] community', () => {
             );
             assert.calledWith(
                 dailyMetricsAdd.getCall(0),
-                validNonEmptyMonthLongCommunities[0].publicId,
+                validNonEmptyMonthLongCommunities[0].id,
                 1.75,
                 1.25,
                 1.18,
@@ -87,7 +88,7 @@ describe('[jobs - cron] community', () => {
             );
             assert.calledWith(
                 dailyMetricsAdd.getCall(1),
-                validNonEmptyMonthLongCommunities[1].publicId,
+                validNonEmptyMonthLongCommunities[1].id,
                 2.45,
                 2.11,
                 0.3,
@@ -96,7 +97,7 @@ describe('[jobs - cron] community', () => {
             );
             assert.calledWith(
                 dailyMetricsAdd.getCall(2),
-                validNonEmptyMonthLongCommunities[2].publicId,
+                validNonEmptyMonthLongCommunities[2].id,
                 1.06,
                 1.05,
                 0.44,
@@ -120,7 +121,7 @@ describe('[jobs - cron] community', () => {
             );
             assert.calledWith(
                 dailyMetricsAdd.getCall(0),
-                validNonEmptyLessThanMonthLongCommunities[0].publicId,
+                validNonEmptyLessThanMonthLongCommunities[0].id,
                 2.03,
                 1.43,
                 1.08,
@@ -129,7 +130,7 @@ describe('[jobs - cron] community', () => {
             );
             assert.calledWith(
                 dailyMetricsAdd.getCall(1),
-                validNonEmptyLessThanMonthLongCommunities[1].publicId,
+                validNonEmptyLessThanMonthLongCommunities[1].id,
                 2.45,
                 0.91,
                 0.14,

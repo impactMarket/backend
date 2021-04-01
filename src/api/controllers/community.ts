@@ -18,8 +18,22 @@ const getResquestChangeUbiParams = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
+/**
+ * @deprecated
+ */
 const getByPublicId = (req: Request, res: Response) => {
     CommunityService.getByPublicId(req.params.publicId)
+        .then((community) => {
+            if (community === null) {
+                res.sendStatus(404);
+            }
+            res.send(community);
+        })
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
+const findById = (req: Request, res: Response) => {
+    CommunityService.findById(parseInt(req.params.id, 10))
         .then((community) => {
             if (community === null) {
                 res.sendStatus(404);
@@ -40,8 +54,16 @@ const getByContractAddress = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
+const getHistoricalSSIByPublicId = (req: Request, res: Response) => {
+    CommunityDailyMetricsService.getHistoricalSSIByPublicId(req.params.publicId)
+        .then((community) => {
+            res.send(community);
+        })
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
 const getHistoricalSSI = (req: Request, res: Response) => {
-    CommunityDailyMetricsService.getHistoricalSSI(req.params.publicId)
+    CommunityDailyMetricsService.getHistoricalSSI(parseInt(req.params.id, 10))
         .then((community) => {
             res.send(community);
         })
@@ -234,7 +256,9 @@ const pending = (req: Request, res: Response) => {
 export default {
     getResquestChangeUbiParams,
     getByPublicId,
+    findById,
     getByContractAddress,
+    getHistoricalSSIByPublicId,
     getHistoricalSSI,
     list,
     listFull,

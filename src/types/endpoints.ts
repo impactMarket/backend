@@ -1,21 +1,29 @@
 import { User } from '@interfaces/app/user';
+import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
+import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
+import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
 import { CommunityAttributes } from '@models/ubi/community';
-import { CommunityContractAttributes } from '@models/ubi/communityContract';
-import { CommunityDailyMetricsAttributes } from '@models/ubi/communityDailyMetrics';
-import { CommunityStateAttributes } from '@models/ubi/communityState';
 
 export interface ICommunityLightDetails {
+    id: number;
+    /**
+     * @deprecated
+     */
     publicId: string;
     contractAddress: string;
     name: string;
     city: string;
     country: string;
     coverImage: string;
-    state: CommunityStateAttributes;
-    contract: CommunityContractAttributes;
+    state: UbiCommunityState;
+    contract: UbiCommunityContract;
 }
 export interface ICommunityPendingDetails {
+    id: number;
+    /**
+     * @deprecated
+     */
     publicId: string;
     contractAddress: string;
     requestByAddress: string;
@@ -25,13 +33,13 @@ export interface ICommunityPendingDetails {
     description: string;
     email: string;
     coverImage: string;
-    state: CommunityStateAttributes;
-    contract: CommunityContractAttributes;
+    state: UbiCommunityState;
+    contract: UbiCommunityContract;
 }
 export interface ICommunity extends CommunityAttributes {
-    state: CommunityStateAttributes;
-    contract: CommunityContractAttributes;
-    metrics?: CommunityDailyMetricsAttributes;
+    state: UbiCommunityState; // TODO: delete
+    contract: UbiCommunityContract; // TODO: delete
+    metrics?: UbiCommunityDailyMetrics; // TODO: delete
 }
 
 export interface IManagers {

@@ -13,9 +13,26 @@ export default (app: Router): void => {
         '/ubiparams/:publicId',
         communityController.getResquestChangeUbiParams
     );
+    /**
+     * @swagger
+     *
+     * /community/publicid/publicId:
+     *   deprecated: true
+     */
     route.get('/publicid/:publicId', communityController.getByPublicId);
+    route.get('/id/:id', communityController.findById);
     route.get('/contract/:address', communityController.getByContractAddress);
-    route.get('/hssi/:publicId', communityController.getHistoricalSSI);
+    /**
+     * @swagger
+     *
+     * /community/hssi/publicId:
+     *   deprecated: true
+     */
+    route.get(
+        '/hssi/:publicId',
+        communityController.getHistoricalSSIByPublicId
+    );
+    route.get('/historical-ssi/:id', communityController.getHistoricalSSI);
     /**
      * @swagger
      *

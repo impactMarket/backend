@@ -1,9 +1,9 @@
-import { CommunityContract } from '../../src/database/models/ubi/communityContract';
+import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
 
 export const now = new Date();
 export const nowTimestamp = now.getTime();
 
-export const communityIds = [
+export const communityPublicIds = [
     // more than 30 days, fully running
     'c77a15a7-2cef-4d1e-96db-afd0b91ab71d',
     'b090d41f-91c0-4f18-a809-633217590bbb',
@@ -14,8 +14,19 @@ export const communityIds = [
     // no beneficiaries
     '2c0f816e-3475-4d4a-847f-13fb141993f6',
 ];
+export const communityIds = [
+    // more than 30 days, fully running
+    0,
+    1,
+    2,
+    // running for less that 30 days, fully running
+    3,
+    4,
+    // no beneficiaries
+    5,
+];
 
-export const totalClaimedLast30Days = new Map<string, string>();
+export const totalClaimedLast30Days = new Map<number, string>();
 totalClaimedLast30Days.set(communityIds[0], '2516000000000000000000');
 totalClaimedLast30Days.set(communityIds[1], '148000000000000000000');
 totalClaimedLast30Days.set(communityIds[2], '1903500000000000000000');
@@ -23,7 +34,7 @@ totalClaimedLast30Days.set(communityIds[3], '52000000000000000000');
 totalClaimedLast30Days.set(communityIds[4], '25000000000000000000');
 totalClaimedLast30Days.set(communityIds[5], '0');
 
-export const ssiLast4Days = new Map<string, number[]>();
+export const ssiLast4Days = new Map<number, number[]>();
 ssiLast4Days.set(communityIds[0], [0.92, 0.87, 1.2, 1.5]);
 ssiLast4Days.set(communityIds[1], [1.3, 2.5, 2.3, 2]);
 ssiLast4Days.set(communityIds[2], [0.8, 0.9, 1.2, 1.3]);
@@ -31,10 +42,10 @@ ssiLast4Days.set(communityIds[3], [1.0, 1.2, 1.8, 1.1]);
 ssiLast4Days.set(communityIds[4], [0.7, 0.5, 0.4, 0.5]);
 ssiLast4Days.set(communityIds[5], []);
 
-export const communitiesContract = new Map<string, CommunityContract>();
+export const communitiesContract = new Map<number, UbiCommunityContractModel>();
 communitiesContract.set(
     communityIds[0],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[0],
         claimAmount: '2000000000000000000',
         maxClaim: '1500000000000000000000',
@@ -44,7 +55,7 @@ communitiesContract.set(
 );
 communitiesContract.set(
     communityIds[1],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[1],
         claimAmount: '1000000000000000000',
         maxClaim: '600000000000000000000',
@@ -54,7 +65,7 @@ communitiesContract.set(
 );
 communitiesContract.set(
     communityIds[2],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[2],
         claimAmount: '1500000000000000000',
         maxClaim: '300000000000000000000',
@@ -64,7 +75,7 @@ communitiesContract.set(
 );
 communitiesContract.set(
     communityIds[3],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[3],
         claimAmount: '1500000000000000000',
         maxClaim: '300000000000000000000',
@@ -74,7 +85,7 @@ communitiesContract.set(
 );
 communitiesContract.set(
     communityIds[4],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[4],
         claimAmount: '1000000000000000000',
         maxClaim: '300000000000000000000',
@@ -84,7 +95,7 @@ communitiesContract.set(
 );
 communitiesContract.set(
     communityIds[5],
-    new CommunityContract({
+    new UbiCommunityContractModel({
         communityId: communityIds[5],
         claimAmount: '1000000000000000000',
         maxClaim: '300000000000000000000',
@@ -96,7 +107,8 @@ communitiesContract.set(
 // TODO: fix type
 export const validNonEmptyMonthLongCommunities: any[] = [
     {
-        publicId: communityIds[0],
+        id: communityIds[0],
+        publicId: communityPublicIds[0],
         contractAddress: '0xFdd8bD58115FfBf04e47411c1d228eCC45E93075',
         state: {
             claimed: '3946000000000000000000',
@@ -106,7 +118,8 @@ export const validNonEmptyMonthLongCommunities: any[] = [
         started: new Date(nowTimestamp - 4752000000), // 55×24×60×60×1000
     },
     {
-        publicId: communityIds[1],
+        id: communityIds[1],
+        publicId: communityPublicIds[1],
         contractAddress: '0x510Bf5D8feBCA69fCfe73d391783be01B3324c69',
         state: {
             claimed: '163000000000000000000',
@@ -116,7 +129,8 @@ export const validNonEmptyMonthLongCommunities: any[] = [
         started: new Date(nowTimestamp - 3888000000), // 45×24×60×60×1000
     },
     {
-        publicId: communityIds[2],
+        id: communityIds[2],
+        publicId: communityPublicIds[2],
         contractAddress: '0x473a3be7C2A42452Ed0b521614B3b76BC59D2D1D',
         state: {
             claimed: '2068500000000000000000',
@@ -130,7 +144,8 @@ export const validNonEmptyMonthLongCommunities: any[] = [
 // TODO: fix type
 export const validNonEmptyLessThanMonthLongCommunities: any[] = [
     {
-        publicId: communityIds[3],
+        id: communityIds[3],
+        publicId: communityPublicIds[3],
         contractAddress: '0xD7C06AfE310baCD786BA2929088298b9e60322ec',
         state: {
             claimed: '20500000000000000000',
@@ -140,7 +155,8 @@ export const validNonEmptyLessThanMonthLongCommunities: any[] = [
         started: new Date(nowTimestamp - 2160000000), // 25×24×60×60×1000
     },
     {
-        publicId: communityIds[4],
+        id: communityIds[4],
+        publicId: communityPublicIds[4],
         contractAddress: '0xFdd8bD58115FfBf04e47411c1d228eCC45E93075',
         state: {
             claimed: '3200000000000000000',
@@ -154,7 +170,8 @@ export const validNonEmptyLessThanMonthLongCommunities: any[] = [
 // TODO: fix type
 export const validEmptyCommunities: any[] = [
     {
-        publicId: communityIds[5],
+        id: communityIds[5],
+        publicId: communityPublicIds[5],
         contractAddress: '0x473a3be7C2A42452Ed0b521614B3b76BC59D2D1D',
         state: {
             claimed: '0',

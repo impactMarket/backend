@@ -1,4 +1,4 @@
-import { CommunityDailyMetrics } from '@models/ubi/communityDailyMetrics';
+import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { median } from 'mathjs';
 import { col, fn, Op } from 'sequelize';
 
@@ -7,17 +7,17 @@ import { ICommunityMetrics } from '../../types';
 
 export default class CommunityDailyMetricsService {
     public static community = models.community;
-    public static communityDailyMetrics = models.communityDailyMetrics;
+    public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
 
     public static async add(
-        communityId: string,
+        communityId: number,
         ssiDayAlone: number,
         ssi: number,
         ubiRate: number,
         estimatedDuration: number,
         date: Date
-    ): Promise<CommunityDailyMetrics> {
-        return await this.communityDailyMetrics.create({
+    ): Promise<UbiCommunityDailyMetrics> {
+        return await this.ubiCommunityDailyMetrics.create({
             communityId,
             ssiDayAlone,
             ssi,
@@ -28,9 +28,9 @@ export default class CommunityDailyMetricsService {
     }
 
     public static async getLastMetrics(
-        communityId: string
+        communityId: number
     ): Promise<ICommunityMetrics | undefined> {
-        const historical = (await this.communityDailyMetrics.findAll({
+        const historical = (await this.ubiCommunityDailyMetrics.findAll({
             attributes: ['ssi'],
             where: {
                 communityId,
@@ -44,7 +44,7 @@ export default class CommunityDailyMetricsService {
             return undefined;
         }
         const lastMetrics = (
-            await this.communityDailyMetrics.findAll({
+            await this.ubiCommunityDailyMetrics.findAll({
                 attributes: [
                     'ssiDayAlone',
                     'ssi',
@@ -68,10 +68,33 @@ export default class CommunityDailyMetricsService {
         };
     }
 
-    public static async getHistoricalSSI(
-        communityId: string
+    public static async getHistoricalSSIByPublicId(
+        publicId: string
     ): Promise<number[]> {
-        const historical = await this.communityDailyMetrics.findAll({
+        const community = await this.community.findOne({ where: { publicId } });
+        if (community === null) {
+            return [];
+        }
+        const historical = await this.ubiCommunityDailyMetrics.findAll({
+            attributes: ['ssi'],
+            where: {
+                communityId: community.id,
+            },
+            order: [['date', 'DESC']],
+            limit: 15,
+            raw: true,
+        });
+        if (historical.length < 5) {
+            // at least 5 days until showing data
+            return [];
+        }
+        return historical.map((h) => h.ssi);
+    }
+
+    public static async getHistoricalSSI(
+        communityId: number
+    ): Promise<number[]> {
+        const historical = await this.ubiCommunityDailyMetrics.findAll({
             attributes: ['ssi'],
             where: {
                 communityId,
@@ -87,13 +110,13 @@ export default class CommunityDailyMetricsService {
         return historical.map((h) => h.ssi);
     }
 
-    public static async getSSILast4Days(): Promise<Map<string, number[]>> {
-        const result = new Map<string, number[]>();
+    public static async getSSILast4Days(): Promise<Map<number, number[]>> {
+        const result = new Map<number, number[]>();
         const todayMidnightTime = new Date();
         todayMidnightTime.setHours(0, 0, 0, 0);
         // seven days ago, from yesterdayDateOnly
         const fiveDaysAgo = new Date(todayMidnightTime.getTime() - 345600000); // 4 * 24 * 60 * 60 * 1000
-        const raw = await this.communityDailyMetrics.findAll({
+        const raw = await this.ubiCommunityDailyMetrics.findAll({
             attributes: ['communityId', 'ssi'],
             where: {
                 date: {
@@ -130,7 +153,7 @@ export default class CommunityDailyMetricsService {
 
         const onlyPublicValidCommunities = (
             await this.community.findAll({
-                attributes: ['publicId'],
+                attributes: ['id'],
                 where: {
                     visibility: 'public',
                     status: 'valid',
@@ -140,9 +163,9 @@ export default class CommunityDailyMetricsService {
                 },
                 raw: true,
             })
-        ).map((c) => c.publicId);
+        ).map((c) => c.id);
 
-        // select cm.ssi from communitydailymetrics cm, community c, communitystate cs
+        // select cm.ssi from ubi_community_daily_metrics cm, community c, ubi_community_state cs
         // where cm.date = '2021-01-30'
         // and cm."communityId" = c."publicId"
         // and cs."communityId" = c."publicId"
@@ -155,7 +178,7 @@ export default class CommunityDailyMetricsService {
         // TODO: only communities with more that 5 days
         const medianSSI = median(
             (
-                await this.communityDailyMetrics.findAll({
+                await this.ubiCommunityDailyMetrics.findAll({
                     attributes: ['ssi'],
                     where: {
                         date,
@@ -167,7 +190,7 @@ export default class CommunityDailyMetricsService {
         );
 
         // select avg(cm."ubiRate") avgUbiRate, avg(cm."estimatedDuration") avgEstimatedDuration
-        // from communitydailymetrics cm, community c, communitystate cs
+        // from ubi_community_daily_metrics cm, community c, ubi_community_state cs
         // where cm.date = '2021-01-30'
         // and cm."communityId" = c."publicId"
         // and cs."communityId" = c."publicId"
@@ -178,7 +201,7 @@ export default class CommunityDailyMetricsService {
         // and cs.claimed > 1
 
         const raw = (
-            await this.communityDailyMetrics.findAll({
+            await this.ubiCommunityDailyMetrics.findAll({
                 attributes: [
                     [fn('avg', col('ubiRate')), 'avgUbiRate'],
                     [

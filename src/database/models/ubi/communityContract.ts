@@ -1,30 +1,14 @@
+import {
+    UbiCommunityContract,
+    UbiCommunityContractCreation,
+} from '@interfaces/ubi/ubiCommunityContract';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export interface CommunityContractAttributes {
-    communityId: string;
-    claimAmount: string;
-    maxClaim: string;
-    baseInterval: number;
-    incrementInterval: number;
-
-    // timestamps
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-interface CommunityContractCreationAttributes {
-    communityId: string;
-    claimAmount: string;
-    maxClaim: string;
-    baseInterval: number;
-    incrementInterval: number;
-}
-
-export class CommunityContract extends Model<
-    CommunityContractAttributes,
-    CommunityContractCreationAttributes
+export class UbiCommunityContractModel extends Model<
+    UbiCommunityContract,
+    UbiCommunityContractCreation
 > {
-    public communityId!: string;
+    public communityId!: number;
     public claimAmount!: string;
     public maxClaim!: string;
     public baseInterval!: number;
@@ -35,18 +19,18 @@ export class CommunityContract extends Model<
     public readonly updatedAt!: Date;
 }
 
-export function initializeCommunityContract(sequelize: Sequelize): void {
-    CommunityContract.init(
+export function initializeUbiCommunityContract(sequelize: Sequelize): void {
+    UbiCommunityContractModel.init(
         {
             communityId: {
-                type: DataTypes.UUID,
+                type: DataTypes.INTEGER,
                 primaryKey: true,
                 unique: true,
                 references: {
                     model: 'community',
-                    key: 'publicId',
+                    key: 'id',
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             claimAmount: {
@@ -77,7 +61,7 @@ export function initializeCommunityContract(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'communitycontract',
+            tableName: 'ubi_community_contract',
             sequelize,
         }
     );

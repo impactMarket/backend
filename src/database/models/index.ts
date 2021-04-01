@@ -31,10 +31,10 @@ import { initializeBeneficiaryTransaction } from './ubi/beneficiaryTransaction';
 import { initializeClaim } from './ubi/claim';
 import { initializeClaimLocation } from './ubi/claimLocation';
 import { initializeCommunity } from './ubi/community';
-import { initializeCommunityContract } from './ubi/communityContract';
-import { initializeCommunityDailyMetrics } from './ubi/communityDailyMetrics';
-import { initializeCommunityDailyState } from './ubi/communityDailyState';
-import { initializeCommunityState } from './ubi/communityState';
+import { initializeUbiCommunityContract } from './ubi/communityContract';
+import { initializeUbiCommunityDailyMetrics } from './ubi/communityDailyMetrics';
+import { initializeUbiCommunityDailyState } from './ubi/communityDailyState';
+import { initializeUbiCommunityState } from './ubi/communityState';
 import { initializeInflow } from './ubi/inflow';
 import { initializeManager } from './ubi/manager';
 import { initializeUbiRequestChangeParams } from './ubi/requestChangeParams';
@@ -58,10 +58,10 @@ export default function initModels(sequelize: Sequelize): void {
 
     // ubi
     initializeCommunity(sequelize);
-    initializeCommunityState(sequelize);
-    initializeCommunityContract(sequelize);
-    initializeCommunityDailyState(sequelize);
-    initializeCommunityDailyMetrics(sequelize);
+    initializeUbiCommunityState(sequelize);
+    initializeUbiCommunityContract(sequelize);
+    initializeUbiCommunityDailyState(sequelize);
+    initializeUbiCommunityDailyMetrics(sequelize);
     initializeUbiCommunitySuspect(sequelize);
     initializeUbiRequestChangeParams(sequelize);
     initializeClaimLocation(sequelize);

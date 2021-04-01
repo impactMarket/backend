@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable('communitycontract', {
+        return queryInterface.createTable('ubi_community_contract', {
             communityId: {
                 type: Sequelize.UUID,
                 primaryKey: true,
@@ -38,10 +38,10 @@ module.exports = {
             updatedAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
-            }
+            },
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable('communitycontract');
-    }
+        return queryInterface.dropTable('ubi_community_contract');
+    },
 };

@@ -23,10 +23,10 @@ import { BeneficiaryTransaction } from '@models/ubi/beneficiaryTransaction';
 import { Claim } from '@models/ubi/claim';
 import { ClaimLocation } from '@models/ubi/claimLocation';
 import { Community } from '@models/ubi/community';
-import { CommunityContract } from '@models/ubi/communityContract';
-import { CommunityDailyMetrics } from '@models/ubi/communityDailyMetrics';
-import { CommunityDailyState } from '@models/ubi/communityDailyState';
-import { CommunityState } from '@models/ubi/communityState';
+import { UbiCommunityContractModel } from '@models/ubi/communityContract';
+import { UbiCommunityDailyMetricsModel } from '@models/ubi/communityDailyMetrics';
+import { UbiCommunityDailyStateModel } from '@models/ubi/communityDailyState';
+import { UbiCommunityStateModel } from '@models/ubi/communityState';
 import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
@@ -66,16 +66,16 @@ const models: DbModels = {
     community: sequelize.models.Community as ModelCtor<Community>,
     ubiCommunitySuspect: sequelize.models
         .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspectModel>,
+    ubiCommunityContract: sequelize.models
+        .UbiCommunityContractModel as ModelCtor<UbiCommunityContractModel>,
+    ubiCommunityState: sequelize.models
+        .UbiCommunityStateModel as ModelCtor<UbiCommunityStateModel>,
+    ubiCommunityDailyState: sequelize.models
+        .UbiCommunityDailyStateModel as ModelCtor<UbiCommunityDailyStateModel>,
+    ubiCommunityDailyMetrics: sequelize.models
+        .UbiCommunityDailyMetricsModel as ModelCtor<UbiCommunityDailyMetricsModel>,
     ubiOrganization: sequelize.models
         .UbiOrganizationModel as ModelCtor<UbiOrganizationModel>,
-    communityContract: sequelize.models
-        .CommunityContract as ModelCtor<CommunityContract>,
-    communityState: sequelize.models
-        .CommunityState as ModelCtor<CommunityState>,
-    communityDailyState: sequelize.models
-        .CommunityDailyState as ModelCtor<CommunityDailyState>,
-    communityDailyMetrics: sequelize.models
-        .CommunityDailyMetrics as ModelCtor<CommunityDailyMetrics>,
     ubiRequestChangeParams: sequelize.models
         .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParamsModel>,
     claim: sequelize.models.Claim as ModelCtor<Claim>,

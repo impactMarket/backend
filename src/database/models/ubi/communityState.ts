@@ -1,29 +1,14 @@
+import {
+    UbiCommunityState,
+    UbiCommunityStateCreation,
+} from '@interfaces/ubi/ubiCommunityState';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export interface CommunityStateAttributes {
-    communityId: string;
-    claimed: string;
-    claims: number;
-    beneficiaries: number; // only in community
-    removedBeneficiaries: number;
-    managers: number;
-    raised: string;
-    backers: number;
-
-    // timestamps
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-interface CommunityStateCreationAttributes {
-    communityId: string;
-}
-
-export class CommunityState extends Model<
-    CommunityStateAttributes,
-    CommunityStateCreationAttributes
+export class UbiCommunityStateModel extends Model<
+    UbiCommunityState,
+    UbiCommunityStateCreation
 > {
-    public communityId!: string;
+    public communityId!: number;
     public claimed!: string;
     public claims!: number;
     public beneficiaries!: number;
@@ -37,18 +22,18 @@ export class CommunityState extends Model<
     public readonly updatedAt!: Date;
 }
 
-export function initializeCommunityState(sequelize: Sequelize): void {
-    CommunityState.init(
+export function initializeUbiCommunityState(sequelize: Sequelize): void {
+    UbiCommunityStateModel.init(
         {
             communityId: {
-                type: DataTypes.UUID,
+                type: DataTypes.INTEGER,
                 primaryKey: true,
                 unique: true,
                 references: {
                     model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                    key: 'id', // key in Target model that we're referencing
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             claimed: {
@@ -98,7 +83,7 @@ export function initializeCommunityState(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'communitystate',
+            tableName: 'ubi_community_state',
             sequelize,
         }
     );

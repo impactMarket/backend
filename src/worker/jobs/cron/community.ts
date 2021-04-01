@@ -90,7 +90,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         if (
             community.state.claimed === '0' ||
             community.state.raised === '0' ||
-            totalClaimedLast30Days.get(community.publicId) === undefined ||
+            totalClaimedLast30Days.get(community.id) === undefined ||
             activeBeneficiariesLast30Days.get(community.publicId) ===
                 undefined ||
             activeBeneficiariesLast30Days.get(community.publicId) === 0
@@ -122,6 +122,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 continue;
             }
             // the first time you don't wait a single second, the second time, only base interval
+            if (community.contract === undefined) {
+                continue;
+            }
             const timeToWait =
                 community.contract.baseInterval +
                 (beneficiary.claims - 2) * community.contract.incrementInterval;
@@ -151,7 +154,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         );
 
         // ssi
-        const ssisAvailable = ssiLast4Days.get(community.publicId);
+        const ssisAvailable = ssiLast4Days.get(community.id);
         if (ssisAvailable === undefined) {
             ssi = ssiDayAlone;
         } else {
@@ -176,7 +179,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
         // calculate ubiRate
         ubiRate = parseFloat(
-            new BigNumber(totalClaimedLast30Days.get(community.publicId)!)
+            new BigNumber(totalClaimedLast30Days.get(community.id)!)
                 .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                 .dividedBy(
                     activeBeneficiariesLast30Days.get(community.publicId)!
@@ -187,14 +190,14 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
         // calculate estimatedDuration
         estimatedDuration = parseFloat(
-            new BigNumber(communitiesContract.get(community.publicId)!.maxClaim)
+            new BigNumber(communitiesContract.get(community.id)!.maxClaim)
                 .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                 .dividedBy(ubiRate)
                 .dividedBy(30)
                 .toFixed(2, 1)
         );
         await CommunityDailyMetricsService.add(
-            community.publicId,
+            community.id,
             ssiDayAlone,
             ssi,
             ubiRate,
@@ -227,7 +230,7 @@ export async function verifyCommunityFunds(): Promise<void> {
                 ) >= 0.9;
 
             if (isLessThan10) {
-                const community = await CommunityService.getCommunityOnlyByPublicId(
+                const community = await CommunityService.getCommunityOnlyById(
                     communityState.communityId
                 );
                 if (community !== null) {
@@ -250,6 +253,6 @@ export async function populateCommunityDailyState(): Promise<void> {
     const communities = await CommunityService.listCommunitiesStructOnly();
 
     communities.forEach((community) => {
-        CommunityDailyStateService.populateNext5Days(community.publicId);
+        CommunityDailyStateService.populateNext5Days(community.id);
     });
 }
