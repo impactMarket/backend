@@ -1,9 +1,9 @@
 import { User } from '@interfaces/app/user';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
+import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
 import { CommunityAttributes } from '@models/ubi/community';
-import { CommunityDailyMetricsAttributes } from '@models/ubi/communityDailyMetrics';
 
 export interface ICommunityLightDetails {
     id: number;
@@ -39,7 +39,7 @@ export interface ICommunityPendingDetails {
 export interface ICommunity extends CommunityAttributes {
     state: UbiCommunityState; // TODO: delete
     contract: UbiCommunityContract; // TODO: delete
-    metrics?: CommunityDailyMetricsAttributes; // TODO: delete
+    metrics?: UbiCommunityDailyMetrics; // TODO: delete
 }
 
 export interface IManagers {

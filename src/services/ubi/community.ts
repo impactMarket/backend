@@ -1,12 +1,12 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
+import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import {
     Community,
     CommunityAttributes,
     CommunityCreationAttributes,
 } from '@models/ubi/community';
-import { CommunityDailyMetricsAttributes } from '@models/ubi/communityDailyMetrics';
 import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
 import { Op, QueryTypes, fn, col, literal } from 'sequelize';
@@ -36,7 +36,7 @@ export default class CommunityService {
     public static community = models.community;
     public static ubiCommunityContract = models.ubiCommunityContract;
     public static ubiCommunityState = models.ubiCommunityState;
-    public static communityDailyMetrics = models.communityDailyMetrics;
+    public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static sequelize = sequelize;
@@ -563,10 +563,9 @@ export default class CommunityService {
         const rawResult: (CommunityAttributes &
             UbiCommunityState &
             UbiCommunityContract &
-            CommunityDailyMetricsAttributes)[] = await this.sequelize.query(
-            sqlQuery,
-            { type: QueryTypes.SELECT }
-        );
+            UbiCommunityDailyMetrics)[] = await this.sequelize.query(sqlQuery, {
+            type: QueryTypes.SELECT,
+        });
 
         const results: ICommunity[] = rawResult.map((c) => ({
             id: c.id,
@@ -621,7 +620,7 @@ export default class CommunityService {
                           ssiDayAlone: c.ssiDayAlone,
                           ubiRate: c.ubiRate,
                           // values below don't matter
-                          communityId: c.publicId,
+                          communityId: c.id,
                           createdAt: c.createdAt,
                           updatedAt: c.updatedAt,
                           id: 0,
@@ -771,14 +770,16 @@ export default class CommunityService {
             },
             raw: true,
         });
-        const communityDailyMetrics = await this.communityDailyMetrics.findAll({
-            where: {
-                communityId: community.publicId,
-            },
-            order: [['createdAt', 'DESC']],
-            limit: 1,
-            raw: true,
-        });
+        const communityDailyMetrics = await this.ubiCommunityDailyMetrics.findAll(
+            {
+                where: {
+                    communityId: community.publicId,
+                },
+                order: [['createdAt', 'DESC']],
+                limit: 1,
+                raw: true,
+            }
+        );
         return {
             ...community,
             state: communityState!,
@@ -792,7 +793,7 @@ export default class CommunityService {
     public static async findById(id: number): Promise<CommunityAttributes> {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const rawCommunity = await this.community.findOne({
+        const community = await this.community.findOne({
             include: [
                 {
                     model: this.ubiCommunitySuspect,
@@ -816,27 +817,27 @@ export default class CommunityService {
                     model: this.ubiCommunityState,
                     as: 'state',
                 },
+                {
+                    model: this.ubiCommunityDailyMetrics,
+                    as: 'metrics',
+                    required: false,
+                    where: {
+                        createdAt: {
+                            [Op.eq]: literal(
+                                '(select max("createdAt") from ubi_community_daily_metrics where "communityId" = "metrics"."communityId")'
+                            ),
+                        },
+                    },
+                },
             ],
             where: {
                 id,
             },
         });
-        if (rawCommunity === null) {
+        if (community === null) {
             throw new Error('Not found community ' + id);
         }
-        const community = rawCommunity.toJSON() as CommunityAttributes;
-        // const communityDailyMetrics = await this.communityDailyMetrics.findAll({
-        //     where: {
-        //         communityId: community.publicId,
-        //     },
-        //     order: [['createdAt', 'DESC']],
-        //     limit: 1,
-        //     raw: true,
-        // });
-        return {
-            ...community,
-            // metrics: communityDailyMetrics[0]!,
-        };
+        return community.toJSON() as CommunityAttributes;
     }
 
     public static async getCommunityOnlyByPublicId(
@@ -885,14 +886,16 @@ export default class CommunityService {
             },
             raw: true,
         });
-        const communityDailyMetrics = await this.communityDailyMetrics.findAll({
-            where: {
-                communityId: community.publicId,
-            },
-            order: [['createdAt', 'DESC']],
-            limit: 1,
-            raw: true,
-        });
+        const communityDailyMetrics = await this.ubiCommunityDailyMetrics.findAll(
+            {
+                where: {
+                    communityId: community.publicId,
+                },
+                order: [['createdAt', 'DESC']],
+                limit: 1,
+                raw: true,
+            }
+        );
         return {
             ...community,
             state: communityState!,
