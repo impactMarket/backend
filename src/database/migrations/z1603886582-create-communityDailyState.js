@@ -3,12 +3,12 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('communitydailystate', {
+        return queryInterface.createTable('ubi_community_daily_state', {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true
+                primaryKey: true,
             },
             communityId: {
                 type: Sequelize.UUID,
@@ -17,7 +17,7 @@ module.exports = {
                     key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
-                allowNull: false
+                allowNull: false,
             },
             claimed: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
@@ -48,19 +48,19 @@ module.exports = {
             },
             date: {
                 type: Sequelize.DATEONLY,
-                allowNull: false
+                allowNull: false,
             },
             createdAt: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
             },
             updatedAt: {
                 allowNull: false,
-                type: Sequelize.DATE
-            }
+                type: Sequelize.DATE,
+            },
         });
     },
     down: (queryInterface) => {
-        return queryInterface.dropTable('communitydailystate');
-    }
+        return queryInterface.dropTable('ubi_community_daily_state');
+    },
 };

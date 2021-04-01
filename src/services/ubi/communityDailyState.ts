@@ -1,24 +1,24 @@
 import {
-    CommunityDailyState,
-    CommunityDailyStateCreationAttributes,
-} from '@models/ubi/communityDailyState';
+    UbiCommunityDailyState,
+    UbiCommunityDailyStateCreation,
+} from '@interfaces/ubi/ubiCommunityDailyState';
 import moment from 'moment';
 import { Op, fn, col, Transaction, QueryTypes } from 'sequelize';
 
 import { models, sequelize } from '../../database';
 
 export default class CommunityDailyStateService {
-    public static communityDailyState = models.communityDailyState;
+    public static ubiCommunityDailyState = models.ubiCommunityDailyState;
     public static sequelize = sequelize;
 
     public static async insertEmptyDailyState(
-        communityId: string,
+        communityId: number,
         starting: Date,
         days: number
     ): Promise<void> {
         // set to beginning day, in case by mistake it wasn't done
         starting.setHours(0, 0, 0, 0);
-        const emptyDays: CommunityDailyStateCreationAttributes[] = [];
+        const emptyDays: UbiCommunityDailyStateCreation[] = [];
         do {
             emptyDays.push({
                 communityId,
@@ -26,19 +26,19 @@ export default class CommunityDailyStateService {
             });
             starting.setTime(starting.getTime() + 24 * 60 * 60 * 1000);
         } while (--days > 0);
-        await this.communityDailyState.bulkCreate(emptyDays);
+        await this.ubiCommunityDailyState.bulkCreate(emptyDays);
     }
 
     // TODO: change this method to have communityId as optional
     // if not undefined, populate the next five days for all existing 'valid' communities
     public static async populateNext5Days(
-        communityId: string,
+        communityId: number,
         t: Transaction | undefined = undefined
     ): Promise<void> {
         const days = 5;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const resultLastDay = await this.communityDailyState.findAll({
+        const resultLastDay = await this.ubiCommunityDailyState.findAll({
             attributes: ['date'],
             where: { communityId },
             order: [['date', 'DESC']],
@@ -55,7 +55,7 @@ export default class CommunityDailyStateService {
         let missingDays = moment(
             today.getTime() + days * 24 * 60 * 60 * 1000
         ).diff(lastDay, 'days');
-        const emptyDays: CommunityDailyStateCreationAttributes[] = [];
+        const emptyDays: UbiCommunityDailyStateCreation[] = [];
         while (missingDays-- > 0) {
             lastDay.setTime(lastDay.getTime() + 24 * 60 * 60 * 1000);
             emptyDays.push({
@@ -66,16 +66,16 @@ export default class CommunityDailyStateService {
             });
         }
         if (emptyDays.length > 0) {
-            await this.communityDailyState.bulkCreate(emptyDays, {
+            await this.ubiCommunityDailyState.bulkCreate(emptyDays, {
                 transaction: t,
             });
         }
     }
 
-    public static async getAll(date: Date): Promise<CommunityDailyState[]> {
+    public static async getAll(date: Date): Promise<UbiCommunityDailyState[]> {
         // set to beginning day, in case by mistake it wasn't done
         date.setHours(0, 0, 0, 0);
-        return await this.communityDailyState.findAll({
+        return await this.ubiCommunityDailyState.findAll({
             where: { date },
             raw: true,
         });
@@ -93,7 +93,7 @@ export default class CommunityDailyStateService {
         const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
         return new Map(
             (
-                await this.communityDailyState.findAll({
+                await this.ubiCommunityDailyState.findAll({
                     attributes: [
                         'communityId',
                         [fn('sum', col('claimed')), 'totalClaimed'],
@@ -123,7 +123,7 @@ export default class CommunityDailyStateService {
                         sum(cs.claims) "totalClaims",
                         sum(cs.beneficiaries) "totalBeneficiaries",
                         sum(cs.raised) "totalRaised"
-                from communitydailystate cs, community c
+                from ubi_community_daily_state cs, community c
                 where cs."communityId" = c."publicId"
                 and c.status = 'valid'
                 and c.visibility = 'public'
@@ -156,7 +156,7 @@ export default class CommunityDailyStateService {
         const query = `select sum(cs.claimed) "totalClaimed",
                         sum(cs.beneficiaries) "totalBeneficiaries",
                         sum(cs.raised) "totalRaised"
-                from communitydailystate cs, community c
+                from ubi_community_daily_state cs, community c
                 where cs."communityId" = c."publicId"
                 and c.status = 'valid'
                 and c.visibility = 'public'

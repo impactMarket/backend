@@ -152,7 +152,7 @@ module.exports = {
             }
         );
         const CommunityDailyState = await queryInterface.sequelize.define(
-            'communitydailystate',
+            'ubi_community_daily_state',
             {
                 id: {
                     type: Sequelize.INTEGER,
@@ -210,7 +210,7 @@ module.exports = {
                 },
             },
             {
-                tableName: 'communitydailystate',
+                tableName: 'ubi_community_daily_state',
                 sequelize: queryInterface.sequelize, // this bit is important
             }
         );
@@ -252,7 +252,7 @@ module.exports = {
                 allCommunitiesState
             ),
             queryInterface.bulkInsert(
-                'communitydailystate',
+                'ubi_community_daily_state',
                 allCommunitiesDailyState
             ),
         ]);

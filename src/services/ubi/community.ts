@@ -117,8 +117,8 @@ export default class CommunityService {
                 await CommunityStateService.add(community.id, t);
                 // private communities don't need daily state
             }
-            // await CommunityStateService.add(community.publicId, t);
-            // await CommunityDailyStateService.populateNext5Days(community.publicId, t);
+            // await CommunityStateService.add
+            // await CommunityDailyStateService.populateNext5Days
             if (txReceipt !== undefined) {
                 await ManagerService.add(managerAddress, community.publicId, t);
             }
@@ -173,7 +173,7 @@ export default class CommunityService {
         });
         await CommunityContractService.add(community.id, contractParams);
         await CommunityStateService.add(community.id);
-        await CommunityDailyStateService.populateNext5Days(community.publicId);
+        await CommunityDailyStateService.populateNext5Days(community.id);
         return community;
     }
 
@@ -326,11 +326,16 @@ export default class CommunityService {
                     );
                 } else {
                     throw new Error(
-                        'Did not update ' + publicId + ' after acceptance!'
+                        'Did not update ' +
+                            dbUpdate[1][0].id +
+                            ' after acceptance!'
                     );
                 }
                 await CommunityStateService.add(dbUpdate[1][0].id, t);
-                await CommunityDailyStateService.populateNext5Days(publicId, t);
+                await CommunityDailyStateService.populateNext5Days(
+                    dbUpdate[1][0].id,
+                    t
+                );
                 // If the execution reaches this line, no errors were thrown.
                 // We commit the transaction.
                 await t.commit();

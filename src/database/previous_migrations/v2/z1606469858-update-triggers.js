@@ -14,17 +14,17 @@ module.exports = {
             -- update overall state
             UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId";
             -- update daily state
-            UPDATE communitydailystate SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
         ELSEIF (OLD.active IS FALSE AND NEW.active IS TRUE) THEN
             -- update overall state
             UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId";
             -- update daily state
-            UPDATE communitydailystate SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
         ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN
             -- update overall state
             UPDATE ubi_community_state SET beneficiaries = beneficiaries - 1 WHERE "communityId"=NEW."communityId";
             -- update daily state
-            UPDATE communitydailystate SET beneficiaries = beneficiaries - 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries - 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
         END IF;
         RETURN NEW;
     END;

@@ -253,6 +253,6 @@ export async function populateCommunityDailyState(): Promise<void> {
     const communities = await CommunityService.listCommunitiesStructOnly();
 
     communities.forEach((community) => {
-        CommunityDailyStateService.populateNext5Days(community.publicId);
+        CommunityDailyStateService.populateNext5Days(community.id);
     });
 }

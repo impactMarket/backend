@@ -143,7 +143,7 @@ module.exports = {
             records = (
                 await queryInterface.sequelize.query(
                     `select sum(raised) traised, sum(claimed) tclaimed, sum(beneficiaries) tbeneficiaries
-            from communitydailystate cds, community c
+            from ubi_community_daily_state cds, community c
             where c."publicId" = cds."communityId"
               and c.visibility = 'public'
               and date <= '` +
