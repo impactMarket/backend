@@ -85,7 +85,7 @@ export default class CommunityDailyStateService {
      * Get total claimed for each community, for the 7 previous days, starting todayMidnightTime.
      */
     public static async getTotalClaimedLast30Days(): Promise<
-        Map<string, string>
+        Map<number, string>
     > {
         const todayMidnightTime = new Date();
         todayMidnightTime.setHours(0, 0, 0, 0);

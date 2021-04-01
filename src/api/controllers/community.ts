@@ -54,8 +54,16 @@ const getByContractAddress = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
+const getHistoricalSSIByPublicId = (req: Request, res: Response) => {
+    CommunityDailyMetricsService.getHistoricalSSIByPublicId(req.params.publicId)
+        .then((community) => {
+            res.send(community);
+        })
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
 const getHistoricalSSI = (req: Request, res: Response) => {
-    CommunityDailyMetricsService.getHistoricalSSI(req.params.publicId)
+    CommunityDailyMetricsService.getHistoricalSSI(parseInt(req.params.id, 10))
         .then((community) => {
             res.send(community);
         })
@@ -250,6 +258,7 @@ export default {
     getByPublicId,
     findById,
     getByContractAddress,
+    getHistoricalSSIByPublicId,
     getHistoricalSSI,
     list,
     listFull,

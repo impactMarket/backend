@@ -32,7 +32,7 @@ import { initializeClaim } from './ubi/claim';
 import { initializeClaimLocation } from './ubi/claimLocation';
 import { initializeCommunity } from './ubi/community';
 import { initializeUbiCommunityContract } from './ubi/communityContract';
-import { initializeCommunityDailyMetrics } from './ubi/communityDailyMetrics';
+import { initializeUbiCommunityDailyMetrics } from './ubi/communityDailyMetrics';
 import { initializeUbiCommunityDailyState } from './ubi/communityDailyState';
 import { initializeUbiCommunityState } from './ubi/communityState';
 import { initializeInflow } from './ubi/inflow';
@@ -59,7 +59,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeUbiCommunityState(sequelize);
     initializeUbiCommunityContract(sequelize);
     initializeUbiCommunityDailyState(sequelize);
-    initializeCommunityDailyMetrics(sequelize);
+    initializeUbiCommunityDailyMetrics(sequelize);
     initializeUbiCommunitySuspect(sequelize);
     initializeUbiRequestChangeParams(sequelize);
     initializeClaimLocation(sequelize);

@@ -24,7 +24,7 @@ import { Claim } from '@models/ubi/claim';
 import { ClaimLocation } from '@models/ubi/claimLocation';
 import { Community } from '@models/ubi/community';
 import { UbiCommunityContractModel } from '@models/ubi/communityContract';
-import { CommunityDailyMetrics } from '@models/ubi/communityDailyMetrics';
+import { UbiCommunityDailyMetricsModel } from '@models/ubi/communityDailyMetrics';
 import { UbiCommunityDailyStateModel } from '@models/ubi/communityDailyState';
 import { UbiCommunityStateModel } from '@models/ubi/communityState';
 import { Inflow } from '@models/ubi/inflow';
@@ -42,7 +42,7 @@ export interface DbModels {
     ubiCommunityContract: ModelCtor<UbiCommunityContractModel>;
     ubiCommunityState: ModelCtor<UbiCommunityStateModel>;
     ubiCommunityDailyState: ModelCtor<UbiCommunityDailyStateModel>;
-    communityDailyMetrics: ModelCtor<CommunityDailyMetrics>;
+    ubiCommunityDailyMetrics: ModelCtor<UbiCommunityDailyMetricsModel>;
     ubiRequestChangeParams: ModelCtor<UbiRequestChangeParamsModel>;
     claim: ModelCtor<Claim>;
     claimLocation: ModelCtor<ClaimLocation>;

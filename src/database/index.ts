@@ -24,7 +24,7 @@ import { Claim } from '@models/ubi/claim';
 import { ClaimLocation } from '@models/ubi/claimLocation';
 import { Community } from '@models/ubi/community';
 import { UbiCommunityContractModel } from '@models/ubi/communityContract';
-import { CommunityDailyMetrics } from '@models/ubi/communityDailyMetrics';
+import { UbiCommunityDailyMetricsModel } from '@models/ubi/communityDailyMetrics';
 import { UbiCommunityDailyStateModel } from '@models/ubi/communityDailyState';
 import { UbiCommunityStateModel } from '@models/ubi/communityState';
 import { Inflow } from '@models/ubi/inflow';
@@ -71,8 +71,8 @@ const models: DbModels = {
         .UbiCommunityStateModel as ModelCtor<UbiCommunityStateModel>,
     ubiCommunityDailyState: sequelize.models
         .UbiCommunityDailyStateModel as ModelCtor<UbiCommunityDailyStateModel>,
-    communityDailyMetrics: sequelize.models
-        .CommunityDailyMetrics as ModelCtor<CommunityDailyMetrics>,
+    ubiCommunityDailyMetrics: sequelize.models
+        .UbiCommunityDailyMetricsModel as ModelCtor<UbiCommunityDailyMetricsModel>,
     ubiRequestChangeParams: sequelize.models
         .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParamsModel>,
     claim: sequelize.models.Claim as ModelCtor<Claim>,

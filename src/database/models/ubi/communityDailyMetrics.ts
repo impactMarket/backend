@@ -1,33 +1,15 @@
+import {
+    UbiCommunityDailyMetrics,
+    UbiCommunityDailyMetricsCreation,
+} from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export interface CommunityDailyMetricsAttributes {
-    id: number;
-    communityId: string;
-    ssiDayAlone: number;
-    ssi: number;
-    ubiRate: number;
-    estimatedDuration: number;
-    date: Date;
-
-    // timestamps
-    createdAt: Date;
-    updatedAt: Date;
-}
-interface CommunityDailyMetricsCreationAttributes {
-    communityId: string;
-    ssiDayAlone: number;
-    ssi: number;
-    ubiRate: number;
-    estimatedDuration: number;
-    date: Date;
-}
-
-export class CommunityDailyMetrics extends Model<
-    CommunityDailyMetricsAttributes,
-    CommunityDailyMetricsCreationAttributes
+export class UbiCommunityDailyMetricsModel extends Model<
+    UbiCommunityDailyMetrics,
+    UbiCommunityDailyMetricsCreation
 > {
     public id!: number;
-    public communityId!: string;
+    public communityId!: number;
     public ssiDayAlone!: number;
     public ssi!: number;
     public ubiRate!: number;
@@ -39,8 +21,8 @@ export class CommunityDailyMetrics extends Model<
     public readonly updatedAt!: Date;
 }
 
-export function initializeCommunityDailyMetrics(sequelize: Sequelize): void {
-    CommunityDailyMetrics.init(
+export function initializeUbiCommunityDailyMetrics(sequelize: Sequelize): void {
+    UbiCommunityDailyMetricsModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -49,12 +31,12 @@ export function initializeCommunityDailyMetrics(sequelize: Sequelize): void {
                 primaryKey: true,
             },
             communityId: {
-                type: DataTypes.UUID,
+                type: DataTypes.INTEGER,
                 references: {
                     model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                    key: 'id', // key in Target model that we're referencing
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             ssiDayAlone: {
@@ -87,7 +69,7 @@ export function initializeCommunityDailyMetrics(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'communitydailymetrics',
+            tableName: 'ubi_community_daily_metrics',
             sequelize, // this bit is important
         }
     );

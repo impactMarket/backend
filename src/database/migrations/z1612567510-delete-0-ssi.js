@@ -3,7 +3,7 @@
 module.exports = {
     up(queryInterface, Sequelize) {
         return queryInterface.sequelize.query(
-            'delete from communitydailymetrics where ssi = 0'
+            'delete from ubi_community_daily_metrics where ssi = 0'
         );
     },
 

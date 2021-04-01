@@ -90,7 +90,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         if (
             community.state.claimed === '0' ||
             community.state.raised === '0' ||
-            totalClaimedLast30Days.get(community.publicId) === undefined ||
+            totalClaimedLast30Days.get(community.id) === undefined ||
             activeBeneficiariesLast30Days.get(community.publicId) ===
                 undefined ||
             activeBeneficiariesLast30Days.get(community.publicId) === 0
@@ -154,7 +154,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         );
 
         // ssi
-        const ssisAvailable = ssiLast4Days.get(community.publicId);
+        const ssisAvailable = ssiLast4Days.get(community.id);
         if (ssisAvailable === undefined) {
             ssi = ssiDayAlone;
         } else {
@@ -179,7 +179,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
         // calculate ubiRate
         ubiRate = parseFloat(
-            new BigNumber(totalClaimedLast30Days.get(community.publicId)!)
+            new BigNumber(totalClaimedLast30Days.get(community.id)!)
                 .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                 .dividedBy(
                     activeBeneficiariesLast30Days.get(community.publicId)!
@@ -197,7 +197,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 .toFixed(2, 1)
         );
         await CommunityDailyMetricsService.add(
-            community.publicId,
+            community.id,
             ssiDayAlone,
             ssi,
             ubiRate,

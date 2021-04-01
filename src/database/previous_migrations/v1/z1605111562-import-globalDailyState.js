@@ -69,7 +69,7 @@ module.exports = {
             }
         );
         const CommunityDailyMetrics = await queryInterface.sequelize.define(
-            'communitydailymetrics',
+            'ubi_community_daily_metrics',
             {
                 id: {
                     type: Sequelize.INTEGER,
@@ -116,7 +116,7 @@ module.exports = {
                 },
             },
             {
-                tableName: 'communitydailymetrics',
+                tableName: 'ubi_community_daily_metrics',
                 sequelize: queryInterface.sequelize, // this bit is important
             }
         );

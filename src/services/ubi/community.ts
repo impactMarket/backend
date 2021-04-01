@@ -540,7 +540,7 @@ export default class CommunityService {
         // https://github.com/sequelize/sequelize/issues/6408
         let sqlQuery =
             'select * from community c ' +
-            'left join communitydailymetrics cm on c."publicId" = cm."communityId" and cm.date = (select date from communitydailymetrics order by date desc limit 1) ' +
+            'left join ubi_community_daily_metrics cm on c."publicId" = cm."communityId" and cm.date = (select date from ubi_community_daily_metrics order by date desc limit 1) ' +
             'left join ubi_community_contract cc on c."publicId" = cc."communityId" ' +
             'left join ubi_community_state cs on c."publicId" = cs."communityId" ' +
             "where c.visibility = 'public' and c.status = 'valid' ";
