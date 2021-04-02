@@ -1,3 +1,4 @@
+import { RequestWithUser } from '@ipcttypes/core';
 import UserService from '@services/app/user';
 import { controllerLogAndFail } from '@utils/api';
 import { Logger } from '@utils/logger';
@@ -62,44 +63,71 @@ class UserController {
             .catch((e) => controllerLogAndFail(e, 404, res));
     };
 
-    public updateUsername = (req: Request, res: Response) => {
-        const { address, username } = req.body;
-        UserService.setUsername(address, username)
+    public updateUsername = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        const { username } = req.body;
+        UserService.setUsername(req.user.address, username)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
-    public updateCurrency = (req: Request, res: Response) => {
-        const { address, currency } = req.body;
-        UserService.setCurrency(address, currency)
+    public updateCurrency = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        const { currency } = req.body;
+        UserService.setCurrency(req.user.address, currency)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
-    public updatePushNotificationsToken = (req: Request, res: Response) => {
-        const { address, token } = req.body;
-        UserService.setPushNotificationsToken(address, token)
+    public updatePushNotificationsToken = (
+        req: RequestWithUser,
+        res: Response
+    ) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        const { token } = req.body;
+        UserService.setPushNotificationsToken(req.user.address, token)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
-    public updateLanguage = (req: Request, res: Response) => {
-        const { address, language } = req.body;
-        UserService.setLanguage(address, language)
+    public updateLanguage = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        const { language } = req.body;
+        UserService.setLanguage(req.user.address, language)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
-    public updateGender = (req: Request, res: Response) => {
-        const { address, gender } = req.body;
-        UserService.setGender(address, gender)
+    public updateGender = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        const { gender } = req.body;
+        UserService.setGender(req.user.address, gender)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
-    public updateAge = (req: Request, res: Response) => {
-        const { address, age } = req.body;
-        UserService.setYear(address, new Date().getFullYear() - age)
+    public updateAge = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        const { age } = req.body;
+        UserService.setYear(req.user.address, new Date().getFullYear() - age)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
@@ -107,14 +135,22 @@ class UserController {
     /**
      * don't even dare! They'll update you first
      */
-    public updateChildren = (req: Request, res: Response) => {
-        const { address, children } = req.body;
-        UserService.setChildren(address, children)
+    public updateChildren = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        const { children } = req.body;
+        UserService.setChildren(req.user.address, children)
             .then(() => res.sendStatus(200))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
-    public device = (req: Request, res: Response) => {
+    public device = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
         const { phone, identifier, device, network } = req.body;
         const hashPhone = crypto
             .createHmac('sha256', config.hashKey)
@@ -126,7 +162,7 @@ class UserController {
             .digest('hex');
 
         UserService.setDevice({
-            userAddress: (req as any).user.address,
+            userAddress: req.user.address,
             phone: hashPhone,
             identifier,
             device,
