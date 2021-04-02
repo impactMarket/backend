@@ -176,9 +176,6 @@ module.exports = {
                     type: Sequelize.ENUM('pending', 'valid', 'removed'),
                     allowNull: false,
                 },
-                txCreationObj: {
-                    type: Sequelize.JSON,
-                },
                 createdAt: {
                     type: Sequelize.DATE,
                     allowNull: false,

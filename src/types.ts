@@ -22,10 +22,6 @@ export interface ICommunity {
     email: string;
     coverImage: string;
     status: string;
-    /**
-     * @deprecated
-     */
-    txCreationObj: ICommunityVars | null; // TODO: remove in future
     started: Date;
 }
 

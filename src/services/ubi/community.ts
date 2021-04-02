@@ -244,7 +244,6 @@ export default class CommunityService {
             description: c.description,
             email: c.email,
             coverImage: c.coverImage,
-            txCreationObj: null,
             contract: {
                 baseInterval: c.baseInterval,
                 claimAmount: c.claimAmount,
@@ -317,7 +316,6 @@ export default class CommunityService {
                     {
                         contractAddress: communityContractAddress,
                         status: 'valid',
-                        txCreationObj: null,
                     },
                     { returning: true, where: { publicId }, transaction: t }
                 );
@@ -365,7 +363,7 @@ export default class CommunityService {
         });
         if (c) {
             await deleteContentFromS3(
-                config.aws.bucketImagesCommunity,
+                config.aws.bucketCommunityCover,
                 c.coverImage
             );
             await this.community.destroy({
@@ -493,7 +491,6 @@ export default class CommunityService {
             city: c.city,
             country: c.country,
             coverImage: c.coverImage,
-            txCreationObj: null,
             contract: {
                 baseInterval: c.baseInterval,
                 claimAmount: c.claimAmount,
@@ -575,9 +572,9 @@ export default class CommunityService {
             email: c.email,
             visibility: c.visibility,
             coverImage: c.coverImage,
+            logo: c.logo,
             status: c.status,
             started: c.started,
-            txCreationObj: null,
             contract: {
                 baseInterval: c.baseInterval,
                 claimAmount: c.claimAmount,
