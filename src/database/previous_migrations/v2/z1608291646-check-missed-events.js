@@ -1,8 +1,8 @@
 'use strict';
 
-const BigNumber = require("bignumber.js");
+const BigNumber = require('bignumber.js');
 const axios = require('axios');
-const { ethers } = require("ethers");
+const { ethers } = require('ethers');
 const { SHA3 } = require('sha3');
 
 const CommunityContractABI = require('../../contracts/CommunityABI.json');
@@ -16,20 +16,21 @@ async function getBlockTime(blockHash) {
             id: 0,
             jsonrpc: '2.0',
             method: 'eth_getBlockByHash',
-            params: [
-                blockHash,
-                false
-            ]
+            params: [blockHash, false],
         };
         // handle success
         const requestHeaders = {
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'Accept-encoding': 'gzip, deflate',
                 'Content-Type': 'application/json',
-            }
+            },
         };
-        const response = await axios.post(process.env.CHAIN_JSON_RPC_URL, requestContent, requestHeaders);
+        const response = await axios.post(
+            process.env.CHAIN_JSON_RPC_URL,
+            requestContent,
+            requestHeaders
+        );
         return new Date(parseInt(response.data.result.timestamp, 16) * 1000);
     } catch (e) {
         console.log('getBlockTime ' + e);
@@ -40,334 +41,353 @@ async function getBlockTime(blockHash) {
 // eslint-disable-next-line no-undef
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-
-        const Beneficiary = await queryInterface.sequelize.define('beneficiary', {
-            id: {
-                type: Sequelize.INTEGER,
-                autoIncrement: true,
-                primaryKey: true,
-            },
-            address: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
-            },
-            communityId: {
-                type: Sequelize.UUID,
-                references: {
-                    model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+        const Beneficiary = await queryInterface.sequelize.define(
+            'beneficiary',
+            {
+                id: {
+                    type: Sequelize.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
                 },
-                onDelete: 'RESTRICT',
-                allowNull: true
-            },
-            active: {
-                type: Sequelize.BOOLEAN,
-                defaultValue: true,
-                allowNull: false,
-            },
-            tx: {
-                type: Sequelize.STRING(68),
-                unique: true,
-                allowNull: false,
-            },
-            txAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            claims: {
-                type: Sequelize.INTEGER,
-                defaultValue: 0,
-                allowNull: false,
-            },
-            lastClaimAt: {
-                type: Sequelize.DATE,
-                allowNull: true,
-            },
-            penultimateClaimAt: {
-                type: Sequelize.DATE,
-                allowNull: true,
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-            }
-        }, {
-            tableName: 'beneficiary',
-            sequelize: queryInterface.sequelize, // this bit is important
-        });
-
-        const Community = await queryInterface.sequelize.define('community', {
-            id: {
-                type: Sequelize.INTEGER,
-                autoIncrement: true,
-                primaryKey: true,
-            },
-            publicId: {
-                type: Sequelize.UUID,
-                defaultValue: Sequelize.UUIDV4,
-                unique: true,
-                allowNull: false,
-            },
-            requestByAddress: {
-                type: Sequelize.STRING(44),
-                unique: true,
-                allowNull: false,
-            },
-            contractAddress: {
-                type: Sequelize.STRING(44),
-            },
-            name: {
-                type: Sequelize.STRING(64),
-                allowNull: false
-            },
-            description: {
-                type: Sequelize.STRING(1024),
-                allowNull: false
-            },
-            descriptionEn: {
-                type: Sequelize.STRING(1024),
-                allowNull: true
-            },
-            language: {
-                type: Sequelize.STRING(8),
-                defaultValue: 'en',
-                allowNull: false
-            },
-            currency: {
-                type: Sequelize.STRING(4),
-                defaultValue: 'USD',
-                allowNull: false
-            },
-            city: {
-                type: Sequelize.STRING(64),
-                allowNull: false
-            },
-            country: {
-                type: Sequelize.STRING(64),
-                allowNull: false
-            },
-            gps: {
-                type: Sequelize.JSON,
-                allowNull: false
-            },
-            email: {
-                type: Sequelize.STRING(64),
-                allowNull: false
-            },
-            visibility: {
-                type: Sequelize.ENUM('public', 'private'),
-                allowNull: false
-            },
-            coverImage: {
-                type: Sequelize.STRING(128),
-                allowNull: false
-            },
-            status: {
-                type: Sequelize.ENUM('pending', 'valid', 'removed'),
-                allowNull: false
-            },
-            txCreationObj: {
-                type: Sequelize.JSON
-            },
-            createdAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            }
-        }, {
-            tableName: 'community',
-            sequelize: queryInterface.sequelize, // this bit is important
-        });
-
-        const BeneficiaryTransaction = await queryInterface.sequelize.define('beneficiarytransaction', {
-            id: {
-                type: Sequelize.INTEGER,
-                autoIncrement: true,
-                primaryKey: true,
-            },
-            beneficiary: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
-            },
-            withAddress: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
-            },
-            amount: {
-                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
-                type: Sequelize.DECIMAL(26), // max 99,999,999 - plus 18 decimals
-                allowNull: false,
-            },
-            isFromBeneficiary: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-            },
-            tx: {
-                type: Sequelize.STRING(68),
-                unique: true,
-                allowNull: false,
-            },
-            date: {
-                type: Sequelize.DATEONLY,
-                allowNull: false,
-            },
-            createdAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            }
-        }, {
-            tableName: 'beneficiarytransaction',
-            sequelize: queryInterface.sequelize, // this bit is important
-        });
-
-        const Claim = await queryInterface.sequelize.define('claim', {
-            id: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-                autoIncrement: true,
-                primaryKey: true
-            },
-            address: {
-                type: Sequelize.STRING(44),
-                allowNull: false
-            },
-            communityId: {
-                type: Sequelize.UUID,
-                references: {
-                    model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                address: {
+                    type: Sequelize.STRING(44),
+                    allowNull: false,
                 },
-                onDelete: 'RESTRICT',
-                allowNull: false
-            },
-            amount: {
-                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
-                type: Sequelize.DECIMAL(24), // max 999,999 - plus 18 decimals
-                allowNull: false,
-            },
-            tx: {
-                type: Sequelize.STRING(68),
-                unique: true,
-                allowNull: false,
-            },
-            txAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            createdAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            }
-        }, {
-            tableName: 'claim',
-            sequelize: queryInterface.sequelize, // this bit is important
-        });
-
-        const Inflow = await queryInterface.sequelize.define('inflow', {
-            id: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-                autoIncrement: true,
-                primaryKey: true
-            },
-            from: {
-                type: Sequelize.STRING(44),
-                allowNull: false
-            },
-            communityId: {
-                type: Sequelize.UUID,
-                references: {
-                    model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                communityId: {
+                    type: Sequelize.UUID,
+                    references: {
+                        model: 'community', // name of Target model
+                        key: 'publicId', // key in Target model that we're referencing
+                    },
+                    onDelete: 'RESTRICT',
+                    allowNull: true,
                 },
-                onDelete: 'RESTRICT',
-                allowNull: false
+                active: {
+                    type: Sequelize.BOOLEAN,
+                    defaultValue: true,
+                    allowNull: false,
+                },
+                tx: {
+                    type: Sequelize.STRING(68),
+                    unique: true,
+                    allowNull: false,
+                },
+                txAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                claims: {
+                    type: Sequelize.INTEGER,
+                    defaultValue: 0,
+                    allowNull: false,
+                },
+                lastClaimAt: {
+                    type: Sequelize.DATE,
+                    allowNull: true,
+                },
+                penultimateClaimAt: {
+                    type: Sequelize.DATE,
+                    allowNull: true,
+                },
+                createdAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                },
+                updatedAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                },
             },
-            amount: {
-                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
-                type: Sequelize.DECIMAL(29), // max 9,999,999,999 - plus 18 decimals
-                allowNull: false,
-            },
-            tx: {
-                type: Sequelize.STRING(68),
-                unique: true,
-                allowNull: false,
-            },
-            txAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            createdAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
+            {
+                tableName: 'beneficiary',
+                sequelize: queryInterface.sequelize, // this bit is important
             }
-        }, {
-            tableName: 'inflow',
-            sequelize: queryInterface.sequelize, // this bit is important
-        });
+        );
 
-        const Transactions = await queryInterface.sequelize.define('transactions', {
-            uid: {
-                type: Sequelize.STRING(64),
-                primaryKey: true,
-                unique: true,
+        const Community = await queryInterface.sequelize.define(
+            'community',
+            {
+                id: {
+                    type: Sequelize.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
+                publicId: {
+                    type: Sequelize.UUID,
+                    defaultValue: Sequelize.UUIDV4,
+                    unique: true,
+                    allowNull: false,
+                },
+                requestByAddress: {
+                    type: Sequelize.STRING(44),
+                    unique: true,
+                    allowNull: false,
+                },
+                contractAddress: {
+                    type: Sequelize.STRING(44),
+                },
+                name: {
+                    type: Sequelize.STRING(64),
+                    allowNull: false,
+                },
+                description: {
+                    type: Sequelize.STRING(1024),
+                    allowNull: false,
+                },
+                descriptionEn: {
+                    type: Sequelize.STRING(1024),
+                    allowNull: true,
+                },
+                language: {
+                    type: Sequelize.STRING(8),
+                    defaultValue: 'en',
+                    allowNull: false,
+                },
+                currency: {
+                    type: Sequelize.STRING(4),
+                    defaultValue: 'USD',
+                    allowNull: false,
+                },
+                city: {
+                    type: Sequelize.STRING(64),
+                    allowNull: false,
+                },
+                country: {
+                    type: Sequelize.STRING(64),
+                    allowNull: false,
+                },
+                gps: {
+                    type: Sequelize.JSON,
+                    allowNull: false,
+                },
+                email: {
+                    type: Sequelize.STRING(64),
+                    allowNull: false,
+                },
+                visibility: {
+                    type: Sequelize.ENUM('public', 'private'),
+                    allowNull: false,
+                },
+                coverImage: {
+                    type: Sequelize.STRING(128),
+                    allowNull: false,
+                },
+                status: {
+                    type: Sequelize.ENUM('pending', 'valid', 'removed'),
+                    allowNull: false,
+                },
+                createdAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                updatedAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
             },
-            tx: {
-                type: Sequelize.STRING(68),
-                allowNull: false,
-            },
-            txAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            from: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
-            },
-            contractAddress: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
-            },
-            event: {
-                type: Sequelize.STRING(64),
-                allowNull: false,
-            },
-            values: {
-                type: Sequelize.JSONB,
-                allowNull: false,
-            },
-            createdAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: Sequelize.DATE,
-                allowNull: false,
+            {
+                tableName: 'community',
+                sequelize: queryInterface.sequelize, // this bit is important
             }
-        }, {
-            tableName: 'transactions',
-            sequelize: queryInterface.sequelize, // this bit is important
-        });
+        );
 
+        const BeneficiaryTransaction = await queryInterface.sequelize.define(
+            'beneficiarytransaction',
+            {
+                id: {
+                    type: Sequelize.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
+                beneficiary: {
+                    type: Sequelize.STRING(44),
+                    allowNull: false,
+                },
+                withAddress: {
+                    type: Sequelize.STRING(44),
+                    allowNull: false,
+                },
+                amount: {
+                    // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+                    type: Sequelize.DECIMAL(26), // max 99,999,999 - plus 18 decimals
+                    allowNull: false,
+                },
+                isFromBeneficiary: {
+                    type: Sequelize.BOOLEAN,
+                    allowNull: false,
+                },
+                tx: {
+                    type: Sequelize.STRING(68),
+                    unique: true,
+                    allowNull: false,
+                },
+                date: {
+                    type: Sequelize.DATEONLY,
+                    allowNull: false,
+                },
+                createdAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                updatedAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+            },
+            {
+                tableName: 'beneficiarytransaction',
+                sequelize: queryInterface.sequelize, // this bit is important
+            }
+        );
+
+        const Claim = await queryInterface.sequelize.define(
+            'claim',
+            {
+                id: {
+                    type: Sequelize.INTEGER,
+                    allowNull: false,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
+                address: {
+                    type: Sequelize.STRING(44),
+                    allowNull: false,
+                },
+                communityId: {
+                    type: Sequelize.UUID,
+                    references: {
+                        model: 'community', // name of Target model
+                        key: 'publicId', // key in Target model that we're referencing
+                    },
+                    onDelete: 'RESTRICT',
+                    allowNull: false,
+                },
+                amount: {
+                    // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+                    type: Sequelize.DECIMAL(24), // max 999,999 - plus 18 decimals
+                    allowNull: false,
+                },
+                tx: {
+                    type: Sequelize.STRING(68),
+                    unique: true,
+                    allowNull: false,
+                },
+                txAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                createdAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                updatedAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+            },
+            {
+                tableName: 'claim',
+                sequelize: queryInterface.sequelize, // this bit is important
+            }
+        );
+
+        const Inflow = await queryInterface.sequelize.define(
+            'inflow',
+            {
+                id: {
+                    type: Sequelize.INTEGER,
+                    allowNull: false,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
+                from: {
+                    type: Sequelize.STRING(44),
+                    allowNull: false,
+                },
+                communityId: {
+                    type: Sequelize.UUID,
+                    references: {
+                        model: 'community', // name of Target model
+                        key: 'publicId', // key in Target model that we're referencing
+                    },
+                    onDelete: 'RESTRICT',
+                    allowNull: false,
+                },
+                amount: {
+                    // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+                    type: Sequelize.DECIMAL(29), // max 9,999,999,999 - plus 18 decimals
+                    allowNull: false,
+                },
+                tx: {
+                    type: Sequelize.STRING(68),
+                    unique: true,
+                    allowNull: false,
+                },
+                txAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                createdAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                updatedAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+            },
+            {
+                tableName: 'inflow',
+                sequelize: queryInterface.sequelize, // this bit is important
+            }
+        );
+
+        const Transactions = await queryInterface.sequelize.define(
+            'transactions',
+            {
+                uid: {
+                    type: Sequelize.STRING(64),
+                    primaryKey: true,
+                    unique: true,
+                },
+                tx: {
+                    type: Sequelize.STRING(68),
+                    allowNull: false,
+                },
+                txAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                from: {
+                    type: Sequelize.STRING(44),
+                    allowNull: false,
+                },
+                contractAddress: {
+                    type: Sequelize.STRING(44),
+                    allowNull: false,
+                },
+                event: {
+                    type: Sequelize.STRING(64),
+                    allowNull: false,
+                },
+                values: {
+                    type: Sequelize.JSONB,
+                    allowNull: false,
+                },
+                createdAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+                updatedAt: {
+                    type: Sequelize.DATE,
+                    allowNull: false,
+                },
+            },
+            {
+                tableName: 'transactions',
+                sequelize: queryInterface.sequelize, // this bit is important
+            }
+        );
 
         // from 4135827
         // to 4136070
@@ -379,48 +399,51 @@ module.exports = {
             where: {
                 status: 'valid',
                 visibility: {
-                    [Sequelize.Op.or]: [
-                        'public',
-                        'private'
-                    ],
-                }
+                    [Sequelize.Op.or]: ['public', 'private'],
+                },
             },
         });
-        const allCommunitiesAddresses = availableCommunities
-            .map((c) => c.contractAddress);
+        const allCommunitiesAddresses = availableCommunities.map(
+            (c) => c.contractAddress
+        );
 
-        const publicCommunities = (await Community.findAll({
-            attributes: ['publicId'],
-            where: { visibility: 'public', status: 'valid' }
-        })).map((c) => c.contractAddress);
+        const publicCommunities = (
+            await Community.findAll({
+                attributes: ['publicId'],
+                where: { visibility: 'public', status: 'valid' },
+            })
+        ).map((c) => c.contractAddress);
 
-        const beneficiariesInPublicCommunities = (await Beneficiary.findAll({
-            attributes: ['address'],
-            where: {
-                communityId: { [Sequelize.Op.in]: publicCommunities },
-                active: true
-            }
-        })).map((b) => b.address);
-        const provider = new ethers.providers.JsonRpcProvider(process.env.CHAIN_JSON_RPC_URL);
+        const beneficiariesInPublicCommunities = (
+            await Beneficiary.findAll({
+                attributes: ['address'],
+                where: {
+                    communityId: { [Sequelize.Op.in]: publicCommunities },
+                    active: true,
+                },
+            })
+        ).map((b) => b.address);
+        const provider = new ethers.providers.JsonRpcProvider(
+            process.env.CHAIN_JSON_RPC_URL
+        );
         // get past community events
         for (let c = 0; c < availableCommunities.length; c++) {
-            const logsCommunity = await provider
-                .getLogs({
-                    address: availableCommunities[c].contractAddress,
-                    fromBlock: 4135827,
-                    toBlock: 4136070,
-                    topics: [
-                        [
-                            // ethers.utils.id('ManagerAdded(address)'),
-                            // ethers.utils.id('ManagerRemoved(address)'),
-                            ethers.utils.id('BeneficiaryAdded(address)'),
-                            // ethers.utils.id('BeneficiaryLocked(address)'),
-                            ethers.utils.id('BeneficiaryRemoved(address)'),
-                            ethers.utils.id('BeneficiaryClaim(address,uint256)'),
-                            // ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
-                        ],
+            const logsCommunity = await provider.getLogs({
+                address: availableCommunities[c].contractAddress,
+                fromBlock: 4135827,
+                toBlock: 4136070,
+                topics: [
+                    [
+                        // ethers.utils.id('ManagerAdded(address)'),
+                        // ethers.utils.id('ManagerRemoved(address)'),
+                        ethers.utils.id('BeneficiaryAdded(address)'),
+                        // ethers.utils.id('BeneficiaryLocked(address)'),
+                        ethers.utils.id('BeneficiaryRemoved(address)'),
+                        ethers.utils.id('BeneficiaryClaim(address,uint256)'),
+                        // ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
                     ],
-                });
+                ],
+            });
 
             const orderedLogs = logsCommunity.sort((a, b) => {
                 if (a.blockNumber > b.blockNumber) {
@@ -449,9 +472,13 @@ module.exports = {
                     const communityAddress = log.address;
                     // let communityId = allCommunities.get(communityAddress);
                     // notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
-                    const isPublicCommunity = availableCommunities.find((c) => c.contractAddress === communityAddress);
+                    const isPublicCommunity = availableCommunities.find(
+                        (c) => c.contractAddress === communityAddress
+                    );
                     if (isPublicCommunity.visibility === 'public') {
-                        beneficiariesInPublicCommunities.push(beneficiaryAddress);
+                        beneficiariesInPublicCommunities.push(
+                            beneficiaryAddress
+                        );
                     }
                     txAt = await getBlockTime(log.blockHash);
                     try {
@@ -461,9 +488,9 @@ module.exports = {
                             tx: log.transactionHash,
                             txAt,
                             createdAt: new Date(),
-                            updatedAt: new Date()
+                            updatedAt: new Date(),
                         });
-                    } catch (e) { }
+                    } catch (e) {}
                 } else if (parsedLog.name === 'BeneficiaryRemoved') {
                     console.log('BeneficiaryRemoved');
                     // const beneficiaryAddress = parsedLog.args[0];
@@ -483,10 +510,10 @@ module.exports = {
                             tx: log.transactionHash,
                             txAt,
                             createdAt: new Date(),
-                            updatedAt: new Date()
+                            updatedAt: new Date(),
                         });
-                    } catch (e) { }
-                }/* else if (parsedLog.name === 'ManagerAdded') {
+                    } catch (e) {}
+                } /* else if (parsedLog.name === 'ManagerAdded') {
                     const managerAddress = parsedLog.args[0];
                     await ManagerService.add(
                         managerAddress,
@@ -494,7 +521,9 @@ module.exports = {
                     );
                 }*/
                 const hash = new SHA3(256);
-                hash.update(log.transactionHash).update(JSON.stringify(parsedLog.args));
+                hash.update(log.transactionHash).update(
+                    JSON.stringify(parsedLog.args)
+                );
                 Transactions.create({
                     uid: hash.digest('hex'),
                     tx: log.transactionHash,
@@ -506,16 +535,20 @@ module.exports = {
                 });
             }
             // get past donations
-            const logsCUSD = await provider
-                .getLogs({
-                    fromBlock: 4135827,
-                    toBlock: 4136070,
-                    topics: [[ethers.utils.id('Transfer(address,address,uint256)')]],
-                });
+            const logsCUSD = await provider.getLogs({
+                fromBlock: 4135827,
+                toBlock: 4136070,
+                topics: [
+                    [ethers.utils.id('Transfer(address,address,uint256)')],
+                ],
+            });
             const eventsCUSD = logsCUSD.map((log) => ifaceERC20.parseLog(log));
             for (let ec = 0; ec < eventsCUSD.length; ec += 1) {
                 const preParsedLog = eventsCUSD[ec];
-                if (eventsCUSD[ec].args.to === availableCommunities[c].contractAddress) {
+                if (
+                    eventsCUSD[ec].args.to ===
+                    availableCommunities[c].contractAddress
+                ) {
                     console.log('Transfer');
                     const log = logsCUSD[ec];
                     const parsedLog = eventsCUSD[ec];
@@ -532,11 +565,13 @@ module.exports = {
                             tx: log.transactionHash,
                             txAt,
                             createdAt: new Date(),
-                            updatedAt: new Date()
+                            updatedAt: new Date(),
                         });
-                    } catch (e) { }
+                    } catch (e) {}
                     const hash = new SHA3(256);
-                    hash.update(log.transactionHash).update(JSON.stringify(parsedLog.args));
+                    hash.update(log.transactionHash).update(
+                        JSON.stringify(parsedLog.args)
+                    );
                     Transactions.add({
                         uid: hash.digest('hex'),
                         tx: log.transactionHash,
@@ -555,7 +590,8 @@ module.exports = {
                     //     beneficiariesInPublicCommunities.includes(
                     //         preParsedLog.args[1]
                     //     )) &&
-                    preParsedLog.args[1] !== '0xdC553892cdeeeD9f575aa0FBA099e5847fd88D20' &&
+                    preParsedLog.args[1] !==
+                        '0xdC553892cdeeeD9f575aa0FBA099e5847fd88D20' &&
                     preParsedLog.args[0] !== preParsedLog.args[1] &&
                     preParsedLog.args[2].toString().length > 15
                 ) {
@@ -565,7 +601,9 @@ module.exports = {
                     // transactions from or to beneficiaries
                     if (
                         isFromBeneficiary ||
-                        beneficiariesInPublicCommunities.includes(preParsedLog.args[1])
+                        beneficiariesInPublicCommunities.includes(
+                            preParsedLog.args[1]
+                        )
                     ) {
                         const log = logsCUSD[ec];
                         const _parsedLog = preParsedLog; // TODO: rename to parsedLog
@@ -585,14 +623,13 @@ module.exports = {
                                 tx: log.transactionHash,
                                 date: new Date(),
                                 createdAt: new Date(),
-                                updatedAt: new Date()
+                                updatedAt: new Date(),
                             });
-                        } catch (e) { }
+                        } catch (e) {}
                     }
                 }
             }
         }
     },
-    down: (queryInterface) => {
-    }
+    down: (queryInterface) => {},
 };

@@ -67,12 +67,13 @@ module.exports = {
                 type: Sequelize.STRING(128),
                 allowNull: false,
             },
+            logo: {
+                type: Sequelize.STRING(128),
+                allowNull: true,
+            },
             status: {
                 type: Sequelize.ENUM('pending', 'valid', 'removed'),
                 allowNull: false,
-            },
-            txCreationObj: {
-                type: Sequelize.JSON,
             },
             started: {
                 type: Sequelize.DATEONLY,
@@ -90,5 +91,5 @@ module.exports = {
     },
     down: (queryInterface, Sequelize) => {
         return queryInterface.dropTable('community');
-    }
+    },
 };
