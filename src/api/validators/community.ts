@@ -15,32 +15,8 @@ const add = celebrate({
             longitude: Joi.number().required(),
         }).required(),
         email: Joi.string().required(),
-        // coverImage: Joi.string().required(),
-        txReceipt: Joi.when('contractAddress', {
-            not: undefined,
-            then: Joi.object().required(),
-            otherwise: Joi.object().optional(),
-        }),
-        contractParams: Joi.object().required(),
-    }),
-});
-
-const create = celebrate({
-    body: Joi.object({
-        requestByAddress: Joi.string().required(),
-        name: Joi.string().required(),
-        contractAddress: Joi.string().optional(),
-        description: Joi.string().required(),
-        language: Joi.string().required(),
-        currency: Joi.string().required(),
-        city: Joi.string().required(),
-        country: Joi.string().required(),
-        gps: Joi.object({
-            latitude: Joi.number().required(),
-            longitude: Joi.number().required(),
-        }).required(),
-        email: Joi.string().required(),
         coverImage: Joi.string().required(),
+        logo: Joi.string().optional(),
         txReceipt: Joi.when('contractAddress', {
             not: undefined,
             then: Joi.object().required(),
@@ -52,8 +28,7 @@ const create = celebrate({
 
 const edit = celebrate({
     body: Joi.object({
-        publicId: Joi.string().required(),
-        name: Joi.string().required(),
+        id: Joi.number().required(),
         description: Joi.string().required(),
         language: Joi.string().required(),
         currency: Joi.string().required(),
@@ -61,6 +36,7 @@ const edit = celebrate({
         country: Joi.string().required(),
         email: Joi.string().required(),
         coverImage: Joi.string().required(),
+        logo: Joi.string().optional(),
     }),
 });
 
@@ -78,7 +54,6 @@ const remove = celebrate({
 });
 
 export default {
-    create,
     add,
     edit,
     accept,

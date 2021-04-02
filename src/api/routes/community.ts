@@ -1,11 +1,14 @@
 import communityController from '@controllers/community';
 import communityValidators from '@validators/community';
 import { Router } from 'express';
+import multer from 'multer';
 
 import { adminAuthentication, authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {
     const route = Router();
+    const storage = multer.memoryStorage();
+    const upload = multer({ storage });
 
     app.use('/community', route);
 
@@ -21,6 +24,21 @@ export default (app: Router): void => {
      */
     route.get('/publicid/:publicId', communityController.getByPublicId);
     route.get('/id/:id', communityController.findById);
+    /**
+     * @swagger
+     *
+     * /community/picture/add/{to}:
+     *   post:
+     *     tags:
+     *       - "community"
+     *     summary: Add a community picture
+     */
+    route.post(
+        '/picture/:to',
+        upload.single('imageFile'),
+        authenticateToken,
+        communityController.pictureAdd
+    );
     route.get('/contract/:address', communityController.getByContractAddress);
     /**
      * @swagger
