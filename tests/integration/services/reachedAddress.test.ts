@@ -17,7 +17,7 @@ describe('reachedAddress', () => {
             logging: false,
             query: { raw: true }, // I wish, eager loading gets fixed
         };
-        sequelize = new Sequelize(process.env.DB_TESTCI_URL!, dbConfig);
+        sequelize = new Sequelize(process.env.DATABASE_URL!, dbConfig);
 
         initializeUser(sequelize);
         initializeReachedAddress(sequelize);
@@ -76,7 +76,6 @@ describe('reachedAddress', () => {
                 visibility: 'public',
                 coverImage: '',
                 status: 'valid',
-                txCreationObj: null,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 currency: '',

@@ -1,12 +1,10 @@
 import { StoryCommunity } from '@interfaces/story/storyCommunity';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
-import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 import { UbiOrganization } from '@interfaces/ubi/ubiOrganization';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-import { ICommunityVars } from '../../../types';
 import { BeneficiaryAttributes } from './beneficiary';
 
 export interface CommunityAttributes {
@@ -28,8 +26,8 @@ export interface CommunityAttributes {
     email: string;
     visibility: 'public' | 'private';
     coverImage: string;
+    logo: string;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    txCreationObj: ICommunityVars | null;
     started: Date;
 
     // timestamps
@@ -87,8 +85,8 @@ export class Community extends Model<
     public email!: string;
     public visibility!: 'public' | 'private';
     public coverImage!: string;
+    public logo!: string;
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    public txCreationObj!: ICommunityVars | null;
     public started!: Date;
 
     // timestamps!
@@ -164,12 +162,13 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 type: DataTypes.STRING(128),
                 allowNull: false,
             },
+            logo: {
+                type: DataTypes.STRING(128),
+                allowNull: true,
+            },
             status: {
                 type: DataTypes.ENUM('pending', 'valid', 'removed'),
                 allowNull: false,
-            },
-            txCreationObj: {
-                type: DataTypes.JSON,
             },
             started: {
                 type: DataTypes.DATEONLY,
