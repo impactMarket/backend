@@ -21,7 +21,7 @@ const hello = celebrate({
     body: Joi.object({
         address: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
         token: Joi.string().allow(''),
-        phone: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
+        phone: Joi.string().optional(), // TODO: change to required once 1.0.7 is the minimal mobile version!
     }),
 });
 
