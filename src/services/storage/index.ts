@@ -47,6 +47,35 @@ const sharpAndUpload = async (
     return uploadResult;
 };
 
+const uploadSingle = async (file: Express.Multer.File, bucket: string) => {
+    const imgBuffer = await sharp(file.buffer)
+        .jpeg({
+            quality: 100,
+        })
+        .toBuffer();
+
+    // content file
+    const today = new Date();
+    const filePrefix = `${today.getFullYear()}${today.getMonth() + 1}/`;
+    const filename = `${Date.now().toString()}.jpeg`;
+    const filePath = `${filePrefix}${filename}`;
+
+    // upload to aws
+    const uploadResult = await uploadContentToS3(bucket, filePath, imgBuffer);
+    return `${config.cloudfrontUrl}/${uploadResult.Key}`;
+};
+
+const uploadCommunityPicture = async (
+    to: string,
+    file: Express.Multer.File
+) => {
+    let toBucket = config.aws.bucketCommunityCover;
+    if (to === 'cover') {
+        toBucket = config.aws.bucketCommunityCover;
+    }
+    return await uploadSingle(file, toBucket);
+};
+
 const uploadContentToS3 = async (
     category: string,
     filePath: string,
@@ -100,6 +129,8 @@ const deleteBulkContentFromS3 = async (
 };
 
 export {
+    uploadCommunityPicture,
+    //
     sharpAndUpload,
     uploadContentToS3,
     deleteContentFromS3,
