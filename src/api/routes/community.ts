@@ -32,6 +32,12 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Add a community picture
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
      */
     route.post(
         '/picture/:to',
@@ -50,6 +56,18 @@ export default (app: Router): void => {
         '/hssi/:publicId',
         communityController.getHistoricalSSIByPublicId
     );
+    /**
+     * @swagger
+     *
+     * /community/historical-ssi/{id}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Add a new community
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
     route.get('/historical-ssi/:id', communityController.getHistoricalSSI);
     /**
      * @swagger
@@ -125,12 +143,42 @@ export default (app: Router): void => {
     );
     route.get('/list/light/:order?', communityController.list);
     route.get('/list/full/:order?', communityController.listFull);
+    /**
+     * @swagger
+     *
+     * /community/add:
+     *   post:
+     *     tags:
+     *       - "community"
+     *     summary: Add a new community
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
     route.post(
         '/add',
         authenticateToken,
         communityValidators.add,
         communityController.add
     );
+    /**
+     * @swagger
+     *
+     * /community/edit:
+     *   post:
+     *     tags:
+     *       - "community"
+     *     summary: Edit existing community
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
     route.post(
         '/edit',
         authenticateToken,
