@@ -28,7 +28,7 @@ const add = celebrate({
 
 const edit = celebrate({
     body: Joi.object({
-        id: Joi.number().required(),
+        // id: Joi.number().required(), // use manager's auth token
         description: Joi.string().required(),
         language: Joi.string().required(),
         currency: Joi.string().required(),
