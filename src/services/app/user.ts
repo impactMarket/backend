@@ -225,8 +225,30 @@ export default class UserService {
     public static async setDevice(
         deviceInfo: AppUserDeviceCreation
     ): Promise<boolean> {
+        const exists = await this.userDevice.findOne({
+            where: {
+                userAddress: deviceInfo.userAddress,
+                identifier: deviceInfo.identifier,
+                network: deviceInfo.network,
+                device: deviceInfo.device,
+            },
+        });
         try {
-            await this.userDevice.create(deviceInfo);
+            if (exists !== null) {
+                await this.userDevice.update(
+                    { lastLogin: new Date() },
+                    {
+                        where: {
+                            userAddress: deviceInfo.userAddress,
+                            identifier: deviceInfo.identifier,
+                            network: deviceInfo.network,
+                            device: deviceInfo.device,
+                        },
+                    }
+                );
+            } else {
+                await this.userDevice.create(deviceInfo);
+            }
             return true;
         } catch (e) {
             if (e.name === 'SequelizeUniqueConstraintError') {
