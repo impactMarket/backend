@@ -80,7 +80,7 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
             },
             blocked: {
                 type: DataTypes.BOOLEAN,
-                defaultValue: true,
+                defaultValue: false,
             },
             tx: {
                 type: DataTypes.STRING(68),
