@@ -274,9 +274,9 @@ const uploadCommunityPicture = async (
     to: string,
     file: Express.Multer.File
 ) => {
-    let toBucket = config.aws.bucketCommunityCover;
+    let toBucket = config.aws.bucket.community;
     if (to === 'cover') {
-        toBucket = config.aws.bucketCommunityCover;
+        toBucket = config.aws.bucket.community;
     }
     return await uploadSingle(file, toBucket);
 };
