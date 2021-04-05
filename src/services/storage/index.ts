@@ -1,4 +1,7 @@
 import fleekStorage from '@fleekhq/fleek-storage-js';
+import { Logger } from '@utils/logger';
+import axios from 'axios';
+import { Job, Queue, Worker } from 'bullmq';
 import sizeOf from 'image-size';
 import sharp from 'sharp';
 
@@ -12,7 +15,22 @@ enum StorageCategory {
     story,
 }
 
-class ContentStorage {
+interface IJobThumbnail {
+    category: StorageCategory;
+    originalS3: AWS.S3.ManagedUpload.SendData;
+}
+
+export class ContentStorage {
+    private queueThumbnail: Queue<IJobThumbnail>;
+    private queueThumbnailName = 'thumbnail';
+    constructor() {
+        this.queueThumbnail = new Queue<IJobThumbnail>(
+            this.queueThumbnailName,
+            {
+                connection: config.redis,
+            }
+        );
+    }
     async processAndUpload(
         file: Express.Multer.File,
         category: StorageCategory
@@ -57,13 +75,69 @@ class ContentStorage {
             imgBuffer
         );
 
-        // TODO: add job to queue, return jobId and start async process
+        // add job to queue, return jobId and start async process
+        this.queueThumbnail.add(
+            'job',
+            {
+                category,
+                originalS3: uploadResult,
+            },
+            { removeOnComplete: true, removeOnFail: 1000 }
+        );
 
         return uploadResult;
     }
 
-    createThumbnail() {
-        //
+    listenToJobs() {
+        const worker = new Worker<IJobThumbnail>(
+            this.queueThumbnailName,
+            this._createThumbnailFromJob,
+            {
+                connection: config.redis,
+                concurrency: config.bullJobsConcurrency,
+            }
+        );
+        worker.on('failed', (job, err) =>
+            Logger.error(`Failed job ${job.id} with ${err}`)
+        );
+    }
+
+    async _createThumbnailFromJob(job: Job<IJobThumbnail, any, string>) {
+        let thumbnailSize: { width: number; height: number };
+        switch (job.data.category) {
+            case StorageCategory.story:
+                thumbnailSize = config.thumbnails.story;
+                break;
+            case StorageCategory.communityCover:
+                thumbnailSize = config.thumbnails.community.cover;
+                break;
+            case StorageCategory.communityLogo:
+                thumbnailSize = config.thumbnails.community.logo;
+                break;
+            case StorageCategory.organizationLogo:
+                thumbnailSize = config.thumbnails.organization.logo;
+                break;
+        }
+
+        const responseFromUrl = await axios.get(
+            `${config.cloudfrontUrl}/${job.data.originalS3.Key}`,
+            {
+                responseType: 'arraybuffer',
+            }
+        );
+
+        const thumbnailBuffer = await sharp(
+            Buffer.from(responseFromUrl.data, 'binary')
+        )
+            .resize(thumbnailSize)
+            .toBuffer();
+
+        const filePath = this._generatedStorageFileName(job.data.category);
+        await this._uploadContentToS3(
+            job.data.category,
+            filePath,
+            thumbnailBuffer
+        );
     }
 
     _generatedStorageFileName(

@@ -52,6 +52,9 @@ function validateEnv() {
         SENTRY_TRACE_SAMPLES_RATE: num({ default: 0 }),
         ADMIN_KEY: str({ devDefault: 'xyz' }),
         HASH_KEY: str({ devDefault: 'xyz' }),
+        REDIS_HOST: str(),
+        REDIS_PORT: num(),
+        BULL_JOBS_CONCURRENCY: num(),
     });
 }
 

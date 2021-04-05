@@ -162,4 +162,11 @@ export default {
             },
         },
     },
+
+    redis: {
+        host: validateEnv.REDIS_HOST,
+        port: validateEnv.REDIS_PORT,
+    },
+
+    bullJobsConcurrency: validateEnv.BULL_JOBS_CONCURRENCY,
 };
