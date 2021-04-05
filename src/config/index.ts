@@ -89,8 +89,10 @@ export default {
         accessKeyId: validatedEnv.AWS_ACCESS_KEY_ID,
         secretAccessKey: validatedEnv.AWS_SECRET_ACCESS_KEY,
         region: validatedEnv.AWS_REGION,
-        bucketImagesCommunity: validatedEnv.AWS_BUCKET_IMAGES_COMMUNITY,
-        bucketImagesStory: validatedEnv.AWS_BUCKET_IMAGES_STORY,
+        bucket: {
+            community: validatedEnv.AWS_BUCKET_IMAGES_COMMUNITY,
+            story: validatedEnv.AWS_BUCKET_IMAGES_STORY,
+        },
     },
 
     /**
@@ -133,4 +135,31 @@ export default {
      *
      */
     adminKey: validatedEnv.ADMIN_KEY,
+
+    /**
+     * Thumbnails size for media content
+     * 0 (zero) is for auto
+     */
+    thumbnails: {
+        story: {
+            width: 0,
+            height: 500,
+        },
+        community: {
+            cover: {
+                width: 800,
+                height: 0,
+            },
+            logo: {
+                width: 100,
+                height: 0,
+            },
+        },
+        organization: {
+            logo: {
+                width: 100,
+                height: 0,
+            },
+        },
+    },
 };

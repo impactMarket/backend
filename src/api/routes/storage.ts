@@ -56,7 +56,7 @@ export default (app: Router): void => {
                 // upload to aws
                 try {
                     const uploadResult = await uploadContentToS3(
-                        config.aws.bucketImagesCommunity,
+                        config.aws.bucket.community,
                         filePath,
                         imgBuffer
                     );

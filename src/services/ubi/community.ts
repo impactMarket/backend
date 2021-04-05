@@ -365,7 +365,7 @@ export default class CommunityService {
         });
         if (c) {
             await deleteContentFromS3(
-                config.aws.bucketImagesCommunity,
+                config.aws.bucket.community,
                 c.coverImage
             );
             await this.community.destroy({

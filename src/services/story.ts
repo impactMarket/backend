@@ -38,10 +38,7 @@ export default class StoryService {
             throw new Error('Story needs at least media or message.');
         }
         if (file) {
-            const media = await sharpAndUpload(
-                file,
-                config.aws.bucketImagesStory
-            );
+            const media = await sharpAndUpload(file, config.aws.bucket.story);
             storyContentToAdd = {
                 media: `${config.cloudfrontUrl}/${media.Key}`,
             };
@@ -101,10 +98,7 @@ export default class StoryService {
             where: { id: storyId, byAddress: userAddress },
         });
         if (destroyed > 0) {
-            deleteContentFromS3(
-                config.aws.bucketImagesStory,
-                contentPath.media
-            );
+            deleteContentFromS3(config.aws.bucket.story, contentPath.media);
         }
         return destroyed;
     }
@@ -409,7 +403,7 @@ export default class StoryService {
         );
 
         deleteBulkContentFromS3(
-            config.aws.bucketImagesStory,
+            config.aws.bucket.story,
             storiesToDelete.map((s: any) => s.media)
         ).catch(Logger.error);
 
