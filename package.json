@@ -49,6 +49,7 @@
         "axios": "0.21.1",
         "bignumber.js": "9.0.0",
         "body-parser": "1.19.0",
+        "bullmq": "1.15.1",
         "celebrate": "14.0.0",
         "cors": "2.8.5",
         "cron": "1.8.2",
