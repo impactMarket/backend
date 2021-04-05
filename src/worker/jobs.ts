@@ -1,5 +1,6 @@
 import CronJobExecutedService from '@services/app/cronJobExecuted';
 import GlobalDemographicsService from '@services/global/globalDemographics';
+import { ContentStorage } from '@services/storage';
 import BeneficiaryService from '@services/ubi/beneficiary';
 import CommunityService from '@services/ubi/community';
 import { Logger } from '@utils/logger';
@@ -19,6 +20,8 @@ import { verifyStoriesLifecycle } from './jobs/cron/stories';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
 
 export default async (): Promise<void> => {
+    const contentStorage = new ContentStorage();
+    contentStorage.listenToJobs();
     cron();
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     let waitingForResponseAfterCrash = false;
