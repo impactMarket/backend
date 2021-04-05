@@ -31,12 +31,23 @@ export class ContentStorage {
             }
         );
     }
+
+    async uploadCommunityImage(to: string, file: Express.Multer.File) {
+        let storageCategory: StorageCategory;
+        if (to === 'cover') {
+            storageCategory = StorageCategory.communityCover;
+        } else if (to === 'logo') {
+            storageCategory = StorageCategory.communityLogo;
+        } else {
+            throw new Error('invalid to!');
+        }
+        return this.processAndUpload(file, storageCategory);
+    }
+
     async processAndUpload(
         file: Express.Multer.File,
         category: StorageCategory
     ) {
-        //
-
         // sharp the file
         const dimensions = sizeOf(file.buffer);
         let sharpBuffer: sharp.Sharp | undefined;
@@ -82,7 +93,7 @@ export class ContentStorage {
                 category,
                 originalS3: uploadResult,
             },
-            { removeOnComplete: true, removeOnFail: 1000 }
+            { removeOnComplete: true, removeOnFail: 10 }
         );
 
         return uploadResult;
@@ -171,17 +182,7 @@ export class ContentStorage {
         filePath: string,
         fileBuffer: Buffer
     ): Promise<AWS.S3.ManagedUpload.SendData> => {
-        let bucket = '';
-        if (category === StorageCategory.story) {
-            bucket = config.aws.bucket.story;
-        } else if (
-            category === StorageCategory.communityCover ||
-            category === StorageCategory.communityLogo ||
-            category === StorageCategory.organizationLogo
-        ) {
-            bucket = config.aws.bucket.community;
-        }
-
+        const bucket = this._mapCategoryToBucket(category);
         const params: AWS.S3.PutObjectRequest = {
             Bucket: bucket,
             Key: filePath,
@@ -193,17 +194,59 @@ export class ContentStorage {
         const uploadResult = await upload.promise();
         return uploadResult;
     };
+
+    /**
+     * @param filePath complete file url
+     */
+    async deleteContentFromS3(category: StorageCategory, filePath: string) {
+        const params: AWS.S3.DeleteObjectRequest = {
+            Bucket: this._mapCategoryToBucket(category),
+            Key: filePath.split(`${config.cloudfrontUrl}/`)[1],
+        };
+        //
+        const s3 = new AWS.S3();
+        await s3.deleteObject(params).promise();
+        return true;
+    }
+
+    /**
+     * @param filePath complete file url
+     */
+    async deleteBulkContentFromS3(
+        category: StorageCategory,
+        filePath: string[]
+    ) {
+        const params: AWS.S3.DeleteObjectsRequest = {
+            Bucket: this._mapCategoryToBucket(category),
+            Delete: {
+                Objects: filePath.map((f) => ({
+                    Key: f.split(`${config.cloudfrontUrl}/`)[1],
+                })),
+            },
+        };
+        //
+        const s3 = new AWS.S3();
+        await s3.deleteObjects(params).promise();
+        return true;
+    }
+
+    _mapCategoryToBucket(category: StorageCategory) {
+        if (category === StorageCategory.story) {
+            return config.aws.bucket.story;
+        } else if (
+            category === StorageCategory.communityCover ||
+            category === StorageCategory.communityLogo ||
+            category === StorageCategory.organizationLogo
+        ) {
+            return config.aws.bucket.community;
+        }
+        throw new Error('invalid category');
+    }
 }
 
-const sharpThumbnail = async (
-    sharp: sharp.Sharp,
-    category: string,
-    width: number,
-    height: number
-) => {
-    const imgBuffer = sharp.resize({ width, height }).toBuffer();
-};
-
+/**
+ * @deprecated
+ */
 const sharpAndUpload = async (
     file: Express.Multer.File,
     category: string,
@@ -252,6 +295,9 @@ const sharpAndUpload = async (
     return uploadResult;
 };
 
+/**
+ * @deprecated
+ */
 const uploadSingle = async (file: Express.Multer.File, bucket: string) => {
     const imgBuffer = await sharp(file.buffer)
         .jpeg({
@@ -270,6 +316,9 @@ const uploadSingle = async (file: Express.Multer.File, bucket: string) => {
     return `${config.cloudfrontUrl}/${uploadResult.Key}`;
 };
 
+/**
+ * @deprecated
+ */
 const uploadCommunityPicture = async (
     to: string,
     file: Express.Multer.File
@@ -281,6 +330,9 @@ const uploadCommunityPicture = async (
     return await uploadSingle(file, toBucket);
 };
 
+/**
+ * @deprecated
+ */
 const uploadContentToS3 = async (
     category: string,
     filePath: string,
@@ -299,7 +351,7 @@ const uploadContentToS3 = async (
 };
 
 /**
- * @param filePath complete file url
+ * @deprecated
  */
 const deleteContentFromS3 = async (category: string, filePath: string) => {
     const params: AWS.S3.DeleteObjectRequest = {
@@ -313,7 +365,7 @@ const deleteContentFromS3 = async (category: string, filePath: string) => {
 };
 
 /**
- * @param filePath complete file url
+ * @deprecated
  */
 const deleteBulkContentFromS3 = async (
     category: string,

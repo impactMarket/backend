@@ -26,7 +26,7 @@ import {
     IManagers,
     IManagersDetails,
 } from '../../types/endpoints';
-import { deleteContentFromS3 } from '../storage';
+import { ContentStorage, deleteContentFromS3 } from '../storage';
 import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
 import CommunityDailyStateService from './communityDailyState';
@@ -42,6 +42,8 @@ export default class CommunityService {
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiOrganization = models.ubiOrganization;
     public static sequelize = sequelize;
+
+    private static contentStorage = new ContentStorage();
 
     public static async create(
         requestByAddress: string,
@@ -350,6 +352,14 @@ export default class CommunityService {
             }
         }
         return null;
+    }
+
+    public static async pictureAdd(to: string, file: Express.Multer.File) {
+        const addResult = await this.contentStorage.uploadCommunityImage(
+            to,
+            file
+        );
+        return `${config.cloudfrontUrl}/${addResult.Key}`;
     }
 
     public static async remove(publicId: string): Promise<boolean> {
