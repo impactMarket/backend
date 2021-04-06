@@ -21,15 +21,17 @@ interface IJobThumbnail {
 }
 
 export class ContentStorage {
-    private queueThumbnail: Queue<IJobThumbnail>;
+    private queueThumbnail?: Queue<IJobThumbnail>;
     private queueThumbnailName = 'thumbnail';
     constructor() {
-        this.queueThumbnail = new Queue<IJobThumbnail>(
-            this.queueThumbnailName,
-            {
-                connection: config.redis,
-            }
-        );
+        if (process.env.NODE_ENV !== 'test') {
+            this.queueThumbnail = new Queue<IJobThumbnail>(
+                this.queueThumbnailName,
+                {
+                    connection: config.redis,
+                }
+            );
+        }
     }
 
     async uploadCommunityCover(file: Express.Multer.File) {
@@ -118,7 +120,8 @@ export class ContentStorage {
         );
 
         // add job to queue, return jobId and start async process
-        this.queueThumbnail.add(
+        // it's only undefined in NODE_ENV test
+        this.queueThumbnail!.add(
             'job',
             {
                 category,
@@ -131,17 +134,19 @@ export class ContentStorage {
     }
 
     listenToJobs() {
-        const worker = new Worker<IJobThumbnail>(
-            this.queueThumbnailName,
-            (job) => this._createThumbnailFromJob(job.data),
-            {
-                connection: config.redis,
-                // concurrency: config.bullJobsConcurrency,
-            }
-        );
-        worker.on('failed', (job, err) =>
-            Logger.error(`Failed job ${job.id} with ${err}`)
-        );
+        if (process.env.NODE_ENV !== 'test') {
+            const worker = new Worker<IJobThumbnail>(
+                this.queueThumbnailName,
+                (job) => this._createThumbnailFromJob(job.data),
+                {
+                    connection: config.redis,
+                    // concurrency: config.bullJobsConcurrency,
+                }
+            );
+            worker.on('failed', (job, err) =>
+                Logger.error(`Failed job ${job.id} with ${err}`)
+            );
+        }
     }
 
     _generatedStorageFileName(
