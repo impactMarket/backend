@@ -13,11 +13,7 @@ import { Includeable, literal, Op, QueryTypes } from 'sequelize';
 
 import config from '../config';
 import { models, sequelize } from '../database';
-import {
-    deleteBulkContentFromS3,
-    deleteContentFromS3,
-    sharpAndUpload,
-} from './storage';
+import { ContentStorage } from './storage';
 
 export default class StoryService {
     public storyContent = models.storyContent;
@@ -28,19 +24,20 @@ export default class StoryService {
     public community = models.community;
     public sequelize = sequelize;
 
+    private contentStorage = new ContentStorage();
+
+    public pictureAdd(file: Express.Multer.File) {
+        return this.contentStorage.uploadStory(file);
+    }
+
     public async add(
-        file: Express.Multer.File | undefined,
         fromAddress: string,
         story: IAddStory
-    ): Promise<boolean> {
+    ): Promise<StoryContent> {
         let storyContentToAdd: { media?: string; message?: string } = {};
-        if (file === undefined || story.message === undefined) {
-            throw new Error('Story needs at least media or message.');
-        }
-        if (file) {
-            const media = await sharpAndUpload(file, config.aws.bucket.story);
+        if (story.mediaUrl) {
             storyContentToAdd = {
-                media: `${config.cloudfrontUrl}/${media.Key}`,
+                media: story.mediaUrl,
             };
         }
         let storyCommunityToAdd: {
@@ -61,7 +58,7 @@ export default class StoryService {
                 ],
             };
         }
-        await this.storyContent.create(
+        return this.storyContent.create(
             {
                 ...storyContentToAdd,
                 ...storyCommunityToAdd,
@@ -77,7 +74,6 @@ export default class StoryService {
                 ],
             }
         );
-        return true;
     }
 
     public async has(address: string): Promise<boolean> {
@@ -98,7 +94,7 @@ export default class StoryService {
             where: { id: storyId, byAddress: userAddress },
         });
         if (destroyed > 0) {
-            deleteContentFromS3(config.aws.bucket.story, contentPath.media);
+            this.contentStorage.deleteStory(contentPath.media);
         }
         return destroyed;
     }
@@ -402,10 +398,9 @@ export default class StoryService {
             { raw: true, type: QueryTypes.SELECT }
         );
 
-        deleteBulkContentFromS3(
-            config.aws.bucket.story,
-            storiesToDelete.map((s: any) => s.media)
-        ).catch(Logger.error);
+        this.contentStorage
+            .deleteStories(storiesToDelete.map((s: any) => s.media))
+            .catch(Logger.error);
 
         await this.storyContent.destroy({
             where: {

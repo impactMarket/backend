@@ -26,7 +26,7 @@ import {
     IManagers,
     IManagersDetails,
 } from '../../types/endpoints';
-import { ContentStorage, deleteContentFromS3 } from '../storage';
+import { ContentStorage } from '../storage';
 import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
 import CommunityDailyStateService from './communityDailyState';
@@ -355,11 +355,15 @@ export default class CommunityService {
     }
 
     public static async pictureAdd(to: string, file: Express.Multer.File) {
-        const addResult = await this.contentStorage.uploadCommunityImage(
-            to,
-            file
-        );
-        return `${config.cloudfrontUrl}/${addResult.Key}`;
+        let addResult = '';
+        if (to === 'cover') {
+            addResult = await this.contentStorage.uploadCommunityCover(file);
+        } else if (to === 'logo') {
+            addResult = await this.contentStorage.uploadCommunityLogo(file);
+        } else {
+            throw new Error('invalid to!');
+        }
+        return addResult;
     }
 
     public static async remove(publicId: string): Promise<boolean> {
@@ -372,10 +376,8 @@ export default class CommunityService {
             raw: true,
         });
         if (c) {
-            await deleteContentFromS3(
-                config.aws.bucket.community,
-                c.coverImage
-            );
+            await this.contentStorage.deleteCommunityLogo(c.logo);
+            await this.contentStorage.deleteCommunityCover(c.coverImage);
             await this.community.destroy({
                 where: {
                     publicId,

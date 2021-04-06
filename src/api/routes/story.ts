@@ -23,6 +23,36 @@ export default (app: Router): void => {
      *     summary: Add a new story
      *     requestBody:
      *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               communityId:
+     *                 type: integer
+     *               message:
+     *                 type: string
+     *               mediaUrl:
+     *                 type: string
+     *                 required: false
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post('/', authenticateToken, storyValidator.add, storyController.add);
+
+    /**
+     * @swagger
+     *
+     * /story/picture:
+     *   post:
+     *     tags:
+     *       - "story"
+     *     summary: Add a new picture to the story bucket
+     *     requestBody:
+     *       content:
      *         multipart/form-data:
      *           schema:
      *             type: object
@@ -30,10 +60,6 @@ export default (app: Router): void => {
      *               imageFile:
      *                 type: string
      *                 format: binary
-     *               communityId:
-     *                 type: integer
-     *               message:
-     *                 type: string
      *     responses:
      *       "200":
      *         description: "Success"
@@ -42,15 +68,10 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.post(
-        '/',
-        (req, res, next) => {
-            // media is optional, so if there's no file, move on
-            upload.single('imageFile')(req, res, () => {
-                next();
-            });
-        },
-        storyValidator.add,
-        storyController.add
+        '/picture',
+        authenticateToken,
+        upload.single('imageFile'),
+        storyController.pictureAdd
     );
 
     route.post('/has', authenticateToken, storyController.has);

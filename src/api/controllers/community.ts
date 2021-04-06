@@ -1,5 +1,4 @@
 import { RequestWithUser } from '@ipcttypes/core';
-import { uploadCommunityPicture } from '@services/storage';
 import BeneficiaryService from '@services/ubi/beneficiary';
 import CommunityService from '@services/ubi/community';
 import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
