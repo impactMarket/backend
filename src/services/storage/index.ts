@@ -1,7 +1,7 @@
 import fleekStorage from '@fleekhq/fleek-storage-js';
 import { Logger } from '@utils/logger';
 import axios from 'axios';
-import { Job, Queue, Worker } from 'bullmq';
+import { Queue, Worker } from 'bullmq';
 import sizeOf from 'image-size';
 import sharp from 'sharp';
 
@@ -32,16 +32,47 @@ export class ContentStorage {
         );
     }
 
-    async uploadCommunityImage(to: string, file: Express.Multer.File) {
-        let storageCategory: StorageCategory;
-        if (to === 'cover') {
-            storageCategory = StorageCategory.communityCover;
-        } else if (to === 'logo') {
-            storageCategory = StorageCategory.communityLogo;
-        } else {
-            throw new Error('invalid to!');
-        }
-        return this.processAndUpload(file, storageCategory);
+    async uploadCommunityCover(file: Express.Multer.File) {
+        const p = await this.processAndUpload(
+            file,
+            StorageCategory.communityCover
+        );
+        return `${config.cloudfrontUrl}/${p.Key}`;
+    }
+
+    async uploadCommunityLogo(file: Express.Multer.File) {
+        const p = await this.processAndUpload(
+            file,
+            StorageCategory.communityLogo
+        );
+        return `${config.cloudfrontUrl}/${p.Key}`;
+    }
+
+    async deleteCommunityCover(filePath: string) {
+        return this._deleteContentFromS3(
+            filePath,
+            StorageCategory.communityCover
+        );
+    }
+
+    async deleteCommunityLogo(filePath: string) {
+        return this._deleteContentFromS3(
+            filePath,
+            StorageCategory.communityLogo
+        );
+    }
+
+    async uploadStory(file: Express.Multer.File): Promise<string> {
+        const p = await this.processAndUpload(file, StorageCategory.story);
+        return `${config.cloudfrontUrl}/${p.Key}`;
+    }
+
+    async deleteStory(filePath: string) {
+        return this._deleteContentFromS3(filePath, StorageCategory.story);
+    }
+
+    async deleteStories(filePath: string[]) {
+        return this._deleteBulkContentFromS3(filePath, StorageCategory.story);
     }
 
     async processAndUpload(
@@ -102,10 +133,10 @@ export class ContentStorage {
     listenToJobs() {
         const worker = new Worker<IJobThumbnail>(
             this.queueThumbnailName,
-            this._createThumbnailFromJob,
+            (job) => this._createThumbnailFromJob(job.data),
             {
                 connection: config.redis,
-                concurrency: config.bullJobsConcurrency,
+                // concurrency: config.bullJobsConcurrency,
             }
         );
         worker.on('failed', (job, err) =>
@@ -113,9 +144,35 @@ export class ContentStorage {
         );
     }
 
-    async _createThumbnailFromJob(job: Job<IJobThumbnail, any, string>) {
+    _generatedStorageFileName(
+        category: StorageCategory,
+        thumbnail?: { width: number; height: number }
+    ): string {
+        // s3 recommends to use file prefix. Works like folders
+        const now = new Date();
+        let filePrefix = '';
+        switch (category) {
+            case StorageCategory.story:
+                filePrefix = `${now.getDate()}/`;
+                break;
+            case StorageCategory.communityCover:
+                filePrefix = 'cover/';
+                break;
+            case StorageCategory.communityLogo:
+                filePrefix = 'logo/';
+                break;
+            case StorageCategory.organizationLogo:
+                filePrefix = 'org-logo/';
+                break;
+        }
+        return `${filePrefix}${
+            thumbnail ? thumbnail.width + 'x' + thumbnail.height + '/' : ''
+        }${now.getTime()}.jpeg`;
+    }
+
+    async _createThumbnailFromJob(jobData: IJobThumbnail) {
         let thumbnailSize: { width: number; height: number };
-        switch (job.data.category) {
+        switch (jobData.category) {
             case StorageCategory.story:
                 thumbnailSize = config.thumbnails.story;
                 break;
@@ -131,50 +188,26 @@ export class ContentStorage {
         }
 
         const responseFromUrl = await axios.get(
-            `${config.cloudfrontUrl}/${job.data.originalS3.Key}`,
+            `${config.cloudfrontUrl}/${jobData.originalS3.Key}`,
             {
                 responseType: 'arraybuffer',
             }
         );
-
         const thumbnailBuffer = await sharp(
             Buffer.from(responseFromUrl.data, 'binary')
         )
             .resize(thumbnailSize)
             .toBuffer();
 
-        const filePath = this._generatedStorageFileName(job.data.category);
+        const filePath = this._generatedStorageFileName(
+            StorageCategory.story,
+            thumbnailSize
+        );
         await this._uploadContentToS3(
-            job.data.category,
+            StorageCategory.story,
             filePath,
             thumbnailBuffer
         );
-    }
-
-    _generatedStorageFileName(
-        category: StorageCategory,
-        thumbnail?: { width: number; height: number }
-    ): string {
-        // s3 recommends to use file prefix. Works like folders
-        const now = new Date();
-        let filePrefix = '';
-        switch (category) {
-            case StorageCategory.story:
-                filePrefix = `${now.getDay()}/`;
-                break;
-            case StorageCategory.communityCover:
-                filePrefix = 'cover/';
-                break;
-            case StorageCategory.communityLogo:
-                filePrefix = 'logo/';
-                break;
-            case StorageCategory.organizationLogo:
-                filePrefix = 'org-logo/';
-                break;
-        }
-        return `${filePrefix}${
-            thumbnail ? thumbnail.width + 'x' + thumbnail.height + '/' : ''
-        }${now.toString()}.jpeg`;
     }
 
     _uploadContentToS3 = async (
@@ -198,7 +231,7 @@ export class ContentStorage {
     /**
      * @param filePath complete file url
      */
-    async deleteContentFromS3(category: StorageCategory, filePath: string) {
+    async _deleteContentFromS3(filePath: string, category: StorageCategory) {
         const params: AWS.S3.DeleteObjectRequest = {
             Bucket: this._mapCategoryToBucket(category),
             Key: filePath.split(`${config.cloudfrontUrl}/`)[1],
@@ -212,9 +245,9 @@ export class ContentStorage {
     /**
      * @param filePath complete file url
      */
-    async deleteBulkContentFromS3(
-        category: StorageCategory,
-        filePath: string[]
+    async _deleteBulkContentFromS3(
+        filePath: string[],
+        category: StorageCategory
     ) {
         const params: AWS.S3.DeleteObjectsRequest = {
             Bucket: this._mapCategoryToBucket(category),

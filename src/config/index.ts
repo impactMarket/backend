@@ -142,31 +142,31 @@ export default {
      */
     thumbnails: {
         story: {
-            width: 0,
-            height: 500,
+            width: 300,
+            height: 800,
         },
         community: {
             cover: {
                 width: 800,
-                height: 0,
+                height: 300,
             },
             logo: {
                 width: 100,
-                height: 0,
+                height: 100,
             },
         },
         organization: {
             logo: {
                 width: 100,
-                height: 0,
+                height: 100,
             },
         },
     },
 
     redis: {
-        host: validateEnv.REDIS_HOST,
-        port: validateEnv.REDIS_PORT,
+        host: validatedEnv.REDIS_HOST,
+        port: validatedEnv.REDIS_PORT,
     },
 
-    bullJobsConcurrency: validateEnv.BULL_JOBS_CONCURRENCY,
+    bullJobsConcurrency: validatedEnv.SENTRY_TRACE_SAMPLES_RATE,
 };
