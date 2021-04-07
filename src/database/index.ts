@@ -1,4 +1,6 @@
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
+import { AppMediaContentModel } from '@models/app/appMediaContent';
+import { AppMediaThumbnailModel } from '@models/app/appMediaThumbnail';
 import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
 import { AppUserTrustModel } from '@models/app/appUserTrust';
 import { CronJobExecuted } from '@models/app/cronJobExecuted';
@@ -106,6 +108,11 @@ const models: DbModels = {
         .NotifiedBacker as ModelCtor<NotifiedBacker>,
     reachedAddress: sequelize.models
         .ReachedAddress as ModelCtor<ReachedAddress>,
+
+    appMediaContent: sequelize.models
+        .AppMediaContentModel as ModelCtor<AppMediaContentModel>,
+    appMediaThumbnail: sequelize.models
+        .AppMediaThumbnailModel as ModelCtor<AppMediaThumbnailModel>,
     // stories
     storyContent: sequelize.models
         .StoryContentModel as ModelCtor<StoryContentModel>,

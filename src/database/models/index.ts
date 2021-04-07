@@ -2,6 +2,8 @@ import { Sequelize } from 'sequelize';
 
 import { initializeAgenda } from './app/agenda';
 import { initializeAppAnonymousReport } from './app/anonymousReport';
+import { initializeAppMediaContent } from './app/appMediaContent';
+import { initializeAppMediaThumbnail } from './app/appMediaThumbnail';
 import { initializeAppUserThroughTrust } from './app/appUserThroughTrust';
 import { initializeAppUserTrust } from './app/appUserTrust';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
@@ -11,6 +13,7 @@ import { initializeMobileError } from './app/mobileError';
 import { initializeSubscribers } from './app/subscribers';
 import { initializeUser } from './app/user';
 import { initializeAppUserDevice } from './app/userDevice';
+import { appAssociation } from './associations/app';
 import { communityAssociation } from './associations/community';
 import { storyAssociation } from './associations/story';
 import { userAssociation } from './associations/user';
@@ -55,6 +58,8 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAppAnonymousReport(sequelize);
     initializeMobileError(sequelize);
     initializeCronJobExecuted(sequelize);
+    initializeAppMediaContent(sequelize);
+    initializeAppMediaThumbnail(sequelize);
 
     // ubi
     initializeCommunity(sequelize);
@@ -93,6 +98,7 @@ export default function initModels(sequelize: Sequelize): void {
     userAssociation(sequelize);
     communityAssociation(sequelize);
     storyAssociation(sequelize);
+    appAssociation(sequelize);
 
     // deprecated
     initializeSSI(sequelize);
