@@ -17,6 +17,7 @@ enum StorageCategory {
 
 interface IJobThumbnail {
     category: StorageCategory;
+    filename: string;
     originalS3: AWS.S3.ManagedUpload.SendData;
 }
 
@@ -112,7 +113,7 @@ export class ContentStorage {
             imgBuffer = file.buffer;
         }
 
-        const filePath = this._generatedStorageFileName(category);
+        const [filePath, filename] = this._generatedStorageFileName(category);
         const uploadResult = await this._uploadContentToS3(
             category,
             filePath,
@@ -125,6 +126,7 @@ export class ContentStorage {
             'job',
             {
                 category,
+                filename,
                 originalS3: uploadResult,
             },
             { removeOnComplete: true, removeOnFail: 10 }
@@ -151,8 +153,9 @@ export class ContentStorage {
 
     _generatedStorageFileName(
         category: StorageCategory,
-        thumbnail?: { width: number; height: number }
-    ): string {
+        thumbnail?: { width: number; height: number },
+        filename?: string
+    ): string[] {
         // s3 recommends to use file prefix. Works like folders
         const now = new Date();
         let filePrefix = '';
@@ -170,9 +173,15 @@ export class ContentStorage {
                 filePrefix = 'org-logo/';
                 break;
         }
-        return `${filePrefix}${
-            thumbnail ? thumbnail.width + 'x' + thumbnail.height + '/' : ''
-        }${now.getTime()}.jpeg`;
+        if (filename === undefined) {
+            filename = `${now.getTime()}.jpeg`;
+        }
+        return [
+            `${filePrefix}${
+                thumbnail ? thumbnail.width + 'x' + thumbnail.height + '/' : ''
+            }${filename}`,
+            filename,
+        ];
     }
 
     async _createThumbnailFromJob(jobData: IJobThumbnail) {
@@ -204,12 +213,13 @@ export class ContentStorage {
             .resize(thumbnailSize)
             .toBuffer();
 
-        const filePath = this._generatedStorageFileName(
-            StorageCategory.story,
-            thumbnailSize
+        const [filePath] = this._generatedStorageFileName(
+            jobData.category,
+            thumbnailSize,
+            jobData.filename
         );
         await this._uploadContentToS3(
-            StorageCategory.story,
+            jobData.category,
             filePath,
             thumbnailBuffer
         );
