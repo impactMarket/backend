@@ -1,3 +1,4 @@
+import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
@@ -355,7 +356,7 @@ export default class CommunityService {
     }
 
     public static async pictureAdd(to: string, file: Express.Multer.File) {
-        let addResult = '';
+        let addResult: AppMediaContent;
         if (to === 'cover') {
             addResult = await this.contentStorage.uploadCommunityCover(file);
         } else if (to === 'logo') {
