@@ -1,7 +1,9 @@
 import fleekStorage from '@fleekhq/fleek-storage-js';
+import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { Logger } from '@utils/logger';
 import axios from 'axios';
 import { Queue, Worker } from 'bullmq';
+import { models } from 'database';
 import sizeOf from 'image-size';
 import sharp from 'sharp';
 
@@ -18,12 +20,17 @@ enum StorageCategory {
 interface IJobThumbnail {
     category: StorageCategory;
     filename: string;
+    mediaContentId: number;
+    pixelRatio: number;
     originalS3: AWS.S3.ManagedUpload.SendData;
 }
 
 export class ContentStorage {
+    private appMediaContent = models.appMediaContent;
+    private appMediaThumbnail = models.appMediaThumbnail;
     private queueThumbnail?: Queue<IJobThumbnail>;
     private queueThumbnailName = 'thumbnail';
+
     constructor() {
         if (process.env.NODE_ENV !== 'test') {
             this.queueThumbnail = new Queue<IJobThumbnail>(
@@ -35,46 +42,37 @@ export class ContentStorage {
         }
     }
 
-    async uploadCommunityCover(file: Express.Multer.File) {
-        const p = await this.processAndUpload(
-            file,
-            StorageCategory.communityCover
-        );
-        return `${config.cloudfrontUrl}/${p.Key}`;
+    uploadCommunityCover(file: Express.Multer.File): Promise<AppMediaContent> {
+        return this.processAndUpload(file, StorageCategory.communityCover);
     }
 
-    async uploadCommunityLogo(file: Express.Multer.File) {
-        const p = await this.processAndUpload(
-            file,
-            StorageCategory.communityLogo
-        );
-        return `${config.cloudfrontUrl}/${p.Key}`;
+    uploadCommunityLogo(file: Express.Multer.File): Promise<AppMediaContent> {
+        return this.processAndUpload(file, StorageCategory.communityLogo);
     }
 
-    async deleteCommunityCover(filePath: string) {
+    deleteCommunityCover(filePath: string) {
         return this._deleteContentFromS3(
             filePath,
             StorageCategory.communityCover
         );
     }
 
-    async deleteCommunityLogo(filePath: string) {
+    deleteCommunityLogo(filePath: string) {
         return this._deleteContentFromS3(
             filePath,
             StorageCategory.communityLogo
         );
     }
 
-    async uploadStory(file: Express.Multer.File): Promise<string> {
-        const p = await this.processAndUpload(file, StorageCategory.story);
-        return `${config.cloudfrontUrl}/${p.Key}`;
+    uploadStory(file: Express.Multer.File): Promise<AppMediaContent> {
+        return this.processAndUpload(file, StorageCategory.story);
     }
 
-    async deleteStory(filePath: string) {
+    deleteStory(filePath: string) {
         return this._deleteContentFromS3(filePath, StorageCategory.story);
     }
 
-    async deleteStories(filePath: string[]) {
+    deleteStories(filePath: string[]) {
         return this._deleteBulkContentFromS3(filePath, StorageCategory.story);
     }
 
@@ -84,26 +82,39 @@ export class ContentStorage {
     ) {
         // sharp the file
         const dimensions = sizeOf(file.buffer);
+        let { height, width } = dimensions;
         let sharpBuffer: sharp.Sharp | undefined;
 
         if (
-            file.mimetype.toLowerCase().indexOf('jpg') === -1 &&
-            file.mimetype.toLowerCase().indexOf('jpeg')
+            file.mimetype.toLowerCase().indexOf('jpeg') === -1 ||
+            file.mimetype.toLowerCase().indexOf('jpg') === -1
         ) {
             sharpBuffer = sharp(file.buffer);
             sharpBuffer = sharpBuffer.jpeg({
                 quality: 100,
             });
         }
-        //
-        if (
-            (dimensions.height && dimensions.height > 8000) ||
-            (dimensions.width && dimensions.width > 8000)
-        ) {
+        // if height or width bigger than 8000, resize
+        if (height && width && (height > 8000 || width > 8000)) {
+            // undefined if for automatic resize
+            // "Use null or undefined to auto-scale the height to match the width."
+            const resizeSizes: { width?: number; height?: number } = {};
             if (sharpBuffer === undefined) {
                 sharpBuffer = sharp(file.buffer);
             }
-            sharpBuffer = sharpBuffer.resize({ width: 8000, height: 8000 });
+            // if height is bigger
+            if (height > width && height > 8000) {
+                resizeSizes.height = 8000;
+            } else {
+                resizeSizes.width = 8000;
+            }
+            sharpBuffer = sharpBuffer.resize({
+                width: resizeSizes.width,
+                height: resizeSizes.height,
+            });
+            const rDimensions = sizeOf(await sharpBuffer.toBuffer());
+            width = rDimensions.width;
+            height = rDimensions.height;
         }
 
         let imgBuffer: Buffer;
@@ -120,19 +131,29 @@ export class ContentStorage {
             imgBuffer
         );
 
+        const mediaContent = await this.appMediaContent.create({
+            url: `${config.cloudfrontUrl}/${uploadResult.Key}`,
+            width: width ? width : 0,
+            height: height ? height : 0,
+        });
+
         // add job to queue, return jobId and start async process
         // it's only undefined in NODE_ENV test
-        this.queueThumbnail!.add(
-            'job',
-            {
-                category,
-                filename,
-                originalS3: uploadResult,
-            },
-            { removeOnComplete: true, removeOnFail: 10 }
-        );
+        config.thumbnails.pixelRatio.forEach((pr) => {
+            this.queueThumbnail!.add(
+                'job',
+                {
+                    category,
+                    filename,
+                    mediaContentId: mediaContent.id,
+                    pixelRatio: pr,
+                    originalS3: uploadResult,
+                },
+                { removeOnComplete: true, removeOnFail: 10 }
+            );
+        });
 
-        return uploadResult;
+        return mediaContent;
     }
 
     listenToJobs() {
@@ -154,6 +175,7 @@ export class ContentStorage {
     _generatedStorageFileName(
         category: StorageCategory,
         thumbnail?: { width: number; height: number },
+        pixelRatio?: number,
         filename?: string
     ): string[] {
         // s3 recommends to use file prefix. Works like folders
@@ -174,7 +196,9 @@ export class ContentStorage {
                 break;
         }
         if (filename === undefined) {
-            filename = `${now.getTime()}.jpeg`;
+            filename = `${now.getTime()}${
+                pixelRatio && pixelRatio > 1 ? '@' + pixelRatio + 'x' : ''
+            }.jpeg`;
         }
         return [
             `${filePrefix}${
@@ -185,19 +209,19 @@ export class ContentStorage {
     }
 
     async _createThumbnailFromJob(jobData: IJobThumbnail) {
-        let thumbnailSize: { width: number; height: number };
+        let thumbnailSizes: { width: number; height: number }[];
         switch (jobData.category) {
             case StorageCategory.story:
-                thumbnailSize = config.thumbnails.story;
+                thumbnailSizes = config.thumbnails.story;
                 break;
             case StorageCategory.communityCover:
-                thumbnailSize = config.thumbnails.community.cover;
+                thumbnailSizes = config.thumbnails.community.cover;
                 break;
             case StorageCategory.communityLogo:
-                thumbnailSize = config.thumbnails.community.logo;
+                thumbnailSizes = config.thumbnails.community.logo;
                 break;
             case StorageCategory.organizationLogo:
-                thumbnailSize = config.thumbnails.organization.logo;
+                thumbnailSizes = config.thumbnails.organization.logo;
                 break;
         }
 
@@ -207,22 +231,35 @@ export class ContentStorage {
                 responseType: 'arraybuffer',
             }
         );
-        const thumbnailBuffer = await sharp(
-            Buffer.from(responseFromUrl.data, 'binary')
-        )
-            .resize(thumbnailSize)
-            .toBuffer();
+        thumbnailSizes.forEach(async (thumbnailSize) => {
+            const thumbnailBuffer = await sharp(
+                Buffer.from(responseFromUrl.data, 'binary')
+            )
+                .resize({
+                    width: thumbnailSize.width * jobData.pixelRatio,
+                    height: thumbnailSize.height * jobData.pixelRatio,
+                })
+                .toBuffer();
 
-        const [filePath] = this._generatedStorageFileName(
-            jobData.category,
-            thumbnailSize,
-            jobData.filename
-        );
-        await this._uploadContentToS3(
-            jobData.category,
-            filePath,
-            thumbnailBuffer
-        );
+            const [filePath] = this._generatedStorageFileName(
+                jobData.category,
+                thumbnailSize,
+                jobData.pixelRatio,
+                jobData.filename
+            );
+            const thumbnailUploadResult = await this._uploadContentToS3(
+                jobData.category,
+                filePath,
+                thumbnailBuffer
+            );
+            this.appMediaThumbnail.create({
+                mediaContentId: jobData.mediaContentId,
+                url: `${config.cloudfrontUrl}/${thumbnailUploadResult.Key}`,
+                width: thumbnailSize.width,
+                height: thumbnailSize.height,
+                pixelRatio: jobData.pixelRatio,
+            });
+        });
     }
 
     _uploadContentToS3 = async (

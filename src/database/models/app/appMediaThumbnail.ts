@@ -13,6 +13,7 @@ export class AppMediaThumbnailModel extends Model<
     public url!: string;
     public width!: number;
     public height!: number;
+    public pixelRatio!: number;
 }
 
 export function initializeAppMediaThumbnail(sequelize: Sequelize): void {
@@ -41,6 +42,10 @@ export function initializeAppMediaThumbnail(sequelize: Sequelize): void {
                 allowNull: false,
             },
             height: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            pixelRatio: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },

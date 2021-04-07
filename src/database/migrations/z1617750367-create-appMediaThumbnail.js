@@ -28,6 +28,10 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
+            pixelRatio: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+            },
         });
     },
     down(queryInterface, Sequelize) {

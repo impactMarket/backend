@@ -163,7 +163,12 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 allowNull: false,
             },
             logo: {
-                type: DataTypes.STRING(128),
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'app_media_content',
+                    key: 'id',
+                },
+                // onDelete: 'SET NULL', // default
                 allowNull: true,
             },
             status: {
