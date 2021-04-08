@@ -50,6 +50,15 @@ if (process.env.NODE_ENV === 'development') {
 }
 const dbConfig: Options = {
     dialect: 'postgres',
+    dialectOptions: {
+        connectTimeout: 60000,
+    },
+    pool: {
+        max: 30,
+        min: 0,
+        acquire: 60000,
+        idle: 5000,
+    },
     protocol: 'postgres',
     native: true,
     logging,
