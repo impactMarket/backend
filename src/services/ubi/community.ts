@@ -42,6 +42,7 @@ export default class CommunityService {
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiOrganization = models.ubiOrganization;
+    public static appMediaContent = models.appMediaContent;
     public static sequelize = sequelize;
 
     private static contentStorage = new ContentStorage();
@@ -854,6 +855,10 @@ export default class CommunityService {
                     model: this.ubiOrganization,
                     as: 'organization',
                     required: false,
+                },
+                {
+                    model: this.appMediaContent,
+                    as: 'cover',
                 },
             ],
             where: {
