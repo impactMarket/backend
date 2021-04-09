@@ -5,7 +5,7 @@ const sizeOf = require('image-size');
 
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.addColumn('community', 'cover', {
+        await queryInterface.addColumn('community', 'coverMediaId', {
             type: Sequelize.INTEGER,
             references: {
                 model: 'app_media_content',
@@ -166,7 +166,7 @@ module.exports = {
                 });
 
                 await Community.update(
-                    { cover: media.id },
+                    { coverMediaId: media.id },
                     { where: { id: e.id } }
                 );
                 console.log('success for ' + e.id);
@@ -174,7 +174,7 @@ module.exports = {
                 console.log('failed for ', communities[c].publicId, e);
             }
         }
-        await queryInterface.changeColumn('community', 'cover', {
+        await queryInterface.changeColumn('community', 'coverMediaId', {
             allowNull: false,
         });
     },

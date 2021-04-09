@@ -3,11 +3,11 @@ import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { Logger } from '@utils/logger';
 import axios from 'axios';
 import { Queue, Worker } from 'bullmq';
-import { models } from 'database';
 import sizeOf from 'image-size';
 import sharp from 'sharp';
 
 import config from '../../config';
+import { models } from '../../database';
 import { AWS } from './aws';
 
 enum StorageCategory {
@@ -19,7 +19,7 @@ enum StorageCategory {
 
 interface IJobThumbnail {
     category: StorageCategory;
-    filename: string;
+    filenameNoExt: string;
     mediaContentId: number;
     pixelRatio: number;
     originalS3: AWS.S3.ManagedUpload.SendData;
@@ -139,12 +139,13 @@ export class ContentStorage {
 
         // add job to queue, return jobId and start async process
         // it's only undefined in NODE_ENV test
+        const filenameNoExt = filename.split('.jp')[0];
         config.thumbnails.pixelRatio.forEach((pr) => {
             this.queueThumbnail!.add(
                 'job',
                 {
                     category,
-                    filename,
+                    filenameNoExt,
                     mediaContentId: mediaContent.id,
                     pixelRatio: pr,
                     originalS3: uploadResult,
@@ -176,7 +177,7 @@ export class ContentStorage {
         category: StorageCategory,
         thumbnail?: { width: number; height: number },
         pixelRatio?: number,
-        filename?: string
+        filenameNoExt?: string
     ): string[] {
         // s3 recommends to use file prefix. Works like folders
         const now = new Date();
@@ -195,11 +196,9 @@ export class ContentStorage {
                 filePrefix = 'org-logo/';
                 break;
         }
-        if (filename === undefined) {
-            filename = `${now.getTime()}${
-                pixelRatio && pixelRatio > 1 ? '@' + pixelRatio + 'x' : ''
-            }.jpeg`;
-        }
+        const filename = `${filenameNoExt ? filenameNoExt : now.getTime()}${
+            pixelRatio && pixelRatio > 1 ? '@' + pixelRatio + 'x' : ''
+        }.jpeg`;
         return [
             `${filePrefix}${
                 thumbnail ? thumbnail.width + 'x' + thumbnail.height + '/' : ''
@@ -245,7 +244,7 @@ export class ContentStorage {
                 jobData.category,
                 thumbnailSize,
                 jobData.pixelRatio,
-                jobData.filename
+                jobData.filenameNoExt
             );
             const thumbnailUploadResult = await this._uploadContentToS3(
                 jobData.category,

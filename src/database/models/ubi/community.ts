@@ -26,6 +26,7 @@ export interface CommunityAttributes {
     email: string;
     visibility: 'public' | 'private';
     coverImage: string;
+    coverMediaId: number;
     logo: string;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     started: Date;
@@ -59,6 +60,7 @@ export interface CommunityCreationAttributes {
     email: string;
     visibility: 'public' | 'private';
     coverImage: string;
+    coverMediaId: number;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     started: Date;
 }
@@ -85,6 +87,7 @@ export class Community extends Model<
     public email!: string;
     public visibility!: 'public' | 'private';
     public coverImage!: string;
+    public coverMediaId!: number;
     public logo!: string;
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     public started!: Date;
@@ -160,6 +163,15 @@ export function initializeCommunity(sequelize: Sequelize): void {
             },
             coverImage: {
                 type: DataTypes.STRING(128),
+                allowNull: false,
+            },
+            coverMediaId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'app_media_content',
+                    key: 'id',
+                },
+                // onDelete: 'SET NULL', // default
                 allowNull: false,
             },
             logo: {

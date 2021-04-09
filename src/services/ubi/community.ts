@@ -76,6 +76,7 @@ export default class CommunityService {
             gps,
             email,
             coverImage,
+            coverMediaId: 1,
             visibility: 'public', // will be changed if private
             status: 'pending', // will be changed if private
             started: new Date(),
@@ -173,6 +174,7 @@ export default class CommunityService {
             email,
             visibility: 'public',
             coverImage,
+            coverMediaId: 1,
             status: 'pending',
             started: new Date(),
         });
@@ -585,6 +587,7 @@ export default class CommunityService {
             email: c.email,
             visibility: c.visibility,
             coverImage: c.coverImage,
+            coverMediaId: 1,
             logo: c.logo,
             status: c.status,
             started: c.started,
