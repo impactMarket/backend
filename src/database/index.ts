@@ -4,7 +4,6 @@ import { AppUserTrustModel } from '@models/app/appUserTrust';
 import { CronJobExecuted } from '@models/app/cronJobExecuted';
 import { ExchangeRates } from '@models/app/exchangeRates';
 import { ImMetadata } from '@models/app/imMetadata';
-import { MobileError } from '@models/app/mobileError';
 import { SubscribersModel } from '@models/app/subscribers';
 import { UserModel } from '@models/app/user';
 import { AppUserDeviceModel } from '@models/app/userDevice';
@@ -108,7 +107,6 @@ const models: DbModels = {
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager>,
-    mobileError: sequelize.models.MobileError as ModelCtor<MobileError>,
     subscribers: sequelize.models
         .SubscribersModel as ModelCtor<SubscribersModel>,
     notifiedBacker: sequelize.models

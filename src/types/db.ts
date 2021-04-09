@@ -4,7 +4,6 @@ import { AppUserTrustModel } from '@models/app/appUserTrust';
 import { CronJobExecuted } from '@models/app/cronJobExecuted';
 import { ExchangeRates } from '@models/app/exchangeRates';
 import { ImMetadata } from '@models/app/imMetadata';
-import { MobileError } from '@models/app/mobileError';
 import { SubscribersModel } from '@models/app/subscribers';
 import { UserModel } from '@models/app/user';
 import { AppUserDeviceModel } from '@models/app/userDevice';
@@ -60,7 +59,6 @@ export interface DbModels {
     imMetadata: ModelCtor<ImMetadata>;
     inflow: ModelCtor<Inflow>;
     manager: ModelCtor<Manager>;
-    mobileError: ModelCtor<MobileError>;
     subscribers: ModelCtor<SubscribersModel>;
     notifiedBacker: ModelCtor<NotifiedBacker>;
     reachedAddress: ModelCtor<ReachedAddress>;
