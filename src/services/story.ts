@@ -233,7 +233,7 @@ export default class StoryService {
             name: '',
             city: '',
             country: '',
-            coverImage: '',
+            cover: undefined as any, // this is loaded on the app
             stories,
         };
     }
@@ -243,8 +243,18 @@ export default class StoryService {
         query: { offset?: string; limit?: string }
     ): Promise<ICommunitiesListStories[]> {
         const r = await this.community.findAll({
-            attributes: ['id', 'name', 'coverImage'],
+            attributes: ['id', 'name'],
             include: [
+                {
+                    model: this.appMediaContent,
+                    as: 'cover',
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
                 {
                     model: this.storyCommunity,
                     as: 'storyCommunity',
@@ -298,7 +308,7 @@ export default class StoryService {
             return {
                 id: community.id,
                 name: community.name,
-                coverImage: community.coverImage,
+                cover: community.cover!,
                 // we can use ! because it's filtered on the query
                 story: community.storyCommunity!.map((s) => ({
                     id: s.storyContent!.id,
@@ -357,6 +367,18 @@ export default class StoryService {
                         {
                             model: this.community,
                             as: 'community',
+                            include: [
+                                {
+                                    model: this.appMediaContent,
+                                    as: 'cover',
+                                    include: [
+                                        {
+                                            model: this.appMediaThumbnail,
+                                            as: 'thumbnails',
+                                        },
+                                    ],
+                                },
+                            ],
                         },
                     ],
                     where: { communityId },
@@ -393,7 +415,7 @@ export default class StoryService {
             name: community.name,
             city: community.city,
             country: community.country,
-            coverImage: community.coverImage,
+            cover: community.cover!,
             // we can use ! because it's filtered on the query
             stories: r.map((s) => {
                 const content = s.toJSON() as StoryContent;

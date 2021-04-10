@@ -175,6 +175,7 @@ const add = (req: Request, res: Response) => {
         currency,
         city,
         country,
+        coverMediaId,
         gps,
         email,
         txReceipt,
@@ -192,7 +193,7 @@ const add = (req: Request, res: Response) => {
         country,
         gps,
         email,
-        config.communityPlaceholderImageUrl,
+        coverMediaId,
         txReceipt,
         contractParams
     )
@@ -210,7 +211,7 @@ const edit = (req: Request, res: Response) => {
         city,
         country,
         email,
-        coverImage,
+        coverMediaId,
     } = req.body;
     // verify if the current user is manager in this community
     ManagerService.get((req as any).user)
@@ -225,7 +226,7 @@ const edit = (req: Request, res: Response) => {
                     city,
                     country,
                     email,
-                    coverImage
+                    coverMediaId
                 )
                     .then((updateResult) =>
                         res.status(200).send(updateResult[1][0])

@@ -16,7 +16,11 @@ export interface ICommunityLightDetails {
     name: string;
     city: string;
     country: string;
+    /**
+     * @deprecated
+     */
     coverImage: string;
+    cover: AppMediaContent;
     state: UbiCommunityState;
     contract: UbiCommunityContract;
 }
@@ -33,6 +37,9 @@ export interface ICommunityPendingDetails {
     country: string;
     description: string;
     email: string;
+    /**
+     * @deprecated
+     */
     coverImage: string;
     state: UbiCommunityState;
     contract: UbiCommunityContract;
@@ -111,7 +118,7 @@ export interface ICommunityStory {
 export interface ICommunitiesListStories {
     id: number;
     name: string;
-    coverImage: string;
+    cover: AppMediaContent;
     story: {
         id: number;
         media?: AppMediaContent;
@@ -125,7 +132,7 @@ export interface ICommunityStories {
     name: string;
     city: string;
     country: string;
-    coverImage: string;
+    cover: AppMediaContent;
     stories: ICommunityStory[];
 }
 
