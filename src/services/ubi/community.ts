@@ -43,6 +43,7 @@ export default class CommunityService {
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiOrganization = models.ubiOrganization;
     public static appMediaContent = models.appMediaContent;
+    public static appMediaThumbnail = models.appMediaThumbnail;
     public static sequelize = sequelize;
 
     private static contentStorage = new ContentStorage();
@@ -859,6 +860,12 @@ export default class CommunityService {
                 {
                     model: this.appMediaContent,
                     as: 'cover',
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
                 },
             ],
             where: {
