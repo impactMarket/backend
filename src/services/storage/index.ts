@@ -50,6 +50,9 @@ export class ContentStorage {
         return this.processAndUpload(file, StorageCategory.communityLogo);
     }
 
+    /**
+     * This will delete thumbnails
+     */
     deleteCommunityCover(filePath: string) {
         return this._deleteContentFromS3(
             filePath,
@@ -57,6 +60,9 @@ export class ContentStorage {
         );
     }
 
+    /**
+     * This will delete thumbnails
+     */
     deleteCommunityLogo(filePath: string) {
         return this._deleteContentFromS3(
             filePath,
@@ -68,10 +74,16 @@ export class ContentStorage {
         return this.processAndUpload(file, StorageCategory.story);
     }
 
+    /**
+     * This will delete thumbnails
+     */
     deleteStory(filePath: string) {
         return this._deleteContentFromS3(filePath, StorageCategory.story);
     }
 
+    /**
+     * This will delete thumbnails
+     */
     deleteStories(filePath: string[]) {
         return this._deleteBulkContentFromS3(filePath, StorageCategory.story);
     }
@@ -279,18 +291,36 @@ export class ContentStorage {
         return uploadResult;
     };
 
-    /**
-     * @param filePath complete file url
-     */
-    async _deleteContentFromS3(filePath: string, category: StorageCategory) {
+    async _awsQueryToDelete(path: string, category: StorageCategory) {
         const params: AWS.S3.DeleteObjectRequest = {
             Bucket: this._mapCategoryToBucket(category),
-            Key: filePath.split(`${config.cloudfrontUrl}/`)[1],
+            Key: path.split(`${config.cloudfrontUrl}/`)[1],
         };
         //
         const s3 = new AWS.S3();
         await s3.deleteObject(params).promise();
-        return true;
+    }
+
+    /**
+     * @param filePath complete file url
+     */
+    async _deleteContentFromS3(filePath: string, category: StorageCategory) {
+        const contentResult = await this.appMediaContent.findOne({
+            include: [
+                {
+                    model: this.appMediaThumbnail,
+                    as: 'thumbnails',
+                },
+            ],
+            where: { url: filePath },
+        });
+        if (contentResult) {
+            const content = contentResult.toJSON() as AppMediaContent;
+            content.thumbnails!.forEach((thumbnail) =>
+                this._awsQueryToDelete(thumbnail.url, category)
+            );
+        }
+        return false;
     }
 
     /**

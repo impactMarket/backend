@@ -22,6 +22,8 @@ export default class StoryService {
     public storyUserEngagement = models.storyUserEngagement;
     public storyUserReport = models.storyUserReport;
     public community = models.community;
+    public appMediaContent = models.appMediaContent;
+    public appMediaThumbnail = models.appMediaThumbnail;
     public sequelize = sequelize;
 
     private contentStorage = new ContentStorage();
@@ -34,10 +36,10 @@ export default class StoryService {
         fromAddress: string,
         story: IAddStory
     ): Promise<StoryContent> {
-        let storyContentToAdd: { media?: string; message?: string } = {};
-        if (story.mediaUrl) {
+        let storyContentToAdd: { mediaMediaId?: number; message?: string } = {};
+        if (story.mediaId) {
             storyContentToAdd = {
-                media: story.mediaUrl,
+                mediaMediaId: story.mediaId,
             };
         }
         let storyCommunityToAdd: {
@@ -85,17 +87,31 @@ export default class StoryService {
 
     public async remove(storyId: number, userAddress: string): Promise<number> {
         const contentPath = await this.storyContent.findOne({
+            include: [
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    required: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
+            ],
             where: { id: storyId },
         });
         if (contentPath === null) {
             return 0;
         }
+        const storyMedia = (contentPath.toJSON() as StoryContent).media;
+        if (storyMedia) {
+            await this.contentStorage.deleteStory(storyMedia.url);
+        }
         const destroyed = await this.storyContent.destroy({
             where: { id: storyId, byAddress: userAddress },
         });
-        if (destroyed > 0) {
-            this.contentStorage.deleteStory(contentPath.media);
-        }
         return destroyed;
     }
 
@@ -110,6 +126,17 @@ export default class StoryService {
                     model: this.storyEngagement,
                     as: 'storyEngagement',
                     duplicating: false,
+                },
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    required: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
                 },
             ],
             where: { byAddress: onlyFromAddress, isPublic: true },
@@ -132,7 +159,7 @@ export default class StoryService {
     public async listImpactMarketOnly(
         userAddress?: string
     ): Promise<ICommunityStories> {
-        let subInclude: Includeable[];
+        let subInclude: Includeable[] = [];
         if (userAddress) {
             subInclude = [
                 {
@@ -165,7 +192,20 @@ export default class StoryService {
             ];
         }
         const r = await this.storyContent.findAll({
-            include: subInclude,
+            include: [
+                ...subInclude,
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    required: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
+            ],
             where: {
                 byAddress: config.impactMarketContractAddress,
                 isPublic: true,
@@ -217,6 +257,17 @@ export default class StoryService {
                                 {
                                     model: this.storyEngagement,
                                     as: 'storyEngagement',
+                                },
+                                {
+                                    model: this.appMediaContent,
+                                    as: 'media',
+                                    required: false,
+                                    include: [
+                                        {
+                                            model: this.appMediaThumbnail,
+                                            as: 'thumbnails',
+                                        },
+                                    ],
                                 },
                             ],
                             where: {
@@ -310,6 +361,17 @@ export default class StoryService {
                     ],
                     where: { communityId },
                 },
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    required: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
                 ...subInclude,
             ],
             where: { isPublic: true },
@@ -381,7 +443,10 @@ export default class StoryService {
         const tenDaysAgo = new Date();
         tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
         //
-        const storiesToDelete = await this.sequelize.query(
+        const storiesToDelete: {
+            contentId: string;
+            media: string;
+        }[] = await this.sequelize.query(
             `select SC."contentId", ST.media
             from community c,
             (select "communityId" from story_community group by "communityId" having count("contentId") > 1) SC1,
@@ -399,13 +464,13 @@ export default class StoryService {
         );
 
         this.contentStorage
-            .deleteStories(storiesToDelete.map((s: any) => s.media))
+            .deleteStories(storiesToDelete.map((s) => s.media))
             .catch(Logger.error);
 
         await this.storyContent.destroy({
             where: {
                 id: {
-                    [Op.in]: storiesToDelete.map((s: any) =>
+                    [Op.in]: storiesToDelete.map((s) =>
                         parseInt(s.contentId, 10)
                     ),
                 },

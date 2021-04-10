@@ -6,7 +6,7 @@ export function appAssociation(sequelize: Sequelize) {
         sequelize.models.AppMediaThumbnailModel,
         {
             foreignKey: 'mediaContentId',
-            as: 'thumbnail',
+            as: 'thumbnails',
         }
     );
 }

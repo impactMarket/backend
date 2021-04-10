@@ -1,3 +1,4 @@
+import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { User } from '@interfaces/app/user';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
@@ -94,13 +95,13 @@ export interface IUserAuth extends IUserHello {
 export interface IAddStory {
     byAddress: string;
     communityId?: number;
-    mediaUrl?: string;
+    mediaId?: number;
     message?: string;
 }
 
 export interface ICommunityStory {
     id: number;
-    media: string | null;
+    media?: AppMediaContent;
     message: string | null;
     loves: number;
     userLoved: boolean;
@@ -113,7 +114,7 @@ export interface ICommunitiesListStories {
     coverImage: string;
     story: {
         id: number;
-        media: string | null;
+        media?: AppMediaContent;
         message: string | null;
     }; // most recent
 }
@@ -130,7 +131,7 @@ export interface ICommunityStories {
 
 export interface UserStory {
     id: number;
-    media: string | null;
+    media?: AppMediaContent;
     message: string | null;
     loves: number;
 }
