@@ -986,36 +986,4 @@ export default class CommunityService {
             raw: true,
         });
     }
-
-    public static async getNamesAndFromAddresses(
-        addresses: string[]
-    ): Promise<Community[]> {
-        return this.community.findAll({
-            attributes: ['contractAddress', 'name'],
-            where: {
-                contractAddress: {
-                    [Op.in]: addresses,
-                },
-            },
-            raw: true,
-        });
-    }
-
-    public static async mappedNames(): Promise<Map<string, string>> {
-        const mapped = new Map<string, string>();
-        const query = await this.community.findAll({
-            attributes: ['contractAddress', 'name'],
-            where: {
-                contractAddress: {
-                    [Op.ne]: null,
-                },
-            },
-            raw: true,
-        });
-        for (let index = 0; index < query.length; index++) {
-            const element = query[index];
-            mapped.set(element.contractAddress!, element.name);
-        }
-        return mapped;
-    }
 }

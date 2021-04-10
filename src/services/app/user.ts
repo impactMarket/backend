@@ -311,19 +311,6 @@ export default class UserService {
             .map((u) => u.pushNotificationToken!);
     }
 
-    public static async mappedNames(): Promise<Map<string, string>> {
-        const mapped = new Map<string, string>();
-        const query = await this.user.findAll({ raw: true });
-        for (let index = 0; index < query.length; index++) {
-            const element = query[index];
-            mapped.set(
-                element.address,
-                element.username ? element.username : ''
-            );
-        }
-        return mapped;
-    }
-
     /**
      * TODO: improve
      */
