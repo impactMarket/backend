@@ -44,7 +44,6 @@ export interface DbModels {
     exchangeRates: ModelCtor<ExchangeRates>;
     userDevice: ModelCtor<AppUserDeviceModel>;
     imMetadata: ModelCtor<ImMetadata>;
-    mobileError: ModelCtor<MobileError>;
     subscribers: ModelCtor<SubscribersModel>;
     reachedAddress: ModelCtor<ReachedAddress>;
     notifiedBacker: ModelCtor<NotifiedBacker>;
