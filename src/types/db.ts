@@ -6,7 +6,6 @@ import { AppUserTrustModel } from '@models/app/appUserTrust';
 import { CronJobExecuted } from '@models/app/cronJobExecuted';
 import { ExchangeRates } from '@models/app/exchangeRates';
 import { ImMetadata } from '@models/app/imMetadata';
-import { MobileError } from '@models/app/mobileError';
 import { SubscribersModel } from '@models/app/subscribers';
 import { UserModel } from '@models/app/user';
 import { AppUserDeviceModel } from '@models/app/userDevice';

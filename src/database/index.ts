@@ -6,7 +6,6 @@ import { AppUserTrustModel } from '@models/app/appUserTrust';
 import { CronJobExecuted } from '@models/app/cronJobExecuted';
 import { ExchangeRates } from '@models/app/exchangeRates';
 import { ImMetadata } from '@models/app/imMetadata';
-import { MobileError } from '@models/app/mobileError';
 import { SubscribersModel } from '@models/app/subscribers';
 import { UserModel } from '@models/app/user';
 import { AppUserDeviceModel } from '@models/app/userDevice';
@@ -52,6 +51,15 @@ if (process.env.NODE_ENV === 'development') {
 }
 const dbConfig: Options = {
     dialect: 'postgres',
+    dialectOptions: {
+        connectTimeout: 60000,
+    },
+    pool: {
+        max: 30,
+        min: 0,
+        acquire: 60000,
+        idle: 5000,
+    },
     protocol: 'postgres',
     native: true,
     logging,
@@ -101,7 +109,6 @@ const models: DbModels = {
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager>,
-    mobileError: sequelize.models.MobileError as ModelCtor<MobileError>,
     subscribers: sequelize.models
         .SubscribersModel as ModelCtor<SubscribersModel>,
     notifiedBacker: sequelize.models

@@ -9,7 +9,6 @@ import { initializeAppUserTrust } from './app/appUserTrust';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
 import { initializeExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
-import { initializeMobileError } from './app/mobileError';
 import { initializeSubscribers } from './app/subscribers';
 import { initializeUser } from './app/user';
 import { initializeAppUserDevice } from './app/userDevice';
@@ -56,7 +55,6 @@ export default function initModels(sequelize: Sequelize): void {
     initializeExchangeRates(sequelize);
     initializeImMetadata(sequelize);
     initializeAppAnonymousReport(sequelize);
-    initializeMobileError(sequelize);
     initializeCronJobExecuted(sequelize);
     initializeAppMediaContent(sequelize);
     initializeAppMediaThumbnail(sequelize);

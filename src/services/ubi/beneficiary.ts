@@ -188,14 +188,20 @@ export default class BeneficiaryService {
                 claimed: b.claimed,
                 blocked: b.blocked,
                 verifiedPN:
-                    b.user?.throughTrust?.length !== 0
-                        ? b.user?.throughTrust![0].verifiedPhoneNumber
+                    b.user &&
+                    b.user.throughTrust &&
+                    b.user.throughTrust.length > 0
+                        ? b.user.throughTrust[0].verifiedPhoneNumber
                         : undefined,
                 suspect:
-                    b.user?.throughTrust?.length !== 0
-                        ? b.user?.throughTrust![0].selfTrust
-                            ? b.user?.throughTrust![0].selfTrust?.length > 1 ||
-                              b.user?.throughTrust![0].suspect
+                    b.user &&
+                    b.user.throughTrust &&
+                    b.user.throughTrust.length > 0
+                        ? b.user.throughTrust[0].selfTrust
+                            ? (b.user.throughTrust[0].selfTrust &&
+                                  b.user.throughTrust[0].selfTrust.length >
+                                      1) ||
+                              b.user.throughTrust[0].suspect
                             : undefined
                         : undefined,
             };
@@ -273,14 +279,20 @@ export default class BeneficiaryService {
                 claimed: b.claimed,
                 blocked: b.blocked,
                 verifiedPN:
-                    b.user?.throughTrust?.length !== 0
-                        ? b.user?.throughTrust![0].verifiedPhoneNumber
+                    b.user &&
+                    b.user.throughTrust &&
+                    b.user.throughTrust.length > 0
+                        ? b.user.throughTrust[0].verifiedPhoneNumber
                         : undefined,
                 suspect:
-                    b.user?.throughTrust?.length !== 0
-                        ? b.user?.throughTrust![0].selfTrust
-                            ? b.user?.throughTrust![0].selfTrust?.length > 1 ||
-                              b.user?.throughTrust![0].suspect
+                    b.user &&
+                    b.user.throughTrust &&
+                    b.user.throughTrust.length > 0
+                        ? b.user.throughTrust[0].selfTrust
+                            ? (b.user.throughTrust[0].selfTrust &&
+                                  b.user.throughTrust[0].selfTrust.length >
+                                      1) ||
+                              b.user.throughTrust[0].suspect
                             : undefined
                         : undefined,
             };
