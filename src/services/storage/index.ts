@@ -4,6 +4,7 @@ import { Logger } from '@utils/logger';
 import axios from 'axios';
 import { Queue, Worker } from 'bullmq';
 import sizeOf from 'image-size';
+import { Op } from 'sequelize';
 import sharp from 'sharp';
 
 import config from '../../config';
@@ -54,17 +55,7 @@ export class ContentStorage {
      * This will delete thumbnails
      */
     async deleteCommunityCover(mediaId: number) {
-        const mediaResult = await this.appMediaContent.findOne({
-            include: [
-                {
-                    model: this.appMediaThumbnail,
-                    as: 'thumbnails',
-                },
-            ],
-            where: { id: mediaId },
-        });
-        const media = mediaResult!.toJSON() as AppMediaContent;
-        const filePaths = [media.url, ...media.thumbnails!.map((t) => t.url)];
+        const filePaths = await this._findContentToDelete(mediaId);
         await this._deleteBulkContentFromS3(
             filePaths,
             StorageCategory.communityCover
@@ -92,17 +83,7 @@ export class ContentStorage {
      * This will delete thumbnails
      */
     async deleteStory(mediaId: number) {
-        const mediaResult = await this.appMediaContent.findOne({
-            include: [
-                {
-                    model: this.appMediaThumbnail,
-                    as: 'thumbnails',
-                },
-            ],
-            where: { id: mediaId },
-        });
-        const media = mediaResult!.toJSON() as AppMediaContent;
-        const filePaths = [media.url, ...media.thumbnails!.map((t) => t.url)];
+        const filePaths = await this._findContentToDelete(mediaId);
         await this._deleteBulkContentFromS3(filePaths, StorageCategory.story);
         await this.appMediaContent.destroy({
             where: { id: mediaId },
@@ -112,8 +93,12 @@ export class ContentStorage {
     /**
      * This will delete thumbnails
      */
-    deleteStories(filePath: string[]) {
-        return this._deleteBulkContentFromS3(filePath, StorageCategory.story);
+    async deleteStories(mediaId: number[]) {
+        const filePaths = await this._findBulkContentToDelete(mediaId);
+        await this._deleteBulkContentFromS3(filePaths, StorageCategory.story);
+        await this.appMediaContent.destroy({
+            where: { id: { [Op.in]: mediaId } },
+        });
     }
 
     async processAndUpload(
@@ -329,6 +314,20 @@ export class ContentStorage {
         await s3.deleteObject(params).promise();
     }
 
+    async _findContentToDelete(mediaId: number) {
+        const mediaResult = await this.appMediaContent.findOne({
+            include: [
+                {
+                    model: this.appMediaThumbnail,
+                    as: 'thumbnails',
+                },
+            ],
+            where: { id: mediaId },
+        });
+        const media = mediaResult!.toJSON() as AppMediaContent;
+        return [media.url, ...media.thumbnails!.map((t) => t.url)];
+    }
+
     /**
      * @param filePath complete file url
      */
@@ -349,6 +348,20 @@ export class ContentStorage {
             );
         }
         return false;
+    }
+
+    async _findBulkContentToDelete(mediaId: number[]) {
+        const mediaResult = await this.appMediaContent.findOne({
+            include: [
+                {
+                    model: this.appMediaThumbnail,
+                    as: 'thumbnails',
+                },
+            ],
+            where: { id: { [Op.in]: mediaId } },
+        });
+        const media = mediaResult!.toJSON() as AppMediaContent;
+        return [media.url, ...media.thumbnails!.map((t) => t.url)];
     }
 
     /**

@@ -468,26 +468,18 @@ export default class StoryService {
         //
         const storiesToDelete: {
             contentId: string;
-            media: string;
+            mediaMediaId: number;
         }[] = await this.sequelize.query(
-            `select SC."contentId", ST.media
-            from community c,
-            (select "communityId" from story_community group by "communityId" having count("contentId") > 1) SC1,
-            (select max("postedAt") r from story_content) recent,
-            story_community SC,
-            story_content ST
-            where date(ST."postedAt") < ${
-                tenDaysAgo.toISOString().split('T')[0]
+            'select SC."contentId", ST."mediaMediaId" from community c, (select "communityId" from story_community group by "communityId" having count("contentId") > 1) SC1, (select max("postedAt") r from story_content) recent, story_community SC, story_content ST where date(ST."postedAt") < ? and ST."postedAt" != recent.r and c.id = SC1."communityId" and c.id = SC."communityId" and ST.id = SC."contentId"',
+            {
+                replacements: [tenDaysAgo.toISOString().split('T')[0]],
+                raw: true,
+                type: QueryTypes.SELECT,
             }
-            and ST."postedAt" != recent.r
-            and c.id = SC1."communityId"
-            and c.id = SC."communityId"
-            and ST.id = SC."contentId"`,
-            { raw: true, type: QueryTypes.SELECT }
         );
 
         this.contentStorage
-            .deleteStories(storiesToDelete.map((s) => s.media))
+            .deleteStories(storiesToDelete.map((s) => s.mediaMediaId))
             .catch(Logger.error);
 
         await this.storyContent.destroy({
