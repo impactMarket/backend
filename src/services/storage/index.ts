@@ -28,6 +28,7 @@ interface IJobThumbnail {
 export class ContentStorage {
     private appMediaContent = models.appMediaContent;
     private appMediaThumbnail = models.appMediaThumbnail;
+    private community = models.community;
     private queueThumbnail?: Queue<IJobThumbnail>;
     private queueThumbnailName = 'thumbnail';
 
@@ -53,11 +54,25 @@ export class ContentStorage {
     /**
      * This will delete thumbnails
      */
-    deleteCommunityCover(filePath: string) {
-        return this._deleteContentFromS3(
-            filePath,
+    async deleteCommunityCover(mediaId: number) {
+        const mediaResult = await this.appMediaContent.findOne({
+            include: [
+                {
+                    model: this.appMediaThumbnail,
+                    as: 'thumbnails',
+                },
+            ],
+            where: { id: mediaId },
+        });
+        const media = mediaResult!.toJSON() as AppMediaContent;
+        const filePaths = [media.url, ...media.thumbnails!.map((t) => t.url)];
+        await this._deleteBulkContentFromS3(
+            filePaths,
             StorageCategory.communityCover
         );
+        await this.appMediaContent.destroy({
+            where: { id: mediaId },
+        });
     }
 
     /**

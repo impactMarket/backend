@@ -201,9 +201,8 @@ const add = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 403, res));
 };
 
-const edit = (req: Request, res: Response) => {
+const edit = (req: RequestWithUser, res: Response) => {
     const {
-        publicId,
         name,
         description,
         language,
@@ -214,11 +213,14 @@ const edit = (req: Request, res: Response) => {
         coverMediaId,
     } = req.body;
     // verify if the current user is manager in this community
-    ManagerService.get((req as any).user)
-        .then((manager) => {
-            if (manager !== null && manager.communityId === publicId) {
+    ManagerService.get(req.user!.address)
+        .then(async (manager) => {
+            if (manager !== null) {
+                const community = await CommunityService.getByPublicId(
+                    manager.communityId
+                );
                 CommunityService.edit(
-                    publicId,
+                    community!.id,
                     name,
                     description,
                     language,
@@ -233,8 +235,7 @@ const edit = (req: Request, res: Response) => {
                     )
                     .catch((e) => controllerLogAndFail(e, 404, res));
             } else {
-                Logger.warn(`Not admin of ${publicId}`);
-                res.status(403).send(`Not admin of ${publicId}`);
+                res.status(403).send(`Not manager!`);
             }
         })
         .catch((e) => controllerLogAndFail(e, 404, res));
