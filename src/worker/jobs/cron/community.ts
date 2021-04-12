@@ -47,10 +47,10 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
     });
     for (let c = 0; c < communities.length; c++) {
         const community = communities[c].toJSON() as CommunityAttributes;
-        if (community.beneficiaries!.length > 0) {
-            const suspectBeneficiaries = community.beneficiaries!.filter((b) =>
-                b.user && b.user.throughTrust && b.user!.throughTrust.length > 0
-                    ? b.user.throughTrust?.length > 1 ||
+        if (community.beneficiaries && community.beneficiaries.length > 0) {
+            const suspectBeneficiaries = community.beneficiaries.filter((b) =>
+                b.user && b.user.throughTrust && b.user.throughTrust.length > 0
+                    ? b.user.throughTrust.length > 1 ||
                       b.user.throughTrust[0].suspect
                     : false
             );
@@ -59,13 +59,13 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
             }
             const ps =
                 (suspectBeneficiaries.length /
-                    (community.beneficiaries!.length -
+                    (community.beneficiaries.length -
                         suspectBeneficiaries.length)) *
                 100;
             const y = 60 * Math.log(ps);
             const suspectLevel = Math.round(Math.min(y, 100) / 10);
             // save suspect level
-            models.ubiCommunitySuspect.create({
+            await models.ubiCommunitySuspect.create({
                 communityId: community.id,
                 percentage: ps,
                 suspect: suspectLevel,
