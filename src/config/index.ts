@@ -178,12 +178,6 @@ export default {
                     height: 294,
                 },
             ],
-            logo: [
-                {
-                    width: 100,
-                    height: 100,
-                },
-            ],
         },
         organization: {
             logo: [

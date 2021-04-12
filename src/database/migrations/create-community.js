@@ -71,10 +71,6 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
-            logo: {
-                type: Sequelize.STRING(128),
-                allowNull: true,
-            },
             status: {
                 type: Sequelize.ENUM('pending', 'valid', 'removed'),
                 allowNull: false,

@@ -16,7 +16,6 @@ const add = celebrate({
         }).required(),
         email: Joi.string().required(),
         coverMediaId: Joi.number().required(),
-        logo: Joi.string().optional(),
         txReceipt: Joi.when('contractAddress', {
             not: undefined,
             then: Joi.object().required(),

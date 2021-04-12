@@ -13,7 +13,6 @@ import { AWS } from './aws';
 
 enum StorageCategory {
     communityCover,
-    communityLogo,
     organizationLogo,
     story,
 }
@@ -156,9 +155,6 @@ export class ContentStorage {
             case StorageCategory.communityCover:
                 filePrefix = 'cover/';
                 break;
-            case StorageCategory.communityLogo:
-                filePrefix = 'logo/';
-                break;
             case StorageCategory.organizationLogo:
                 filePrefix = 'org-logo/';
                 break;
@@ -182,9 +178,6 @@ export class ContentStorage {
                 break;
             case StorageCategory.communityCover:
                 thumbnailSizes = config.thumbnails.community.cover;
-                break;
-            case StorageCategory.communityLogo:
-                thumbnailSizes = config.thumbnails.community.logo;
                 break;
             case StorageCategory.organizationLogo:
                 thumbnailSizes = config.thumbnails.organization.logo;
@@ -335,7 +328,6 @@ export class ContentStorage {
             return config.aws.bucket.story;
         } else if (
             category === StorageCategory.communityCover ||
-            category === StorageCategory.communityLogo ||
             category === StorageCategory.organizationLogo
         ) {
             return config.aws.bucket.community;

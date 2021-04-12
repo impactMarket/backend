@@ -28,7 +28,6 @@ export interface CommunityAttributes {
     visibility: 'public' | 'private';
     coverImage: string;
     coverMediaId: number;
-    logo: string;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     started: Date;
 
@@ -90,7 +89,6 @@ export class Community extends Model<
     public visibility!: 'public' | 'private';
     public coverImage!: string;
     public coverMediaId!: number;
-    public logo!: string;
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     public started!: Date;
 
@@ -175,15 +173,6 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 },
                 // onDelete: 'SET NULL', // default
                 allowNull: false,
-            },
-            logo: {
-                type: DataTypes.INTEGER,
-                references: {
-                    model: 'app_media_content',
-                    key: 'id',
-                },
-                // onDelete: 'SET NULL', // default
-                allowNull: true,
             },
             status: {
                 type: DataTypes.ENUM('pending', 'valid', 'removed'),

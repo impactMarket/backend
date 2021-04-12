@@ -590,7 +590,6 @@ export default class CommunityService {
             visibility: c.visibility,
             coverImage: c.coverImage,
             coverMediaId: c.coverMediaId,
-            logo: c.logo,
             status: c.status,
             started: c.started,
             contract: {
