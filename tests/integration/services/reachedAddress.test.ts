@@ -75,6 +75,7 @@ describe('reachedAddress', () => {
                 email: '',
                 visibility: 'public',
                 coverImage: '',
+                coverMediaId: 0,
                 status: 'valid',
                 createdAt: new Date(),
                 updatedAt: new Date(),
