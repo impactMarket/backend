@@ -28,7 +28,7 @@ import {
     IManagers,
     IManagersDetails,
 } from '../../types/endpoints';
-import { ContentStorage } from '../storage';
+import { CommunityContentStorage } from '../storage';
 import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
 import CommunityDailyStateService from './communityDailyState';
@@ -47,7 +47,7 @@ export default class CommunityService {
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static sequelize = sequelize;
 
-    private static contentStorage = new ContentStorage();
+    private static communityContentStorage = new CommunityContentStorage();
 
     public static async create(
         requestByAddress: string,
@@ -214,7 +214,7 @@ export default class CommunityService {
         if (community!.coverMediaId !== coverMediaId) {
             // image has been replaced
             // delete previous one! new one was already uploaded, will be updated below
-            await this.contentStorage.deleteCommunityCover(
+            await this.communityContentStorage.deleteContent(
                 community!.coverMediaId
             );
         }
@@ -371,9 +371,7 @@ export default class CommunityService {
     public static async pictureAdd(to: string, file: Express.Multer.File) {
         let addResult: AppMediaContent;
         if (to === 'cover') {
-            addResult = await this.contentStorage.uploadCommunityCover(file);
-        } else if (to === 'logo') {
-            addResult = await this.contentStorage.uploadCommunityLogo(file);
+            addResult = await this.communityContentStorage.uploadContent(file);
         } else {
             throw new Error('invalid to!');
         }
@@ -390,13 +388,12 @@ export default class CommunityService {
             raw: true,
         });
         if (c) {
-            await this.contentStorage.deleteCommunityLogo(c.logo);
-            await this.contentStorage.deleteCommunityCover(c.id);
             await this.community.destroy({
                 where: {
                     publicId,
                 },
             });
+            await this.communityContentStorage.deleteContent(c.coverMediaId);
             return true;
         }
         return false;

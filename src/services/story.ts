@@ -13,7 +13,7 @@ import { Includeable, literal, Op, QueryTypes } from 'sequelize';
 
 import config from '../config';
 import { models, sequelize } from '../database';
-import { ContentStorage } from './storage';
+import { StoryContentStorage } from './storage';
 
 export default class StoryService {
     public storyContent = models.storyContent;
@@ -26,10 +26,10 @@ export default class StoryService {
     public appMediaThumbnail = models.appMediaThumbnail;
     public sequelize = sequelize;
 
-    private contentStorage = new ContentStorage();
+    private storyContentStorage = new StoryContentStorage();
 
     public pictureAdd(file: Express.Multer.File) {
-        return this.contentStorage.uploadStory(file);
+        return this.storyContentStorage.uploadContent(file);
     }
 
     public async add(
@@ -108,7 +108,7 @@ export default class StoryService {
         const storyMedia = (contentPath.toJSON() as StoryContent).media;
         // first delete media
         if (storyMedia) {
-            await this.contentStorage.deleteStory(storyMedia.id);
+            await this.storyContentStorage.deleteContent(storyMedia.id);
         }
         const destroyed = await this.storyContent.destroy({
             where: { id: storyId, byAddress: userAddress },
@@ -478,8 +478,8 @@ export default class StoryService {
             }
         );
 
-        this.contentStorage
-            .deleteStories(storiesToDelete.map((s) => s.mediaMediaId))
+        this.storyContentStorage
+            .deleteBulkContent(storiesToDelete.map((s) => s.mediaMediaId))
             .catch(Logger.error);
 
         await this.storyContent.destroy({

@@ -27,8 +27,8 @@ interface IJobThumbnail {
 }
 
 export class ContentStorage {
-    private appMediaContent = models.appMediaContent;
-    private appMediaThumbnail = models.appMediaThumbnail;
+    public appMediaContent = models.appMediaContent;
+    public appMediaThumbnail = models.appMediaThumbnail;
     private queueThumbnail?: Queue<IJobThumbnail>;
     private queueThumbnailName = 'thumbnail';
 
@@ -43,65 +43,23 @@ export class ContentStorage {
         }
     }
 
-    uploadCommunityCover(file: Express.Multer.File): Promise<AppMediaContent> {
-        return this.processAndUpload(file, StorageCategory.communityCover);
+    listenToJobs() {
+        if (process.env.NODE_ENV !== 'test') {
+            const worker = new Worker<IJobThumbnail>(
+                this.queueThumbnailName,
+                (job) => this._createThumbnailFromJob(job.data),
+                {
+                    connection: config.redis,
+                    // concurrency: config.bullJobsConcurrency,
+                }
+            );
+            worker.on('failed', (job, err) =>
+                Logger.error(`Failed job ${job.id} with ${err}`)
+            );
+        }
     }
 
-    uploadCommunityLogo(file: Express.Multer.File): Promise<AppMediaContent> {
-        return this.processAndUpload(file, StorageCategory.communityLogo);
-    }
-
-    /**
-     * This will delete thumbnails
-     */
-    async deleteCommunityCover(mediaId: number) {
-        const filePaths = await this._findContentToDelete(mediaId);
-        await this._deleteBulkContentFromS3(
-            filePaths,
-            StorageCategory.communityCover
-        );
-        await this.appMediaContent.destroy({
-            where: { id: mediaId },
-        });
-    }
-
-    /**
-     * This will delete thumbnails
-     */
-    deleteCommunityLogo(filePath: string) {
-        return this._deleteContentFromS3(
-            filePath,
-            StorageCategory.communityLogo
-        );
-    }
-
-    uploadStory(file: Express.Multer.File): Promise<AppMediaContent> {
-        return this.processAndUpload(file, StorageCategory.story);
-    }
-
-    /**
-     * This will delete thumbnails
-     */
-    async deleteStory(mediaId: number) {
-        const filePaths = await this._findContentToDelete(mediaId);
-        await this._deleteBulkContentFromS3(filePaths, StorageCategory.story);
-        await this.appMediaContent.destroy({
-            where: { id: mediaId },
-        });
-    }
-
-    /**
-     * This will delete thumbnails
-     */
-    async deleteStories(mediaId: number[]) {
-        const filePaths = await this._findBulkContentToDelete(mediaId);
-        await this._deleteBulkContentFromS3(filePaths, StorageCategory.story);
-        await this.appMediaContent.destroy({
-            where: { id: { [Op.in]: mediaId } },
-        });
-    }
-
-    async processAndUpload(
+    protected async _processAndUpload(
         file: Express.Multer.File,
         category: StorageCategory
     ) {
@@ -182,23 +140,7 @@ export class ContentStorage {
         return mediaContent;
     }
 
-    listenToJobs() {
-        if (process.env.NODE_ENV !== 'test') {
-            const worker = new Worker<IJobThumbnail>(
-                this.queueThumbnailName,
-                (job) => this._createThumbnailFromJob(job.data),
-                {
-                    connection: config.redis,
-                    // concurrency: config.bullJobsConcurrency,
-                }
-            );
-            worker.on('failed', (job, err) =>
-                Logger.error(`Failed job ${job.id} with ${err}`)
-            );
-        }
-    }
-
-    _generatedStorageFileName(
+    protected _generatedStorageFileName(
         category: StorageCategory,
         thumbnail?: { width: number; height: number },
         pixelRatio?: number,
@@ -232,7 +174,7 @@ export class ContentStorage {
         ];
     }
 
-    async _createThumbnailFromJob(jobData: IJobThumbnail) {
+    protected async _createThumbnailFromJob(jobData: IJobThumbnail) {
         let thumbnailSizes: { width: number; height: number }[];
         switch (jobData.category) {
             case StorageCategory.story:
@@ -286,7 +228,7 @@ export class ContentStorage {
         });
     }
 
-    _uploadContentToS3 = async (
+    protected _uploadContentToS3 = async (
         category: StorageCategory,
         filePath: string,
         fileBuffer: Buffer
@@ -304,7 +246,7 @@ export class ContentStorage {
         return uploadResult;
     };
 
-    async _awsQueryToDelete(path: string, category: StorageCategory) {
+    protected async _awsQueryToDelete(path: string, category: StorageCategory) {
         const params: AWS.S3.DeleteObjectRequest = {
             Bucket: this._mapCategoryToBucket(category),
             Key: path.split(`${config.cloudfrontUrl}/`)[1],
@@ -314,7 +256,7 @@ export class ContentStorage {
         await s3.deleteObject(params).promise();
     }
 
-    async _findContentToDelete(mediaId: number) {
+    protected async _findContentToDelete(mediaId: number) {
         const mediaResult = await this.appMediaContent.findOne({
             include: [
                 {
@@ -331,7 +273,10 @@ export class ContentStorage {
     /**
      * @param filePath complete file url
      */
-    async _deleteContentFromS3(filePath: string, category: StorageCategory) {
+    protected async _deleteContentFromS3(
+        filePath: string,
+        category: StorageCategory
+    ) {
         const contentResult = await this.appMediaContent.findOne({
             include: [
                 {
@@ -350,7 +295,7 @@ export class ContentStorage {
         return false;
     }
 
-    async _findBulkContentToDelete(mediaId: number[]) {
+    protected async _findBulkContentToDelete(mediaId: number[]) {
         const mediaResult = await this.appMediaContent.findOne({
             include: [
                 {
@@ -367,7 +312,7 @@ export class ContentStorage {
     /**
      * @param filePath complete file url
      */
-    async _deleteBulkContentFromS3(
+    protected async _deleteBulkContentFromS3(
         filePath: string[],
         category: StorageCategory
     ) {
@@ -385,7 +330,7 @@ export class ContentStorage {
         return true;
     }
 
-    _mapCategoryToBucket(category: StorageCategory) {
+    protected _mapCategoryToBucket(category: StorageCategory) {
         if (category === StorageCategory.story) {
             return config.aws.bucket.story;
         } else if (
@@ -397,6 +342,66 @@ export class ContentStorage {
         }
         throw new Error('invalid category');
     }
+}
+
+interface IContentStorage {
+    uploadContent(file: Express.Multer.File): Promise<AppMediaContent>;
+    deleteContent(mediaId: number): Promise<void>;
+    deleteBulkContent(mediaId: number[]): Promise<void>;
+}
+
+export class StoryContentStorage
+    extends ContentStorage
+    implements IContentStorage {
+    uploadContent(file: Express.Multer.File): Promise<AppMediaContent> {
+        return this._processAndUpload(file, StorageCategory.story);
+    }
+
+    /**
+     * This will delete thumbnails
+     */
+    async deleteContent(mediaId: number) {
+        const filePaths = await this._findContentToDelete(mediaId);
+        await this._deleteBulkContentFromS3(filePaths, StorageCategory.story);
+        await this.appMediaContent.destroy({
+            where: { id: mediaId },
+        });
+    }
+
+    /**
+     * This will delete thumbnails
+     */
+    async deleteBulkContent(mediaId: number[]) {
+        const filePaths = await this._findBulkContentToDelete(mediaId);
+        await this._deleteBulkContentFromS3(filePaths, StorageCategory.story);
+        await this.appMediaContent.destroy({
+            where: { id: { [Op.in]: mediaId } },
+        });
+    }
+}
+
+export class CommunityContentStorage
+    extends ContentStorage
+    implements IContentStorage {
+    uploadContent(file: Express.Multer.File): Promise<AppMediaContent> {
+        return this._processAndUpload(file, StorageCategory.communityCover);
+    }
+
+    /**
+     * This will delete thumbnails
+     */
+    async deleteContent(mediaId: number) {
+        const filePaths = await this._findContentToDelete(mediaId);
+        await this._deleteBulkContentFromS3(
+            filePaths,
+            StorageCategory.communityCover
+        );
+        await this.appMediaContent.destroy({
+            where: { id: mediaId },
+        });
+    }
+
+    async deleteBulkContent(mediaId: number[]) {}
 }
 
 /**
