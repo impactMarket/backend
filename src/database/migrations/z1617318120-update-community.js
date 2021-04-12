@@ -2,6 +2,9 @@
 
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         return queryInterface.addColumn('community', 'logo', {
             type: Sequelize.INTEGER,
             references: {

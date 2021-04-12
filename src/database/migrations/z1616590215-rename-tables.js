@@ -1,6 +1,9 @@
 'use strict';
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         await queryInterface.renameTable('AppSubscribers', 'app_subscribers');
         await queryInterface.renameTable(
             'UbiRequestChangeParams',

@@ -5,6 +5,9 @@ const sizeOf = require('image-size');
 
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         await queryInterface.addColumn('community', 'coverMediaId', {
             type: Sequelize.INTEGER,
             references: {

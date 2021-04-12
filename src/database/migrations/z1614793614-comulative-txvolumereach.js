@@ -5,6 +5,9 @@ BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
 // eslint-disable-next-line no-undef
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         const GlobalDailyState = await queryInterface.sequelize.define(
             'globaldailystate',
             {

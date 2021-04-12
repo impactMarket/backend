@@ -41,6 +41,9 @@ async function getBlockTime(blockHash) {
 // eslint-disable-next-line no-undef
 module.exports = {
     up: async (queryInterface, Sequelize) => {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         const Beneficiary = await queryInterface.sequelize.define(
             'beneficiary',
             {

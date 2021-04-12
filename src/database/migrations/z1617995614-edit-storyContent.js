@@ -3,6 +3,9 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         await queryInterface.removeColumn('story_content', 'media');
         await queryInterface.addColumn('story_content', 'mediaMediaId', {
             type: Sequelize.INTEGER,

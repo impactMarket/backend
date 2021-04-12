@@ -67,6 +67,10 @@ module.exports = {
                 type: Sequelize.STRING(128),
                 allowNull: false,
             },
+            coverMediaId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+            },
             logo: {
                 type: Sequelize.STRING(128),
                 allowNull: true,

@@ -4,6 +4,9 @@ const AWS = require('aws-sdk');
 
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         const Community = await queryInterface.sequelize.define(
             'community',
             {
