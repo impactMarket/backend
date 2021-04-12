@@ -401,7 +401,9 @@ export class CommunityContentStorage
         });
     }
 
-    async deleteBulkContent(mediaId: number[]) {}
+    async deleteBulkContent(mediaId: number[]) {
+        // To be compliant with interface
+    }
 }
 
 /**
