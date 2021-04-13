@@ -15,6 +15,7 @@ enum StorageCategory {
     communityCover,
     organizationLogo,
     story,
+    profile,
 }
 
 interface IJobThumbnail {
@@ -182,6 +183,9 @@ export class ContentStorage {
             case StorageCategory.organizationLogo:
                 thumbnailSizes = config.thumbnails.organization.logo;
                 break;
+            case StorageCategory.profile:
+                thumbnailSizes = config.thumbnails.profile;
+                break;
         }
 
         const responseFromUrl = await axios.get(
@@ -326,6 +330,8 @@ export class ContentStorage {
     protected _mapCategoryToBucket(category: StorageCategory) {
         if (category === StorageCategory.story) {
             return config.aws.bucket.story;
+        } else if (category === StorageCategory.profile) {
+            return config.aws.bucket.profile;
         } else if (
             category === StorageCategory.communityCover ||
             category === StorageCategory.organizationLogo
@@ -388,6 +394,29 @@ export class CommunityContentStorage
             filePaths,
             StorageCategory.communityCover
         );
+        await this.appMediaContent.destroy({
+            where: { id: mediaId },
+        });
+    }
+
+    async deleteBulkContent(mediaId: number[]) {
+        // To be compliant with interface
+    }
+}
+
+export class ProfileContentStorage
+    extends ContentStorage
+    implements IContentStorage {
+    uploadContent(file: Express.Multer.File): Promise<AppMediaContent> {
+        return this._processAndUpload(file, StorageCategory.profile);
+    }
+
+    /**
+     * This will delete thumbnails
+     */
+    async deleteContent(mediaId: number) {
+        const filePaths = await this._findContentToDelete(mediaId);
+        await this._deleteBulkContentFromS3(filePaths, StorageCategory.profile);
         await this.appMediaContent.destroy({
             where: { id: mediaId },
         });
