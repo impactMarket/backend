@@ -90,8 +90,8 @@ export default {
         secretAccessKey: validatedEnv.AWS_SECRET_ACCESS_KEY,
         region: validatedEnv.AWS_REGION,
         bucket: {
-            community: validatedEnv.AWS_BUCKET_IMAGES_COMMUNITY,
-            story: validatedEnv.AWS_BUCKET_IMAGES_STORY,
+            community: validatedEnv.AWS_BUCKET_COMMUNITY,
+            story: validatedEnv.AWS_BUCKET_STORY,
         },
     },
 
@@ -193,6 +193,8 @@ export default {
     redis: {
         host: validatedEnv.REDIS_HOST,
         port: validatedEnv.REDIS_PORT,
+        username: validatedEnv.REDIS_USER,
+        password: validatedEnv.REDIS_PASSWORD,
     },
 
     bullJobsConcurrency: validatedEnv.SENTRY_TRACE_SAMPLES_RATE,
