@@ -6,7 +6,7 @@ module.exports = {
         if (process.env.NODE_ENV === 'test') {
             return;
         }
-        await queryInterface.removeColumn('user', 'avatar');
+        // await queryInterface.removeColumn('user', 'avatar');
         await queryInterface.addColumn('user', 'avatarMediaId', {
             type: Sequelize.INTEGER,
             references: {
