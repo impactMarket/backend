@@ -151,7 +151,7 @@ module.exports = {
                 const e = communities[c];
 
                 const params = {
-                    Bucket: process.env.AWS_BUCKET_IMAGES_COMMUNITY,
+                    Bucket: process.env.AWS_BUCKET_COMMUNITY,
                     Key: e.coverImage.split(process.env.CLOUDFRONT_URL)[1],
                 };
                 const rg = await S3.getObject(params).promise();
