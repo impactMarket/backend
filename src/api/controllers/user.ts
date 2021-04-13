@@ -152,7 +152,7 @@ class UserController {
             return;
         }
         UserService.setProfilePicture(req.user.address, req.file)
-            .then(() => res.sendStatus(200))
+            .then((r) => res.send(r))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
