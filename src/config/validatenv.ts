@@ -62,7 +62,7 @@ function validateEnv() {
         HASH_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         REDIS_HOST: str({ devDefault: 'localhost' }),
         REDIS_PORT: num({ devDefault: 6379 }),
-        REDIS_USER: str({ devDefault: '' }),
+        REDIS_USER: str({ default: '' }),
         REDIS_PASSWORD: str({ devDefault: '' }),
         BULL_JOBS_CONCURRENCY: num({ devDefault: 2 }),
     });
