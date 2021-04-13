@@ -92,6 +92,7 @@ export default {
         bucket: {
             community: validatedEnv.AWS_BUCKET_COMMUNITY,
             story: validatedEnv.AWS_BUCKET_STORY,
+            profile: validatedEnv.AWS_BUCKET_PROFILE,
         },
     },
 
@@ -187,6 +188,16 @@ export default {
                 },
             ],
         },
+        profile: [
+            {
+                width: 42,
+                height: 42,
+            },
+            {
+                width: 80,
+                height: 80,
+            },
+        ],
         pixelRatio: [1, 2],
     },
 

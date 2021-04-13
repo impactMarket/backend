@@ -4,7 +4,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export class UserModel extends Model<User, UserCreationAttributes> {
     public address!: string;
     public username!: string | null;
-    public avatar!: string;
+    public avatarMediaId!: number;
     public language!: string;
     public currency!: string;
     public pushNotificationToken!: string | null;
@@ -26,6 +26,15 @@ export function initializeUser(sequelize: Sequelize): typeof UserModel {
                 allowNull: false,
                 primaryKey: true,
                 unique: true,
+            },
+            avatarMediaId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'app_media_content',
+                    key: 'id',
+                },
+                // onDelete: 'SET NULL', // default
+                allowNull: false,
             },
             username: {
                 type: DataTypes.STRING(128),

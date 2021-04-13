@@ -1,6 +1,7 @@
 import { AppAnonymousReport } from '@interfaces/app/appAnonymousReport';
 import { AppUserDeviceCreation } from '@interfaces/app/appUserDevice';
 import { User, UserCreationAttributes } from '@interfaces/app/user';
+import { ProfileContentStorage } from '@services/storage';
 import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
 
@@ -19,6 +20,10 @@ export default class UserService {
     public static appUserTrust = models.appUserTrust;
     public static appUserThroughTrust = models.appUserThroughTrust;
     public static userDevice = models.userDevice;
+    public static appMediaContent = models.appMediaContent;
+    public static appMediaThumbnail = models.appMediaThumbnail;
+
+    private static profileContentStorage = new ProfileContentStorage();
 
     public static async authenticate(
         address: string,
@@ -30,6 +35,19 @@ export default class UserService {
         try {
             const token = generateAccessToken(address);
             let user = await this.user.findOne({
+                include: [
+                    {
+                        model: this.appMediaContent,
+                        as: 'avatar',
+                        required: false,
+                        include: [
+                            {
+                                model: this.appMediaThumbnail,
+                                as: 'thumbnails',
+                            },
+                        ],
+                    },
+                ],
                 where: { address },
                 raw: true,
             });
@@ -220,6 +238,23 @@ export default class UserService {
             { returning: true, where: { address } }
         );
         return updated[0] > 0;
+    }
+
+    public static async setProfilePicture(
+        address: string,
+        file: Express.Multer.File
+    ) {
+        const user = await this.user.findOne({ where: { address } });
+        const media = await this.profileContentStorage.uploadContent(file);
+        const updateResult = await this.user.update(
+            { avatarMediaId: media.id },
+            { where: { address } }
+        );
+        if (user!.avatarMediaId !== null && user!.avatarMediaId !== media.id) {
+            await this.profileContentStorage.deleteContent(user!.avatarMediaId);
+        }
+        console.log(updateResult);
+        return updateResult[1][0];
     }
 
     public static async setDevice(

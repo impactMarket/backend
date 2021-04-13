@@ -12,6 +12,14 @@ export function userAssociation(sequelize: Sequelize) {
         as: 'user',
     });
 
+    // used to query from the community with incude
+    sequelize.models.UserModel.hasOne(sequelize.models.AppMediaContentModel, {
+        foreignKey: 'id',
+        sourceKey: 'avatarMediaId',
+        as: 'avatar',
+        constraints: false,
+    });
+
     // used to query from the user with incude
     sequelize.models.UserModel.hasMany(sequelize.models.Manager, {
         foreignKey: 'user',

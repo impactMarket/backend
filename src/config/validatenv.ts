@@ -38,6 +38,7 @@ function validateEnv() {
         AWS_SECRET_ACCESS_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_BUCKET_COMMUNITY: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_BUCKET_STORY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        AWS_BUCKET_PROFILE: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_REGION: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_BASE_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
@@ -61,8 +62,8 @@ function validateEnv() {
         HASH_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         REDIS_HOST: str({ devDefault: 'localhost' }),
         REDIS_PORT: num({ devDefault: 6379 }),
-        REDIS_USER: str({ devDefault: onlyOnTestEnv('hello') }),
-        REDIS_PASSWORD: str({ devDefault: onlyOnTestEnv('hello') }),
+        REDIS_USER: str({ devDefault: '' }),
+        REDIS_PASSWORD: str({ devDefault: '' }),
         BULL_JOBS_CONCURRENCY: num({ devDefault: 2 }),
     });
 }

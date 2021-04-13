@@ -146,6 +146,16 @@ class UserController {
             .catch((e) => controllerLogAndFail(e, 400, res));
     };
 
+    public pictureAdd = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        UserService.setProfilePicture(req.user.address, req.file)
+            .then(() => res.sendStatus(200))
+            .catch((e) => controllerLogAndFail(e, 400, res));
+    };
+
     public device = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             controllerLogAndFail('User not identified!', 400, res);

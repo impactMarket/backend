@@ -1,10 +1,12 @@
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
 
+import { AppMediaContent } from './appMediaContent';
 import { AppUserTrust } from './appUserTrust';
 
 export interface User {
     address: string;
+    avatarMediaId: number | null;
     username: string | null;
     language: string;
     currency: string;
@@ -18,6 +20,7 @@ export interface User {
     createdAt: Date;
     updatedAt: Date;
 
+    avatar?: AppMediaContent;
     throughTrust?: AppUserTrust[];
     beneficiary?: BeneficiaryAttributes[];
     manager?: ManagerAttributes[];

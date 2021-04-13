@@ -1,12 +1,15 @@
 import UserController from '@controllers/user';
 import userValidators from '@validators/user';
 import { Router } from 'express';
+import multer from 'multer';
 
 import { authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {
     const route = Router();
     const userController = new UserController();
+    const storage = multer.memoryStorage();
+    const upload = multer({ storage });
 
     app.use('/user', route);
 
@@ -113,6 +116,13 @@ export default (app: Router): void => {
         authenticateToken,
         userValidators.updateChildren,
         userController.updateChildren
+    );
+
+    route.post(
+        '/picture',
+        upload.single('imageFile'),
+        authenticateToken,
+        userController.pictureAdd
     );
 
     route.post(
