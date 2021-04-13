@@ -56,7 +56,7 @@ function validateEnv() {
             devDefault: 'test',
         }),
         CLOUDFRONT_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
-        SENTRY_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        SENTRY_KEY: str({ default: '' }),
         SENTRY_TRACE_SAMPLES_RATE: num({ default: 0 }),
         ADMIN_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         HASH_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
