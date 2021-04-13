@@ -7,6 +7,15 @@ module.exports = {
                 primaryKey: true,
                 allowNull: false,
             },
+            avatarMediaId: {
+                type: Sequelize.INTEGER,
+                // references: {
+                //     model: 'app_media_content',
+                //     key: 'id',
+                // },
+                // // onDelete: 'SET NULL', // default
+                allowNull: true,
+            },
             username: {
                 type: Sequelize.STRING(128),
             },
