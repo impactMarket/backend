@@ -1,5 +1,7 @@
 'use strict';
 
+const AWS = require('aws-sdk');
+
 module.exports = {
     async up(queryInterface, Sequelize) {
         if (process.env.NODE_ENV === 'test') {
@@ -92,36 +94,60 @@ module.exports = {
             }
         );
 
-        // Argentina -> AR
-        // Brasil -> BR
-        // Ghana -> GH
-        // Nigeria -> NG
-        // Philippines -> PH
-        // Honduras -> HN
-        // Venezuela -> VE
-        // Cabo Verde -> CV
-        // Portugal -> PT
-        const countries = new Map();
-        countries.set('Argentina', 'AR');
-        countries.set('Brasil', 'BR');
-        countries.set('Ghana', 'GH');
-        countries.set('Nigeria', 'NG');
-        countries.set('Philippines', 'PH');
-        countries.set('Honduras', 'HN');
-        countries.set('Venezuela', 'VE');
-        countries.set('Cabo Verde', 'CV');
-        countries.set('Portugal', 'PT');
-
         const communities = await Community.findAll({
-            attributes: ['publicId', 'country'],
+            attributes: ['publicId', 'coverImage'],
+        });
+
+        console.log(communities.length);
+
+        const oldS3 = new AWS.S3({
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            region: process.env.AWS_REGION,
+        });
+
+        const newS3 = new AWS.S3({
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            region: process.env.AWS_REGION,
         });
 
         for (let c = 0; c < communities.length; c++) {
-            const e = communities[c];
-            await Community.update(
-                { country: countries.get(e.country) },
-                { where: { publicId: e.publicId } }
-            );
+            try {
+                const e = communities[c];
+                const params = {
+                    Bucket: process.env.AWS_BUCKET_IMAGES_COMMUNITY,
+                    Key: e.coverImage.split(process.env.CLOUDFRONT_URL)[1],
+                };
+                const rg = await oldS3.getObject(params).promise();
+
+                // sharp the file
+                const imgBuffer = rg.Body;
+
+                // content file
+                const today = new Date();
+                const filePrefix = 'cover/';
+                const filename = `${today.getTime()}.jpeg`;
+                const filePath = `${filePrefix}${filename}`;
+
+                const paramsp = {
+                    Bucket: process.env.AWS_BUCKET_COMMUNITY,
+                    Key: filePath,
+                    Body: imgBuffer,
+                    ACL: 'public-read',
+                };
+                const rp = await newS3.upload(paramsp).promise();
+
+                // TODO: add jobs for thumbnails
+
+                await Community.update(
+                    { coverImage: process.env.CLOUDFRONT_URL + '/' + rp.Key },
+                    { where: { publicId: e.publicId } }
+                );
+                console.log('success for ' + e.publicId);
+            } catch (e) {
+                console.log('failed for ', communities[c].publicId, e);
+            }
         }
     },
 

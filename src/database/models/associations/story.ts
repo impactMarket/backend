@@ -28,6 +28,16 @@ export function storyAssociation(sequelize: Sequelize) {
             as: 'storyCommunity',
         }
     );
+    // used to post from the content with incude
+    sequelize.models.StoryContentModel.hasOne(
+        sequelize.models.AppMediaContentModel,
+        {
+            foreignKey: 'id',
+            sourceKey: 'mediaMediaId',
+            as: 'media',
+            constraints: false,
+        }
+    );
 
     // used to query from the community with incude
     sequelize.models.StoryEngagementModel.belongsTo(

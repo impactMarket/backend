@@ -67,9 +67,9 @@ module.exports = {
                 type: Sequelize.STRING(128),
                 allowNull: false,
             },
-            logo: {
-                type: Sequelize.STRING(128),
-                allowNull: true,
+            coverMediaId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
             },
             status: {
                 type: Sequelize.ENUM('pending', 'valid', 'removed'),

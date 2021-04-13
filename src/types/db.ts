@@ -1,4 +1,6 @@
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
+import { AppMediaContentModel } from '@models/app/appMediaContent';
+import { AppMediaThumbnailModel } from '@models/app/appMediaThumbnail';
 import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
 import { AppUserTrustModel } from '@models/app/appUserTrust';
 import { CronJobExecuted } from '@models/app/cronJobExecuted';
@@ -37,6 +39,17 @@ export interface DbModels {
     user: ModelCtor<UserModel>;
     appUserTrust: ModelCtor<AppUserTrustModel>;
     appUserThroughTrust: ModelCtor<AppUserThroughTrustModel>;
+    anonymousReport: ModelCtor<AppAnonymousReportModel>;
+    cronJobExecuted: ModelCtor<CronJobExecuted>;
+    exchangeRates: ModelCtor<ExchangeRates>;
+    userDevice: ModelCtor<AppUserDeviceModel>;
+    imMetadata: ModelCtor<ImMetadata>;
+    subscribers: ModelCtor<SubscribersModel>;
+    reachedAddress: ModelCtor<ReachedAddress>;
+    notifiedBacker: ModelCtor<NotifiedBacker>;
+    appMediaContent: ModelCtor<AppMediaContentModel>;
+    appMediaThumbnail: ModelCtor<AppMediaThumbnailModel>;
+    //
     community: ModelCtor<Community>;
     ubiCommunitySuspect: ModelCtor<UbiCommunitySuspectModel>;
     ubiCommunityContract: ModelCtor<UbiCommunityContractModel>;
@@ -48,20 +61,13 @@ export interface DbModels {
     claim: ModelCtor<Claim>;
     claimLocation: ModelCtor<ClaimLocation>;
     beneficiary: ModelCtor<Beneficiary>;
-    anonymousReport: ModelCtor<AppAnonymousReportModel>;
     beneficiaryTransaction: ModelCtor<BeneficiaryTransaction>;
-    cronJobExecuted: ModelCtor<CronJobExecuted>;
-    exchangeRates: ModelCtor<ExchangeRates>;
+    inflow: ModelCtor<Inflow>;
+    manager: ModelCtor<Manager>;
+    //
     globalDailyState: ModelCtor<GlobalDailyState>;
     globalDemographics: ModelCtor<GlobalDemographics>;
     globalGrowth: ModelCtor<GlobalGrowthModel>;
-    userDevice: ModelCtor<AppUserDeviceModel>;
-    imMetadata: ModelCtor<ImMetadata>;
-    inflow: ModelCtor<Inflow>;
-    manager: ModelCtor<Manager>;
-    subscribers: ModelCtor<SubscribersModel>;
-    notifiedBacker: ModelCtor<NotifiedBacker>;
-    reachedAddress: ModelCtor<ReachedAddress>;
     //
     storyContent: ModelCtor<StoryContentModel>;
     storyCommunity: ModelCtor<StoryCommunityModel>;

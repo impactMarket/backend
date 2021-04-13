@@ -36,8 +36,7 @@ function validateEnv() {
         ATTESTATION_PROXY_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_ACCESS_KEY_ID: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_SECRET_ACCESS_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
-        AWS_BUCKET_COMMUNITY_COVER: str({ devDefault: onlyOnTestEnv('xyz') }),
-        AWS_BUCKET_COMMUNITY_LOGO: str({ devDefault: onlyOnTestEnv('xyz') }),
+        AWS_BUCKET_IMAGES_COMMUNITY: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_BUCKET_IMAGES_STORY: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_REGION: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_BASE_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
@@ -60,6 +59,9 @@ function validateEnv() {
         SENTRY_TRACE_SAMPLES_RATE: num({ default: 0 }),
         ADMIN_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         HASH_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        REDIS_HOST: str({ devDefault: 'localhost' }),
+        REDIS_PORT: num({ devDefault: 6379 }),
+        BULL_JOBS_CONCURRENCY: num({ devDefault: 2 }),
     });
 }
 

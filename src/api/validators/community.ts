@@ -15,8 +15,7 @@ const add = celebrate({
             longitude: Joi.number().required(),
         }).required(),
         email: Joi.string().required(),
-        coverImage: Joi.string().required(),
-        logo: Joi.string().optional(),
+        coverMediaId: Joi.number().required(),
         txReceipt: Joi.when('contractAddress', {
             not: undefined,
             then: Joi.object().required(),
@@ -35,8 +34,7 @@ const edit = celebrate({
         city: Joi.string().required(),
         country: Joi.string().required(),
         email: Joi.string().required(),
-        coverImage: Joi.string().required(),
-        logo: Joi.string().optional(),
+        coverMediaId: Joi.number().required(),
     }),
 });
 

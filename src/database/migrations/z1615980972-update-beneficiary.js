@@ -2,6 +2,9 @@
 
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         await queryInterface.addColumn('beneficiary', 'blocked', {
             type: Sequelize.BOOLEAN,
             defaultValue: false,

@@ -10,7 +10,8 @@ import {
 } from '@models/ubi/community';
 import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
-import { Op, QueryTypes, fn, col, literal } from 'sequelize';
+import { Op, QueryTypes, fn, col, literal, OrderItem } from 'sequelize';
+import { Literal } from 'sequelize/types/lib/utils';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
@@ -26,7 +27,7 @@ import {
     IManagers,
     IManagersDetails,
 } from '../../types/endpoints';
-import { deleteContentFromS3 } from '../storage';
+import { CommunityContentStorage } from '../storage';
 import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
 import CommunityDailyStateService from './communityDailyState';
@@ -41,7 +42,11 @@ export default class CommunityService {
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiOrganization = models.ubiOrganization;
+    public static appMediaContent = models.appMediaContent;
+    public static appMediaThumbnail = models.appMediaThumbnail;
     public static sequelize = sequelize;
+
+    private static communityContentStorage = new CommunityContentStorage();
 
     public static async create(
         requestByAddress: string,
@@ -57,7 +62,7 @@ export default class CommunityService {
             longitude: number;
         },
         email: string,
-        coverImage: string,
+        coverMediaId: number,
         txReceipt: any | undefined,
         contractParams: ICommunityContractParams
     ): Promise<Community> {
@@ -72,7 +77,7 @@ export default class CommunityService {
             country,
             gps,
             email,
-            coverImage,
+            coverMediaId,
             visibility: 'public', // will be changed if private
             status: 'pending', // will be changed if private
             started: new Date(),
@@ -154,7 +159,7 @@ export default class CommunityService {
             longitude: number;
         },
         email: string,
-        coverImage: string,
+        coverMediaId: number,
         contractParams: ICommunityContractParams
     ): Promise<Community> {
         // TODO: improve, insert with unique transaction (see sequelize eager loading)
@@ -169,7 +174,7 @@ export default class CommunityService {
             gps,
             email,
             visibility: 'public',
-            coverImage,
+            coverMediaId,
             status: 'pending',
             started: new Date(),
         });
@@ -180,7 +185,7 @@ export default class CommunityService {
     }
 
     public static async edit(
-        publicId: string,
+        id: number,
         name: string,
         description: string,
         language: string,
@@ -188,9 +193,11 @@ export default class CommunityService {
         city: string,
         country: string,
         email: string,
-        coverImage: string
+        coverMediaId: number
     ): Promise<[number, Community[]]> {
-        return this.community.update(
+        const community = await this.community.findOne({ where: { id } });
+        // since cover can't be null, we first update and then remove
+        const update = await this.community.update(
             {
                 name,
                 description,
@@ -199,10 +206,18 @@ export default class CommunityService {
                 city,
                 country,
                 email,
-                coverImage,
+                coverMediaId,
             },
-            { returning: true, where: { publicId } }
+            { returning: true, where: { id } }
         );
+        if (community!.coverMediaId !== coverMediaId) {
+            // image has been replaced
+            // delete previous one! new one was already uploaded, will be updated below
+            await this.communityContentStorage.deleteContent(
+                community!.coverMediaId
+            );
+        }
+        return update;
     }
 
     public static async pending(): Promise<ICommunityPendingDetails[]> {
@@ -352,6 +367,10 @@ export default class CommunityService {
         return null;
     }
 
+    public static async pictureAdd(file: Express.Multer.File) {
+        return this.communityContentStorage.uploadContent(file);
+    }
+
     public static async remove(publicId: string): Promise<boolean> {
         const c = await this.community.findOne({
             where: {
@@ -362,15 +381,12 @@ export default class CommunityService {
             raw: true,
         });
         if (c) {
-            await deleteContentFromS3(
-                config.aws.bucketCommunityCover,
-                c.coverImage
-            );
             await this.community.destroy({
                 where: {
                     publicId,
                 },
             });
+            await this.communityContentStorage.deleteContent(c.coverMediaId);
             return true;
         }
         return false;
@@ -420,19 +436,23 @@ export default class CommunityService {
         order: string | undefined,
         query: any
     ): Promise<ICommunityLightDetails[]> {
-        // by the time of writting, sequelize
-        // does not support eager loading with global "raw: false".
-        // Please, check again, and if available, update this
-        // https://github.com/sequelize/sequelize/issues/6408
-        let sqlQuery =
-            'select id, "publicId", "contractAddress", name, city, country, "coverImage", cc.*, cs.* ' +
-            'from community c ' +
-            'left join ubi_community_contract cc on c.id = cc."communityId" ' +
-            'left join ubi_community_state cs on c.id = cs."communityId" ' +
-            "where status = 'valid' and visibility = 'public' ";
+        let offset: number | undefined;
+        let limit: number | undefined;
         let useOrder = '';
+        let orderOption: string | Literal | OrderItem[] | undefined;
+
+        if (query.offset !== undefined && query.limit !== undefined) {
+            const offset = parseInt(query.offset, 10);
+            const limit = parseInt(query.limit, 10);
+            if (typeof offset !== 'number' || typeof limit !== 'number') {
+                throw new Error('NaN');
+            }
+        }
+
         if (order === undefined && query.order !== undefined) {
             useOrder = query.order;
+        } else if (order !== undefined) {
+            useOrder = order;
         }
         switch (useOrder) {
             case 'nearest': {
@@ -441,82 +461,72 @@ export default class CommunityService {
                 if (typeof lat !== 'number' || typeof lng !== 'number') {
                     throw new Error('NaN');
                 }
-                sqlQuery +=
-                    'order by (6371*acos(cos(radians(' +
-                    lat +
-                    "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
-                    lng +
-                    '))+sin(radians(' +
-                    lat +
-                    "))*sin(radians(cast(gps->>'latitude' as float)))))";
+                orderOption = [
+                    [
+                        literal(
+                            '(6371*acos(cos(radians(' +
+                                lat +
+                                "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
+                                lng +
+                                '))+sin(radians(' +
+                                lat +
+                                "))*sin(radians(cast(gps->>'latitude' as float)))))"
+                        ),
+                        'ASC',
+                    ],
+                ];
                 break;
             }
             default:
-                sqlQuery += 'order by cs.beneficiaries desc';
+                orderOption = [[literal('state.beneficiaries'), 'DESC']];
                 break;
         }
 
-        if (query.offset !== undefined && query.limit !== undefined) {
-            const offset = parseInt(query.offset, 10);
-            const limit = parseInt(query.limit, 10);
-            if (typeof offset !== 'number' || typeof limit !== 'number') {
-                throw new Error('NaN');
-            }
-            const totalCommunities = await CommunityService.countPublicCommunities();
-            sqlQuery +=
-                ' offset ' +
-                offset +
-                ' limit ' +
-                Math.min(limit, Math.max(totalCommunities - offset, 0));
-        }
-
-        const rawResult: ({
-            id: number;
-            publicId: string;
-            contractAddress: string;
-            name: string;
-            city: string;
-            country: string;
-            coverImage: string;
-        } & UbiCommunityState &
-            UbiCommunityContract)[] = await this.sequelize.query(sqlQuery, {
-            type: QueryTypes.SELECT,
+        const communitiesResult = await this.community.findAll({
+            include: [
+                {
+                    model: this.ubiCommunityContract,
+                    as: 'contract',
+                },
+                {
+                    model: this.ubiCommunityState,
+                    as: 'state',
+                },
+                {
+                    model: this.appMediaContent,
+                    as: 'cover',
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
+            ],
+            where: {
+                status: 'valid',
+                visibility: 'public',
+            },
+            limit,
+            offset,
+            order: orderOption,
         });
 
-        const results: ICommunityLightDetails[] = rawResult.map((c) => ({
+        const communities = communitiesResult.map((c) =>
+            c.toJSON()
+        ) as CommunityAttributes[];
+
+        const results: ICommunityLightDetails[] = communities.map((c) => ({
             id: c.id,
             publicId: c.publicId,
-            contractAddress: c.contractAddress,
+            contractAddress: c.contractAddress!,
             name: c.name,
             city: c.city,
             country: c.country,
             coverImage: c.coverImage,
-            contract: {
-                baseInterval: c.baseInterval,
-                claimAmount: c.claimAmount,
-                incrementInterval: c.incrementInterval,
-                maxClaim: c.maxClaim,
-                // values below don't matter
-                communityId: c.id,
-                createdAt: c.createdAt,
-                updatedAt: c.updatedAt,
-            },
-            state: {
-                backers: c.backers,
-                beneficiaries: c.beneficiaries,
-                removedBeneficiaries: c.removedBeneficiaries,
-                managers: c.managers,
-                claimed: c.claimed,
-                claims: c.claims,
-                raised: c.raised,
-                // values below don't matter
-                communityId: c.id,
-                createdAt: c.createdAt,
-                updatedAt: c.updatedAt,
-            },
-            // values below don't matter
-            createdAt: c.createdAt,
-            updatedAt: c.updatedAt,
+            cover: c.cover!,
+            contract: c.contract!,
+            state: c.state!,
         }));
 
         return results;
@@ -572,7 +582,7 @@ export default class CommunityService {
             email: c.email,
             visibility: c.visibility,
             coverImage: c.coverImage,
-            logo: c.logo,
+            coverMediaId: c.coverMediaId,
             status: c.status,
             started: c.started,
             contract: {
@@ -839,6 +849,16 @@ export default class CommunityService {
                     as: 'organization',
                     required: false,
                 },
+                {
+                    model: this.appMediaContent,
+                    as: 'cover',
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
             ],
             where: {
                 id,
@@ -964,37 +984,5 @@ export default class CommunityService {
             where: { contractAddress },
             raw: true,
         });
-    }
-
-    public static async getNamesAndFromAddresses(
-        addresses: string[]
-    ): Promise<Community[]> {
-        return this.community.findAll({
-            attributes: ['contractAddress', 'name'],
-            where: {
-                contractAddress: {
-                    [Op.in]: addresses,
-                },
-            },
-            raw: true,
-        });
-    }
-
-    public static async mappedNames(): Promise<Map<string, string>> {
-        const mapped = new Map<string, string>();
-        const query = await this.community.findAll({
-            attributes: ['contractAddress', 'name'],
-            where: {
-                contractAddress: {
-                    [Op.ne]: null,
-                },
-            },
-            raw: true,
-        });
-        for (let index = 0; index < query.length; index++) {
-            const element = query[index];
-            mapped.set(element.contractAddress!, element.name);
-        }
-        return mapped;
     }
 }

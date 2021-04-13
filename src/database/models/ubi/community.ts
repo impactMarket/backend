@@ -1,3 +1,4 @@
+import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { StoryCommunity } from '@interfaces/story/storyCommunity';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
@@ -26,7 +27,7 @@ export interface CommunityAttributes {
     email: string;
     visibility: 'public' | 'private';
     coverImage: string;
-    logo: string;
+    coverMediaId: number;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     started: Date;
 
@@ -35,6 +36,7 @@ export interface CommunityAttributes {
     updatedAt: Date;
 
     // metrics?: UbiCommunityDailyMetrics[];
+    cover?: AppMediaContent;
     contract?: UbiCommunityContract;
     state?: UbiCommunityState;
     storyCommunity?: StoryCommunity[];
@@ -58,7 +60,8 @@ export interface CommunityCreationAttributes {
     };
     email: string;
     visibility: 'public' | 'private';
-    coverImage: string;
+    // coverImage: string;
+    coverMediaId: number;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     started: Date;
 }
@@ -85,7 +88,7 @@ export class Community extends Model<
     public email!: string;
     public visibility!: 'public' | 'private';
     public coverImage!: string;
-    public logo!: string;
+    public coverMediaId!: number;
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     public started!: Date;
 
@@ -160,11 +163,16 @@ export function initializeCommunity(sequelize: Sequelize): void {
             },
             coverImage: {
                 type: DataTypes.STRING(128),
-                allowNull: false,
-            },
-            logo: {
-                type: DataTypes.STRING(128),
                 allowNull: true,
+            },
+            coverMediaId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'app_media_content',
+                    key: 'id',
+                },
+                // onDelete: 'SET NULL', // default
+                allowNull: false,
             },
             status: {
                 type: DataTypes.ENUM('pending', 'valid', 'removed'),

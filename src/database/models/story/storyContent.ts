@@ -9,7 +9,7 @@ export class StoryContentModel extends Model<
     StoryContentCreation
 > {
     public id!: number;
-    public media!: string;
+    public mediaMediaId!: number;
     public message!: string;
     public byAddress!: string;
     public isPublic!: boolean;
@@ -27,8 +27,13 @@ export function initializeStoryContent(
                 autoIncrement: true,
                 primaryKey: true,
             },
-            media: {
-                type: DataTypes.STRING(128),
+            mediaMediaId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'app_media_content',
+                    key: 'id',
+                },
+                // onDelete: 'SET NULL', // default
                 allowNull: true,
             },
             message: {

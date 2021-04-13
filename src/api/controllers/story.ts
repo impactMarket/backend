@@ -6,13 +6,24 @@ import { Request, Response } from 'express';
 class StoryController {
     storyService = new StoryService();
 
+    pictureAdd = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            controllerLogAndFail('User not identified!', 400, res);
+            return;
+        }
+        this.storyService
+            .pictureAdd(req.file)
+            .then((r) => res.send(r))
+            .catch((e) => controllerLogAndFail(e, 400, res));
+    };
+
     add = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             controllerLogAndFail('User not identified!', 400, res);
             return;
         }
         this.storyService
-            .add(req.file, req.user.address, req.body)
+            .add(req.user.address, req.body)
             .then((r) => res.send(r))
             .catch((e) => controllerLogAndFail(e, 400, res));
     };

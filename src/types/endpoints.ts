@@ -1,3 +1,4 @@
+import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { User } from '@interfaces/app/user';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
@@ -15,7 +16,11 @@ export interface ICommunityLightDetails {
     name: string;
     city: string;
     country: string;
+    /**
+     * @deprecated
+     */
     coverImage: string;
+    cover: AppMediaContent;
     state: UbiCommunityState;
     contract: UbiCommunityContract;
 }
@@ -32,6 +37,9 @@ export interface ICommunityPendingDetails {
     country: string;
     description: string;
     email: string;
+    /**
+     * @deprecated
+     */
     coverImage: string;
     state: UbiCommunityState;
     contract: UbiCommunityContract;
@@ -94,13 +102,13 @@ export interface IUserAuth extends IUserHello {
 export interface IAddStory {
     byAddress: string;
     communityId?: number;
-    // media?: string;
+    mediaId?: number;
     message?: string;
 }
 
 export interface ICommunityStory {
     id: number;
-    media: string | null;
+    media?: AppMediaContent;
     message: string | null;
     loves: number;
     userLoved: boolean;
@@ -110,10 +118,10 @@ export interface ICommunityStory {
 export interface ICommunitiesListStories {
     id: number;
     name: string;
-    coverImage: string;
+    cover: AppMediaContent;
     story: {
         id: number;
-        media: string | null;
+        media?: AppMediaContent;
         message: string | null;
     }; // most recent
 }
@@ -124,13 +132,13 @@ export interface ICommunityStories {
     name: string;
     city: string;
     country: string;
-    coverImage: string;
+    cover: AppMediaContent;
     stories: ICommunityStory[];
 }
 
 export interface UserStory {
     id: number;
-    media: string | null;
+    media?: AppMediaContent;
     message: string | null;
     loves: number;
 }

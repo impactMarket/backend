@@ -1,3 +1,5 @@
+import { AppMediaContent } from '@interfaces/app/appMediaContent';
+
 import { StoryCommunity, StoryCommunityCreationEager } from './storyCommunity';
 import { StoryEngagement, StoryEngagementCreation } from './storyEngagement';
 import { StoryUserEngagement } from './storyUserEngagement';
@@ -5,12 +7,13 @@ import { StoryUserReport } from './storyUserReport';
 
 export interface StoryContent {
     id: number;
-    media: string | null;
+    mediaMediaId: number | null;
     message: string | null;
     byAddress: string;
     isPublic: boolean;
     postedAt: Date;
 
+    media?: AppMediaContent;
     storyCommunity?: StoryCommunity;
     storyEngagement?: StoryEngagement;
     storyUserEngagement?: StoryUserEngagement[];
@@ -20,7 +23,7 @@ export interface StoryContent {
 export interface StoryContentCreation {
     byAddress: string;
     postedAt: Date;
-    media?: string;
+    mediaMediaId?: number;
     message?: string;
     isPublic?: boolean;
     storyCommunity?: StoryCommunityCreationEager[];

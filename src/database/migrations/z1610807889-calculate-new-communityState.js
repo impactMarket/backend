@@ -2,6 +2,9 @@
 
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         const Beneficiary = await queryInterface.sequelize.define(
             'beneficiary',
             {

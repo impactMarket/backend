@@ -13,11 +13,7 @@ import { Includeable, literal, Op, QueryTypes } from 'sequelize';
 
 import config from '../config';
 import { models, sequelize } from '../database';
-import {
-    deleteBulkContentFromS3,
-    deleteContentFromS3,
-    sharpAndUpload,
-} from './storage';
+import { StoryContentStorage } from './storage';
 
 export default class StoryService {
     public storyContent = models.storyContent;
@@ -26,24 +22,24 @@ export default class StoryService {
     public storyUserEngagement = models.storyUserEngagement;
     public storyUserReport = models.storyUserReport;
     public community = models.community;
+    public appMediaContent = models.appMediaContent;
+    public appMediaThumbnail = models.appMediaThumbnail;
     public sequelize = sequelize;
 
+    private storyContentStorage = new StoryContentStorage();
+
+    public pictureAdd(file: Express.Multer.File) {
+        return this.storyContentStorage.uploadContent(file);
+    }
+
     public async add(
-        file: Express.Multer.File | undefined,
         fromAddress: string,
         story: IAddStory
-    ): Promise<boolean> {
-        let storyContentToAdd: { media?: string; message?: string } = {};
-        if (file === undefined || story.message === undefined) {
-            throw new Error('Story needs at least media or message.');
-        }
-        if (file) {
-            const media = await sharpAndUpload(
-                file,
-                config.aws.bucketImagesStory
-            );
+    ): Promise<StoryContent> {
+        let storyContentToAdd: { mediaMediaId?: number; message?: string } = {};
+        if (story.mediaId) {
             storyContentToAdd = {
-                media: `${config.cloudfrontUrl}/${media.Key}`,
+                mediaMediaId: story.mediaId,
             };
         }
         let storyCommunityToAdd: {
@@ -64,7 +60,7 @@ export default class StoryService {
                 ],
             };
         }
-        await this.storyContent.create(
+        return this.storyContent.create(
             {
                 ...storyContentToAdd,
                 ...storyCommunityToAdd,
@@ -80,7 +76,6 @@ export default class StoryService {
                 ],
             }
         );
-        return true;
     }
 
     public async has(address: string): Promise<boolean> {
@@ -92,21 +87,32 @@ export default class StoryService {
 
     public async remove(storyId: number, userAddress: string): Promise<number> {
         const contentPath = await this.storyContent.findOne({
+            include: [
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    required: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
+            ],
             where: { id: storyId },
         });
         if (contentPath === null) {
             return 0;
         }
-        const destroyed = await this.storyContent.destroy({
+        const storyMedia = (contentPath.toJSON() as StoryContent).media;
+        // first delete media
+        if (storyMedia) {
+            await this.storyContentStorage.deleteContent(storyMedia.id);
+        }
+        return await this.storyContent.destroy({
             where: { id: storyId, byAddress: userAddress },
         });
-        if (destroyed > 0) {
-            deleteContentFromS3(
-                config.aws.bucketImagesStory,
-                contentPath.media
-            );
-        }
-        return destroyed;
     }
 
     public async listByUser(
@@ -121,13 +127,24 @@ export default class StoryService {
                     as: 'storyEngagement',
                     duplicating: false,
                 },
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    required: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
             ],
             where: { byAddress: onlyFromAddress, isPublic: true },
             order: [['postedAt', 'DESC']],
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
-        const stories = r.map((c) => {
+        return r.map((c) => {
             const content = c.toJSON() as StoryContent;
             return {
                 id: content.id,
@@ -136,46 +153,27 @@ export default class StoryService {
                 loves: content.storyEngagement!.loves,
             };
         });
-        return stories;
     }
 
     public async listImpactMarketOnly(
         userAddress?: string
     ): Promise<ICommunityStories> {
-        let subInclude: Includeable[];
-        if (userAddress) {
-            subInclude = [
-                {
-                    model: this.storyEngagement,
-                    as: 'storyEngagement',
-                },
-                {
-                    model: this.storyUserEngagement,
-                    as: 'storyUserEngagement',
-                    required: false,
-                    where: {
-                        address: userAddress,
-                    },
-                },
-                {
-                    model: this.storyUserReport,
-                    as: 'storyUserReport',
-                    required: false,
-                    where: {
-                        address: userAddress,
-                    },
-                },
-            ];
-        } else {
-            subInclude = [
-                {
-                    model: this.storyEngagement,
-                    as: 'storyEngagement',
-                },
-            ];
-        }
+        const subInclude = this._filterSubInclude(userAddress);
         const r = await this.storyContent.findAll({
-            include: subInclude,
+            include: [
+                ...subInclude,
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    required: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
+            ],
             where: {
                 byAddress: config.impactMarketContractAddress,
                 isPublic: true,
@@ -203,7 +201,7 @@ export default class StoryService {
             name: '',
             city: '',
             country: '',
-            coverImage: '',
+            cover: undefined as any, // this is loaded on the app
             stories,
         };
     }
@@ -213,8 +211,18 @@ export default class StoryService {
         query: { offset?: string; limit?: string }
     ): Promise<ICommunitiesListStories[]> {
         const r = await this.community.findAll({
-            attributes: ['id', 'name', 'coverImage'],
+            attributes: ['id', 'name'],
             include: [
+                {
+                    model: this.appMediaContent,
+                    as: 'cover',
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
                 {
                     model: this.storyCommunity,
                     as: 'storyCommunity',
@@ -227,6 +235,17 @@ export default class StoryService {
                                 {
                                     model: this.storyEngagement,
                                     as: 'storyEngagement',
+                                },
+                                {
+                                    model: this.appMediaContent,
+                                    as: 'media',
+                                    required: false,
+                                    include: [
+                                        {
+                                            model: this.appMediaThumbnail,
+                                            as: 'thumbnails',
+                                        },
+                                    ],
                                 },
                             ],
                             where: {
@@ -252,12 +271,12 @@ export default class StoryService {
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
-        const stories = r.map((c) => {
+        return r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
             return {
                 id: community.id,
                 name: community.name,
-                coverImage: community.coverImage,
+                cover: community.cover!,
                 // we can use ! because it's filtered on the query
                 story: community.storyCommunity!.map((s) => ({
                     id: s.storyContent!.id,
@@ -266,7 +285,6 @@ export default class StoryService {
                 }))[0],
             };
         });
-        return stories;
     }
 
     public async getByCommunity(
@@ -275,38 +293,7 @@ export default class StoryService {
         query: { offset?: string; limit?: string },
         userAddress?: string
     ): Promise<ICommunityStories> {
-        let subInclude: Includeable[];
-        if (userAddress) {
-            subInclude = [
-                {
-                    model: this.storyEngagement,
-                    as: 'storyEngagement',
-                },
-                {
-                    model: this.storyUserEngagement,
-                    as: 'storyUserEngagement',
-                    required: false,
-                    where: {
-                        address: userAddress,
-                    },
-                },
-                {
-                    model: this.storyUserReport,
-                    as: 'storyUserReport',
-                    required: false,
-                    where: {
-                        address: userAddress,
-                    },
-                },
-            ];
-        } else {
-            subInclude = [
-                {
-                    model: this.storyEngagement,
-                    as: 'storyEngagement',
-                },
-            ];
-        }
+        const subInclude = this._filterSubInclude(userAddress);
         const r = await this.storyContent.findAll({
             include: [
                 {
@@ -316,9 +303,32 @@ export default class StoryService {
                         {
                             model: this.community,
                             as: 'community',
+                            include: [
+                                {
+                                    model: this.appMediaContent,
+                                    as: 'cover',
+                                    include: [
+                                        {
+                                            model: this.appMediaThumbnail,
+                                            as: 'thumbnails',
+                                        },
+                                    ],
+                                },
+                            ],
                         },
                     ],
                     where: { communityId },
+                },
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    required: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
                 },
                 ...subInclude,
             ],
@@ -341,7 +351,7 @@ export default class StoryService {
             name: community.name,
             city: community.city,
             country: community.country,
-            coverImage: community.coverImage,
+            cover: community.cover!,
             // we can use ! because it's filtered on the query
             stories: r.map((s) => {
                 const content = s.toJSON() as StoryContent;
@@ -391,36 +401,65 @@ export default class StoryService {
         const tenDaysAgo = new Date();
         tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
         //
-        const storiesToDelete = await this.sequelize.query(
-            `select SC."contentId", ST.media
-            from community c,
-            (select "communityId" from story_community group by "communityId" having count("contentId") > 1) SC1,
-            (select max("postedAt") r from story_content) recent,
-            story_community SC,
-            story_content ST
-            where date(ST."postedAt") < ${
-                tenDaysAgo.toISOString().split('T')[0]
+        const storiesToDelete: {
+            contentId: string;
+            mediaMediaId: number;
+        }[] = await this.sequelize.query(
+            'select SC."contentId", ST."mediaMediaId" from community c, (select "communityId" from story_community group by "communityId" having count("contentId") > 1) SC1, (select max("postedAt") r from story_content) recent, story_community SC, story_content ST where date(ST."postedAt") < ? and ST."postedAt" != recent.r and c.id = SC1."communityId" and c.id = SC."communityId" and ST.id = SC."contentId"',
+            {
+                replacements: [tenDaysAgo.toISOString().split('T')[0]],
+                raw: true,
+                type: QueryTypes.SELECT,
             }
-            and ST."postedAt" != recent.r
-            and c.id = SC1."communityId"
-            and c.id = SC."communityId"
-            and ST.id = SC."contentId"`,
-            { raw: true, type: QueryTypes.SELECT }
         );
-
-        deleteBulkContentFromS3(
-            config.aws.bucketImagesStory,
-            storiesToDelete.map((s: any) => s.media)
-        ).catch(Logger.error);
 
         await this.storyContent.destroy({
             where: {
                 id: {
-                    [Op.in]: storiesToDelete.map((s: any) =>
+                    [Op.in]: storiesToDelete.map((s) =>
                         parseInt(s.contentId, 10)
                     ),
                 },
             },
         });
+        await this.storyContentStorage
+            .deleteBulkContent(storiesToDelete.map((s) => s.mediaMediaId))
+            .catch(Logger.error);
+    }
+
+    private _filterSubInclude(userAddress?: string) {
+        let subInclude: Includeable[];
+        if (userAddress) {
+            subInclude = [
+                {
+                    model: this.storyEngagement,
+                    as: 'storyEngagement',
+                },
+                {
+                    model: this.storyUserEngagement,
+                    as: 'storyUserEngagement',
+                    required: false,
+                    where: {
+                        address: userAddress,
+                    },
+                },
+                {
+                    model: this.storyUserReport,
+                    as: 'storyUserReport',
+                    required: false,
+                    where: {
+                        address: userAddress,
+                    },
+                },
+            ];
+        } else {
+            subInclude = [
+                {
+                    model: this.storyEngagement,
+                    as: 'storyEngagement',
+                },
+            ];
+        }
+        return subInclude;
     }
 }

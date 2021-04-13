@@ -1,14 +1,10 @@
 import { RequestWithUser } from '@ipcttypes/core';
-import { uploadCommunityPicture } from '@services/storage';
 import BeneficiaryService from '@services/ubi/beneficiary';
 import CommunityService from '@services/ubi/community';
 import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
 import ManagerService from '@services/ubi/managers';
 import { controllerLogAndFail } from '@utils/api';
-import { Logger } from '@utils/logger';
 import { Request, Response } from 'express';
-
-import config from '../../config';
 
 const getResquestChangeUbiParams = (req: Request, res: Response) => {
     CommunityService.getResquestChangeUbiParams(req.params.publicId)
@@ -45,7 +41,7 @@ const findById = (req: Request, res: Response) => {
 };
 
 const pictureAdd = (req: Request, res: Response) => {
-    uploadCommunityPicture(req.params.to, req.file)
+    CommunityService.pictureAdd(req.file)
         .then((url) => res.send(url))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
@@ -176,6 +172,7 @@ const add = (req: Request, res: Response) => {
         currency,
         city,
         country,
+        coverMediaId,
         gps,
         email,
         txReceipt,
@@ -193,7 +190,7 @@ const add = (req: Request, res: Response) => {
         country,
         gps,
         email,
-        config.communityPlaceholderImageUrl,
+        coverMediaId,
         txReceipt,
         contractParams
     )
@@ -201,9 +198,8 @@ const add = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 403, res));
 };
 
-const edit = (req: Request, res: Response) => {
+const edit = (req: RequestWithUser, res: Response) => {
     const {
-        publicId,
         name,
         description,
         language,
@@ -211,14 +207,17 @@ const edit = (req: Request, res: Response) => {
         city,
         country,
         email,
-        coverImage,
+        coverMediaId,
     } = req.body;
     // verify if the current user is manager in this community
-    ManagerService.get((req as any).user)
-        .then((manager) => {
-            if (manager !== null && manager.communityId === publicId) {
+    ManagerService.get(req.user!.address)
+        .then(async (manager) => {
+            if (manager !== null) {
+                const community = await CommunityService.getByPublicId(
+                    manager.communityId
+                );
                 CommunityService.edit(
-                    publicId,
+                    community!.id,
                     name,
                     description,
                     language,
@@ -226,15 +225,14 @@ const edit = (req: Request, res: Response) => {
                     city,
                     country,
                     email,
-                    coverImage
+                    coverMediaId
                 )
                     .then((updateResult) =>
                         res.status(200).send(updateResult[1][0])
                     )
                     .catch((e) => controllerLogAndFail(e, 404, res));
             } else {
-                Logger.warn(`Not admin of ${publicId}`);
-                res.status(403).send(`Not admin of ${publicId}`);
+                res.status(403).send(`Not manager!`);
             }
         })
         .catch((e) => controllerLogAndFail(e, 404, res));

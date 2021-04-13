@@ -89,9 +89,10 @@ export default {
         accessKeyId: validatedEnv.AWS_ACCESS_KEY_ID,
         secretAccessKey: validatedEnv.AWS_SECRET_ACCESS_KEY,
         region: validatedEnv.AWS_REGION,
-        bucketCommunityCover: validatedEnv.AWS_BUCKET_COMMUNITY_COVER,
-        bucketCommunityLogo: validatedEnv.AWS_BUCKET_COMMUNITY_LOGO,
-        bucketImagesStory: validatedEnv.AWS_BUCKET_IMAGES_STORY,
+        bucket: {
+            community: validatedEnv.AWS_BUCKET_IMAGES_COMMUNITY,
+            story: validatedEnv.AWS_BUCKET_IMAGES_STORY,
+        },
     },
 
     /**
@@ -134,4 +135,65 @@ export default {
      *
      */
     adminKey: validatedEnv.ADMIN_KEY,
+
+    /**
+     * Thumbnails size for media content
+     * 0 (zero) is for auto
+     */
+    thumbnails: {
+        story: [
+            {
+                width: 94,
+                height: 148,
+            },
+            {
+                width: 84,
+                height: 140,
+            },
+        ],
+        community: {
+            cover: [
+                {
+                    width: 392,
+                    height: 392,
+                },
+                {
+                    width: 293,
+                    height: 293,
+                },
+                {
+                    width: 88,
+                    height: 88,
+                },
+                {
+                    width: 330,
+                    height: 330,
+                },
+                {
+                    width: 42,
+                    height: 42,
+                },
+                {
+                    width: 294,
+                    height: 294,
+                },
+            ],
+        },
+        organization: {
+            logo: [
+                {
+                    width: 100,
+                    height: 100,
+                },
+            ],
+        },
+        pixelRatio: [1, 2],
+    },
+
+    redis: {
+        host: validatedEnv.REDIS_HOST,
+        port: validatedEnv.REDIS_PORT,
+    },
+
+    bullJobsConcurrency: validatedEnv.SENTRY_TRACE_SAMPLES_RATE,
 };
