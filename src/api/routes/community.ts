@@ -27,7 +27,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/picture/add/{to}:
+     * /community/picture:
      *   post:
      *     tags:
      *       - "community"
@@ -40,7 +40,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.post(
-        '/picture/:to',
+        '/picture',
         upload.single('imageFile'),
         authenticateToken,
         communityController.pictureAdd

@@ -4,10 +4,7 @@ import CommunityService from '@services/ubi/community';
 import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
 import ManagerService from '@services/ubi/managers';
 import { controllerLogAndFail } from '@utils/api';
-import { Logger } from '@utils/logger';
 import { Request, Response } from 'express';
-
-import config from '../../config';
 
 const getResquestChangeUbiParams = (req: Request, res: Response) => {
     CommunityService.getResquestChangeUbiParams(req.params.publicId)
@@ -44,7 +41,7 @@ const findById = (req: Request, res: Response) => {
 };
 
 const pictureAdd = (req: Request, res: Response) => {
-    CommunityService.pictureAdd(req.params.to, req.file)
+    CommunityService.pictureAdd(req.file)
         .then((url) => res.send(url))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };

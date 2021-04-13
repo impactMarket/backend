@@ -1,4 +1,3 @@
-import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
@@ -368,14 +367,8 @@ export default class CommunityService {
         return null;
     }
 
-    public static async pictureAdd(to: string, file: Express.Multer.File) {
-        let addResult: AppMediaContent;
-        if (to === 'cover') {
-            addResult = await this.communityContentStorage.uploadContent(file);
-        } else {
-            throw new Error('invalid to!');
-        }
-        return addResult;
+    public static async pictureAdd(file: Express.Multer.File) {
+        return this.communityContentStorage.uploadContent(file);
     }
 
     public static async remove(publicId: string): Promise<boolean> {
