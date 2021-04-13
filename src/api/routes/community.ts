@@ -32,6 +32,15 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Add a community picture
+     *     requestBody:
+     *       content:
+     *         multipart/form-data:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               imageFile:
+     *                 type: string
+     *                 format: binary
      *     responses:
      *       "200":
      *         description: OK
