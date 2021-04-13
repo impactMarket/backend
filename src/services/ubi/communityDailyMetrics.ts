@@ -167,8 +167,8 @@ export default class CommunityDailyMetricsService {
 
         // select cm.ssi from ubi_community_daily_metrics cm, community c, ubi_community_state cs
         // where cm.date = '2021-01-30'
-        // and cm."communityId" = c."publicId"
-        // and cs."communityId" = c."publicId"
+        // and cm."communityId" = c.id
+        // and cs."communityId" = c.id
         // and c.status = 'valid'
         // and c.visibility = 'public'
         // and c.started < '2021-01-25'
@@ -192,8 +192,8 @@ export default class CommunityDailyMetricsService {
         // select avg(cm."ubiRate") avgUbiRate, avg(cm."estimatedDuration") avgEstimatedDuration
         // from ubi_community_daily_metrics cm, community c, ubi_community_state cs
         // where cm.date = '2021-01-30'
-        // and cm."communityId" = c."publicId"
-        // and cs."communityId" = c."publicId"
+        // and cm."communityId" = c.id
+        // and cs."communityId" = c.id
         // and c.status = 'valid'
         // and c.visibility = 'public'
         // and c.started < '2021-01-25'

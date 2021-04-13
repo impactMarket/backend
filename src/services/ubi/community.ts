@@ -228,8 +228,8 @@ export default class CommunityService {
         const sqlQuery =
             'select id, "publicId", "contractAddress", "requestByAddress", name, city, country, description, email, "coverImage", cc.*, cs.* ' +
             'from community c ' +
-            'left join ubi_community_contract cc on c."publicId" = cc."communityId" ' +
-            'left join ubi_community_state cs on c."publicId" = cs."communityId" ' +
+            'left join ubi_community_contract cc on c.id = cc."communityId" ' +
+            'left join ubi_community_state cs on c.id = cs."communityId" ' +
             "where status = 'pending' and visibility = 'public' order by c.\"createdAt\" DESC";
 
         const rawResult: ({
@@ -539,7 +539,7 @@ export default class CommunityService {
         // https://github.com/sequelize/sequelize/issues/6408
         let sqlQuery =
             'select * from community c ' +
-            'left join ubi_community_daily_metrics cm on c."publicId" = cm."communityId" and cm.date = (select date from ubi_community_daily_metrics order by date desc limit 1) ' +
+            'left join ubi_community_daily_metrics cm on c.id = cm."communityId" and cm.date = (select date from ubi_community_daily_metrics order by date desc limit 1) ' +
             'left join ubi_community_contract cc on c.id = cc."communityId" ' +
             'left join ubi_community_state cs on c.id = cs."communityId" ' +
             "where c.visibility = 'public' and c.status = 'valid' ";

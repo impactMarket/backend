@@ -124,7 +124,7 @@ export default class CommunityDailyStateService {
                         sum(cs.beneficiaries) "totalBeneficiaries",
                         sum(cs.raised) "totalRaised"
                 from ubi_community_daily_state cs, community c
-                where cs."communityId" = c."publicId"
+                where cs."communityId" = c.id
                 and c.status = 'valid'
                 and c.visibility = 'public'
                 and cs.date = '${date.toISOString().split('T')[0]}'`;
@@ -157,7 +157,7 @@ export default class CommunityDailyStateService {
                         sum(cs.beneficiaries) "totalBeneficiaries",
                         sum(cs.raised) "totalRaised"
                 from ubi_community_daily_state cs, community c
-                where cs."communityId" = c."publicId"
+                where cs."communityId" = c.id
                 and c.status = 'valid'
                 and c.visibility = 'public'
                 and cs.date = '${new Date().toISOString().split('T')[0]}'`;

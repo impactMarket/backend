@@ -33,7 +33,7 @@ export default class CommunityStateService {
     public static getAllCommunitiesState(): Promise<UbiCommunityState[]> {
         const query = `select "communityId", claimed, raised, beneficiaries, backers
         from ubi_community_state cs , community c
-        where cs."communityId" = c."publicId"
+        where cs."communityId" = c.id
           and c.status = 'valid'
           and c.visibility = 'public'`;
 
