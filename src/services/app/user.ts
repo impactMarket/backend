@@ -34,7 +34,7 @@ export default class UserService {
     ): Promise<IUserAuth> {
         try {
             const token = generateAccessToken(address);
-            let user = await this.user.findOne({
+            let userResult = await this.user.findOne({
                 include: [
                     {
                         model: this.appMediaContent,
@@ -49,9 +49,8 @@ export default class UserService {
                     },
                 ],
                 where: { address },
-                raw: true,
             });
-            if (user === null) {
+            if (userResult === null) {
                 try {
                     await this.sequelize.transaction(async (t) => {
                         let createUser: UserCreationAttributes = {
@@ -65,7 +64,7 @@ export default class UserService {
                                 currency,
                             };
                         }
-                        user = await this.user.create(createUser, {
+                        userResult = await this.user.create(createUser, {
                             transaction: t,
                         });
                         if (phone) {
@@ -93,9 +92,10 @@ export default class UserService {
                     { where: { address } }
                 );
             }
-            if (user === null) {
+            if (userResult === null) {
                 throw new Error('User was not defined!');
             }
+            const user = userResult.toJSON() as User;
             const userHello = await this.loadUser(user.address);
             return {
                 token,
@@ -248,13 +248,12 @@ export default class UserService {
         const media = await this.profileContentStorage.uploadContent(file);
         const updateResult = await this.user.update(
             { avatarMediaId: media.id },
-            { where: { address } }
+            { returning: true, where: { address } }
         );
         if (user!.avatarMediaId !== null && user!.avatarMediaId !== media.id) {
             await this.profileContentStorage.deleteContent(user!.avatarMediaId);
         }
-        console.log(updateResult);
-        return updateResult[1][0];
+        return updateResult[1][0].toJSON();
     }
 
     public static async setDevice(
