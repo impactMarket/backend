@@ -3,14 +3,14 @@ module.exports = {
     up: (queryInterface, Sequelize) => {
         return queryInterface.createTable('ubi_community_contract', {
             communityId: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
                 primaryKey: true,
                 unique: true,
                 references: {
                     model: 'community',
-                    key: 'publicId',
+                    key: 'id',
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             claimAmount: {
