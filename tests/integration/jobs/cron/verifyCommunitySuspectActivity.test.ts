@@ -1,14 +1,13 @@
-import { stub, assert, match } from 'sinon';
 import { Sequelize } from 'sequelize';
+import { stub, assert, match } from 'sinon';
 
+import { models } from '../../../../src/database';
+import { initializeAppUserThroughTrust } from '../../../../src/database/models/app/appUserThroughTrust';
+import { initializeAppUserTrust } from '../../../../src/database/models/app/appUserTrust';
 import { initializeUser } from '../../../../src/database/models/app/user';
-import { initializeReachedAddress } from '../../../../src/database/models/reachedAddress';
 import { initializeBeneficiary } from '../../../../src/database/models/ubi/beneficiary';
 import { initializeCommunity } from '../../../../src/database/models/ubi/community';
-import { initializeAppUserTrust } from '../../../../src/database/models/app/appUserTrust';
-import { initializeAppUserThroughTrust } from '../../../../src/database/models/app/appUserThroughTrust';
 import { verifyCommunitySuspectActivity } from '../../../../src/worker/jobs/cron/community';
-import { models } from '../../../../src/database';
 
 describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
     let sequelize;
@@ -19,10 +18,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
             native: true,
             logging: false,
         };
-        sequelize = new Sequelize(
-            'postgresql://postgres:mysecretpassword@localhost/impactmarkettest',
-            dbConfig
-        );
+        sequelize = new Sequelize(process.env.DATABASE_URL!, dbConfig);
 
         initializeUser(sequelize);
         initializeBeneficiary(sequelize);
@@ -58,15 +54,6 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 foreignKey: 'appUserTrustId',
                 sourceKey: 'id',
                 as: 'throughTrust',
-            }
-        );
-        // self association to find repeated values on those keys
-        sequelize.models.AppUserTrustModel.hasMany(
-            sequelize.models.AppUserTrustModel,
-            {
-                foreignKey: 'phone',
-                sourceKey: 'phone',
-                as: 'selfTrust',
             }
         );
         // used to query from the community with incude
