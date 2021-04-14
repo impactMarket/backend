@@ -44,35 +44,42 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
                 ],
             },
         ],
+        where: {
+            status: 'valid',
+            visibility: 'public',
+        },
     });
-    console.log('x1');
     for (let c = 0; c < communities.length; c++) {
         const community = communities[c].toJSON() as CommunityAttributes;
-        console.log('x2');
         if (community.beneficiaries && community.beneficiaries.length > 0) {
             const suspectBeneficiaries = community.beneficiaries.filter((b) =>
                 b.user && b.user.throughTrust && b.user.throughTrust.length > 0
-                    ? b.user.throughTrust.length > 1 ||
+                    ? (b.user.throughTrust[0].selfTrust &&
+                          b.user.throughTrust[0].selfTrust.length > 1) ||
                       b.user.throughTrust[0].suspect
                     : false
             );
-            console.log('x3');
             if (suspectBeneficiaries.length === 0) {
                 continue;
             }
+            // in case it's 100%
             const ps =
-                (suspectBeneficiaries.length /
-                    (community.beneficiaries.length -
-                        suspectBeneficiaries.length)) *
-                100;
+                suspectBeneficiaries.length === community.beneficiaries.length
+                    ? 100
+                    : (suspectBeneficiaries.length /
+                          community.beneficiaries.length) *
+                      100;
             const y = 60 * Math.log(ps);
             const suspectLevel = Math.round(Math.min(y, 100) / 10);
             // save suspect level
-            await models.ubiCommunitySuspect.create({
-                communityId: community.id,
-                percentage: ps,
-                suspect: suspectLevel,
-            });
+            await models.ubiCommunitySuspect.create(
+                {
+                    communityId: community.id,
+                    percentage: Math.round(ps * 100) / 100,
+                    suspect: suspectLevel,
+                },
+                { returning: false }
+            );
         }
     }
 }

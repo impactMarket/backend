@@ -8,6 +8,7 @@ import { initializeCommunity } from '../../../../src/database/models/ubi/communi
 import { initializeAppUserTrust } from '../../../../src/database/models/app/appUserTrust';
 import { initializeAppUserThroughTrust } from '../../../../src/database/models/app/appUserThroughTrust';
 import { verifyCommunitySuspectActivity } from '../../../../src/worker/jobs/cron/community';
+import { models } from '../../../../src/database';
 
 describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
     let sequelize;
@@ -94,7 +95,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 email: '',
                 visibility: 'public',
                 coverImage: '',
-                logo: '',
+                coverMediaId: 0,
                 status: 'valid',
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -116,7 +117,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 email: '',
                 visibility: 'public',
                 coverImage: '',
-                logo: '',
+                coverMediaId: 0,
                 status: 'valid',
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -139,6 +140,15 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
             },
             {
                 address: '0x002D33893983E187814Be1bdBe9852299829C554',
+                username: 'x1',
+                language: 'pt',
+                currency: 'BTC',
+                pushNotificationToken: '',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                address: '0x012D33893983E187814Be1bdBe9852299829C554',
                 username: 'x1',
                 language: 'pt',
                 currency: 'BTC',
@@ -187,25 +197,34 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 verifiedPhoneNumber: false,
                 suspect: false,
             },
+            {
+                phone: '00351969696969',
+                verifiedPhoneNumber: false,
+                suspect: false,
+            },
         ]);
-        console.log(r);
+        const tIds = r.map((ids) => ids.toJSON());
 
         await sequelize.models.AppUserThroughTrustModel.bulkCreate([
             {
                 userAddress: '0xd55Fae4769e3240FfFf4c17cd2CC03143e55E420',
-                appUserTrustId: 1,
+                appUserTrustId: tIds[0].id,
             },
             {
                 userAddress: '0x002D33893983E187814Be1bdBe9852299829C554',
-                appUserTrustId: 2,
+                appUserTrustId: tIds[1].id,
+            },
+            {
+                userAddress: '0x012D33893983E187814Be1bdBe9852299829C554',
+                appUserTrustId: tIds[2].id,
             },
             {
                 userAddress: '0xc55Fae4769e3240FfFf4c17cd2CC03143e55E420',
-                appUserTrustId: 3,
+                appUserTrustId: tIds[3].id,
             },
             {
                 userAddress: '0x102D33893983E187814Be1bdBe9852299829C554',
-                appUserTrustId: 4,
+                appUserTrustId: tIds[4].id,
             },
         ]);
 
@@ -235,6 +254,20 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 blocked: false,
                 tx:
                     '0xef364783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+            {
+                address: '0x012D33893983E187814Be1bdBe9852299829C554',
+                communityId: '073ddf28-4a3d-4e05-8570-ff38b656b46f',
+                txAt: new Date(),
+                claims: 0,
+                lastClaimAt: null,
+                penultimateClaimAt: null,
+                active: false,
+                blocked: false,
+                tx:
+                    '0xef464783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -288,8 +321,21 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
     });
 
     it('with suspicious activity', async () => {
-        console.log('1');
+        const ubiCommunitySuspectAddStub = stub(
+            models.ubiCommunitySuspect,
+            'create'
+        );
+        ubiCommunitySuspectAddStub.returns(Promise.resolve({} as any));
         await verifyCommunitySuspectActivity();
-        console.log('2');
+        assert.callCount(ubiCommunitySuspectAddStub, 1);
+        assert.calledWith(
+            ubiCommunitySuspectAddStub.getCall(0),
+            {
+                communityId: match.any,
+                percentage: 66.67,
+                suspect: 10,
+            },
+            { returning: false }
+        );
     });
 });
