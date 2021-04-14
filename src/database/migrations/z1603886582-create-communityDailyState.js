@@ -11,12 +11,12 @@ module.exports = {
                 primaryKey: true,
             },
             communityId: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'publicId',
+                    key: 'id',
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             claimed: {
