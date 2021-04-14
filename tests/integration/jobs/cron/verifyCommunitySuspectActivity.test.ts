@@ -180,12 +180,12 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
             {
                 phone: '00351969696966',
                 verifiedPhoneNumber: false,
-                suspect: false,
+                suspect: true,
             },
             {
                 phone: '00351969696966',
                 verifiedPhoneNumber: false,
-                suspect: false,
+                suspect: true,
             },
             {
                 phone: '00351969696967',
