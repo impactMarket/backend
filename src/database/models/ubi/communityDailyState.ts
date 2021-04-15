@@ -15,6 +15,12 @@ export class UbiCommunityDailyStateModel extends Model<
     public beneficiaries!: number;
     public raised!: string;
     public backers!: number;
+    public volume!: string;
+    public transactions!: number;
+    public reach!: number;
+    public reachOut!: number;
+    public ubiRate!: number;
+    public fundingRate!: number;
     public date!: Date;
 
     // timestamps!
@@ -44,28 +50,48 @@ export function initializeUbiCommunityDailyState(sequelize: Sequelize): void {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
                 defaultValue: 0,
-                allowNull: false,
             },
             claims: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
             },
             beneficiaries: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
             },
             raised: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
                 defaultValue: 0,
-                allowNull: false,
             },
             backers: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+            },
+            volume: {
+                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+                type: DataTypes.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
+                defaultValue: 0,
+            },
+            transactions: {
+                type: DataTypes.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
+            },
+            reach: {
+                type: DataTypes.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
+            },
+            reachOut: {
+                type: DataTypes.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
+            },
+            ubiRate: {
+                type: DataTypes.FLOAT,
+                defaultValue: 0,
+            },
+            fundingRate: {
+                type: DataTypes.FLOAT,
+                defaultValue: 0,
             },
             date: {
                 type: DataTypes.DATEONLY,

@@ -6,6 +6,12 @@ export interface UbiCommunityDailyState {
     beneficiaries: number;
     raised: string;
     backers: number;
+    volume: string;
+    transactions: number;
+    reach: number;
+    reachOut: number;
+    ubiRate: number;
+    fundingRate: number;
     date: Date;
 
     // timestamps
