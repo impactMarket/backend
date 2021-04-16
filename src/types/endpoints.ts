@@ -47,7 +47,7 @@ export interface ICommunityPendingDetails {
 export interface ICommunity extends CommunityAttributes {
     state: UbiCommunityState; // TODO: delete
     contract: UbiCommunityContract; // TODO: delete
-    metrics?: UbiCommunityDailyMetrics; // TODO: delete
+    // metrics?: UbiCommunityDailyMetrics; // TODO: delete
 }
 
 export interface IManagers {

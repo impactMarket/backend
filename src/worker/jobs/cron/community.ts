@@ -85,8 +85,11 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const ssiLast4Days = await CommunityDailyMetricsService.getSSILast4Days();
     const communitiesContract = await CommunityContractService.getAll();
     //
-    const calculateMetrics = async (community: ICommunity) => {
+    const calculateMetrics = async (community: CommunityAttributes) => {
         // if no activity, do not calculate
+        if (community.state === undefined) {
+            return;
+        }
         if (
             community.state.claimed === '0' ||
             community.state.raised === '0' ||
@@ -206,7 +209,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             yesterday
         );
     };
-    const communities = await CommunityService.listFull();
+    const communities = await CommunityService.fullList();
     const pending: Promise<void>[] = [];
     // for each community
     for (let index = 0; index < communities.length; index++) {

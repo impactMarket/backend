@@ -10,7 +10,15 @@ import {
 } from '@models/ubi/community';
 import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
-import { Op, QueryTypes, fn, col, literal, OrderItem } from 'sequelize';
+import {
+    Op,
+    QueryTypes,
+    fn,
+    col,
+    literal,
+    OrderItem,
+    WhereOptions,
+} from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
 import config from '../../config';
@@ -532,6 +540,85 @@ export default class CommunityService {
         return results;
     }
 
+    public static async fullList(
+        order?: string
+    ): Promise<CommunityAttributes[]> {
+        let extendedWhere: WhereOptions<CommunityAttributes> = {};
+        let orderOption: string | Literal | OrderItem[] | undefined;
+
+        switch (order) {
+            case 'out_of_funds': {
+                extendedWhere = {
+                    state: {
+                        beneficiaries: {
+                            [Op.not]: 0,
+                        },
+                    },
+                };
+                orderOption = [
+                    [
+                        literal(
+                            '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
+                        ),
+                        'DESC',
+                    ],
+                ];
+                break;
+            }
+            case 'newest':
+                orderOption = [[literal('community.started'), 'DESC']];
+                break;
+            default:
+                orderOption = [[literal('state.beneficiaries'), 'DESC']];
+                break;
+        }
+
+        const communitiesResult = await this.community.findAll({
+            include: [
+                {
+                    model: this.ubiCommunityContract,
+                    as: 'contract',
+                },
+                {
+                    model: this.ubiCommunityState,
+                    as: 'state',
+                },
+                {
+                    model: this.ubiCommunityDailyMetrics,
+                    // required: false,
+                    as: 'metrics',
+                    where: {
+                        date: {
+                            [Op.eq]: literal(
+                                '(select date from ubi_community_daily_metrics order by date desc limit 1)'
+                            ),
+                        },
+                    },
+                },
+                {
+                    model: this.appMediaContent,
+                    as: 'cover',
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
+            ],
+            where: {
+                status: 'valid',
+                visibility: 'public',
+                ...extendedWhere,
+            },
+            order: orderOption,
+        });
+        return communitiesResult.map((c) => c.toJSON() as CommunityAttributes);
+    }
+
+    /**
+     * @deprecated
+     */
     public static async listFull(order?: string): Promise<ICommunity[]> {
         // by the time of writting, sequelize
         // does not support eager loading with global "raw: false".
@@ -566,7 +653,7 @@ export default class CommunityService {
             type: QueryTypes.SELECT,
         });
 
-        const results: ICommunity[] = rawResult.map((c) => ({
+        const results: any[] = rawResult.map((c) => ({
             id: c.id,
             publicId: c.publicId,
             requestByAddress: c.requestByAddress,
@@ -802,7 +889,7 @@ export default class CommunityService {
                 ? (communityContract as any)
                 : undefined,
             metrics: communityDailyMetrics[0]!,
-        };
+        } as any;
     }
 
     public static async findById(id: number): Promise<CommunityAttributes> {
@@ -892,6 +979,9 @@ export default class CommunityService {
         });
     }
 
+    /**
+     * @deprecated (create a new method)
+     */
     public static async getByContractAddress(
         contractAddress: string
     ): Promise<ICommunity | null> {
@@ -931,7 +1021,7 @@ export default class CommunityService {
             state: communityState!,
             contract: communityContract!,
             metrics: communityDailyMetrics[0]!,
-        };
+        } as any;
     }
 
     public static async existsByContractAddress(
