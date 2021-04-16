@@ -11,17 +11,25 @@ module.exports = {
         await queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_beneficiaries_community_states()
     RETURNS TRIGGER AS $$
+    declare
+        community_id integer;
     BEGIN
-        IF (TG_OP = 'INSERT') THEN -- beneficiary being added to a community
+        SELECT id INTO community_id FROM community where "publicId"=NEW."communityId";
+        IF (TG_OP = 'INSERT') THEN -- INSERT operations (first added)
             -- update overall state
-            UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId";
+            UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=community_id;
             -- update daily state
-            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
+        ELSEIF (OLD.active IS FALSE AND NEW.active IS TRUE) THEN -- beneficiary being added back to community
+            -- update overall state
+            UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1, "removedBeneficiaries" = "removedBeneficiaries" - 1 WHERE "communityId"=community_id;
+            -- update daily state
+            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN -- beneficiary being removed from community
             -- update overall state
-            UPDATE ubi_community_state SET beneficiaries = beneficiaries - 1, "removedBeneficiaries" = "removedBeneficiaries" + 1 WHERE "communityId"=NEW."communityId";
+            UPDATE ubi_community_state SET beneficiaries = beneficiaries - 1, "removedBeneficiaries" = "removedBeneficiaries" + 1 WHERE "communityId"=community_id;
             -- update daily state
-            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries - 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries - 1 WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         END IF;
         RETURN NEW;
     END;
@@ -34,18 +42,20 @@ $$ LANGUAGE plpgsql;`);
         state_claimed numeric(29);
         state_daily_claimed numeric(29);
         beneficiary_last_claim_at timestamp with time zone;
+        community_id integer;
     BEGIN
+        SELECT id INTO community_id FROM community where "publicId"=NEW."communityId";
         -- update claims
-        UPDATE ubi_community_state SET claims = claims + 1 WHERE "communityId"=NEW."communityId";
-        UPDATE ubi_community_daily_state SET claims = claims + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+        UPDATE ubi_community_state SET claims = claims + 1 WHERE "communityId"=community_id;
+        UPDATE ubi_community_daily_state SET claims = claims + 1 WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         -- update beneficiary table as well
-        SELECT "lastClaimAt" INTO beneficiary_last_claim_at FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address;
-        UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt" WHERE "communityId"=NEW."communityId" AND address=NEW.address;
+        SELECT "lastClaimAt" INTO beneficiary_last_claim_at FROM beneficiary WHERE "communityId"=community_id AND address=NEW.address;
+        UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt" WHERE "communityId"=community_id AND address=NEW.address;
         -- update total claimed
-        SELECT SUM(claimed + NEW.amount) INTO state_claimed FROM ubi_community_state WHERE "communityId"=NEW."communityId";
-        UPDATE ubi_community_state SET claimed = state_claimed WHERE "communityId"=NEW."communityId";
-        SELECT SUM(claimed + NEW.amount) INTO state_daily_claimed FROM ubi_community_daily_state WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
-        UPDATE ubi_community_daily_state SET claimed = state_daily_claimed WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+        SELECT SUM(claimed + NEW.amount) INTO state_claimed FROM ubi_community_state WHERE "communityId"=community_id;
+        UPDATE ubi_community_state SET claimed = state_claimed WHERE "communityId"=community_id;
+        SELECT SUM(claimed + NEW.amount) INTO state_daily_claimed FROM ubi_community_daily_state WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
+        UPDATE ubi_community_daily_state SET claimed = state_daily_claimed WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         return NEW;
     END;
 $$ LANGUAGE plpgsql;`);
@@ -53,14 +63,18 @@ $$ LANGUAGE plpgsql;`);
         await queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_managers_community_state()
     RETURNS TRIGGER AS $$
+    declare
+        community_id integer;
     BEGIN
         IF (TG_OP = 'INSERT') THEN -- INSERT operations
             -- update overall state
-            UPDATE ubi_community_state SET managers = managers + 1 WHERE "communityId"=NEW."communityId";
+            SELECT id INTO community_id FROM community where "publicId"=NEW."communityId";
+            UPDATE ubi_community_state SET managers = managers + 1 WHERE "communityId"=community_id;
             RETURN NEW;
         ELSEIF (TG_OP = 'DELETE') THEN -- DELETE operations
             -- update overall state
-            UPDATE ubi_community_state SET managers = managers - 1 WHERE "communityId"=OLD."communityId";
+            SELECT id INTO community_id FROM community where "publicId"=OLD."communityId";
+            UPDATE ubi_community_state SET managers = managers - 1 WHERE "communityId"=community_id;
             RETURN OLD;
         END IF;
     END;
