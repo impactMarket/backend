@@ -5,17 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "args": ["${workspaceFolder}/tests"],
+            "internalConsoleOptions": "openOnSessionStart",
+            "name": "Mocha Tests",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "request": "launch",
+            "skipFiles": ["<node_internals>/**"],
+            "runtimeExecutable": "${env:HOME}/.nvm/versions/node/v14.15.1/bin/node",
+            "env": {
+                "NODE_ENV": "test"
+            }
+        },
+        {
             "type": "node",
             "request": "launch",
-            "name": "Launch (NVM v12.18.3)",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
+            "name": "Launch (NVM v14.15.1)",
+            "skipFiles": ["<node_internals>/**"],
             "program": "${workspaceFolder}/src/app.ts",
-            "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
-            ],
-            "runtimeVersion": "12.18.3"
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+            "runtimeVersion": "14.15.1"
         }
     ]
 }
