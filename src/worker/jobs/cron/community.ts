@@ -13,6 +13,7 @@ import { Logger } from '@utils/logger';
 import { notifyBackersCommunityLowFunds } from '@utils/util';
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
+import { Op, literal } from 'sequelize';
 
 import config from '../../../config';
 import { models } from '../../../database';
@@ -74,6 +75,190 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
     }
 }
 
+export async function newCalcuateCommunitiesMetrics(): Promise<void> {
+    const aMonthAgo = new Date(new Date().getDate() - 30);
+    const result = await models.community.findAll({
+        include: [
+            {
+                model: models.beneficiary,
+                as: 'beneficiaries',
+                where: {
+                    claims: { [Op.gt]: 1 },
+                    lastClaimAt: { [Op.gte]: aMonthAgo },
+                    active: true,
+                },
+            },
+            {
+                model: models.ubiCommunityContract,
+                as: 'contract',
+            },
+            {
+                model: models.ubiCommunityState,
+                as: 'state',
+                where: {
+                    claimed: { [Op.ne]: 0 },
+                    raised: { [Op.ne]: 0 },
+                    beneficiaries: { [Op.gt]: 1 },
+                },
+            },
+            {
+                model: models.ubiCommunityDailyMetrics,
+                required: false,
+                as: 'metrics',
+                order: [['date', 'DESC']],
+                limit: 4,
+            },
+        ],
+        where: {
+            status: 'valid',
+            visibility: 'public',
+        },
+    });
+
+    const communities = result.map((e) => e.toJSON() as CommunityAttributes);
+
+    const calculateMetrics = async (community: CommunityAttributes) => {
+        // if no activity, do not calculate
+        if (
+            community.state === undefined ||
+            community.contract === undefined ||
+            community.beneficiaries === undefined ||
+            community.metrics === undefined
+        ) {
+            return;
+        }
+        // if (
+        //     community.state.claimed === '0' ||
+        //     community.state.raised === '0' ||
+        //     totalClaimedLast30Days.get(community.id) === undefined ||
+        //     activeBeneficiariesLast30Days.get(community.publicId) ===
+        //         undefined ||
+        //     activeBeneficiariesLast30Days.get(community.publicId) === 0
+        // ) {
+        //     return;
+        // }
+        // const beneficiaries = await BeneficiaryService.listActiveInCommunity(
+        //     community.publicId
+        // );
+        // if (beneficiaries.length < 1) {
+        //     return;
+        // }
+        let ssiDayAlone: number = 0;
+        let ssi: number = 0;
+        let ubiRate: number = 0;
+        let estimatedDuration: number = 0;
+
+        const beneficiariesTimeToWait: number[] = [];
+        const beneficiariesTimeWaited: number[] = [];
+
+        for (const beneficiary of community.beneficiaries) {
+            // at least two claims are necessary
+            if (
+                beneficiary.claims < 2 ||
+                beneficiary.lastClaimAt === null ||
+                beneficiary.penultimateClaimAt === null
+            ) {
+                continue;
+            }
+            // the first time you don't wait a single second, the second time, only base interval
+            if (community.contract === undefined) {
+                continue;
+            }
+            const timeToWait =
+                community.contract.baseInterval +
+                (beneficiary.claims - 2) * community.contract.incrementInterval;
+            const timeWaited =
+                Math.floor(
+                    (beneficiary.lastClaimAt.getTime() -
+                        beneficiary.penultimateClaimAt.getTime()) /
+                        1000
+                ) - timeToWait;
+            // console.log(beneficiary.address, beneficiary.lastClaimAt, beneficiary.penultimateClaimAt);
+            beneficiariesTimeToWait.push(timeToWait);
+            beneficiariesTimeWaited.push(timeWaited);
+        }
+        if (
+            beneficiariesTimeToWait.length < 2 ||
+            beneficiariesTimeWaited.length < 2
+        ) {
+            return;
+        }
+        // calculate ssi day alone
+        const meanTimeToWait = mean(beneficiariesTimeToWait);
+        const madTimeWaited = median(beneficiariesTimeWaited);
+        // console.log(community.name, madTimeWaited, meanTimeToWait);
+        ssiDayAlone = parseFloat(
+            ((madTimeWaited / meanTimeToWait) * 50) /* aka, 100 / 2 */
+                .toFixed(2)
+        );
+
+        // ssi
+        const ssisAvailable = community.metrics.map((m) => m.ssi);
+        if (ssisAvailable === undefined) {
+            ssi = ssiDayAlone;
+        } else {
+            const sumSSI =
+                ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) +
+                ssiDayAlone;
+            ssi =
+                Math.round(
+                    parseFloat(
+                        (sumSSI / (ssisAvailable.length + 1)).toFixed(2)
+                    ) * 100
+                ) / 100;
+        }
+
+        let daysSinceStart = Math.round(
+            (new Date().getTime() - new Date(community.started).getTime()) /
+                86400000
+        ); // 86400000 1 days in ms
+        if (daysSinceStart > 30) {
+            daysSinceStart = 30;
+        }
+
+        // calculate ubiRate
+        ubiRate = parseFloat(
+            new BigNumber(
+                community.beneficiaries.reduce(
+                    (acc, b) => acc.plus(b.claimed),
+                    new BigNumber('0')
+                )
+            )
+                .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
+                .dividedBy(community.beneficiaries.length)
+                .dividedBy(daysSinceStart)
+                .toFixed(2, 1)
+        );
+
+        // calculate estimatedDuration
+        estimatedDuration = parseFloat(
+            new BigNumber(community.contract.maxClaim)
+                .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
+                .dividedBy(ubiRate)
+                .dividedBy(30)
+                .toFixed(2, 1)
+        );
+        console.log(
+            community.id,
+            ssiDayAlone,
+            ssi,
+            ubiRate,
+            estimatedDuration,
+            // since it's calculated post-midnight, save it with yesterdayDateOnly's date
+            // yesterday
+            new Date().getDate() - 1
+        );
+    };
+
+    const pending: Promise<void>[] = [];
+    // for each community
+    for (let index = 0; index < communities.length; index++) {
+        pending.push(calculateMetrics(communities[index]));
+        // await calculateMetrics(communities[index]);
+    }
+    await Promise.all(pending);
+}
+
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     // this should run post-midnight (well, at midnight)
     const todayDateOnly = new Date();
@@ -83,7 +268,13 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const activeBeneficiariesLast30Days = await BeneficiaryService.getActiveBeneficiariesLast30Days();
     const totalClaimedLast30Days = await CommunityDailyStateService.getTotalClaimedLast30Days();
     const ssiLast4Days = await CommunityDailyMetricsService.getSSILast4Days();
-    const communitiesContract = await CommunityContractService.getAll();
+    // TODO: get only from public valid communities
+    const communitiesContract = new Map(
+        (await models.ubiCommunityContract.findAll({ raw: true })).map((c) => [
+            c.communityId,
+            c,
+        ])
+    );
     //
     const calculateMetrics = async (community: CommunityAttributes) => {
         // if no activity, do not calculate
