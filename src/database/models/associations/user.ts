@@ -6,6 +6,16 @@ export function userAssociation(sequelize: Sequelize) {
         foreignKey: 'address',
         as: 'beneficiary',
     });
+    // used to query from the beneficiarytransaction with incude
+    // TODO:
+    // sequelize.models.BeneficiaryTransaction.belongsTo(
+    //     sequelize.models.Beneficiary,
+    //     {
+    //         foreignKey: 'beneficiary',
+    //         targetKey: 'address',
+    //         as: 'beneficiaryInTx',
+    //     }
+    // );
     // used to query from the beneficiary with incude
     sequelize.models.Beneficiary.belongsTo(sequelize.models.UserModel, {
         foreignKey: 'address',
@@ -54,4 +64,12 @@ export function userAssociation(sequelize: Sequelize) {
         targetKey: 'communityId',
         as: 'manager',
     });
+
+    // beneficiaries are linked to manager through communityId
+    // TODO:
+    // sequelize.models.Beneficiary.belongsTo(sequelize.models.Community, {
+    //     foreignKey: 'communityId',
+    //     targetKey: 'publicId',
+    //     as: 'community',
+    // });
 }
