@@ -65,7 +65,7 @@ module.exports = {
             },
             coverImage: {
                 type: Sequelize.STRING(128),
-                allowNull: false,
+                // allowNull: false,
             },
             coverMediaId: {
                 type: Sequelize.INTEGER,
