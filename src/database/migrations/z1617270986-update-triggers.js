@@ -49,8 +49,8 @@ $$ LANGUAGE plpgsql;`);
         UPDATE ubi_community_state SET claims = claims + 1 WHERE "communityId"=community_id;
         UPDATE ubi_community_daily_state SET claims = claims + 1 WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         -- update beneficiary table as well
-        SELECT "lastClaimAt" INTO beneficiary_last_claim_at FROM beneficiary WHERE "communityId"=community_id AND address=NEW.address;
-        UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt" WHERE "communityId"=community_id AND address=NEW.address;
+        SELECT "lastClaimAt" INTO beneficiary_last_claim_at FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address;
+        UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt" WHERE "communityId"=NEW."communityId" AND address=NEW.address;
         -- update total claimed
         SELECT SUM(claimed + NEW.amount) INTO state_claimed FROM ubi_community_state WHERE "communityId"=community_id;
         UPDATE ubi_community_state SET claimed = state_claimed WHERE "communityId"=community_id;
@@ -77,6 +77,30 @@ $$ LANGUAGE plpgsql;`);
             UPDATE ubi_community_state SET managers = managers - 1 WHERE "communityId"=community_id;
             RETURN OLD;
         END IF;
+    END;
+$$ LANGUAGE plpgsql;`);
+
+        await queryInterface.sequelize.query(`
+        CREATE OR REPLACE FUNCTION update_inflow_community_states()
+    RETURNS TRIGGER AS $$
+    declare
+        state_raised numeric(29);
+        state_daily_raised numeric(29);
+        n_backer bigint;
+        community_id integer;
+    BEGIN
+        SELECT id INTO community_id FROM community where "publicId"=NEW."communityId";
+        -- if this address never donated, it's a new backer
+        SELECT count(*) INTO n_backer FROM inflow WHERE "from" = NEW."from" AND "communityId"=NEW."communityId";
+        IF n_backer = 0 THEN
+            UPDATE ubi_community_state SET backers = backers + 1 WHERE "communityId"=community_id;
+        end if;
+        -- update total raised
+        SELECT SUM(raised + NEW.amount) INTO state_raised FROM ubi_community_state WHERE "communityId"=community_id;
+        UPDATE ubi_community_state SET raised = state_raised WHERE "communityId"=community_id;
+        SELECT SUM(raised + NEW.amount) INTO state_daily_raised FROM ubi_community_daily_state WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
+        UPDATE ubi_community_daily_state SET raised = state_daily_raised WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
+        return NEW;
     END;
 $$ LANGUAGE plpgsql;`);
     },
