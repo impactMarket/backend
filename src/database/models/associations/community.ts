@@ -45,6 +45,13 @@ export function communityAssociation(sequelize: Sequelize) {
             as: 'metrics',
         }
     );
+
+    // used to query from the community with incude
+    sequelize.models.Inflow.belongsTo(sequelize.models.Community, {
+        foreignKey: 'communityId',
+        targetKey: 'publicId',
+        as: 'communityInflow',
+    });
     // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.Beneficiary, {
         foreignKey: 'communityId',
