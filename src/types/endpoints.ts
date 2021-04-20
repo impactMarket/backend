@@ -1,7 +1,6 @@
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { User } from '@interfaces/app/user';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
-import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
 import { CommunityAttributes } from '@models/ubi/community';
