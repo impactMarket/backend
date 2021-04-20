@@ -31,6 +31,14 @@ export function communityAssociation(sequelize: Sequelize) {
     });
     // used to query from the community with incude
     sequelize.models.Community.hasMany(
+        sequelize.models.UbiCommunityDemographicsModel,
+        {
+            foreignKey: 'communityId',
+            as: 'demographics',
+        }
+    );
+    // used to query from the community with incude
+    sequelize.models.Community.hasMany(
         sequelize.models.UbiCommunityDailyStateModel,
         {
             foreignKey: 'communityId',
