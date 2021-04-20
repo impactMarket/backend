@@ -49,6 +49,7 @@ export default class CommunityService {
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
     public static ubiCommunityDailyState = models.ubiCommunityDailyState;
     public static ubiCommunityDemographics = models.ubiCommunityDemographics;
+    public static claimLocation = models.claimLocation;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiOrganization = models.ubiOrganization;
@@ -989,6 +990,28 @@ export default class CommunityService {
                     as: 'dailyState',
                     order: [['date', 'DESC']],
                     limit: 30,
+                },
+            ],
+            where: {
+                id,
+            },
+        });
+        return result?.toJSON() as CommunityAttributes;
+    }
+
+    public static async getClaimLocation(id: string) {
+        const aMonthAgo = new Date();
+        aMonthAgo.setDate(aMonthAgo.getDate() - 30);
+        aMonthAgo.setHours(0, 0, 0, 0);
+        const result = await this.community.findOne({
+            attributes: ['id'],
+            include: [
+                {
+                    model: this.claimLocation,
+                    as: 'claimLocation',
+                    where: {
+                        createdAt: { [Op.gte]: aMonthAgo },
+                    },
                 },
             ],
             where: {

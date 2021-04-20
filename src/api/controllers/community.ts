@@ -150,6 +150,12 @@ const getDashboard = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
+const getClaimLocation = (req: Request, res: Response) => {
+    CommunityService.getClaimLocation(req.params.id)
+        .then((r) => standardResponse(res, 200, true, r))
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
 /**
  * @deprecated Since mobile version 0.1.8
  */
@@ -273,6 +279,7 @@ export default {
     getHistoricalSSIByPublicId,
     getHistoricalSSI,
     getDashboard,
+    getClaimLocation,
     list,
     listFull,
     findBeneficiaryByAddress,
