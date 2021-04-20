@@ -1,9 +1,7 @@
 import { CommunityAttributes } from '@models/ubi/community';
 import UserService from '@services/app/user';
 import NotifiedBackerService from '@services/notifiedBacker';
-import BeneficiaryService from '@services/ubi/beneficiary';
 import CommunityService from '@services/ubi/community';
-import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
 import CommunityDailyStateService from '@services/ubi/communityDailyState';
 import CommunityStateService from '@services/ubi/communityState';
 import InflowService from '@services/ubi/inflow';
@@ -117,20 +115,51 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             visibility: 'public',
         },
     });
-    // const resultEconomicActivity = await models.beneficiaryTransaction.findAll({
-    //     attributes: [
-    //         [fn('count', col('amount')), 'txs'],
-    //         [fn('sum', col('amount')), 'volume'],
-    //         [fn('count', fn('distinct', col('withAddress'))), 'reach'],
-    //     ],
+    // const someEconomicActivity = await models.beneficiaryTransaction.findAll({
+    //     attributes: {
+    //         exclude: [
+    //             'id',
+    //             'beneficiary',
+    //             'withAddress',
+    //             'amount',
+    //             'isFromBeneficiary',
+    //             'tx',
+    //             'date',
+    //             'createdAt',
+    //             'updatedAt',
+    //         ],
+    //         include: [
+    //             [fn('count', col('amount')), 'txs'],
+    //             [fn('sum', col('amount')), 'volume'],
+    //             [fn('count', fn('distinct', col('withAddress'))), 'reach'],
+    //         ],
+    //     },
     //     include: [
     //         {
     //             model: models.beneficiary,
     //             as: 'beneficiaryInTx',
+    //             attributes: {
+    //                 exclude: [
+    //                     'id',
+    //                     'address',
+    //                     'communityId',
+    //                     'active',
+    //                     'blocked',
+    //                     'tx',
+    //                     'txAt',
+    //                     'claims',
+    //                     'claimed',
+    //                     'lastClaimAt',
+    //                     'penultimateClaimAt',
+    //                     'createdAt',
+    //                     'updatedAt',
+    //                 ],
+    //             },
     //             include: [
     //                 {
     //                     model: models.community,
     //                     as: 'community',
+    //                     attributes: ['id'],
     //                     where: {
     //                         status: 'valid',
     //                         visibility: 'public',
@@ -139,7 +168,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     //             ],
     //         },
     //     ],
+    //     group: ['beneficiaryInTx->community.id'],
+    //     // raw: true,
     // });
+    // console.log(someEconomicActivity.map((r) => r.toJSON()));
     const resultEconomicActivity: {
         volume: string;
         txs: string;
