@@ -3,7 +3,7 @@ import BeneficiaryService from '@services/ubi/beneficiary';
 import CommunityService from '@services/ubi/community';
 import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
 import ManagerService from '@services/ubi/managers';
-import { controllerLogAndFail } from '@utils/api';
+import { controllerLogAndFail, standardResponse } from '@utils/api';
 import { Request, Response } from 'express';
 
 const getResquestChangeUbiParams = (req: Request, res: Response) => {
@@ -144,6 +144,12 @@ const listManagers = (req: RequestWithUser, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
+const getDashboard = (req: Request, res: Response) => {
+    CommunityService.getDashboard(req.params.id)
+        .then((r) => standardResponse(res, 200, true, r))
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
 /**
  * @deprecated Since mobile version 0.1.8
  */
@@ -266,6 +272,7 @@ export default {
     getByContractAddress,
     getHistoricalSSIByPublicId,
     getHistoricalSSI,
+    getDashboard,
     list,
     listFull,
     findBeneficiaryByAddress,

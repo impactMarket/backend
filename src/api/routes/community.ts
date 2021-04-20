@@ -23,7 +23,26 @@ export default (app: Router): void => {
      *   deprecated: true
      */
     route.get('/publicid/:publicId', communityController.getByPublicId);
-    route.get('/id/:id', communityController.findById);
+    /**
+     * @swagger
+     *
+     * /community/{id}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Find a beneficiary in manager's community
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id', communityController.findById);
     /**
      * @swagger
      *
@@ -68,16 +87,29 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/historical-ssi/{id}:
+     * /community/{id}/historical-ssi:
      *   get:
      *     tags:
      *       - "community"
-     *     summary: Add a new community
+     *     summary: Historical SSI
      *     responses:
      *       "200":
      *         description: OK
      */
-    route.get('/historical-ssi/:id', communityController.getHistoricalSSI);
+    route.get('/:id/historical-ssi', communityController.getHistoricalSSI);
+    /**
+     * @swagger
+     *
+     * /community/{id}/dashboard:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community dashboard details
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/dashboard', communityController.getDashboard);
     /**
      * @swagger
      *

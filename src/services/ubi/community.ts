@@ -47,6 +47,8 @@ export default class CommunityService {
     public static ubiCommunityContract = models.ubiCommunityContract;
     public static ubiCommunityState = models.ubiCommunityState;
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
+    public static ubiCommunityDailyState = models.ubiCommunityDailyState;
+    public static ubiCommunityDemographics = models.ubiCommunityDemographics;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiOrganization = models.ubiOrganization;
@@ -955,6 +957,45 @@ export default class CommunityService {
             throw new Error('Not found community ' + id);
         }
         return community.toJSON() as CommunityAttributes;
+    }
+
+    public static async getDashboard(id: string) {
+        const result = await this.community.findOne({
+            include: [
+                {
+                    model: this.ubiCommunityState,
+                    as: 'state',
+                },
+                {
+                    model: this.ubiCommunityContract,
+                    as: 'contract',
+                },
+                {
+                    model: this.ubiCommunityDemographics,
+                    required: false,
+                    as: 'demographics',
+                    order: [['date', 'DESC']],
+                    limit: 1,
+                },
+                {
+                    model: this.ubiCommunityDailyMetrics,
+                    required: false,
+                    as: 'metrics',
+                    order: [['date', 'DESC']],
+                    limit: 30,
+                },
+                {
+                    model: this.ubiCommunityDailyState,
+                    as: 'dailyState',
+                    order: [['date', 'DESC']],
+                    limit: 30,
+                },
+            ],
+            where: {
+                id,
+            },
+        });
+        return result?.toJSON() as CommunityAttributes;
     }
 
     public static async getCommunityOnlyByPublicId(
