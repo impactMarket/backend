@@ -1,18 +1,7 @@
 import { Sequelize } from 'sequelize';
-import { assert, match } from 'sinon';
-import initModels from '../../../../src/database/models';
 
-import { initializeUser } from '../../../../src/database/models/app/user';
-import { initializeBeneficiary } from '../../../../src/database/models/ubi/beneficiary';
-import { initializeCommunity } from '../../../../src/database/models/ubi/community';
-import { initializeUbiCommunityDailyState } from '../../../../src/database/models/ubi/communityDailyState';
+import initModels from '../../../../src/database/models';
 import { User } from '../../../../src/interfaces/app/user';
-import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
-import {
-    validNonEmptyMonthLongCommunities,
-    validNonEmptyLessThanMonthLongCommunities,
-    validEmptyCommunities,
-} from '../../../fake/community';
 
 describe('INTEGRATION [jobs - cron] calcuateCommunitiesMetrics2', () => {
     let sequelize;
