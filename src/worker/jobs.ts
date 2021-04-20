@@ -18,6 +18,7 @@ import {
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { verifyStoriesLifecycle } from './jobs/cron/stories';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
+import { verifyUserSuspectActivity } from './jobs/cron/user';
 
 export default async (): Promise<void> => {
     const contentStorage = new ContentStorage();
@@ -273,6 +274,27 @@ function cron() {
                 })
                 .catch((e) => {
                     Logger.error('verifyCommunitySuspectActivity FAILED! ' + e);
+                });
+        },
+        null,
+        true
+    );
+
+    // at 2:12 am and 2:12 pm.
+    // eslint-disable-next-line no-new
+    new CronJob(
+        '12 2,14 * * *',
+        () => {
+            Logger.info('Verify user suspicious activity...');
+            verifyUserSuspectActivity()
+                .then(() => {
+                    CronJobExecutedService.add('verifyUserSuspectActivity');
+                    Logger.info(
+                        'verifyUserSuspectActivity successfully executed!'
+                    );
+                })
+                .catch((e) => {
+                    Logger.error('verifyUserSuspectActivity FAILED! ' + e);
                 });
         },
         null,
