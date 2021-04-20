@@ -1,6 +1,6 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-interface ClaimLocationAttributes {
+export interface ClaimLocationAttributes {
     id: number;
     communityId: string;
     gps: {
@@ -31,6 +31,7 @@ export class ClaimLocation extends Model<
         longitude: number;
     };
 
+    // TODO: replace createdAt with date and remove timestamp
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;

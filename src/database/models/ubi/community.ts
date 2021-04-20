@@ -8,6 +8,7 @@ import { UbiOrganization } from '@interfaces/ubi/ubiOrganization';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { BeneficiaryAttributes } from './beneficiary';
+import { ClaimLocationAttributes } from './claimLocation';
 
 export interface CommunityAttributes {
     id: number; // Note that the `null assertion` `!` is required in strict mode.
@@ -44,6 +45,7 @@ export interface CommunityAttributes {
     suspect?: UbiCommunitySuspect[];
     beneficiaries?: BeneficiaryAttributes[];
     organization?: UbiOrganization;
+    claimLocation?: ClaimLocationAttributes[];
 }
 export interface CommunityCreationAttributes {
     requestByAddress: string;

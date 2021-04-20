@@ -38,6 +38,12 @@ export function communityAssociation(sequelize: Sequelize) {
         }
     );
     // used to query from the community with incude
+    sequelize.models.Community.hasMany(sequelize.models.ClaimLocation, {
+        foreignKey: 'communityId',
+        sourceKey: 'publicId',
+        as: 'claimLocation',
+    });
+    // used to query from the community with incude
     sequelize.models.Community.hasMany(
         sequelize.models.UbiCommunityDailyStateModel,
         {

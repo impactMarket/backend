@@ -113,6 +113,19 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /community/{id}/claim-location:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community claim locations
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/claim-location', communityController.getClaimLocation);
+    /**
+     * @swagger
+     *
      * /community/beneficiaries/find/{beneficiaryQuery}/{active}:
      *   get:
      *     tags:
