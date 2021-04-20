@@ -171,7 +171,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     //     group: ['beneficiaryInTx->community.id'],
     //     // raw: true,
     // });
-    // console.log(someEconomicActivity.map((r) => r.toJSON()));
+    // TODO: tests cant query with sequelize query!
     const resultEconomicActivity: {
         volume: string;
         txs: string;
