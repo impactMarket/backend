@@ -13,25 +13,24 @@ module.exports = {
                     model: 'community',
                     key: 'publicId',
                 },
-                onUpdate: 'CASCADE',
                 onDelete: 'SET NULL',
-                allowNull: false
+                allowNull: false,
             },
             gps: {
                 type: Sequelize.JSON,
-                allowNull: false
+                allowNull: false,
             },
             createdAt: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
             },
             updatedAt: {
                 allowNull: false,
-                type: Sequelize.DATE
-            }
+                type: Sequelize.DATE,
+            },
         });
     },
     down: (queryInterface, Sequelize) => {
         return queryInterface.dropTable('claimlocation');
-    }
+    },
 };

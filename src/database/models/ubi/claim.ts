@@ -52,7 +52,7 @@ export function initializeClaim(sequelize: Sequelize): void {
                     model: 'community', // name of Target model
                     key: 'publicId', // key in Target model that we're referencing
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             amount: {

@@ -8,11 +8,11 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true
+                primaryKey: true,
             },
             address: {
                 type: Sequelize.STRING(44),
-                allowNull: false
+                allowNull: false,
             },
             communityId: {
                 type: Sequelize.UUID,
@@ -20,8 +20,8 @@ module.exports = {
                     model: 'community',
                     key: 'publicId',
                 },
-                onDelete: 'RESTRICT',
-                allowNull: false
+                onDelete: 'CASCADE',
+                allowNull: false,
             },
             amount: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
@@ -39,15 +39,15 @@ module.exports = {
             },
             createdAt: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
             },
             updatedAt: {
                 allowNull: false,
-                type: Sequelize.DATE
-            }
+                type: Sequelize.DATE,
+            },
         });
     },
     down: (queryInterface) => {
         return queryInterface.dropTable('claim');
-    }
+    },
 };

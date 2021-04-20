@@ -50,7 +50,7 @@ export function initializeClaimLocation(sequelize: Sequelize): void {
                     model: 'community',
                     key: 'publicId',
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'SET NULL',
                 allowNull: false,
             },
             gps: {
