@@ -2,6 +2,8 @@ import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { StoryCommunity } from '@interfaces/story/storyCommunity';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
+import { UbiCommunityDailyState } from '@interfaces/ubi/ubiCommunityDailyState';
+import { UbiCommunityDemographics } from '@interfaces/ubi/ubiCommunityDemographics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 import { UbiOrganization } from '@interfaces/ubi/ubiOrganization';
@@ -46,6 +48,8 @@ export interface CommunityAttributes {
     beneficiaries?: BeneficiaryAttributes[];
     organization?: UbiOrganization;
     claimLocation?: ClaimLocationAttributes[];
+    demographics?: UbiCommunityDemographics[];
+    dailyState?: UbiCommunityDailyState[];
 }
 export interface CommunityCreationAttributes {
     requestByAddress: string;
