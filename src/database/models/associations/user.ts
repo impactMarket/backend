@@ -6,6 +6,11 @@ export function userAssociation(sequelize: Sequelize) {
         foreignKey: 'address',
         as: 'beneficiary',
     });
+    // used to query from the beneficiary with incude
+    sequelize.models.Beneficiary.belongsTo(sequelize.models.UserModel, {
+        foreignKey: 'address',
+        as: 'user',
+    });
     // used to query from the beneficiarytransaction with incude
     // TODO:
     // sequelize.models.BeneficiaryTransaction.belongsTo(
@@ -16,11 +21,6 @@ export function userAssociation(sequelize: Sequelize) {
     //         as: 'beneficiaryInTx',
     //     }
     // );
-    // used to query from the beneficiary with incude
-    sequelize.models.Beneficiary.belongsTo(sequelize.models.UserModel, {
-        foreignKey: 'address',
-        as: 'user',
-    });
 
     // used to query from the community with incude
     sequelize.models.UserModel.hasOne(sequelize.models.AppMediaContentModel, {
@@ -32,14 +32,20 @@ export function userAssociation(sequelize: Sequelize) {
 
     // used to query from the user with incude
     sequelize.models.UserModel.hasMany(sequelize.models.Manager, {
-        foreignKey: 'user',
+        foreignKey: 'address',
         as: 'manager',
     });
-
     // used to query from the manager with incude
-    sequelize.models.Manager.hasMany(sequelize.models.UserModel, {
-        foreignKey: 'user',
+    sequelize.models.Manager.belongsTo(sequelize.models.UserModel, {
+        foreignKey: 'address',
         as: 'user',
+    });
+
+    // beneficiaries are linked to manager through communityId
+    sequelize.models.Beneficiary.belongsTo(sequelize.models.Manager, {
+        foreignKey: 'communityId',
+        targetKey: 'communityId',
+        as: 'manager',
     });
 
     // used to query from the user with incude
@@ -71,13 +77,6 @@ export function userAssociation(sequelize: Sequelize) {
             as: 'selfTrust',
         }
     );
-
-    // beneficiaries are linked to manager through communityId
-    sequelize.models.Beneficiary.belongsTo(sequelize.models.Manager, {
-        foreignKey: 'communityId',
-        targetKey: 'communityId',
-        as: 'manager',
-    });
 
     // beneficiaries are linked to manager through communityId
     // TODO:

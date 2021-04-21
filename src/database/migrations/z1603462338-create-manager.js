@@ -5,16 +5,16 @@ module.exports = {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
-                primaryKey: true
+                primaryKey: true,
             },
-            user: {
+            address: {
                 type: Sequelize.STRING(44),
                 references: {
                     model: 'user',
                     key: 'address',
                 },
                 onDelete: 'RESTRICT',
-                allowNull: false
+                allowNull: false,
             },
             communityId: {
                 type: Sequelize.UUID,
@@ -23,19 +23,23 @@ module.exports = {
                     key: 'publicId',
                 },
                 onDelete: 'RESTRICT',
-                allowNull: false
+                allowNull: false,
+            },
+            active: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: true,
             },
             createdAt: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATE,
             },
             updatedAt: {
                 allowNull: false,
-                type: Sequelize.DATE
-            }
+                type: Sequelize.DATE,
+            },
         });
     },
     down: (queryInterface, Sequelize) => {
         return queryInterface.dropTable('manager');
-    }
+    },
 };

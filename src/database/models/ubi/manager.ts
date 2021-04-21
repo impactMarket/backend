@@ -1,16 +1,20 @@
+import { User } from '@interfaces/app/user';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export interface ManagerAttributes {
     id: number;
-    user: string;
+    address: string;
     communityId: string;
+    active: boolean;
 
     // timestamps
     createdAt: Date;
     updatedAt: Date;
+
+    user?: User;
 }
 interface ManagerCreationAttributes {
-    user: string;
+    address: string;
     communityId: string;
 }
 export class Manager extends Model<
@@ -18,8 +22,9 @@ export class Manager extends Model<
     ManagerCreationAttributes
 > {
     public id!: number;
-    public user!: string;
+    public address!: string;
     public communityId!: string;
+    public active!: boolean;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -34,7 +39,7 @@ export function initializeManager(sequelize: Sequelize): void {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            user: {
+            address: {
                 type: DataTypes.STRING(44),
                 references: {
                     model: sequelize.models.UserModel,
@@ -51,6 +56,10 @@ export function initializeManager(sequelize: Sequelize): void {
                 },
                 onDelete: 'RESTRICT',
                 allowNull: false,
+            },
+            active: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: true,
             },
             createdAt: {
                 type: DataTypes.DATE,
