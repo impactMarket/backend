@@ -29,23 +29,6 @@ const getByPublicId = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
-const findById = (req: Request, res: Response) => {
-    CommunityService.findById(parseInt(req.params.id, 10))
-        .then((community) => {
-            if (community === null) {
-                res.sendStatus(404);
-            }
-            res.send(community);
-        })
-        .catch((e) => controllerLogAndFail(e, 400, res));
-};
-
-const pictureAdd = (req: Request, res: Response) => {
-    CommunityService.pictureAdd(req.file)
-        .then((url) => res.send(url))
-        .catch((e) => controllerLogAndFail(e, 400, res));
-};
-
 const getByContractAddress = (req: Request, res: Response) => {
     CommunityService.getByContractAddress(req.params.address)
         .then((community) => {
@@ -141,6 +124,18 @@ const listManagers = (req: RequestWithUser, res: Response) => {
         parseInt(req.params.limit, 10)
     )
         .then((r) => res.send(r))
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
+const pictureAdd = (req: Request, res: Response) => {
+    CommunityService.pictureAdd(req.file)
+        .then((url) => standardResponse(res, 200, true, url))
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
+const findById = (req: Request, res: Response) => {
+    CommunityService.findById(parseInt(req.params.id, 10))
+        .then((community) => standardResponse(res, 200, true, community))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
