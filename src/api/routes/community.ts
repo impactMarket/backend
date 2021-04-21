@@ -126,6 +126,19 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /community/{id}/managers:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community managers
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/managers', communityController.getManagers);
+    /**
+     * @swagger
+     *
      * /community/beneficiaries/find/{beneficiaryQuery}/{active}:
      *   get:
      *     tags:
