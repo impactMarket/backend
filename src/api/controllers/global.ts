@@ -4,7 +4,7 @@ import GlobalGrowthService from '@services/global/globalGrowth';
 import ReachedAddressService from '@services/reachedAddress';
 import CommunityDailyStateService from '@services/ubi/communityDailyState';
 import InflowService from '@services/ubi/inflow';
-import { controllerLogAndFail } from '@utils/api';
+import { controllerLogAndFail, standardResponse } from '@utils/api';
 import { Request, Response } from 'express';
 
 const reachedAddressService = new ReachedAddressService();
@@ -35,5 +35,11 @@ const globalDemographics = (req: Request, res: Response) => {
         .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
+const numbers = (req: Request, res: Response) => {
+    globalDailyStateService
+        .numbers()
+        .then((r) => standardResponse(res, 200, true, r))
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
 
-export default { globalStatus, globalDemographics };
+export default { globalStatus, globalDemographics, numbers };
