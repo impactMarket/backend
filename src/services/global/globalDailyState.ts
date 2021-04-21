@@ -2,17 +2,55 @@ import {
     GlobalDailyState,
     GlobalDailyStateCreationAttributes,
 } from '@models/global/globalDailyState';
+import { BigNumber } from 'bignumber.js';
+import config from 'config';
 import { col, fn, Op } from 'sequelize';
 
 import { models } from '../../database';
 
 export default class GlobalDailyStateService {
     public globalDailyState = models.globalDailyState;
+    public community = models.community;
 
     public add(
         state: GlobalDailyStateCreationAttributes
     ): Promise<GlobalDailyState> {
         return this.globalDailyState.create(state);
+    }
+
+    public async numbers(): Promise<{
+        raised: string;
+        countries: number;
+        beneficiaries: number;
+        backers: number;
+        communities: number;
+    }> {
+        const countries = await this.community.count({
+            col: 'country',
+            distinct: true,
+            where: {
+                visibility: 'public',
+                status: 'valid',
+            },
+        });
+        const communities = await this.community.count({
+            where: {
+                visibility: 'public',
+                status: 'valid',
+            },
+        });
+        const lastGlobal = (await this.globalDailyState.findOne({
+            order: [['date', 'DESC']],
+        }))!; // only empty at the beginning
+        return {
+            raised: new BigNumber(lastGlobal.totalRaised)
+                .div(config.cUSDDecimal ** 10)
+                .toString(),
+            countries,
+            beneficiaries: lastGlobal.totalBeneficiaries,
+            backers: lastGlobal.totalBackers,
+            communities,
+        };
     }
 
     public async getLast4AvgMedianSSI(): Promise<number[]> {

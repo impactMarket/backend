@@ -7,5 +7,7 @@ export default (app: Router): void => {
 
     route.get('/status', globalController.globalStatus);
 
+    route.get('/numbers', globalController.numbers);
+
     route.get('/demographics', globalController.globalDemographics);
 };
