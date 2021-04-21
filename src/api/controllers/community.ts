@@ -156,6 +156,12 @@ const getClaimLocation = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
+const getManagers = (req: Request, res: Response) => {
+    CommunityService.getManagers(req.params.id)
+        .then((r) => standardResponse(res, 200, true, r))
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
 /**
  * @deprecated Since mobile version 0.1.8
  */
@@ -280,6 +286,7 @@ export default {
     getHistoricalSSI,
     getDashboard,
     getClaimLocation,
+    getManagers,
     list,
     listFull,
     findBeneficiaryByAddress,

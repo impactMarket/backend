@@ -36,6 +36,12 @@ export function userAssociation(sequelize: Sequelize) {
         as: 'manager',
     });
 
+    // used to query from the manager with incude
+    sequelize.models.Manager.hasMany(sequelize.models.UserModel, {
+        foreignKey: 'user',
+        as: 'user',
+    });
+
     // used to query from the user with incude
     sequelize.models.UserModel.belongsToMany(
         sequelize.models.AppUserTrustModel,

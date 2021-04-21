@@ -8,6 +8,7 @@ import {
     CommunityAttributes,
     CommunityCreationAttributes,
 } from '@models/ubi/community';
+import { ManagerAttributes } from '@models/ubi/manager';
 import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
 import {
@@ -44,6 +45,8 @@ import ManagerService from './managers';
 
 export default class CommunityService {
     public static community = models.community;
+    public static manager = models.manager;
+    public static user = models.user;
     public static ubiCommunityContract = models.ubiCommunityContract;
     public static ubiCommunityState = models.ubiCommunityState;
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
@@ -1019,6 +1022,37 @@ export default class CommunityService {
             },
         });
         return result?.toJSON() as CommunityAttributes;
+    }
+
+    public static async getManagers(communityId: string) {
+        const community = (await this.community.findOne({
+            where: { id: communityId },
+        }))!;
+        const result = await this.manager.findAll({
+            include: [
+                {
+                    model: this.user,
+                    as: 'user',
+                    include: [
+                        {
+                            model: this.appMediaContent,
+                            as: 'media',
+                            required: false,
+                            include: [
+                                {
+                                    model: this.appMediaThumbnail,
+                                    as: 'thumbnails',
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            where: {
+                communityId: community.publicId,
+            },
+        });
+        return result.map((r) => r.toJSON() as ManagerAttributes);
     }
 
     public static async getCommunityOnlyByPublicId(
