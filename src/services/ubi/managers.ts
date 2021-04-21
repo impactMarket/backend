@@ -18,12 +18,12 @@ export default class ManagerService {
         // if user does not exist, add to pending list
         // otherwise update
         const user = await this.manager.findOne({
-            where: { user: address, communityId },
+            where: { address, communityId },
             raw: true,
         });
         if (user === null) {
             const managerData = {
-                user: address,
+                address,
                 communityId,
             };
             try {
@@ -47,7 +47,7 @@ export default class ManagerService {
 
     public static async get(address: string): Promise<Manager | null> {
         return await this.manager.findOne({
-            where: { user: address },
+            where: { address },
             raw: true,
         });
     }
@@ -147,7 +147,7 @@ export default class ManagerService {
         communityId: string
     ): Promise<void> {
         await this.manager.destroy({
-            where: { user: address, communityId },
+            where: { address, communityId },
         });
     }
 }
