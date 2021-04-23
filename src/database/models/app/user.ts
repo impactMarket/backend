@@ -34,7 +34,7 @@ export function initializeUser(sequelize: Sequelize): typeof UserModel {
                     key: 'id',
                 },
                 // onDelete: 'SET NULL', // default
-                allowNull: false,
+                allowNull: true,
             },
             username: {
                 type: DataTypes.STRING(128),
