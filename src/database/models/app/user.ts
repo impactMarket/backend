@@ -44,8 +44,7 @@ export function initializeUser(sequelize: Sequelize): typeof UserModel {
                 allowNull: false,
             },
             currency: {
-                type: DataTypes.STRING(6),
-                defaultValue: 'USD',
+                type: DataTypes.STRING(4),
             },
             pushNotificationToken: {
                 type: DataTypes.STRING(64),

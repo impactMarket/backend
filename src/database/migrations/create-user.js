@@ -24,7 +24,7 @@ module.exports = {
                 allowNull: false,
             },
             currency: {
-                type: Sequelize.STRING(6),
+                type: Sequelize.STRING(4),
                 defaultValue: 'USD',
             },
             pushNotificationToken: {
