@@ -4,7 +4,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export class UserModel extends Model<User, UserCreationAttributes> {
     public address!: string;
     public username!: string | null;
-    public avatarMediaId!: number;
+    public avatarMediaId!: number | null;
     public language!: string;
     public currency!: string;
     public pushNotificationToken!: string | null;
