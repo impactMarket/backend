@@ -59,6 +59,10 @@ export default class UserService {
                             pushNotificationToken,
                         };
                         if (currency) {
+                            // TODO: temporary fix. Solved in mobile verion 1.1.0
+                            if (currency.indexOf(',') !== -1) {
+                                currency = currency.split(',')[0];
+                            }
                             createUser = {
                                 ...createUser,
                                 currency,
