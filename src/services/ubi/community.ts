@@ -1036,7 +1036,7 @@ export default class CommunityService {
                     include: [
                         {
                             model: this.appMediaContent,
-                            as: 'media',
+                            as: 'avatar',
                             required: false,
                             include: [
                                 {

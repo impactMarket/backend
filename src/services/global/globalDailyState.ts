@@ -3,9 +3,9 @@ import {
     GlobalDailyStateCreationAttributes,
 } from '@models/global/globalDailyState';
 import { BigNumber } from 'bignumber.js';
-import config from 'config';
 import { col, fn, Op } from 'sequelize';
 
+import config from '../../config';
 import { models } from '../../database';
 
 export default class GlobalDailyStateService {
