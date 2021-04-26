@@ -32,6 +32,7 @@ import { UbiCommunityStateModel } from '@models/ubi/communityState';
 import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
+import { UbiCommunityLabelModel } from '@models/ubi/ubiCommunityLabel';
 import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
 import { UbiOrganizationModel } from '@models/ubi/ubiOrganization';
 import { Logger } from '@utils/logger';
@@ -89,6 +90,8 @@ const models: DbModels = {
         .UbiCommunityDemographicsModel as ModelCtor<UbiCommunityDemographicsModel>,
     ubiOrganization: sequelize.models
         .UbiOrganizationModel as ModelCtor<UbiOrganizationModel>,
+    ubiCommunityLabels: sequelize.models
+        .UbiCommunityLabelModel as ModelCtor<UbiCommunityLabelModel>,
     ubiRequestChangeParams: sequelize.models
         .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParamsModel>,
     claim: sequelize.models.Claim as ModelCtor<Claim>,

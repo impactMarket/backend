@@ -41,6 +41,7 @@ import { initializeUbiCommunityState } from './ubi/communityState';
 import { initializeInflow } from './ubi/inflow';
 import { initializeManager } from './ubi/manager';
 import { initializeUbiRequestChangeParams } from './ubi/requestChangeParams';
+import { initializeUbiCommunityLabel } from './ubi/ubiCommunityLabel';
 import { initializeUbiCommunityOrganization } from './ubi/ubiCommunityOrganization';
 import { initializeUbiCommunitySuspect } from './ubi/ubiCommunitySuspect';
 import { initializeUbiOrganization } from './ubi/ubiOrganization';
@@ -77,6 +78,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeInflow(sequelize);
     initializeUbiCommunityOrganization(sequelize);
     initializeUbiOrganization(sequelize);
+    initializeUbiCommunityLabel(sequelize);
 
     // others
     initializeNotifiedBacker(sequelize);
