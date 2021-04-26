@@ -181,6 +181,9 @@ export default (app: Router): void => {
         authenticateToken,
         communityController.searchBeneficiary
     );
+    /**
+     * @deprecated Deprecated in mobile-app@1.1.0
+     */
     route.get(
         '/managers/search/:managerQuery',
         authenticateToken,
@@ -191,6 +194,9 @@ export default (app: Router): void => {
         authenticateToken,
         communityController.listBeneficiaries
     );
+    /**
+     * @deprecated Deprecated in mobile-app@1.1.0
+     */
     route.get(
         '/managers/list/:offset/:limit',
         authenticateToken,

@@ -740,6 +740,9 @@ export default class CommunityService {
         );
     }
 
+    /**
+     * @deprecated Since mobile version 1.1.0
+     */
     public static async listManagers(
         managerAddress: string,
         offset: number,
@@ -760,6 +763,9 @@ export default class CommunityService {
         );
     }
 
+    /**
+     * @deprecated Since mobile version 1.1.0
+     */
     public static async searchManager(
         managerAddress: string,
         beneficiaryQuery: string

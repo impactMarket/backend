@@ -1,4 +1,4 @@
-import { Manager } from '@models/ubi/manager';
+import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isAddress, isUUID } from '@utils/util';
 import { col, fn, QueryTypes, Transaction } from 'sequelize';
@@ -17,11 +17,10 @@ export default class ManagerService {
     ): Promise<boolean> {
         // if user does not exist, add to pending list
         // otherwise update
-        const user = await this.manager.findOne({
+        const manager = await this.manager.findOne({
             where: { address, communityId },
-            raw: true,
         });
-        if (user === null) {
+        if (manager === null) {
             const managerData = {
                 address,
                 communityId,
@@ -45,11 +44,16 @@ export default class ManagerService {
         return true;
     }
 
-    public static async get(address: string): Promise<Manager | null> {
-        return await this.manager.findOne({
-            where: { address },
-            raw: true,
+    public static async get(
+        address: string
+    ): Promise<ManagerAttributes | null> {
+        const r = await this.manager.findOne({
+            where: { address, active: true },
         });
+        if (r) {
+            return r.toJSON() as ManagerAttributes;
+        }
+        return null;
     }
 
     /**
@@ -87,6 +91,9 @@ export default class ManagerService {
         );
     }
 
+    /**
+     * @deprecated Since mobile version 1.1.0
+     */
     public static async search(
         managerAddress: string,
         address: string
@@ -113,6 +120,9 @@ export default class ManagerService {
         );
     }
 
+    /**
+     * @deprecated Since mobile version 1.1.0 Replaced with /community/{id}/managers
+     */
     public static async listManagers(
         managerAddress: string,
         offset: number,
@@ -146,8 +156,11 @@ export default class ManagerService {
         address: string,
         communityId: string
     ): Promise<void> {
-        await this.manager.destroy({
-            where: { address, communityId },
-        });
+        await this.manager.update(
+            { active: false },
+            {
+                where: { address, communityId },
+            }
+        );
     }
 }
