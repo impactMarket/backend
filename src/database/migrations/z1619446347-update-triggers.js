@@ -62,22 +62,22 @@ $$ LANGUAGE plpgsql;`);
 
         await queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_managers_community_state()
-    RETURNS TRIGGER AS $$
-    declare
-        community_id integer;
-    BEGIN
-        IF (TG_OP = 'INSERT') THEN -- INSERT operations
-            -- update overall state
-            SELECT id INTO community_id FROM community where "publicId"=NEW."communityId";
-            UPDATE ubi_community_state SET managers = managers + 1 WHERE "communityId"=community_id;
-            RETURN NEW;
-        ELSEIF (TG_OP = 'DELETE') THEN -- DELETE operations
-            -- update overall state
-            SELECT id INTO community_id FROM community where "publicId"=OLD."communityId";
-            UPDATE ubi_community_state SET managers = managers - 1 WHERE "communityId"=community_id;
-            RETURN OLD;
-        END IF;
-    END;
+    RETURNS TRIGGER AS
+$$
+declare
+    community_id integer;
+BEGIN
+    SELECT id INTO community_id FROM community where "publicId" = NEW."communityId";
+    IF (TG_OP = 'INSERT') THEN -- INSERT operations
+    -- update overall state
+        UPDATE ubi_community_state SET managers = managers + 1 WHERE "communityId" = community_id;
+        RETURN NEW;
+    ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN -- beneficiary being removed from community
+    -- update overall state
+        UPDATE ubi_community_state SET managers = managers - 1 WHERE "communityId" = community_id;
+        RETURN OLD;
+    END IF;
+END;
 $$ LANGUAGE plpgsql;`);
 
         await queryInterface.sequelize.query(`
