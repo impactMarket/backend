@@ -18,6 +18,14 @@ export function communityAssociation(sequelize: Sequelize) {
         }
     );
     // used to query from the community with incude
+    sequelize.models.Community.hasMany(
+        sequelize.models.UbiCommunityLabelModel,
+        {
+            foreignKey: 'communityId',
+            as: 'labels',
+        }
+    );
+    // used to query from the community with incude
     sequelize.models.Community.hasOne(sequelize.models.AppMediaContentModel, {
         foreignKey: 'id',
         sourceKey: 'coverMediaId',
