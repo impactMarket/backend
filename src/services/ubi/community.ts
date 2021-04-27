@@ -60,6 +60,8 @@ export default class CommunityService {
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiOrganization = models.ubiOrganization;
+    public static ubiOrganizationSocialMedia =
+        models.ubiOrganizationSocialMedia;
     public static ubiCommunityLabels = models.ubiCommunityLabels;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
@@ -1064,6 +1066,22 @@ export default class CommunityService {
                     model: this.ubiOrganization,
                     as: 'organization',
                     required: false,
+                    include: [
+                        {
+                            model: this.ubiOrganizationSocialMedia,
+                            as: 'socialMedia',
+                        },
+                        {
+                            model: this.appMediaContent,
+                            as: 'logo',
+                            include: [
+                                {
+                                    model: this.appMediaThumbnail,
+                                    as: 'thumbnails',
+                                },
+                            ],
+                        },
+                    ],
                 },
                 {
                     model: this.appMediaContent,

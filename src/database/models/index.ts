@@ -45,6 +45,7 @@ import { initializeUbiCommunityLabel } from './ubi/ubiCommunityLabel';
 import { initializeUbiCommunityOrganization } from './ubi/ubiCommunityOrganization';
 import { initializeUbiCommunitySuspect } from './ubi/ubiCommunitySuspect';
 import { initializeUbiOrganization } from './ubi/ubiOrganization';
+import { initializeUbiOrganizationSocialMedia } from './ubi/ubiOrganizationSocialMedia';
 
 export default function initModels(sequelize: Sequelize): void {
     // app
@@ -78,6 +79,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeInflow(sequelize);
     initializeUbiCommunityOrganization(sequelize);
     initializeUbiOrganization(sequelize);
+    initializeUbiOrganizationSocialMedia(sequelize);
     initializeUbiCommunityLabel(sequelize);
 
     // others

@@ -100,6 +100,15 @@ export function communityAssociation(sequelize: Sequelize) {
             as: 'socialMedia',
         }
     );
+    sequelize.models.UbiOrganizationModel.hasOne(
+        sequelize.models.AppMediaContentModel,
+        {
+            foreignKey: 'id',
+            sourceKey: 'logoMediaId',
+            as: 'logo',
+            constraints: false,
+        }
+    );
     sequelize.models.UbiOrganizationModel.belongsToMany(
         sequelize.models.Community,
         {
