@@ -21,8 +21,8 @@ export function initializeUbiCommunityLabel(sequelize: Sequelize): void {
         {
             id: {
                 type: DataTypes.INTEGER,
+                autoIncrement: true,
                 primaryKey: true,
-                unique: true,
             },
             communityId: {
                 type: DataTypes.INTEGER,

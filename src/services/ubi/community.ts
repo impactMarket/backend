@@ -19,6 +19,7 @@ import {
     literal,
     OrderItem,
     WhereOptions,
+    Includeable,
 } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
@@ -56,6 +57,7 @@ export default class CommunityService {
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiOrganization = models.ubiOrganization;
+    public static ubiCommunityLabels = models.ubiCommunityLabels;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static sequelize = sequelize;
@@ -446,7 +448,112 @@ export default class CommunityService {
         return result[0] > 0;
     }
 
-    public static async list(
+    public static async list(query: any): Promise<CommunityAttributes[]> {
+        console.log(query);
+        let orderOption: string | Literal | OrderItem[] | undefined;
+        const extendedInclude: Includeable[] = [];
+
+        switch (query.orderBy) {
+            case 'nearest': {
+                const lat = parseInt(query.lat, 10);
+                const lng = parseInt(query.lng, 10);
+                if (typeof lat !== 'number' || typeof lng !== 'number') {
+                    throw new Error('NaN');
+                }
+                orderOption = [
+                    [
+                        literal(
+                            '(6371*acos(cos(radians(' +
+                                lat +
+                                "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
+                                lng +
+                                '))+sin(radians(' +
+                                lat +
+                                "))*sin(radians(cast(gps->>'latitude' as float)))))"
+                        ),
+                        'ASC',
+                    ],
+                ];
+                break;
+            }
+            default:
+                orderOption = [[literal('state.beneficiaries'), 'DESC']];
+                break;
+        }
+
+        if (query.filter === 'featured') {
+            extendedInclude.push({
+                model: this.ubiCommunityLabels,
+                as: 'labels',
+                where: {
+                    label: 'featured',
+                },
+                duplicating: false,
+            });
+        }
+
+        if (query.extended) {
+            extendedInclude.push(
+                {
+                    model: this.ubiCommunityContract,
+                    as: 'contract',
+                },
+                {
+                    model: this.ubiCommunityDailyMetrics,
+                    required: false,
+                    duplicating: false,
+                    as: 'metrics',
+                    where: {
+                        date: {
+                            [Op.eq]: literal(
+                                '(select date from ubi_community_daily_metrics order by date desc limit 1)'
+                            ),
+                        },
+                    },
+                }
+            );
+        }
+
+        const communitiesResult = await this.community.findAll({
+            where: {
+                status: 'valid',
+                visibility: 'public',
+            },
+            include: [
+                {
+                    model: this.ubiCommunityState,
+                    as: 'state',
+                },
+                {
+                    model: this.appMediaContent,
+                    as: 'cover',
+                    duplicating: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                            duplicating: false,
+                        },
+                    ],
+                },
+                ...extendedInclude,
+            ],
+            order: orderOption,
+            offset: query.offset ? parseInt(query.offset, 10) : undefined,
+            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+        });
+
+        const communities = communitiesResult.map((c) =>
+            c.toJSON()
+        ) as CommunityAttributes[];
+
+        return communities;
+    }
+
+    /**
+     * @deprecated
+     */
+    public static async listLight(
         order: string | undefined,
         query: any
     ): Promise<ICommunityLightDetails[]> {

@@ -57,7 +57,13 @@ const getHistoricalSSI = (req: Request, res: Response) => {
 };
 
 const list = (req: Request, res: Response) => {
-    CommunityService.list(req.params.order, req.query)
+    CommunityService.list(req.query)
+        .then((r) => standardResponse(res, 200, true, r))
+        .catch((e) => controllerLogAndFail(e, 400, res));
+};
+
+const listLight = (req: Request, res: Response) => {
+    CommunityService.listLight(req.params.order, req.query)
         .then((r) => res.send(r))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
@@ -283,6 +289,7 @@ export default {
     getClaimLocation,
     getManagers,
     list,
+    listLight,
     listFull,
     findBeneficiaryByAddress,
     searchBeneficiary,
