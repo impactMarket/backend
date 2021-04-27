@@ -69,7 +69,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.post(
-        '/picture',
+        '/picture/:isOrganization?',
         upload.single('imageFile'),
         authenticateToken,
         communityController.pictureAdd

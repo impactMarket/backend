@@ -37,7 +37,10 @@ import {
     IManagers,
     IManagersDetails,
 } from '../../types/endpoints';
-import { CommunityContentStorage } from '../storage';
+import {
+    CommunityContentStorage,
+    OrganizationContentStorage,
+} from '../storage';
 import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
 import CommunityDailyStateService from './communityDailyState';
@@ -63,6 +66,7 @@ export default class CommunityService {
     public static sequelize = sequelize;
 
     private static communityContentStorage = new CommunityContentStorage();
+    private static organizationContentStorage = new OrganizationContentStorage();
 
     public static async create(
         requestByAddress: string,
@@ -383,7 +387,13 @@ export default class CommunityService {
         return null;
     }
 
-    public static async pictureAdd(file: Express.Multer.File) {
+    public static async pictureAdd(
+        isOrganization: boolean,
+        file: Express.Multer.File
+    ) {
+        if (isOrganization) {
+            return this.organizationContentStorage.uploadContent(file);
+        }
         return this.communityContentStorage.uploadContent(file);
     }
 

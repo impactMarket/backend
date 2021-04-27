@@ -404,6 +404,32 @@ export class CommunityContentStorage
     }
 }
 
+export class OrganizationContentStorage
+    extends ContentStorage
+    implements IContentStorage {
+    uploadContent(file: Express.Multer.File): Promise<AppMediaContent> {
+        return this._processAndUpload(file, StorageCategory.organizationLogo);
+    }
+
+    /**
+     * This will delete thumbnails
+     */
+    async deleteContent(mediaId: number) {
+        const filePaths = await this._findContentToDelete(mediaId);
+        await this._deleteBulkContentFromS3(
+            filePaths,
+            StorageCategory.organizationLogo
+        );
+        await this.appMediaContent.destroy({
+            where: { id: mediaId },
+        });
+    }
+
+    async deleteBulkContent(mediaId: number[]) {
+        // To be compliant with interface
+    }
+}
+
 export class ProfileContentStorage
     extends ContentStorage
     implements IContentStorage {
