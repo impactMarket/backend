@@ -134,7 +134,7 @@ const listManagers = (req: RequestWithUser, res: Response) => {
 };
 
 const pictureAdd = (req: Request, res: Response) => {
-    CommunityService.pictureAdd(req.file)
+    CommunityService.pictureAdd(req.params.isOrganization === 'true', req.file)
         .then((url) => standardResponse(res, 200, true, url))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
