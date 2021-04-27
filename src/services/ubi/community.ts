@@ -461,7 +461,6 @@ export default class CommunityService {
     }
 
     public static async list(query: any): Promise<CommunityAttributes[]> {
-        console.log(query);
         let orderOption: string | Literal | OrderItem[] | undefined;
         const extendedInclude: Includeable[] = [];
 
