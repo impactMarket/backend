@@ -15,17 +15,22 @@ module.exports = {
                 type: Sequelize.STRING(512),
                 allowNull: false,
             },
-            logo: {
-                type: Sequelize.STRING(128),
+            logoMediaId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'app_media_content',
+                    key: 'id',
+                },
+                // onDelete: 'SET NULL', // default
                 allowNull: false,
             },
             website: {
                 type: Sequelize.STRING(128),
-                allowNull: false,
+                allowNull: true,
             },
             facebook: {
                 type: Sequelize.STRING(128),
-                allowNull: false,
+                allowNull: true,
             },
         });
     },
