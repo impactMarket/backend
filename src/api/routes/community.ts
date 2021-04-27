@@ -23,6 +23,7 @@ export default (app: Router): void => {
      *   deprecated: true
      */
     route.get('/publicid/:publicId', communityController.getByPublicId);
+    route.get('/list/:query?', communityController.list);
     /**
      * @swagger
      *
@@ -208,7 +209,13 @@ export default (app: Router): void => {
         authenticateToken,
         communityController.managersDetails
     );
-    route.get('/list/light/:order?', communityController.list);
+    /**
+     * @deprecated use /list
+     */
+    route.get('/list/light/:order?', communityController.listLight);
+    /**
+     * @deprecated use /list
+     */
     route.get('/list/full/:order?', communityController.listFull);
     /**
      * @swagger
