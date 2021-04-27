@@ -8,12 +8,9 @@ export class UbiOrganizationModel extends Model<
     UbiOrganization,
     UbiOrganizationCreation
 > {
-    public communityId!: string;
     public name!: string;
     public description!: string;
-    public logo!: string;
-    public website!: string;
-    public facebook!: string;
+    public logoMediaId!: number;
 }
 
 export function initializeUbiOrganization(sequelize: Sequelize): void {
@@ -32,16 +29,13 @@ export function initializeUbiOrganization(sequelize: Sequelize): void {
                 type: DataTypes.STRING(512),
                 allowNull: false,
             },
-            logo: {
-                type: DataTypes.STRING(128),
-                allowNull: false,
-            },
-            website: {
-                type: DataTypes.STRING(128),
-                allowNull: false,
-            },
-            facebook: {
-                type: DataTypes.STRING(128),
+            logoMediaId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'app_media_content',
+                    key: 'id',
+                },
+                // onDelete: 'SET NULL', // default
                 allowNull: false,
             },
         },

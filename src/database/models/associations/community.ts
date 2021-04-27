@@ -93,6 +93,13 @@ export function communityAssociation(sequelize: Sequelize) {
             as: 'organization',
         }
     );
+    sequelize.models.UbiOrganizationModel.hasMany(
+        sequelize.models.UbiOrganizationSocialMediaModel,
+        {
+            foreignKey: 'organizationId',
+            as: 'socialMedia',
+        }
+    );
     sequelize.models.UbiOrganizationModel.belongsToMany(
         sequelize.models.Community,
         {
