@@ -24,14 +24,6 @@ module.exports = {
                 // onDelete: 'SET NULL', // default
                 allowNull: false,
             },
-            website: {
-                type: Sequelize.STRING(128),
-                allowNull: true,
-            },
-            facebook: {
-                type: Sequelize.STRING(128),
-                allowNull: true,
-            },
         });
     },
     down(queryInterface, Sequelize) {
