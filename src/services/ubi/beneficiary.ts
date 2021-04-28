@@ -152,7 +152,7 @@ export default class BeneficiaryService {
                     model: this.manager,
                     as: 'manager',
                     where: {
-                        user: managerAddress,
+                        address: managerAddress,
                     },
                 },
                 {
@@ -243,7 +243,7 @@ export default class BeneficiaryService {
                     model: this.manager,
                     as: 'manager',
                     where: {
-                        user: managerAddress,
+                        address: managerAddress,
                     },
                 },
                 {
