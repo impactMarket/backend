@@ -19,7 +19,7 @@ export default class GlobalDailyStateService {
     }
 
     public async numbers(): Promise<{
-        raised: string;
+        claimed: string;
         countries: number;
         beneficiaries: number;
         backers: number;
@@ -43,7 +43,7 @@ export default class GlobalDailyStateService {
             order: [['date', 'DESC']],
         }))!; // only empty at the beginning
         return {
-            raised: new BigNumber(lastGlobal.totalRaised)
+            claimed: new BigNumber(lastGlobal.totalDistributed)
                 .div(config.cUSDDecimal ** 10)
                 .toString(),
             countries,
