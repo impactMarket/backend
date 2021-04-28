@@ -460,12 +460,23 @@ export default class CommunityService {
         return result[0] > 0;
     }
 
-    public static async list(query: any): Promise<CommunityAttributes[]> {
+    public static async list(query: {
+        orderBy?: string;
+        filter?: string;
+        extended?: string;
+        offset?: string;
+        limit?: string;
+        lat?: string;
+        lng?: string;
+    }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let orderOption: string | Literal | OrderItem[] | undefined;
         const extendedInclude: Includeable[] = [];
 
         switch (query.orderBy) {
             case 'nearest': {
+                if (query.lat === undefined || query.lng === undefined) {
+                    throw new Error('invalid coordinates');
+                }
                 const lat = parseInt(query.lat, 10);
                 const lng = parseInt(query.lng, 10);
                 if (typeof lat !== 'number' || typeof lng !== 'number') {
@@ -512,7 +523,7 @@ export default class CommunityService {
                 {
                     model: this.ubiCommunityDailyMetrics,
                     required: false,
-                    duplicating: false,
+                    separate: true,
                     as: 'metrics',
                     where: {
                         date: {
@@ -524,8 +535,7 @@ export default class CommunityService {
                 }
             );
         }
-
-        const communitiesResult = await this.community.findAll({
+        const communitiesResult = await this.community.findAndCountAll({
             where: {
                 status: 'valid',
                 visibility: 'public',
@@ -543,7 +553,7 @@ export default class CommunityService {
                         {
                             model: this.appMediaThumbnail,
                             as: 'thumbnails',
-                            duplicating: false,
+                            separate: true,
                         },
                     ],
                 },
@@ -554,11 +564,14 @@ export default class CommunityService {
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
 
-        const communities = communitiesResult.map((c) =>
+        const communities = communitiesResult.rows.map((c) =>
             c.toJSON()
         ) as CommunityAttributes[];
 
-        return communities;
+        return {
+            count: communitiesResult.count,
+            rows: communities,
+        };
     }
 
     /**

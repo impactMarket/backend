@@ -58,7 +58,9 @@ const getHistoricalSSI = (req: Request, res: Response) => {
 
 const list = (req: Request, res: Response) => {
     CommunityService.list(req.query)
-        .then((r) => standardResponse(res, 200, true, r))
+        .then((r) =>
+            standardResponse(res, 200, true, r.rows, { count: r.count })
+        )
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
