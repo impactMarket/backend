@@ -402,7 +402,7 @@ export default class UserService {
         }
         return {
             isBeneficiary: fUser.beneficiary!.length > 0,
-            isManager: fUser.manager!.length > 0,
+            isManager: fUser.manager!.length > 0 || community !== undefined,
             blocked:
                 fUser.beneficiary!.length > 0
                     ? fUser.beneficiary![0].blocked
