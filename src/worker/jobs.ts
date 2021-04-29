@@ -144,7 +144,7 @@ function cron() {
     // every four hour, update exchange rates
     if (
         config.currenciesApiKey !== undefined &&
-        config.currenciesApiKey.length > 0
+        config.currenciesApiKey.length > 3 // allow to use any single char in staging env
     ) {
         updateExchangeRates();
         // eslint-disable-next-line no-new
