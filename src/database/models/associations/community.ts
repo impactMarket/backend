@@ -17,13 +17,13 @@ export function communityAssociation(sequelize: Sequelize) {
             as: 'contract',
         }
     );
-    // sequelize.models.UbiCommunityContractModel.belongsTo(
-    //     sequelize.models.Community,
-    //     {
-    //         foreignKey: 'communityId',
-    //         as: 'community',
-    //     }
-    // );
+    sequelize.models.UbiCommunityContractModel.belongsTo(
+        sequelize.models.Community,
+        {
+            foreignKey: 'communityId',
+            as: 'community',
+        }
+    );
     // used to query from the community with incude
     sequelize.models.Community.hasMany(
         sequelize.models.UbiCommunityLabelModel,

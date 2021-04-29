@@ -80,28 +80,24 @@ async function calculateMetricsGrowth(
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
     const calculateAvgComulativeUbi = async (): Promise<string> => {
-        // await models.ubiCommunityContract.findAll({
-        //     attributes: [[fn('sum', col('maxClaim')), 'avgComulativeUbi']],
-        //     include: [
-        //         {
-        //             model: models.community,
-        //             as: 'community',
-        //             where: {
-        //                 status: 'valid',
-        //                 visibility: 'public',
-        //             },
-        //         },
-        //     ],
-        // });
-
-        const query = `select avg(cc."maxClaim") avgComulativeUbi
-        from ubi_community_contract cc, community c
-        where c.id = cc."communityId"
-        and c.status = 'valid'
-        and c.visibility = 'public'`;
-        const r: any = await sequelize.query(query, {
-            type: QueryTypes.SELECT,
-        });
+        const r: {
+            avgComulativeUbi: string;
+        }[] = (await models.ubiCommunityContract.findAll({
+            // special thanks to Abhishek Shah (sequelize's slack)
+            raw: true, // if this is not given, sequelize will add 'id' column/primary key in attributes by itself
+            attributes: [[fn('sum', col('maxClaim')), 'avgComulativeUbi']],
+            include: [
+                {
+                    model: models.community,
+                    as: 'community',
+                    attributes: [], // so that no attributes are taken from this table/model
+                    where: {
+                        status: 'valid',
+                        visibility: 'public',
+                    },
+                },
+            ],
+        })) as any;
 
         return r[0].avgComulativeUbi;
     };
