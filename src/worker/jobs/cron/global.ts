@@ -80,6 +80,20 @@ async function calculateMetricsGrowth(
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
     const calculateAvgComulativeUbi = async (): Promise<string> => {
+        // await models.ubiCommunityContract.findAll({
+        //     attributes: [[fn('sum', col('maxClaim')), 'avgComulativeUbi']],
+        //     include: [
+        //         {
+        //             model: models.community,
+        //             as: 'community',
+        //             where: {
+        //                 status: 'valid',
+        //                 visibility: 'public',
+        //             },
+        //         },
+        //     ],
+        // });
+
         const query = `select avg(cc."maxClaim") avgComulativeUbi
         from ubi_community_contract cc, community c
         where c.id = cc."communityId"
