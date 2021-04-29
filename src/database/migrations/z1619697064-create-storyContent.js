@@ -10,8 +10,13 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            media: {
-                type: Sequelize.STRING(128),
+            mediaMediaId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'app_media_content',
+                    key: 'id',
+                },
+                // onDelete: 'SET NULL', // default
                 allowNull: true,
             },
             message: {
