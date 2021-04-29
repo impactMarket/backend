@@ -1,17 +1,14 @@
 import GlobalDailyStateService from '@services/global/globalDailyState';
 import GlobalGrowthService from '@services/global/globalGrowth';
 import ReachedAddressService from '@services/reachedAddress';
-import BeneficiaryTransactionService from '@services/ubi/beneficiaryTransaction';
-import ClaimService from '@services/ubi/claim';
-import CommunityContractService from '@services/ubi/communityContract';
 import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
-import CommunityDailyStateService from '@services/ubi/communityDailyState';
 import InflowService from '@services/ubi/inflow';
-import { Logger } from '@utils/logger';
 import BigNumber from 'bignumber.js';
 import { mean } from 'mathjs';
+import { col, fn, Op, QueryTypes, Sequelize } from 'sequelize';
 
 import config from '../../../config';
+import { models, sequelize } from '../../../database';
 
 BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
 
@@ -82,6 +79,135 @@ async function calculateMetricsGrowth(
  * As this is all calculated past midnight, everything is from yesterdayDateOnly
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
+    const calculateAvgComulativeUbi = async (): Promise<string> => {
+        const query = `select avg(cc."maxClaim") avgComulativeUbi
+        from ubi_community_contract cc, community c
+        where c.id = cc."communityId"
+        and c.status = 'valid'
+        and c.visibility = 'public'`;
+        const r: any = await sequelize.query(query, {
+            type: QueryTypes.SELECT,
+        });
+
+        return r[0].avgComulativeUbi;
+    };
+
+    const sumCommunities = async (
+        date: Date
+    ): Promise<{
+        totalClaimed: string;
+        totalClaims: number;
+        totalBeneficiaries: number;
+        totalRaised: string;
+        totalVolume: string;
+        totalTransactions: number;
+    }> => {
+        const query = `select sum(cs.claimed) "totalClaimed",
+                        sum(cs.claims) "totalClaims",
+                        sum(cs.beneficiaries) "totalBeneficiaries",
+                        sum(cs.raised) "totalRaised"
+                        sum(cs.volume) "totalVolume"
+                        sum(cs.transactions) "totalTransactions"
+                from ubi_community_daily_state cs, community c
+                where cs."communityId" = c.id
+                and c.status = 'valid'
+                and c.visibility = 'public'
+                and cs.date = '${date.toISOString().split('T')[0]}'`;
+
+        const result = await sequelize.query<{
+            totalClaimed: string;
+            totalClaims: string;
+            totalBeneficiaries: string;
+            totalRaised: string;
+            totalVolume: string;
+            totalTransactions: string;
+        }>(query, { type: QueryTypes.SELECT });
+
+        return {
+            totalClaimed: result[0].totalClaimed,
+            totalClaims: parseInt(result[0].totalClaims, 10),
+            totalBeneficiaries: parseInt(result[0].totalBeneficiaries, 10),
+            totalRaised: result[0].totalRaised,
+            totalVolume: result[0].totalVolume,
+            totalTransactions: parseInt(result[0].totalTransactions, 10),
+        };
+    };
+
+    const txReach = async (
+        date: Date
+    ): Promise<{
+        reach: string[];
+        reachOut: string[];
+    }> => {
+        const uniqueAddressesReached = await models.beneficiaryTransaction.findAll(
+            {
+                attributes: [[fn('distinct', col('withAddress')), 'addresses']],
+                where: { date },
+                raw: true,
+            }
+        ); // this is an array, wich can be empty (return no rows)
+        const uniqueAddressesReachedOut = await models.beneficiaryTransaction.findAll(
+            {
+                attributes: [[fn('distinct', col('withAddress')), 'addresses']],
+                where: {
+                    date,
+                    withAddress: {
+                        [Op.notIn]: Sequelize.literal(
+                            '(select distinct address from beneficiary)'
+                        ),
+                    },
+                },
+                raw: true,
+            }
+        ); // this is an array, wich can be empty (return no rows)
+        return {
+            reach:
+                uniqueAddressesReached.length === 0
+                    ? []
+                    : uniqueAddressesReached.map((a: any) => a.addresses),
+            reachOut:
+                uniqueAddressesReachedOut.length === 0
+                    ? []
+                    : uniqueAddressesReachedOut.map((a: any) => a.addresses),
+        };
+    };
+
+    /**
+     * Get total monthly (last 30 days, starting todayMidnightTime) raised amounts.
+     *
+     * **NOTE**: raised amounts will always be bigger than zero though,
+     * a community might not be listed if no raise has ever happened!
+     *
+     * @returns string
+     */
+    const getMonthlyRaised = async (from: Date): Promise<string> => {
+        // 30 days ago, from todayMidnightTime
+        const aMonthAgo = new Date();
+        aMonthAgo.setDate(from.getDate() - 30);
+        const query = `select sum(i.amount) raised from inflow i, community c where i."communityId" = c."publicId" and c.status = 'valid' and c.visibility = 'public' and i."txAt" >= '${
+            aMonthAgo.toISOString().split('T')[0]
+        }' and i."txAt" < '${from.toISOString().split('T')[0]}'`;
+
+        const result = await sequelize.query<{
+            raised: string;
+        }>(query, { type: QueryTypes.SELECT });
+        return result[0].raised;
+    };
+
+    const getMonthlyClaimed = async (from: Date): Promise<string> => {
+        // 30 days ago, from todayMidnightTime
+        const aMonthAgo = new Date();
+        aMonthAgo.setDate(from.getDate() - 30);
+        const query = `select sum(i.amount) claimed from claim i, community c where i."communityId" = c."publicId" and c.status = 'valid' and c.visibility = 'public' and i."txAt" >= '${
+            aMonthAgo.toISOString().split('T')[0]
+        }' and i."txAt" < '${from.toISOString().split('T')[0]}'`;
+
+        const result = await sequelize.query<{
+            claimed: string;
+        }>(query, { type: QueryTypes.SELECT });
+        return result[0].claimed;
+    };
+
     const reachedAddressService = new ReachedAddressService();
     const globalDailyStateService = new GlobalDailyStateService();
     const todayMidnightTime = new Date();
@@ -89,15 +215,16 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const yesterdayDateOnly = new Date(); // yesterdayDateOnly
     yesterdayDateOnly.setHours(0, 0, 0, 0);
     yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
+
+    //
     const lastGlobalMetrics = await globalDailyStateService.getLast();
     const last4DaysAvgSSI = await globalDailyStateService.getLast4AvgMedianSSI();
-    const communitiesYesterday = await CommunityDailyStateService.getPublicCommunitiesSum(
-        yesterdayDateOnly
-    );
-    Logger.error(JSON.stringify(communitiesYesterday));
-    const volumeTransactionsAndAddresses = await BeneficiaryTransactionService.getAllByDay(
-        yesterdayDateOnly
-    );
+
+    //
+    const summedCommunities = await sumCommunities(yesterdayDateOnly);
+    const volumeTransactionsAndAddresses = await txReach(yesterdayDateOnly);
+
+    //
     const backersAndFunding = await InflowService.uniqueBackersAndFundingLast30Days(
         todayMidnightTime
     );
@@ -105,24 +232,20 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         yesterdayDateOnly
     );
 
-    const monthlyClaimed = await ClaimService.getMonthlyClaimed(
-        todayMidnightTime
-    );
-    const monthlyRaised = await InflowService.getMonthlyRaised(
-        todayMidnightTime
-    );
+    const monthlyClaimed = await getMonthlyClaimed(todayMidnightTime);
+    const monthlyRaised = await getMonthlyRaised(todayMidnightTime);
+    const totalBackers = await InflowService.countEvergreenBackers();
 
     // inflow / outflow
     const totalRaised = new BigNumber(lastGlobalMetrics.totalRaised)
-        .plus(communitiesYesterday.totalRaised)
+        .plus(summedCommunities.totalRaised)
         .toString();
     const totalDistributed = new BigNumber(lastGlobalMetrics.totalDistributed)
-        .plus(communitiesYesterday.totalClaimed)
+        .plus(summedCommunities.totalClaimed)
         .toString();
-    const totalBackers = await InflowService.countEvergreenBackers();
     const totalBeneficiaries =
         lastGlobalMetrics.totalBeneficiaries +
-        communitiesYesterday.totalBeneficiaries;
+        summedCommunities.totalBeneficiaries;
 
     // ubi pulse
     const givingRate = parseFloat(
@@ -133,21 +256,8 @@ export async function calcuateGlobalMetrics(): Promise<void> {
             .decimalPlaces(2, 1)
             .toString()
     );
-    const ubiRate = communitiesAvgYesterday.avgUbiRate;
-    const avgComulativeUbi = await CommunityContractService.avgComulativeUbi();
-    // const avgUbiDuration = parseFloat(
-    //     new BigNumber(avgComulativeUbi)
-    //         .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
-    //         .dividedBy(ubiRate)
-    //         .dividedBy(30)
-    //         .decimalPlaces(2, 1)
-    //         .toString()
-    // );
-    const avgUbiDuration = communitiesAvgYesterday.avgEstimatedDuration;
 
     // economic activity
-    const volume = volumeTransactionsAndAddresses.volume;
-    const transactions = volumeTransactionsAndAddresses.transactions;
     const reach = volumeTransactionsAndAddresses.reach.length;
     const reachOut = volumeTransactionsAndAddresses.reachOut.length;
     await reachedAddressService.updateReachedList(
@@ -166,12 +276,12 @@ export async function calcuateGlobalMetrics(): Promise<void> {
             .toFixed(2, 1)
     );
     const totalVolume = new BigNumber(lastGlobalMetrics.totalVolume)
-        .plus(volume)
+        .plus(summedCommunities.totalVolume)
         .toString();
     const totalTransactions = new BigNumber(
         lastGlobalMetrics.totalTransactions.toString()
     )
-        .plus(transactions)
+        .plus(summedCommunities.totalTransactions)
         .toString();
     const allReachEver = await reachedAddressService.getAllReachedEver();
 
@@ -182,13 +292,13 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     await globalDailyStateService.add({
         date: yesterdayDateOnly,
         avgMedianSSI: Math.round(avgMedianSSI * 100) / 100,
-        claimed: communitiesYesterday.totalClaimed,
-        claims: communitiesYesterday.totalClaims,
-        beneficiaries: communitiesYesterday.totalBeneficiaries,
-        raised: communitiesYesterday.totalRaised,
+        claimed: summedCommunities.totalClaimed,
+        claims: summedCommunities.totalClaims,
+        beneficiaries: summedCommunities.totalBeneficiaries,
+        raised: summedCommunities.totalRaised,
         backers: backersAndFunding.backers,
-        volume,
-        transactions,
+        volume: summedCommunities.totalVolume,
+        transactions: summedCommunities.totalTransactions,
         reach,
         reachOut,
         totalRaised,
@@ -196,11 +306,11 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         totalBackers,
         totalBeneficiaries,
         givingRate,
-        ubiRate: Math.round(ubiRate * 100) / 100,
+        ubiRate: Math.round(communitiesAvgYesterday.avgUbiRate * 100) / 100,
         fundingRate,
         spendingRate,
-        avgComulativeUbi,
-        avgUbiDuration,
+        avgComulativeUbi: await calculateAvgComulativeUbi(),
+        avgUbiDuration: communitiesAvgYesterday.avgEstimatedDuration,
         totalVolume,
         totalTransactions: BigInt(totalTransactions),
         totalReach: BigInt(allReachEver.reach),

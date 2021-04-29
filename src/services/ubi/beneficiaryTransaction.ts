@@ -1,8 +1,7 @@
 import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
 import { Logger } from '@utils/logger';
-import { col, fn, Op } from 'sequelize';
 
-import { models, Sequelize } from '../../database';
+import { models } from '../../database';
 
 export default class BeneficiaryTransactionService {
     public static beneficiaryTransaction = models.beneficiaryTransaction;
@@ -21,63 +20,5 @@ export default class BeneficiaryTransactionService {
                 Logger.error(e);
             }
         }
-    }
-
-    public static async getAllByDay(
-        date: Date
-    ): Promise<{
-        reach: string[];
-        reachOut: string[];
-        volume: string;
-        transactions: number;
-    }> {
-        const uniqueAddressesReached = await this.beneficiaryTransaction.findAll(
-            {
-                attributes: [[fn('distinct', col('withAddress')), 'addresses']],
-                where: { date },
-                raw: true,
-            }
-        ); // this is an array, wich can be empty (return no rows)
-        const uniqueAddressesReachedOut = await this.beneficiaryTransaction.findAll(
-            {
-                attributes: [[fn('distinct', col('withAddress')), 'addresses']],
-                where: {
-                    date,
-                    withAddress: {
-                        [Op.notIn]: Sequelize.literal(
-                            '(select distinct address from beneficiary)'
-                        ),
-                    },
-                },
-                raw: true,
-            }
-        ); // this is an array, wich can be empty (return no rows)
-        const volumeAndTransactions = (
-            await this.beneficiaryTransaction.findAll({
-                attributes: [
-                    [fn('sum', col('amount')), 'volume'],
-                    [fn('count', col('tx')), 'transactions'],
-                ],
-                where: { date },
-                raw: true,
-            })
-        )[0] as any; // this is a single result, that, if there's nothing, the result is zero
-        // result is { volume: null, transactions: '0' } if nothing has happened
-        console.log(volumeAndTransactions);
-        return {
-            reach:
-                uniqueAddressesReached.length === 0
-                    ? []
-                    : uniqueAddressesReached.map((a: any) => a.addresses),
-            reachOut:
-                uniqueAddressesReachedOut.length === 0
-                    ? []
-                    : uniqueAddressesReachedOut.map((a: any) => a.addresses),
-            volume:
-                volumeAndTransactions.volume === null
-                    ? '0'
-                    : volumeAndTransactions.volume,
-            transactions: parseInt(volumeAndTransactions.transactions, 10),
-        };
     }
 }

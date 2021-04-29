@@ -33,34 +33,6 @@ export default class InflowService {
         }
     }
 
-    /**
-     * Get total monthly (last 30 days, starting todayMidnightTime) raised amounts.
-     *
-     * **NOTE**: raised amounts will always be bigger than zero though,
-     * a community might not be listed if no raise has ever happened!
-     *
-     * @returns string
-     */
-    public static async getMonthlyRaised(from: Date): Promise<string> {
-        // 30 days ago, from todayMidnightTime
-        const aMonthAgo = new Date();
-        aMonthAgo.setDate(from.getDate() - 30);
-        const raised: { raised: string } = (
-            await this.inflow.findAll({
-                attributes: [[fn('sum', col('amount')), 'raised']],
-                where: {
-                    txAt: {
-                        [Op.lt]: from,
-                        [Op.gte]: aMonthAgo,
-                    },
-                },
-                raw: true,
-            })
-        )[0] as any;
-        // there will always be raised.lenght > 0 (were only zero at the begining)
-        return raised.raised;
-    }
-
     public static async getAllBackers(communityId: string): Promise<string[]> {
         const backers = (
             await this.inflow.findAll({

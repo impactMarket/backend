@@ -111,39 +111,6 @@ export default class CommunityDailyStateService {
         );
     }
 
-    public static async getPublicCommunitiesSum(
-        date: Date
-    ): Promise<{
-        totalClaimed: string;
-        totalClaims: number;
-        totalBeneficiaries: number;
-        totalRaised: string;
-    }> {
-        const query = `select sum(cs.claimed) "totalClaimed",
-                        sum(cs.claims) "totalClaims",
-                        sum(cs.beneficiaries) "totalBeneficiaries",
-                        sum(cs.raised) "totalRaised"
-                from ubi_community_daily_state cs, community c
-                where cs."communityId" = c.id
-                and c.status = 'valid'
-                and c.visibility = 'public'
-                and cs.date = '${date.toISOString().split('T')[0]}'`;
-
-        const result = await this.sequelize.query<{
-            totalClaimed: string;
-            totalClaims: string;
-            totalBeneficiaries: string;
-            totalRaised: string;
-        }>(query, { type: QueryTypes.SELECT });
-
-        return {
-            totalClaimed: result[0].totalClaimed,
-            totalClaims: parseInt(result[0].totalClaims, 10),
-            totalBeneficiaries: parseInt(result[0].totalBeneficiaries, 10),
-            totalRaised: result[0].totalRaised,
-        };
-    }
-
     /**
      * 💂‍♀️ yes sir, that's about it!
      * Used on dashboard to provider "real time" data
