@@ -67,7 +67,7 @@ export interface CommunityCreationAttributes {
     };
     email: string;
     visibility: 'public' | 'private';
-    // coverImage: string;
+    coverImage: string;
     coverMediaId: number;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     started: Date;

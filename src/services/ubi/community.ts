@@ -89,6 +89,9 @@ export default class CommunityService {
         contractParams: ICommunityContractParams
     ): Promise<Community> {
         let managerAddress: string = '';
+        const media = await this.appMediaContent.findOne({
+            where: { id: coverMediaId },
+        });
         let createObject: CommunityCreationAttributes = {
             requestByAddress,
             name,
@@ -100,6 +103,7 @@ export default class CommunityService {
             gps,
             email,
             coverMediaId,
+            coverImage: media!.url,
             visibility: 'public', // will be changed if private
             status: 'pending', // will be changed if private
             started: new Date(),
@@ -185,6 +189,9 @@ export default class CommunityService {
         contractParams: ICommunityContractParams
     ): Promise<Community> {
         // TODO: improve, insert with unique transaction (see sequelize eager loading)
+        const media = await this.appMediaContent.findOne({
+            where: { id: coverMediaId },
+        });
         const community = await this.community.create({
             requestByAddress,
             name,
@@ -197,6 +204,7 @@ export default class CommunityService {
             email,
             visibility: 'public',
             coverMediaId,
+            coverImage: media!.url,
             status: 'pending',
             started: new Date(),
         });
