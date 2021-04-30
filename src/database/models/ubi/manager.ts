@@ -9,6 +9,7 @@ export interface ManagerAttributes {
 
     // timestamps
     createdAt: Date;
+    updatedAt: Date;
 
     user?: User;
 }
@@ -27,6 +28,7 @@ export class Manager extends Model<
 
     // timestamps!
     public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
 }
 
 export function initializeManager(sequelize: Sequelize): void {
@@ -63,10 +65,13 @@ export function initializeManager(sequelize: Sequelize): void {
                 type: DataTypes.DATE,
                 allowNull: false,
             },
+            updatedAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
         },
         {
             tableName: 'manager',
-            updatedAt: false,
             sequelize,
         }
     );
