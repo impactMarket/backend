@@ -1,4 +1,5 @@
 import { AppAnonymousReport } from '@interfaces/app/appAnonymousReport';
+import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { AppUserDeviceCreation } from '@interfaces/app/appUserDevice';
 import { User, UserCreationAttributes } from '@interfaces/app/user';
 import { ProfileContentStorage } from '@services/storage';
@@ -257,7 +258,7 @@ export default class UserService {
         if (user!.avatarMediaId !== null && user!.avatarMediaId !== media.id) {
             await this.profileContentStorage.deleteContent(user!.avatarMediaId);
         }
-        return updateResult[1][0].toJSON();
+        return updateResult[1][0].toJSON() as AppMediaContent;
     }
 
     public static async setDevice(
