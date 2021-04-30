@@ -3,7 +3,7 @@ import { celebrate, Joi } from 'celebrate';
 class StoryValidator {
     add = celebrate({
         body: Joi.object({
-            communityId: Joi.number().optional(),
+            communityId: Joi.number(),
             message: Joi.string().optional(),
             mediaId: Joi.number().optional(),
         }),
