@@ -35,26 +35,6 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/{id}:
-     *   get:
-     *     tags:
-     *       - "community"
-     *     summary: Find a beneficiary in manager's community
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         schema:
-     *           type: integer
-     *         required: true
-     *         description: community id
-     *     responses:
-     *       "200":
-     *         description: OK
-     */
-    route.get('/:id', communityController.findById);
-    /**
-     * @swagger
-     *
      * /community/picture:
      *   post:
      *     tags:
@@ -93,58 +73,6 @@ export default (app: Router): void => {
         '/hssi/:publicId',
         communityController.getHistoricalSSIByPublicId
     );
-    /**
-     * @swagger
-     *
-     * /community/{id}/historical-ssi:
-     *   get:
-     *     tags:
-     *       - "community"
-     *     summary: Historical SSI
-     *     responses:
-     *       "200":
-     *         description: OK
-     */
-    route.get('/:id/historical-ssi', communityController.getHistoricalSSI);
-    /**
-     * @swagger
-     *
-     * /community/{id}/dashboard:
-     *   get:
-     *     tags:
-     *       - "community"
-     *     summary: Get community dashboard details
-     *     responses:
-     *       "200":
-     *         description: OK
-     */
-    route.get('/:id/dashboard', communityController.getDashboard);
-    /**
-     * @swagger
-     *
-     * /community/{id}/claim-location:
-     *   get:
-     *     tags:
-     *       - "community"
-     *     summary: Get community claim locations
-     *     responses:
-     *       "200":
-     *         description: OK
-     */
-    route.get('/:id/claim-location', communityController.getClaimLocation);
-    /**
-     * @swagger
-     *
-     * /community/{id}/managers:
-     *   get:
-     *     tags:
-     *       - "community"
-     *     summary: Get community managers
-     *     responses:
-     *       "200":
-     *         description: OK
-     */
-    route.get('/:id/managers', communityController.getManagers);
     /**
      * @swagger
      *
@@ -278,4 +206,77 @@ export default (app: Router): void => {
         communityController.remove
     );
     route.get('/pending', communityController.pending);
+
+    /**
+     * @swagger
+     *
+     * /community/{id}/historical-ssi:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Historical SSI
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/historical-ssi', communityController.getHistoricalSSI);
+    /**
+     * @swagger
+     *
+     * /community/{id}/dashboard:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community dashboard details
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/dashboard', communityController.getDashboard);
+    /**
+     * @swagger
+     *
+     * /community/{id}/claim-location:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community claim locations
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/claim-location', communityController.getClaimLocation);
+    /**
+     * @swagger
+     *
+     * /community/{id}/managers:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community managers
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/managers', communityController.getManagers);
+    /**
+     * @swagger
+     *
+     * /community/{id}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Find a beneficiary in manager's community
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id', communityController.findById);
 };
