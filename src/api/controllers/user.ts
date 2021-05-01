@@ -1,6 +1,6 @@
 import { RequestWithUser } from '@ipcttypes/core';
 import UserService from '@services/app/user';
-import { controllerLogAndFail } from '@utils/api';
+import { controllerLogAndFail, standardResponse } from '@utils/api';
 import { Logger } from '@utils/logger';
 import crypto from 'crypto';
 import { Request, Response } from 'express';
@@ -152,8 +152,8 @@ class UserController {
             return;
         }
         UserService.setProfilePicture(req.user.address, req.file)
-            .then((r) => res.send(r))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public device = (req: RequestWithUser, res: Response) => {
