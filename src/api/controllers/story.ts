@@ -1,6 +1,6 @@
 import { RequestWithUser } from '@ipcttypes/core';
 import StoryService from '@services/story';
-import { controllerLogAndFail } from '@utils/api';
+import { controllerLogAndFail, standardResponse } from '@utils/api';
 import { Request, Response } from 'express';
 
 class StoryController {
@@ -13,8 +13,8 @@ class StoryController {
         }
         this.storyService
             .pictureAdd(req.file)
-            .then((r) => res.send(r))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     add = (req: RequestWithUser, res: Response) => {
@@ -24,8 +24,8 @@ class StoryController {
         }
         this.storyService
             .add(req.user.address, req.body)
-            .then((r) => res.send(r))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     has = (req: RequestWithUser, res: Response) => {
@@ -35,8 +35,8 @@ class StoryController {
         }
         this.storyService
             .has(req.user.address)
-            .then((r) => res.send(r))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     remove = (req: RequestWithUser, res: Response) => {
@@ -46,8 +46,8 @@ class StoryController {
         }
         this.storyService
             .remove(parseInt(req.params.id, 10), req.user.address)
-            .then((r) => (r === 0 ? res.sendStatus(400) : res.sendStatus(200)))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, r !== 0, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     listUserOnly = (req: RequestWithUser, res: Response) => {
@@ -57,22 +57,22 @@ class StoryController {
         }
         this.storyService
             .listByUser(req.params.order, req.query, req.user.address)
-            .then((r) => res.send(r))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     listImpactMarketOnly = (req: RequestWithUser, res: Response) => {
         this.storyService
             .listImpactMarketOnly(req.user?.address)
-            .then((r) => res.send(r))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     listByOrder = (req: Request, res: Response) => {
         this.storyService
             .listByOrder(req.params.order, req.query)
-            .then((r) => res.send(r))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getByCommunity = (req: RequestWithUser, res: Response) => {
@@ -83,8 +83,8 @@ class StoryController {
                 req.query,
                 req.user?.address
             )
-            .then((r) => res.send(r))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     love = (req: RequestWithUser, res: Response) => {
@@ -94,8 +94,8 @@ class StoryController {
         }
         this.storyService
             .love(req.user.address, parseInt(req.params.id, 10))
-            .then(() => res.sendStatus(200))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     inapropriate = (req: RequestWithUser, res: Response) => {
@@ -105,8 +105,8 @@ class StoryController {
         }
         this.storyService
             .inapropriate(req.user.address, parseInt(req.params.id, 10))
-            .then(() => res.sendStatus(200))
-            .catch((e) => controllerLogAndFail(e, 400, res));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 

@@ -12,14 +12,14 @@ export const standardResponse = (
     success: boolean,
     data: any,
     options?: {
-        errorMessage?: string;
+        error?: string;
         count?: number;
     }
 ) => {
     res.status(status).send({
         success,
         data,
-        errorMessage: options?.errorMessage,
+        error: options?.error,
         count: options?.count,
     });
 };
