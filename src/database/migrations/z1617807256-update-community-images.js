@@ -116,7 +116,7 @@ module.exports = {
             try {
                 const e = communities[c];
                 const params = {
-                    Bucket: process.env.AWS_BUCKET_COMMUNITY,
+                    Bucket: process.env.AWS_BUCKET_IMAGES_COMMUNITY,
                     Key: e.coverImage.split(process.env.CLOUDFRONT_URL)[1],
                 };
                 const rg = await oldS3.getObject(params).promise();

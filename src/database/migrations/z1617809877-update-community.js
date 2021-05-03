@@ -109,7 +109,7 @@ module.exports = {
             }
         );
         const AppMediaContent = await queryInterface.sequelize.define(
-            'community',
+            'app_media_content',
             {
                 id: {
                     type: Sequelize.INTEGER,
@@ -164,6 +164,8 @@ module.exports = {
                     height: dimensions.height,
                 });
 
+                // TODO: create thumbnails
+
                 await Community.update(
                     { coverMediaId: media.id },
                     { where: { id: e.id } }
@@ -174,6 +176,12 @@ module.exports = {
             }
         }
         await queryInterface.changeColumn('community', 'coverMediaId', {
+            type: Sequelize.INTEGER,
+            references: {
+                model: 'app_media_content',
+                key: 'id',
+            },
+            // onDelete: 'SET NULL', // default
             allowNull: false,
         });
     },
