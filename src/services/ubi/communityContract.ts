@@ -102,13 +102,13 @@ export default class CommunityContractService {
         // where c."publicId" = cc."communityId"
         // and c.status = 'valid'
         // and c.visibility = 'public'
-        const publicCommunities: string[] = (
+        const publicCommunities: number[] = (
             await this.community.findAll({
-                attributes: ['publicId'],
+                attributes: ['id'],
                 where: { visibility: 'public', status: 'valid' },
                 raw: true,
             })
-        ).map((c) => c.publicId);
+        ).map((c) => c.id);
 
         const result = (
             await this.ubiCommunityContract.findAll({

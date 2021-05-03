@@ -74,6 +74,11 @@ export default class GlobalDailyStateService {
         return last[0];
     }
 
+    public async count(): Promise<number> {
+        // it was null just once at the system's begin.
+        return await this.globalDailyState.count();
+    }
+
     public async sumLast30Days(
         from: Date
     ): Promise<{
