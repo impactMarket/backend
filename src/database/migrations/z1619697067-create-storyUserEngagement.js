@@ -24,6 +24,11 @@ module.exports = {
                 allowNull: false,
             },
         });
+        try {
+            await queryInterface.sequelize.query(
+                `alter table story_user_engagement drop constraint one_love_per_story_key;`
+            );
+        } catch (e) {}
         return queryInterface.sequelize.query(
             `ALTER TABLE story_user_engagement ADD CONSTRAINT one_love_per_story_key UNIQUE ("contentId", address);`
         );
