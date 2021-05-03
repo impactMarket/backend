@@ -113,16 +113,31 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     );
 
     // inflow / outflow
-    const totalRaised = new BigNumber(lastGlobalMetrics.totalRaised)
-        .plus(communitiesYesterday.totalRaised)
-        .toString();
-    const totalDistributed = new BigNumber(lastGlobalMetrics.totalDistributed)
-        .plus(communitiesYesterday.totalClaimed)
-        .toString();
+    let totalRaised = '0';
+    let totalDistributed = '0';
+    let totalBeneficiaries = 0;
+    let totalVolume = '0';
+    let totalTransactions = '0';
+    if (lastGlobalMetrics) {
+        totalRaised = new BigNumber(lastGlobalMetrics.totalRaised)
+            .plus(communitiesYesterday.totalRaised)
+            .toString();
+        totalDistributed = new BigNumber(lastGlobalMetrics.totalDistributed)
+            .plus(communitiesYesterday.totalClaimed)
+            .toString();
+        totalBeneficiaries =
+            lastGlobalMetrics.totalBeneficiaries +
+            communitiesYesterday.totalBeneficiaries;
+        totalVolume = new BigNumber(lastGlobalMetrics.totalVolume)
+            .plus(volumeTransactionsAndAddresses.volume)
+            .toString();
+        totalTransactions = new BigNumber(
+            lastGlobalMetrics.totalTransactions.toString()
+        )
+            .plus(volumeTransactionsAndAddresses.transactions)
+            .toString();
+    }
     const totalBackers = await InflowService.countEvergreenBackers();
-    const totalBeneficiaries =
-        lastGlobalMetrics.totalBeneficiaries +
-        communitiesYesterday.totalBeneficiaries;
 
     // ubi pulse
     const givingRate = parseFloat(
@@ -146,8 +161,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     const avgUbiDuration = communitiesAvgYesterday.avgEstimatedDuration;
 
     // economic activity
-    const volume = volumeTransactionsAndAddresses.volume;
-    const transactions = volumeTransactionsAndAddresses.transactions;
+    const { volume, transactions } = volumeTransactionsAndAddresses;
     const reach = volumeTransactionsAndAddresses.reach.length;
     const reachOut = volumeTransactionsAndAddresses.reachOut.length;
     await reachedAddressService.updateReachedList(
@@ -165,14 +179,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
             .multipliedBy(100)
             .toFixed(2, 1)
     );
-    const totalVolume = new BigNumber(lastGlobalMetrics.totalVolume)
-        .plus(volume)
-        .toString();
-    const totalTransactions = new BigNumber(
-        lastGlobalMetrics.totalTransactions.toString()
-    )
-        .plus(transactions)
-        .toString();
+
     const allReachEver = await reachedAddressService.getAllReachedEver();
 
     const avgMedianSSI = mean(
@@ -207,6 +214,8 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         totalReachOut: BigInt(allReachEver.reachOut),
     });
 
-    // calculate global growth
-    await calculateMetricsGrowth(globalDailyStateService);
+    if ((await globalDailyStateService.count()) > 60) {
+        // calculate global growth
+        await calculateMetricsGrowth(globalDailyStateService);
+    }
 }

@@ -182,7 +182,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         reach: string;
         id: string;
     }[] = await sequelize.query(
-        'select sum(bt.amount) volume, count(bt.amount) txs, count(distinct bt."withAddress") reach, c.id from beneficiarytransaction bt left join beneficiary b on bt.beneficiary = b.address left join community c on b."communityId" = c."publicId" where bt.date = \'?\' group by c.id',
+        'select sum(bt.amount) volume, count(bt.amount) txs, count(distinct bt."withAddress") reach, c.id from beneficiarytransaction bt left join beneficiary b on bt.beneficiary = b.address left join community c on b."communityId" = c."publicId" where bt.date = ? group by c.id',
         {
             replacements: [yesterday.toISOString().split('T')[0]],
             raw: true,
@@ -355,15 +355,17 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             estimatedDuration,
             date: yesterday,
         });
-        const economic = economicActivity.get(community.id)!;
-        await models.ubiCommunityDailyState.update(
-            {
-                transactions: parseInt(economic.txs, 10),
-                reach: parseInt(economic.reach, 10),
-                volume: economic.volume,
-            },
-            { where: { communityId: community.id } }
-        );
+        const economic = economicActivity.get(community.id);
+        if (economic) {
+            await models.ubiCommunityDailyState.update(
+                {
+                    transactions: parseInt(economic.txs, 10),
+                    reach: parseInt(economic.reach, 10),
+                    volume: economic.volume,
+                },
+                { where: { communityId: community.id } }
+            );
+        }
     };
 
     const pending: Promise<void>[] = [];
