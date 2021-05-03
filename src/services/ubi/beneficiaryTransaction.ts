@@ -55,7 +55,7 @@ export default class BeneficiaryTransactionService {
         const volumeAndTransactions = (
             await this.beneficiaryTransaction.findAll({
                 attributes: [
-                    [fn('sum', col('amount')), 'volume'],
+                    [fn('coalesce', fn('sum', col('amount')), 0), 'volume'],
                     [fn('count', col('tx')), 'transactions'],
                 ],
                 where: { date },
