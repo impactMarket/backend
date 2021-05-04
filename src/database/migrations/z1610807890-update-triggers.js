@@ -13,22 +13,25 @@ module.exports = {
 
         CREATE OR REPLACE FUNCTION update_beneficiaries_community_states()
     RETURNS TRIGGER AS $$
+    declare
+        community_id integer;
     BEGIN
+        SELECT id INTO community_id FROM community where "publicId"=NEW."communityId";
         IF (TG_OP = 'INSERT') THEN -- INSERT operations (first added)
             -- update overall state
-            UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId";
+            UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=community_id;
             -- update daily state
-            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         ELSEIF (OLD.active IS FALSE AND NEW.active IS TRUE) THEN -- beneficiary being added back to community
             -- update overall state
-            UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1, "removedBeneficiaries" = "removedBeneficiaries" - 1 WHERE "communityId"=NEW."communityId";
+            UPDATE ubi_community_state SET beneficiaries = beneficiaries + 1, "removedBeneficiaries" = "removedBeneficiaries" - 1 WHERE "communityId"=community_id;
             -- update daily state
-            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries + 1 WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN -- beneficiary being removed from community
             -- update overall state
-            UPDATE ubi_community_state SET beneficiaries = beneficiaries - 1, "removedBeneficiaries" = "removedBeneficiaries" + 1 WHERE "communityId"=NEW."communityId";
+            UPDATE ubi_community_state SET beneficiaries = beneficiaries - 1, "removedBeneficiaries" = "removedBeneficiaries" + 1 WHERE "communityId"=community_id;
             -- update daily state
-            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries - 1 WHERE "communityId"=NEW."communityId" AND date=DATE(NEW."txAt");
+            UPDATE ubi_community_daily_state SET beneficiaries = beneficiaries - 1 WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         END IF;
         RETURN NEW;
     END;
@@ -78,22 +81,25 @@ EXECUTE PROCEDURE update_claim_states();`);
 
         await queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_managers_community_state()
-    RETURNS TRIGGER AS $$
-    BEGIN
-        IF (TG_OP = 'INSERT') THEN -- INSERT operations
-            -- update overall state
-            UPDATE ubi_community_state SET managers = managers + 1 WHERE "communityId"=NEW."communityId";
-            RETURN NEW;
-        ELSEIF (TG_OP = 'DELETE') THEN -- DELETE operations
-            -- update overall state
-            UPDATE ubi_community_state SET managers = managers - 1 WHERE "communityId"=OLD."communityId";
-            RETURN OLD;
-        END IF;
-    END;
+    RETURNS TRIGGER AS
+$$
+declare
+    community_id integer;
+BEGIN
+    SELECT id INTO community_id FROM community where "publicId" = NEW."communityId";
+    IF (TG_OP = 'INSERT') THEN -- INSERT operations
+    -- update overall state
+        UPDATE ubi_community_state SET managers = managers + 1 WHERE "communityId" = community_id;
+    ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN -- manager being removed from community
+    -- update overall state
+        UPDATE ubi_community_state SET managers = managers - 1 WHERE "communityId" = community_id;
+    END IF;
+    RETURN NEW;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_managers_community_state
-BEFORE INSERT OR DELETE
+BEFORE INSERT OR UPDATE
 ON manager
 FOR EACH ROW
 EXECUTE PROCEDURE update_managers_community_state();`);

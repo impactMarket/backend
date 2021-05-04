@@ -76,7 +76,7 @@ BEGIN
     IF (TG_OP = 'INSERT') THEN -- INSERT operations
     -- update overall state
         UPDATE ubi_community_state SET managers = managers + 1 WHERE "communityId" = community_id;
-    ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN -- beneficiary being removed from community
+    ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN -- manager being removed from community
     -- update overall state
         UPDATE ubi_community_state SET managers = managers - 1 WHERE "communityId" = community_id;
     END IF;
