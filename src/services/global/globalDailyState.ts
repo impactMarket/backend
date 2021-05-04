@@ -44,7 +44,7 @@ export default class GlobalDailyStateService {
         }))!; // only empty at the beginning
         return {
             claimed: new BigNumber(lastGlobal.totalDistributed)
-                .div(config.cUSDDecimal ** 10)
+                .div(10 ** config.cUSDDecimal)
                 .toString(),
             countries,
             beneficiaries: lastGlobal.totalBeneficiaries,
