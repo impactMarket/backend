@@ -64,6 +64,8 @@ $$ LANGUAGE plpgsql;`);
 $$ LANGUAGE plpgsql;`);
 
         await queryInterface.sequelize.query(`
+        DROP TRIGGER update_managers_community_state on manager;
+
         CREATE OR REPLACE FUNCTION update_managers_community_state()
     RETURNS TRIGGER AS
 $$
@@ -74,14 +76,19 @@ BEGIN
     IF (TG_OP = 'INSERT') THEN -- INSERT operations
     -- update overall state
         UPDATE ubi_community_state SET managers = managers + 1 WHERE "communityId" = community_id;
-        RETURN NEW;
     ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN -- beneficiary being removed from community
     -- update overall state
         UPDATE ubi_community_state SET managers = managers - 1 WHERE "communityId" = community_id;
-        RETURN OLD;
     END IF;
+    RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;`);
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_managers_community_state
+BEFORE INSERT OR UPDATE
+ON manager
+FOR EACH ROW
+EXECUTE PROCEDURE update_managers_community_state();`);
 
         await queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_inflow_community_states()
