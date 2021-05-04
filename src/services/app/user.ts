@@ -391,6 +391,7 @@ export default class UserService {
         }
         const fUser = user.toJSON() as User;
         let community: ICommunity | null = null;
+        let managerInPendingCommunity = false;
         if (fUser.beneficiary!.length > 0) {
             community = await CommunityService.getByPublicId(
                 fUser.beneficiary![0].communityId
@@ -405,11 +406,12 @@ export default class UserService {
             );
             if (communityId) {
                 community = await CommunityService.getByPublicId(communityId);
+                managerInPendingCommunity = true;
             }
         }
         return {
             isBeneficiary: fUser.beneficiary!.length > 0,
-            isManager: fUser.manager!.length > 0 || community !== undefined,
+            isManager: fUser.manager!.length > 0 || managerInPendingCommunity,
             blocked:
                 fUser.beneficiary!.length > 0
                     ? fUser.beneficiary![0].blocked
