@@ -127,7 +127,7 @@ export interface ICommunitiesListStories {
 
 export interface ICommunityStories {
     id: number;
-    publicId: string; // temporary
+    // publicId: string; // temporary
     name: string;
     city: string;
     country: string;

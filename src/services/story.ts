@@ -197,7 +197,7 @@ export default class StoryService {
         });
         return {
             id: 0,
-            publicId: 'impact-market',
+            // publicId: 'impact-market',
             name: '',
             city: '',
             country: '',
@@ -347,7 +347,7 @@ export default class StoryService {
             .community!;
         return {
             id: community.id,
-            publicId: community.publicId,
+            // publicId: community.publicId,
             name: community.name,
             city: community.city,
             country: community.country,
