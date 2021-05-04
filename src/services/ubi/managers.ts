@@ -62,7 +62,7 @@ export default class ManagerService {
     public static async countManagers(communityId: string): Promise<number> {
         const managers: { total: string } = (
             await this.manager.findAll({
-                attributes: [[fn('count', col('user')), 'total']],
+                attributes: [[fn('count', col('address')), 'total']],
                 where: { communityId },
                 raw: true,
             })
@@ -84,7 +84,7 @@ export default class ManagerService {
         }
 
         return await this.sequelize.query(
-            'select m."user" address, u.username username, m."createdAt" "timestamp" from manager m left join "user" u on u.address = m."user" where m."communityId" = \'' +
+            'select m."address" address, u.username username, m."createdAt" "timestamp" from manager m left join "user" u on u.address = m."address" where m.active = true and m."communityId" = \'' +
                 communityId +
                 '\' order by m."createdAt" desc',
             { type: QueryTypes.SELECT }
@@ -111,9 +111,9 @@ export default class ManagerService {
         }
 
         return await this.sequelize.query(
-            'select mq."user" address, u.username username, mq."createdAt" "timestamp" from manager m, manager mq left join "user" u on u.address = mq."user" where m."communityId" = mq."communityId" and m."user" = \'' +
+            'select mq."address" address, u.username username, mq."createdAt" "timestamp" from manager m, manager mq left join "user" u on u.address = mq."address" where mq.active = true and m."communityId" = mq."communityId" and m."address" = \'' +
                 managerAddress +
-                '\'  and mq."user" = \'' +
+                '\'  and mq."address" = \'' +
                 address +
                 '\' order by mq."createdAt" desc',
             { type: QueryTypes.SELECT }
@@ -142,7 +142,7 @@ export default class ManagerService {
         }
 
         return await this.sequelize.query(
-            'select mq."user" address, u.username username, mq."createdAt" "timestamp" from manager m, manager mq left join "user" u on u.address = mq."user" where m."communityId" = mq."communityId" and m."user" = \'' +
+            'select mq."address" address, u.username username, mq."createdAt" "timestamp" from manager m, manager mq left join "user" u on u.address = mq."address" where mq.active = true and m."communityId" = mq."communityId" and m."address" = \'' +
                 managerAddress +
                 '\' order by mq."createdAt" desc offset ' +
                 offset +
