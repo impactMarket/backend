@@ -359,11 +359,17 @@ export default class UserService {
                     model: this.beneficiary,
                     as: 'beneficiary',
                     required: false,
+                    where: {
+                        active: true,
+                    },
                 },
                 {
                     model: this.manager,
                     as: 'manager',
                     required: false,
+                    where: {
+                        active: true,
+                    },
                 },
                 {
                     model: this.appUserTrust,
