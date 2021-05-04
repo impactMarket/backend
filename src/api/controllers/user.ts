@@ -1,6 +1,6 @@
 import { RequestWithUser } from '@ipcttypes/core';
 import UserService from '@services/app/user';
-import { controllerLogAndFail, standardResponse } from '@utils/api';
+import { standardResponse } from '@utils/api';
 import { Logger } from '@utils/logger';
 import crypto from 'crypto';
 import { Request, Response } from 'express';
@@ -53,7 +53,9 @@ class UserController {
 
     public updateUsername = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         const { username } = req.body;
@@ -64,7 +66,9 @@ class UserController {
 
     public updateCurrency = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         const { currency } = req.body;
@@ -78,7 +82,9 @@ class UserController {
         res: Response
     ) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         const { token } = req.body;
@@ -89,7 +95,9 @@ class UserController {
 
     public updateLanguage = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         const { language } = req.body;
@@ -100,7 +108,9 @@ class UserController {
 
     public updateGender = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         const { gender } = req.body;
@@ -111,7 +121,9 @@ class UserController {
 
     public updateAge = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         const { age } = req.body;
@@ -125,7 +137,9 @@ class UserController {
      */
     public updateChildren = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         const { children } = req.body;
@@ -136,7 +150,9 @@ class UserController {
 
     public pictureAdd = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         UserService.setProfilePicture(req.user.address, req.file)
@@ -149,7 +165,9 @@ class UserController {
      */
     public device = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         const { phone, identifier, device, network } = req.body;
@@ -209,7 +227,7 @@ class UserController {
         }
         UserService.hello(address, phone)
             .then((u) => res.send(u))
-            .catch((e) => controllerLogAndFail(e, 403, res));
+            .catch(() => res.sendStatus(403));
     };
 
     /**
@@ -224,7 +242,7 @@ class UserController {
                     res.send('OK');
                 }
             })
-            .catch((e) => controllerLogAndFail(e, 404, res));
+            .catch(() => res.sendStatus(404));
     };
 }
 
