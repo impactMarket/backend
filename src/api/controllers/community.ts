@@ -183,7 +183,7 @@ const managersDetails = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
-const add = (req: Request, res: Response) => {
+const create = (req: Request, res: Response) => {
     const {
         requestByAddress, // the address making the request (will be community manager)
         name,
@@ -211,7 +211,44 @@ const add = (req: Request, res: Response) => {
         country,
         gps,
         email,
-        coverMediaId,
+        txReceipt,
+        contractParams,
+        coverMediaId
+    )
+        .then((community) => standardResponse(res, 201, true, community))
+        .catch((e) => standardResponse(res, 403, false, e));
+};
+
+/**
+ * @deprecated
+ */
+const add = (req: Request, res: Response) => {
+    const {
+        requestByAddress, // the address making the request (will be community manager)
+        name,
+        contractAddress,
+        description,
+        language,
+        currency,
+        city,
+        country,
+        gps,
+        email,
+        txReceipt,
+        contractParams,
+    } = req.body;
+
+    CommunityService.create(
+        requestByAddress,
+        name,
+        contractAddress,
+        description,
+        language,
+        currency,
+        city,
+        country,
+        gps,
+        email,
         txReceipt,
         contractParams
     )
@@ -301,6 +338,7 @@ export default {
     managers,
     managersDetails,
     add,
+    create,
     edit,
     accept,
     remove,

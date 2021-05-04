@@ -67,8 +67,8 @@ export interface CommunityCreationAttributes {
     };
     email: string;
     visibility: 'public' | 'private';
-    coverImage: string;
-    coverMediaId: number;
+    coverImage?: string; // TODO: will be required once next version is released
+    coverMediaId?: number; // TODO: will be required once next version is released
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     started: Date;
 }
@@ -95,7 +95,7 @@ export class Community extends Model<
     public email!: string;
     public visibility!: 'public' | 'private';
     public coverImage!: string;
-    public coverMediaId!: number;
+    public coverMediaId!: number | null; // TODO: will be required once next version is released
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     public started!: Date;
 
@@ -179,7 +179,7 @@ export function initializeCommunity(sequelize: Sequelize): void {
                     key: 'id',
                 },
                 // onDelete: 'SET NULL', // default
-                allowNull: false,
+                allowNull: true, // TODO: will be required once next version is released
             },
             status: {
                 type: DataTypes.ENUM('pending', 'valid', 'removed'),
