@@ -363,7 +363,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     reach: parseInt(economic.reach, 10),
                     volume: economic.volume,
                 },
-                { where: { communityId: community.id } }
+                { where: { communityId: community.id, date: yesterday } }
             );
         }
     };
