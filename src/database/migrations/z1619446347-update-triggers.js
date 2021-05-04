@@ -41,6 +41,7 @@ $$ LANGUAGE plpgsql;`);
     declare
         state_claimed numeric(29);
         state_daily_claimed numeric(29);
+        beneficiary_claimed numeric(22);
         beneficiary_last_claim_at timestamp with time zone;
         community_id integer;
     BEGIN
@@ -51,6 +52,8 @@ $$ LANGUAGE plpgsql;`);
         -- update beneficiary table as well
         SELECT "lastClaimAt" INTO beneficiary_last_claim_at FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address;
         UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt" WHERE "communityId"=NEW."communityId" AND address=NEW.address;
+        SELECT SUM(claimed + NEW.amount) INTO beneficiary_claimed FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address;
+        UPDATE beneficiary SET claimed = beneficiary_claimed WHERE "communityId"=NEW."communityId" AND address=NEW.address;
         -- update total claimed
         SELECT SUM(claimed + NEW.amount) INTO state_claimed FROM ubi_community_state WHERE "communityId"=community_id;
         UPDATE ubi_community_state SET claimed = state_claimed WHERE "communityId"=community_id;
