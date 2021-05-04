@@ -21,9 +21,12 @@
             "request": "launch",
             "name": "Launch (NVM v14.15.1)",
             "skipFiles": ["<node_internals>/**"],
-            "program": "${workspaceFolder}/src/app.ts",
+            "program": "${workspaceFolder}/src/api/app.ts",
             "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-            "runtimeVersion": "14.15.1"
+            "runtimeVersion": "14.15.1",
+            "env": {
+                "NODE_ENV": "development"
+            }
         }
     ]
 }
