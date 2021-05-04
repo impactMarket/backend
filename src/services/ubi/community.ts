@@ -10,7 +10,9 @@ import {
 } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { notifyManagerAdded } from '@utils/util';
+import AWS from 'aws-sdk';
 import { ethers } from 'ethers';
+import sizeOf from 'image-size';
 import {
     Op,
     QueryTypes,
@@ -22,6 +24,7 @@ import {
     Includeable,
 } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
+import sharp from 'sharp';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
@@ -84,14 +87,11 @@ export default class CommunityService {
             longitude: number;
         },
         email: string,
-        coverMediaId: number,
         txReceipt: any | undefined,
-        contractParams: ICommunityContractParams
+        contractParams: ICommunityContractParams,
+        coverMediaId?: number
     ): Promise<Community> {
         let managerAddress: string = '';
-        const media = await this.appMediaContent.findOne({
-            where: { id: coverMediaId },
-        });
         let createObject: CommunityCreationAttributes = {
             requestByAddress,
             name,
@@ -102,12 +102,23 @@ export default class CommunityService {
             country,
             gps,
             email,
-            coverMediaId,
-            coverImage: media!.url,
+            // coverMediaId,
+            // coverImage: media!.url,
             visibility: 'public', // will be changed if private
             status: 'pending', // will be changed if private
             started: new Date(),
         };
+
+        if (coverMediaId) {
+            const media = await this.appMediaContent.findOne({
+                where: { id: coverMediaId },
+            });
+            createObject = {
+                ...createObject,
+                coverMediaId,
+                coverImage: media!.url,
+            };
+        }
 
         // if it was submitted as private, validate the transaction first.
         if (txReceipt !== undefined) {
@@ -244,7 +255,7 @@ export default class CommunityService {
             // image has been replaced
             // delete previous one! new one was already uploaded, will be updated below
             await this.communityContentStorage.deleteContent(
-                community!.coverMediaId
+                community!.coverMediaId! // TODO: will be required once next version is released
             );
         }
         return update;
@@ -422,7 +433,7 @@ export default class CommunityService {
                     publicId,
                 },
             });
-            await this.communityContentStorage.deleteContent(c.coverMediaId);
+            await this.communityContentStorage.deleteContent(c.coverMediaId!); // TODO: will be required once next version is released
             return true;
         }
         return false;
@@ -455,13 +466,93 @@ export default class CommunityService {
         return communities[0].total;
     }
 
+    /**
+     * @deprecated
+     */
     public static async updateCoverImage(
         publicId: string,
         newPictureUrl: string
     ): Promise<boolean> {
+        // TODO:
+        const params = {
+            Bucket: config.aws.bucket.community,
+            Key: newPictureUrl.split(config.cloudfrontUrl + '/')[1],
+        };
+        const S3 = new AWS.S3({
+            accessKeyId: config.aws.accessKeyId,
+            secretAccessKey: config.aws.secretAccessKey,
+            region: config.aws.region,
+        });
+        const rg = await S3.getObject(params).promise();
+
+        const dimensions = sizeOf(rg.Body as any);
+
+        const today1 = new Date();
+        const filePrefix1 = 'cover/';
+        const filename1 = `${today1.getTime()}.jpeg`;
+        const filePath1 = `${filePrefix1}${filename1}`;
+
+        const paramsp1 = {
+            Bucket: config.aws.bucket.community,
+            Key: filePath1,
+            Body: rg.Body,
+            ACL: 'public-read',
+        };
+
+        const rp1 = await S3.upload(paramsp1 as any).promise();
+
+        const media = await this.appMediaContent.create({
+            url: config.cloudfrontUrl + '/' + rp1.Key,
+            width: dimensions.width!,
+            height: dimensions.height!,
+        });
+
+        // create thumbnails
+
+        for (let pixelRatio = 1; pixelRatio <= 2; pixelRatio++) {
+            for (const cover of config.thumbnails.community.cover) {
+                const thumbnailBuffer = await sharp(
+                    Buffer.from(rg.Body as any, 'binary')
+                )
+                    .resize({
+                        width: cover.width * pixelRatio,
+                        height: cover.height * pixelRatio,
+                    })
+                    .toBuffer();
+
+                const today = new Date();
+                const filePrefix =
+                    'cover/' + cover.width + 'x' + cover.height + '/';
+                const filename = `${today.getTime()}${
+                    pixelRatio > 1 ? '@' + pixelRatio + 'x' : ''
+                }.jpeg`;
+                const filePath = `${filePrefix}${filename}`;
+
+                const paramsp = {
+                    Bucket: config.aws.bucket.community,
+                    Key: filePath,
+                    Body: thumbnailBuffer,
+                    ACL: 'public-read',
+                };
+
+                const rp = await S3.upload(paramsp as any).promise();
+
+                const thumbnailURL = config.cloudfrontUrl + '/' + rp.Key;
+
+                await this.appMediaThumbnail.create({
+                    mediaContentId: media.id,
+                    url: thumbnailURL,
+                    width: cover.width,
+                    height: cover.height,
+                    pixelRatio,
+                });
+            }
+        }
+
         const result = await this.community.update(
             {
                 coverImage: newPictureUrl,
+                coverMediaId: media.id,
             },
             { returning: true, where: { publicId } }
         );

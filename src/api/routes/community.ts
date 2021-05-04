@@ -154,7 +154,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/add:
+     * /community/create:
      *   post:
      *     tags:
      *       - "community"
@@ -165,6 +165,15 @@ export default (app: Router): void => {
      *     security:
      *     - api_auth:
      *       - "write:modify":
+     */
+    route.post(
+        '/create',
+        authenticateToken,
+        communityValidators.create,
+        communityController.create
+    );
+    /**
+     * @deprecated
      */
     route.post(
         '/add',
