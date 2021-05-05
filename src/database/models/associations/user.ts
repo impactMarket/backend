@@ -6,6 +6,11 @@ export function userAssociation(sequelize: Sequelize) {
         foreignKey: 'address',
         as: 'beneficiary',
     });
+    sequelize.models.Beneficiary.hasMany(sequelize.models.Claim, {
+        sourceKey: 'address',
+        foreignKey: 'address',
+        as: 'claim',
+    });
     // used to query from the beneficiary with incude
     sequelize.models.Beneficiary.belongsTo(sequelize.models.UserModel, {
         foreignKey: 'address',
