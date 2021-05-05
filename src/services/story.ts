@@ -1,3 +1,4 @@
+import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
 import { StoryContent } from '@interfaces/story/storyContent';
 import {
@@ -35,7 +36,7 @@ export default class StoryService {
     public async add(
         fromAddress: string,
         story: IAddStory
-    ): Promise<StoryContent> {
+    ): Promise<ICommunityStory> {
         let storyContentToAdd: { mediaMediaId?: number; message?: string } = {};
         if (story.mediaId) {
             storyContentToAdd = {
@@ -60,7 +61,7 @@ export default class StoryService {
                 ],
             };
         }
-        return this.storyContent.create(
+        const created = await this.storyContent.create(
             {
                 ...storyContentToAdd,
                 ...storyCommunityToAdd,
@@ -76,6 +77,26 @@ export default class StoryService {
                 ],
             }
         );
+        const newStory = created.toJSON() as StoryContent;
+        if (story.mediaId) {
+            const media = await this.appMediaContent.findOne({
+                where: { id: story.mediaId },
+                include: [
+                    {
+                        model: this.appMediaThumbnail,
+                        as: 'thumbnails',
+                    },
+                ],
+            });
+            return {
+                ...newStory,
+                media: media!.toJSON() as AppMediaContent,
+                loves: 0,
+                userLoved: false,
+                userReported: false,
+            };
+        }
+        return { ...newStory, loves: 0, userLoved: false, userReported: false };
     }
 
     public async has(address: string): Promise<boolean> {
