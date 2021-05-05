@@ -209,4 +209,6 @@ export default {
     },
 
     bullJobsConcurrency: validatedEnv.SENTRY_TRACE_SAMPLES_RATE,
+
+    impactMarketStoryCoverId: validatedEnv.IMPACTMARKET_STORY_COVER_ID,
 };

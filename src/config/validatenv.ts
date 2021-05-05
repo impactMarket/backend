@@ -65,6 +65,7 @@ function validateEnv() {
         REDIS_USER: str({ default: '' }),
         REDIS_PASSWORD: str({ devDefault: '' }),
         BULL_JOBS_CONCURRENCY: num({ devDefault: 2 }),
+        IMPACTMARKET_STORY_COVER_ID: num({ devDefault: onlyOnTestEnv(0) }),
     });
 }
 

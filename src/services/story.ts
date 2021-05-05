@@ -216,13 +216,24 @@ export default class StoryService {
                     : false,
             };
         });
+        const ipctCover = await this.appMediaContent.findOne({
+            include: [
+                {
+                    model: this.appMediaThumbnail,
+                    as: 'thumbnails',
+                },
+            ],
+            where: {
+                id: config.impactMarketStoryCoverId,
+            },
+        });
         return {
             id: 0,
             publicId: 'impact-market',
-            name: '',
+            name: 'impactMarket',
             city: '',
             country: '',
-            cover: undefined as any, // this is loaded on the app
+            cover: ipctCover!.toJSON() as AppMediaContent,
             stories,
         };
     }
