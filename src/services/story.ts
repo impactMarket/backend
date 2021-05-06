@@ -6,8 +6,8 @@ import {
     ICommunitiesListStories,
     ICommunityStories,
     ICommunityStory,
-    UserStory,
 } from '@ipcttypes/endpoints';
+import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { CommunityAttributes } from '@models/ubi/community';
 import { Logger } from '@utils/logger';
 import { Includeable, literal, Op, QueryTypes } from 'sequelize';
@@ -25,6 +25,8 @@ export default class StoryService {
     public community = models.community;
     public appMediaContent = models.appMediaContent;
     public appMediaThumbnail = models.appMediaThumbnail;
+    public beneficiary = models.beneficiary;
+    public user = models.user;
     public sequelize = sequelize;
 
     private storyContentStorage = new StoryContentStorage();
@@ -140,7 +142,7 @@ export default class StoryService {
         order: string | undefined,
         query: { offset?: string; limit?: string },
         onlyFromAddress: string
-    ): Promise<UserStory[]> {
+    ): Promise<ICommunityStories> {
         const r = await this.storyContent.findAll({
             include: [
                 {
@@ -159,21 +161,92 @@ export default class StoryService {
                         },
                     ],
                 },
+                ...this._filterSubInclude(onlyFromAddress),
             ],
             where: { byAddress: onlyFromAddress, isPublic: true },
             order: [['postedAt', 'DESC']],
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
-        return r.map((c) => {
-            const content = c.toJSON() as StoryContent;
-            return {
-                id: content.id,
-                media: content.media,
-                message: content.message,
-                loves: content.storyEngagement!.loves,
-            };
+
+        const beneficiaryResult = await this.beneficiary.findOne({
+            include: [
+                // {
+                //     model: models.user,
+                //     as: 'user',
+                //     attributes: ['name'],
+                //     include: [
+                //         {
+                //             model: this.appMediaContent,
+                //             as: 'avatar',
+                //             required: false,
+                //             include: [
+                //                 {
+                //                     model: this.appMediaThumbnail,
+                //                     as: 'thumbnails',
+                //                 },
+                //             ],
+                //         },
+                //     ],
+                // },
+                {
+                    model: models.community,
+                    as: 'community',
+                    attributes: ['id'],
+                    // include: [
+                    //     {
+                    //         model: this.appMediaContent,
+                    //         as: 'cover',
+                    //         required: false,
+                    //         include: [
+                    //             {
+                    //                 model: this.appMediaThumbnail,
+                    //                 as: 'thumbnails',
+                    //             },
+                    //         ],
+                    //     },
+                    // ],
+                },
+            ],
+            where: { address: onlyFromAddress },
         });
+
+        if (beneficiaryResult === null) {
+            throw new Error('beneficiary not found!');
+        }
+
+        const beneficiary = beneficiaryResult.toJSON() as BeneficiaryAttributes;
+
+        if (beneficiary.community === undefined) {
+            throw new Error('beneficiary not found!');
+        }
+
+        return {
+            id: beneficiary.community.id,
+            // this information is on the user side already
+            name: '',
+            city: '',
+            country: '',
+            publicId: '',
+            cover: {
+                id: 0,
+                url: '',
+                height: 0,
+                width: 0,
+            },
+            //
+            stories: r.map((c) => {
+                const content = c.toJSON() as StoryContent;
+                return {
+                    id: content.id,
+                    media: content.media,
+                    message: content.message,
+                    loves: content.storyEngagement!.loves,
+                    userLoved: content.storyUserEngagement!.length !== 0,
+                    userReported: content.storyUserReport!.length !== 0,
+                };
+            }),
+        };
     }
 
     public async listImpactMarketOnly(

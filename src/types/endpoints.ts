@@ -135,9 +135,9 @@ export interface ICommunityStories {
     stories: ICommunityStory[];
 }
 
-export interface UserStory {
-    id: number;
-    media?: AppMediaContent;
-    message: string | null;
-    loves: number;
-}
+// export interface UserStory {
+//     id: number;
+//     media?: AppMediaContent;
+//     message: string | null;
+//     loves: number;
+// }
