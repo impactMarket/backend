@@ -250,73 +250,52 @@ export default class StoryService {
         };
     }
 
-    public async listImpactMarketOnly(
-        userAddress?: string
-    ): Promise<ICommunityStories> {
-        const subInclude = this._filterSubInclude(userAddress);
-        const r = await this.storyContent.findAll({
-            include: [
-                ...subInclude,
-                {
-                    model: this.appMediaContent,
-                    as: 'media',
-                    required: false,
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                        },
-                    ],
-                },
-            ],
-            where: {
-                byAddress: config.impactMarketContractAddress,
-                isPublic: true,
-            },
-            order: [['postedAt', 'DESC']],
-        });
-        const stories: ICommunityStory[] = r.map((c) => {
-            const content = c.toJSON() as StoryContent;
-            return {
-                id: content.id,
-                media: content.media,
-                message: content.message,
-                byAddress: content.byAddress,
-                loves: content.storyEngagement!.loves,
-                userLoved: userAddress
-                    ? content.storyUserEngagement!.length !== 0
-                    : false,
-                userReported: userAddress
-                    ? content.storyUserReport!.length !== 0
-                    : false,
-            };
-        });
-        const ipctCover = await this.appMediaContent.findOne({
-            include: [
-                {
-                    model: this.appMediaThumbnail,
-                    as: 'thumbnails',
-                },
-            ],
-            where: {
-                id: config.impactMarketStoryCoverId,
-            },
-        });
-        return {
-            id: 0,
-            publicId: 'impact-market',
-            name: 'impactMarket',
-            city: '',
-            country: '',
-            cover: ipctCover!.toJSON() as AppMediaContent,
-            stories,
-        };
-    }
-
     public async listByOrder(
         order: string | undefined,
-        query: { offset?: string; limit?: string }
+        query: { offset?: string; limit?: string; includeIPCT?: boolean }
     ): Promise<ICommunitiesListStories[]> {
+        let ipctMostRecent: ICommunitiesListStories | undefined;
+        if (query.includeIPCT) {
+            const r = await this.storyContent.findAll({
+                include: [
+                    {
+                        model: this.appMediaContent,
+                        as: 'media',
+                        required: false,
+                        include: [
+                            {
+                                model: this.appMediaThumbnail,
+                                as: 'thumbnails',
+                            },
+                        ],
+                    },
+                ],
+                where: {
+                    byAddress: config.impactMarketContractAddress,
+                    isPublic: true,
+                },
+                order: [['postedAt', 'DESC']],
+                limit: 1,
+            });
+            const ipctCover = await this.appMediaContent.findOne({
+                include: [
+                    {
+                        model: this.appMediaThumbnail,
+                        as: 'thumbnails',
+                    },
+                ],
+                where: {
+                    id: config.impactMarketStoryCoverId,
+                },
+            });
+            const story = r[0].toJSON() as StoryContent;
+            ipctMostRecent = {
+                id: -1,
+                name: 'impactMarket',
+                cover: ipctCover!.toJSON() as AppMediaContent,
+                story,
+            };
+        }
         const r = await this.community.findAll({
             attributes: ['id', 'name'],
             include: [
@@ -378,7 +357,7 @@ export default class StoryService {
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
-        return r.map((c) => {
+        const communitiesStories = r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
             return {
                 id: community.id,
@@ -392,6 +371,10 @@ export default class StoryService {
                 }))[0],
             };
         });
+        if (ipctMostRecent) {
+            return [ipctMostRecent].concat(communitiesStories);
+        }
+        return communitiesStories;
     }
 
     public async getByCommunity(
@@ -400,6 +383,10 @@ export default class StoryService {
         query: { offset?: string; limit?: string },
         userAddress?: string
     ): Promise<ICommunityStories> {
+        if (communityId === -1) {
+            return this._listImpactMarketOnly();
+        }
+
         const subInclude = this._filterSubInclude(userAddress);
         const r = await this.storyContent.findAll({
             include: [
@@ -533,6 +520,69 @@ export default class StoryService {
         await this.storyContentStorage
             .deleteBulkContent(storiesToDelete.map((s) => s.mediaMediaId))
             .catch(Logger.error);
+    }
+
+    public async _listImpactMarketOnly(
+        userAddress?: string
+    ): Promise<ICommunityStories> {
+        const subInclude = this._filterSubInclude(userAddress);
+        const r = await this.storyContent.findAll({
+            include: [
+                ...subInclude,
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    required: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
+            ],
+            where: {
+                byAddress: config.impactMarketContractAddress,
+                isPublic: true,
+            },
+            order: [['postedAt', 'DESC']],
+        });
+        const stories: ICommunityStory[] = r.map((c) => {
+            const content = c.toJSON() as StoryContent;
+            return {
+                id: content.id,
+                media: content.media,
+                message: content.message,
+                byAddress: content.byAddress,
+                loves: content.storyEngagement!.loves,
+                userLoved: userAddress
+                    ? content.storyUserEngagement!.length !== 0
+                    : false,
+                userReported: userAddress
+                    ? content.storyUserReport!.length !== 0
+                    : false,
+            };
+        });
+        const ipctCover = await this.appMediaContent.findOne({
+            include: [
+                {
+                    model: this.appMediaThumbnail,
+                    as: 'thumbnails',
+                },
+            ],
+            where: {
+                id: config.impactMarketStoryCoverId,
+            },
+        });
+        return {
+            id: -1,
+            publicId: 'impact-market',
+            name: 'impactMarket',
+            city: '',
+            country: '',
+            cover: ipctCover!.toJSON() as AppMediaContent,
+            stories,
+        };
     }
 
     private _filterSubInclude(userAddress?: string) {

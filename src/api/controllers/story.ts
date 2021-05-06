@@ -61,13 +61,6 @@ class StoryController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    listImpactMarketOnly = (req: RequestWithUser, res: Response) => {
-        this.storyService
-            .listImpactMarketOnly(req.user?.address)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
     listByOrder = (req: Request, res: Response) => {
         this.storyService
             .listByOrder(req.params.order, req.query)

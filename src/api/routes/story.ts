@@ -127,30 +127,6 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /story/impactmarket:
-     *   get:
-     *     tags:
-     *       - "story"
-     *     summary: List impactmarket stories only
-     *     produces:
-     *       - application/json
-     *     responses:
-     *       "200":
-     *         description: "Success"
-     */
-    route.get(
-        '/impactmarket',
-        (req, res, next) => {
-            (req as any).authTokenIsOptional = true;
-            next();
-        },
-        authenticateToken,
-        storyController.listImpactMarketOnly
-    );
-
-    /**
-     * @swagger
-     *
      * /story/list/{order}:
      *   get:
      *     tags:
