@@ -122,7 +122,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "read:read":
      */
-    route.get('/me', authenticateToken, storyController.listUserOnly);
+    route.get('/me', authenticateToken, storyController.getByUser);
 
     /**
      * @swagger

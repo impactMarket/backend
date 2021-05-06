@@ -50,13 +50,13 @@ class StoryController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    listUserOnly = (req: RequestWithUser, res: Response) => {
+    getByUser = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             controllerLogAndFail('User not identified!', 400, res);
             return;
         }
         this.storyService
-            .listByUser(req.params.order, req.query, req.user.address)
+            .getByUser(req.params.order, req.query, req.user.address)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

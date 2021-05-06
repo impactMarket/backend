@@ -138,7 +138,7 @@ export default class StoryService {
         });
     }
 
-    public async listByUser(
+    public async getByUser(
         order: string | undefined,
         query: { offset?: string; limit?: string },
         onlyFromAddress: string
