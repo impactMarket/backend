@@ -6,12 +6,17 @@ import multer from 'multer';
 import { adminAuthentication, authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {
+    const controller = new communityController.CommunityController();
+
     const route = Router();
     const storage = multer.memoryStorage();
     const upload = multer({ storage });
 
     app.use('/community', route);
 
+    /**
+     * @deprecated
+     */
     route.get(
         '/ubiparams/:publicId',
         communityController.getResquestChangeUbiParams
@@ -31,7 +36,135 @@ export default (app: Router): void => {
      * @deprecated use /list
      */
     route.get('/list/full/:order?', communityController.listFull);
-    route.get('/list/:query?', communityController.list);
+    /**
+     * @deprecated
+     */
+    route.get('/contract/:address', communityController.getByContractAddress);
+    /**
+     * @swagger
+     *
+     * /community/hssi/publicId:
+     *   deprecated: true
+     */
+    route.get(
+        '/hssi/:publicId',
+        communityController.getHistoricalSSIByPublicId
+    );
+    /**
+     * @deprecated
+     */
+    route.get(
+        '/beneficiaries/find/:beneficiaryQuery/:active?',
+        authenticateToken,
+        communityController.searchBeneficiary
+    );
+
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries/search/{active}/beneficiaryQuery:
+     *   deprecated: true
+     */
+    route.get(
+        '/beneficiaries/search/:active/:beneficiaryQuery',
+        authenticateToken,
+        communityController.searchBeneficiary
+    );
+    /**
+     * @deprecated Deprecated in mobile-app@1.1.0
+     */
+    route.get(
+        '/managers/search/:managerQuery',
+        authenticateToken,
+        communityController.searchManager
+    );
+    /**
+     * @deprecated
+     */
+    route.get(
+        '/beneficiaries/list/:active/:offset/:limit',
+        authenticateToken,
+        communityController.listBeneficiaries
+    );
+    /**
+     * @deprecated Deprecated in mobile-app@1.1.0
+     */
+    route.get(
+        '/managers/list/:offset/:limit',
+        authenticateToken,
+        communityController.listManagers
+    );
+    /**
+     * @deprecated Deprecated in mobile-app@1.0.2
+     */
+    route.get('/managers', authenticateToken, communityController.managers);
+    /**
+     * @deprecated Deprecated in mobile-app@1.0.2
+     */
+    route.get(
+        '/managers/details',
+        authenticateToken,
+        communityController.managersDetails
+    );
+    /**
+     * @deprecated
+     */
+    route.post(
+        '/add',
+        authenticateToken,
+        communityValidators.add,
+        communityController.add
+    );
+    /**
+     * @deprecated
+     */
+    route.post(
+        '/edit',
+        authenticateToken,
+        communityValidators.edit,
+        communityController.edit
+    );
+    // TODO: add verification (not urgent, as it highly depends on the contract transaction)
+    // route.post(
+    //     '/accept',
+    //     communityValidators.accept,
+    //     communityController.accept
+    // );
+    route.post(
+        '/remove',
+        adminAuthentication,
+        communityValidators.remove,
+        communityController.remove
+    );
+    // route.get('/pending', communityController.pending);
+
+    route.get('/:id/historical-ssi', communityController.getHistoricalSSI);
+
+    // new
+
+    route.get('/address/:address', controller.findByContractAddress);
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries/{query}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Find or list beneficiaries in manager's community
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/beneficiaries/:query?',
+        authenticateToken,
+        controller.beneficiaries
+    );
+
+    route.get('/list/:query?', controller.list);
     /**
      * @swagger
      *
@@ -60,97 +193,9 @@ export default (app: Router): void => {
         '/picture/:isOrganization?',
         upload.single('imageFile'),
         authenticateToken,
-        communityController.pictureAdd
-    );
-    route.get('/contract/:address', communityController.getByContractAddress);
-    /**
-     * @swagger
-     *
-     * /community/hssi/publicId:
-     *   deprecated: true
-     */
-    route.get(
-        '/hssi/:publicId',
-        communityController.getHistoricalSSIByPublicId
-    );
-    /**
-     * @swagger
-     *
-     * /community/beneficiaries/find/{beneficiaryQuery}/{active}:
-     *   get:
-     *     tags:
-     *       - "community"
-     *     summary: Find a beneficiary in manager's community
-     *     parameters:
-     *       - in: path
-     *         name: beneficiaryQuery
-     *         schema:
-     *           type: string
-     *         required: true
-     *         description: Address or (part of) name
-     *       - in: path
-     *         name: active
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *         description: Active, inactive or irrelevante (not defined)
-     *     responses:
-     *       "200":
-     *         description: OK
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.get(
-        '/beneficiaries/find/:beneficiaryQuery/:active?',
-        authenticateToken,
-        communityController.searchBeneficiary
+        controller.pictureAdd
     );
 
-    /**
-     * @swagger
-     *
-     * /community/beneficiaries/search/{active}/beneficiaryQuery:
-     *   deprecated: true
-     */
-    route.get(
-        '/beneficiaries/search/:active/:beneficiaryQuery',
-        authenticateToken,
-        communityController.searchBeneficiary
-    );
-    /**
-     * @deprecated Deprecated in mobile-app@1.1.0
-     */
-    route.get(
-        '/managers/search/:managerQuery',
-        authenticateToken,
-        communityController.searchManager
-    );
-    route.get(
-        '/beneficiaries/list/:active/:offset/:limit',
-        authenticateToken,
-        communityController.listBeneficiaries
-    );
-    /**
-     * @deprecated Deprecated in mobile-app@1.1.0
-     */
-    route.get(
-        '/managers/list/:offset/:limit',
-        authenticateToken,
-        communityController.listManagers
-    );
-    /**
-     * @deprecated Deprecated in mobile-app@1.0.2
-     */
-    route.get('/managers', authenticateToken, communityController.managers);
-    /**
-     * @deprecated Deprecated in mobile-app@1.0.2
-     */
-    route.get(
-        '/managers/details',
-        authenticateToken,
-        communityController.managersDetails
-    );
     /**
      * @swagger
      *
@@ -172,54 +217,13 @@ export default (app: Router): void => {
         communityValidators.create,
         communityController.create
     );
-    /**
-     * @deprecated
-     */
-    route.post(
-        '/add',
-        authenticateToken,
-        communityValidators.add,
-        communityController.add
-    );
-    /**
-     * @swagger
-     *
-     * /community/edit:
-     *   post:
-     *     tags:
-     *       - "community"
-     *     summary: Edit existing community
-     *     responses:
-     *       "200":
-     *         description: OK
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.post(
-        '/edit',
-        authenticateToken,
-        communityValidators.edit,
-        communityController.edit
-    );
-    // TODO: add verification (not urgent, as it highly depends on the contract transaction)
-    route.post(
-        '/accept',
-        communityValidators.accept,
-        communityController.accept
-    );
-    route.post(
-        '/remove',
-        adminAuthentication,
-        communityValidators.remove,
-        communityController.remove
-    );
-    route.get('/pending', communityController.pending);
+
+    route.get('/:id/ubi', controller.findRequestChangeUbiParams);
 
     /**
      * @swagger
      *
-     * /community/{id}/historical-ssi:
+     * /community/{id}/past-ssi:
      *   get:
      *     tags:
      *       - "community"
@@ -228,7 +232,8 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:id/historical-ssi', communityController.getHistoricalSSI);
+    route.get('/:id/past-ssi', controller.getPastSSI);
+
     /**
      * @swagger
      *
@@ -241,7 +246,8 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:id/dashboard', communityController.getDashboard);
+    route.get('/:id/dashboard', controller.getDashboard);
+
     /**
      * @swagger
      *
@@ -254,7 +260,8 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:id/claim-location', communityController.getClaimLocation);
+    route.get('/:id/claim-location', controller.getClaimLocation);
+
     /**
      * @swagger
      *
@@ -267,7 +274,8 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:id/managers', communityController.getManagers);
+    route.get('/:id/managers', controller.getManagers);
+
     /**
      * @swagger
      *
@@ -287,5 +295,37 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:id', communityController.findById);
+    route.get('/:id', controller.findById);
+
+    /**
+     * @swagger
+     *
+     * /community/{id}:
+     *   put:
+     *     tags:
+     *       - "community"
+     *     summary: Edit existing community
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put(
+        '/:id',
+        authenticateToken,
+        communityValidators.edit,
+        controller.edit
+    );
+
+    // admin endpoints
+
+    route.delete('/:id', adminAuthentication, controller.delete);
+    route.post(
+        '/accept',
+        communityValidators.accept,
+        communityController.accept
+    );
+    route.get('/pending', communityController.pending);
 };

@@ -39,37 +39,49 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    searchBeneficiary = (req: RequestWithUser, res: Response) => {
+    beneficiaries = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
                 error: 'User not identified!',
             });
             return;
         }
-        CommunityService.searchBeneficiary(
-            req.user.address,
-            req.params.beneficiaryQuery,
-            req.params.active ? req.params.active === 'true' : undefined
-        )
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
-    listBeneficiaries = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 400, false, '', {
-                error: 'User not identified!',
-            });
-            return;
+        if (req.query.action === 'search') {
+            const { active, search } = req.query;
+            if (search === undefined || typeof search !== 'string') {
+                throw new Error('invalid search!');
+            }
+            CommunityService.searchBeneficiary(
+                req.user.address,
+                search,
+                active ? active === 'true' : undefined
+            )
+                .then((r) => standardResponse(res, 200, true, r))
+                .catch((e) =>
+                    standardResponse(res, 400, false, '', { error: e })
+                );
+        } else {
+            let { active, offset, limit } = req.query;
+            if (active === undefined || typeof active !== 'string') {
+                active = 'true';
+            }
+            if (offset === undefined || typeof offset !== 'string') {
+                offset = '0';
+            }
+            if (limit === undefined || typeof limit !== 'string') {
+                limit = '5';
+            }
+            CommunityService.listBeneficiaries(
+                req.user.address,
+                active === 'true',
+                parseInt(offset, 10),
+                parseInt(limit, 10)
+            )
+                .then((r) => standardResponse(res, 200, true, r))
+                .catch((e) =>
+                    standardResponse(res, 400, false, '', { error: e })
+                );
         }
-        CommunityService.listBeneficiaries(
-            req.user.address,
-            req.params.active === 'true',
-            parseInt(req.params.offset, 10),
-            parseInt(req.params.limit, 10)
-        )
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     pictureAdd = (req: Request, res: Response) => {
@@ -196,9 +208,9 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    remove = (req: Request, res: Response) => {
-        const { publicId } = req.body;
-        CommunityService.remove(publicId)
+    delete = (req: Request, res: Response) => {
+        const { id } = req.params;
+        CommunityService.delete(parseInt(id, 10))
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

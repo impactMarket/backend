@@ -418,6 +418,30 @@ export default class CommunityService {
         return this.communityContentStorage.uploadContent(file);
     }
 
+    public static async delete(id: number): Promise<boolean> {
+        const c = await this.community.findOne({
+            where: {
+                id,
+                status: 'pending',
+                visibility: 'public',
+            },
+            raw: true,
+        });
+        if (c) {
+            await this.community.destroy({
+                where: {
+                    id,
+                },
+            });
+            await this.communityContentStorage.deleteContent(c.coverMediaId!); // TODO: will be required once next version is released
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @deprecated Use delete
+     */
     public static async remove(publicId: string): Promise<boolean> {
         const c = await this.community.findOne({
             where: {
@@ -1135,6 +1159,22 @@ export default class CommunityService {
     }
 
     public static async findById(id: number): Promise<CommunityAttributes> {
+        return this._findCommunityBy({
+            id,
+        });
+    }
+
+    public static async findByContractAddress(
+        contractAddress: string
+    ): Promise<CommunityAttributes> {
+        return this._findCommunityBy({
+            contractAddress,
+        });
+    }
+
+    private static async _findCommunityBy(
+        where: WhereOptions<CommunityAttributes>
+    ): Promise<CommunityAttributes> {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const community = await this.community.findOne({
@@ -1205,12 +1245,10 @@ export default class CommunityService {
                     ],
                 },
             ],
-            where: {
-                id,
-            },
+            where,
         });
         if (community === null) {
-            throw new Error('Not found community ' + id);
+            throw new Error('Not found community ' + where);
         }
         return community.toJSON() as CommunityAttributes;
     }
