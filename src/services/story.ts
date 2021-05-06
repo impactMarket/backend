@@ -241,6 +241,7 @@ export default class StoryService {
                     id: content.id,
                     media: content.media,
                     message: content.message,
+                    byAddress: content.byAddress,
                     loves: content.storyEngagement!.loves,
                     userLoved: content.storyUserEngagement!.length !== 0,
                     userReported: content.storyUserReport!.length !== 0,
@@ -280,6 +281,7 @@ export default class StoryService {
                 id: content.id,
                 media: content.media,
                 message: content.message,
+                byAddress: content.byAddress,
                 loves: content.storyEngagement!.loves,
                 userLoved: userAddress
                     ? content.storyUserEngagement!.length !== 0
@@ -464,6 +466,7 @@ export default class StoryService {
                     id: content.id,
                     media: content.media,
                     message: content.message,
+                    byAddress: content.byAddress,
                     loves: content.storyEngagement!.loves,
                     userLoved: userAddress
                         ? content.storyUserEngagement!.length !== 0
