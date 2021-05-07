@@ -249,7 +249,11 @@ class ChainSubscribers {
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryRemoved') {
             const beneficiaryAddress = parsedLog.args[0];
-            BeneficiaryService.remove(beneficiaryAddress);
+            const communityAddress = log.address;
+            BeneficiaryService.remove(
+                beneficiaryAddress,
+                this.communities.get(communityAddress)!
+            );
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryClaim') {
             const beneficiaryAddress = parsedLog.args[0];
