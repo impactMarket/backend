@@ -568,6 +568,7 @@ export default class CommunityService {
         lat?: string;
         lng?: string;
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
+        let extendedWhere: WhereOptions<CommunityAttributes> = {};
         let orderOption: string | Literal | OrderItem[] | undefined;
         const extendedInclude: Includeable[] = [];
 
@@ -597,6 +598,27 @@ export default class CommunityService {
                 ];
                 break;
             }
+            case 'out_of_funds': {
+                // this requires extended
+                query.extended = 'true';
+                extendedWhere = {
+                    '$state.beneficiaries$': {
+                        [Op.not]: 0,
+                    },
+                } as any;
+                orderOption = [
+                    [
+                        literal(
+                            '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
+                        ),
+                        'DESC',
+                    ],
+                ];
+                break;
+            }
+            case 'newest':
+                orderOption = [[literal('"Community".started'), 'DESC']];
+                break;
             default:
                 orderOption = [[literal('state.beneficiaries'), 'DESC']];
                 break;
@@ -622,7 +644,6 @@ export default class CommunityService {
                 {
                     model: this.ubiCommunityDailyMetrics,
                     required: false,
-                    separate: true,
                     as: 'metrics',
                     where: {
                         date: {
@@ -638,6 +659,7 @@ export default class CommunityService {
             where: {
                 status: 'valid',
                 visibility: 'public',
+                ...extendedWhere,
             },
             include: [
                 {
