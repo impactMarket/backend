@@ -250,14 +250,14 @@ export default class UserService {
     ) {
         const user = await this.user.findOne({ where: { address } });
         const media = await this.profileContentStorage.uploadContent(file);
-        const updateResult = await this.user.update(
+        await this.user.update(
             { avatarMediaId: media.id },
             { returning: true, where: { address } }
         );
         if (user!.avatarMediaId !== null && user!.avatarMediaId !== media.id) {
             await this.profileContentStorage.deleteContent(user!.avatarMediaId);
         }
-        return updateResult[1][0].toJSON();
+        return media;
     }
 
     public static async setDevice(
