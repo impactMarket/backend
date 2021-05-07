@@ -361,7 +361,7 @@ export class StoryContentStorage
     async deleteContent(mediaId: number) {
         const filePaths = await this._findContentToDelete(mediaId);
         await this._deleteBulkContentFromS3(filePaths, StorageCategory.story);
-        // TODO: avoid destroy from here
+        // TODO:
         try {
             await this.appMediaContent.destroy({
                 where: { id: mediaId },

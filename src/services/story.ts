@@ -129,13 +129,13 @@ export default class StoryService {
             return 0;
         }
         const storyMedia = (contentPath.toJSON() as StoryContent).media;
-        // first delete media
+        const result = await this.storyContent.destroy({
+            where: { id: storyId, byAddress: userAddress },
+        });
         if (storyMedia) {
             await this.storyContentStorage.deleteContent(storyMedia.id);
         }
-        return await this.storyContent.destroy({
-            where: { id: storyId, byAddress: userAddress },
-        });
+        return result;
     }
 
     public async getByUser(
