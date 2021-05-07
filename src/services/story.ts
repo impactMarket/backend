@@ -384,7 +384,7 @@ export default class StoryService {
         userAddress?: string
     ): Promise<ICommunityStories> {
         if (communityId === -1) {
-            return this._listImpactMarketOnly();
+            return this._listImpactMarketOnly(userAddress);
         }
 
         const subInclude = this._filterSubInclude(userAddress);
