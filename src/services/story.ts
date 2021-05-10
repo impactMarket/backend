@@ -277,24 +277,26 @@ export default class StoryService {
                 order: [['postedAt', 'DESC']],
                 limit: 1,
             });
-            const ipctCover = await this.appMediaContent.findOne({
-                include: [
-                    {
-                        model: this.appMediaThumbnail,
-                        as: 'thumbnails',
+            if (r.length > 0) {
+                const ipctCover = await this.appMediaContent.findOne({
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                    where: {
+                        id: config.impactMarketStoryCoverId,
                     },
-                ],
-                where: {
-                    id: config.impactMarketStoryCoverId,
-                },
-            });
-            const story = r[0].toJSON() as StoryContent;
-            ipctMostRecent = {
-                id: -1,
-                name: 'impactMarket',
-                cover: ipctCover!.toJSON() as AppMediaContent,
-                story,
-            };
+                });
+                const story = r[0].toJSON() as StoryContent;
+                ipctMostRecent = {
+                    id: -1,
+                    name: 'impactMarket',
+                    cover: ipctCover!.toJSON() as AppMediaContent,
+                    story,
+                };
+            }
         }
         const r = await this.community.findAll({
             attributes: ['id', 'name'],
