@@ -151,13 +151,16 @@ export class ContentStorage {
         let filePrefix = '';
         switch (category) {
             case StorageCategory.story:
-                filePrefix = `${now.getDate()}/`;
+                filePrefix = `story/${now.getDate()}/`;
                 break;
             case StorageCategory.communityCover:
                 filePrefix = 'cover/';
                 break;
             case StorageCategory.organizationLogo:
                 filePrefix = 'org-logo/';
+                break;
+            case StorageCategory.profile:
+                filePrefix = 'avatar/';
                 break;
         }
         const filename = `${filenameNoExt ? filenameNoExt : now.getTime()}${
