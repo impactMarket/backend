@@ -9,6 +9,7 @@ import {
 } from '@ipcttypes/endpoints';
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { CommunityAttributes } from '@models/ubi/community';
+import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { Includeable, literal, Op, QueryTypes } from 'sequelize';
 
@@ -26,6 +27,7 @@ export default class StoryService {
     public appMediaContent = models.appMediaContent;
     public appMediaThumbnail = models.appMediaThumbnail;
     public beneficiary = models.beneficiary;
+    public manager = models.manager;
     public user = models.user;
     public sequelize = sequelize;
 
@@ -168,60 +170,46 @@ export default class StoryService {
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
 
+        let result: BeneficiaryAttributes | ManagerAttributes;
+
         const beneficiaryResult = await this.beneficiary.findOne({
+            attributes: ['address'],
             include: [
-                // {
-                //     model: models.user,
-                //     as: 'user',
-                //     attributes: ['name'],
-                //     include: [
-                //         {
-                //             model: this.appMediaContent,
-                //             as: 'avatar',
-                //             required: false,
-                //             include: [
-                //                 {
-                //                     model: this.appMediaThumbnail,
-                //                     as: 'thumbnails',
-                //                 },
-                //             ],
-                //         },
-                //     ],
-                // },
                 {
                     model: models.community,
                     as: 'community',
                     attributes: ['id'],
-                    // include: [
-                    //     {
-                    //         model: this.appMediaContent,
-                    //         as: 'cover',
-                    //         required: false,
-                    //         include: [
-                    //             {
-                    //                 model: this.appMediaThumbnail,
-                    //                 as: 'thumbnails',
-                    //             },
-                    //         ],
-                    //     },
-                    // ],
                 },
             ],
-            where: { address: onlyFromAddress },
+            where: { address: onlyFromAddress, active: true },
         });
 
         if (beneficiaryResult === null) {
-            throw new Error('beneficiary not found!');
+            const managerResult = await this.manager.findOne({
+                attributes: ['address'],
+                include: [
+                    {
+                        model: models.community,
+                        as: 'community',
+                        attributes: ['id'],
+                    },
+                ],
+                where: { address: onlyFromAddress, active: true },
+            });
+            if (managerResult === null) {
+                throw new Error('user not found!');
+            }
+            result = managerResult.toJSON() as ManagerAttributes;
+        } else {
+            result = beneficiaryResult.toJSON() as BeneficiaryAttributes;
         }
 
-        const beneficiary = beneficiaryResult.toJSON() as BeneficiaryAttributes;
-
-        if (beneficiary.community === undefined) {
-            throw new Error('beneficiary not found!');
+        if (result.community === undefined) {
+            throw new Error('community not found!');
         }
 
         return {
-            id: beneficiary.community.id,
+            id: result.community.id,
             // this information is on the user side already
             name: '',
             city: '',

@@ -89,4 +89,11 @@ export function userAssociation(sequelize: Sequelize) {
         targetKey: 'publicId',
         as: 'community',
     });
+
+    // beneficiaries are linked to manager through communityId
+    sequelize.models.Manager.belongsTo(sequelize.models.Community, {
+        foreignKey: 'communityId',
+        targetKey: 'publicId',
+        as: 'community',
+    });
 }
