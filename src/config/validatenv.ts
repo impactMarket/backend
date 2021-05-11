@@ -60,10 +60,7 @@ function validateEnv() {
         SENTRY_TRACE_SAMPLES_RATE: num({ default: 0 }),
         ADMIN_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         HASH_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
-        REDIS_HOST: str({ devDefault: 'localhost' }),
-        REDIS_PORT: num({ devDefault: 6379 }),
-        REDIS_USER: str({ default: '' }),
-        REDIS_PASSWORD: str({ devDefault: '' }),
+        REDIS_URL: str({ devDefault: 'redis://:@localhost:6379' }),
         BULL_JOBS_CONCURRENCY: num({ devDefault: 2 }),
         IMPACTMARKET_STORY_COVER_ID: num({ devDefault: onlyOnTestEnv(0) }),
     });
