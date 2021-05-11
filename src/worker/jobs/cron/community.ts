@@ -21,6 +21,9 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
             {
                 model: models.beneficiary,
                 as: 'beneficiaries',
+                where: {
+                    active: true,
+                },
                 include: [
                     {
                         model: models.user,

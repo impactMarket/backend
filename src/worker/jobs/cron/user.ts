@@ -39,6 +39,30 @@ export async function verifyUserSuspectActivity(): Promise<void> {
                         returning: false,
                     }
                 );
+            } else {
+                // was it suspect before?
+                const wasSuspect = user.throughTrust.filter((tt) => {
+                    if (
+                        tt.selfTrust &&
+                        tt.selfTrust.length === 1 &&
+                        tt.selfTrust[0].suspect
+                    ) {
+                        suspectInId.push(tt.id);
+                        return true;
+                    }
+                    return false;
+                });
+                if (wasSuspect.length > 0) {
+                    await models.appUserTrust.update(
+                        {
+                            suspect: false,
+                        },
+                        {
+                            where: { id: { [Op.in]: suspectInId } },
+                            returning: false,
+                        }
+                    );
+                }
             }
         }
     }
