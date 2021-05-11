@@ -139,9 +139,8 @@ export default class StoryService {
     }
 
     public async getByUser(
-        order: string | undefined,
-        query: { offset?: string; limit?: string },
-        onlyFromAddress: string
+        onlyFromAddress: string,
+        query: { offset?: string; limit?: string }
     ): Promise<ICommunityStories> {
         const r = await this.storyContent.findAll({
             include: [
@@ -242,18 +241,25 @@ export default class StoryService {
                     media: content.media,
                     message: content.message,
                     byAddress: content.byAddress,
-                    loves: content.storyEngagement!.loves,
-                    userLoved: content.storyUserEngagement!.length !== 0,
-                    userReported: content.storyUserReport!.length !== 0,
+                    loves: content.storyEngagement
+                        ? content.storyEngagement.loves
+                        : 0,
+                    userLoved: content.storyUserEngagement
+                        ? content.storyUserEngagement.length !== 0
+                        : false,
+                    userReported: content.storyUserReport
+                        ? content.storyUserReport.length !== 0
+                        : false,
                 };
             }),
         };
     }
 
-    public async listByOrder(
-        order: string | undefined,
-        query: { offset?: string; limit?: string; includeIPCT?: boolean }
-    ): Promise<ICommunitiesListStories[]> {
+    public async list(query: {
+        offset?: string;
+        limit?: string;
+        includeIPCT?: boolean;
+    }): Promise<ICommunitiesListStories[]> {
         let ipctMostRecent: ICommunitiesListStories | undefined;
         if (query.includeIPCT) {
             const r = await this.storyContent.findAll({
@@ -300,10 +306,12 @@ export default class StoryService {
         }
         const r = await this.community.findAll({
             attributes: ['id', 'name'],
+            subQuery: false,
             include: [
                 {
                     model: this.appMediaContent,
                     as: 'cover',
+                    // duplicating: false,
                     include: [
                         {
                             model: this.appMediaThumbnail,
@@ -314,11 +322,12 @@ export default class StoryService {
                 {
                     model: this.storyCommunity,
                     as: 'storyCommunity',
-                    duplicating: false,
+                    // duplicating: false,
                     include: [
                         {
                             model: this.storyContent,
                             as: 'storyContent',
+                            // duplicating: false,
                             include: [
                                 {
                                     model: this.storyEngagement,
@@ -327,7 +336,7 @@ export default class StoryService {
                                 {
                                     model: this.appMediaContent,
                                     as: 'media',
-                                    required: false,
+                                    // subQuery: true,
                                     include: [
                                         {
                                             model: this.appMediaThumbnail,

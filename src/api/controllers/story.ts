@@ -56,14 +56,14 @@ class StoryController {
             return;
         }
         this.storyService
-            .getByUser(req.params.order, req.query, req.user.address)
+            .getByUser(req.user.address, req.query)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     listByOrder = (req: Request, res: Response) => {
         this.storyService
-            .listByOrder(req.params.order, req.query)
+            .list(req.query)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
