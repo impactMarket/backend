@@ -294,12 +294,11 @@ export default class StoryService {
         }
         const r = await this.community.findAll({
             attributes: ['id', 'name'],
-            subQuery: false,
             include: [
                 {
                     model: this.appMediaContent,
                     as: 'cover',
-                    // duplicating: false,
+                    // separate: true,
                     include: [
                         {
                             model: this.appMediaThumbnail,
@@ -310,21 +309,22 @@ export default class StoryService {
                 {
                     model: this.storyCommunity,
                     as: 'storyCommunity',
-                    // duplicating: false,
+                    required: true,
                     include: [
                         {
                             model: this.storyContent,
                             as: 'storyContent',
-                            // duplicating: false,
+                            duplicating: true,
                             include: [
                                 {
                                     model: this.storyEngagement,
                                     as: 'storyEngagement',
+                                    // duplicating: true,
                                 },
                                 {
                                     model: this.appMediaContent,
                                     as: 'media',
-                                    // subQuery: true,
+                                    duplicating: true,
                                     include: [
                                         {
                                             model: this.appMediaThumbnail,
@@ -334,23 +334,20 @@ export default class StoryService {
                                 },
                             ],
                             where: {
-                                byAddress: { [Op.not]: null },
+                                postedAt: {
+                                    // TODO: use query builder instead
+                                    [Op.eq]: literal(`(select max("postedAt")
+                                    from story_content sc, story_community sm
+                                    where sc.id=sm."contentId" and sm."communityId"="storyCommunity"."communityId" and sc."isPublic"=true)`),
+                                },
                             },
                         },
                     ],
-                    where: {
-                        contentId: { [Op.not]: null },
-                    },
                 },
             ],
             where: {
                 visibility: 'public',
                 status: 'valid',
-                '$storyCommunity->storyContent.postedAt$': {
-                    [Op.eq]: literal(`(select max("postedAt")
-                    from story_content sc, story_community sm
-                    where sc.id=sm."contentId" and sm."communityId"="Community".id and sc."isPublic"=true)`),
-                },
             } as any, // does not recognize the string as a variable
             order: [['storyCommunity', 'storyContent', 'postedAt', 'DESC']],
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
@@ -362,7 +359,7 @@ export default class StoryService {
                 id: community.id,
                 name: community.name,
                 cover: community.cover!,
-                // we can use ! because it's filtered on the query
+                // we can use ! because it's uncluded on the query
                 story: community.storyCommunity!.map((s) => ({
                     id: s.storyContent!.id,
                     media: s.storyContent!.media,
