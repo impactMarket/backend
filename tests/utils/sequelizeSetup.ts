@@ -24,3 +24,22 @@ export function sequelizeSetup() {
     initModels(sequelize);
     return sequelize;
 }
+
+const truncateTable = (sequelize: Sequelize, modelName: string) =>
+    sequelize.models[modelName].destroy({
+        where: {},
+        force: true,
+    });
+
+export default async function truncate(sequelize: Sequelize, model?: string) {
+    if (model) {
+        return truncateTable(sequelize, model);
+    }
+
+    return Promise.all(
+        Object.keys(sequelize.models).map((key) => {
+            if (['sequelize', 'Sequelize'].includes(key)) return null;
+            return truncateTable(sequelize, key);
+        })
+    );
+}
