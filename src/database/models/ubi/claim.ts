@@ -12,7 +12,7 @@ interface ClaimAttributes {
     createdAt: Date;
     updatedAt: Date;
 }
-interface ClaimCreationAttributes {
+export interface ClaimCreationAttributes {
     address: string;
     communityId: string;
     amount: string;
