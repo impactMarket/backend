@@ -33,7 +33,8 @@ const data = async () => {
 const UserFactory = async (options: { n: number } = { n: 1 }) => {
     const result: User[] = [];
     for (let index = 0; index < options.n; index++) {
-        result.push(await UserModel.create(await data()));
+        const newUser: any = await UserModel.create(await data());
+        result.push(newUser.toJSON());
     }
     return result;
 };

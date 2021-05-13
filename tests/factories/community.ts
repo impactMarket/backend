@@ -6,12 +6,16 @@ import {
     // CommunityAttributes,
     // CommunityCreationAttributes,
 } from '../../src/database/models/ubi/community';
+import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
+import { UbiCommunityStateModel } from '../../src/database/models/ubi/communityState';
+import { UbiCommunityContractCreation } from '../../src/interfaces/ubi/ubiCommunityContract';
 
 interface ICreateProps {
     requestByAddress: string;
     started: Date;
     status: 'pending' | 'valid' | 'removed';
     visibility: 'public' | 'private';
+    contract: UbiCommunityContractCreation;
     hasAddress?: boolean;
 }
 /**
@@ -57,7 +61,13 @@ const data = async (props: ICreateProps) => {
 const CommunityFactory = async (props: ICreateProps[]) => {
     const result: any /*CommunityAttributes*/[] = [];
     for (let index = 0; index < props.length; index++) {
-        result.push(await Community.create(await data(props[index])));
+        const newCommunity = await Community.create(await data(props[index]));
+        result.push(newCommunity.toJSON());
+        await UbiCommunityContractModel.create({
+            ...props[index].contract,
+            communityId: newCommunity.id,
+        });
+        await UbiCommunityStateModel.create({ communityId: newCommunity.id });
     }
     return result;
 };

@@ -33,9 +33,10 @@ const data = async (user: User, communityId: string) => {
 const BeneficiaryFactory = async (user: User[], communityId: string) => {
     const result: BeneficiaryAttributes[] = [];
     for (let index = 0; index < user.length; index++) {
-        result.push(
-            await Beneficiary.create(await data(user[index], communityId))
+        const newBneficiary: any = await Beneficiary.create(
+            await data(user[index], communityId)
         );
+        result.push(newBneficiary.toJSON());
     }
     return result;
 };
