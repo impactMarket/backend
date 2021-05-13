@@ -202,9 +202,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             type: QueryTypes.SELECT,
         }
     );
-    const economicActivity = new Map(
-        resultEconomicActivity.map((r) => [parseInt(r.id, 10), r])
-    );
 
     const calculateMetrics = async (
         community: CommunityAttributes & {
@@ -329,16 +326,21 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             estimatedDuration,
             date: yesterday,
         });
-        const economic = economicActivity.get(community.id);
-        if (economic) {
-            await models.ubiCommunityDailyState.update(
-                {
-                    transactions: parseInt(economic.txs, 10),
-                    reach: parseInt(economic.reach, 10),
-                    volume: economic.volume,
-                },
-                { where: { communityId: community.id, date: yesterday } }
+        if (resultEconomicActivity) {
+            const economicActivity = new Map(
+                resultEconomicActivity.map((r) => [parseInt(r.id, 10), r])
             );
+            const economic = economicActivity.get(community.id);
+            if (economic) {
+                await models.ubiCommunityDailyState.update(
+                    {
+                        transactions: parseInt(economic.txs, 10),
+                        reach: parseInt(economic.reach, 10),
+                        volume: economic.volume,
+                    },
+                    { where: { communityId: community.id, date: yesterday } }
+                );
+            }
         }
     };
 
