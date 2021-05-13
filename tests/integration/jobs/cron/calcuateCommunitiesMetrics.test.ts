@@ -4,6 +4,7 @@ import tk from 'timekeeper';
 
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import BeneficiaryFactory from '../../../factories/beneficiary';
+import BeneficiaryTransactionFactory from '../../../factories/beneficiaryTransaction';
 import ClaimFactory from '../../../factories/claim';
 import CommunityFactory from '../../../factories/community';
 import InflowFactory from '../../../factories/inflow';
@@ -57,6 +58,7 @@ describe('calcuateCommunitiesMetrics', () => {
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await ClaimFactory(beneficiaries[1], community);
+            await BeneficiaryTransactionFactory(beneficiaries[0], true);
             await calcuateCommunitiesMetrics();
             tk.travel(
                 new Date().getTime() + 1000 * 60 * 60 * 24 + 36 * 60 * 1000
@@ -64,6 +66,7 @@ describe('calcuateCommunitiesMetrics', () => {
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await ClaimFactory(beneficiaries[1], community);
+            await BeneficiaryTransactionFactory(beneficiaries[1], false);
         });
 
         after(async () => {
