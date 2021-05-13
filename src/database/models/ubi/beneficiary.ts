@@ -22,7 +22,7 @@ export interface BeneficiaryAttributes {
     user?: User;
     community?: CommunityAttributes;
 }
-interface BeneficiaryCreationAttributes {
+export interface BeneficiaryCreationAttributes {
     address: string;
     communityId: string;
     tx: string;
