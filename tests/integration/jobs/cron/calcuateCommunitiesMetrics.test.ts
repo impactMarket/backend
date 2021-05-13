@@ -1,5 +1,6 @@
 // import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
+import tk from 'timekeeper';
 
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import BeneficiaryFactory from '../../../factories/beneficiary';
@@ -27,7 +28,7 @@ describe('calcuateCommunitiesMetrics', () => {
                         claimAmount: '1000000000000000000',
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '25000000000000000000',
+                        maxClaim: '450000000000000000000',
                     },
                     hasAddress: true,
                 },
@@ -39,7 +40,7 @@ describe('calcuateCommunitiesMetrics', () => {
                     claimAmount: '1000000000000000000',
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '25000000000000000000',
+                    maxClaim: '450000000000000000000',
                 },
             };
             await InflowFactory(community);
@@ -49,8 +50,19 @@ describe('calcuateCommunitiesMetrics', () => {
                 community.publicId
             );
             await ClaimFactory(beneficiaries[0], community);
-            await ClaimFactory(beneficiaries[0], community);
             await ClaimFactory(beneficiaries[1], community);
+            tk.travel(
+                new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000
+            );
+            await ClaimFactory(beneficiaries[0], community);
+            tk.travel(new Date().getTime() + 1000 * 60 * 3);
+            await ClaimFactory(beneficiaries[1], community);
+            await calcuateCommunitiesMetrics();
+            tk.travel(
+                new Date().getTime() + 1000 * 60 * 60 * 24 + 36 * 60 * 1000
+            );
+            await ClaimFactory(beneficiaries[0], community);
+            tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await ClaimFactory(beneficiaries[1], community);
         });
 

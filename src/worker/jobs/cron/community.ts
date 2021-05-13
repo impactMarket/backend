@@ -313,10 +313,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             ssiDayAlone,
             ssi,
             ubiRate,
-            estimatedDuration,
+            estimatedDuration
             // since it's calculated post-midnight, save it with yesterdayDateOnly's date
             // yesterday
-            new Date().getDate() - 1
+            // new Date().getDate() - 1
         );
         await models.ubiCommunityDailyMetrics.create({
             communityId: community.id,
