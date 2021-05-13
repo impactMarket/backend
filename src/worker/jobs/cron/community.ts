@@ -188,63 +188,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             },
         });
     }
-
-    // const someEconomicActivity = await models.beneficiaryTransaction.findAll({
-    //     attributes: {
-    //         exclude: [
-    //             'id',
-    //             'beneficiary',
-    //             'withAddress',
-    //             'amount',
-    //             'isFromBeneficiary',
-    //             'tx',
-    //             'date',
-    //             'createdAt',
-    //             'updatedAt',
-    //         ],
-    //         include: [
-    //             [fn('count', col('amount')), 'txs'],
-    //             [fn('sum', col('amount')), 'volume'],
-    //             [fn('count', fn('distinct', col('withAddress'))), 'reach'],
-    //         ],
-    //     },
-    //     include: [
-    //         {
-    //             model: models.beneficiary,
-    //             as: 'beneficiaryInTx',
-    //             attributes: {
-    //                 exclude: [
-    //                     'id',
-    //                     'address',
-    //                     'communityId',
-    //                     'active',
-    //                     'blocked',
-    //                     'tx',
-    //                     'txAt',
-    //                     'claims',
-    //                     'claimed',
-    //                     'lastClaimAt',
-    //                     'penultimateClaimAt',
-    //                     'createdAt',
-    //                     'updatedAt',
-    //                 ],
-    //             },
-    //             include: [
-    //                 {
-    //                     model: models.community,
-    //                     as: 'community',
-    //                     attributes: ['id'],
-    //                     where: {
-    //                         status: 'valid',
-    //                         visibility: 'public',
-    //                     },
-    //                 },
-    //             ],
-    //         },
-    //     ],
-    //     group: ['beneficiaryInTx->community.id'],
-    //     // raw: true,
-    // });
     // TODO: tests cant query with sequelize query!
     const resultEconomicActivity: {
         volume: string;
@@ -278,22 +221,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         ) {
             return;
         }
-        // if (
-        //     community.state.claimed === '0' ||
-        //     community.state.raised === '0' ||
-        //     totalClaimedLast30Days.get(community.id) === undefined ||
-        //     activeBeneficiariesLast30Days.get(community.publicId) ===
-        //         undefined ||
-        //     activeBeneficiariesLast30Days.get(community.publicId) === 0
-        // ) {
-        //     return;
-        // }
-        // const beneficiaries = await BeneficiaryService.listActiveInCommunity(
-        //     community.publicId
-        // );
-        // if (beneficiaries.length < 1) {
-        //     return;
-        // }
         let ssiDayAlone: number = 0;
         let ssi: number = 0;
         let ubiRate: number = 0;
