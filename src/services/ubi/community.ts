@@ -1280,22 +1280,15 @@ export default class CommunityService {
         const aMonthAgo = new Date();
         aMonthAgo.setDate(aMonthAgo.getDate() - 30);
         aMonthAgo.setHours(0, 0, 0, 0);
-        const result = await this.community.findOne({
-            attributes: ['id'],
-            include: [
-                {
-                    model: this.claimLocation,
-                    as: 'claimLocation',
-                    where: {
-                        createdAt: { [Op.gte]: aMonthAgo },
-                    },
-                },
-            ],
+
+        const community = (await this.community.findOne({ where: { id } }))!;
+        return await this.claimLocation.findAll({
+            attributes: ['gps'],
             where: {
-                id,
+                createdAt: { [Op.gte]: aMonthAgo },
+                communityId: community.publicId,
             },
         });
-        return result?.toJSON() as CommunityAttributes;
     }
 
     public static async getManagers(communityId: string) {
