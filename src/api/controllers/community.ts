@@ -8,10 +8,10 @@ import { Request, Response } from 'express';
 
 class CommunityController {
     findRequestChangeUbiParams = (req: Request, res: Response) => {
-        CommunityService.getResquestChangeUbiParams(req.params.publicId)
-            .then((community) =>
-                standardResponse(res, 200, !!community, community)
-            )
+        CommunityService.findResquestChangeUbiParams(
+            parseInt(req.params.id, 10)
+        )
+            .then((community) => standardResponse(res, 200, true, community))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 

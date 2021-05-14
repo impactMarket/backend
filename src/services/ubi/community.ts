@@ -1100,6 +1100,19 @@ export default class CommunityService {
         });
     }
 
+    public static async findResquestChangeUbiParams(
+        id: number
+    ): Promise<UbiRequestChangeParams | null> {
+        const community = (await this.community.findOne({
+            attributes: ['publicId'],
+            where: { id },
+            raw: true,
+        }))!;
+        return this.ubiRequestChangeParams.findOne({
+            where: { communityId: community.publicId },
+        });
+    }
+
     /**
      * @deprecated Use `findById`
      */
