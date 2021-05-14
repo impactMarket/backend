@@ -54,7 +54,7 @@ class CommunityController {
             CommunityService.searchBeneficiary(
                 req.user.address,
                 search,
-                active ? active === 'true' : undefined
+                active !== undefined ? active === 'true' : undefined
             )
                 .then((r) => standardResponse(res, 200, true, r))
                 .catch((e) =>
