@@ -1267,13 +1267,16 @@ export default class CommunityService {
                     as: 'dailyState',
                     order: [['date', 'DESC']],
                     limit: 30,
+                    where: {
+                        date: { [Op.lt]: new Date() },
+                    },
                 },
             ],
             where: {
                 id,
             },
         });
-        return result?.toJSON() as CommunityAttributes;
+        return result!.toJSON() as CommunityAttributes;
     }
 
     public static async getClaimLocation(id: string) {
