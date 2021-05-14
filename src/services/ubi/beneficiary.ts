@@ -384,10 +384,13 @@ export default class BeneficiaryService {
         ).map((b) => b.address);
     }
 
-    public static async remove(address: string): Promise<void> {
+    public static async remove(
+        address: string,
+        communityId: string
+    ): Promise<void> {
         await this.beneficiary.update(
             { active: false },
-            { where: { address } }
+            { where: { address, communityId } }
         );
     }
 

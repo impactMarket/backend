@@ -7,6 +7,7 @@ import { initializeAppUserTrust } from '../../../../src/database/models/app/appU
 import { initializeUser } from '../../../../src/database/models/app/user';
 import { verifyUserSuspectActivity } from '../../../../src/worker/jobs/cron/user';
 
+// in this test there are users being assined with suspicious activity and others being removed
 describe('[jobs - cron] verifyUserSuspectActivity', () => {
     let sequelize;
     let tIds: any[];
@@ -125,10 +126,15 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
             {
                 phone: '00351969696968',
                 verifiedPhoneNumber: false,
-                suspect: false,
+                suspect: true, // was suspect previously
             },
             {
                 phone: '00351969696969',
+                verifiedPhoneNumber: false,
+                suspect: false,
+            },
+            {
+                phone: '00351969696970',
                 verifiedPhoneNumber: false,
                 suspect: false,
             },
@@ -156,6 +162,10 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
                 userAddress: '0x102D33893983E187814Be1bdBe9852299829C554',
                 appUserTrustId: tIds[4].id,
             },
+            {
+                userAddress: '0x102D33893983E187814Be1bdBe9852299829C554',
+                appUserTrustId: tIds[5].id,
+            },
         ]);
     });
 
@@ -175,7 +185,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
         const appUserTrustUpdateStub = stub(models.appUserTrust, 'update');
         appUserTrustUpdateStub.returns(Promise.resolve({} as any));
         await verifyUserSuspectActivity();
-        assert.callCount(appUserTrustUpdateStub, 2);
+        assert.callCount(appUserTrustUpdateStub, 3);
         assert.calledWith(
             appUserTrustUpdateStub.getCall(0),
             {
@@ -196,5 +206,17 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
                 returning: false,
             }
         );
+        assert.calledWith(
+            appUserTrustUpdateStub.getCall(2),
+            {
+                suspect: false,
+            },
+            {
+                where: { id: { [Op.in]: [tIds[3].id] } },
+                returning: false,
+            }
+        );
     });
+
+    // TODO: devide in two tests, one to find suspect, one to remove
 });

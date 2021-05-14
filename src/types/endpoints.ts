@@ -1,5 +1,6 @@
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { User } from '@interfaces/app/user';
+import { StoryContent } from '@interfaces/story/storyContent';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
@@ -107,8 +108,9 @@ export interface IAddStory {
 
 export interface ICommunityStory {
     id: number;
-    media?: AppMediaContent;
     message: string | null;
+    byAddress: string;
+    media?: AppMediaContent;
     loves: number;
     userLoved: boolean;
     userReported: boolean;
@@ -135,9 +137,9 @@ export interface ICommunityStories {
     stories: ICommunityStory[];
 }
 
-export interface UserStory {
-    id: number;
-    media?: AppMediaContent;
-    message: string | null;
-    loves: number;
-}
+// export interface UserStory {
+//     id: number;
+//     media?: AppMediaContent;
+//     message: string | null;
+//     loves: number;
+// }

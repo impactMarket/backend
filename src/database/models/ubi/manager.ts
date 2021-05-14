@@ -1,6 +1,8 @@
 import { User } from '@interfaces/app/user';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
+import { CommunityAttributes } from './community';
+
 export interface ManagerAttributes {
     id: number;
     address: string;
@@ -12,6 +14,7 @@ export interface ManagerAttributes {
     updatedAt: Date;
 
     user?: User;
+    community?: CommunityAttributes;
 }
 interface ManagerCreationAttributes {
     address: string;

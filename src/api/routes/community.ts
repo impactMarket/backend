@@ -148,12 +148,7 @@ export default (app: Router): void => {
      *
      * /community/beneficiaries/{query}:
      *   get:
-     *     tags:
-     *       - "community"
      *     summary: Find or list beneficiaries in manager's community
-     *     responses:
-     *       "200":
-     *         description: OK
      *     security:
      *     - api_auth:
      *       - "write:modify":
@@ -162,6 +157,28 @@ export default (app: Router): void => {
         '/beneficiaries/:query?',
         authenticateToken,
         controller.beneficiaries
+    );
+
+    /**
+     * @swagger
+     *
+     * /community/create:
+     *   post:
+     *     tags:
+     *       - "community"
+     *     summary: Create community
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/create',
+        authenticateToken,
+        communityValidators.create,
+        communityController.create
     );
 
     route.get('/list/:query?', controller.list);

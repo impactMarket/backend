@@ -1,3 +1,4 @@
+import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
 import { StoryContent } from '@interfaces/story/storyContent';
 import {
@@ -5,9 +6,10 @@ import {
     ICommunitiesListStories,
     ICommunityStories,
     ICommunityStory,
-    UserStory,
 } from '@ipcttypes/endpoints';
+import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { CommunityAttributes } from '@models/ubi/community';
+import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { Includeable, literal, Op, QueryTypes } from 'sequelize';
 
@@ -24,6 +26,9 @@ export default class StoryService {
     public community = models.community;
     public appMediaContent = models.appMediaContent;
     public appMediaThumbnail = models.appMediaThumbnail;
+    public beneficiary = models.beneficiary;
+    public manager = models.manager;
+    public user = models.user;
     public sequelize = sequelize;
 
     private storyContentStorage = new StoryContentStorage();
@@ -35,7 +40,7 @@ export default class StoryService {
     public async add(
         fromAddress: string,
         story: IAddStory
-    ): Promise<StoryContent> {
+    ): Promise<ICommunityStory> {
         let storyContentToAdd: { mediaMediaId?: number; message?: string } = {};
         if (story.mediaId) {
             storyContentToAdd = {
@@ -60,7 +65,7 @@ export default class StoryService {
                 ],
             };
         }
-        return this.storyContent.create(
+        const created = await this.storyContent.create(
             {
                 ...storyContentToAdd,
                 ...storyCommunityToAdd,
@@ -76,6 +81,26 @@ export default class StoryService {
                 ],
             }
         );
+        const newStory = created.toJSON() as StoryContent;
+        if (story.mediaId) {
+            const media = await this.appMediaContent.findOne({
+                where: { id: story.mediaId },
+                include: [
+                    {
+                        model: this.appMediaThumbnail,
+                        as: 'thumbnails',
+                    },
+                ],
+            });
+            return {
+                ...newStory,
+                media: media!.toJSON() as AppMediaContent,
+                loves: 0,
+                userLoved: false,
+                userReported: false,
+            };
+        }
+        return { ...newStory, loves: 0, userLoved: false, userReported: false };
     }
 
     public async has(address: string): Promise<boolean> {
@@ -106,20 +131,19 @@ export default class StoryService {
             return 0;
         }
         const storyMedia = (contentPath.toJSON() as StoryContent).media;
-        // first delete media
+        const result = await this.storyContent.destroy({
+            where: { id: storyId, byAddress: userAddress },
+        });
         if (storyMedia) {
             await this.storyContentStorage.deleteContent(storyMedia.id);
         }
-        return await this.storyContent.destroy({
-            where: { id: storyId, byAddress: userAddress },
-        });
+        return result;
     }
 
-    public async listByUser(
-        order: string | undefined,
-        query: { offset?: string; limit?: string },
-        onlyFromAddress: string
-    ): Promise<UserStory[]> {
+    public async getByUser(
+        onlyFromAddress: string,
+        query: { offset?: string; limit?: string }
+    ): Promise<ICommunityStories> {
         const r = await this.storyContent.findAll({
             include: [
                 {
@@ -138,84 +162,143 @@ export default class StoryService {
                         },
                     ],
                 },
+                ...this._filterSubInclude(onlyFromAddress),
             ],
             where: { byAddress: onlyFromAddress, isPublic: true },
             order: [['postedAt', 'DESC']],
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
-        return r.map((c) => {
-            const content = c.toJSON() as StoryContent;
-            return {
-                id: content.id,
-                media: content.media,
-                message: content.message,
-                loves: content.storyEngagement!.loves,
-            };
+
+        let result: BeneficiaryAttributes | ManagerAttributes;
+
+        const beneficiaryResult = await this.beneficiary.findOne({
+            attributes: ['address'],
+            include: [
+                {
+                    model: models.community,
+                    as: 'community',
+                    attributes: ['id'],
+                },
+            ],
+            where: { address: onlyFromAddress, active: true },
         });
+
+        if (beneficiaryResult === null) {
+            const managerResult = await this.manager.findOne({
+                attributes: ['address'],
+                include: [
+                    {
+                        model: models.community,
+                        as: 'community',
+                        attributes: ['id'],
+                    },
+                ],
+                where: { address: onlyFromAddress, active: true },
+            });
+            if (managerResult === null) {
+                throw new Error('user not found!');
+            }
+            result = managerResult.toJSON() as ManagerAttributes;
+        } else {
+            result = beneficiaryResult.toJSON() as BeneficiaryAttributes;
+        }
+
+        if (result.community === undefined) {
+            throw new Error('community not found!');
+        }
+
+        return {
+            id: result.community.id,
+            // this information is on the user side already
+            name: '',
+            city: '',
+            country: '',
+            publicId: '',
+            cover: {
+                id: 0,
+                url: '',
+                height: 0,
+                width: 0,
+            },
+            //
+            stories: r.map((c) => {
+                const content = c.toJSON() as StoryContent;
+                return {
+                    id: content.id,
+                    media: content.media,
+                    message: content.message,
+                    byAddress: content.byAddress,
+                    loves: content.storyEngagement
+                        ? content.storyEngagement.loves
+                        : 0,
+                    userLoved: content.storyUserEngagement
+                        ? content.storyUserEngagement.length !== 0
+                        : false,
+                    userReported: content.storyUserReport
+                        ? content.storyUserReport.length !== 0
+                        : false,
+                };
+            }),
+        };
     }
 
-    public async listImpactMarketOnly(
-        userAddress?: string
-    ): Promise<ICommunityStories> {
-        const subInclude = this._filterSubInclude(userAddress);
-        const r = await this.storyContent.findAll({
-            include: [
-                ...subInclude,
-                {
-                    model: this.appMediaContent,
-                    as: 'media',
-                    required: false,
+    public async list(query: {
+        offset?: string;
+        limit?: string;
+        includeIPCT?: boolean;
+    }): Promise<ICommunitiesListStories[]> {
+        let ipctMostRecent: ICommunitiesListStories | undefined;
+        if (query.includeIPCT) {
+            const r = await this.storyContent.findAll({
+                include: [
+                    {
+                        model: this.appMediaContent,
+                        as: 'media',
+                        required: false,
+                        include: [
+                            {
+                                model: this.appMediaThumbnail,
+                                as: 'thumbnails',
+                            },
+                        ],
+                    },
+                ],
+                where: {
+                    byAddress: config.impactMarketContractAddress,
+                    isPublic: true,
+                },
+                order: [['postedAt', 'DESC']],
+                limit: 1,
+            });
+            if (r.length > 0) {
+                const ipctCover = await this.appMediaContent.findOne({
                     include: [
                         {
                             model: this.appMediaThumbnail,
                             as: 'thumbnails',
                         },
                     ],
-                },
-            ],
-            where: {
-                byAddress: config.impactMarketContractAddress,
-                isPublic: true,
-            },
-            order: [['postedAt', 'DESC']],
-        });
-        const stories: ICommunityStory[] = r.map((c) => {
-            const content = c.toJSON() as StoryContent;
-            return {
-                id: content.id,
-                media: content.media,
-                message: content.message,
-                loves: content.storyEngagement!.loves,
-                userLoved: userAddress
-                    ? content.storyUserEngagement!.length !== 0
-                    : false,
-                userReported: userAddress
-                    ? content.storyUserReport!.length !== 0
-                    : false,
-            };
-        });
-        return {
-            id: 0,
-            // publicId: 'impact-market',
-            name: '',
-            city: '',
-            country: '',
-            cover: undefined as any, // this is loaded on the app
-            stories,
-        };
-    }
-
-    public async listByOrder(
-        order: string | undefined,
-        query: { offset?: string; limit?: string }
-    ): Promise<ICommunitiesListStories[]> {
+                    where: {
+                        id: config.impactMarketStoryCoverId,
+                    },
+                });
+                const story = r[0].toJSON() as StoryContent;
+                ipctMostRecent = {
+                    id: -1,
+                    name: 'impactMarket',
+                    cover: ipctCover!.toJSON() as AppMediaContent,
+                    story,
+                };
+            }
+        }
         const r = await this.community.findAll({
             attributes: ['id', 'name'],
             include: [
                 {
                     model: this.appMediaContent,
                     as: 'cover',
+                    // separate: true,
                     include: [
                         {
                             model: this.appMediaThumbnail,
@@ -226,20 +309,22 @@ export default class StoryService {
                 {
                     model: this.storyCommunity,
                     as: 'storyCommunity',
-                    duplicating: false,
+                    required: true,
                     include: [
                         {
                             model: this.storyContent,
                             as: 'storyContent',
+                            duplicating: true,
                             include: [
                                 {
                                     model: this.storyEngagement,
                                     as: 'storyEngagement',
+                                    // duplicating: true,
                                 },
                                 {
                                     model: this.appMediaContent,
                                     as: 'media',
-                                    required: false,
+                                    duplicating: true,
                                     include: [
                                         {
                                             model: this.appMediaThumbnail,
@@ -249,35 +334,32 @@ export default class StoryService {
                                 },
                             ],
                             where: {
-                                byAddress: { [Op.not]: null },
+                                postedAt: {
+                                    // TODO: use query builder instead
+                                    [Op.eq]: literal(`(select max("postedAt")
+                                    from story_content sc, story_community sm
+                                    where sc.id=sm."contentId" and sm."communityId"="storyCommunity"."communityId" and sc."isPublic"=true)`),
+                                },
                             },
                         },
                     ],
-                    where: {
-                        contentId: { [Op.not]: null },
-                    },
                 },
             ],
             where: {
                 visibility: 'public',
                 status: 'valid',
-                '$storyCommunity->storyContent.postedAt$': {
-                    [Op.eq]: literal(`(select max("postedAt")
-                    from story_content sc, story_community sm
-                    where sc.id=sm."contentId" and sm."communityId"="Community".id and sc."isPublic"=true)`),
-                },
             } as any, // does not recognize the string as a variable
             order: [['storyCommunity', 'storyContent', 'postedAt', 'DESC']],
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
-        return r.map((c) => {
+        const communitiesStories = r.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
             return {
                 id: community.id,
                 name: community.name,
                 cover: community.cover!,
-                // we can use ! because it's filtered on the query
+                // we can use ! because it's uncluded on the query
                 story: community.storyCommunity!.map((s) => ({
                     id: s.storyContent!.id,
                     media: s.storyContent!.media,
@@ -285,6 +367,10 @@ export default class StoryService {
                 }))[0],
             };
         });
+        if (ipctMostRecent) {
+            return [ipctMostRecent].concat(communitiesStories);
+        }
+        return communitiesStories;
     }
 
     public async getByCommunity(
@@ -293,6 +379,10 @@ export default class StoryService {
         query: { offset?: string; limit?: string },
         userAddress?: string
     ): Promise<ICommunityStories> {
+        if (communityId === -1) {
+            return this._listImpactMarketOnly(userAddress);
+        }
+
         const subInclude = this._filterSubInclude(userAddress);
         const r = await this.storyContent.findAll({
             include: [
@@ -359,6 +449,7 @@ export default class StoryService {
                     id: content.id,
                     media: content.media,
                     message: content.message,
+                    byAddress: content.byAddress,
                     loves: content.storyEngagement!.loves,
                     userLoved: userAddress
                         ? content.storyUserEngagement!.length !== 0
@@ -425,6 +516,69 @@ export default class StoryService {
         await this.storyContentStorage
             .deleteBulkContent(storiesToDelete.map((s) => s.mediaMediaId))
             .catch(Logger.error);
+    }
+
+    public async _listImpactMarketOnly(
+        userAddress?: string
+    ): Promise<ICommunityStories> {
+        const subInclude = this._filterSubInclude(userAddress);
+        const r = await this.storyContent.findAll({
+            include: [
+                ...subInclude,
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    required: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                        },
+                    ],
+                },
+            ],
+            where: {
+                byAddress: config.impactMarketContractAddress,
+                isPublic: true,
+            },
+            order: [['postedAt', 'DESC']],
+        });
+        const stories: ICommunityStory[] = r.map((c) => {
+            const content = c.toJSON() as StoryContent;
+            return {
+                id: content.id,
+                media: content.media,
+                message: content.message,
+                byAddress: content.byAddress,
+                loves: content.storyEngagement!.loves,
+                userLoved: userAddress
+                    ? content.storyUserEngagement!.length !== 0
+                    : false,
+                userReported: userAddress
+                    ? content.storyUserReport!.length !== 0
+                    : false,
+            };
+        });
+        const ipctCover = await this.appMediaContent.findOne({
+            include: [
+                {
+                    model: this.appMediaThumbnail,
+                    as: 'thumbnails',
+                },
+            ],
+            where: {
+                id: config.impactMarketStoryCoverId,
+            },
+        });
+        return {
+            id: -1,
+            publicId: 'impact-market',
+            name: 'impactMarket',
+            city: '',
+            country: '',
+            cover: ipctCover!.toJSON() as AppMediaContent,
+            stories,
+        };
     }
 
     private _filterSubInclude(userAddress?: string) {

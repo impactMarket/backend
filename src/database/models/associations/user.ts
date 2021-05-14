@@ -6,6 +6,11 @@ export function userAssociation(sequelize: Sequelize) {
         foreignKey: 'address',
         as: 'beneficiary',
     });
+    sequelize.models.Beneficiary.hasMany(sequelize.models.Claim, {
+        sourceKey: 'address',
+        foreignKey: 'address',
+        as: 'claim',
+    });
     // used to query from the beneficiary with incude
     sequelize.models.Beneficiary.belongsTo(sequelize.models.UserModel, {
         foreignKey: 'address',
@@ -79,10 +84,16 @@ export function userAssociation(sequelize: Sequelize) {
     );
 
     // beneficiaries are linked to manager through communityId
-    // TODO:
-    // sequelize.models.Beneficiary.belongsTo(sequelize.models.Community, {
-    //     foreignKey: 'communityId',
-    //     targetKey: 'publicId',
-    //     as: 'community',
-    // });
+    sequelize.models.Beneficiary.belongsTo(sequelize.models.Community, {
+        foreignKey: 'communityId',
+        targetKey: 'publicId',
+        as: 'community',
+    });
+
+    // beneficiaries are linked to manager through communityId
+    sequelize.models.Manager.belongsTo(sequelize.models.Community, {
+        foreignKey: 'communityId',
+        targetKey: 'publicId',
+        as: 'community',
+    });
 }

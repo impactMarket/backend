@@ -9,7 +9,7 @@ import { Logger } from '@utils/logger';
 import { notifyBackersCommunityLowFunds } from '@utils/util';
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
-import { Op, QueryTypes } from 'sequelize';
+import { col, fn, Op, QueryTypes } from 'sequelize';
 
 import config from '../../../config';
 import { models, sequelize } from '../../../database';
@@ -21,6 +21,9 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
             {
                 model: models.beneficiary,
                 as: 'beneficiaries',
+                where: {
+                    active: true,
+                },
                 include: [
                     {
                         model: models.user,
@@ -82,17 +85,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(0, 0, 0, 0);
-    const resultCommunities = await models.community.findAll({
+    const communitiesStatePre = await models.community.findAll({
+        attributes: ['id', 'started'],
         include: [
-            {
-                model: models.beneficiary,
-                as: 'beneficiaries',
-                where: {
-                    claims: { [Op.gt]: 1 },
-                    lastClaimAt: { [Op.gte]: aMonthAgo },
-                    active: true,
-                },
-            },
             {
                 model: models.ubiCommunityContract,
                 as: 'contract',
@@ -108,17 +103,92 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             },
             {
                 model: models.ubiCommunityDailyMetrics,
-                required: false,
                 as: 'metrics',
+                attributes: ['ssi'],
+                required: false,
                 order: [['date', 'DESC']],
                 limit: 4,
+            },
+            {
+                model: models.beneficiary,
+                as: 'beneficiaries',
+                where: {
+                    claims: { [Op.gt]: 1 },
+                    lastClaimAt: { [Op.gte]: aMonthAgo },
+                    active: true,
+                },
             },
         ],
         where: {
             status: 'valid',
             visibility: 'public',
         },
+        order: [['id', 'DESC']],
     });
+    const communityNumbers: any = await models.community.findAll({
+        attributes: [
+            'id',
+            [
+                fn('count', fn('distinct', col('beneficiaries.address'))),
+                'count',
+            ],
+            [
+                fn('sum', fn('coalesce', col('beneficiaries.claim.amount'), 0)),
+                'sum',
+            ],
+        ],
+        include: [
+            {
+                model: models.beneficiary,
+                as: 'beneficiaries',
+                where: {
+                    claims: { [Op.gt]: 1 },
+                    lastClaimAt: { [Op.gte]: aMonthAgo },
+                    active: true,
+                },
+                attributes: [],
+                required: false,
+                include: [
+                    {
+                        model: models.claim,
+                        as: 'claim',
+                        attributes: [],
+                        required: false,
+                        where: {
+                            txAt: { [Op.gte]: aMonthAgo },
+                        },
+                    },
+                ],
+            },
+        ],
+        where: {
+            status: 'valid',
+            visibility: 'public',
+        },
+        group: ['Community.id'],
+        order: [['id', 'DESC']],
+        raw: true,
+    });
+
+    const communitiesState = communitiesStatePre.map(
+        (c) => c.toJSON() as CommunityAttributes
+    );
+    const communities: (CommunityAttributes & {
+        beneficiariesClaiming: { count: number; claimed: string };
+    })[] = [];
+    for (let index = 0; index < communitiesState.length; index++) {
+        const cn = communityNumbers.find(
+            (c) => c.id === communitiesState[index].id
+        )!;
+        communities.push({
+            ...communitiesState[index],
+            beneficiariesClaiming: {
+                count: parseInt(cn.count, 10),
+                claimed: cn.sum,
+            },
+        });
+    }
+
     // const someEconomicActivity = await models.beneficiaryTransaction.findAll({
     //     attributes: {
     //         exclude: [
@@ -193,36 +263,18 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         resultEconomicActivity.map((r) => [parseInt(r.id, 10), r])
     );
 
-    // const resultBackers = await models.inflow.count({
-    //     distinct: true,
-    //     group: 'Inflow.communityId',
-    //     col: 'from',
-    //     include: [
-    //         {
-    //             model: models.community,
-    //             as: 'communityInflow',
-    //             where: {
-    //                 status: 'valid',
-    //                 visibility: 'public',
-    //             },
-    //         },
-    //     ],
-    //     where: {
-    //         txAt: { [Op.gte]: aMonthAgo },
-    //     },
-    // });
-
-    const communities = resultCommunities.map(
-        (e) => e.toJSON() as CommunityAttributes
-    );
-
-    const calculateMetrics = async (community: CommunityAttributes) => {
+    const calculateMetrics = async (
+        community: CommunityAttributes & {
+            beneficiariesClaiming: { count: number; claimed: string };
+        }
+    ) => {
         // if no activity, do not calculate
         if (
             community.state === undefined ||
             community.contract === undefined ||
             community.beneficiaries === undefined ||
-            community.metrics === undefined
+            community.metrics === undefined ||
+            community.beneficiariesClaiming.claimed === '0'
         ) {
             return;
         }
@@ -317,14 +369,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
         // calculate ubiRate
         ubiRate = parseFloat(
-            new BigNumber(
-                community.beneficiaries.reduce(
-                    (acc, b) => acc.plus(b.claimed),
-                    new BigNumber('0')
-                )
-            )
+            new BigNumber(community.beneficiariesClaiming.claimed)
                 .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
-                .dividedBy(community.beneficiaries.length)
+                .dividedBy(community.beneficiariesClaiming.count)
                 .dividedBy(daysSinceStart)
                 .toFixed(2, 1)
         );

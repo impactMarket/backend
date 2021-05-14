@@ -34,28 +34,46 @@ export class ContentStorage {
 
     constructor() {
         if (process.env.NODE_ENV !== 'test') {
-            this.queueThumbnail = new Queue<IJobThumbnail>(
-                this.queueThumbnailName,
-                {
-                    connection: config.redis,
-                }
-            );
+            const re = /redis:\/\/([\w\d]*):([\w\d]*)@([\w\d-.]*):([\d]*)/i;
+            const found = config.redis.match(re);
+            if (found) {
+                this.queueThumbnail = new Queue<IJobThumbnail>(
+                    this.queueThumbnailName,
+                    {
+                        connection: {
+                            username: found[1],
+                            password: found[2],
+                            host: found[3],
+                            port: parseInt(found[4], 10),
+                        },
+                    }
+                );
+            }
         }
     }
 
     listenToJobs() {
         if (process.env.NODE_ENV !== 'test') {
-            const worker = new Worker<IJobThumbnail>(
-                this.queueThumbnailName,
-                (job) => this._createThumbnailFromJob(job.data),
-                {
-                    connection: config.redis,
-                    // concurrency: config.bullJobsConcurrency,
-                }
-            );
-            worker.on('failed', (job, err) =>
-                Logger.error(`Failed job ${job.id} with ${err}`)
-            );
+            const re = /redis:\/\/([\w\d]*):([\w\d]*)@([\w\d-.]*):([\d]*)/i;
+            const found = config.redis.match(re);
+            if (found) {
+                const worker = new Worker<IJobThumbnail>(
+                    this.queueThumbnailName,
+                    (job) => this._createThumbnailFromJob(job.data),
+                    {
+                        connection: {
+                            username: found[1],
+                            password: found[2],
+                            host: found[3],
+                            port: parseInt(found[4], 10),
+                        },
+                        // concurrency: config.bullJobsConcurrency,
+                    }
+                );
+                worker.on('failed', (job, err) =>
+                    Logger.error(`Failed job ${job.id} with ${err}`)
+                );
+            }
         }
     }
 
@@ -151,13 +169,16 @@ export class ContentStorage {
         let filePrefix = '';
         switch (category) {
             case StorageCategory.story:
-                filePrefix = `${now.getDate()}/`;
+                filePrefix = `story/${now.getDate()}/`;
                 break;
             case StorageCategory.communityCover:
                 filePrefix = 'cover/';
                 break;
             case StorageCategory.organizationLogo:
                 filePrefix = 'org-logo/';
+                break;
+            case StorageCategory.profile:
+                filePrefix = 'avatar/';
                 break;
         }
         const filename = `${filenameNoExt ? filenameNoExt : now.getTime()}${
@@ -361,9 +382,12 @@ export class StoryContentStorage
     async deleteContent(mediaId: number) {
         const filePaths = await this._findContentToDelete(mediaId);
         await this._deleteBulkContentFromS3(filePaths, StorageCategory.story);
-        await this.appMediaContent.destroy({
-            where: { id: mediaId },
-        });
+        // TODO:
+        try {
+            await this.appMediaContent.destroy({
+                where: { id: mediaId },
+            });
+        } catch (e) {}
     }
 
     /**

@@ -13,6 +13,7 @@ export interface StoryContent {
     isPublic: boolean;
     postedAt: Date;
 
+    // extensions
     media?: AppMediaContent;
     storyCommunity?: StoryCommunity;
     storyEngagement?: StoryEngagement;

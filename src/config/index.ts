@@ -201,12 +201,9 @@ export default {
         pixelRatio: [1, 2],
     },
 
-    redis: {
-        host: validatedEnv.REDIS_HOST,
-        port: validatedEnv.REDIS_PORT,
-        username: validatedEnv.REDIS_USER,
-        password: validatedEnv.REDIS_PASSWORD,
-    },
+    redis: validatedEnv.REDIS_URL,
 
     bullJobsConcurrency: validatedEnv.SENTRY_TRACE_SAMPLES_RATE,
+
+    impactMarketStoryCoverId: validatedEnv.IMPACTMARKET_STORY_COVER_ID,
 };
