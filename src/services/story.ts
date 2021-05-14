@@ -214,7 +214,6 @@ export default class StoryService {
             name: '',
             city: '',
             country: '',
-            publicId: '',
             cover: {
                 id: 0,
                 url: '',
@@ -572,7 +571,6 @@ export default class StoryService {
         });
         return {
             id: -1,
-            publicId: 'impact-market',
             name: 'impactMarket',
             city: '',
             country: '',

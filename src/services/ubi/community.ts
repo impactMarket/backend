@@ -668,6 +668,7 @@ export default class CommunityService {
                 {
                     model: this.ubiCommunityDailyMetrics,
                     required: false,
+                    duplicating: false,
                     as: 'metrics',
                     where: {
                         date: {
@@ -1389,17 +1390,17 @@ export default class CommunityService {
         });
     }
 
-    public static async findByContractAddress(
-        contractAddress: string
-    ): Promise<CommunityAttributes | null> {
-        const community = await this.community.findOne({
-            where: {
-                contractAddress,
-            },
-            raw: true,
-        });
-        return community?.toJSON() as CommunityAttributes | null;
-    }
+    // public static async findByContractAddress(
+    //     contractAddress: string
+    // ): Promise<CommunityAttributes | null> {
+    //     const community = await this.community.findOne({
+    //         where: {
+    //             contractAddress,
+    //         },
+    //         raw: true,
+    //     });
+    //     return community?.toJSON() as CommunityAttributes | null;
+    // }
 
     /**
      * @deprecated (create a new method)
