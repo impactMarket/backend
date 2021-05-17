@@ -14,9 +14,33 @@ export default (app: Router): void => {
     app.use('/user', route);
 
     /**
+     * @deprecated
+     */
+    route.post(
+        '/authenticate',
+        userValidators.auth,
+        userController.authenticate
+    );
+
+    /**
+     * @deprecated
+     */
+    route.post(
+        '/hello',
+        authenticateToken,
+        userValidators.welcome,
+        userController.hello
+    );
+
+    /**
+     * @deprecated
+     */
+    route.get('/exists/:address', userController.userExists);
+
+    /**
      * @swagger
      *
-     * /user/authenticate:
+     * /user/auth:
      *   post:
      *     tags:
      *     - "user"
@@ -47,10 +71,13 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      */
+    route.post('/auth', userValidators.auth, userController.auth);
+
     route.post(
-        '/authenticate',
-        userValidators.authenticate,
-        userController.authenticate
+        '/welcome',
+        authenticateToken,
+        userValidators.welcome,
+        userController.welcome
     );
 
     route.post(
@@ -60,14 +87,7 @@ export default (app: Router): void => {
         userController.report
     );
 
-    route.get('/exists/:address', userController.userExists);
-
-    route.post(
-        '/hello',
-        authenticateToken,
-        userValidators.hello,
-        userController.hello
-    );
+    route.get('/exist/:address', userController.userExist);
 
     route.post(
         '/username',

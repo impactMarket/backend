@@ -1,6 +1,6 @@
 import { RequestWithUser } from '@ipcttypes/core';
 import StoryService from '@services/story';
-import { controllerLogAndFail, standardResponse } from '@utils/api';
+import { standardResponse } from '@utils/api';
 import { Request, Response } from 'express';
 
 class StoryController {
@@ -8,7 +8,9 @@ class StoryController {
 
     pictureAdd = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         this.storyService
@@ -19,7 +21,9 @@ class StoryController {
 
     add = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         this.storyService
@@ -30,7 +34,9 @@ class StoryController {
 
     has = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         this.storyService
@@ -41,7 +47,9 @@ class StoryController {
 
     remove = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         this.storyService
@@ -52,7 +60,9 @@ class StoryController {
 
     getByUser = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         this.storyService
@@ -82,7 +92,9 @@ class StoryController {
 
     love = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         this.storyService
@@ -93,7 +105,9 @@ class StoryController {
 
     inapropriate = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            controllerLogAndFail('User not identified!', 400, res);
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
             return;
         }
         this.storyService

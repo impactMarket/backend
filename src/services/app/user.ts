@@ -1,4 +1,5 @@
 import { AppAnonymousReport } from '@interfaces/app/appAnonymousReport';
+import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { AppUserDeviceCreation } from '@interfaces/app/appUserDevice';
 import { User, UserCreationAttributes } from '@interfaces/app/user';
 import { ProfileContentStorage } from '@services/storage';
