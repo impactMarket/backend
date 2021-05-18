@@ -182,8 +182,8 @@ class CommunityController {
                         email,
                         coverMediaId
                     )
-                        .then((updateResult) =>
-                            standardResponse(res, 200, true, updateResult[1][0])
+                        .then((community) =>
+                            standardResponse(res, 200, true, community)
                         )
                         .catch((e) =>
                             standardResponse(res, 400, false, '', { error: e })

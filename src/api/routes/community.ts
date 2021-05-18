@@ -317,7 +317,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/{id}:
+     * /community:
      *   put:
      *     tags:
      *       - "community"
@@ -330,7 +330,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.put(
-        '/:id',
+        '/',
         authenticateToken,
         communityValidators.edit,
         controller.edit
