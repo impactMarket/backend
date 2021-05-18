@@ -236,6 +236,29 @@ function cron() {
         true
     );
 
+    // eslint-disable-next-line no-new
+    new CronJob(
+        '0 0 * * *',
+        () => {
+            GlobalDemographicsService.calculateCommunitiesDemographics()
+                .then(() => {
+                    CronJobExecutedService.add(
+                        'calculateCommunitiesDemographics'
+                    );
+                    Logger.info(
+                        'calculateCommunitiesDemographics successfully executed!'
+                    );
+                })
+                .catch((e) => {
+                    Logger.error(
+                        'calculateCommunitiesDemographics FAILED! ' + e
+                    );
+                });
+        },
+        null,
+        true
+    );
+
     // everyday at 1am
     // eslint-disable-next-line no-new
     new CronJob(
