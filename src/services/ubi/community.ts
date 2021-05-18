@@ -235,8 +235,14 @@ export default class CommunityService {
         country: string,
         email: string,
         coverMediaId: number
-    ): Promise<[number, Community[]]> {
-        const community = await this.community.findOne({ where: { id } });
+    ): Promise<CommunityAttributes> {
+        const community = await this.community.findOne({
+            attributes: ['coverMediaId'],
+            where: { id },
+        });
+        if (community === null) {
+            throw new Error('community not found!');
+        }
         // since cover can't be null, we first update and then remove
         const update = await this.community.update(
             {
@@ -249,16 +255,19 @@ export default class CommunityService {
                 email,
                 coverMediaId,
             },
-            { returning: true, where: { id } }
+            { where: { id } }
         );
-        if (community!.coverMediaId !== coverMediaId) {
+        if (community.coverMediaId !== coverMediaId) {
             // image has been replaced
             // delete previous one! new one was already uploaded, will be updated below
             await this.communityContentStorage.deleteContent(
-                community!.coverMediaId! // TODO: will be required once next version is released
+                community.coverMediaId! // TODO: will be required once next version is released
             );
         }
-        return update;
+        if (update[0] === 0) {
+            throw new Error('community was not updated!');
+        }
+        return this._findCommunityBy({ id });
     }
 
     public static async pending(): Promise<ICommunityPendingDetails[]> {
