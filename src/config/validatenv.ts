@@ -42,6 +42,8 @@ function validateEnv() {
         AWS_REGION: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_BASE_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        POSITION_STACK_API_BASE_URL: str({ devDefault: 'xyz' }),
+        POSITION_STACK_API_KEY: str({ devDefault: 'xyz' }),
         MASTER_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         LATEST_MOBILE_APP_VERSION: str({ devDefault: onlyOnTestEnv('0.0.0') }),
         MINIMAL_MOBILE_APP_VERSION: str({ devDefault: onlyOnTestEnv('0.0.1') }),
