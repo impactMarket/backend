@@ -280,7 +280,7 @@ export default class CommunityService {
             'from community c ' +
             'left join ubi_community_contract cc on c.id = cc."communityId" ' +
             'left join ubi_community_state cs on c.id = cs."communityId" ' +
-            "where status = 'pending' and visibility = 'public' order by c.\"createdAt\" DESC";
+            "where status = 'pending' and visibility = 'public' order by c.\"createdAt\" DESC limit 20";
 
         const rawResult: ({
             id: number;

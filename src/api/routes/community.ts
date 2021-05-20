@@ -14,6 +14,18 @@ export default (app: Router): void => {
 
     app.use('/community', route);
 
+    // admin endpoints
+
+    route.delete('/:id', adminAuthentication, controller.delete);
+    route.post(
+        '/accept',
+        communityValidators.accept,
+        communityController.accept
+    );
+    route.get('/pending', communityController.pending);
+
+    // end admin endpoints
+
     /**
      * @deprecated
      */
@@ -335,14 +347,4 @@ export default (app: Router): void => {
         communityValidators.edit,
         controller.edit
     );
-
-    // admin endpoints
-
-    route.delete('/:id', adminAuthentication, controller.delete);
-    route.post(
-        '/accept',
-        communityValidators.accept,
-        communityController.accept
-    );
-    route.get('/pending', communityController.pending);
 };
