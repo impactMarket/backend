@@ -26,7 +26,7 @@ export default class ClaimLocationService {
             longitude: number;
         }
     ): Promise<void> {
-        if (config.apiEnvironment !== 'production') {
+        if (config.claimVerification === false) {
             await this.claimLocation.create({
                 communityId,
                 gps,
