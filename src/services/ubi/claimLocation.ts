@@ -1,8 +1,8 @@
 import axios from 'axios';
-import config from 'config/index';
 import { Op } from 'sequelize';
 import countriesJSON from 'utils/countries.json';
 
+import config from '../../config/index';
 import { models } from '../../database';
 
 const countries: {
