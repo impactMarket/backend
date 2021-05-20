@@ -209,5 +209,5 @@ export default {
 
     positionStackApiBaseUrl: validatedEnv.POSITION_STACK_API_BASE_URL,
     positionStackApiKey: validatedEnv.POSITION_STACK_API_KEY,
-    apiEnvironment: validatedEnv.API_ENVIRONMENT,
+    claimVerification: validatedEnv.CLAIM_VERIFICATION,
 };
