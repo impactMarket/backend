@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { Op } from 'sequelize';
-import countriesJSON from 'utils/countries.json';
 
 import config from '../../config/index';
 import { models } from '../../database';
+import countriesJSON from '../../utils/countries.json';
 
 const countries: {
     [key: string]: {
