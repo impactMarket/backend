@@ -69,12 +69,19 @@ export function communityAssociation(sequelize: Sequelize) {
     );
 
     // used to query from the community with incude
-    // TODO:
-    // sequelize.models.Inflow.belongsTo(sequelize.models.Community, {
-    //     foreignKey: 'communityId',
-    //     targetKey: 'publicId',
-    //     as: 'communityInflow',
-    // });
+    sequelize.models.Community.hasMany(sequelize.models.Inflow, {
+        foreignKey: 'communityId',
+        sourceKey: 'publicId',
+        as: 'inflow',
+    });
+    // sequelize.models.Community.hasMany(
+    //     sequelize.models.BeneficiaryTransaction,
+    //     {
+    //         foreignKey: 'communityId',
+    //         sourceKey: 'publicId',
+    //         as: 'beneficiaryTxs',
+    //     }
+    // );
     // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.Beneficiary, {
         foreignKey: 'communityId',

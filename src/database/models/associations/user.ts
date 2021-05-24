@@ -17,15 +17,14 @@ export function userAssociation(sequelize: Sequelize) {
         as: 'user',
     });
     // used to query from the beneficiarytransaction with incude
-    // TODO:
-    // sequelize.models.BeneficiaryTransaction.belongsTo(
-    //     sequelize.models.Beneficiary,
-    //     {
-    //         foreignKey: 'beneficiary',
-    //         targetKey: 'address',
-    //         as: 'beneficiaryInTx',
-    //     }
-    // );
+    sequelize.models.Beneficiary.hasMany(
+        sequelize.models.BeneficiaryTransaction,
+        {
+            foreignKey: 'beneficiary',
+            sourceKey: 'address',
+            as: 'transactions',
+        }
+    );
 
     // used to query from the community with incude
     sequelize.models.UserModel.hasOne(sequelize.models.AppMediaContentModel, {
