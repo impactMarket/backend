@@ -85,6 +85,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(0, 0, 0, 0);
+
     const communitiesStatePre = await models.community.findAll({
         attributes: ['id', 'started'],
         include: [
@@ -125,6 +126,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         },
         order: [['id', 'DESC']],
     });
+
     const communityNumbers: any = await models.community.findAll({
         attributes: [
             'id',
@@ -249,62 +251,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         });
     }
 
-    // const someEconomicActivity = await models.beneficiaryTransaction.findAll({
-    //     attributes: {
-    //         exclude: [
-    //             'id',
-    //             'beneficiary',
-    //             'withAddress',
-    //             'amount',
-    //             'isFromBeneficiary',
-    //             'tx',
-    //             'date',
-    //             'createdAt',
-    //             'updatedAt',
-    //         ],
-    //         include: [
-    //             [fn('count', col('amount')), 'txs'],
-    //             [fn('sum', col('amount')), 'volume'],
-    //             [fn('count', fn('distinct', col('withAddress'))), 'reach'],
-    //         ],
-    //     },
-    //     include: [
-    //         {
-    //             model: models.beneficiary,
-    //             as: 'beneficiaryInTx',
-    //             attributes: {
-    //                 exclude: [
-    //                     'id',
-    //                     'address',
-    //                     'communityId',
-    //                     'active',
-    //                     'blocked',
-    //                     'tx',
-    //                     'txAt',
-    //                     'claims',
-    //                     'claimed',
-    //                     'lastClaimAt',
-    //                     'penultimateClaimAt',
-    //                     'createdAt',
-    //                     'updatedAt',
-    //                 ],
-    //             },
-    //             include: [
-    //                 {
-    //                     model: models.community,
-    //                     as: 'community',
-    //                     attributes: ['id'],
-    //                     where: {
-    //                         status: 'valid',
-    //                         visibility: 'public',
-    //                     },
-    //                 },
-    //             ],
-    //         },
-    //     ],
-    //     group: ['beneficiaryInTx->community.id'],
-    //     // raw: true,
-    // });
     // TODO: tests cant query with sequelize query!
     const resultEconomicActivity: {
         volume: string;
@@ -338,22 +284,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         ) {
             return;
         }
-        // if (
-        //     community.state.claimed === '0' ||
-        //     community.state.raised === '0' ||
-        //     totalClaimedLast30Days.get(community.id) === undefined ||
-        //     activeBeneficiariesLast30Days.get(community.publicId) ===
-        //         undefined ||
-        //     activeBeneficiariesLast30Days.get(community.publicId) === 0
-        // ) {
-        //     return;
-        // }
-        // const beneficiaries = await BeneficiaryService.listActiveInCommunity(
-        //     community.publicId
-        // );
-        // if (beneficiaries.length < 1) {
-        //     return;
-        // }
         let ssiDayAlone: number = 0;
         let ssi: number = 0;
         let ubiRate: number = 0;
@@ -384,7 +314,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                         beneficiary.penultimateClaimAt.getTime()) /
                         1000
                 ) - timeToWait;
-            // console.log(beneficiary.address, beneficiary.lastClaimAt, beneficiary.penultimateClaimAt);
+            //
             beneficiariesTimeToWait.push(timeToWait);
             beneficiariesTimeWaited.push(timeWaited);
         }
@@ -397,7 +327,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         // calculate ssi day alone
         const meanTimeToWait = mean(beneficiariesTimeToWait);
         const madTimeWaited = median(beneficiariesTimeWaited);
-        // console.log(community.name, madTimeWaited, meanTimeToWait);
+        //
         ssiDayAlone = parseFloat(
             ((madTimeWaited / meanTimeToWait) * 50) /* aka, 100 / 2 */
                 .toFixed(2)
@@ -483,7 +413,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     // for each community
     for (let index = 0; index < communities.length; index++) {
         pending.push(calculateMetrics(communities[index]));
-        // await calculateMetrics(communities[index]);
     }
     await Promise.all(pending);
 }
