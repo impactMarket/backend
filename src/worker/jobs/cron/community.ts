@@ -9,7 +9,7 @@ import { Logger } from '@utils/logger';
 import { notifyBackersCommunityLowFunds } from '@utils/util';
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
-import { col, fn, Op, QueryTypes } from 'sequelize';
+import { col, fn, literal, Op, QueryTypes } from 'sequelize';
 
 import config from '../../../config';
 import { models, sequelize } from '../../../database';
@@ -169,6 +169,66 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         order: [['id', 'DESC']],
         raw: true,
     });
+
+    const communityUbiActivity: {
+        claimed: string;
+        claims: string;
+        raised: string;
+        backers: string;
+    } = (await models.community.findAll({
+        attributes: [
+            'id',
+            [
+                fn('sum', fn('coalesce', col('beneficiaries.claim.amount'), 0)),
+                'claimed',
+            ],
+            [fn('count', col('beneficiaries.claim.tx')), 'claims'],
+            [fn('sum', fn('coalesce', col('inflow.amount'), 0)), 'raised'],
+            [fn('count', fn('distinct', col('inflow."from"'))), 'backers'],
+        ],
+        include: [
+            {
+                model: models.beneficiary,
+                as: 'beneficiaries',
+                where: literal(
+                    `date("lastClaimAt") = '${
+                        yesterday.toISOString().split('T')[0]
+                    }'`
+                ),
+                attributes: [],
+                required: false,
+                include: [
+                    {
+                        model: models.claim,
+                        as: 'claim',
+                        attributes: [],
+                        required: false,
+                        where: literal(
+                            `date("txAT") = '${
+                                yesterday.toISOString().split('T')[0]
+                            }'`
+                        ),
+                    },
+                ],
+            },
+            {
+                model: models.inflow,
+                as: 'inflow',
+                attributes: [],
+                required: false,
+                where: literal(
+                    `date("txAT") = '${yesterday.toISOString().split('T')[0]}'`
+                ),
+            },
+        ],
+        where: {
+            status: 'valid',
+            visibility: 'public',
+        },
+        group: ['Community.id'],
+        order: [['id', 'DESC']],
+        raw: true,
+    })) as any;
 
     const communitiesState = communitiesStatePre.map(
         (c) => c.toJSON() as CommunityAttributes
@@ -409,6 +469,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     transactions: parseInt(economic.txs, 10),
                     reach: parseInt(economic.reach, 10),
                     volume: economic.volume,
+                    backers: parseInt(communityUbiActivity.backers, 10),
+                    raised: communityUbiActivity.raised,
+                    claimed: communityUbiActivity.claimed,
+                    claims: parseInt(communityUbiActivity.claims, 10),
                 },
                 { where: { communityId: community.id, date: yesterday } }
             );
