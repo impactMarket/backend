@@ -89,6 +89,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             volume: string;
             txs: string;
             reach: string;
+            reachOut: string;
+            fundingRate: string;
         };
     };
 
@@ -267,6 +269,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         volume: string;
         txs: string;
         reach: string;
+        reachOut: string;
     }[] = (await models.community.findAll({
         attributes: [
             'id',
@@ -287,11 +290,16 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     'count',
                     fn(
                         'distinct',
-                        col('"beneficiaries->transactions"."withAddress"'),
-                        0
+                        col('"beneficiaries->transactions"."withAddress"')
                     )
                 ),
                 'reach',
+            ],
+            [
+                literal(
+                    'count(distinct "beneficiaries->transactions"."withAddress") filter (where "beneficiaries->transactions"."withAddress" not in (select distinct address from beneficiary where active = true))'
+                ),
+                'reachOut',
             ],
         ],
         include: [
@@ -324,6 +332,57 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         raw: true,
     })) as any;
 
+    const communityMonthly: {
+        id: string;
+        claimed: string;
+        raised: string;
+    }[] = (await models.community.findAll({
+        attributes: [
+            'id',
+            [
+                fn('sum', fn('coalesce', col('beneficiaries.claim.amount'), 0)),
+                'claimed',
+            ],
+            [fn('sum', fn('coalesce', col('inflow.amount'), 0)), 'raised'],
+        ],
+        include: [
+            {
+                model: models.beneficiary,
+                as: 'beneficiaries',
+                attributes: [],
+                required: false,
+                include: [
+                    {
+                        model: models.claim,
+                        as: 'claim',
+                        attributes: [],
+                        required: false,
+                        where: {
+                            txAt: { [Op.gte]: aMonthAgo },
+                        },
+                    },
+                ],
+            },
+            {
+                model: models.inflow,
+                as: 'inflow',
+                attributes: [],
+                required: false,
+                where: {
+                    txAt: { [Op.gte]: aMonthAgo },
+                },
+            },
+        ],
+        where: {
+            status: 'valid',
+            visibility: 'public',
+            createdAt: { [Op.gte]: aMonthAgo },
+        },
+        group: ['Community.id'],
+        order: [['id', 'DESC']],
+        raw: true,
+    })) as any;
+
     // build communities object
     const communitiesState = communitiesStatePre.map(
         (c) => c.toJSON() as CommunityAttributes
@@ -342,6 +401,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const cea = communityEconomicActivity.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
+        const cm = communityMonthly.find(
+            (c) => parseInt(c.id, 10) === communitiesState[index].id
+        );
         communities.push({
             ...communitiesState[index],
             beneficiariesClaiming: {
@@ -351,7 +413,16 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             activity: {
                 ...(cca ? cca : { claimed: '0', claims: '0' }),
                 ...(cia ? cia : { raised: '0', backers: '0' }),
-                ...(cea ? cea : { volume: '0', txs: '0', reach: '0' }),
+                ...(cea
+                    ? cea
+                    : { volume: '0', txs: '0', reach: '0', reachOut: '0' }),
+                fundingRate: cm
+                    ? new BigNumber(cm.raised)
+                          .minus(cm.claimed)
+                          .dividedBy(cm.raised)
+                          .multipliedBy(100)
+                          .toFixed(2, 1)
+                    : '0',
             },
         });
     }
@@ -471,11 +542,13 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 {
                     transactions: parseInt(community.activity.txs, 10),
                     reach: parseInt(community.activity.reach, 10),
+                    reachOut: parseInt(community.activity.reachOut, 10),
                     volume: community.activity.volume,
                     backers: parseInt(community.activity.backers, 10),
                     raised: community.activity.raised,
                     claimed: community.activity.claimed,
                     claims: parseInt(community.activity.claims, 10),
+                    fundingRate: parseFloat(community.activity.fundingRate),
                 },
                 { where: { communityId: community.id, date: yesterday } }
             );
