@@ -64,6 +64,10 @@ export default class UserService {
                             if (currency.indexOf(',') !== -1) {
                                 currency = currency.split(',')[0];
                             }
+                            // TODO: temporary fix. Solved in mobile verion 1.1.2
+                            if (currency.indexOf('MWK') !== -1) {
+                                currency = 'USD';
+                            }
                             createUser = {
                                 ...createUser,
                                 currency,
