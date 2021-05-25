@@ -69,12 +69,19 @@ export function communityAssociation(sequelize: Sequelize) {
     );
 
     // used to query from the community with incude
-    // TODO:
-    // sequelize.models.Inflow.belongsTo(sequelize.models.Community, {
-    //     foreignKey: 'communityId',
-    //     targetKey: 'publicId',
-    //     as: 'communityInflow',
-    // });
+    sequelize.models.Community.hasMany(sequelize.models.Inflow, {
+        foreignKey: 'communityId',
+        sourceKey: 'publicId',
+        as: 'inflow',
+    });
+    // sequelize.models.Community.hasMany(
+    //     sequelize.models.BeneficiaryTransaction,
+    //     {
+    //         foreignKey: 'communityId',
+    //         sourceKey: 'publicId',
+    //         as: 'beneficiaryTxs',
+    //     }
+    // );
     // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.Beneficiary, {
         foreignKey: 'communityId',
@@ -93,6 +100,15 @@ export function communityAssociation(sequelize: Sequelize) {
             as: 'organization',
         }
     );
+    sequelize.models.UbiOrganizationModel.belongsToMany(
+        sequelize.models.Community,
+        {
+            through: sequelize.models.UbiCommunityOrganizationModel,
+            sourceKey: 'id',
+            foreignKey: 'organizationId',
+            as: 'community',
+        }
+    );
     sequelize.models.UbiOrganizationModel.hasMany(
         sequelize.models.UbiOrganizationSocialMediaModel,
         {
@@ -107,15 +123,6 @@ export function communityAssociation(sequelize: Sequelize) {
             sourceKey: 'logoMediaId',
             as: 'logo',
             constraints: false,
-        }
-    );
-    sequelize.models.UbiOrganizationModel.belongsToMany(
-        sequelize.models.Community,
-        {
-            through: sequelize.models.UbiCommunityOrganizationModel,
-            sourceKey: 'id',
-            foreignKey: 'organizationId',
-            as: 'organization',
         }
     );
 }

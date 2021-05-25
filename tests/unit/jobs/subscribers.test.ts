@@ -10,6 +10,7 @@ import BeneficiaryService from '../../../src/services/ubi/beneficiary';
 import BeneficiaryTransactionService from '../../../src/services/ubi/beneficiaryTransaction';
 import ClaimsService from '../../../src/services/ubi/claim';
 import CommunityService from '../../../src/services/ubi/community';
+import CommunityContractService from '../../../src/services/ubi/communityContract';
 import InflowService from '../../../src/services/ubi/inflow';
 import ManagerService from '../../../src/services/ubi/managers';
 import * as utils from '../../../src/utils/util';
@@ -31,6 +32,7 @@ describe('[jobs] subscribers', () => {
     let beneficiaryRemove: SinonStub<any, any>;
     let claimAdd: SinonStub<any, any>;
     let managerAdd: SinonStub<any, any>;
+    let communityEdit: SinonStub<any, any>;
     let managerRemove: SinonStub<any, any>;
     let inflowAdd: SinonStub<any, any>;
     // let beneficiaryAdd: SinonStub<
@@ -68,7 +70,8 @@ describe('[jobs] subscribers', () => {
             'alter toy tortoise hard lava aunt second lamp sister galaxy parent bargain',
     });
     //
-    const thisCommunityId = 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd';
+    const thisCommunityPublicId = 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd';
+    const thisCommunityId = 1;
     let lastBlock = 0;
 
     before(async () => {
@@ -98,6 +101,9 @@ describe('[jobs] subscribers', () => {
         stub(ImMetadataService, 'setRecoverBlockUsingLastBlock').returns(
             Promise.resolve()
         );
+        stub(CommunityService, 'getCommunityOnlyByPublicId').returns(
+            Promise.resolve({ id: thisCommunityId } as any)
+        );
         getLastBlockStub = stub(ImMetadataService, 'getLastBlock');
         getRecoverBlockStub = stub(ImMetadataService, 'getRecoverBlock');
         getLastBlockStub.returns(Promise.resolve(lastBlock));
@@ -107,6 +113,8 @@ describe('[jobs] subscribers', () => {
         claimAdd.returns(Promise.resolve());
         managerAdd = stub(ManagerService, 'add');
         managerAdd.returns(Promise.resolve(true));
+        communityEdit = stub(CommunityContractService, 'update');
+        communityEdit.returns(Promise.resolve(true));
         managerRemove = stub(ManagerService, 'remove');
         managerRemove.returns(Promise.resolve());
         getAllAddressesAndIds = stub(CommunityService, 'getAllAddressesAndIds');
@@ -135,7 +143,8 @@ describe('[jobs] subscribers', () => {
         //
         stub(CommunityService, 'getOnlyCommunityByContractAddress').returns(
             Promise.resolve({
-                publicId: thisCommunityId,
+                id: thisCommunityId,
+                publicId: thisCommunityPublicId,
                 visibility: 'public',
                 // anything below, does not matter
                 city: 'Love',
@@ -189,11 +198,11 @@ describe('[jobs] subscribers', () => {
                 '0x0000000000000000000000000000000000000000'
             )
         ).connect(provider.getSigner(1));
-        communities.set(communityContract.address, thisCommunityId);
+        communities.set(communityContract.address, thisCommunityPublicId);
         communitiesVisibility.set(communityContract.address, true);
         const newCommunityAddressesAndIds = new Map([
             ...communityAddressesAndIds,
-            [communityContract.address, thisCommunityId],
+            [communityContract.address, thisCommunityPublicId],
         ]);
         getAllAddressesAndIds.returns(
             Promise.resolve(newCommunityAddressesAndIds)
@@ -204,7 +213,54 @@ describe('[jobs] subscribers', () => {
         //
         await waitForStubCall(managerAdd, 1);
         assert.callCount(managerAdd, 1);
-        assert.calledWith(managerAdd.getCall(0), accounts[1], thisCommunityId);
+        assert.calledWith(
+            managerAdd.getCall(0),
+            accounts[1],
+            thisCommunityPublicId
+        );
+    });
+
+    it('edit a community', async () => {
+        // deploy a community
+        communityContract = (
+            await communityFactory.deploy(
+                accounts[1],
+                '1000000000000000000',
+                '1600000000000000000000',
+                86400,
+                600,
+                '0x0000000000000000000000000000000000000000',
+                cUSD.address,
+                '0x0000000000000000000000000000000000000000'
+            )
+        ).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([
+            ...communityAddressesAndIds,
+            [communityContract.address, thisCommunityPublicId],
+        ]);
+        getAllAddressesAndIds.returns(
+            Promise.resolve(newCommunityAddressesAndIds)
+        );
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(communityContract.address);
+        //
+        await communityContract.edit(
+            '2000000000000000000',
+            '1500000000000000000000',
+            86400,
+            300
+        );
+        await waitForStubCall(communityEdit, 1);
+        assert.callCount(communityEdit, 1);
+        assert.calledWith(communityEdit.getCall(0), thisCommunityId, {
+            claimAmount: '2000000000000000000',
+            maxClaim: '1500000000000000000000',
+            baseInterval: 86400,
+            incrementInterval: 300,
+        });
     });
 
     context('add beneficiary', () => {
@@ -222,11 +278,11 @@ describe('[jobs] subscribers', () => {
                     '0x0000000000000000000000000000000000000000'
                 )
             ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityId);
+            communities.set(communityContract.address, thisCommunityPublicId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityId],
+                [communityContract.address, thisCommunityPublicId],
             ]);
             getAllAddressesAndIds.returns(
                 Promise.resolve(newCommunityAddressesAndIds)
@@ -241,7 +297,7 @@ describe('[jobs] subscribers', () => {
             assert.calledWith(
                 beneficiaryAdd.getCall(0),
                 accounts[5],
-                thisCommunityId,
+                thisCommunityPublicId,
                 match.any,
                 match.any
             );
@@ -263,11 +319,11 @@ describe('[jobs] subscribers', () => {
                     '0x0000000000000000000000000000000000000000'
                 )
             ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityId);
+            communities.set(communityContract.address, thisCommunityPublicId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityId],
+                [communityContract.address, thisCommunityPublicId],
             ]);
             getAllAddressesAndIds.returns(
                 Promise.resolve(newCommunityAddressesAndIds)
@@ -300,11 +356,11 @@ describe('[jobs] subscribers', () => {
                     '0x0000000000000000000000000000000000000000'
                 )
             ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityId);
+            communities.set(communityContract.address, thisCommunityPublicId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityId],
+                [communityContract.address, thisCommunityPublicId],
             ]);
             getAllAddressesAndIds.returns(
                 Promise.resolve(newCommunityAddressesAndIds)
@@ -320,7 +376,7 @@ describe('[jobs] subscribers', () => {
             assert.calledWith(
                 claimAdd.getCall(0),
                 accounts[5],
-                thisCommunityId,
+                thisCommunityPublicId,
                 match.any,
                 match.any,
                 match.any
@@ -344,11 +400,11 @@ describe('[jobs] subscribers', () => {
                     '0x0000000000000000000000000000000000000000'
                 )
             ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityId);
+            communities.set(communityContract.address, thisCommunityPublicId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityId],
+                [communityContract.address, thisCommunityPublicId],
             ]);
             getAllAddressesAndIds.returns(
                 Promise.resolve(newCommunityAddressesAndIds)
@@ -363,12 +419,12 @@ describe('[jobs] subscribers', () => {
             assert.calledWith(
                 managerAdd.getCall(0),
                 accounts[1],
-                thisCommunityId
+                thisCommunityPublicId
             );
             assert.calledWith(
                 managerAdd.getCall(1),
                 accounts[2],
-                thisCommunityId
+                thisCommunityPublicId
             );
         });
     });
@@ -390,11 +446,11 @@ describe('[jobs] subscribers', () => {
                     '0x0000000000000000000000000000000000000000'
                 )
             ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityId);
+            communities.set(communityContract.address, thisCommunityPublicId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityId],
+                [communityContract.address, thisCommunityPublicId],
             ]);
             getAllAddressesAndIds.returns(
                 Promise.resolve(newCommunityAddressesAndIds)
@@ -411,7 +467,7 @@ describe('[jobs] subscribers', () => {
             assert.calledWith(
                 managerRemove.getCall(0),
                 accounts[2],
-                thisCommunityId
+                thisCommunityPublicId
             );
         });
     });
@@ -434,11 +490,11 @@ describe('[jobs] subscribers', () => {
                     '0x0000000000000000000000000000000000000000'
                 )
             ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityId);
+            communities.set(communityContract.address, thisCommunityPublicId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityId],
+                [communityContract.address, thisCommunityPublicId],
             ]);
             getAllAddressesAndIds.returns(
                 Promise.resolve(newCommunityAddressesAndIds)
@@ -455,7 +511,7 @@ describe('[jobs] subscribers', () => {
             assert.calledWith(
                 inflowAdd.getCall(0),
                 accounts[2],
-                thisCommunityId,
+                thisCommunityPublicId,
                 '2000000000000000000',
                 match.any,
                 match.any
@@ -481,11 +537,11 @@ describe('[jobs] subscribers', () => {
                     '0x0000000000000000000000000000000000000000'
                 )
             ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityId);
+            communities.set(communityContract.address, thisCommunityPublicId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityId],
+                [communityContract.address, thisCommunityPublicId],
             ]);
             getAllAddressesAndIds.returns(
                 Promise.resolve(newCommunityAddressesAndIds)
@@ -536,11 +592,11 @@ describe('[jobs] subscribers', () => {
                     '0x0000000000000000000000000000000000000000'
                 )
             ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityId);
+            communities.set(communityContract.address, thisCommunityPublicId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityId],
+                [communityContract.address, thisCommunityPublicId],
             ]);
             getAllAddressesAndIds.returns(
                 Promise.resolve(newCommunityAddressesAndIds)

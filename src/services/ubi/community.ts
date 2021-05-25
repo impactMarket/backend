@@ -235,8 +235,14 @@ export default class CommunityService {
         country: string,
         email: string,
         coverMediaId: number
-    ): Promise<[number, Community[]]> {
-        const community = await this.community.findOne({ where: { id } });
+    ): Promise<CommunityAttributes> {
+        const community = await this.community.findOne({
+            attributes: ['coverMediaId'],
+            where: { id },
+        });
+        if (community === null) {
+            throw new Error('community not found!');
+        }
         // since cover can't be null, we first update and then remove
         const update = await this.community.update(
             {
@@ -249,16 +255,19 @@ export default class CommunityService {
                 email,
                 coverMediaId,
             },
-            { returning: true, where: { id } }
+            { where: { id } }
         );
-        if (community!.coverMediaId !== coverMediaId) {
+        if (community.coverMediaId !== coverMediaId) {
             // image has been replaced
             // delete previous one! new one was already uploaded, will be updated below
             await this.communityContentStorage.deleteContent(
-                community!.coverMediaId! // TODO: will be required once next version is released
+                community.coverMediaId! // TODO: will be required once next version is released
             );
         }
-        return update;
+        if (update[0] === 0) {
+            throw new Error('community was not updated!');
+        }
+        return this._findCommunityBy({ id });
     }
 
     public static async pending(): Promise<ICommunityPendingDetails[]> {
@@ -271,7 +280,7 @@ export default class CommunityService {
             'from community c ' +
             'left join ubi_community_contract cc on c.id = cc."communityId" ' +
             'left join ubi_community_state cs on c.id = cs."communityId" ' +
-            "where status = 'pending' and visibility = 'public' order by c.\"createdAt\" DESC";
+            "where status = 'pending' and visibility = 'public' order by c.\"createdAt\" DESC limit 20";
 
         const rawResult: ({
             id: number;
@@ -418,6 +427,30 @@ export default class CommunityService {
         return this.communityContentStorage.uploadContent(file);
     }
 
+    public static async delete(id: number): Promise<boolean> {
+        const c = await this.community.findOne({
+            where: {
+                id,
+                status: 'pending',
+                visibility: 'public',
+            },
+            raw: true,
+        });
+        if (c) {
+            await this.community.destroy({
+                where: {
+                    id,
+                },
+            });
+            await this.communityContentStorage.deleteContent(c.coverMediaId!); // TODO: will be required once next version is released
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @deprecated Use delete
+     */
     public static async remove(publicId: string): Promise<boolean> {
         const c = await this.community.findOne({
             where: {
@@ -644,6 +677,7 @@ export default class CommunityService {
                 {
                     model: this.ubiCommunityDailyMetrics,
                     required: false,
+                    duplicating: false,
                     as: 'metrics',
                     where: {
                         date: {
@@ -1075,6 +1109,19 @@ export default class CommunityService {
         });
     }
 
+    public static async findResquestChangeUbiParams(
+        id: number
+    ): Promise<UbiRequestChangeParams | null> {
+        const community = (await this.community.findOne({
+            attributes: ['publicId'],
+            where: { id },
+            raw: true,
+        }))!;
+        return this.ubiRequestChangeParams.findOne({
+            where: { communityId: community.publicId },
+        });
+    }
+
     /**
      * @deprecated Use `findById`
      */
@@ -1157,6 +1204,22 @@ export default class CommunityService {
     }
 
     public static async findById(id: number): Promise<CommunityAttributes> {
+        return this._findCommunityBy({
+            id,
+        });
+    }
+
+    public static async findByContractAddress(
+        contractAddress: string
+    ): Promise<CommunityAttributes> {
+        return this._findCommunityBy({
+            contractAddress,
+        });
+    }
+
+    private static async _findCommunityBy(
+        where: WhereOptions<CommunityAttributes>
+    ): Promise<CommunityAttributes> {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const community = await this.community.findOne({
@@ -1227,12 +1290,10 @@ export default class CommunityService {
                     ],
                 },
             ],
-            where: {
-                id,
-            },
+            where,
         });
         if (community === null) {
-            throw new Error('Not found community ' + id);
+            throw new Error('Not found community ' + where);
         }
         return community.toJSON() as CommunityAttributes;
     }
@@ -1267,27 +1328,8 @@ export default class CommunityService {
                     as: 'dailyState',
                     order: [['date', 'DESC']],
                     limit: 30,
-                },
-            ],
-            where: {
-                id,
-            },
-        });
-        return result?.toJSON() as CommunityAttributes;
-    }
-
-    public static async getClaimLocation(id: string) {
-        const aMonthAgo = new Date();
-        aMonthAgo.setDate(aMonthAgo.getDate() - 30);
-        aMonthAgo.setHours(0, 0, 0, 0);
-        const result = await this.community.findOne({
-            attributes: ['id'],
-            include: [
-                {
-                    model: this.claimLocation,
-                    as: 'claimLocation',
                     where: {
-                        createdAt: { [Op.gte]: aMonthAgo },
+                        date: { [Op.lt]: new Date() },
                     },
                 },
             ],
@@ -1295,7 +1337,22 @@ export default class CommunityService {
                 id,
             },
         });
-        return result?.toJSON() as CommunityAttributes;
+        return result!.toJSON() as CommunityAttributes;
+    }
+
+    public static async getClaimLocation(id: string) {
+        const aMonthAgo = new Date();
+        aMonthAgo.setDate(aMonthAgo.getDate() - 30);
+        aMonthAgo.setHours(0, 0, 0, 0);
+
+        const community = (await this.community.findOne({ where: { id } }))!;
+        return await this.claimLocation.findAll({
+            attributes: ['gps'],
+            where: {
+                createdAt: { [Op.gte]: aMonthAgo },
+                communityId: community.publicId,
+            },
+        });
     }
 
     public static async getManagers(communityId: string) {
@@ -1351,17 +1408,17 @@ export default class CommunityService {
         });
     }
 
-    public static async findByContractAddress(
-        contractAddress: string
-    ): Promise<CommunityAttributes | null> {
-        const community = await this.community.findOne({
-            where: {
-                contractAddress,
-            },
-            raw: true,
-        });
-        return community?.toJSON() as CommunityAttributes | null;
-    }
+    // public static async findByContractAddress(
+    //     contractAddress: string
+    // ): Promise<CommunityAttributes | null> {
+    //     const community = await this.community.findOne({
+    //         where: {
+    //             contractAddress,
+    //         },
+    //         raw: true,
+    //     });
+    //     return community?.toJSON() as CommunityAttributes | null;
+    // }
 
     /**
      * @deprecated (create a new method)

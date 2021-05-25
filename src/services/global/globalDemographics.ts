@@ -1,12 +1,15 @@
+import { UbiCommunityDemographicsCreation } from '@interfaces/ubi/ubiCommunityDemographics';
 import {
     GlobalDemographics,
     GlobalDemographicsCreationAttributes,
 } from '@models/global/globalDemographics';
-import { QueryTypes } from 'sequelize';
+import { col, fn, literal, QueryTypes } from 'sequelize';
 
 import { models, sequelize } from '../../database';
 
 export default class GlobalDemographicsService {
+    public static community = models.community;
+    public static ubiCommunityDemographics = models.ubiCommunityDemographics;
     public static globalDemographics = models.globalDemographics;
     public static sequelize = sequelize;
 
@@ -21,6 +24,96 @@ export default class GlobalDemographicsService {
             `select * from globaldemographics where date = (select date from globaldemographics order by date desc limit 1)`,
             { type: QueryTypes.SELECT }
         );
+    }
+    public static async calculateCommunitiesDemographics(): Promise<void> {
+        const yesterdayDateOnly = new Date();
+        yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
+        const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
+
+        const year = new Date().getUTCFullYear();
+        const demographics: UbiCommunityDemographicsCreation[] = (await this.community.findAll(
+            {
+                attributes: [
+                    ['id', 'communityId'],
+                    [literal(`'${yesterdayDate}'`), 'date'],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 18 AND 24)`
+                        ),
+                        'ageRange1',
+                    ],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 25 AND 34)`
+                        ),
+                        'ageRange2',
+                    ],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 35 AND 44)`
+                        ),
+                        'ageRange3',
+                    ],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 45 AND 54)`
+                        ),
+                        'ageRange4',
+                    ],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 55 AND 64)`
+                        ),
+                        'ageRange5',
+                    ],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 65 AND 120)`
+                        ),
+                        'ageRange6',
+                    ],
+                    [
+                        literal(
+                            'count(*) FILTER (WHERE "beneficiaries->user".gender = \'m\')'
+                        ),
+                        'male',
+                    ],
+                    [
+                        literal(
+                            'count(*) FILTER (WHERE "beneficiaries->user".gender = \'f\')'
+                        ),
+                        'female',
+                    ],
+                    [
+                        literal(
+                            'count(*) FILTER (WHERE "beneficiaries->user".gender = \'u\')'
+                        ),
+                        'undisclosed',
+                    ],
+                    [literal('count(*)'), 'totalGender'],
+                ],
+                include: [
+                    {
+                        model: models.beneficiary,
+                        as: 'beneficiaries',
+                        attributes: [],
+                        where: {
+                            active: true,
+                        },
+                        include: [
+                            { model: models.user, as: 'user', attributes: [] },
+                        ],
+                    },
+                ],
+                where: {
+                    visibility: 'public',
+                    status: 'valid',
+                },
+                group: ['"Community".id'],
+                raw: true,
+            }
+        )) as any;
+        await this.ubiCommunityDemographics.bulkCreate(demographics);
     }
 
     public static async calculateDemographics(): Promise<void> {

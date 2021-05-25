@@ -1,10 +1,23 @@
-import { ClaimLocation } from '@models/ubi/claimLocation';
+import axios from 'axios';
 import { Op } from 'sequelize';
 
+import config from '../../config/index';
 import { models } from '../../database';
+import countriesJSON from '../../utils/countries.json';
 
+const countries: {
+    [key: string]: {
+        name: string;
+        native: string;
+        phone: string;
+        currency: string;
+        languages: string[];
+        emoji: string;
+    };
+} = countriesJSON;
 export default class ClaimLocationService {
     public static claimLocation = models.claimLocation;
+    public static community = models.community;
 
     public static async add(
         communityId: string,
@@ -12,11 +25,31 @@ export default class ClaimLocationService {
             latitude: number;
             longitude: number;
         }
-    ): Promise<ClaimLocation> {
-        return this.claimLocation.create({
-            communityId,
-            gps,
+    ): Promise<void> {
+        if (config.claimVerification === false) {
+            await this.claimLocation.create({
+                communityId,
+                gps,
+            });
+            return;
+        }
+        const community = await this.community.findOne({
+            attributes: ['country'],
+            where: { publicId: communityId },
         });
+        if (community === null) {
+            throw new Error('no community found!');
+        }
+        const query = await axios.get(
+            `${config.positionStackApiBaseUrl}?access_key=${config.positionStackApiKey}&query=${gps.latitude},${gps.longitude}`
+        );
+        // country code are 3 chars, we use 2 chars
+        if (countries[community.country].name === query.data.data[0].country) {
+            await this.claimLocation.create({
+                communityId,
+                gps,
+            });
+        }
     }
 
     public static async getAll(): Promise<

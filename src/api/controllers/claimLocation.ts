@@ -1,5 +1,5 @@
 import ClaimLocationService from '@services/ubi/claimLocation';
-import { controllerLogAndFail } from '@utils/api';
+import { standardResponse } from '@utils/api';
 import { Request, Response } from 'express';
 
 const getAll = (req: Request, res: Response) => {
@@ -7,7 +7,7 @@ const getAll = (req: Request, res: Response) => {
         .then((r) => {
             res.send(r);
         })
-        .catch((e) => controllerLogAndFail(e, 400, res));
+        .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 
 const add = (req: Request, res: Response) => {
@@ -16,7 +16,7 @@ const add = (req: Request, res: Response) => {
         .then(() => {
             res.sendStatus(200);
         })
-        .catch((e) => controllerLogAndFail(e, 400, res));
+        .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 
 export default {

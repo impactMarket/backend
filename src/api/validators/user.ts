@@ -7,7 +7,7 @@ const report = celebrate({
     }),
 });
 
-const authenticate = celebrate({
+const auth = celebrate({
     body: Joi.object({
         address: Joi.string().required(),
         language: Joi.string().required(),
@@ -17,7 +17,7 @@ const authenticate = celebrate({
     }),
 });
 
-const hello = celebrate({
+const welcome = celebrate({
     body: Joi.object({
         address: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
         token: Joi.string().allow(''),
@@ -85,8 +85,8 @@ const device = celebrate({
 
 export default {
     report,
-    authenticate,
-    hello,
+    auth,
+    welcome,
     updateUsername,
     updateCurrency,
     updatePushNotificationsToken,

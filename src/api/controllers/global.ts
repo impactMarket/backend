@@ -4,7 +4,7 @@ import GlobalGrowthService from '@services/global/globalGrowth';
 import ReachedAddressService from '@services/reachedAddress';
 import CommunityDailyStateService from '@services/ubi/communityDailyState';
 import InflowService from '@services/ubi/inflow';
-import { controllerLogAndFail, standardResponse } from '@utils/api';
+import { standardResponse } from '@utils/api';
 import { Request, Response } from 'express';
 
 const reachedAddressService = new ReachedAddressService();
@@ -28,18 +28,18 @@ const globalStatus = (req: Request, res: Response) => {
     });
     waitForResult
         .then((r) => res.send(r))
-        .catch((e) => controllerLogAndFail(e, 400, res));
+        .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 const globalDemographics = (req: Request, res: Response) => {
     GlobalDemographicsService.getLast()
         .then((r) => res.send(r))
-        .catch((e) => controllerLogAndFail(e, 400, res));
+        .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 const numbers = (req: Request, res: Response) => {
     globalDailyStateService
         .numbers()
         .then((r) => standardResponse(res, 200, true, r))
-        .catch((e) => controllerLogAndFail(e, 400, res));
+        .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 
 export default { globalStatus, globalDemographics, numbers };

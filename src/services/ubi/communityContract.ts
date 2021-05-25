@@ -44,6 +44,10 @@ export default class CommunityContractService {
             incrementInterval,
         } = contractParams;
 
+        const community = (await this.community.findOne({
+            attributes: ['publicId'],
+            where: { id: communityId },
+        }))!;
         try {
             await sequelize.transaction(async (t) => {
                 await this.ubiCommunityContract.update(
@@ -56,8 +60,9 @@ export default class CommunityContractService {
                     { where: { communityId }, transaction: t }
                 );
 
+                // TODO: migrate
                 await this.ubiRequestChangeParams.destroy({
-                    where: { communityId },
+                    where: { communityId: community.publicId },
                     transaction: t,
                 });
             });

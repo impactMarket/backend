@@ -293,10 +293,10 @@ class ChainSubscribers {
                     this.communities.get(communityAddress)!
                 ))!.id,
                 {
-                    claimAmount: parsedLog.args[0],
-                    maxClaim: parsedLog.args[1],
-                    baseInterval: parsedLog.args[2],
-                    incrementInterval: parsedLog.args[3],
+                    claimAmount: parsedLog.args[0].toString(),
+                    maxClaim: parsedLog.args[1].toString(),
+                    baseInterval: parsedLog.args[2].toNumber(),
+                    incrementInterval: parsedLog.args[3].toNumber(),
                 }
             );
             result = parsedLog;

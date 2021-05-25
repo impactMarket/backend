@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { cleanEnv, num, port, str } from 'envalid';
+import { bool, cleanEnv, num, port, str } from 'envalid';
 
 if (process.env.NODE_ENV === 'development') {
     const envFound = dotenv.config();
@@ -42,6 +42,9 @@ function validateEnv() {
         AWS_REGION: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_BASE_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        POSITION_STACK_API_BASE_URL: str({ devDefault: 'xyz' }),
+        POSITION_STACK_API_KEY: str({ devDefault: 'xyz' }),
+        CLAIM_VERIFICATION: bool({ default: false }),
         MASTER_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         LATEST_MOBILE_APP_VERSION: str({ devDefault: onlyOnTestEnv('0.0.0') }),
         MINIMAL_MOBILE_APP_VERSION: str({ devDefault: onlyOnTestEnv('0.0.1') }),
