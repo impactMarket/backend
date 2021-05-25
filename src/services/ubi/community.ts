@@ -1401,18 +1401,19 @@ export default class CommunityService {
     }
 
     public static async getClaimLocation(id: string) {
-        const aMonthAgo = new Date();
-        aMonthAgo.setDate(aMonthAgo.getDate() - 30);
-        aMonthAgo.setHours(0, 0, 0, 0);
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setDate(threeMonthsAgo.getDate() - 90);
+        threeMonthsAgo.setHours(0, 0, 0, 0);
 
         const community = (await this.community.findOne({ where: { id } }))!;
-        return await this.claimLocation.findAll({
+        const res = await this.claimLocation.findAll({
             attributes: ['gps'],
             where: {
-                createdAt: { [Op.gte]: aMonthAgo },
+                createdAt: { [Op.gte]: threeMonthsAgo },
                 communityId: community.publicId,
             },
         });
+        return res.map((r) => r.gps);
     }
 
     public static async getManagers(communityId: string) {
