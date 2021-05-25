@@ -1337,7 +1337,67 @@ export default class CommunityService {
                 id,
             },
         });
-        return result!.toJSON() as CommunityAttributes;
+        // add reachedLastMonth
+        const aMonthAgo = new Date();
+        aMonthAgo.setDate(aMonthAgo.getDate() - 30);
+        aMonthAgo.setHours(0, 0, 0, 0);
+        const reachedLastMonth: {
+            reach: string;
+            reachOut: string;
+        } = (await this.community.findOne({
+            attributes: [
+                [
+                    fn(
+                        'count',
+                        fn(
+                            'distinct',
+                            col('"beneficiaries->transactions"."withAddress"')
+                        )
+                    ),
+                    'reach',
+                ],
+                [
+                    literal(
+                        'count(distinct "beneficiaries->transactions"."withAddress") filter (where "beneficiaries->transactions"."withAddress" not in (select distinct address from beneficiary where active = true))'
+                    ),
+                    'reachOut',
+                ],
+            ],
+            include: [
+                {
+                    model: models.beneficiary,
+                    as: 'beneficiaries',
+                    attributes: [],
+                    required: false,
+                    include: [
+                        {
+                            model: models.beneficiaryTransaction,
+                            as: 'transactions',
+                            where: literal(
+                                `date("beneficiaries->transactions"."date") = '${
+                                    aMonthAgo.toISOString().split('T')[0]
+                                }'`
+                            ),
+                            attributes: [],
+                            required: false,
+                        },
+                    ],
+                },
+            ],
+            where: {
+                id,
+            },
+            raw: true,
+        })) as any;
+        return {
+            ...result!.toJSON(),
+            reachedLastMonth,
+        } as CommunityAttributes & {
+            reachedLastMonth: {
+                reach: string;
+                reachOut: string;
+            };
+        };
     }
 
     public static async getClaimLocation(id: string) {
