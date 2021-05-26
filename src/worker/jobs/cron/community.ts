@@ -81,7 +81,7 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     type ICommunityToMetrics = CommunityAttributes & {
         beneficiariesClaiming: { count: number; claimed: string };
-        activity?: {
+        activity: {
             claimed: string;
             claims: string;
             raised: string;
@@ -390,7 +390,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     for (let index = 0; index < communitiesState.length; index++) {
         const cn = communityNumbers.find(
             (c) => c.id === communitiesState[index].id
-        )!;
+        );
         const cca = communityClaimActivity.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
@@ -405,10 +405,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         );
         communities.push({
             ...communitiesState[index],
-            beneficiariesClaiming: {
-                count: parseInt(cn.count, 10),
-                claimed: cn.sum,
-            },
+            beneficiariesClaiming: cn
+                ? {
+                      count: parseInt(cn.count, 10),
+                      claimed: cn.sum,
+                  }
+                : { count: 0, claimed: '0' },
             activity: {
                 ...(cca ? cca : { claimed: '0', claims: '0' }),
                 ...(cia ? cia : { raised: '0', backers: '0' }),
@@ -536,22 +538,20 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             estimatedDuration,
             date: yesterday,
         });
-        if (community.activity) {
-            await models.ubiCommunityDailyState.update(
-                {
-                    transactions: parseInt(community.activity.txs, 10),
-                    reach: parseInt(community.activity.reach, 10),
-                    reachOut: parseInt(community.activity.reachOut, 10),
-                    volume: community.activity.volume,
-                    backers: parseInt(community.activity.backers, 10),
-                    raised: community.activity.raised,
-                    claimed: community.activity.claimed,
-                    claims: parseInt(community.activity.claims, 10),
-                    fundingRate: parseFloat(community.activity.fundingRate),
-                },
-                { where: { communityId: community.id, date: yesterday } }
-            );
-        }
+        await models.ubiCommunityDailyState.update(
+            {
+                transactions: parseInt(community.activity.txs, 10),
+                reach: parseInt(community.activity.reach, 10),
+                reachOut: parseInt(community.activity.reachOut, 10),
+                volume: community.activity.volume,
+                backers: parseInt(community.activity.backers, 10),
+                raised: community.activity.raised,
+                claimed: community.activity.claimed,
+                claims: parseInt(community.activity.claims, 10),
+                fundingRate: parseFloat(community.activity.fundingRate),
+            },
+            { where: { communityId: community.id, date: yesterday } }
+        );
     };
 
     const pending: Promise<void>[] = [];
