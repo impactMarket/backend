@@ -12,7 +12,7 @@ interface InflowAttributes {
     createdAt: Date;
     updatedAt: Date;
 }
-interface InflowCreationAttributes {
+export interface InflowCreationAttributes {
     from: string;
     communityId: string;
     amount: string;

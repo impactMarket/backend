@@ -3,7 +3,7 @@ import { Sequelize } from 'sequelize';
 import initModels from '../../../../src/database/models';
 import { User } from '../../../../src/interfaces/app/user';
 
-describe('INTEGRATION [jobs - cron] calcuateCommunitiesMetrics2', () => {
+describe('INTEGRATION [jobs - cron] ccm2', () => {
     let sequelize;
     before(async () => {
         const dbConfig: any = {
