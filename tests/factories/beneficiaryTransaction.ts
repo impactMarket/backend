@@ -17,14 +17,22 @@ import { randomTx } from '../utils/utils';
  */
 const data = async (
     beneficiary: BeneficiaryAttributes,
-    isFromBeneficiary: boolean
+    isFromBeneficiary: boolean,
+    options?: {
+        toBeneficiary?: BeneficiaryAttributes;
+        amount?: string;
+    }
 ) => {
     const randomWallet = ethers.Wallet.createRandom();
     const defaultProps: BeneficiaryTransactionCreationAttributes = {
-        amount: '1000000000000000000',
+        amount:
+            options && options.amount ? options.amount : '1000000000000000000',
         beneficiary: beneficiary.address,
         isFromBeneficiary,
-        withAddress: await randomWallet.getAddress(),
+        withAddress:
+            options && options.toBeneficiary
+                ? options.toBeneficiary.address
+                : await randomWallet.getAddress(),
         tx: randomTx(),
         date: new Date(),
     };
@@ -39,10 +47,14 @@ const data = async (
  */
 const BeneficiaryTransactionFactory = async (
     beneficiary: BeneficiaryAttributes,
-    isFromBeneficiary: boolean
+    isFromBeneficiary: boolean,
+    options?: {
+        toBeneficiary?: BeneficiaryAttributes;
+        amount?: string;
+    }
 ) => {
     const result = await BeneficiaryTransaction.create(
-        await data(beneficiary, isFromBeneficiary)
+        await data(beneficiary, isFromBeneficiary, options)
     );
     return result;
 };
