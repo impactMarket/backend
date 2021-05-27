@@ -2,13 +2,14 @@ import { AppAnonymousReport } from '@interfaces/app/appAnonymousReport';
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { AppUserDeviceCreation } from '@interfaces/app/appUserDevice';
 import { User, UserCreationAttributes } from '@interfaces/app/user';
+import { CommunityAttributes } from '@models/ubi/community';
 import { ProfileContentStorage } from '@services/storage';
 import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
 
 import { generateAccessToken } from '../../api/middlewares';
 import { models, sequelize } from '../../database';
-import { ICommunity, IUserHello, IUserAuth } from '../../types/endpoints';
+import { IUserHello, IUserAuth } from '../../types/endpoints';
 import CommunityService from '../ubi/community';
 import ExchangeRatesService from './exchangeRates';
 
@@ -394,22 +395,35 @@ export default class UserService {
             throw new Error('User is null?');
         }
         const fUser = user.toJSON() as User;
-        let community: ICommunity | null = null;
+        let community: CommunityAttributes | null = null;
         let managerInPendingCommunity = false;
-        if (fUser.beneficiary!.length > 0) {
-            community = await CommunityService.getByPublicId(
-                fUser.beneficiary![0].communityId
+        if (fUser.beneficiary && fUser.beneficiary.length > 0) {
+            const newCommunity = await CommunityService.getCommunityOnlyByPublicId(
+                fUser.beneficiary[0].communityId
             );
-        } else if (fUser.manager!.length > 0) {
-            community = await CommunityService.getByPublicId(
-                fUser.manager![0].communityId
+            if (newCommunity !== null) {
+                community = await CommunityService.findById(newCommunity.id);
+            }
+        } else if (fUser.manager && fUser.manager.length > 0) {
+            const newCommunity = await CommunityService.getCommunityOnlyByPublicId(
+                fUser.manager[0].communityId
             );
+            if (newCommunity !== null) {
+                community = await CommunityService.findById(newCommunity.id);
+            }
         } else {
             const communityId = await CommunityService.findByFirstManager(
                 fUser.address
             );
             if (communityId) {
-                community = await CommunityService.getByPublicId(communityId);
+                const newCommunity = await CommunityService.getCommunityOnlyByPublicId(
+                    communityId
+                );
+                if (newCommunity !== null) {
+                    community = await CommunityService.findById(
+                        newCommunity.id
+                    );
+                }
                 managerInPendingCommunity = true;
             }
         }

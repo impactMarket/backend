@@ -87,7 +87,7 @@ export interface IUserHello {
     rates: ExchangeRatesAttributes[];
     isBeneficiary: boolean;
     isManager: boolean;
-    community?: ICommunity;
+    community?: CommunityAttributes;
     blocked: boolean;
     // to users not yet registered, the values below do not exist
     verifiedPN: boolean | undefined;
