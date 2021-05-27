@@ -67,14 +67,18 @@ class StoryController {
         }
         this.storyService
             .getByUser(req.user.address, req.query)
-            .then((r) => standardResponse(res, 200, true, r))
+            .then((r) =>
+                standardResponse(res, 200, true, r.content, { count: r.count })
+            )
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     listByOrder = (req: Request, res: Response) => {
         this.storyService
             .list(req.query)
-            .then((r) => standardResponse(res, 200, true, r))
+            .then((r) =>
+                standardResponse(res, 200, true, r.content, { count: r.count })
+            )
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
@@ -82,11 +86,12 @@ class StoryController {
         this.storyService
             .getByCommunity(
                 parseInt(req.params.id, 10),
-                req.params.order,
-                req.query,
+                req.query ? req.query : {},
                 req.user?.address
             )
-            .then((r) => standardResponse(res, 200, true, r))
+            .then((r) =>
+                standardResponse(res, 200, true, r.content, { count: r.count })
+            )
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 

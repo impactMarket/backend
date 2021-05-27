@@ -143,8 +143,8 @@ export default class StoryService {
     public async getByUser(
         onlyFromAddress: string,
         query: { offset?: string; limit?: string }
-    ): Promise<ICommunityStories> {
-        const r = await this.storyContent.findAll({
+    ): Promise<{ count: number; content: ICommunityStories }> {
+        const r = await this.storyContent.findAndCountAll({
             include: [
                 {
                     model: this.storyEngagement,
@@ -159,6 +159,7 @@ export default class StoryService {
                         {
                             model: this.appMediaThumbnail,
                             as: 'thumbnails',
+                            separate: true,
                         },
                     ],
                 },
@@ -209,36 +210,39 @@ export default class StoryService {
         }
 
         return {
-            id: result.community.id,
-            // this information is on the user side already
-            name: '',
-            city: '',
-            country: '',
-            cover: {
-                id: 0,
-                url: '',
-                height: 0,
-                width: 0,
+            count: r.count,
+            content: {
+                id: result.community.id,
+                // this information is on the user side already
+                name: '',
+                city: '',
+                country: '',
+                cover: {
+                    id: 0,
+                    url: '',
+                    height: 0,
+                    width: 0,
+                },
+                //
+                stories: r.rows.map((c) => {
+                    const content = c.toJSON() as StoryContent;
+                    return {
+                        id: content.id,
+                        media: content.media,
+                        message: content.message,
+                        byAddress: content.byAddress,
+                        loves: content.storyEngagement
+                            ? content.storyEngagement.loves
+                            : 0,
+                        userLoved: content.storyUserEngagement
+                            ? content.storyUserEngagement.length !== 0
+                            : false,
+                        userReported: content.storyUserReport
+                            ? content.storyUserReport.length !== 0
+                            : false,
+                    };
+                }),
             },
-            //
-            stories: r.map((c) => {
-                const content = c.toJSON() as StoryContent;
-                return {
-                    id: content.id,
-                    media: content.media,
-                    message: content.message,
-                    byAddress: content.byAddress,
-                    loves: content.storyEngagement
-                        ? content.storyEngagement.loves
-                        : 0,
-                    userLoved: content.storyUserEngagement
-                        ? content.storyUserEngagement.length !== 0
-                        : false,
-                    userReported: content.storyUserReport
-                        ? content.storyUserReport.length !== 0
-                        : false,
-                };
-            }),
         };
     }
 
@@ -246,7 +250,7 @@ export default class StoryService {
         offset?: string;
         limit?: string;
         includeIPCT?: boolean;
-    }): Promise<ICommunitiesListStories[]> {
+    }): Promise<{ count: number; content: ICommunitiesListStories[] }> {
         let ipctMostRecent: ICommunitiesListStories | undefined;
         if (query.includeIPCT) {
             const r = await this.storyContent.findAll({
@@ -291,17 +295,17 @@ export default class StoryService {
                 };
             }
         }
-        const r = await this.community.findAll({
+        const r = await this.community.findAndCountAll({
             attributes: ['id', 'name'],
             include: [
                 {
                     model: this.appMediaContent,
                     as: 'cover',
-                    // separate: true,
                     include: [
                         {
                             model: this.appMediaThumbnail,
                             as: 'thumbnails',
+                            separate: true,
                         },
                     ],
                 },
@@ -318,7 +322,6 @@ export default class StoryService {
                                 {
                                     model: this.storyEngagement,
                                     as: 'storyEngagement',
-                                    // duplicating: true,
                                 },
                                 {
                                     model: this.appMediaContent,
@@ -328,6 +331,7 @@ export default class StoryService {
                                         {
                                             model: this.appMediaThumbnail,
                                             as: 'thumbnails',
+                                            separate: true,
                                         },
                                     ],
                                 },
@@ -352,7 +356,7 @@ export default class StoryService {
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
-        const communitiesStories = r.map((c) => {
+        const communitiesStories = r.rows.map((c) => {
             const community = c.toJSON() as CommunityAttributes;
             return {
                 id: community.id,
@@ -367,23 +371,28 @@ export default class StoryService {
             };
         });
         if (ipctMostRecent) {
-            return [ipctMostRecent].concat(communitiesStories);
+            return {
+                count: r.count + 1,
+                content: [ipctMostRecent].concat(communitiesStories),
+            };
         }
-        return communitiesStories;
+        return {
+            count: r.count,
+            content: communitiesStories,
+        };
     }
 
     public async getByCommunity(
         communityId: number,
-        order: string | undefined,
         query: { offset?: string; limit?: string },
         userAddress?: string
-    ): Promise<ICommunityStories> {
+    ): Promise<{ count: number; content: ICommunityStories }> {
         if (communityId === -1) {
             return this._listImpactMarketOnly(userAddress);
         }
 
         const subInclude = this._filterSubInclude(userAddress);
-        const r = await this.storyContent.findAll({
+        const r = await this.storyContent.findAndCountAll({
             include: [
                 {
                     model: this.storyCommunity,
@@ -400,6 +409,7 @@ export default class StoryService {
                                         {
                                             model: this.appMediaThumbnail,
                                             as: 'thumbnails',
+                                            separate: true,
                                         },
                                     ],
                                 },
@@ -416,6 +426,7 @@ export default class StoryService {
                         {
                             model: this.appMediaThumbnail,
                             as: 'thumbnails',
+                            separate: true,
                         },
                     ],
                 },
@@ -427,7 +438,7 @@ export default class StoryService {
             order: [['postedAt', 'DESC']],
         });
 
-        if (r.length === 0) {
+        if (r.rows.length === 0) {
             throw new Error('No stories for community ' + communityId);
         }
 
@@ -435,29 +446,32 @@ export default class StoryService {
         const community = (r[0].toJSON() as StoryContent).storyCommunity!
             .community!;
         return {
-            id: community.id,
-            // publicId: community.publicId,
-            name: community.name,
-            city: community.city,
-            country: community.country,
-            cover: community.cover!,
-            // we can use ! because it's filtered on the query
-            stories: r.map((s) => {
-                const content = s.toJSON() as StoryContent;
-                return {
-                    id: content.id,
-                    media: content.media,
-                    message: content.message,
-                    byAddress: content.byAddress,
-                    loves: content.storyEngagement!.loves,
-                    userLoved: userAddress
-                        ? content.storyUserEngagement!.length !== 0
-                        : false,
-                    userReported: userAddress
-                        ? content.storyUserReport!.length !== 0
-                        : false,
-                };
-            }),
+            count: r.count,
+            content: {
+                id: community.id,
+                // publicId: community.publicId,
+                name: community.name,
+                city: community.city,
+                country: community.country,
+                cover: community.cover!,
+                // we can use ! because it's filtered on the query
+                stories: r.rows.map((s) => {
+                    const content = s.toJSON() as StoryContent;
+                    return {
+                        id: content.id,
+                        media: content.media,
+                        message: content.message,
+                        byAddress: content.byAddress,
+                        loves: content.storyEngagement!.loves,
+                        userLoved: userAddress
+                            ? content.storyUserEngagement!.length !== 0
+                            : false,
+                        userReported: userAddress
+                            ? content.storyUserReport!.length !== 0
+                            : false,
+                    };
+                }),
+            },
         };
     }
 
@@ -519,9 +533,9 @@ export default class StoryService {
 
     public async _listImpactMarketOnly(
         userAddress?: string
-    ): Promise<ICommunityStories> {
+    ): Promise<{ count: number; content: ICommunityStories }> {
         const subInclude = this._filterSubInclude(userAddress);
-        const r = await this.storyContent.findAll({
+        const r = await this.storyContent.findAndCountAll({
             include: [
                 ...subInclude,
                 {
@@ -532,6 +546,7 @@ export default class StoryService {
                         {
                             model: this.appMediaThumbnail,
                             as: 'thumbnails',
+                            separate: true,
                         },
                     ],
                 },
@@ -542,7 +557,7 @@ export default class StoryService {
             },
             order: [['postedAt', 'DESC']],
         });
-        const stories: ICommunityStory[] = r.map((c) => {
+        const stories: ICommunityStory[] = r.rows.map((c) => {
             const content = c.toJSON() as StoryContent;
             return {
                 id: content.id,
@@ -570,12 +585,15 @@ export default class StoryService {
             },
         });
         return {
-            id: -1,
-            name: 'impactMarket',
-            city: '',
-            country: '',
-            cover: ipctCover!.toJSON() as AppMediaContent,
-            stories,
+            count: r.count,
+            content: {
+                id: -1,
+                name: 'impactMarket',
+                city: '',
+                country: '',
+                cover: ipctCover!.toJSON() as AppMediaContent,
+                stories,
+            },
         };
     }
 

@@ -110,11 +110,11 @@ export default (app: Router): void => {
      *     summary: List user stories only
      *     parameters:
      *       - in: path
-     *         name: order
+     *         name: query
      *         schema:
      *           type: string
      *         required: false
-     *         description: Stories' order (not using any order yet) (eg. ?offset=0&limit=5)
+     *         description: Stories' list query (eg. ?offset=0&limit=5)
      *     responses:
      *       "200":
      *         description: "Success"
@@ -122,7 +122,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "read:read":
      */
-    route.get('/me', authenticateToken, storyController.getByUser);
+    route.get('/me/:query?', authenticateToken, storyController.getByUser);
 
     /**
      * @swagger
@@ -134,16 +134,16 @@ export default (app: Router): void => {
      *     summary: List all communities (with at least one story) with the most recent story
      *     parameters:
      *       - in: path
-     *         name: order
+     *         name: query
      *         schema:
      *           type: string
      *         required: false
-     *         description: Stories' order (not using any order yet) (eg. ?offset=0&limit=5)
+     *         description: Stories' user list query (eg. ?offset=0&limit=5)
      *     responses:
      *       "200":
      *         description: OK
      */
-    route.get('/list/:order?', storyController.listByOrder);
+    route.get('/list/:query?', storyController.listByOrder);
 
     /**
      * @swagger
@@ -161,17 +161,17 @@ export default (app: Router): void => {
      *         required: true
      *         description: Community id to fetch stories from
      *       - in: path
-     *         name: order
+     *         name: query
      *         schema:
      *           type: string
      *         required: false
-     *         description: Stories' order (not using any order yet) (eg. ?offset=0&limit=5)
+     *         description: Stories' community query (eg. ?offset=0&limit=5)
      *     responses:
      *       "200":
      *         description: OK
      */
     route.get(
-        '/community/:id/:order?',
+        '/community/:id/:query?',
         (req, res, next) => {
             (req as any).authTokenIsOptional = true;
             next();
