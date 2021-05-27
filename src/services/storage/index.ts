@@ -1,4 +1,3 @@
-import fleekStorage from '@fleekhq/fleek-storage-js';
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { Logger } from '@utils/logger';
 import axios from 'axios';
@@ -515,15 +514,6 @@ const sharpAndUpload = async (
 
     // upload to aws
     const uploadResult = await uploadContentToS3(category, filePath, imgBuffer);
-    // also upload to fleek storage (test phase)
-    if (includeFleek) {
-        fleekStorage.upload({
-            apiKey: config.fleekStorage.accessKeyId,
-            apiSecret: config.fleekStorage.secretAccessKey,
-            key: `${category}/${filePath}`,
-            data: imgBuffer,
-        });
-    }
 
     return uploadResult;
 };
