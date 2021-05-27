@@ -210,4 +210,5 @@ export default {
     positionStackApiBaseUrl: validatedEnv.POSITION_STACK_API_BASE_URL,
     positionStackApiKey: validatedEnv.POSITION_STACK_API_KEY,
     claimVerification: validatedEnv.CLAIM_VERIFICATION,
+    storyCronActive: validatedEnv.STORY_CRON_ACTIVE,
 };
