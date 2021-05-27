@@ -1,7 +1,11 @@
 import StoryService from '@services/story';
 
+import config from '../../../config';
+
 export async function verifyStoriesLifecycle(): Promise<void> {
     //
-    const stories = new StoryService();
-    await stories.deleteOlderStories();
+    if (config.storyCronActive) {
+        const stories = new StoryService();
+        await stories.deleteOlderStories();
+    }
 }
