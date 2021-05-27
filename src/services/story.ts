@@ -1,5 +1,8 @@
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
-import { StoryCommunityCreationEager } from '@interfaces/story/storyCommunity';
+import {
+    StoryCommunity,
+    StoryCommunityCreationEager,
+} from '@interfaces/story/storyCommunity';
 import { StoryContent } from '@interfaces/story/storyContent';
 import {
     IAddStory,
@@ -392,36 +395,47 @@ export default class StoryService {
         }
 
         const subInclude = this._filterSubInclude(userAddress);
-        const r = await this.storyContent.findAndCountAll({
+        const r = await this.storyCommunity.findAndCountAll({
             include: [
                 {
-                    model: this.storyCommunity,
-                    as: 'storyCommunity',
+                    model: this.storyContent,
+                    as: 'storyContent',
+                    required: false,
                     include: [
                         {
-                            model: this.community,
-                            as: 'community',
+                            model: this.appMediaContent,
+                            as: 'media',
+                            required: false,
                             include: [
                                 {
-                                    model: this.appMediaContent,
-                                    as: 'cover',
-                                    include: [
-                                        {
-                                            model: this.appMediaThumbnail,
-                                            as: 'thumbnails',
-                                            separate: true,
-                                        },
-                                    ],
+                                    model: this.appMediaThumbnail,
+                                    as: 'thumbnails',
+                                    separate: true,
                                 },
                             ],
                         },
+                        ...subInclude,
                     ],
-                    where: { communityId },
+                    where: { isPublic: true },
                 },
+            ],
+            where: { communityId },
+            offset: query.offset ? parseInt(query.offset, 10) : undefined,
+            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+            order: [['storyContent', 'postedAt', 'DESC']],
+        });
+
+        if (r.rows.length === 0) {
+            throw new Error('No stories for community ' + communityId);
+        }
+
+        // at this point, this is not null
+        const community = (await this.community.findOne({
+            attributes: ['id', 'name', 'city', 'country'],
+            include: [
                 {
                     model: this.appMediaContent,
-                    as: 'media',
-                    required: false,
+                    as: 'cover',
                     include: [
                         {
                             model: this.appMediaThumbnail,
@@ -430,39 +444,29 @@ export default class StoryService {
                         },
                     ],
                 },
-                ...subInclude,
             ],
-            where: { isPublic: true },
-            offset: query.offset ? parseInt(query.offset, 10) : undefined,
-            limit: query.limit ? parseInt(query.limit, 10) : undefined,
-            order: [['postedAt', 'DESC']],
-        });
-
-        if (r.rows.length === 0) {
-            throw new Error('No stories for community ' + communityId);
-        }
-
-        // at this point, this is not null
-        const community = (r[0].toJSON() as StoryContent).storyCommunity!
-            .community!;
+            where: { id: communityId },
+        }))!.toJSON() as CommunityAttributes;
         return {
             count: r.count,
             content: {
                 id: community.id,
-                // publicId: community.publicId,
                 name: community.name,
                 city: community.city,
                 country: community.country,
                 cover: community.cover!,
                 // we can use ! because it's filtered on the query
                 stories: r.rows.map((s) => {
-                    const content = s.toJSON() as StoryContent;
+                    const content = (s.toJSON() as StoryCommunity)
+                        .storyContent!;
                     return {
                         id: content.id,
                         media: content.media,
                         message: content.message,
                         byAddress: content.byAddress,
-                        loves: content.storyEngagement!.loves,
+                        loves: content.storyEngagement
+                            ? content.storyEngagement.loves
+                            : 0,
                         userLoved: userAddress
                             ? content.storyUserEngagement!.length !== 0
                             : false,
