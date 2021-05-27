@@ -298,10 +298,10 @@ describe('calcuateCommunitiesMetrics', () => {
                     reach: 0,
                     reachOut: 0,
                     volume: '0',
-                    backers: 1,
+                    backers: 2,
                     raised: match.any,
-                    claimed: '1000000000000000000',
-                    claims: 1,
+                    claimed: '2000000000000000000',
+                    claims: 2,
                     fundingRate: match.any,
                 },
                 {
