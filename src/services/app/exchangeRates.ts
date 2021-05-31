@@ -12,7 +12,7 @@ export default class ExchangeRatesService {
     public static async get(): Promise<ExchangeRatesAttributes[]> {
         const rates = await getRedis(this.redisKey);
         if (rates === null) {
-            const currentRates = this.exchangeRates.findAll({
+            const currentRates = await this.exchangeRates.findAll({
                 attributes: ['currency', 'rate'],
                 raw: true,
             });
