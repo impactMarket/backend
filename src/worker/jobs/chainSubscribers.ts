@@ -129,7 +129,7 @@ class ChainSubscribers {
     ) {
         let parsedLog: ethers.utils.LogDescription | undefined;
         if (log.address === config.cUSDContractAddress) {
-            parsedLog = this._processCUSDEvents(log);
+            parsedLog = await this._processCUSDEvents(log);
         } else if (this.allCommunitiesAddresses.includes(log.address)) {
             parsedLog = await this._processCommunityEvents(log);
         } else {
@@ -141,9 +141,9 @@ class ChainSubscribers {
         return parsedLog;
     }
 
-    _processCUSDEvents(
+    async _processCUSDEvents(
         log: ethers.providers.Log
-    ): ethers.utils.LogDescription | undefined {
+    ): Promise<ethers.utils.LogDescription | undefined> {
         const parsedLog = this.ifaceERC20.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
         // only transactions to community contracts (donations)
@@ -189,7 +189,7 @@ class ChainSubscribers {
                 ? parsedLog.args[1]
                 : parsedLog.args[0];
             // save to table to calculate txs and volume
-            BeneficiaryTransactionService.add({
+            await BeneficiaryTransactionService.add({
                 beneficiary: beneficiaryAddress,
                 withAddress,
                 amount: parsedLog.args[2].toString(),
@@ -238,19 +238,20 @@ class ChainSubscribers {
             }
             // allBeneficiaryAddressses.push(beneficiaryAddress);
             notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
-            getBlockTime(log.blockHash).then((txAt) =>
-                BeneficiaryService.add(
+            try {
+                const txAt = await getBlockTime(log.blockHash);
+                await BeneficiaryService.add(
                     beneficiaryAddress,
                     communityId!,
                     log.transactionHash,
                     txAt
-                ).catch(asyncTxsFailure)
-            );
+                );
+            } catch (e) {}
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryRemoved') {
             const beneficiaryAddress = parsedLog.args[0];
             const communityAddress = log.address;
-            BeneficiaryService.remove(
+            await BeneficiaryService.remove(
                 beneficiaryAddress,
                 this.communities.get(communityAddress)!
             );
@@ -259,21 +260,20 @@ class ChainSubscribers {
             const beneficiaryAddress = parsedLog.args[0];
             const amount = parsedLog.args[1];
             const communityId = this.communities.get(log.address)!;
-            getBlockTime(log.blockHash).then((txAt) =>
-                ClaimsService.add(
-                    beneficiaryAddress,
-                    communityId,
-                    amount,
-                    log.transactionHash,
-                    txAt
-                )
+            const txAt = await getBlockTime(log.blockHash);
+            await ClaimsService.add(
+                beneficiaryAddress,
+                communityId,
+                amount,
+                log.transactionHash,
+                txAt
             );
             result = parsedLog;
         } else if (parsedLog.name === 'ManagerAdded') {
             // new managers in existing community
             const managerAddress = parsedLog.args[0];
             const communityAddress = log.address;
-            ManagerService.add(
+            await ManagerService.add(
                 managerAddress,
                 this.communities.get(communityAddress)!
             );
@@ -281,14 +281,14 @@ class ChainSubscribers {
         } else if (parsedLog.name === 'ManagerRemoved') {
             const managerAddress = parsedLog.args[0];
             const communityAddress = log.address;
-            ManagerService.remove(
+            await ManagerService.remove(
                 managerAddress,
                 this.communities.get(communityAddress)!
             );
             result = parsedLog;
         } else if (parsedLog.name === 'CommunityEdited') {
             const communityAddress = log.address;
-            CommunityContractService.update(
+            await CommunityContractService.update(
                 (await CommunityService.getCommunityOnlyByPublicId(
                     this.communities.get(communityAddress)!
                 ))!.id,
