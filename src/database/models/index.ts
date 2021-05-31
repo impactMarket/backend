@@ -21,13 +21,13 @@ import { initializeGlobalDemographics } from './global/globalDemographics';
 import { initializeGlobalGrowth } from './global/globalGrowth';
 import { initializeNotifiedBacker } from './notifiedBacker';
 import { initializeReachedAddress } from './reachedAddress';
-import { initializeSSI } from './ssi';
+// import { initializeSSI } from './ssi';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryContent } from './story/storyContent';
 import { initializeStoryEngagement } from './story/storyEngagement';
 import { initializeStoryUserEngagement } from './story/storyUserEngagement';
 import { initializeStoryUserReport } from './story/storyUserReport';
-import { initializeTransactions } from './transactions';
+// import { initializeTransactions } from './transactions';
 import { initializeBeneficiary } from './ubi/beneficiary';
 import { initializeBeneficiaryTransaction } from './ubi/beneficiaryTransaction';
 import { initializeClaim } from './ubi/claim';
@@ -105,6 +105,6 @@ export default function initModels(sequelize: Sequelize): void {
     appAssociation(sequelize);
 
     // deprecated
-    initializeSSI(sequelize);
-    initializeTransactions(sequelize);
+    // initializeSSI(sequelize);
+    // initializeTransactions(sequelize);
 }

@@ -1,5 +1,5 @@
 import ImMetadataService from '@services/app/imMetadata';
-import TransactionsService from '@services/transactions';
+// import TransactionsService from '@services/transactions';
 import BeneficiaryService from '@services/ubi/beneficiary';
 import BeneficiaryTransactionService from '@services/ubi/beneficiaryTransaction';
 import ClaimsService from '@services/ubi/claim';
@@ -135,9 +135,9 @@ class ChainSubscribers {
         } else {
             await this._processOtherEvents(log);
         }
-        if (parsedLog !== undefined) {
-            TransactionsService.add(provider, log, parsedLog);
-        }
+        // if (parsedLog !== undefined) {
+        //     TransactionsService.add(provider, log, parsedLog);
+        // }
         return parsedLog;
     }
 
