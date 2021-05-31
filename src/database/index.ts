@@ -8,7 +8,7 @@ import { ExchangeRates } from '@models/app/exchangeRates';
 import { ImMetadata } from '@models/app/imMetadata';
 import { SubscribersModel } from '@models/app/subscribers';
 import { UserModel } from '@models/app/user';
-import { AppUserDeviceModel } from '@models/app/userDevice';
+// import { AppUserDeviceModel } from '@models/app/userDevice';
 import { GlobalDailyState } from '@models/global/globalDailyState';
 import { GlobalDemographics } from '@models/global/globalDemographics';
 import { GlobalGrowthModel } from '@models/global/globalGrowth';
@@ -37,6 +37,7 @@ import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
 import { UbiOrganizationModel } from '@models/ubi/ubiOrganization';
 import { UbiOrganizationSocialMediaModel } from '@models/ubi/ubiOrganizationSocialMedia';
 import { Logger } from '@utils/logger';
+import redis from 'redis';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
 
 import config from '../config';
@@ -142,4 +143,6 @@ const models: DbModels = {
         .StoryUserReportModel as ModelCtor<StoryUserReportModel>,
 };
 
-export { sequelize, Sequelize, models };
+const redisClient = redis.createClient();
+
+export { sequelize, Sequelize, models, redisClient };
