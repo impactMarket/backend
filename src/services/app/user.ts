@@ -21,7 +21,7 @@ export default class UserService {
     public static manager = models.manager;
     public static appUserTrust = models.appUserTrust;
     public static appUserThroughTrust = models.appUserThroughTrust;
-    public static userDevice = models.userDevice;
+    // public static userDevice = models.userDevice;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
 
@@ -266,52 +266,52 @@ export default class UserService {
         return media;
     }
 
-    public static async setDevice(
-        deviceInfo: AppUserDeviceCreation
-    ): Promise<boolean> {
-        const exists = await this.userDevice.findOne({
-            where: {
-                userAddress: deviceInfo.userAddress,
-                identifier: deviceInfo.identifier,
-                network: deviceInfo.network,
-                device: deviceInfo.device,
-            },
-        });
-        try {
-            if (exists !== null) {
-                await this.userDevice.update(
-                    { lastLogin: new Date() },
-                    {
-                        where: {
-                            userAddress: deviceInfo.userAddress,
-                            identifier: deviceInfo.identifier,
-                            network: deviceInfo.network,
-                            device: deviceInfo.device,
-                        },
-                    }
-                );
-            } else {
-                await this.userDevice.create(deviceInfo);
-            }
-            return true;
-        } catch (e) {
-            if (e.name === 'SequelizeUniqueConstraintError') {
-                await this.userDevice.update(
-                    { lastLogin: new Date() },
-                    {
-                        where: {
-                            userAddress: deviceInfo.userAddress,
-                            identifier: deviceInfo.identifier,
-                            network: deviceInfo.network,
-                            device: deviceInfo.device,
-                        },
-                    }
-                );
-                return true;
-            }
-        }
-        return false;
-    }
+    // public static async setDevice(
+    //     deviceInfo: AppUserDeviceCreation
+    // ): Promise<boolean> {
+    //     const exists = await this.userDevice.findOne({
+    //         where: {
+    //             userAddress: deviceInfo.userAddress,
+    //             identifier: deviceInfo.identifier,
+    //             network: deviceInfo.network,
+    //             device: deviceInfo.device,
+    //         },
+    //     });
+    //     try {
+    //         if (exists !== null) {
+    //             await this.userDevice.update(
+    //                 { lastLogin: new Date() },
+    //                 {
+    //                     where: {
+    //                         userAddress: deviceInfo.userAddress,
+    //                         identifier: deviceInfo.identifier,
+    //                         network: deviceInfo.network,
+    //                         device: deviceInfo.device,
+    //                     },
+    //                 }
+    //             );
+    //         } else {
+    //             await this.userDevice.create(deviceInfo);
+    //         }
+    //         return true;
+    //     } catch (e) {
+    //         if (e.name === 'SequelizeUniqueConstraintError') {
+    //             await this.userDevice.update(
+    //                 { lastLogin: new Date() },
+    //                 {
+    //                     where: {
+    //                         userAddress: deviceInfo.userAddress,
+    //                         identifier: deviceInfo.identifier,
+    //                         network: deviceInfo.network,
+    //                         device: deviceInfo.device,
+    //                     },
+    //                 }
+    //             );
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
 
     public static async get(address: string): Promise<User | null> {
         return this.user.findOne({ where: { address }, raw: true });
