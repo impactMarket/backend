@@ -164,32 +164,7 @@ class UserController {
      * @deprecated
      */
     public device = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
-            });
-            return;
-        }
-        const { phone, identifier, device, network } = req.body;
-        const hashPhone = crypto
-            .createHmac('sha256', config.hashKey)
-            .update(phone)
-            .digest('hex');
-        const hashNetwork = crypto
-            .createHmac('sha256', config.hashKey)
-            .update(network)
-            .digest('hex');
-
-        UserService.setDevice({
-            userAddress: req.user.address,
-            phone: hashPhone,
-            identifier,
-            device,
-            network: hashNetwork,
-            lastLogin: new Date(),
-        })
-            .then(() => res.sendStatus(200))
-            .catch(() => res.sendStatus(400));
+        res.sendStatus(200);
     };
 
     /**
