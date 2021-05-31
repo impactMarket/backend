@@ -113,8 +113,8 @@ const models: DbModels = {
         .GlobalDemographics as ModelCtor<GlobalDemographics>,
     globalGrowth: sequelize.models
         .GlobalGrowthModel as ModelCtor<GlobalGrowthModel>,
-    userDevice: sequelize.models
-        .AppUserDeviceModel as ModelCtor<AppUserDeviceModel>,
+    // userDevice: sequelize.models
+    //     .AppUserDeviceModel as ModelCtor<AppUserDeviceModel>,
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager>,

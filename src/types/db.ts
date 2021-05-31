@@ -8,7 +8,7 @@ import { ExchangeRates } from '@models/app/exchangeRates';
 import { ImMetadata } from '@models/app/imMetadata';
 import { SubscribersModel } from '@models/app/subscribers';
 import { UserModel } from '@models/app/user';
-import { AppUserDeviceModel } from '@models/app/userDevice';
+// import { AppUserDeviceModel } from '@models/app/userDevice';
 import { GlobalDailyState } from '@models/global/globalDailyState';
 import { GlobalDemographics } from '@models/global/globalDemographics';
 import { GlobalGrowthModel } from '@models/global/globalGrowth';
@@ -45,7 +45,7 @@ export interface DbModels {
     anonymousReport: ModelCtor<AppAnonymousReportModel>;
     cronJobExecuted: ModelCtor<CronJobExecuted>;
     exchangeRates: ModelCtor<ExchangeRates>;
-    userDevice: ModelCtor<AppUserDeviceModel>;
+    // userDevice: ModelCtor<AppUserDeviceModel>;
     imMetadata: ModelCtor<ImMetadata>;
     subscribers: ModelCtor<SubscribersModel>;
     reachedAddress: ModelCtor<ReachedAddress>;

@@ -11,7 +11,7 @@ import { initializeExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
 import { initializeSubscribers } from './app/subscribers';
 import { initializeUser } from './app/user';
-import { initializeAppUserDevice } from './app/userDevice';
+// import { initializeAppUserDevice } from './app/userDevice';
 import { appAssociation } from './associations/app';
 import { communityAssociation } from './associations/community';
 import { storyAssociation } from './associations/story';
@@ -53,7 +53,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeSubscribers(sequelize);
     initializeAppUserTrust(sequelize);
     initializeAppUserThroughTrust(sequelize);
-    initializeAppUserDevice(sequelize);
+    // initializeAppUserDevice(sequelize);
     initializeAgenda(sequelize);
     initializeExchangeRates(sequelize);
     initializeImMetadata(sequelize);
