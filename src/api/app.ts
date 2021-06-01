@@ -19,23 +19,6 @@ async function startServer() {
             new Sentry.Integrations.Http({ tracing: true }),
             // enable Express.js middleware tracing
             new Integrations.Express({ app }),
-            new Integrations.BrowserTracing({
-                beforeNavigate: (context) => {
-                    return {
-                        ...context,
-                        // You could use your UI's routing library to find the matching
-                        // route template here. We don't have one right now, so do some basic
-                        // parameter replacements.
-                        // eslint-disable-next-line no-undef
-                        name: location.pathname
-                            .replace(
-                                /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[4][0-9A-Fa-f]{3}-[89AB][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}/g,
-                                '<uuid>'
-                            )
-                            .replace(/0x[a-fA-F0-9]{40}/g, '<address>'),
-                    };
-                },
-            }),
         ],
         tracesSampler: (samplingContext) => {
             // Examine provided context data (including parent decision, if any) along

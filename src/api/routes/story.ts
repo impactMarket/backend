@@ -177,7 +177,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/community/:id/:query?',
-        cacheWithRedis('1 hour'),
+        // cacheWithRedis('1 hour'), - can't cache due to user specific results
         (req, res, next) => {
             (req as any).authTokenIsOptional = true;
             next();
