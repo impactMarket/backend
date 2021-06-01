@@ -400,7 +400,7 @@ export default class StoryService {
                 {
                     model: this.storyContent,
                     as: 'storyContent',
-                    required: false,
+                    required: true,
                     include: [
                         {
                             model: this.appMediaContent,
@@ -416,10 +416,14 @@ export default class StoryService {
                         },
                         ...subInclude,
                     ],
-                    where: { isPublic: true },
                 },
             ],
-            where: { communityId },
+            where: {
+                communityId,
+                '$"storyContent"."isPublic"$': {
+                    [Op.eq]: true,
+                },
+            } as any,
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
             order: [['storyContent', 'postedAt', 'DESC']],
