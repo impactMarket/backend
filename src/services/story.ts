@@ -298,38 +298,20 @@ export default class StoryService {
                 };
             }
         }
-        const r = await this.community.findAndCountAll({
-            attributes: ['id', 'name'],
+        const r = await this.storyContent.findAndCountAll({
             include: [
-                {
-                    model: this.appMediaContent,
-                    as: 'cover',
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
-                },
                 {
                     model: this.storyCommunity,
                     as: 'storyCommunity',
-                    required: true,
                     include: [
                         {
-                            model: this.storyContent,
-                            as: 'storyContent',
-                            duplicating: true,
+                            model: this.community,
+                            as: 'community',
+                            attributes: ['id', 'name'],
                             include: [
                                 {
-                                    model: this.storyEngagement,
-                                    as: 'storyEngagement',
-                                },
-                                {
                                     model: this.appMediaContent,
-                                    as: 'media',
-                                    duplicating: true,
+                                    as: 'cover',
                                     include: [
                                         {
                                             model: this.appMediaThumbnail,
@@ -339,38 +321,49 @@ export default class StoryService {
                                     ],
                                 },
                             ],
-                            where: {
-                                postedAt: {
-                                    // TODO: use query builder instead
-                                    [Op.eq]: literal(`(select max("postedAt")
-                                    from story_content sc, story_community sm
-                                    where sc.id=sm."contentId" and sm."communityId"="storyCommunity"."communityId" and sc."isPublic"=true)`),
-                                },
-                            },
+                        },
+                    ],
+                },
+                {
+                    model: this.storyEngagement,
+                    as: 'storyEngagement',
+                },
+                {
+                    model: this.appMediaContent,
+                    as: 'media',
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                            separate: true,
                         },
                     ],
                 },
             ],
             where: {
-                visibility: 'public',
-                status: 'valid',
-            } as any, // does not recognize the string as a variable
-            order: [['storyCommunity', 'storyContent', 'postedAt', 'DESC']],
+                postedAt: {
+                    // TODO: use query builder instead
+                    [Op.eq]: literal(
+                        `(select max("postedAt") from story_content sc, story_community sm where sc.id=sm."contentId" and sm."communityId"="storyCommunity"."communityId" and sc."isPublic"=true)`
+                    ),
+                },
+            },
+            order: [['postedAt', 'DESC']],
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
         });
         const communitiesStories = r.rows.map((c) => {
-            const community = c.toJSON() as CommunityAttributes;
+            const content = c.toJSON() as StoryContent;
             return {
-                id: community.id,
-                name: community.name,
-                cover: community.cover!,
                 // we can use ! because it's uncluded on the query
-                story: community.storyCommunity!.map((s) => ({
-                    id: s.storyContent!.id,
-                    media: s.storyContent!.media,
-                    message: s.storyContent!.message,
-                }))[0],
+                id: content.storyCommunity!.communityId,
+                name: content.storyCommunity!.community!.name,
+                cover: content.storyCommunity!.community!.cover!,
+                story: {
+                    id: content.id,
+                    media: content.media,
+                    message: content.message,
+                },
             };
         });
         if (ipctMostRecent) {
