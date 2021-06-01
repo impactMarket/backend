@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node';
+import { Logger } from '@utils/logger';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Request, Response } from 'express';
@@ -138,17 +139,37 @@ export default (app: express.Application): void => {
     // The error handler must be before any other error middleware and after all controllers
     app.use(Sentry.Handlers.errorHandler());
 
+    app.use((error, req, res, next) => {
+        Logger.error(
+            req.originalUrl +
+                ' -> ' +
+                error.details.get('body').details[0].message
+        );
+        if (error.toString().indexOf('celebrate') !== -1) {
+            return res.status(200).json({
+                success: false,
+                error:
+                    'celebrate error ' +
+                    error.details.get('body').details[0].message,
+            });
+        }
+        next();
+    });
+
     /// catch 404
     app.use((req, res, next) => {
-        res.status(404).send('what???');
+        res.status(404).send({ success: false, error: 'what???' });
     });
 
     /// error handlers
     app.use((err: any, req: Request, res: Response) => {
         if (err.name === 'UnauthorizedError') {
-            res.status(err.status).send({ message: err.message }).end();
+            res.status(err.status)
+                .send({ success: false, message: err.message })
+                .end();
         }
         res.status(err.status || 500).json({
+            success: false,
             errors: {
                 message: err.message,
             },
