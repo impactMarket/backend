@@ -3,6 +3,7 @@ import StoryValidator from '@validators/story';
 import { Router } from 'express';
 import multer from 'multer';
 
+import { cacheWithRedis } from '../../database';
 import { authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {
@@ -143,7 +144,11 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/list/:query?', storyController.listByOrder);
+    route.get(
+        '/list/:query?',
+        cacheWithRedis('1 hour'),
+        storyController.listByOrder
+    );
 
     /**
      * @swagger
@@ -172,6 +177,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/community/:id/:query?',
+        cacheWithRedis('1 hour'),
         (req, res, next) => {
             (req as any).authTokenIsOptional = true;
             next();

@@ -3,6 +3,7 @@ import communityValidators from '@validators/community';
 import { Router } from 'express';
 import multer from 'multer';
 
+import { cacheWithRedis } from '../../database';
 import { adminAuthentication, authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {
@@ -31,6 +32,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/ubiparams/:publicId',
+        cacheWithRedis('10 minutes'),
         communityController.getResquestChangeUbiParams
     );
     /**
@@ -39,11 +41,19 @@ export default (app: Router): void => {
      * /community/publicid/publicId:
      *   deprecated: true
      */
-    route.get('/publicid/:publicId', communityController.getByPublicId);
+    route.get(
+        '/publicid/:publicId',
+        cacheWithRedis('10 minutes'),
+        communityController.getByPublicId
+    );
     /**
      * @deprecated use /list
      */
-    route.get('/list/light/:order?', communityController.listLight);
+    route.get(
+        '/list/light/:order?',
+        cacheWithRedis('10 minutes'),
+        communityController.listLight
+    );
     /**
      * @deprecated use /list
      */
@@ -150,11 +160,19 @@ export default (app: Router): void => {
     );
     // route.get('/pending', communityController.pending);
 
-    route.get('/:id/historical-ssi', communityController.getHistoricalSSI);
+    route.get(
+        '/:id/historical-ssi',
+        cacheWithRedis('1 day'),
+        communityController.getHistoricalSSI
+    );
 
     // new
 
-    route.get('/address/:address', controller.findByContractAddress);
+    route.get(
+        '/address/:address',
+        cacheWithRedis('10 minutes'),
+        controller.findByContractAddress
+    );
     /**
      * @swagger
      *
@@ -193,7 +211,7 @@ export default (app: Router): void => {
         communityController.create
     );
 
-    route.get('/list/:query?', controller.list);
+    route.get('/list/:query?', cacheWithRedis('10 minutes'), controller.list);
     /**
      * @swagger
      *
@@ -247,7 +265,11 @@ export default (app: Router): void => {
         communityController.create
     );
 
-    route.get('/:id/ubi', controller.findRequestChangeUbiParams);
+    route.get(
+        '/:id/ubi',
+        cacheWithRedis('10 minutes'),
+        controller.findRequestChangeUbiParams
+    );
 
     /**
      * @swagger
@@ -261,7 +283,11 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:id/past-ssi', controller.getPastSSI);
+    route.get(
+        '/:id/past-ssi',
+        cacheWithRedis('10 minutes'),
+        controller.getPastSSI
+    );
 
     /**
      * @swagger
@@ -275,7 +301,11 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:id/dashboard', controller.getDashboard);
+    route.get(
+        '/:id/dashboard',
+        cacheWithRedis('1 hour'),
+        controller.getDashboard
+    );
 
     /**
      * @swagger
@@ -289,7 +319,11 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:id/claim-location', controller.getClaimLocation);
+    route.get(
+        '/:id/claim-location',
+        cacheWithRedis('1 day'),
+        controller.getClaimLocation
+    );
 
     /**
      * @swagger
@@ -324,7 +358,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:id', controller.findById);
+    route.get('/:id', cacheWithRedis('10 minutes'), controller.findById);
 
     /**
      * @swagger

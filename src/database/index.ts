@@ -37,6 +37,7 @@ import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
 import { UbiOrganizationModel } from '@models/ubi/ubiOrganization';
 import { UbiOrganizationSocialMediaModel } from '@models/ubi/ubiOrganizationSocialMedia';
 import { Logger } from '@utils/logger';
+import apicache from 'apicache';
 import redis from 'redis';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
 
@@ -143,6 +144,9 @@ const models: DbModels = {
         .StoryUserReportModel as ModelCtor<StoryUserReportModel>,
 };
 
-const redisClient = redis.createClient();
+const redisClient = redis.createClient({
+    url: config.redis,
+});
+const cacheWithRedis = apicache.options({ redisClient }).middleware;
 
-export { sequelize, Sequelize, models, redisClient };
+export { sequelize, Sequelize, models, redisClient, cacheWithRedis };
