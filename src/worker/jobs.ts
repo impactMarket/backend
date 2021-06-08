@@ -11,6 +11,7 @@ import config from '../config';
 import { ChainSubscribers } from './jobs/chainSubscribers';
 import {
     calcuateCommunitiesMetrics,
+    internalNotifyLowCommunityFunds,
     populateCommunityDailyState,
     verifyCommunityFunds,
     verifyCommunitySuspectActivity,
@@ -179,6 +180,30 @@ function cron() {
                 })
                 .catch((e) => {
                     Logger.error('verifyCommunityFunds FAILED! ' + e);
+                });
+        },
+        null,
+        true
+    );
+
+    // every hour
+    // eslint-disable-next-line no-new
+    new CronJob(
+        '12 * * * *',
+        () => {
+            internalNotifyLowCommunityFunds()
+                .then(() => {
+                    CronJobExecutedService.add(
+                        'internalNotifyLowCommunityFunds'
+                    );
+                    Logger.info(
+                        'internalNotifyLowCommunityFunds successfully executed!'
+                    );
+                })
+                .catch((e) => {
+                    Logger.error(
+                        'internalNotifyLowCommunityFunds FAILED! ' + e
+                    );
                 });
         },
         null,

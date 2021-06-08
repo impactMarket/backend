@@ -5,6 +5,7 @@ import CommunityService from '@services/ubi/community';
 import CommunityDailyStateService from '@services/ubi/communityDailyState';
 import CommunityStateService from '@services/ubi/communityState';
 import InflowService from '@services/ubi/inflow';
+import { WebClient } from '@slack/web-api';
 import { Logger } from '@utils/logger';
 import { notifyBackersCommunityLowFunds } from '@utils/util';
 import BigNumber from 'bignumber.js';
@@ -591,6 +592,50 @@ export async function verifyCommunityFunds(): Promise<void> {
                 }
             }
         }
+    });
+}
+
+export async function internalNotifyLowCommunityFunds(): Promise<void> {
+    const web = new WebClient(config.slackApi);
+
+    const communitiesOrdered = await CommunityService.list({
+        orderBy: 'out_of_funds',
+    });
+
+    let result = '*Communities running out of funds:*';
+
+    const communities = communitiesOrdered.rows.slice(0, 10);
+
+    for (let index = 0; index < communities.length; index++) {
+        const community = communities[index];
+        if (
+            community.state &&
+            community.state.backers > 0 &&
+            community.state.claimed !== '0'
+        ) {
+            const percentageClaimed = parseFloat(
+                new BigNumber(community.state.claimed)
+                    .div(community.state.raised)
+                    .toString()
+            );
+            const onContract = parseFloat(
+                new BigNumber(community.state.raised)
+                    .minus(community.state.claimed)
+                    .div(10 ** 18)
+                    .toString()
+            );
+            result += `\n\nCommunity: ${
+                community.name
+            } | Remaining: ${Math.round(
+                (1 - percentageClaimed) * 100
+            )}% ($${Math.round(onContract)})`;
+        }
+    }
+
+    await web.chat.postMessage({
+        channel: 'communities-funds',
+        text: result,
+        mrkdwn: true,
     });
 }
 

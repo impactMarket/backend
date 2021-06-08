@@ -211,4 +211,5 @@ export default {
     positionStackApiKey: validatedEnv.POSITION_STACK_API_KEY,
     claimVerification: validatedEnv.CLAIM_VERIFICATION,
     storyCronActive: validatedEnv.STORY_CRON_ACTIVE,
+    slackApi: validatedEnv.SLACK_API,
 };
