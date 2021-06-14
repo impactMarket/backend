@@ -109,7 +109,37 @@ class CommunityController {
     };
 
     getManagers = (req: Request, res: Response) => {
-        CommunityService.getManagers(req.params.id)
+        CommunityService.getManagers(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getPromoter = (req: Request, res: Response) => {
+        CommunityService.getPromoter(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getSuspect = (req: Request, res: Response) => {
+        CommunityService.getSuspect(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getContract = (req: Request, res: Response) => {
+        CommunityService.getContract(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getState = (req: Request, res: Response) => {
+        CommunityService.getState(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getMetrics = (req: Request, res: Response) => {
+        CommunityService.getMetrics(parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -373,7 +403,7 @@ const getClaimLocation = (req: Request, res: Response) => {
 };
 
 const getManagers = (req: Request, res: Response) => {
-    CommunityService.getManagers(req.params.id)
+    CommunityService.getManagers(parseInt(req.params.id, 10))
         .then((r) => standardResponse(res, 200, true, r))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };

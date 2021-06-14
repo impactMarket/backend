@@ -91,15 +91,15 @@ export function communityAssociation(sequelize: Sequelize) {
 
     // used to query from the community with incude
     // this should be a belongsTo instead, but we want to use a third table
-    sequelize.models.Community.belongsToMany(
-        sequelize.models.UbiPromoterModel,
-        {
-            through: sequelize.models.UbiCommunityPromoterModel,
-            sourceKey: 'id',
-            foreignKey: 'communityId',
-            as: 'promoter',
-        }
-    );
+    // sequelize.models.Community.belongsToMany(
+    //     sequelize.models.UbiPromoterModel,
+    //     {
+    //         through: sequelize.models.UbiCommunityPromoterModel,
+    //         sourceKey: 'id',
+    //         foreignKey: 'communityId',
+    //         as: 'promoter',
+    //     }
+    // );
     sequelize.models.UbiPromoterModel.belongsToMany(
         sequelize.models.Community,
         {

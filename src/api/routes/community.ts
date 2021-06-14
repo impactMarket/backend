@@ -404,6 +404,76 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /community/{id}/promoter:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community promoter
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/promoter', controller.getPromoter);
+
+    /**
+     * @swagger
+     *
+     * /community/{id}/suspect:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get suspicious community activity
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/suspect', controller.getSuspect);
+
+    /**
+     * @swagger
+     *
+     * /community/{id}/contract:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community contract UBI parameters
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/contract', controller.getContract);
+
+    /**
+     * @swagger
+     *
+     * /community/{id}/state:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community state
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/state', controller.getState);
+
+    /**
+     * @swagger
+     *
+     * /community/{id}/metrics:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community metrics
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/metrics', controller.getMetrics);
+
+    /**
+     * @swagger
+     *
      * /community/{id}:
      *   get:
      *     tags:
