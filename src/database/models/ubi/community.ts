@@ -46,7 +46,7 @@ export interface CommunityAttributes {
     storyCommunity?: StoryCommunity[];
     suspect?: UbiCommunitySuspect[];
     beneficiaries?: BeneficiaryAttributes[];
-    promoter?: UbiPromoter;
+    // promoter?: UbiPromoter;
     claimLocation?: ClaimLocationAttributes[];
     demographics?: UbiCommunityDemographics[];
     dailyState?: UbiCommunityDailyState[];

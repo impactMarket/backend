@@ -2,6 +2,7 @@ import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
+import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
 import {
     Community,
@@ -1181,13 +1182,13 @@ export default class CommunityService {
 
         // because promoter as a many-to-many (see association file)
         // needs to be broken
-        let promoter: UbiPromoter | undefined = undefined;
-        if (community.promoter && (community.promoter as any).length > 0) {
-            promoter = (community.promoter as any)[0];
-        }
+        // let promoter: UbiPromoter | undefined = undefined;
+        // if (community.promoter && (community.promoter as any).length > 0) {
+        //     promoter = (community.promoter as any)[0];
+        // }
         return {
             ...community,
-            promoter,
+            // promoter,
             state: communityState!,
             contract: communityContract
                 ? (communityContract as any)
@@ -1251,27 +1252,27 @@ export default class CommunityService {
                         },
                     },
                 },
-                {
-                    model: this.ubiPromoter,
-                    as: 'promoter',
-                    required: false,
-                    include: [
-                        {
-                            model: this.ubiPromoterSocialMedia,
-                            as: 'socialMedia',
-                        },
-                        {
-                            model: this.appMediaContent,
-                            as: 'logo',
-                            include: [
-                                {
-                                    model: this.appMediaThumbnail,
-                                    as: 'thumbnails',
-                                },
-                            ],
-                        },
-                    ],
-                },
+                // {
+                //     model: this.ubiPromoter,
+                //     as: 'promoter',
+                //     required: false,
+                //     include: [
+                //         {
+                //             model: this.ubiPromoterSocialMedia,
+                //             as: 'socialMedia',
+                //         },
+                //         {
+                //             model: this.appMediaContent,
+                //             as: 'logo',
+                //             include: [
+                //                 {
+                //                     model: this.appMediaThumbnail,
+                //                     as: 'thumbnails',
+                //                 },
+                //             ],
+                //         },
+                //     ],
+                // },
                 {
                     model: this.appMediaContent,
                     as: 'cover',
@@ -1409,7 +1410,7 @@ export default class CommunityService {
         return res.map((r) => r.gps);
     }
 
-    public static async getManagers(communityId: string) {
+    public static async getManagers(communityId: number) {
         const community = (await this.community.findOne({
             where: { id: communityId },
         }))!;
@@ -1439,6 +1440,89 @@ export default class CommunityService {
             },
         });
         return result.map((r) => r.toJSON() as ManagerAttributes);
+    }
+
+    public static async getPromoter(communityId: number) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const result = await this.ubiPromoter.findOne({
+            include: [
+                {
+                    model: this.community,
+                    as: 'community',
+                    required: true,
+                    attributes: [],
+                    where: {
+                        id: communityId,
+                    },
+                },
+                {
+                    model: this.ubiPromoterSocialMedia,
+                    as: 'socialMedia',
+                },
+                {
+                    model: this.appMediaContent,
+                    as: 'logo',
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                            separate: true,
+                        },
+                    ],
+                },
+            ],
+        });
+        return result !== null ? (result.toJSON() as UbiPromoter) : null;
+    }
+
+    public static async getSuspect(communityId: number) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const result = await this.ubiCommunitySuspect.findOne({
+            where: {
+                communityId,
+                createdAt: {
+                    [Op.lte]: yesterday.toISOString().split('T')[0],
+                },
+            },
+        });
+        return result !== null
+            ? (result.toJSON() as UbiCommunitySuspect)
+            : null;
+    }
+
+    public static async getContract(communityId: number) {
+        const result = await this.ubiCommunityContract.findOne({
+            where: {
+                communityId,
+            },
+        });
+        return result !== null
+            ? (result.toJSON() as UbiCommunityContract)
+            : null;
+    }
+
+    public static async getState(communityId: number) {
+        const result = await this.ubiCommunityState.findOne({
+            where: {
+                communityId,
+            },
+        });
+        return result !== null ? (result.toJSON() as UbiCommunityState) : null;
+    }
+
+    public static async getMetrics(communityId: number) {
+        const result = await this.ubiCommunityDailyMetrics.findAll({
+            where: {
+                communityId,
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1,
+        });
+        return result.length > 0
+            ? (result[0].toJSON() as UbiCommunityDailyMetrics)
+            : null;
     }
 
     public static async getCommunityOnlyByPublicId(
