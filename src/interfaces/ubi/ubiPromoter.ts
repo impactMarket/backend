@@ -4,7 +4,7 @@ import { UbiPromoterSocialMedia } from './ubiPromoterSocialMedia';
 
 export interface UbiPromoter {
     id: number;
-    type: 'organization' | 'company' | 'individual';
+    category: 'organization' | 'company' | 'individual';
     name: string;
     description: string;
     logoMediaId: number;
@@ -14,7 +14,7 @@ export interface UbiPromoter {
 }
 
 export interface UbiPromoterCreation {
-    type: 'organization' | 'company' | 'individual';
+    category: 'organization' | 'company' | 'individual';
     name: string;
     description: string;
     logoMediaId: number;

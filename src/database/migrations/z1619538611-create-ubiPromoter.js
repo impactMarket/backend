@@ -7,7 +7,7 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            type: {
+            category: {
                 type: Sequelize.ENUM('organization', 'company', 'individual'),
                 allowNull: false,
             },

@@ -2,7 +2,7 @@ import { UbiPromoter, UbiPromoterCreation } from '@interfaces/ubi/ubiPromoter';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiPromoterModel extends Model<UbiPromoter, UbiPromoterCreation> {
-    public type!: 'organization' | 'company' | 'individual';
+    public category!: 'organization' | 'company' | 'individual';
     public name!: string;
     public description!: string;
     public logoMediaId!: number;
@@ -16,7 +16,7 @@ export function initializeUbiPromoter(sequelize: Sequelize): void {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            type: {
+            category: {
                 type: DataTypes.ENUM('organization', 'company', 'individual'),
                 allowNull: false,
             },
