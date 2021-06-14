@@ -1,18 +1,18 @@
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
 
-import { UbiOrganizationSocialMedia } from './ubiOrganizationSocialMedia';
+import { UbiPromoterSocialMedia } from './ubiPromoterSocialMedia';
 
-export interface UbiOrganization {
+export interface UbiPromoter {
     id: number;
     name: string;
     description: string;
     logoMediaId: number;
 
     logo?: AppMediaContent;
-    socialMedia?: UbiOrganizationSocialMedia[];
+    socialMedia?: UbiPromoterSocialMedia[];
 }
 
-export interface UbiOrganizationCreation {
+export interface UbiPromoterCreation {
     name: string;
     description: string;
     logoMediaId: number;

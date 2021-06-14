@@ -92,31 +92,31 @@ export function communityAssociation(sequelize: Sequelize) {
     // used to query from the community with incude
     // this should be a belongsTo instead, but we want to use a third table
     sequelize.models.Community.belongsToMany(
-        sequelize.models.UbiOrganizationModel,
+        sequelize.models.UbiPromoterModel,
         {
-            through: sequelize.models.UbiCommunityOrganizationModel,
+            through: sequelize.models.UbiCommunityPromoterModel,
             sourceKey: 'id',
             foreignKey: 'communityId',
-            as: 'organization',
+            as: 'promoter',
         }
     );
-    sequelize.models.UbiOrganizationModel.belongsToMany(
+    sequelize.models.UbiPromoterModel.belongsToMany(
         sequelize.models.Community,
         {
-            through: sequelize.models.UbiCommunityOrganizationModel,
+            through: sequelize.models.UbiCommunityPromoterModel,
             sourceKey: 'id',
-            foreignKey: 'organizationId',
+            foreignKey: 'promoterId',
             as: 'community',
         }
     );
-    sequelize.models.UbiOrganizationModel.hasMany(
-        sequelize.models.UbiOrganizationSocialMediaModel,
+    sequelize.models.UbiPromoterModel.hasMany(
+        sequelize.models.UbiPromoterSocialMediaModel,
         {
-            foreignKey: 'organizationId',
+            foreignKey: 'promoterId',
             as: 'socialMedia',
         }
     );
-    sequelize.models.UbiOrganizationModel.hasOne(
+    sequelize.models.UbiPromoterModel.hasOne(
         sequelize.models.AppMediaContentModel,
         {
             foreignKey: 'id',

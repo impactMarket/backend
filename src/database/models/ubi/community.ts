@@ -6,7 +6,7 @@ import { UbiCommunityDailyState } from '@interfaces/ubi/ubiCommunityDailyState';
 import { UbiCommunityDemographics } from '@interfaces/ubi/ubiCommunityDemographics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
-import { UbiOrganization } from '@interfaces/ubi/ubiOrganization';
+import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { BeneficiaryAttributes } from './beneficiary';
@@ -46,7 +46,7 @@ export interface CommunityAttributes {
     storyCommunity?: StoryCommunity[];
     suspect?: UbiCommunitySuspect[];
     beneficiaries?: BeneficiaryAttributes[];
-    organization?: UbiOrganization;
+    promoter?: UbiPromoter;
     claimLocation?: ClaimLocationAttributes[];
     demographics?: UbiCommunityDemographics[];
     dailyState?: UbiCommunityDailyState[];

@@ -34,8 +34,8 @@ import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
 import { UbiCommunityLabelModel } from '@models/ubi/ubiCommunityLabel';
 import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
-import { UbiOrganizationModel } from '@models/ubi/ubiOrganization';
-import { UbiOrganizationSocialMediaModel } from '@models/ubi/ubiOrganizationSocialMedia';
+import { UbiPromoterModel } from '@models/ubi/ubiPromoter';
+import { UbiPromoterSocialMediaModel } from '@models/ubi/ubiPromoterSocialMedia';
 import { Logger } from '@utils/logger';
 import apicache from 'apicache';
 import redis from 'redis';
@@ -91,10 +91,10 @@ const models: DbModels = {
         .UbiCommunityDailyMetricsModel as ModelCtor<UbiCommunityDailyMetricsModel>,
     ubiCommunityDemographics: sequelize.models
         .UbiCommunityDemographicsModel as ModelCtor<UbiCommunityDemographicsModel>,
-    ubiOrganization: sequelize.models
-        .UbiOrganizationModel as ModelCtor<UbiOrganizationModel>,
-    ubiOrganizationSocialMedia: sequelize.models
-        .UbiOrganizationSocialMediaModel as ModelCtor<UbiOrganizationSocialMediaModel>,
+    ubiPromoter: sequelize.models
+        .UbiPromoterModel as ModelCtor<UbiPromoterModel>,
+    ubiPromoterSocialMedia: sequelize.models
+        .UbiPromoterSocialMediaModel as ModelCtor<UbiPromoterSocialMediaModel>,
     ubiCommunityLabels: sequelize.models
         .UbiCommunityLabelModel as ModelCtor<UbiCommunityLabelModel>,
     ubiRequestChangeParams: sequelize.models

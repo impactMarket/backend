@@ -237,7 +237,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.post(
-        '/picture/:isOrganization?',
+        '/picture/:isPromoter?',
         upload.single('imageFile'),
         authenticateToken,
         controller.pictureAdd

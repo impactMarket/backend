@@ -12,7 +12,7 @@ import { AWS } from './aws';
 
 enum StorageCategory {
     communityCover,
-    organizationLogo,
+    promoterLogo,
     story,
     profile,
 }
@@ -173,7 +173,7 @@ export class ContentStorage {
             case StorageCategory.communityCover:
                 filePrefix = 'cover/';
                 break;
-            case StorageCategory.organizationLogo:
+            case StorageCategory.promoterLogo:
                 filePrefix = 'org-logo/';
                 break;
             case StorageCategory.profile:
@@ -200,8 +200,8 @@ export class ContentStorage {
             case StorageCategory.communityCover:
                 thumbnailSizes = config.thumbnails.community.cover;
                 break;
-            case StorageCategory.organizationLogo:
-                thumbnailSizes = config.thumbnails.organization.logo;
+            case StorageCategory.promoterLogo:
+                thumbnailSizes = config.thumbnails.promoter.logo;
                 break;
             case StorageCategory.profile:
                 thumbnailSizes = config.thumbnails.profile;
@@ -354,7 +354,7 @@ export class ContentStorage {
             return config.aws.bucket.profile;
         } else if (
             category === StorageCategory.communityCover ||
-            category === StorageCategory.organizationLogo
+            category === StorageCategory.promoterLogo
         ) {
             return config.aws.bucket.community;
         }
@@ -427,11 +427,11 @@ export class CommunityContentStorage
     }
 }
 
-export class OrganizationContentStorage
+export class PromoterContentStorage
     extends ContentStorage
     implements IContentStorage {
     uploadContent(file: Express.Multer.File): Promise<AppMediaContent> {
-        return this._processAndUpload(file, StorageCategory.organizationLogo);
+        return this._processAndUpload(file, StorageCategory.promoterLogo);
     }
 
     /**
@@ -441,7 +441,7 @@ export class OrganizationContentStorage
         const filePaths = await this._findContentToDelete(mediaId);
         await this._deleteBulkContentFromS3(
             filePaths,
-            StorageCategory.organizationLogo
+            StorageCategory.promoterLogo
         );
         await this.appMediaContent.destroy({
             where: { id: mediaId },

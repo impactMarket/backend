@@ -34,8 +34,8 @@ import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
 import { UbiCommunityLabelModel } from '@models/ubi/ubiCommunityLabel';
 import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
-import { UbiOrganizationModel } from '@models/ubi/ubiOrganization';
-import { UbiOrganizationSocialMediaModel } from '@models/ubi/ubiOrganizationSocialMedia';
+import { UbiPromoterModel } from '@models/ubi/ubiPromoter';
+import { UbiPromoterSocialMediaModel } from '@models/ubi/ubiPromoterSocialMedia';
 import { ModelCtor, Sequelize } from 'sequelize/types';
 
 export interface DbModels {
@@ -60,8 +60,8 @@ export interface DbModels {
     ubiCommunityDailyState: ModelCtor<UbiCommunityDailyStateModel>;
     ubiCommunityDailyMetrics: ModelCtor<UbiCommunityDailyMetricsModel>;
     ubiCommunityDemographics: ModelCtor<UbiCommunityDemographicsModel>;
-    ubiOrganization: ModelCtor<UbiOrganizationModel>;
-    ubiOrganizationSocialMedia: ModelCtor<UbiOrganizationSocialMediaModel>;
+    ubiPromoter: ModelCtor<UbiPromoterModel>;
+    ubiPromoterSocialMedia: ModelCtor<UbiPromoterSocialMediaModel>;
     ubiCommunityLabels: ModelCtor<UbiCommunityLabelModel>;
     ubiRequestChangeParams: ModelCtor<UbiRequestChangeParamsModel>;
     claim: ModelCtor<Claim>;

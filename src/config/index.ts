@@ -180,7 +180,7 @@ export default {
                 },
             ],
         },
-        organization: {
+        promoter: {
             logo: [
                 {
                     width: 100,
