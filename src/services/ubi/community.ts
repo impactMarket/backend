@@ -1442,6 +1442,7 @@ export default class CommunityService {
             ],
             where: {
                 communityId: community.publicId,
+                active: true,
             },
         });
         return result.map((r) => r.toJSON() as ManagerAttributes);
