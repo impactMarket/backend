@@ -186,10 +186,10 @@ function cron() {
         true
     );
 
-    // every hour
+    // every three hours
     // eslint-disable-next-line no-new
     new CronJob(
-        '12 * * * *',
+        '12 */3 * * *',
         () => {
             internalNotifyLowCommunityFunds()
                 .then(() => {

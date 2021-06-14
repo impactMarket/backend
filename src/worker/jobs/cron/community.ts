@@ -600,35 +600,36 @@ export async function internalNotifyLowCommunityFunds(): Promise<void> {
 
     const communitiesOrdered = await CommunityService.list({
         orderBy: 'out_of_funds',
+        offset: '0',
+        limit: '10',
     });
 
     let result = '*Communities running out of funds:*';
 
-    const communities = communitiesOrdered.rows.slice(0, 10);
+    const communities = communitiesOrdered.rows;
 
     for (let index = 0; index < communities.length; index++) {
         const community = communities[index];
         if (
             community.state &&
             community.state.backers > 0 &&
-            community.state.claimed !== '0'
+            community.state.claimed !== '0' &&
+            community.state.beneficiaries > 1
         ) {
-            const percentageClaimed = parseFloat(
-                new BigNumber(community.state.claimed)
-                    .div(community.state.raised)
-                    .toString()
-            );
             const onContract = parseFloat(
                 new BigNumber(community.state.raised)
                     .minus(community.state.claimed)
                     .div(10 ** 18)
                     .toString()
             );
-            result += `\n\nCommunity: ${
-                community.name
-            } | Remaining: ${Math.round(
-                (1 - percentageClaimed) * 100
-            )}% ($${Math.round(onContract)})`;
+
+            if (onContract < 80) {
+                result += `\n\n($${Math.round(onContract)}) -> ${
+                    community.name
+                } | <http://${
+                    community.contractAddress
+                }|Copy address to clipboard> [${community.contractAddress}]`;
+            }
         }
     }
 
