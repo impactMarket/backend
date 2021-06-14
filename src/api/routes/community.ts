@@ -173,6 +173,7 @@ export default (app: Router): void => {
         cacheWithRedis('10 minutes'),
         controller.findByContractAddress
     );
+
     /**
      * @swagger
      *
@@ -211,7 +212,6 @@ export default (app: Router): void => {
         communityController.create
     );
 
-    route.get('/list/:query?', cacheWithRedis('10 minutes'), controller.list);
     /**
      * @swagger
      *
@@ -242,6 +242,68 @@ export default (app: Router): void => {
         authenticateToken,
         controller.pictureAdd
     );
+
+    /**
+     * @swagger
+     *
+     * /community/list:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: List communities
+     *     parameters:
+     *       - in: query
+     *         name: orderBy
+     *         schema:
+     *           type: string
+     *           enum: [nearest, out_of_funds, newest, bigger]
+     *         required: false
+     *         description: communities list order (bigger by default)
+     *       - in: query
+     *         name: filter
+     *         schema:
+     *           type: string
+     *           enum: [featured]
+     *         required: false
+     *         description: communities filters (no filter by default)
+     *       - in: query
+     *         name: extended
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: include community metrics and contract parameters
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for community pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination
+     *       - in: query
+     *         name: lat
+     *         schema:
+     *           type: number
+     *         required: false
+     *         description: latitude used for nearest location
+     *       - in: query
+     *         name: lng
+     *         schema:
+     *           type: number
+     *         required: false
+     *         description: longitude used for nearest location
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "read:modify":
+     */
+    route.get('/list/:query?', cacheWithRedis('10 minutes'), controller.list);
 
     /**
      * @swagger
