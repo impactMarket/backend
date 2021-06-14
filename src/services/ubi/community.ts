@@ -640,7 +640,7 @@ export default class CommunityService {
                         literal(
                             '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
                         ),
-                        'DESC',
+                        'ASC',
                     ],
                 ];
                 break;
