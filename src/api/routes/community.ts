@@ -299,9 +299,6 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
-     *     security:
-     *     - api_auth:
-     *       - "read:modify":
      */
     route.get('/list/:query?', cacheWithRedis('10 minutes'), controller.list);
 
@@ -341,6 +338,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Historical SSI
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     responses:
      *       "200":
      *         description: OK
@@ -359,6 +363,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Get community dashboard details
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     responses:
      *       "200":
      *         description: OK
@@ -377,6 +388,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Get community claim locations
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     responses:
      *       "200":
      *         description: OK
@@ -395,6 +413,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Get community managers
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     responses:
      *       "200":
      *         description: OK
@@ -409,6 +434,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Get community promoter
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     responses:
      *       "200":
      *         description: OK
@@ -423,6 +455,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Get suspicious community activity
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     responses:
      *       "200":
      *         description: OK
@@ -437,6 +476,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Get community contract UBI parameters
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     responses:
      *       "200":
      *         description: OK
@@ -451,6 +497,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Get community state
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     responses:
      *       "200":
      *         description: OK
@@ -465,6 +518,13 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Get community metrics
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *     responses:
      *       "200":
      *         description: OK
