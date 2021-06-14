@@ -42,10 +42,10 @@ import { initializeInflow } from './ubi/inflow';
 import { initializeManager } from './ubi/manager';
 import { initializeUbiRequestChangeParams } from './ubi/requestChangeParams';
 import { initializeUbiCommunityLabel } from './ubi/ubiCommunityLabel';
-import { initializeUbiCommunityOrganization } from './ubi/ubiCommunityOrganization';
+import { initializeUbiCommunityPromoter } from './ubi/ubiCommunityPromoter';
 import { initializeUbiCommunitySuspect } from './ubi/ubiCommunitySuspect';
-import { initializeUbiOrganization } from './ubi/ubiOrganization';
-import { initializeUbiOrganizationSocialMedia } from './ubi/ubiOrganizationSocialMedia';
+import { initializeUbiPromoter } from './ubi/ubiPromoter';
+import { initializeUbiPromoterSocialMedia } from './ubi/ubiPromoterSocialMedia';
 
 export default function initModels(sequelize: Sequelize): void {
     // app
@@ -77,9 +77,9 @@ export default function initModels(sequelize: Sequelize): void {
     initializeBeneficiaryTransaction(sequelize);
     initializeClaim(sequelize);
     initializeInflow(sequelize);
-    initializeUbiCommunityOrganization(sequelize);
-    initializeUbiOrganization(sequelize);
-    initializeUbiOrganizationSocialMedia(sequelize);
+    initializeUbiCommunityPromoter(sequelize);
+    initializeUbiPromoter(sequelize);
+    initializeUbiPromoterSocialMedia(sequelize);
     initializeUbiCommunityLabel(sequelize);
 
     // others

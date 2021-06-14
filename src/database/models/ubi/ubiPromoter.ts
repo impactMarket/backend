@@ -1,20 +1,14 @@
-import {
-    UbiOrganization,
-    UbiOrganizationCreation,
-} from '@interfaces/ubi/ubiOrganization';
+import { UbiPromoter, UbiPromoterCreation } from '@interfaces/ubi/ubiPromoter';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class UbiOrganizationModel extends Model<
-    UbiOrganization,
-    UbiOrganizationCreation
-> {
+export class UbiPromoterModel extends Model<UbiPromoter, UbiPromoterCreation> {
     public name!: string;
     public description!: string;
     public logoMediaId!: number;
 }
 
-export function initializeUbiOrganization(sequelize: Sequelize): void {
-    UbiOrganizationModel.init(
+export function initializeUbiPromoter(sequelize: Sequelize): void {
+    UbiPromoterModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -40,7 +34,7 @@ export function initializeUbiOrganization(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'ubi_organization',
+            tableName: 'ubi_promoter',
             timestamps: false,
             sequelize,
         }

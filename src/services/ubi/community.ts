@@ -2,7 +2,7 @@ import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
-import { UbiOrganization } from '@interfaces/ubi/ubiOrganization';
+import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
 import {
     Community,
     CommunityAttributes,
@@ -40,10 +40,7 @@ import {
     IManagers,
     IManagersDetails,
 } from '../../types/endpoints';
-import {
-    CommunityContentStorage,
-    OrganizationContentStorage,
-} from '../storage';
+import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
 import CommunityDailyStateService from './communityDailyState';
@@ -62,16 +59,15 @@ export default class CommunityService {
     public static claimLocation = models.claimLocation;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
-    public static ubiOrganization = models.ubiOrganization;
-    public static ubiOrganizationSocialMedia =
-        models.ubiOrganizationSocialMedia;
+    public static ubiPromoter = models.ubiPromoter;
+    public static ubiPromoterSocialMedia = models.ubiPromoterSocialMedia;
     public static ubiCommunityLabels = models.ubiCommunityLabels;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static sequelize = sequelize;
 
     private static communityContentStorage = new CommunityContentStorage();
-    private static organizationContentStorage = new OrganizationContentStorage();
+    private static promoterContentStorage = new PromoterContentStorage();
 
     public static async create(
         requestByAddress: string,
@@ -418,11 +414,11 @@ export default class CommunityService {
     }
 
     public static async pictureAdd(
-        isOrganization: boolean,
+        isPromoter: boolean,
         file: Express.Multer.File
     ) {
-        if (isOrganization) {
-            return this.organizationContentStorage.uploadContent(file);
+        if (isPromoter) {
+            return this.promoterContentStorage.uploadContent(file);
         }
         return this.communityContentStorage.uploadContent(file);
     }
@@ -1147,8 +1143,8 @@ export default class CommunityService {
                     },
                 },
                 {
-                    model: this.ubiOrganization,
-                    as: 'organization',
+                    model: this.ubiPromoter,
+                    as: 'promoter',
                     required: false,
                 },
             ],
@@ -1183,18 +1179,15 @@ export default class CommunityService {
             }
         );
 
-        // because organization as a many-to-many (see association file)
+        // because promoter as a many-to-many (see association file)
         // needs to be broken
-        let organization: UbiOrganization | undefined = undefined;
-        if (
-            community.organization &&
-            (community.organization as any).length > 0
-        ) {
-            organization = (community.organization as any)[0];
+        let promoter: UbiPromoter | undefined = undefined;
+        if (community.promoter && (community.promoter as any).length > 0) {
+            promoter = (community.promoter as any)[0];
         }
         return {
             ...community,
-            organization,
+            promoter,
             state: communityState!,
             contract: communityContract
                 ? (communityContract as any)
@@ -1259,12 +1252,12 @@ export default class CommunityService {
                     },
                 },
                 {
-                    model: this.ubiOrganization,
-                    as: 'organization',
+                    model: this.ubiPromoter,
+                    as: 'promoter',
                     required: false,
                     include: [
                         {
-                            model: this.ubiOrganizationSocialMedia,
+                            model: this.ubiPromoterSocialMedia,
                             as: 'socialMedia',
                         },
                         {

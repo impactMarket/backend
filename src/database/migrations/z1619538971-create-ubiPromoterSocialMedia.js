@@ -1,16 +1,16 @@
 'use strict';
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('ubi_organization_social_media', {
+        return queryInterface.createTable('ubi_promoter_social_media', {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
             },
-            organizationId: {
+            promoterId: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: 'ubi_organization',
+                    model: 'ubi_promoter',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -27,6 +27,6 @@ module.exports = {
         });
     },
     down(queryInterface, Sequelize) {
-        return queryInterface.dropTable('ubi_organization_social_media');
+        return queryInterface.dropTable('ubi_promoter_social_media');
     },
 };

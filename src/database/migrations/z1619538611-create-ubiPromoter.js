@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('ubi_organization', {
+        return queryInterface.createTable('ubi_promoter', {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
@@ -27,6 +27,6 @@ module.exports = {
         });
     },
     down(queryInterface, Sequelize) {
-        return queryInterface.dropTable('ubi_organization');
+        return queryInterface.dropTable('ubi_promoter');
     },
 };

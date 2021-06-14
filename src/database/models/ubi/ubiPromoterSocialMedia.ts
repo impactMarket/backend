@@ -1,33 +1,31 @@
 import {
-    UbiOrganizationSocialMedia,
-    UbiOrganizationSocialMediaCreation,
-} from '@interfaces/ubi/ubiOrganizationSocialMedia';
+    UbiPromoterSocialMedia,
+    UbiPromoterSocialMediaCreation,
+} from '@interfaces/ubi/ubiPromoterSocialMedia';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class UbiOrganizationSocialMediaModel extends Model<
-    UbiOrganizationSocialMedia,
-    UbiOrganizationSocialMediaCreation
+export class UbiPromoterSocialMediaModel extends Model<
+    UbiPromoterSocialMedia,
+    UbiPromoterSocialMediaCreation
 > {
     public id!: number;
-    public organizationId!: string;
+    public promoterId!: string;
     public mediaType!: string;
     public url!: string;
 }
 
-export function initializeUbiOrganizationSocialMedia(
-    sequelize: Sequelize
-): void {
-    UbiOrganizationSocialMediaModel.init(
+export function initializeUbiPromoterSocialMedia(sequelize: Sequelize): void {
+    UbiPromoterSocialMediaModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
             },
-            organizationId: {
+            promoterId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'ubi_organization',
+                    model: 'ubi_promoter',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -43,7 +41,7 @@ export function initializeUbiOrganizationSocialMedia(
             },
         },
         {
-            tableName: 'ubi_organization_social_media',
+            tableName: 'ubi_promoter_social_media',
             timestamps: false,
             sequelize,
         }

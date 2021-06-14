@@ -85,10 +85,7 @@ class CommunityController {
     };
 
     pictureAdd = (req: Request, res: Response) => {
-        CommunityService.pictureAdd(
-            req.params.isOrganization === 'true',
-            req.file
-        )
+        CommunityService.pictureAdd(req.params.isPromoter === 'true', req.file)
             .then((url) => standardResponse(res, 200, true, url))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -352,7 +349,7 @@ const listManagers = (req: RequestWithUser, res: Response) => {
 };
 
 const pictureAdd = (req: Request, res: Response) => {
-    CommunityService.pictureAdd(req.params.isOrganization === 'true', req.file)
+    CommunityService.pictureAdd(req.params.isPromoter === 'true', req.file)
         .then((url) => standardResponse(res, 200, true, url))
         .catch((e) => controllerLogAndFail(e, 400, res));
 };

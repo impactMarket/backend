@@ -1,24 +1,24 @@
 import {
-    UbiCommunityOrganization,
-    UbiCommunityOrganizationCreation,
-} from '@interfaces/ubi/ubiCommunityOrganization';
+    UbiCommunityPromoter,
+    UbiCommunityPromoterCreation,
+} from '@interfaces/ubi/ubiCommunityPromoter';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class UbiCommunityOrganizationModel extends Model<
-    UbiCommunityOrganization,
-    UbiCommunityOrganizationCreation
+export class UbiCommunityPromoterModel extends Model<
+    UbiCommunityPromoter,
+    UbiCommunityPromoterCreation
 > {
-    public organizationId!: number;
+    public promoterId!: number;
     public communityId!: number;
 }
 
-export function initializeUbiCommunityOrganization(sequelize: Sequelize): void {
-    UbiCommunityOrganizationModel.init(
+export function initializeUbiCommunityPromoter(sequelize: Sequelize): void {
+    UbiCommunityPromoterModel.init(
         {
-            organizationId: {
+            promoterId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'ubi_organization',
+                    model: 'ubi_promoter',
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -35,7 +35,7 @@ export function initializeUbiCommunityOrganization(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'ubi_community_organization',
+            tableName: 'ubi_community_promoter',
             timestamps: false,
             sequelize,
         }
