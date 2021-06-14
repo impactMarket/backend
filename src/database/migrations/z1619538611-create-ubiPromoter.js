@@ -7,6 +7,10 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
+            type: {
+                type: Sequelize.ENUM('organization', 'company', 'individual'),
+                allowNull: false,
+            },
             name: {
                 type: Sequelize.STRING(64),
                 allowNull: false,
