@@ -4,6 +4,35 @@ import {
 } from '@interfaces/ubi/ubiCommunityContract';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      UbiCommunityContract:
+ *        type: object
+ *        required:
+ *          - communityId
+ *          - claimAmount
+ *          - maxClaim
+ *          - baseInterval
+ *          - incrementInterval
+ *        properties:
+ *          communityId:
+ *            type: integer
+ *            description: The community id
+ *          claimAmount:
+ *            type: string
+ *            description: Amount per claim, same as in contract with 18 decimals
+ *          maxClaim:
+ *            type: string
+ *            description: Maximum claim per beneficiary, same as in contract with 18 decimals
+ *          baseInterval:
+ *            type: integer
+ *            description: Base interval between claims
+ *          incrementInterval:
+ *            type: integer
+ *            description: Increment interval after each claim
+ */
 export class UbiCommunityContractModel extends Model<
     UbiCommunityContract,
     UbiCommunityContractCreation
