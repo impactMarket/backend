@@ -486,6 +486,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityContract'
      */
     route.get('/:id/contract', controller.getContract);
 
