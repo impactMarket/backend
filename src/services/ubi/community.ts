@@ -1252,27 +1252,6 @@ export default class CommunityService {
                         },
                     },
                 },
-                // {
-                //     model: this.ubiPromoter,
-                //     as: 'promoter',
-                //     required: false,
-                //     include: [
-                //         {
-                //             model: this.ubiPromoterSocialMedia,
-                //             as: 'socialMedia',
-                //         },
-                //         {
-                //             model: this.appMediaContent,
-                //             as: 'logo',
-                //             include: [
-                //                 {
-                //                     model: this.appMediaThumbnail,
-                //                     as: 'thumbnails',
-                //                 },
-                //             ],
-                //         },
-                //     ],
-                // },
                 {
                     model: this.appMediaContent,
                     as: 'cover',

@@ -444,6 +444,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiPromoter'
      */
     route.get('/:id/promoter', controller.getPromoter);
 
@@ -465,6 +469,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunitySuspect'
      */
     route.get('/:id/suspect', controller.getSuspect);
 
@@ -511,6 +519,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityState'
      */
     route.get('/:id/state', controller.getState);
 
@@ -532,6 +544,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityDailyMetrics'
      */
     route.get('/:id/metrics', controller.getMetrics);
 
