@@ -2,6 +2,29 @@ import { AppMediaContent } from '@interfaces/app/appMediaContent';
 
 import { UbiPromoterSocialMedia } from './ubiPromoterSocialMedia';
 
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      UbiPromoter:
+ *        type: object
+ *        required:
+ *          - category
+ *          - name
+ *          - description
+ *        properties:
+ *          category:
+ *            type: string
+ *            description: Promoter gategory
+ *          name:
+ *            type: string
+ *            description: Promoter name
+ *          description:
+ *            type: string
+ *            description: Promoter description
+ *          socialMedia:
+ *            $ref: '#/components/schemas/UbiPromoterSocialMedia'
+ */
 export interface UbiPromoter {
     id: number;
     category: 'organization' | 'company' | 'individual';

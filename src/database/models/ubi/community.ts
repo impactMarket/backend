@@ -6,7 +6,7 @@ import { UbiCommunityDailyState } from '@interfaces/ubi/ubiCommunityDailyState';
 import { UbiCommunityDemographics } from '@interfaces/ubi/ubiCommunityDemographics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
-import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
+// import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { BeneficiaryAttributes } from './beneficiary';
@@ -14,7 +14,7 @@ import { ClaimLocationAttributes } from './claimLocation';
 
 export interface CommunityAttributes {
     id: number; // Note that the `null assertion` `!` is required in strict mode.
-    publicId: string;
+    publicId: string; // TODO: to be removed
     requestByAddress: string;
     contractAddress: string | null;
     name: string;
@@ -30,26 +30,26 @@ export interface CommunityAttributes {
     };
     email: string;
     visibility: 'public' | 'private';
-    coverImage: string;
+    coverImage: string; // TODO: to be removed
     coverMediaId: number;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    started: Date;
+    started: Date; // TODO: to be removed
 
     // timestamps
     createdAt: Date;
     updatedAt: Date;
 
-    metrics?: UbiCommunityDailyMetrics[];
+    metrics?: UbiCommunityDailyMetrics[]; // TODO: to be removed
     cover?: AppMediaContent;
-    contract?: UbiCommunityContract;
-    state?: UbiCommunityState;
-    storyCommunity?: StoryCommunity[];
-    suspect?: UbiCommunitySuspect[];
-    beneficiaries?: BeneficiaryAttributes[];
+    contract?: UbiCommunityContract; // TODO: to be removed
+    state?: UbiCommunityState; // TODO: to be removed
+    storyCommunity?: StoryCommunity[]; // TODO: to be removed
+    suspect?: UbiCommunitySuspect[]; // TODO: to be removed
+    beneficiaries?: BeneficiaryAttributes[]; // TODO: to be removed
     // promoter?: UbiPromoter;
-    claimLocation?: ClaimLocationAttributes[];
-    demographics?: UbiCommunityDemographics[];
-    dailyState?: UbiCommunityDailyState[];
+    claimLocation?: ClaimLocationAttributes[]; // TODO: to be removed
+    demographics?: UbiCommunityDemographics[]; // TODO: to be removed
+    dailyState?: UbiCommunityDailyState[]; // TODO: to be removed
 }
 export interface CommunityCreationAttributes {
     requestByAddress: string;
