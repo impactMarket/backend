@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node';
 import { Logger } from '@utils/logger';
-import bodyParser from 'body-parser';
+// import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Request, Response } from 'express';
 import helmet from 'helmet';
@@ -60,7 +60,7 @@ export default (app: express.Application): void => {
         ];
         urlSchema = 'https';
     }
-    if (swaggerServers.length > 0) {
+    if (swaggerServers.length > 0 && process.env.NODE_ENV !== 'test') {
         const options = {
             swaggerDefinition: {
                 openapi: '3.0.1',
@@ -132,7 +132,8 @@ export default (app: express.Application): void => {
     });
 
     // Middleware that transforms the raw string of req.body into json
-    app.use(bodyParser.json());
+    app.use(express.json());
+    // app.use(express.urlencoded({ extended: true }));
     // Load API routes
     app.use(config.api.prefix, routes());
 

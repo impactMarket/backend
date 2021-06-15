@@ -48,7 +48,7 @@ function validateEnv() {
         MASTER_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         LATEST_MOBILE_APP_VERSION: str({ devDefault: onlyOnTestEnv('0.0.0') }),
         MINIMAL_MOBILE_APP_VERSION: str({ devDefault: onlyOnTestEnv('0.0.1') }),
-        LOG_LEVEL: str({ default: 'verbose' }),
+        LOG_LEVEL: str({ default: 'warn' }),
         FLEEK_STORAGE_KEY_ID: str({ devDefault: onlyOnTestEnv('xyz') }),
         FLEEK_STORAGE_ACCESS_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         COMMUNITY_PLACEHOLDER_IMAGE_URL: str({
