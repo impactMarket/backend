@@ -144,9 +144,14 @@ const models: DbModels = {
         .StoryUserReportModel as ModelCtor<StoryUserReportModel>,
 };
 
-const redisClient = redis.createClient({
-    url: config.redis,
-});
-const cacheWithRedis = apicache.options({ redisClient }).middleware;
+const cacheWithRedis = apicache.options(
+    process.env.NODE_ENV === 'test'
+        ? {}
+        : {
+              redisClient: redis.createClient({
+                  url: config.redis,
+              }),
+          }
+).middleware;
 
-export { sequelize, Sequelize, models, redisClient, cacheWithRedis };
+export { sequelize, Sequelize, models, cacheWithRedis };
