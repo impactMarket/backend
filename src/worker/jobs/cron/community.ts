@@ -565,7 +565,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
 export async function verifyCommunityFunds(): Promise<void> {
     Logger.info('Verifying community funds...');
-    const communitiesState = await CommunityStateService.getAllCommunitiesState();
+    const communitiesState =
+        await CommunityStateService.getAllCommunitiesState();
 
     communitiesState.forEach(async (communityState) => {
         if (communityState.backers > 0 && communityState.claimed !== '0') {
@@ -585,9 +586,10 @@ export async function verifyCommunityFunds(): Promise<void> {
                         await InflowService.getAllBackers(community.publicId),
                         community.publicId
                     );
-                    const pushTokens = await UserService.getPushTokensFromAddresses(
-                        backersAddresses
-                    );
+                    const pushTokens =
+                        await UserService.getPushTokensFromAddresses(
+                            backersAddresses
+                        );
                     notifyBackersCommunityLowFunds(community, pushTokens);
                 }
             }
@@ -604,7 +606,7 @@ export async function internalNotifyLowCommunityFunds(): Promise<void> {
         limit: '10',
     });
 
-    let result = '*Communities running out of funds:*';
+    let result = '';
 
     const communities = communitiesOrdered.rows;
 
@@ -623,7 +625,7 @@ export async function internalNotifyLowCommunityFunds(): Promise<void> {
                     .toString()
             );
 
-            if (onContract < 80) {
+            if (onContract < 150) {
                 result += `\n\n($${Math.round(onContract)}) -> ${
                     community.name
                 } | <http://${
@@ -633,11 +635,13 @@ export async function internalNotifyLowCommunityFunds(): Promise<void> {
         }
     }
 
-    await web.chat.postMessage({
-        channel: 'communities-funds',
-        text: result,
-        mrkdwn: true,
-    });
+    if (result.length > 0) {
+        await web.chat.postMessage({
+            channel: 'communities-funds',
+            text: result,
+            mrkdwn: true,
+        });
+    }
 }
 
 export async function populateCommunityDailyState(): Promise<void> {

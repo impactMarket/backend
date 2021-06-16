@@ -33,8 +33,10 @@ export default async (): Promise<void> => {
     let intervalWhenTxRegWarn: NodeJS.Timeout | undefined = undefined;
     let waitingForResponseAfterTxRegWarn = false;
 
-    const availableCommunities = await CommunityService.listCommunitiesStructOnly();
-    const beneficiariesInPublicCommunities = await BeneficiaryService.getAllAddressesInPublicValidCommunities();
+    const availableCommunities =
+        await CommunityService.listCommunitiesStructOnly();
+    const beneficiariesInPublicCommunities =
+        await BeneficiaryService.getAllAddressesInPublicValidCommunities();
     const subscribers = new ChainSubscribers(
         provider,
         beneficiariesInPublicCommunities,
@@ -186,10 +188,10 @@ function cron() {
         true
     );
 
-    // every three hours
+    // at 7:12pm
     // eslint-disable-next-line no-new
     new CronJob(
-        '12 */3 * * *',
+        '12 19 * * *',
         () => {
             internalNotifyLowCommunityFunds()
                 .then(() => {
