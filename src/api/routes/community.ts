@@ -383,6 +383,35 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /community/{id}/demographics:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community demographics
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityDemographics'
+     */
+    route.get(
+        '/:id/demographics',
+        cacheWithRedis('1 day'),
+        controller.getDemographics
+    );
+
+    /**
+     * @swagger
+     *
      * /community/{id}/claim-location:
      *   get:
      *     tags:

@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize';
 
 export function communityAssociation(sequelize: Sequelize) {
     // used to query from the community with incude
+    // TODO: to be removed
     sequelize.models.Community.hasMany(
         sequelize.models.UbiCommunitySuspectModel,
         {
@@ -18,14 +19,6 @@ export function communityAssociation(sequelize: Sequelize) {
         }
     );
     // used to query from the community with incude
-    sequelize.models.Community.hasMany(
-        sequelize.models.UbiCommunityLabelModel,
-        {
-            foreignKey: 'communityId',
-            as: 'labels',
-        }
-    );
-    // used to query from the community with incude
     sequelize.models.Community.hasOne(sequelize.models.AppMediaContentModel, {
         foreignKey: 'id',
         sourceKey: 'coverMediaId',
@@ -38,20 +31,7 @@ export function communityAssociation(sequelize: Sequelize) {
         as: 'state',
     });
     // used to query from the community with incude
-    sequelize.models.Community.hasMany(
-        sequelize.models.UbiCommunityDemographicsModel,
-        {
-            foreignKey: 'communityId',
-            as: 'demographics',
-        }
-    );
-    // used to query from the community with incude
-    sequelize.models.Community.hasMany(sequelize.models.ClaimLocation, {
-        foreignKey: 'communityId',
-        sourceKey: 'publicId',
-        as: 'claimLocation',
-    });
-    // used to query from the community with incude
+    // TODO: used only once, should be removed
     sequelize.models.Community.hasMany(
         sequelize.models.UbiCommunityDailyStateModel,
         {
@@ -60,6 +40,7 @@ export function communityAssociation(sequelize: Sequelize) {
         }
     );
     // used to query from the community with incude
+    // used only at calcuateCommunitiesMetrics
     sequelize.models.Community.hasMany(
         sequelize.models.UbiCommunityDailyMetricsModel,
         {
@@ -74,14 +55,6 @@ export function communityAssociation(sequelize: Sequelize) {
         sourceKey: 'publicId',
         as: 'inflow',
     });
-    // sequelize.models.Community.hasMany(
-    //     sequelize.models.BeneficiaryTransaction,
-    //     {
-    //         foreignKey: 'communityId',
-    //         sourceKey: 'publicId',
-    //         as: 'beneficiaryTxs',
-    //     }
-    // );
     // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.Beneficiary, {
         foreignKey: 'communityId',
