@@ -42,6 +42,7 @@
         "@interfaces": "dist/interfaces"
     },
     "dependencies": {
+        "@sendgrid/mail": "7.4.4",
         "@sentry/node": "6.7.1",
         "@sentry/tracing": "6.7.1",
         "@slack/events-api": "3.0.1",
