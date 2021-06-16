@@ -1,6 +1,7 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
+import { UbiCommunityLabel } from '@interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
@@ -371,16 +372,14 @@ export default class CommunityService {
 
             const t = await this.sequelize.transaction();
             try {
-                const dbUpdate: [
-                    number,
-                    Community[]
-                ] = await this.community.update(
-                    {
-                        contractAddress: communityContractAddress,
-                        status: 'valid',
-                    },
-                    { returning: true, where: { publicId }, transaction: t }
-                );
+                const dbUpdate: [number, Community[]] =
+                    await this.community.update(
+                        {
+                            contractAddress: communityContractAddress,
+                            status: 'valid',
+                        },
+                        { returning: true, where: { publicId }, transaction: t }
+                    );
                 if (dbUpdate[0] === 1) {
                     notifyManagerAdded(
                         dbUpdate[1][0].requestByAddress,
@@ -655,14 +654,16 @@ export default class CommunityService {
         }
 
         if (query.filter === 'featured') {
-            extendedInclude.push({
-                model: this.ubiCommunityLabels,
-                as: 'labels',
-                where: {
-                    label: 'featured',
-                },
-                duplicating: false,
-            });
+            const featuredIds = (
+                await this.ubiCommunityLabels.findAll({
+                    attributes: ['communityId'],
+                    where: { label: 'featured' },
+                })
+            ).map((c) => (c.toJSON() as UbiCommunityLabel).communityId);
+            extendedWhere = {
+                ...extendedWhere,
+                id: { [Op.in]: featuredIds },
+            };
         }
 
         if (query.extended) {
@@ -1169,16 +1170,15 @@ export default class CommunityService {
             },
             raw: true,
         });
-        const communityDailyMetrics = await this.ubiCommunityDailyMetrics.findAll(
-            {
+        const communityDailyMetrics =
+            await this.ubiCommunityDailyMetrics.findAll({
                 where: {
                     communityId: community.id,
                 },
                 order: [['createdAt', 'DESC']],
                 limit: 1,
                 raw: true,
-            }
-        );
+            });
 
         // because promoter as a many-to-many (see association file)
         // needs to be broken
@@ -1283,13 +1283,6 @@ export default class CommunityService {
                     as: 'contract',
                 },
                 {
-                    model: this.ubiCommunityDemographics,
-                    required: false,
-                    as: 'demographics',
-                    order: [['date', 'DESC']],
-                    limit: 1,
-                },
-                {
                     model: this.ubiCommunityDailyMetrics,
                     required: false,
                     as: 'metrics',
@@ -1387,6 +1380,14 @@ export default class CommunityService {
             },
         });
         return res.map((r) => r.gps);
+    }
+
+    public static async getDemographics(id: string) {
+        return this.ubiCommunityDemographics.findAll({
+            where: { communityId: id },
+            order: [['date', 'DESC']],
+            limit: 1,
+        });
     }
 
     public static async getManagers(communityId: number) {
@@ -1565,16 +1566,15 @@ export default class CommunityService {
             },
             raw: true,
         });
-        const communityDailyMetrics = await this.ubiCommunityDailyMetrics.findAll(
-            {
+        const communityDailyMetrics =
+            await this.ubiCommunityDailyMetrics.findAll({
                 where: {
                     communityId: community.id,
                 },
                 order: [['createdAt', 'DESC']],
                 limit: 1,
                 raw: true,
-            }
-        );
+            });
         return {
             ...community,
             state: communityState!,

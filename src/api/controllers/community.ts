@@ -108,6 +108,12 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    getDemographics = (req: Request, res: Response) => {
+        CommunityService.getDemographics(req.params.id)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     getManagers = (req: Request, res: Response) => {
         CommunityService.getManagers(parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
