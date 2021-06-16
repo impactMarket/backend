@@ -172,21 +172,23 @@ function cron() {
 
     // every eight hours, verify community funds
     // eslint-disable-next-line no-new
-    new CronJob(
-        '45 */8 * * *',
-        () => {
-            verifyCommunityFunds()
-                .then(() => {
-                    CronJobExecutedService.add('verifyCommunityFunds');
-                    Logger.info('verifyCommunityFunds successfully executed!');
-                })
-                .catch((e) => {
-                    Logger.error('verifyCommunityFunds FAILED! ' + e);
-                });
-        },
-        null,
-        true
-    );
+    // TODO: we internally decided to turn this off for a while.
+    // A new better mechanism will replace this.
+    // new CronJob(
+    //     '45 */8 * * *',
+    //     () => {
+    //         verifyCommunityFunds()
+    //             .then(() => {
+    //                 CronJobExecutedService.add('verifyCommunityFunds');
+    //                 Logger.info('verifyCommunityFunds successfully executed!');
+    //             })
+    //             .catch((e) => {
+    //                 Logger.error('verifyCommunityFunds FAILED! ' + e);
+    //             });
+    //     },
+    //     null,
+    //     true
+    // );
 
     // at 7:12pm
     // eslint-disable-next-line no-new
