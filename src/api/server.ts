@@ -55,7 +55,7 @@ export default (app: express.Application): void => {
     } else {
         swaggerServers = [
             {
-                url: process.env.HEROKU_APP_NAME + '.herokuapp.com/api',
+                url: `https://impactmarket-api-${process.env.API_ENVIRONMENT}.herokuapp.com/api`,
             },
         ];
         urlSchema = 'https';
