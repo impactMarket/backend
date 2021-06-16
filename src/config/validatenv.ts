@@ -68,6 +68,9 @@ function validateEnv() {
         IMPACTMARKET_STORY_COVER_ID: num({ devDefault: onlyOnTestEnv(0) }),
         STORY_CRON_ACTIVE: bool({ default: false }),
         SLACK_API: str({ default: 'xyz' }),
+        SENDGRID_API_KEY: str({ default: 'xyz' }),
+        INTERNAL_EMAIL_NOTIFYING: str({ default: 'none@none.none' }),
+        INTERNAL_EMAIL_TO_NOTIFY: str({ default: 'none@none.none' }),
     });
 }
 

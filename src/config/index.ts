@@ -212,4 +212,7 @@ export default {
     claimVerification: validatedEnv.CLAIM_VERIFICATION,
     storyCronActive: validatedEnv.STORY_CRON_ACTIVE,
     slackApi: validatedEnv.SLACK_API,
+    sendgridApi: validatedEnv.SENDGRID_API_KEY,
+    internalEmailNotifying: validatedEnv.INTERNAL_EMAIL_NOTIFYING,
+    internalEmailToNotify: validatedEnv.INTERNAL_EMAIL_TO_NOTIFY,
 };
