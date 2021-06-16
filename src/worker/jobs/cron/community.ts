@@ -87,6 +87,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             claims: string;
             raised: string;
             backers: string;
+            monthlyBackers: string;
             volume: string;
             txs: string;
             reach: string;
@@ -264,6 +265,39 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         raw: true,
     })) as any;
 
+    const communityInflowMonthlyActivity: {
+        id: string;
+        monthlyBackers: string;
+    }[] = (await models.community.findAll({
+        attributes: [
+            'id',
+            [
+                fn('count', fn('distinct', col('inflow."from"'))),
+                'monthlyBackers',
+            ],
+        ],
+        include: [
+            {
+                model: models.inflow,
+                as: 'inflow',
+                attributes: [],
+                required: false,
+                where: literal(
+                    `date(inflow."txAt") >= '${
+                        aMonthAgo.toISOString().split('T')[0]
+                    }'`
+                ),
+            },
+        ],
+        where: {
+            status: 'valid',
+            visibility: 'public',
+        },
+        group: ['Community.id'],
+        order: [['id', 'DESC']],
+        raw: true,
+    })) as any;
+
     const communityEconomicActivity: {
         id: string;
         volume: string;
@@ -398,6 +432,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const cia = communityInflowActivity.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
+        const cima = communityInflowMonthlyActivity.find(
+            (c) => parseInt(c.id, 10) === communitiesState[index].id
+        );
         const cea = communityEconomicActivity.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
@@ -415,6 +452,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             activity: {
                 ...(cca ? cca : { claimed: '0', claims: '0' }),
                 ...(cia ? cia : { raised: '0', backers: '0' }),
+                ...(cima ? cima : { monthlyBackers: '0' }),
                 ...(cea
                     ? cea
                     : { volume: '0', txs: '0', reach: '0', reachOut: '0' }),
@@ -546,6 +584,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 reachOut: parseInt(community.activity.reachOut, 10),
                 volume: community.activity.volume,
                 backers: parseInt(community.activity.backers, 10),
+                monthlyBackers: parseInt(community.activity.monthlyBackers, 10),
                 raised: community.activity.raised,
                 claimed: community.activity.claimed,
                 claims: parseInt(community.activity.claims, 10),
