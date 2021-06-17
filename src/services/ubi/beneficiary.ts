@@ -17,7 +17,6 @@ import { Col, Fn, Literal, Where } from 'sequelize/types/lib/utils';
 import { models, sequelize } from '../../database';
 import CommunityService from './community';
 
-// const db = database();
 export default class BeneficiaryService {
     public static beneficiary = models.beneficiary;
     public static manager = models.manager;
@@ -301,80 +300,6 @@ export default class BeneficiaryService {
             };
         });
         return result;
-    }
-
-    /**
-     * @deprecated Since mobile version 0.1.8
-     */
-    public static async countInCommunity(
-        communityId: string
-    ): Promise<{ active: number; inactive: number }> {
-        const active: { total: string } = (
-            await this.beneficiary.findAll({
-                attributes: [[fn('count', col('address')), 'total']],
-                where: {
-                    communityId,
-                    active: true,
-                },
-                raw: true,
-            })
-        )[0] as any;
-        const inactive: { total: string } = (
-            await this.beneficiary.findAll({
-                attributes: [[fn('count', col('address')), 'total']],
-                where: {
-                    communityId,
-                    active: false,
-                },
-                raw: true,
-            })
-        )[0] as any;
-        return {
-            active: parseInt(active.total, 10),
-            inactive: parseInt(inactive.total, 10),
-        };
-    }
-
-    /**
-     * @deprecated Since mobile version 0.1.8
-     */
-    public static async listAllInCommunity(communityId: string): Promise<{
-        active: IManagerDetailsBeneficiary[];
-        inactive: IManagerDetailsBeneficiary[];
-    }> {
-        // sequelize still has a bug related to eager loading when using global raw:false
-
-        // select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed
-        // from beneficiary b
-        //     left join "user" u on b.address = u.address
-        //     left join claim c on b.address = c.address
-        // where b."communityId" = 'ca16d975-4a11-4cdc-baa9-91442c534125'
-        // group by b.address, u.username, b."txAt"
-        // order by b."txAt" desc
-
-        if (!isUUID(communityId)) {
-            throw new Error('Not valid UUID ' + communityId);
-        }
-
-        const active: IManagerDetailsBeneficiary[] = await this.sequelize.query(
-            'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address where b."communityId" = \'' +
-                communityId +
-                '\' and b.active = true group by b.address, u.username, b."txAt" order by b."txAt" desc',
-            { type: QueryTypes.SELECT }
-        );
-
-        const inactive: IManagerDetailsBeneficiary[] =
-            await this.sequelize.query(
-                'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address where b."communityId" = \'' +
-                    communityId +
-                    '\' and b.active = false group by b.address, u.username, b."txAt" order by b."txAt" desc',
-                { type: QueryTypes.SELECT }
-            );
-
-        return {
-            active,
-            inactive,
-        };
     }
 
     public static async getAllAddresses(): Promise<string[]> {

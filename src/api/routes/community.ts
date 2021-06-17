@@ -117,18 +117,6 @@ export default (app: Router): void => {
         communityController.listManagers
     );
     /**
-     * @deprecated Deprecated in mobile-app@1.0.2
-     */
-    route.get('/managers', authenticateToken, communityController.managers);
-    /**
-     * @deprecated Deprecated in mobile-app@1.0.2
-     */
-    route.get(
-        '/managers/details',
-        authenticateToken,
-        communityController.managersDetails
-    );
-    /**
      * @deprecated
      */
     route.post(

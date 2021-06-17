@@ -57,41 +57,6 @@ export default class ManagerService {
     }
 
     /**
-     * @deprecated Since mobile version 0.1.8
-     */
-    public static async countManagers(communityId: string): Promise<number> {
-        const managers: { total: string } = (
-            await this.manager.findAll({
-                attributes: [[fn('count', col('address')), 'total']],
-                where: { communityId },
-                raw: true,
-            })
-        )[0] as any;
-        return parseInt(managers.total, 10);
-    }
-
-    /**
-     * @deprecated Since mobile version 0.1.8
-     */
-    public static async managersInCommunity(
-        communityId: string
-    ): Promise<IManagerDetailsManager[]> {
-        // select m."user" address, u.username username, m."createdAt" "timestamp"
-        // from manager m left join "user" u on u.address = m."user"
-
-        if (!isUUID(communityId)) {
-            throw new Error('Not valid UUID ' + communityId);
-        }
-
-        return await this.sequelize.query(
-            'select m."address" address, u.username username, m."createdAt" "timestamp" from manager m left join "user" u on u.address = m."address" where m.active = true and m."communityId" = \'' +
-                communityId +
-                '\' order by m."createdAt" desc',
-            { type: QueryTypes.SELECT }
-        );
-    }
-
-    /**
      * @deprecated Since mobile version 1.1.0
      */
     public static async search(

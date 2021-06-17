@@ -414,24 +414,6 @@ const getManagers = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
-/**
- * @deprecated Since mobile version 0.1.8
- */
-const managers = (req: Request, res: Response) => {
-    CommunityService.managers((req as any).user.address)
-        .then((r) => res.send(r))
-        .catch((e) => controllerLogAndFail(e, 400, res));
-};
-
-/**
- * @deprecated Since mobile version 0.1.8
- */
-const managersDetails = (req: Request, res: Response) => {
-    CommunityService.managersDetails((req as any).user.address)
-        .then((r) => res.send(r))
-        .catch((e) => controllerLogAndFail(e, 400, res));
-};
-
 const create = (req: Request, res: Response) => {
     const {
         requestByAddress, // the address making the request (will be community manager)
@@ -584,8 +566,6 @@ export default {
     searchManager,
     listBeneficiaries,
     listManagers,
-    managers,
-    managersDetails,
     add,
     create,
     edit,
