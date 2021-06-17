@@ -1,6 +1,7 @@
 import { User } from '@interfaces/app/user';
 import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
 import { Beneficiary, BeneficiaryAttributes } from '@models/ubi/beneficiary';
+import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isUUID, isAddress } from '@utils/util';
 import {
@@ -145,16 +146,17 @@ export default class BeneficiaryService {
             ['user', 'throughTrust', 'suspect', 'DESC'],
         ]; // it's default order for now.
 
+        const manager = await this.manager.findOne({
+            attributes: ['communityId'],
+            where: { address: managerAddress, active: true },
+        });
+        if (manager === null) {
+            return [];
+        }
+        const communityId = (manager.toJSON() as ManagerAttributes).communityId;
         const x = await this.beneficiary.findAll({
-            where: whereActive,
+            where: { ...whereActive, communityId },
             include: [
-                {
-                    model: this.manager,
-                    as: 'manager',
-                    where: {
-                        address: managerAddress,
-                    },
-                },
                 {
                     model: this.user,
                     as: 'user',
@@ -236,16 +238,17 @@ export default class BeneficiaryService {
             ['user', 'throughTrust', 'suspect', 'DESC'],
         ]; // it's default order for now.
 
+        const manager = await this.manager.findOne({
+            attributes: ['communityId'],
+            where: { address: managerAddress, active: true },
+        });
+        if (manager === null) {
+            return [];
+        }
+        const communityId = (manager.toJSON() as ManagerAttributes).communityId;
         const x = await this.beneficiary.findAll({
-            where: { active },
+            where: { active, communityId },
             include: [
-                {
-                    model: this.manager,
-                    as: 'manager',
-                    where: {
-                        address: managerAddress,
-                    },
-                },
                 {
                     model: this.user,
                     as: 'user',
@@ -335,9 +338,7 @@ export default class BeneficiaryService {
     /**
      * @deprecated Since mobile version 0.1.8
      */
-    public static async listAllInCommunity(
-        communityId: string
-    ): Promise<{
+    public static async listAllInCommunity(communityId: string): Promise<{
         active: IManagerDetailsBeneficiary[];
         inactive: IManagerDetailsBeneficiary[];
     }> {
@@ -362,12 +363,13 @@ export default class BeneficiaryService {
             { type: QueryTypes.SELECT }
         );
 
-        const inactive: IManagerDetailsBeneficiary[] = await this.sequelize.query(
-            'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address where b."communityId" = \'' +
-                communityId +
-                '\' and b.active = false group by b.address, u.username, b."txAt" order by b."txAt" desc',
-            { type: QueryTypes.SELECT }
-        );
+        const inactive: IManagerDetailsBeneficiary[] =
+            await this.sequelize.query(
+                'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address where b."communityId" = \'' +
+                    communityId +
+                    '\' and b.active = false group by b.address, u.username, b."txAt" order by b."txAt" desc',
+                { type: QueryTypes.SELECT }
+            );
 
         return {
             active,

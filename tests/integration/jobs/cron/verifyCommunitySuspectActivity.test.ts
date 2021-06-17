@@ -32,11 +32,6 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         initializeAppUserTrust(sequelize);
         initializeUbiCommunitySuspect(sequelize);
 
-        // used to query from the user with incude
-        sequelize.models.UserModel.hasMany(sequelize.models.Beneficiary, {
-            foreignKey: 'address',
-            as: 'beneficiary',
-        });
         // used to query from the beneficiary with incude
         sequelize.models.Beneficiary.belongsTo(sequelize.models.UserModel, {
             foreignKey: 'address',
@@ -289,8 +284,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 penultimateClaimAt: null,
                 active: false,
                 blocked: false,
-                tx:
-                    '0xa56148b8a8c559bc52e438a8d50afc5c1f68201a07c6c67615d1e2da00999f5b',
+                tx: '0xa56148b8a8c559bc52e438a8d50afc5c1f68201a07c6c67615d1e2da00999f5b',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -303,8 +297,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 penultimateClaimAt: null,
                 active: true,
                 blocked: false,
-                tx:
-                    '0xaf364783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
+                tx: '0xaf364783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -317,8 +310,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 penultimateClaimAt: null,
                 active: true,
                 blocked: false,
-                tx:
-                    '0xb56148b8a8c559bc52e438a8d50afc5c1f68201a07c6c67615d1e2da00999f5b',
+                tx: '0xb56148b8a8c559bc52e438a8d50afc5c1f68201a07c6c67615d1e2da00999f5b',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -331,8 +323,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 penultimateClaimAt: null,
                 active: false,
                 blocked: false,
-                tx:
-                    '0xef364783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
+                tx: '0xef364783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -345,8 +336,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 penultimateClaimAt: null,
                 active: true,
                 blocked: false,
-                tx:
-                    '0xef464783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
+                tx: '0xef464783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -359,8 +349,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 penultimateClaimAt: null,
                 active: true,
                 blocked: false,
-                tx:
-                    '0xc56148b8a8c559bc52e438a8d50afc5c1f68201a07c6c67615d1e2da00999f5b',
+                tx: '0xc56148b8a8c559bc52e438a8d50afc5c1f68201a07c6c67615d1e2da00999f5b',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -373,8 +362,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 penultimateClaimAt: null,
                 active: false,
                 blocked: false,
-                tx:
-                    '0xcf364783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
+                tx: '0xcf364783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
