@@ -3,15 +3,8 @@ import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
 import { Beneficiary, BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
-import { isUUID, isAddress } from '@utils/util';
-import {
-    Op,
-    fn,
-    col,
-    QueryTypes,
-    OrderItem,
-    WhereAttributeHash,
-} from 'sequelize';
+import { isAddress } from '@utils/util';
+import { Op, fn, col, OrderItem, WhereAttributeHash } from 'sequelize';
 import { Col, Fn, Literal, Where } from 'sequelize/types/lib/utils';
 
 import { models, sequelize } from '../../database';
@@ -51,6 +44,16 @@ export default class BeneficiaryService {
         return true;
     }
 
+    public static async remove(
+        address: string,
+        communityId: string
+    ): Promise<void> {
+        await this.beneficiary.update(
+            { active: false },
+            { where: { address, communityId } }
+        );
+    }
+
     public static findByAddress(
         address: string,
         active?: boolean
@@ -58,49 +61,6 @@ export default class BeneficiaryService {
         return this.beneficiary.findOne({
             where: { address, active },
         });
-    }
-
-    public static async getAllAddressesInPublicValidCommunities(): Promise<
-        string[]
-    > {
-        // select address from beneficiary b, community c
-        // where b."communityId" = c."publicId"
-        // and c.status = 'valid'
-        // and c.visibility = 'public'
-        // and b.active = true
-        const publicCommunities: string[] = (
-            await this.community.findAll({
-                attributes: ['publicId'],
-                where: { visibility: 'public', status: 'valid' },
-                raw: true,
-            })
-        ).map((c) => c.publicId);
-
-        return (
-            await this.beneficiary.findAll({
-                attributes: ['address'],
-                where: {
-                    communityId: { [Op.in]: publicCommunities },
-                    active: true,
-                },
-                raw: true,
-            })
-        ).map((b) => b.address);
-    }
-
-    public static listActiveInCommunity(
-        communityId: string
-    ): Promise<
-        { claims: number; lastClaimAt: Date; penultimateClaimAt: Date }[]
-    > {
-        return this.beneficiary.findAll({
-            attributes: ['claims', 'lastClaimAt', 'penultimateClaimAt'],
-            where: {
-                communityId,
-                active: true,
-            },
-            raw: true,
-        }) as any;
     }
 
     public static async search(
@@ -210,6 +170,21 @@ export default class BeneficiaryService {
         return result;
     }
 
+    public static listActiveInCommunity(
+        communityId: string
+    ): Promise<
+        { claims: number; lastClaimAt: Date; penultimateClaimAt: Date }[]
+    > {
+        return this.beneficiary.findAll({
+            attributes: ['claims', 'lastClaimAt', 'penultimateClaimAt'],
+            where: {
+                communityId,
+                active: true,
+            },
+            raw: true,
+        }) as any;
+    }
+
     public static async listBeneficiaries(
         managerAddress: string,
         active: boolean,
@@ -302,6 +277,34 @@ export default class BeneficiaryService {
         return result;
     }
 
+    public static async getAllAddressesInPublicValidCommunities(): Promise<
+        string[]
+    > {
+        // select address from beneficiary b, community c
+        // where b."communityId" = c."publicId"
+        // and c.status = 'valid'
+        // and c.visibility = 'public'
+        // and b.active = true
+        const publicCommunities: string[] = (
+            await this.community.findAll({
+                attributes: ['publicId'],
+                where: { visibility: 'public', status: 'valid' },
+                raw: true,
+            })
+        ).map((c) => c.publicId);
+
+        return (
+            await this.beneficiary.findAll({
+                attributes: ['address'],
+                where: {
+                    communityId: { [Op.in]: publicCommunities },
+                    active: true,
+                },
+                raw: true,
+            })
+        ).map((b) => b.address);
+    }
+
     public static async getAllAddresses(): Promise<string[]> {
         return (
             await this.beneficiary.findAll({
@@ -309,16 +312,6 @@ export default class BeneficiaryService {
                 raw: true,
             })
         ).map((b) => b.address);
-    }
-
-    public static async remove(
-        address: string,
-        communityId: string
-    ): Promise<void> {
-        await this.beneficiary.update(
-            { active: false },
-            { where: { address, communityId } }
-        );
     }
 
     public static async getActiveBeneficiariesLast30Days(): Promise<
