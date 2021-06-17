@@ -64,24 +64,22 @@ export default class GlobalDailyStateService {
         return last.map((g) => g.avgMedianSSI);
     }
 
-    public async getLast(): Promise<GlobalDailyState> {
-        // it was null just once at the system's begin.
-        const last = await this.globalDailyState.findAll({
-            order: [['date', 'DESC']],
-            limit: 1,
-            raw: true,
-        });
-        return last[0];
-    }
+    // public async getLast(): Promise<GlobalDailyState> {
+    //     // it was null just once at the system's begin.
+    //     const last = await this.globalDailyState.findAll({
+    //         order: [['date', 'DESC']],
+    //         limit: 1,
+    //         raw: true,
+    //     });
+    //     return last[0];
+    // }
 
     public async count(): Promise<number> {
         // it was null just once at the system's begin.
         return await this.globalDailyState.count();
     }
 
-    public async sumLast30Days(
-        from: Date
-    ): Promise<{
+    public async sumLast30Days(from: Date): Promise<{
         tClaimed: string;
         tClaims: number;
         tBeneficiaries: number;
