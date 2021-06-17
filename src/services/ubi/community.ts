@@ -1057,48 +1057,6 @@ export default class CommunityService {
         return await ManagerService.search(managerAddress, beneficiaryQuery);
     }
 
-    /**
-     * @deprecated Since mobile version 0.1.8
-     */
-    public static async managers(managerAddress: string): Promise<IManagers> {
-        const manager = await ManagerService.get(managerAddress);
-        if (manager === null) {
-            throw new Error('Not a manager ' + managerAddress);
-        }
-        const managers = await ManagerService.countManagers(
-            manager.communityId
-        );
-        const beneficiaries = await BeneficiaryService.countInCommunity(
-            manager.communityId
-        );
-        return {
-            managers,
-            beneficiaries,
-        };
-    }
-
-    /**
-     * @deprecated Since mobile version 0.1.8
-     */
-    public static async managersDetails(
-        managerAddress: string
-    ): Promise<IManagersDetails> {
-        const manager = await ManagerService.get(managerAddress);
-        if (manager === null) {
-            throw new Error('Not a manager ' + managerAddress);
-        }
-        const managers = await ManagerService.managersInCommunity(
-            manager.communityId
-        );
-        const beneficiaries = await BeneficiaryService.listAllInCommunity(
-            manager.communityId
-        );
-        return {
-            managers,
-            beneficiaries,
-        };
-    }
-
     public static getResquestChangeUbiParams(
         publicId: string
     ): Promise<UbiRequestChangeParams | null> {
