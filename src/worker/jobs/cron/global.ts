@@ -3,15 +3,15 @@ import GlobalDailyStateService from '@services/global/globalDailyState';
 import GlobalGrowthService from '@services/global/globalGrowth';
 import ReachedAddressService from '@services/reachedAddress';
 // import BeneficiaryTransactionService from '@services/ubi/beneficiaryTransaction';
-import ClaimService from '@services/ubi/claim';
-import CommunityContractService from '@services/ubi/communityContract';
-import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
+// import ClaimService from '@services/ubi/claim';
+// import CommunityContractService from '@services/ubi/communityContract';
+// import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
 // import CommunityDailyStateService from '@services/ubi/communityDailyState';
-import InflowService from '@services/ubi/inflow';
+// import InflowService from '@services/ubi/inflow';
 // import { Logger } from '@utils/logger';
 import { calculateGrowth } from '@utils/util';
 import { BigNumber } from 'bignumber.js';
-import { mean } from 'mathjs';
+import { mean, median } from 'mathjs';
 import { col, fn, Op, QueryTypes, Sequelize } from 'sequelize';
 
 import config from '../../../config';
@@ -68,42 +68,37 @@ async function calculateInflowOutflow(
     let totalDistributed = '0';
     let totalBeneficiaries = 0;
 
-    const getPublicCommunitiesSum = async (
-        date: Date
-    ): Promise<{
+    const communitiesYesterday: {
         totalClaimed: string;
         totalClaims: number;
         totalBeneficiaries: number;
         totalRaised: string;
-    }> => {
-        const query = `select sum(cs.claimed) "totalClaimed",
-                        sum(cs.claims) "totalClaims",
-                        sum(cs.beneficiaries) "totalBeneficiaries",
-                        sum(cs.raised) "totalRaised"
-                from ubi_community_daily_state cs, community c
-                where cs."communityId" = c.id
-                and c.status = 'valid'
-                and c.visibility = 'public'
-                and cs.date = '${date.toISOString().split('T')[0]}'`;
-
-        const result = await sequelize.query<{
-            totalClaimed: string;
-            totalClaims: string;
-            totalBeneficiaries: string;
-            totalRaised: string;
-        }>(query, { type: QueryTypes.SELECT });
-
-        return {
-            totalClaimed: result[0].totalClaimed,
-            totalClaims: parseInt(result[0].totalClaims, 10),
-            totalBeneficiaries: parseInt(result[0].totalBeneficiaries, 10),
-            totalRaised: result[0].totalRaised,
-        };
-    };
-
-    const communitiesYesterday = await getPublicCommunitiesSum(
-        yesterdayDateOnly
-    );
+    } = (
+        await models.ubiCommunityDailyState.findAll({
+            attributes: [
+                [fn('sum', col('claimed')), 'totalClaimed'],
+                [fn('sum', col('claims')), 'totalClaims'],
+                [fn('sum', col('beneficiaries')), 'totalBeneficiaries'],
+                [fn('sum', col('raised')), 'totalRaised'],
+            ],
+            where: {
+                date: yesterdayDateOnly.toISOString().split('T')[0],
+                communityId: {
+                    [Op.in]: (
+                        await models.community.findAll({
+                            attributes: ['id'],
+                            where: {
+                                visibility: 'public',
+                                status: 'valid',
+                            },
+                            raw: true,
+                        })
+                    ).map((c) => c.id),
+                },
+            },
+            raw: true,
+        })
+    )[0] as any;
 
     totalRaised = new BigNumber(lastGlobalMetrics.totalRaised)
         .plus(communitiesYesterday.totalRaised)
@@ -114,7 +109,10 @@ async function calculateInflowOutflow(
     totalBeneficiaries =
         lastGlobalMetrics.totalBeneficiaries +
         communitiesYesterday.totalBeneficiaries;
-    const totalBackers = await InflowService.countEvergreenBackers();
+    const totalBackers = await models.inflow.count({
+        distinct: true,
+        col: 'from',
+    });
 
     return {
         totalRaised,
@@ -129,12 +127,125 @@ async function calculateUbiPulse(
     todayMidnightTime: Date,
     yesterdayDateOnly: Date
 ) {
-    const backersAndFunding =
-        await InflowService.uniqueBackersAndFundingLast30Days(
-            todayMidnightTime
+    const uniqueBackersAndFundingLast30Days = async (
+        startDate: Date
+    ): Promise<{
+        backers: number;
+        funding: string;
+    }> => {
+        // 30 days ago, from todayMidnightTime
+        const aMonthAgo = new Date();
+        aMonthAgo.setDate(startDate.getDate() - 30);
+        const result: { backers: string; funding: string } = (
+            await models.inflow.findAll({
+                attributes: [
+                    [fn('count', fn('distinct', col('from'))), 'backers'],
+                    [fn('sum', col('amount')), 'funding'],
+                ],
+                where: {
+                    txAt: {
+                        [Op.lt]: startDate,
+                        [Op.gte]: aMonthAgo,
+                    },
+                },
+                raw: true,
+            })
+        )[0] as any;
+        return {
+            backers: parseInt(result.backers, 10),
+            funding: result.funding,
+        };
+    };
+
+    const getCommunitiesAvg = async (
+        date: Date
+    ): Promise<{
+        medianSSI: number;
+        avgUbiRate: number;
+        avgEstimatedDuration: number;
+    }> => {
+        const fiveDaysAgo = new Date();
+        fiveDaysAgo.setDate(date.getDate() - 5);
+
+        const onlyPublicValidCommunities = (
+            await models.community.findAll({
+                attributes: ['id'],
+                where: {
+                    visibility: 'public',
+                    status: 'valid',
+                    started: {
+                        [Op.lt]: fiveDaysAgo,
+                    },
+                },
+                raw: true,
+            })
+        ).map((c) => c.id);
+
+        // TODO: only communities with more that 5 days
+        const medianSSI = median(
+            (
+                await models.ubiCommunityDailyMetrics.findAll({
+                    attributes: ['ssi'],
+                    where: {
+                        date,
+                        communityId: { [Op.in]: onlyPublicValidCommunities },
+                    },
+                    raw: true,
+                })
+            ).map((m) => m.ssi)
         );
-    const communitiesAvgYesterday =
-        await CommunityDailyMetricsService.getCommunitiesAvg(yesterdayDateOnly);
+
+        const raw = (
+            await models.ubiCommunityDailyMetrics.findAll({
+                attributes: [
+                    [fn('avg', col('ubiRate')), 'avgUbiRate'],
+                    [
+                        fn('avg', col('estimatedDuration')),
+                        'avgEstimatedDuration',
+                    ],
+                ],
+                where: {
+                    date,
+                    communityId: { [Op.in]: onlyPublicValidCommunities },
+                },
+                raw: true,
+            })
+        )[0];
+        return {
+            medianSSI,
+            avgUbiRate: parseFloat((raw as any).avgUbiRate),
+            avgEstimatedDuration: parseFloat((raw as any).avgEstimatedDuration),
+        };
+    };
+
+    const getAvgComulativeUbi = async (): Promise<string> => {
+        const result = (
+            await models.ubiCommunityContract.findAll({
+                attributes: [[fn('avg', col('maxClaim')), 'avgComulativeUbi']],
+                where: {
+                    communityId: {
+                        [Op.in]: (
+                            await models.community.findAll({
+                                attributes: ['id'],
+                                where: {
+                                    visibility: 'public',
+                                    status: 'valid',
+                                },
+                                raw: true,
+                            })
+                        ).map((c) => c.id),
+                    },
+                },
+                raw: true,
+            })
+        )[0] as any;
+        return result.avgComulativeUbi;
+    };
+
+    const backersAndFunding = await uniqueBackersAndFundingLast30Days(
+        todayMidnightTime
+    );
+    const communitiesAvgYesterday = await getCommunitiesAvg(yesterdayDateOnly);
 
     const givingRate = parseFloat(
         new BigNumber(backersAndFunding.funding)
@@ -145,7 +256,7 @@ async function calculateUbiPulse(
             .toString()
     );
     const ubiRate = communitiesAvgYesterday.avgUbiRate;
-    const avgComulativeUbi = await CommunityContractService.avgComulativeUbi();
+    const avgComulativeUbi = await getAvgComulativeUbi();
     const avgUbiDuration = communitiesAvgYesterday.avgEstimatedDuration;
 
     return {
@@ -261,17 +372,64 @@ async function calculateChartsData(
         avgEstimatedDuration: number;
     }
 ) {
-    const reachedAddressService = new ReachedAddressService();
-    const globalDailyStateService = new GlobalDailyStateService();
-    const last4DaysAvgSSI =
-        await globalDailyStateService.getLast4AvgMedianSSI();
+    const getLast4AvgMedianSSI = async (): Promise<number[]> => {
+        // it was null just once at the system's begin.
+        const last = await models.globalDailyState.findAll({
+            attributes: ['avgMedianSSI'],
+            order: [['date', 'DESC']],
+            limit: 4,
+            raw: true,
+        });
+        return last.map((g) => g.avgMedianSSI);
+    };
 
-    const monthlyClaimed = await ClaimService.getMonthlyClaimed(
-        todayMidnightTime
-    );
-    const monthlyRaised = await InflowService.getMonthlyRaised(
-        todayMidnightTime
-    );
+    const getMonthlyClaimed = async (from: Date): Promise<string> => {
+        // 30 days ago, from todayMidnightTime
+        const aMonthAgo = new Date();
+        aMonthAgo.setDate(from.getDate() - 30);
+        //
+        const claimed: { claimed: string } = (
+            await models.claim.findAll({
+                attributes: [[fn('sum', col('amount')), 'claimed']],
+                where: {
+                    txAt: {
+                        [Op.lt]: from,
+                        [Op.gte]: aMonthAgo,
+                    },
+                },
+                raw: true,
+            })
+        )[0] as any;
+        // there will always be claimed.lenght > 0 (were only zero at the begining)
+        return claimed.claimed;
+    };
+
+    const getMonthlyRaised = async (from: Date): Promise<string> => {
+        // 30 days ago, from todayMidnightTime
+        const aMonthAgo = new Date();
+        aMonthAgo.setDate(from.getDate() - 30);
+        const raised: { raised: string } = (
+            await models.inflow.findAll({
+                attributes: [[fn('sum', col('amount')), 'raised']],
+                where: {
+                    txAt: {
+                        [Op.lt]: from,
+                        [Op.gte]: aMonthAgo,
+                    },
+                },
+                raw: true,
+            })
+        )[0] as any;
+        // there will always be raised.lenght > 0 (were only zero at the begining)
+        return raised.raised;
+    };
+
+    const reachedAddressService = new ReachedAddressService();
+    // const globalDailyStateService = new GlobalDailyStateService();
+    const last4DaysAvgSSI = await getLast4AvgMedianSSI();
+
+    const monthlyClaimed = await getMonthlyClaimed(todayMidnightTime);
+    const monthlyRaised = await getMonthlyRaised(todayMidnightTime);
 
     // chart data by day, all communities sum
     // remaining data are in communitiesYesterday

@@ -53,27 +53,6 @@ export default class GlobalDailyStateService {
         };
     }
 
-    public async getLast4AvgMedianSSI(): Promise<number[]> {
-        // it was null just once at the system's begin.
-        const last = await this.globalDailyState.findAll({
-            attributes: ['avgMedianSSI'],
-            order: [['date', 'DESC']],
-            limit: 4,
-            raw: true,
-        });
-        return last.map((g) => g.avgMedianSSI);
-    }
-
-    // public async getLast(): Promise<GlobalDailyState> {
-    //     // it was null just once at the system's begin.
-    //     const last = await this.globalDailyState.findAll({
-    //         order: [['date', 'DESC']],
-    //         limit: 1,
-    //         raw: true,
-    //     });
-    //     return last[0];
-    // }
-
     public async count(): Promise<number> {
         // it was null just once at the system's begin.
         return await this.globalDailyState.count();
