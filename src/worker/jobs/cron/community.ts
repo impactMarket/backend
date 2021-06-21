@@ -98,9 +98,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
     const aMonthAgo = new Date();
     aMonthAgo.setDate(aMonthAgo.getDate() - 30);
-    aMonthAgo.setHours(0, 0, 0, 0);
+    aMonthAgo.setUTCHours(0, 0, 0, 0);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setUTCHours(0, 0, 0, 0);
 
     // query communities data
 
@@ -590,7 +591,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 claims: parseInt(community.activity.claims, 10),
                 fundingRate: parseFloat(community.activity.fundingRate),
             },
-            { where: { communityId: community.id, date: yesterday } }
+            {
+                where: {
+                    communityId: community.id,
+                    date: yesterday,
+                },
+            }
         );
     };
 

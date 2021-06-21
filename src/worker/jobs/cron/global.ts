@@ -2,20 +2,13 @@ import { GlobalDailyStateCreationAttributes } from '@models/global/globalDailySt
 import GlobalDailyStateService from '@services/global/globalDailyState';
 import GlobalGrowthService from '@services/global/globalGrowth';
 import ReachedAddressService from '@services/reachedAddress';
-// import BeneficiaryTransactionService from '@services/ubi/beneficiaryTransaction';
-// import ClaimService from '@services/ubi/claim';
-// import CommunityContractService from '@services/ubi/communityContract';
-// import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
-// import CommunityDailyStateService from '@services/ubi/communityDailyState';
-// import InflowService from '@services/ubi/inflow';
-// import { Logger } from '@utils/logger';
 import { calculateGrowth } from '@utils/util';
 import { BigNumber } from 'bignumber.js';
 import { mean, median } from 'mathjs';
-import { col, fn, Op, QueryTypes, Sequelize } from 'sequelize';
+import { col, fn, Op, Sequelize } from 'sequelize';
 
 import config from '../../../config';
-import { models, sequelize } from '../../../database';
+import { models } from '../../../database';
 
 BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
 
@@ -25,12 +18,12 @@ async function calculateMetricsGrowth(
     const globalGrowthService = new GlobalGrowthService();
 
     const todayMidnightTime = new Date();
-    todayMidnightTime.setHours(0, 0, 0, 0);
+    todayMidnightTime.setUTCHours(0, 0, 0, 0);
     const yesterdayDateOnly = new Date();
-    yesterdayDateOnly.setHours(0, 0, 0, 0);
+    yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
     yesterdayDateOnly.setDate(todayMidnightTime.getDate() - 1);
     const aMonthAgo = new Date();
-    aMonthAgo.setHours(0, 0, 0, 0);
+    aMonthAgo.setUTCHours(0, 0, 0, 0);
     aMonthAgo.setDate(yesterdayDateOnly.getDate() - 30);
 
     const present = await globalDailyStateService.sumLast30Days(
@@ -70,8 +63,8 @@ async function calculateInflowOutflow(
 
     const communitiesYesterday: {
         totalClaimed: string;
-        totalClaims: number;
-        totalBeneficiaries: number;
+        totalClaims: string;
+        totalBeneficiaries: string;
         totalRaised: string;
     } = (
         await models.ubiCommunityDailyState.findAll({
@@ -108,7 +101,7 @@ async function calculateInflowOutflow(
         .toString();
     totalBeneficiaries =
         lastGlobalMetrics.totalBeneficiaries +
-        communitiesYesterday.totalBeneficiaries;
+        parseInt(communitiesYesterday.totalBeneficiaries, 10);
     const totalBackers = await models.inflow.count({
         distinct: true,
         col: 'from',
@@ -134,7 +127,7 @@ async function calculateUbiPulse(
         funding: string;
     }> => {
         // 30 days ago, from todayMidnightTime
-        const aMonthAgo = new Date();
+        const aMonthAgo = new Date(startDate);
         aMonthAgo.setDate(startDate.getDate() - 30);
         const result: { backers: string; funding: string } = (
             await models.inflow.findAll({
@@ -164,36 +157,44 @@ async function calculateUbiPulse(
         avgUbiRate: number;
         avgEstimatedDuration: number;
     }> => {
-        const fiveDaysAgo = new Date();
+        const fiveDaysAgo = new Date(date);
         fiveDaysAgo.setDate(date.getDate() - 5);
-
-        const onlyPublicValidCommunities = (
+        const communitiesId = (
             await models.community.findAll({
                 attributes: ['id'],
                 where: {
                     visibility: 'public',
                     status: 'valid',
                     started: {
-                        [Op.lt]: fiveDaysAgo,
+                        [Op.lte]: fiveDaysAgo,
                     },
                 },
                 raw: true,
             })
         ).map((c) => c.id);
 
-        // TODO: only communities with more that 5 days
-        const medianSSI = median(
-            (
-                await models.ubiCommunityDailyMetrics.findAll({
-                    attributes: ['ssi'],
-                    where: {
-                        date,
-                        communityId: { [Op.in]: onlyPublicValidCommunities },
+        if (communitiesId.length === 0) {
+            return {
+                avgEstimatedDuration: 0,
+                avgUbiRate: 0,
+                medianSSI: 0,
+            };
+        }
+
+        // TODO: should be at least 5 days, 2 beneficiaries and 2 claims
+        const pastSSI = (
+            await models.ubiCommunityDailyMetrics.findAll({
+                attributes: ['ssi'],
+                where: {
+                    date,
+                    communityId: {
+                        [Op.in]: communitiesId,
                     },
-                    raw: true,
-                })
-            ).map((m) => m.ssi)
-        );
+                },
+                raw: true,
+            })
+        ).map((m) => m.ssi);
+        const medianSSI = pastSSI.length > 2 ? median(pastSSI) : 0;
 
         const raw = (
             await models.ubiCommunityDailyMetrics.findAll({
@@ -206,15 +207,15 @@ async function calculateUbiPulse(
                 ],
                 where: {
                     date,
-                    communityId: { [Op.in]: onlyPublicValidCommunities },
+                    communityId: { [Op.in]: communitiesId },
                 },
                 raw: true,
             })
-        )[0];
+        )[0] as any;
         return {
             medianSSI,
-            avgUbiRate: parseFloat((raw as any).avgUbiRate),
-            avgEstimatedDuration: parseFloat((raw as any).avgEstimatedDuration),
+            avgUbiRate: parseFloat(raw.avgUbiRate),
+            avgEstimatedDuration: parseFloat(raw.avgEstimatedDuration),
         };
     };
 
@@ -385,7 +386,7 @@ async function calculateChartsData(
 
     const getMonthlyClaimed = async (from: Date): Promise<string> => {
         // 30 days ago, from todayMidnightTime
-        const aMonthAgo = new Date();
+        const aMonthAgo = new Date(from);
         aMonthAgo.setDate(from.getDate() - 30);
         //
         const claimed: { claimed: string } = (
@@ -406,7 +407,7 @@ async function calculateChartsData(
 
     const getMonthlyRaised = async (from: Date): Promise<string> => {
         // 30 days ago, from todayMidnightTime
-        const aMonthAgo = new Date();
+        const aMonthAgo = new Date(from);
         aMonthAgo.setDate(from.getDate() - 30);
         const raised: { raised: string } = (
             await models.inflow.findAll({
@@ -461,9 +462,9 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     // const reachedAddressService = new ReachedAddressService();
     const globalDailyStateService = new GlobalDailyStateService();
     const todayMidnightTime = new Date();
-    todayMidnightTime.setHours(0, 0, 0, 0);
+    todayMidnightTime.setUTCHours(0, 0, 0, 0);
     const yesterdayDateOnly = new Date(); // yesterdayDateOnly
-    yesterdayDateOnly.setHours(0, 0, 0, 0);
+    yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
     yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
 
     // get last global metrics
@@ -544,8 +545,8 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         date: yesterdayDateOnly,
         avgMedianSSI: Math.round(avgMedianSSI * 100) / 100,
         claimed: communitiesYesterday.totalClaimed,
-        claims: communitiesYesterday.totalClaims,
-        beneficiaries: communitiesYesterday.totalBeneficiaries,
+        claims: parseInt(communitiesYesterday.totalClaims, 10),
+        beneficiaries: parseInt(communitiesYesterday.totalBeneficiaries, 10),
         raised: communitiesYesterday.totalRaised,
         backers: backersAndFunding.backers,
         volume,
