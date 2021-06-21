@@ -191,9 +191,9 @@ describe('#calcuateGlobalMetrics()', () => {
             avgComulativeUbi: '450000000000000000000',
             avgUbiDuration: 17.64,
             totalVolume: '1500000000000000000',
-            totalTransactions: 2n,
-            totalReach: 2n,
-            totalReachOut: 1n,
+            totalTransactions: BigInt(2),
+            totalReach: BigInt(2),
+            totalReachOut: BigInt(1),
         });
     });
 });
