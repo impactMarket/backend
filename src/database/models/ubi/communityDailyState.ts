@@ -20,7 +20,6 @@ export class UbiCommunityDailyStateModel extends Model<
     public transactions!: number;
     public reach!: number;
     public reachOut!: number;
-    public ubiRate!: number;
     public fundingRate!: number;
     public date!: Date;
 
@@ -88,10 +87,6 @@ export function initializeUbiCommunityDailyState(sequelize: Sequelize): void {
             },
             reachOut: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
-                defaultValue: 0,
-            },
-            ubiRate: {
-                type: DataTypes.FLOAT,
                 defaultValue: 0,
             },
             fundingRate: {

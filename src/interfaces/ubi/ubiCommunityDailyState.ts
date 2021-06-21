@@ -11,7 +11,6 @@ export interface UbiCommunityDailyState {
     transactions: number;
     reach: number;
     reachOut: number;
-    ubiRate: number;
     fundingRate: number;
     date: Date;
 

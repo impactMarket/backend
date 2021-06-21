@@ -62,10 +62,6 @@ module.exports = {
                 type: Sequelize.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
             },
-            ubiRate: {
-                type: Sequelize.FLOAT,
-                defaultValue: 0,
-            },
             fundingRate: {
                 type: Sequelize.FLOAT,
                 defaultValue: 0,
