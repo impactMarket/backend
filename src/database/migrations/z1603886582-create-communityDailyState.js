@@ -70,14 +70,6 @@ module.exports = {
                 type: Sequelize.DATEONLY,
                 allowNull: false,
             },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-            },
         });
     },
     down: (queryInterface) => {

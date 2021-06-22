@@ -718,12 +718,3 @@ export async function internalNotifyLowCommunityFunds(): Promise<void> {
         });
     }
 }
-
-export async function populateCommunityDailyState(): Promise<void> {
-    Logger.info('Inserting community empty daily state...');
-    const communities = await CommunityService.listCommunitiesStructOnly();
-
-    communities.forEach((community) => {
-        CommunityDailyStateService.populateNext5Days(community.id);
-    });
-}
