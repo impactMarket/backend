@@ -1,7 +1,3 @@
-import GlobalDailyStateService from '@services/global/globalDailyState';
-import ReachedAddressService from '@services/reachedAddress';
-import CommunityDailyStateService from '@services/ubi/communityDailyState';
-import InflowService from '@services/ubi/inflow';
 import systemValidators from '@validators/system';
 import { Router } from 'express';
 
@@ -9,8 +5,6 @@ import { models } from '../../database';
 
 export default (app: Router): void => {
     const subscribersModel = models.subscribers;
-    const reachedAddressService = new ReachedAddressService();
-    const globalDailyStateService = new GlobalDailyStateService();
     app.get('/clock', (req, res) => res.json(new Date().getTime()));
 
     app.post('/subscribe', systemValidators.subscribe, (req, res) => {
