@@ -2,7 +2,6 @@ import { CommunityAttributes } from '@models/ubi/community';
 import UserService from '@services/app/user';
 import NotifiedBackerService from '@services/notifiedBacker';
 import CommunityService from '@services/ubi/community';
-import CommunityDailyStateService from '@services/ubi/communityDailyState';
 import CommunityStateService from '@services/ubi/communityState';
 import InflowService from '@services/ubi/inflow';
 import { WebClient } from '@slack/web-api';
