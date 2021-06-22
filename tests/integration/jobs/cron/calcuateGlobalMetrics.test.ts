@@ -4,14 +4,12 @@ import tk from 'timekeeper';
 
 import { models } from '../../../../src/database';
 import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
-import { UbiCommunityDailyStateCreation } from '../../../../src/interfaces/ubi/ubiCommunityDailyState';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import { calcuateGlobalMetrics } from '../../../../src/worker/jobs/cron/global';
 import BeneficiaryFactory from '../../../factories/beneficiary';
 import BeneficiaryTransactionFactory from '../../../factories/beneficiaryTransaction';
 import ClaimFactory from '../../../factories/claim';
 import CommunityFactory from '../../../factories/community';
-import UbiCommunityDailyStateFactory from '../../../factories/communityDailyState';
 import InflowFactory from '../../../factories/inflow';
 import UserFactory from '../../../factories/user';
 import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
@@ -36,6 +34,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await truncate(sequelize, 'Community');
         await truncate(sequelize, 'UbiCommunityDailyStateModel');
         await truncate(sequelize, 'GlobalDailyState');
+        await truncate(sequelize, 'ReachedAddress');
     });
 
     it('first day, one community', async () => {
@@ -69,14 +68,6 @@ describe('#calcuateGlobalMetrics()', () => {
                 updatedAt: new Date(),
             },
         };
-        const day = new Date();
-        day.setDate(day.getDate() - 1);
-        const days: UbiCommunityDailyStateCreation[] = [];
-        for (let index = 0; index < 7; index++) {
-            days.push({ communityId: communities[0].id, date: new Date(day) });
-            day.setDate(day.getDate() + 1);
-        }
-        await UbiCommunityDailyStateFactory(days);
         await InflowFactory(community);
         await InflowFactory(community);
         await InflowFactory(community);

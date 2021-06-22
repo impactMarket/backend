@@ -1,28 +1,14 @@
 import { assert } from 'chai';
 import { Sequelize } from 'sequelize';
 
-import { initializeUser } from '../../../src/database/models/app/user';
-import { initializeReachedAddress } from '../../../src/database/models/reachedAddress';
-import { initializeBeneficiary } from '../../../src/database/models/ubi/beneficiary';
-import { initializeCommunity } from '../../../src/database/models/ubi/community';
 import ReachedAddressService from '../../../src/services/reachedAddress';
+import { sequelizeSetup } from '../../utils/sequelizeSetup';
 
 describe('reachedAddress', () => {
-    let sequelize;
+    let sequelize: Sequelize;
     before(async () => {
-        const dbConfig: any = {
-            dialect: 'postgres',
-            protocol: 'postgres',
-            native: true,
-            logging: false,
-            query: { raw: true }, // I wish, eager loading gets fixed
-        };
-        sequelize = new Sequelize(process.env.DATABASE_URL!, dbConfig);
-
-        initializeUser(sequelize);
-        initializeReachedAddress(sequelize);
-        initializeBeneficiary(sequelize);
-        initializeCommunity(sequelize);
+        sequelize = sequelizeSetup();
+        await sequelize.sync();
 
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -117,8 +103,7 @@ describe('reachedAddress', () => {
                 penultimateClaimAt: null,
                 active: true,
                 blocked: false,
-                tx:
-                    '0xb56148b8a8c559bc52e438a8d50afc5c1f68201a07c6c67615d1e2da00999f5b',
+                tx: '0xb56148b8a8c559bc52e438a8d50afc5c1f68201a07c6c67615d1e2da00999f5b',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -131,8 +116,7 @@ describe('reachedAddress', () => {
                 penultimateClaimAt: null,
                 active: false,
                 blocked: false,
-                tx:
-                    '0xef364783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
+                tx: '0xef364783a779a9787ec590a3b40ba53915713c8c10315f98740819321b3423d9',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
