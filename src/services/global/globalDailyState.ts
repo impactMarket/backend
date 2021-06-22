@@ -160,4 +160,53 @@ export default class GlobalDailyStateService {
             avgMedianSSI: g.avgMedianSSI,
         }));
     }
+
+    public async notYetCountedToday() {
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+
+        const communitiesPublicId = (
+            await models.community.findAll({
+                attributes: ['publicId'],
+                where: { status: 'valid', visibility: 'public' },
+            })
+        ).map((c) => c.publicId);
+
+        const claimed: string = (
+            (
+                await models.claim.findAll({
+                    attributes: [[fn('sum', col('amount')), 'claimed']],
+                    where: {
+                        txAt: { [Op.gte]: today },
+                        communityId: { [Op.in]: communitiesPublicId },
+                    },
+                })
+            )[0] as any
+        ).claimed;
+
+        const raised: string = (
+            (
+                await models.inflow.findAll({
+                    attributes: [[fn('sum', col('amount')), 'raised']],
+                    where: {
+                        txAt: { [Op.gte]: today },
+                        communityId: { [Op.in]: communitiesPublicId },
+                    },
+                })
+            )[0] as any
+        ).raised;
+
+        const beneficiaries = await models.beneficiary.count({
+            where: {
+                txAt: { [Op.gte]: today },
+                communityId: { [Op.in]: communitiesPublicId },
+            },
+        });
+
+        return {
+            claimed,
+            raised,
+            beneficiaries,
+        };
+    }
 }
