@@ -22,10 +22,6 @@ export class UbiCommunityDailyStateModel extends Model<
     public reachOut!: number;
     public fundingRate!: number;
     public date!: Date;
-
-    // timestamps!
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
 }
 
 export function initializeUbiCommunityDailyState(sequelize: Sequelize): void {
@@ -97,18 +93,11 @@ export function initializeUbiCommunityDailyState(sequelize: Sequelize): void {
                 type: DataTypes.DATEONLY,
                 allowNull: false,
             },
-            createdAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
         },
         {
             tableName: 'ubi_community_daily_state',
             sequelize,
+            timestamps: false,
         }
     );
 }

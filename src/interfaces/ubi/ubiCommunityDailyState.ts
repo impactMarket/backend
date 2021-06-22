@@ -13,10 +13,6 @@ export interface UbiCommunityDailyState {
     reachOut: number;
     fundingRate: number;
     date: Date;
-
-    // timestamps
-    createdAt: Date;
-    updatedAt: Date;
 }
 export interface UbiCommunityDailyStateCreation {
     communityId: number;
