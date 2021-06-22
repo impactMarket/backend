@@ -93,6 +93,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             reach: string;
             reachOut: string;
             fundingRate: string;
+            newBeneficiaries: string;
         };
     };
 
@@ -223,6 +224,36 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                         ),
                     },
                 ],
+            },
+        ],
+        where: {
+            status: 'valid',
+            visibility: 'public',
+        },
+        group: ['Community.id'],
+        order: [['id', 'DESC']],
+        raw: true,
+    })) as any;
+
+    const communityNewBeneficiaryActivity: {
+        id: string;
+        newBeneficiaries: string;
+    }[] = (await models.community.findAll({
+        attributes: [
+            'id',
+            [fn('count', col('beneficiaries.address')), 'newBeneficiaries'],
+        ],
+        include: [
+            {
+                model: models.beneficiary,
+                as: 'beneficiaries',
+                attributes: [],
+                required: false,
+                where: literal(
+                    `date("beneficiaries"."txAt") = '${
+                        yesterday.toISOString().split('T')[0]
+                    }'`
+                ),
             },
         ],
         where: {
@@ -442,6 +473,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const cm = communityMonthly.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
+        const cnb = communityNewBeneficiaryActivity.find(
+            (c) => parseInt(c.id, 10) === communitiesState[index].id
+        );
         communities.push({
             ...communitiesState[index],
             beneficiariesClaiming: cn
@@ -464,6 +498,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                           .multipliedBy(100)
                           .toFixed(2, 1)
                     : '0',
+                ...(cnb ? cnb : { newBeneficiaries: '0' }),
             },
         });
     }
@@ -578,26 +613,21 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             estimatedDuration,
             date: yesterday,
         });
-        await models.ubiCommunityDailyState.update(
-            {
-                transactions: parseInt(community.activity.txs, 10),
-                reach: parseInt(community.activity.reach, 10),
-                reachOut: parseInt(community.activity.reachOut, 10),
-                volume: community.activity.volume,
-                backers: parseInt(community.activity.backers, 10),
-                monthlyBackers: parseInt(community.activity.monthlyBackers, 10),
-                raised: community.activity.raised,
-                claimed: community.activity.claimed,
-                claims: parseInt(community.activity.claims, 10),
-                fundingRate: parseFloat(community.activity.fundingRate),
-            },
-            {
-                where: {
-                    communityId: community.id,
-                    date: yesterday,
-                },
-            }
-        );
+        await models.ubiCommunityDailyState.create({
+            transactions: parseInt(community.activity.txs, 10),
+            reach: parseInt(community.activity.reach, 10),
+            reachOut: parseInt(community.activity.reachOut, 10),
+            volume: community.activity.volume,
+            backers: parseInt(community.activity.backers, 10),
+            monthlyBackers: parseInt(community.activity.monthlyBackers, 10),
+            raised: community.activity.raised,
+            claimed: community.activity.claimed,
+            claims: parseInt(community.activity.claims, 10),
+            fundingRate: parseFloat(community.activity.fundingRate),
+            beneficiaries: parseInt(community.activity.newBeneficiaries, 10),
+            communityId: community.id,
+            date: yesterday,
+        });
     };
 
     const pending: Promise<void>[] = [];

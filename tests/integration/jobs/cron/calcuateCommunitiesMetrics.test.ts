@@ -18,11 +18,11 @@ import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
 describe('calcuateCommunitiesMetrics', () => {
     let communities: any[] = [];
     let sequelize: Sequelize;
-    const ubiCommunityDailyStateUpdate = stub(
+    const ubiCommunityDailyStateCreate = stub(
         models.ubiCommunityDailyState,
-        'update'
+        'create'
     );
-    ubiCommunityDailyStateUpdate.returns(Promise.resolve({} as any));
+    ubiCommunityDailyStateCreate.returns(Promise.resolve({} as any));
     before(async () => {
         sequelize = sequelizeSetup();
     });
@@ -99,7 +99,7 @@ describe('calcuateCommunitiesMetrics', () => {
             tk.travel(
                 new Date().getTime() + 1000 * 60 * 60 * 24 + 30 * 60 * 1000
             );
-            ubiCommunityDailyStateUpdate.resetHistory();
+            ubiCommunityDailyStateCreate.resetHistory();
         });
 
         after(async () => {
@@ -113,25 +113,22 @@ describe('calcuateCommunitiesMetrics', () => {
 
         it('few claims', async () => {
             await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateUpdate, 1);
-            assert.calledWith(
-                ubiCommunityDailyStateUpdate.getCall(0),
-                {
-                    transactions: 3,
-                    reach: 3,
-                    reachOut: 2,
-                    volume: '2500000000000000000',
-                    backers: 1,
-                    monthlyBackers: 3,
-                    raised: match.any,
-                    claimed: '2000000000000000000',
-                    claims: 2,
-                    fundingRate: 80,
-                },
-                {
-                    where: { communityId: communities[0].id, date: match.any },
-                }
-            );
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 3,
+                reach: 3,
+                reachOut: 2,
+                volume: '2500000000000000000',
+                backers: 1,
+                monthlyBackers: 3,
+                raised: match.any,
+                claimed: '2000000000000000000',
+                claims: 2,
+                fundingRate: 80,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 0,
+            });
         });
     });
 
@@ -196,7 +193,7 @@ describe('calcuateCommunitiesMetrics', () => {
             tk.travel(
                 new Date().getTime() + 1000 * 60 * 60 * 24 + 30 * 60 * 1000
             );
-            ubiCommunityDailyStateUpdate.resetHistory();
+            ubiCommunityDailyStateCreate.resetHistory();
         });
 
         after(async () => {
@@ -210,25 +207,22 @@ describe('calcuateCommunitiesMetrics', () => {
 
         it('few claims', async () => {
             await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateUpdate, 1);
-            assert.calledWith(
-                ubiCommunityDailyStateUpdate.getCall(0),
-                {
-                    transactions: 0,
-                    reach: 0,
-                    reachOut: 0,
-                    volume: '0',
-                    backers: 1,
-                    monthlyBackers: 3,
-                    raised: match.any,
-                    claimed: '2000000000000000000',
-                    claims: 2,
-                    fundingRate: match.any,
-                },
-                {
-                    where: { communityId: communities[0].id, date: match.any },
-                }
-            );
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 1,
+                monthlyBackers: 3,
+                raised: match.any,
+                claimed: '2000000000000000000',
+                claims: 2,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 0,
+            });
         });
     });
 
@@ -278,7 +272,7 @@ describe('calcuateCommunitiesMetrics', () => {
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await ClaimFactory(beneficiaries[1], community);
-            ubiCommunityDailyStateUpdate.resetHistory();
+            ubiCommunityDailyStateCreate.resetHistory();
         });
 
         after(async () => {
@@ -292,25 +286,22 @@ describe('calcuateCommunitiesMetrics', () => {
 
         it('few claims', async () => {
             await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateUpdate, 1);
-            assert.calledWith(
-                ubiCommunityDailyStateUpdate.getCall(0),
-                {
-                    transactions: 0,
-                    reach: 0,
-                    reachOut: 0,
-                    volume: '0',
-                    backers: 2,
-                    monthlyBackers: 2,
-                    raised: match.any,
-                    claimed: '2000000000000000000',
-                    claims: 2,
-                    fundingRate: match.any,
-                },
-                {
-                    where: { communityId: communities[0].id, date: match.any },
-                }
-            );
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 2,
+                monthlyBackers: 2,
+                raised: match.any,
+                claimed: '2000000000000000000',
+                claims: 2,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 2,
+            });
         });
     });
 
@@ -346,7 +337,7 @@ describe('calcuateCommunitiesMetrics', () => {
             };
             await InflowFactory(community);
             await BeneficiaryFactory(users, community.publicId);
-            ubiCommunityDailyStateUpdate.resetHistory();
+            ubiCommunityDailyStateCreate.resetHistory();
         });
 
         after(async () => {
@@ -360,7 +351,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
         it('few claims', async () => {
             await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateUpdate, 0);
+            assert.callCount(ubiCommunityDailyStateCreate, 0);
         });
     });
 
@@ -400,7 +391,7 @@ describe('calcuateCommunitiesMetrics', () => {
             tk.travel(
                 new Date().getTime() + 1000 * 60 * 60 * 24 * 3 + 30 * 60 * 1000
             );
-            ubiCommunityDailyStateUpdate.resetHistory();
+            ubiCommunityDailyStateCreate.resetHistory();
         });
 
         after(async () => {
@@ -414,7 +405,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
         it('few claims', async () => {
             await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateUpdate, 0);
+            assert.callCount(ubiCommunityDailyStateCreate, 0);
         });
     });
 });
