@@ -38,14 +38,13 @@ export function userAssociation(sequelize: Sequelize) {
     });
 
     // used to query from the user with incude
-    // TODO: maybe remove
     sequelize.models.UserModel.belongsToMany(
         sequelize.models.AppUserTrustModel,
         {
             through: sequelize.models.AppUserThroughTrustModel,
             foreignKey: 'userAddress',
             sourceKey: 'address',
-            as: 'throughTrust',
+            as: 'trust',
         }
     );
 

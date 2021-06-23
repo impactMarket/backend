@@ -154,7 +154,7 @@ export default (app: Router): void => {
         communityController.getHistoricalSSI
     );
 
-    // new
+    // --------------------------------------------------------------- new
 
     route.get(
         '/address/:address',
