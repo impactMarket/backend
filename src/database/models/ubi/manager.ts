@@ -16,7 +16,7 @@ export interface ManagerAttributes {
     user?: User;
     community?: CommunityAttributes;
 }
-interface ManagerCreationAttributes {
+export interface ManagerCreationAttributes {
     address: string;
     communityId: string;
 }

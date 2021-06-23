@@ -124,7 +124,7 @@ export default class BeneficiaryService {
                         {
                             model: this.appUserTrust,
                             as: 'trust',
-                            separate: true,
+                            // separate: true,
                         },
                     ],
                 },
@@ -200,7 +200,7 @@ export default class BeneficiaryService {
                         {
                             model: this.appUserTrust,
                             as: 'trust',
-                            separate: true,
+                            // separate: true,
                         },
                     ],
                 },

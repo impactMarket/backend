@@ -2,7 +2,7 @@ import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
 
 import { AppMediaContent } from './appMediaContent';
-import { AppUserTrust } from './appUserTrust';
+import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
 
 export interface User {
     address: string;
@@ -31,5 +31,9 @@ export interface UserCreationAttributes {
     address: string;
     language: string;
     currency?: string;
+    gender?: string;
+    suspect?: boolean; // for test purposes
     pushNotificationToken: string;
+
+    trust?: AppUserTrustCreation;
 }
