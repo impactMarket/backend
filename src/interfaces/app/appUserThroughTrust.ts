@@ -3,6 +3,6 @@ export interface AppUserThroughTrust {
     appUserTrustId: number;
 }
 export interface AppUserThroughTrustCreation {
-    userAddress: string;
-    appUserTrustId: number;
+    userAddress?: string;
+    appUserTrustId?: number;
 }
