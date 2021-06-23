@@ -1,5 +1,4 @@
 import { User } from '@interfaces/app/user';
-import { Op } from 'sequelize';
 
 import { models } from '../../../database';
 
@@ -8,7 +7,7 @@ export async function verifyUserSuspectActivity(): Promise<void> {
         include: [
             {
                 model: models.appUserTrust,
-                as: 'throughTrust',
+                as: 'trust',
                 include: [
                     {
                         model: models.appUserTrust,
@@ -20,45 +19,32 @@ export async function verifyUserSuspectActivity(): Promise<void> {
     });
     for (let c = 0; c < users.length; c++) {
         const user = users[c].toJSON() as User;
-        if (user.throughTrust && user.throughTrust.length > 0) {
-            const suspectInId: number[] = [];
-            const couldBeSuspect = user.throughTrust.filter((tt) => {
+        if (user.trust && user.trust.length > 0) {
+            const couldBeSuspect = user.trust.filter((tt) => {
                 if (tt.selfTrust && tt.selfTrust.length > 1) {
-                    suspectInId.push(tt.id);
                     return true;
                 }
                 return false;
             });
             if (couldBeSuspect.length > 0) {
-                await models.appUserTrust.update(
+                await models.user.update(
                     {
                         suspect: true,
                     },
                     {
-                        where: { id: { [Op.in]: suspectInId } },
+                        where: { address: user.address },
                         returning: false,
                     }
                 );
             } else {
                 // was it suspect before?
-                const wasSuspect = user.throughTrust.filter((tt) => {
-                    if (
-                        tt.selfTrust &&
-                        tt.selfTrust.length === 1 &&
-                        tt.selfTrust[0].suspect
-                    ) {
-                        suspectInId.push(tt.id);
-                        return true;
-                    }
-                    return false;
-                });
-                if (wasSuspect.length > 0) {
-                    await models.appUserTrust.update(
+                if (user.suspect) {
+                    await models.user.update(
                         {
                             suspect: false,
                         },
                         {
-                            where: { id: { [Op.in]: suspectInId } },
+                            where: { address: user.address },
                             returning: false,
                         }
                     );
