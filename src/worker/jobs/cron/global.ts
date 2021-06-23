@@ -475,6 +475,34 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         raw: true,
     });
     if (last.length === 0) {
+        const communitiesPublicId = (
+            await models.community.findAll({
+                attributes: ['publicId'],
+                where: { status: 'valid', visibility: 'public' },
+            })
+        ).map((c) => c.publicId);
+
+        const totalBeneficiaries = await models.beneficiary.count({
+            where: {
+                txAt: { [Op.lt]: todayMidnightTime },
+                communityId: { [Op.in]: communitiesPublicId },
+                active: true,
+            },
+        });
+
+        const totalDistributed: string = (
+            (
+                await models.claim.findAll({
+                    attributes: [[fn('sum', col('amount')), 'claimed']],
+                    where: {
+                        txAt: { [Op.lt]: todayMidnightTime },
+                        communityId: { [Op.in]: communitiesPublicId },
+                    },
+                    raw: true,
+                })
+            )[0] as any
+        ).claimed;
+
         lastGlobalMetrics = {
             avgComulativeUbi: '0',
             avgMedianSSI: 0,
@@ -490,8 +518,8 @@ export async function calcuateGlobalMetrics(): Promise<void> {
             reachOut: 0,
             spendingRate: 0,
             totalBackers: 0,
-            totalBeneficiaries: 0,
-            totalDistributed: '0',
+            totalBeneficiaries,
+            totalDistributed,
             totalRaised: '0',
             totalReach: BigInt(0),
             totalReachOut: BigInt(0),

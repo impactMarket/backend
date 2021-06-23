@@ -102,6 +102,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setUTCHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
 
     // query communities data
 
@@ -216,11 +218,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                         as: 'claim',
                         attributes: [],
                         required: false,
-                        where: literal(
-                            `date("beneficiaries->claim"."txAt") = '${
-                                yesterday.toISOString().split('T')[0]
-                            }'`
-                        ),
+                        where: {
+                            txAt: { [Op.between]: [yesterday, today] },
+                        },
                     },
                 ],
             },
@@ -248,11 +248,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 as: 'beneficiaries',
                 attributes: [],
                 required: false,
-                where: literal(
-                    `date("beneficiaries"."txAt") = '${
-                        yesterday.toISOString().split('T')[0]
-                    }'`
-                ),
+                where: {
+                    txAt: { [Op.between]: [yesterday, today] },
+                },
             },
         ],
         where: {
@@ -280,11 +278,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 as: 'inflow',
                 attributes: [],
                 required: false,
-                where: literal(
-                    `date(inflow."txAt") = '${
-                        yesterday.toISOString().split('T')[0]
-                    }'`
-                ),
+                where: {
+                    txAt: { [Op.between]: [yesterday, today] },
+                },
             },
         ],
         where: {
@@ -313,11 +309,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 as: 'inflow',
                 attributes: [],
                 required: false,
-                where: literal(
-                    `date(inflow."txAt") >= '${
-                        aMonthAgo.toISOString().split('T')[0]
-                    }'`
-                ),
+                where: {
+                    txAt: { [Op.between]: [aMonthAgo, today] },
+                },
             },
         ],
         where: {
@@ -377,13 +371,11 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     {
                         model: models.beneficiaryTransaction,
                         as: 'transactions',
-                        where: literal(
-                            `date("beneficiaries->transactions"."date") = '${
-                                yesterday.toISOString().split('T')[0]
-                            }'`
-                        ),
                         attributes: [],
                         required: false,
+                        where: {
+                            date: { [Op.between]: [yesterday, today] },
+                        },
                     },
                 ],
             },
