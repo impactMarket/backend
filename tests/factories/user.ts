@@ -1,8 +1,9 @@
 import { ethers } from 'ethers';
 import faker from 'faker';
 
+import { AppUserTrustModel } from '../../src/database/models/app/appUserTrust';
 import { UserModel } from '../../src/database/models/app/user';
-import { User } from '../../src/interfaces/app/user';
+import { User, UserCreationAttributes } from '../../src/interfaces/app/user';
 /**
  * Generate an object which container attributes needed
  * to successfully create a user instance.
@@ -13,13 +14,16 @@ import { User } from '../../src/interfaces/app/user';
  */
 const data = async () => {
     const randomWallet = ethers.Wallet.createRandom();
-    const defaultProps = {
+    const defaultProps: UserCreationAttributes = {
         address: await randomWallet.getAddress(),
         language: 'pt',
         currency: faker.finance.currencyCode(),
         gender: 'u',
         pushNotificationToken: '',
-        lastLogin: new Date(),
+        suspect: false,
+        trust: {
+            phone: faker.phone.phoneNumber(),
+        },
     };
     return defaultProps;
 };
@@ -33,7 +37,14 @@ const data = async () => {
 const UserFactory = async (options: { n: number } = { n: 1 }) => {
     const result: User[] = [];
     for (let index = 0; index < options.n; index++) {
-        const newUser: any = await UserModel.create(await data());
+        const newUser: any = await UserModel.create(await data(), {
+            include: [
+                {
+                    model: AppUserTrustModel,
+                    as: 'trust',
+                },
+            ],
+        } as any); // use any :facepalm:
         result.push(newUser.toJSON());
     }
     return result;
