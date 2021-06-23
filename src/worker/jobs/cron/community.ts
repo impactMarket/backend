@@ -31,7 +31,7 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
                         include: [
                             {
                                 model: models.appUserTrust,
-                                as: 'throughTrust',
+                                as: 'trust',
                             },
                         ],
                     },
@@ -47,11 +47,7 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
         const community = communities[c].toJSON() as CommunityAttributes;
         if (community.beneficiaries && community.beneficiaries.length > 0) {
             const suspectBeneficiaries = community.beneficiaries.filter(
-                (b) =>
-                    b.user &&
-                    b.user.throughTrust &&
-                    b.user.throughTrust.length > 0 &&
-                    b.user.throughTrust.filter((tt) => tt.suspect).length > 0
+                (b) => b.user && b.user.suspect
             );
             if (suspectBeneficiaries.length === 0) {
                 continue;

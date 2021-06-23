@@ -15,13 +15,14 @@ export interface User {
     year: number | null;
     children: number | null;
     lastLogin: Date;
+    suspect: boolean;
 
     // timestamps
     createdAt: Date;
     updatedAt: Date;
 
     avatar?: AppMediaContent;
-    throughTrust?: AppUserTrust[];
+    trust?: AppUserTrust[];
     beneficiary?: BeneficiaryAttributes[];
     manager?: ManagerAttributes[];
 }

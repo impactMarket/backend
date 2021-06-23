@@ -102,7 +102,7 @@ export default class BeneficiaryService {
         }
 
         const order: string | Literal | Fn | Col | OrderItem[] | undefined = [
-            ['user', 'throughTrust', 'suspect', 'DESC'],
+            ['user', 'suspect', 'DESC'],
         ]; // it's default order for now.
 
         const manager = await this.manager.findOne({
@@ -123,13 +123,8 @@ export default class BeneficiaryService {
                     include: [
                         {
                             model: this.appUserTrust,
-                            as: 'throughTrust',
-                            include: [
-                                {
-                                    model: this.appUserTrust,
-                                    as: 'selfTrust',
-                                },
-                            ],
+                            as: 'trust',
+                            separate: true,
                         },
                     ],
                 },
@@ -149,22 +144,10 @@ export default class BeneficiaryService {
                 claimed: b.claimed,
                 blocked: b.blocked,
                 verifiedPN:
-                    b.user &&
-                    b.user.throughTrust &&
-                    b.user.throughTrust.length > 0
-                        ? b.user.throughTrust[0].verifiedPhoneNumber
+                    b.user && b.user.trust && b.user.trust.length === 1
+                        ? b.user.trust[0].verifiedPhoneNumber
                         : undefined,
-                suspect:
-                    b.user &&
-                    b.user.throughTrust &&
-                    b.user.throughTrust.length > 0
-                        ? b.user.throughTrust[0].selfTrust
-                            ? (b.user.throughTrust[0].selfTrust &&
-                                  b.user.throughTrust[0].selfTrust.length >
-                                      1) ||
-                              b.user.throughTrust[0].suspect
-                            : undefined
-                        : undefined,
+                suspect: b.user && b.user.suspect,
             };
         });
         return result;
@@ -191,26 +174,13 @@ export default class BeneficiaryService {
         offset: number,
         limit: number
     ): Promise<IManagerDetailsBeneficiary[]> {
-        // sequelize still has a bug related to eager loading when using global raw:false
-
-        // select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed
-        // from beneficiary b
-        //     left join "user" u on b.address = u.address
-        //     left join claim c on b.address = c.address
-        //     left join manager m on b."communityId" = m."communityId"
-        // where m."user" = '0x833961aab38d24EECdCD2129Aa5a5d41Fd86Acbf'
-        // group by b.address, u.username, b."txAt"
-        // order by b."txAt" desc
-        // offset 0
-        // limit 10
-
         if (!isAddress(managerAddress)) {
             throw new Error('Not a manager ' + managerAddress);
         }
 
         const order: string | Literal | Fn | Col | OrderItem[] | undefined = [
-            ['user', 'throughTrust', 'suspect', 'DESC'],
-        ]; // it's default order for now.
+            ['user', 'suspect', 'DESC'],
+        ];
 
         const manager = await this.manager.findOne({
             attributes: ['communityId'],
@@ -229,13 +199,8 @@ export default class BeneficiaryService {
                     include: [
                         {
                             model: this.appUserTrust,
-                            as: 'throughTrust',
-                            include: [
-                                {
-                                    model: this.appUserTrust,
-                                    as: 'selfTrust',
-                                },
-                            ],
+                            as: 'trust',
+                            separate: true,
                         },
                     ],
                 },
@@ -256,22 +221,10 @@ export default class BeneficiaryService {
                 claimed: b.claimed,
                 blocked: b.blocked,
                 verifiedPN:
-                    b.user &&
-                    b.user.throughTrust &&
-                    b.user.throughTrust.length > 0
-                        ? b.user.throughTrust[0].verifiedPhoneNumber
+                    b.user && b.user.trust && b.user.trust.length === 1
+                        ? b.user.trust[0].verifiedPhoneNumber
                         : undefined,
-                suspect:
-                    b.user &&
-                    b.user.throughTrust &&
-                    b.user.throughTrust.length > 0
-                        ? b.user.throughTrust[0].selfTrust
-                            ? (b.user.throughTrust[0].selfTrust &&
-                                  b.user.throughTrust[0].selfTrust.length >
-                                      1) ||
-                              b.user.throughTrust[0].suspect
-                            : undefined
-                        : undefined,
+                suspect: b.user && b.user.suspect,
             };
         });
         return result;

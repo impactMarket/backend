@@ -2,67 +2,19 @@ import { Sequelize } from 'sequelize';
 import { stub, assert, match } from 'sinon';
 
 import { models } from '../../../../src/database';
-import { initializeAppUserThroughTrust } from '../../../../src/database/models/app/appUserThroughTrust';
-import { initializeAppUserTrust } from '../../../../src/database/models/app/appUserTrust';
-import { initializeUser } from '../../../../src/database/models/app/user';
-import { initializeBeneficiary } from '../../../../src/database/models/ubi/beneficiary';
-import { initializeCommunity } from '../../../../src/database/models/ubi/community';
-import { initializeUbiCommunitySuspect } from '../../../../src/database/models/ubi/ubiCommunitySuspect';
+import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
+import { AppUserTrust } from '../../../../src/interfaces/app/appUserTrust';
 import { verifyCommunitySuspectActivity } from '../../../../src/worker/jobs/cron/community';
+import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
 
 // in this test there are 3 communities
 // onw with past suspicious activities, not having anymore
 // one without suspicious activity
 // one with new suspicious activity
 describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
-    let sequelize;
+    let sequelize: Sequelize;
     before(async () => {
-        const dbConfig: any = {
-            dialect: 'postgres',
-            protocol: 'postgres',
-            native: true,
-            logging: false,
-        };
-        sequelize = new Sequelize(process.env.DATABASE_URL!, dbConfig);
-
-        initializeUser(sequelize);
-        initializeBeneficiary(sequelize);
-        initializeCommunity(sequelize);
-        initializeAppUserThroughTrust(sequelize);
-        initializeAppUserTrust(sequelize);
-        initializeUbiCommunitySuspect(sequelize);
-
-        // used to query from the beneficiary with incude
-        sequelize.models.Beneficiary.belongsTo(sequelize.models.UserModel, {
-            foreignKey: 'address',
-            as: 'user',
-        });
-        // used to query from the user with incude
-        sequelize.models.UserModel.belongsToMany(
-            sequelize.models.AppUserTrustModel,
-            {
-                through: sequelize.models.AppUserThroughTrustModel,
-                foreignKey: 'userAddress',
-                sourceKey: 'address',
-                as: 'throughTrust',
-            }
-        );
-        // used to query from the AppUserTrust with incude
-        sequelize.models.AppUserTrustModel.belongsToMany(
-            sequelize.models.UserModel,
-            {
-                through: sequelize.models.AppUserThroughTrustModel,
-                foreignKey: 'appUserTrustId',
-                sourceKey: 'id',
-                as: 'throughTrust',
-            }
-        );
-        // used to query from the community with incude
-        sequelize.models.Community.hasMany(sequelize.models.Beneficiary, {
-            foreignKey: 'communityId',
-            sourceKey: 'publicId',
-            as: 'beneficiaries',
-        });
+        sequelize = sequelizeSetup();
 
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
@@ -147,6 +99,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 pushNotificationToken: '',
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                suspect: true,
             },
             {
                 address: '0x002D33893983E187814Be1bdBe9852299829C554',
@@ -156,6 +109,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 pushNotificationToken: '',
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                suspect: true,
             },
             {
                 address: '0x012D33893983E187814Be1bdBe9852299829C554',
@@ -165,6 +119,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 pushNotificationToken: '',
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                suspect: false,
             },
             {
                 address: '0xc55Fae4769e3240FfFf4c17cd2CC03143e55E420',
@@ -174,6 +129,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 pushNotificationToken: '',
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                suspect: false,
             },
             {
                 address: '0x102D33893983E187814Be1bdBe9852299829C554',
@@ -183,6 +139,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 pushNotificationToken: '',
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                suspect: false,
             },
             {
                 address: '0xb55Fae4769e3240FfFf4c17cd2CC03143e55E420',
@@ -192,6 +149,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 pushNotificationToken: '',
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                suspect: true,
             },
             {
                 address: '0x202D33893983E187814Be1bdBe9852299829C554',
@@ -201,6 +159,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 pushNotificationToken: '',
                 createdAt: new Date(),
                 updatedAt: new Date(),
+                suspect: false,
             },
         ]);
 
@@ -208,40 +167,33 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
             {
                 phone: '00351969696966',
                 verifiedPhoneNumber: false,
-                suspect: true,
             },
             {
                 phone: '00351969696966',
                 verifiedPhoneNumber: false,
-                suspect: true,
             },
             {
                 phone: '00351969696967',
                 verifiedPhoneNumber: false,
-                suspect: false,
             },
             {
                 phone: '00351969696968',
                 verifiedPhoneNumber: false,
-                suspect: false,
             },
             {
                 phone: '00351969696969',
                 verifiedPhoneNumber: false,
-                suspect: false,
             },
             {
                 phone: '00351979696966',
                 verifiedPhoneNumber: false,
-                suspect: true,
             },
             {
                 phone: '00351989696966',
                 verifiedPhoneNumber: false,
-                suspect: false,
             },
         ]);
-        const tIds = r.map((ids) => ids.toJSON());
+        const tIds = r.map((ids) => ids.toJSON() as AppUserTrust);
 
         await sequelize.models.AppUserThroughTrustModel.bulkCreate([
             {
@@ -368,7 +320,9 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
             },
         ]);
 
-        const rCommunities = communities.map((ids) => ids.toJSON());
+        const rCommunities = communities.map(
+            (ids) => ids.toJSON() as CommunityAttributes
+        );
 
         await sequelize.models.UbiCommunitySuspectModel.bulkCreate([
             {

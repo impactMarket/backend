@@ -44,6 +44,11 @@ module.exports = {
                 defaultValue: Sequelize.fn('now'),
                 allowNull: false,
             },
+            suspect: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
+                allowNull: false,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,

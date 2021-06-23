@@ -127,7 +127,7 @@ export default class UserService {
             include: [
                 {
                     model: this.appUserTrust,
-                    as: 'throughTrust',
+                    as: 'trust',
                     include: [
                         {
                             model: this.appUserTrust,
@@ -144,9 +144,7 @@ export default class UserService {
         if (phone) {
             const uu = user.toJSON() as User;
             const userTrustId =
-                uu.throughTrust && uu.throughTrust.length > 0
-                    ? uu.throughTrust[0].id
-                    : undefined;
+                uu.trust && uu.trust.length > 0 ? uu.trust[0].id : undefined;
             if (userTrustId === undefined) {
                 try {
                     await this.sequelize.transaction(async (t) => {
@@ -364,7 +362,7 @@ export default class UserService {
             include: [
                 {
                     model: this.appUserTrust,
-                    as: 'throughTrust',
+                    as: 'trust',
                     include: [
                         {
                             model: this.appUserTrust,
@@ -420,16 +418,10 @@ export default class UserService {
             isManager: manager !== null || managerInPendingCommunity,
             blocked: beneficiary !== null ? beneficiary.blocked : false,
             verifiedPN:
-                fUser.throughTrust?.length !== 0
-                    ? fUser.throughTrust![0].verifiedPhoneNumber
+                fUser.trust?.length !== 0
+                    ? fUser.trust![0].verifiedPhoneNumber
                     : undefined,
-            suspect:
-                fUser.throughTrust?.length !== 0
-                    ? fUser.throughTrust![0].selfTrust
-                        ? fUser.throughTrust![0].selfTrust?.length > 1 ||
-                          fUser.throughTrust![0].suspect
-                        : undefined
-                    : undefined,
+            suspect: fUser.suspect,
             rates: await ExchangeRatesService.get(),
             community: community ? community : undefined,
             communityId: community ? community.id : undefined,
