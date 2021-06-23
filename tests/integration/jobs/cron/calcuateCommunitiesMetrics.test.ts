@@ -1,5 +1,5 @@
-import { Sequelize } from 'sequelize';
-import { assert, match, stub } from 'sinon';
+import { CreateOptions, Sequelize } from 'sequelize';
+import Sinon, { assert, match, stub } from 'sinon';
 import tk from 'timekeeper';
 
 import { models } from '../../../../src/database';
@@ -18,13 +18,25 @@ import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
 describe('calcuateCommunitiesMetrics', () => {
     let communities: any[] = [];
     let sequelize: Sequelize;
-    const ubiCommunityDailyStateCreate = stub(
-        models.ubiCommunityDailyState,
-        'create'
-    );
-    ubiCommunityDailyStateCreate.returns(Promise.resolve({} as any));
+    let ubiCommunityDailyStateCreate: Sinon.SinonStub<
+        [
+            any,
+            CreateOptions<any> & {
+                returning: false;
+            }
+        ],
+        Promise<void>
+    >;
     before(async () => {
         sequelize = sequelizeSetup();
+        ubiCommunityDailyStateCreate = stub(
+            models.ubiCommunityDailyState,
+            'create'
+        );
+        ubiCommunityDailyStateCreate.returns(Promise.resolve({} as any));
+    });
+    after(() => {
+        ubiCommunityDailyStateCreate.restore();
     });
     describe('recent community with beneficiaries, txs and inflow', () => {
         before(async () => {
@@ -175,15 +187,16 @@ describe('calcuateCommunitiesMetrics', () => {
             tk.travel(
                 new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000
             );
+            await calcuateCommunitiesMetrics();
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await ClaimFactory(beneficiaries[1], community);
-            await calcuateCommunitiesMetrics();
 
             // THIS IS HAPPENING TWO DAYS FROM NOW
             tk.travel(
                 new Date().getTime() + 1000 * 60 * 60 * 24 + 36 * 60 * 1000
             );
+            await calcuateCommunitiesMetrics();
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await ClaimFactory(beneficiaries[1], community);

@@ -17,7 +17,7 @@ export function sequelizeSetup() {
         // },
         protocol: 'postgres',
         native: true,
-        // logging,
+        logging: false,
         // query: { raw: true }, // I wish, eager loading gets fixed
     };
     const sequelize = new Sequelize(config.dbUrl, dbConfig);
