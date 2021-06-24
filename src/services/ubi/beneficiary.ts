@@ -4,8 +4,8 @@ import { Beneficiary, BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isAddress } from '@utils/util';
-import { Op, fn, col, OrderItem, WhereAttributeHash } from 'sequelize';
-import { Col, Fn, Literal, Where } from 'sequelize/types/lib/utils';
+import { Op, fn, col, WhereAttributeHash, literal } from 'sequelize';
+import { Literal, Where } from 'sequelize/types/lib/utils';
 
 import { models, sequelize } from '../../database';
 import CommunityService from './community';
@@ -101,9 +101,14 @@ export default class BeneficiaryService {
             whereActive = { active };
         }
 
-        const order: string | Literal | Fn | Col | OrderItem[] | undefined = [
-            ['user', 'suspect', 'DESC'],
-        ]; // it's default order for now.
+        // const order: OrderItem[] = [
+        //     [
+        //         [{ model: models.user, as: 'user' }, 'suspect', 'DESC'],
+        //         ['txAt', 'DESC'],
+        //     ],
+        // ];
+
+        const order: Literal = literal('"user".suspect DESC, "txAt" DESC');
 
         const manager = await this.manager.findOne({
             attributes: ['communityId'],
@@ -120,13 +125,6 @@ export default class BeneficiaryService {
                     model: this.user,
                     as: 'user',
                     where: whereSearchCondition,
-                    include: [
-                        {
-                            model: this.appUserTrust,
-                            as: 'trust',
-                            // separate: true,
-                        },
-                    ],
                 },
             ],
             order,
@@ -143,10 +141,6 @@ export default class BeneficiaryService {
                 timestamp: b.txAt.getTime(),
                 claimed: b.claimed,
                 blocked: b.blocked,
-                verifiedPN:
-                    b.user && b.user.trust && b.user.trust.length === 1
-                        ? b.user.trust[0].verifiedPhoneNumber
-                        : undefined,
                 suspect: b.user && b.user.suspect,
             };
         });
@@ -178,9 +172,14 @@ export default class BeneficiaryService {
             throw new Error('Not a manager ' + managerAddress);
         }
 
-        const order: string | Literal | Fn | Col | OrderItem[] | undefined = [
-            ['user', 'suspect', 'DESC'],
-        ];
+        // const order: OrderItem[] = [
+        //     [
+        //         [{ model: models.user, as: 'user' }, 'suspect', 'DESC'],
+        //         ['txAt', 'DESC'],
+        //     ],
+        // ];
+
+        const order: Literal = literal('"user".suspect DESC, "txAt" DESC');
 
         const manager = await this.manager.findOne({
             attributes: ['communityId'],
@@ -196,13 +195,6 @@ export default class BeneficiaryService {
                 {
                     model: this.user,
                     as: 'user',
-                    include: [
-                        {
-                            model: this.appUserTrust,
-                            as: 'trust',
-                            // separate: true,
-                        },
-                    ],
                 },
             ],
             order,
@@ -220,10 +212,6 @@ export default class BeneficiaryService {
                 timestamp: b.txAt.getTime(),
                 claimed: b.claimed,
                 blocked: b.blocked,
-                verifiedPN:
-                    b.user && b.user.trust && b.user.trust.length === 1
-                        ? b.user.trust[0].verifiedPhoneNumber
-                        : undefined,
                 suspect: b.user && b.user.suspect,
             };
         });

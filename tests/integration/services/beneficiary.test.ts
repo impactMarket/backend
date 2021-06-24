@@ -1,9 +1,11 @@
+import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
+
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
-
 import { User } from '../../../src/interfaces/app/user';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
+import { IManagerDetailsBeneficiary } from '../../../src/types/endpoints';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
@@ -20,7 +22,7 @@ describe('beneficiary service', () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        users = await UserFactory({ n: 5 });
+        users = await UserFactory({ n: 8 });
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -48,10 +50,7 @@ describe('beneficiary service', () => {
             },
         };
         managers = await ManagerFactory([users[0]], community.publicId);
-        const beneficiaries = await BeneficiaryFactory(
-            users,
-            community.publicId
-        );
+        await BeneficiaryFactory(users, community.publicId);
     });
 
     after(async () => {
@@ -62,11 +61,78 @@ describe('beneficiary service', () => {
     });
 
     it('order by suspicious activity', async () => {
-        await BeneficiaryService.listBeneficiaries(
+        // set some as suspect
+        await sequelize.models.UserModel.update(
+            { suspect: true },
+            { where: { address: users[2].address } }
+        );
+        await sequelize.models.UserModel.update(
+            { suspect: true },
+            { where: { address: users[4].address } }
+        );
+        // test results
+        let result: IManagerDetailsBeneficiary[];
+        result = await BeneficiaryService.listBeneficiaries(
             managers[0].address,
             true,
             0,
-            3
+            5
         );
+        expect(result[0]).to.include({
+            address: users[4].address,
+            suspect: true,
+        });
+        expect(result[1]).to.include({
+            address: users[2].address,
+            suspect: true,
+        });
+        expect(result[2]).to.include({
+            address: users[7].address,
+            suspect: false,
+        });
+        expect(result[3]).to.include({
+            address: users[6].address,
+            suspect: false,
+        });
+        expect(result[4]).to.include({
+            address: users[5].address,
+            suspect: false,
+        });
+        // change suspects
+        await sequelize.models.UserModel.update(
+            { suspect: false },
+            { where: { address: users[4].address } }
+        );
+        await sequelize.models.UserModel.update(
+            { suspect: true },
+            { where: { address: users[5].address } }
+        );
+        // test results
+        result = await BeneficiaryService.listBeneficiaries(
+            managers[0].address,
+            true,
+            0,
+            5
+        );
+        expect(result[0]).to.include({
+            address: users[5].address,
+            suspect: true,
+        });
+        expect(result[1]).to.include({
+            address: users[2].address,
+            suspect: true,
+        });
+        expect(result[2]).to.include({
+            address: users[7].address,
+            suspect: false,
+        });
+        expect(result[3]).to.include({
+            address: users[6].address,
+            suspect: false,
+        });
+        expect(result[4]).to.include({
+            address: users[4].address,
+            suspect: false,
+        });
     });
 });
