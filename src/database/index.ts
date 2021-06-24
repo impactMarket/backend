@@ -150,6 +150,9 @@ const cacheWithRedis = apicache.options(
         : {
               redisClient: redis.createClient({
                   url: config.redis,
+                  tls: {
+                      rejectUnauthorized: false,
+                  },
               }),
           }
 ).middleware;
