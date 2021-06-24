@@ -20,8 +20,6 @@ jobs:
           command: yarn coverage:ci
           environment:
             DATABASE_URL: postgresql://citest:test101@localhost:5432/impactmarkettest
-      - store_artifacts:
-          path: coverage
       - coveralls/upload
   lint:
     docker:
