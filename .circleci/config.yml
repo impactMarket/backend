@@ -20,7 +20,8 @@ jobs:
           command: yarn coverage:ci
           environment:
             DATABASE_URL: postgresql://citest:test101@localhost:5432/impactmarkettest
-      - coveralls/upload
+      - coveralls/upload:
+          path_to_lcov: ./coverage/lcov.info
   lint:
     docker:
       - image: circleci/node:14.15.1
