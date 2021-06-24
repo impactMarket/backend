@@ -22,7 +22,7 @@ jobs:
             DATABASE_URL: postgresql://citest:test101@localhost:5432/impactmarkettest
       - run:
           name: "run cmd"
-          command: ll -a
+          command: ls -a
       - coveralls/upload:
           path_to_lcov: ./coverage/lcov.info
   lint:
