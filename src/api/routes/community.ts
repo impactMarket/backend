@@ -6,6 +6,40 @@ import multer from 'multer';
 import { cacheWithRedis } from '../../database';
 import { adminAuthentication, authenticateToken } from '../middlewares';
 
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      IListBeneficiary:
+ *        type: object
+ *        required:
+ *          - address
+ *          - username
+ *          - timestamp
+ *          - claimed
+ *          - blocked
+ *          - suspect
+ *        properties:
+ *          address:
+ *            type: string
+ *            description: Beneficiary address
+ *          username:
+ *            type: string
+ *            nullable: true
+ *            description: Username if user has filled it, otherwise null
+ *          timestamp:
+ *            type: integer
+ *            description: Timestamp of when the beneficiary was added
+ *          claimed:
+ *            type: string
+ *            description: How much has the beneficiary claimed since added as beneficiary
+ *          blocked:
+ *            type: boolean
+ *            description: Is the beneficiary blocked?
+ *          suspect:
+ *            type: boolean
+ *            description: Is the beneficiary suspect?
+ */
 export default (app: Router): void => {
     const controller = new communityController.CommunityController();
 
@@ -165,22 +199,6 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/beneficiaries/{query}:
-     *   get:
-     *     summary: Find or list beneficiaries in manager's community
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.get(
-        '/beneficiaries/:query?',
-        authenticateToken,
-        controller.beneficiaries
-    );
-
-    /**
-     * @swagger
-     *
      * /community/create:
      *   post:
      *     tags:
@@ -229,6 +247,57 @@ export default (app: Router): void => {
         upload.single('imageFile'),
         authenticateToken,
         controller.pictureAdd
+    );
+
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries/{query}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Find or list beneficiaries in manager's community
+     *     parameters:
+     *       - in: query
+     *         name: action
+     *         schema:
+     *           type: string
+     *           enum: [search, list]
+     *         required: false
+     *         description: search or list beneficiaries in a community (list by default)
+     *       - in: query
+     *         name: active
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: filter search/list by active/inactive/both (both by default)
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 5)
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/IListBeneficiary'
+     */
+    route.get(
+        '/beneficiaries/:query?',
+        authenticateToken,
+        controller.beneficiaries
     );
 
     /**
