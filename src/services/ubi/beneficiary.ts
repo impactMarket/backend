@@ -7,17 +7,10 @@ import { isAddress } from '@utils/util';
 import { Op, WhereAttributeHash, literal } from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 import CommunityService from './community';
 
 export default class BeneficiaryService {
-    public static beneficiary = models.beneficiary;
-    public static manager = models.manager;
-    public static appUserTrust = models.appUserTrust;
-    public static user = models.user;
-    public static community = models.community;
-    public static sequelize = sequelize;
-
     public static async add(
         address: string,
         communityId: string,
@@ -31,7 +24,7 @@ export default class BeneficiaryService {
             txAt,
         };
         try {
-            await this.beneficiary.create(beneficiaryData);
+            await models.beneficiary.create(beneficiaryData);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
@@ -48,7 +41,7 @@ export default class BeneficiaryService {
         address: string,
         communityId: string
     ): Promise<void> {
-        await this.beneficiary.update(
+        await models.beneficiary.update(
             { active: false },
             { where: { address, communityId } }
         );
@@ -58,7 +51,7 @@ export default class BeneficiaryService {
         address: string,
         active?: boolean
     ): Promise<Beneficiary | null> {
-        return this.beneficiary.findOne({
+        return models.beneficiary.findOne({
             where: { address, active },
         });
     }
@@ -110,7 +103,7 @@ export default class BeneficiaryService {
 
         const order: Literal = literal('"user".suspect DESC, "txAt" DESC');
 
-        const manager = await this.manager.findOne({
+        const manager = await models.manager.findOne({
             attributes: ['communityId'],
             where: { address: managerAddress, active: true },
         });
@@ -118,11 +111,11 @@ export default class BeneficiaryService {
             return [];
         }
         const communityId = (manager.toJSON() as ManagerAttributes).communityId;
-        const x = await this.beneficiary.findAll({
+        const x = await models.beneficiary.findAll({
             where: { ...whereActive, communityId },
             include: [
                 {
-                    model: this.user,
+                    model: models.user,
                     as: 'user',
                     where: whereSearchCondition,
                 },
@@ -166,7 +159,7 @@ export default class BeneficiaryService {
 
         const order: Literal = literal('"user".suspect DESC, "txAt" DESC');
 
-        const manager = await this.manager.findOne({
+        const manager = await models.manager.findOne({
             attributes: ['communityId'],
             where: { address: managerAddress, active: true },
         });
@@ -174,11 +167,11 @@ export default class BeneficiaryService {
             return [];
         }
         const communityId = (manager.toJSON() as ManagerAttributes).communityId;
-        const x = await this.beneficiary.findAll({
+        const x = await models.beneficiary.findAll({
             where: { active, communityId },
             include: [
                 {
-                    model: this.user,
+                    model: models.user,
                     as: 'user',
                 },
             ],
@@ -212,7 +205,7 @@ export default class BeneficiaryService {
         // and c.visibility = 'public'
         // and b.active = true
         const publicCommunities: string[] = (
-            await this.community.findAll({
+            await models.community.findAll({
                 attributes: ['publicId'],
                 where: { visibility: 'public', status: 'valid' },
                 raw: true,
@@ -220,7 +213,7 @@ export default class BeneficiaryService {
         ).map((c) => c.publicId);
 
         return (
-            await this.beneficiary.findAll({
+            await models.beneficiary.findAll({
                 attributes: ['address'],
                 where: {
                     communityId: { [Op.in]: publicCommunities },
@@ -233,7 +226,7 @@ export default class BeneficiaryService {
 
     public static async getAllAddresses(): Promise<string[]> {
         return (
-            await this.beneficiary.findAll({
+            await models.beneficiary.findAll({
                 attributes: ['address'],
                 raw: true,
             })
