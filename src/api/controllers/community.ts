@@ -51,7 +51,7 @@ class CommunityController {
             if (search === undefined || typeof search !== 'string') {
                 throw new Error('invalid search!');
             }
-            CommunityService.searchBeneficiary(
+            BeneficiaryService.search(
                 req.user.address,
                 search,
                 active !== undefined ? active === 'true' : undefined
@@ -71,7 +71,7 @@ class CommunityController {
             if (limit === undefined || typeof limit !== 'string') {
                 limit = '5';
             }
-            CommunityService.listBeneficiaries(
+            BeneficiaryService.list(
                 req.user.address,
                 active === 'true',
                 parseInt(offset, 10),
@@ -336,7 +336,7 @@ const searchBeneficiary = (req: RequestWithUser, res: Response) => {
         controllerLogAndFail('User not identified!', 400, res);
         return;
     }
-    CommunityService.searchBeneficiary(
+    BeneficiaryService.search(
         req.user.address,
         req.params.beneficiaryQuery,
         req.params.active ? req.params.active === 'true' : undefined
@@ -360,7 +360,7 @@ const listBeneficiaries = (req: RequestWithUser, res: Response) => {
         controllerLogAndFail('User not identified!', 400, res);
         return;
     }
-    CommunityService.listBeneficiaries(
+    BeneficiaryService.list(
         req.user.address,
         req.params.active === 'true',
         parseInt(req.params.offset, 10),
