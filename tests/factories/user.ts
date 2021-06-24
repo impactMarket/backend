@@ -37,7 +37,7 @@ const data = async () => {
 const UserFactory = async (options: { n: number } = { n: 1 }) => {
     const result: User[] = [];
     for (let index = 0; index < options.n; index++) {
-        const newUser: any = await UserModel.create(await data(), {
+        const newUser: UserModel = await UserModel.create(await data(), {
             include: [
                 {
                     model: AppUserTrustModel,
@@ -45,7 +45,7 @@ const UserFactory = async (options: { n: number } = { n: 1 }) => {
                 },
             ],
         } as any); // use any :facepalm:
-        result.push(newUser.toJSON());
+        result.push(newUser.toJSON() as User);
     }
     return result;
 };

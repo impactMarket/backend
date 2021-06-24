@@ -71,7 +71,7 @@ export interface IManagerDetailsBeneficiary {
     claimed: string;
     blocked: boolean;
     // to users not yet registered, the values below do not exist
-    verifiedPN: boolean | undefined;
+    verifiedPN?: boolean | undefined; // TODO: to be removed
     suspect: boolean | undefined;
 }
 
