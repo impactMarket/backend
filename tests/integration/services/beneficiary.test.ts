@@ -72,12 +72,7 @@ describe('beneficiary service', () => {
         );
         // test results
         let result: IListBeneficiary[];
-        result = await BeneficiaryService.listBeneficiaries(
-            managers[0].address,
-            true,
-            0,
-            5
-        );
+        result = await BeneficiaryService.list(managers[0].address, true, 0, 5);
         expect(result[0]).to.include({
             address: users[4].address,
             suspect: true,
@@ -108,12 +103,7 @@ describe('beneficiary service', () => {
             { where: { address: users[5].address } }
         );
         // test results
-        result = await BeneficiaryService.listBeneficiaries(
-            managers[0].address,
-            true,
-            0,
-            5
-        );
+        result = await BeneficiaryService.list(managers[0].address, true, 0, 5);
         expect(result[0]).to.include({
             address: users[5].address,
             suspect: true,
