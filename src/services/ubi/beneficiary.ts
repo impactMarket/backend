@@ -1,5 +1,5 @@
 import { User } from '@interfaces/app/user';
-import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
+import { IListBeneficiary } from '@ipcttypes/endpoints';
 import { Beneficiary, BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
@@ -67,7 +67,7 @@ export default class BeneficiaryService {
         managerAddress: string,
         searchInput: string,
         active?: boolean
-    ): Promise<IManagerDetailsBeneficiary[]> {
+    ): Promise<IListBeneficiary[]> {
         let whereSearchCondition: Where | WhereAttributeHash<User>;
         let whereActive: Where | WhereAttributeHash<BeneficiaryAttributes> = {};
         if (!isAddress(managerAddress)) {
@@ -133,7 +133,7 @@ export default class BeneficiaryService {
         if (x === null) {
             return [];
         }
-        const result: IManagerDetailsBeneficiary[] = x.map((r) => {
+        const result: IListBeneficiary[] = x.map((r) => {
             const b = r.toJSON() as BeneficiaryAttributes;
             return {
                 address: b.address,
@@ -167,7 +167,7 @@ export default class BeneficiaryService {
         active: boolean,
         offset: number,
         limit: number
-    ): Promise<IManagerDetailsBeneficiary[]> {
+    ): Promise<IListBeneficiary[]> {
         if (!isAddress(managerAddress)) {
             throw new Error('Not a manager ' + managerAddress);
         }
@@ -204,7 +204,7 @@ export default class BeneficiaryService {
         if (x === null) {
             return [];
         }
-        const result: IManagerDetailsBeneficiary[] = x.map((r) => {
+        const result: IListBeneficiary[] = x.map((r) => {
             const b = r.toJSON() as BeneficiaryAttributes;
             return {
                 address: b.address,
