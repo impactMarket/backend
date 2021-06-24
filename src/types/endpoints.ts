@@ -64,7 +64,7 @@ export interface IManagerDetailsManager {
     timestamp: number;
 }
 
-export interface IManagerDetailsBeneficiary {
+export interface IListBeneficiary {
     address: string;
     username: string | null;
     timestamp: number;
@@ -78,8 +78,8 @@ export interface IManagerDetailsBeneficiary {
 export interface IManagersDetails {
     managers: IManagerDetailsManager[];
     beneficiaries: {
-        active: IManagerDetailsBeneficiary[];
-        inactive: IManagerDetailsBeneficiary[];
+        active: IListBeneficiary[];
+        inactive: IListBeneficiary[];
     };
 }
 

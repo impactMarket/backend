@@ -37,7 +37,7 @@ import {
     ICommunity,
     ICommunityLightDetails,
     ICommunityPendingDetails,
-    IManagerDetailsBeneficiary,
+    IListBeneficiary,
     IManagerDetailsManager,
     IManagers,
     IManagersDetails,
@@ -425,7 +425,7 @@ export default class CommunityService {
         active: boolean,
         offset: number,
         limit: number
-    ): Promise<IManagerDetailsBeneficiary[]> {
+    ): Promise<IListBeneficiary[]> {
         return BeneficiaryService.listBeneficiaries(
             managerAddress,
             active,
@@ -438,7 +438,7 @@ export default class CommunityService {
         managerAddress: string,
         beneficiaryQuery: string,
         active?: boolean
-    ): Promise<IManagerDetailsBeneficiary[]> {
+    ): Promise<IListBeneficiary[]> {
         return await BeneficiaryService.search(
             managerAddress,
             beneficiaryQuery,
