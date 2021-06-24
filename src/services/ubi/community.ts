@@ -37,13 +37,9 @@ import {
     ICommunity,
     ICommunityLightDetails,
     ICommunityPendingDetails,
-    IListBeneficiary,
     IManagerDetailsManager,
-    IManagers,
-    IManagersDetails,
 } from '../../types/endpoints';
 import { CommunityContentStorage, PromoterContentStorage } from '../storage';
-import BeneficiaryService from './beneficiary';
 import CommunityContractService from './communityContract';
 import CommunityDailyStateService from './communityDailyState';
 import CommunityStateService from './communityState';
@@ -418,32 +414,6 @@ export default class CommunityService {
             count: communitiesResult.count,
             rows: communities,
         };
-    }
-
-    public static async listBeneficiaries(
-        managerAddress: string,
-        active: boolean,
-        offset: number,
-        limit: number
-    ): Promise<IListBeneficiary[]> {
-        return BeneficiaryService.listBeneficiaries(
-            managerAddress,
-            active,
-            offset,
-            limit
-        );
-    }
-
-    public static async searchBeneficiary(
-        managerAddress: string,
-        beneficiaryQuery: string,
-        active?: boolean
-    ): Promise<IListBeneficiary[]> {
-        return await BeneficiaryService.search(
-            managerAddress,
-            beneficiaryQuery,
-            active
-        );
     }
 
     public static getResquestChangeUbiParams(
