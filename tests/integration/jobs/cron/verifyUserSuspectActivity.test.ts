@@ -174,6 +174,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
                 returning: false,
             }
         );
+        userUpdateStub.restore();
     });
 
     // TODO: devide in two tests, one to find suspect, one to remove
