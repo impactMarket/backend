@@ -5,7 +5,7 @@ import { CommunityAttributes } from '../../../src/database/models/ubi/community'
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { User } from '../../../src/interfaces/app/user';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
-import { IManagerDetailsBeneficiary } from '../../../src/types/endpoints';
+import { IListBeneficiary } from '../../../src/types/endpoints';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
@@ -71,7 +71,7 @@ describe('beneficiary service', () => {
             { where: { address: users[4].address } }
         );
         // test results
-        let result: IManagerDetailsBeneficiary[];
+        let result: IListBeneficiary[];
         result = await BeneficiaryService.listBeneficiaries(
             managers[0].address,
             true,
