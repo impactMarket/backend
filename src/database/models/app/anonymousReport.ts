@@ -11,6 +11,8 @@ export class AppAnonymousReportModel extends Model<
     public id!: number;
     public communityId!: string;
     public message!: string;
+    public category!: string;
+    public status!: 'pending' | 'in-progress' | 'halted' | 'closed';
     public createdAt!: Date;
 }
 
@@ -34,6 +36,21 @@ export function initializeAppAnonymousReport(sequelize: Sequelize): void {
             message: {
                 type: DataTypes.STRING(512),
                 allowNull: false,
+            },
+            category: {
+                type: DataTypes.ENUM('general'),
+                allowNull: false,
+                defaultValue: 'general',
+            },
+            status: {
+                type: DataTypes.ENUM(
+                    'pending',
+                    'in-progress',
+                    'halted',
+                    'closed'
+                ),
+                allowNull: false,
+                defaultValue: 'pending',
             },
             createdAt: {
                 type: DataTypes.DATEONLY,

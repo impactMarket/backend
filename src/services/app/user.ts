@@ -1,4 +1,7 @@
-import { AppAnonymousReport } from '@interfaces/app/appAnonymousReport';
+import {
+    AppAnonymousReport,
+    AppAnonymousReportCreation,
+} from '@interfaces/app/appAnonymousReport';
 // import { AppMediaContent } from '@interfaces/app/appMediaContent';
 // import { AppUserDeviceCreation } from '@interfaces/app/appUserDevice';
 import { User, UserCreationAttributes } from '@interfaces/app/user';
@@ -319,12 +322,24 @@ export default class UserService {
     }
 
     public static report(
+        message: string,
         communityId: string | undefined,
-        message: string
+        category: string | undefined
     ): Promise<AppAnonymousReport> {
-        return this.anonymousReport.create(
-            communityId ? { communityId, message } : { message }
-        );
+        let newReport: AppAnonymousReportCreation = { message };
+        if (communityId) {
+            newReport = {
+                ...newReport,
+                communityId,
+            };
+        }
+        if (category) {
+            newReport = {
+                ...newReport,
+                category,
+            };
+        }
+        return this.anonymousReport.create(newReport);
     }
 
     public static async exists(address: string): Promise<boolean> {
