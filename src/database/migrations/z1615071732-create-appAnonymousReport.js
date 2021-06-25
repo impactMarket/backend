@@ -20,6 +20,25 @@ module.exports = {
                 type: Sequelize.STRING(512),
                 allowNull: false,
             },
+            category: {
+                type: Sequelize.ENUM('general'),
+                allowNull: false,
+                defaultValue: 'general',
+            },
+            status: {
+                type: Sequelize.ENUM(
+                    'pending',
+                    'in-progress',
+                    'halted',
+                    'closed'
+                ),
+                allowNull: false,
+                defaultValue: 'pending',
+            },
+            createdAt: {
+                type: Sequelize.DATEONLY,
+                defaultValue: Sequelize.fn('now'),
+            },
         });
     },
     down(queryInterface, Sequelize) {
