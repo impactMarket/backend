@@ -46,6 +46,7 @@ export default class UserService {
                             {
                                 model: this.appMediaThumbnail,
                                 as: 'thumbnails',
+                                separate: true,
                             },
                         ],
                     },
@@ -362,22 +363,6 @@ export default class UserService {
         const user = await this.user.findOne({
             include: [
                 {
-                    model: this.beneficiary,
-                    as: 'beneficiary',
-                    required: false,
-                    where: {
-                        active: true,
-                    },
-                },
-                {
-                    model: this.manager,
-                    as: 'manager',
-                    required: false,
-                    where: {
-                        active: true,
-                    },
-                },
-                {
                     model: this.appUserTrust,
                     as: 'throughTrust',
                     include: [
@@ -389,64 +374,65 @@ export default class UserService {
                 },
             ],
             where: { address: userAddress },
-            // raw: true,
         });
         if (user === null) {
             throw new Error('User is null?');
         }
         const fUser = user.toJSON() as User;
+        const beneficiary = await this.beneficiary.findOne({
+            where: { active: true, address: userAddress },
+        });
+        const manager = await this.manager.findOne({
+            where: { active: true, address: userAddress },
+        });
+
+        // get user community
+        // TODO: part of the block below should be removed
         let community: CommunityAttributes | null = null;
         let managerInPendingCommunity = false;
-        if (fUser.beneficiary && fUser.beneficiary.length > 0) {
-            const newCommunity = await CommunityService.getCommunityOnlyByPublicId(
-                fUser.beneficiary[0].communityId
+        // reusable method
+        const getCommunity = async (publicId: string) => {
+            const community = await CommunityService.getCommunityOnlyByPublicId(
+                publicId
             );
-            if (newCommunity !== null) {
-                community = await CommunityService.findById(newCommunity.id);
+            if (community !== null) {
+                return CommunityService.findById(community.id);
             }
-        } else if (fUser.manager && fUser.manager.length > 0) {
-            const newCommunity = await CommunityService.getCommunityOnlyByPublicId(
-                fUser.manager[0].communityId
-            );
-            if (newCommunity !== null) {
-                community = await CommunityService.findById(newCommunity.id);
-            }
+            return null;
+        };
+        if (beneficiary) {
+            community = await getCommunity(beneficiary.communityId);
+        } else if (manager) {
+            community = await getCommunity(manager.communityId);
         } else {
             const communityId = await CommunityService.findByFirstManager(
                 fUser.address
             );
             if (communityId) {
-                const newCommunity = await CommunityService.getCommunityOnlyByPublicId(
-                    communityId
-                );
-                if (newCommunity !== null) {
-                    community = await CommunityService.findById(
-                        newCommunity.id
-                    );
-                }
+                community = await getCommunity(communityId);
                 managerInPendingCommunity = true;
             }
         }
+        // until here
+
         return {
-            isBeneficiary: fUser.beneficiary!.length > 0,
-            isManager: fUser.manager!.length > 0 || managerInPendingCommunity,
-            blocked:
-                fUser.beneficiary!.length > 0
-                    ? fUser.beneficiary![0].blocked
-                    : false,
+            isBeneficiary: beneficiary !== null,
+            isManager: manager !== null || managerInPendingCommunity,
+            blocked: beneficiary !== null ? beneficiary.blocked : false,
             verifiedPN:
-                fUser?.throughTrust?.length !== 0
-                    ? fUser?.throughTrust![0].verifiedPhoneNumber
+                fUser.throughTrust?.length !== 0
+                    ? fUser.throughTrust![0].verifiedPhoneNumber
                     : undefined,
             suspect:
-                fUser?.throughTrust?.length !== 0
-                    ? fUser?.throughTrust![0].selfTrust
-                        ? fUser?.throughTrust![0].selfTrust?.length > 1 ||
-                          fUser?.throughTrust![0].suspect
+                fUser.throughTrust?.length !== 0
+                    ? fUser.throughTrust![0].selfTrust
+                        ? fUser.throughTrust![0].selfTrust?.length > 1 ||
+                          fUser.throughTrust![0].suspect
                         : undefined
                     : undefined,
             rates: await ExchangeRatesService.get(),
             community: community ? community : undefined,
+            communityId: community ? community.id : undefined,
         };
     }
 }

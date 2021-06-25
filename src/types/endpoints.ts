@@ -84,10 +84,11 @@ export interface IManagersDetails {
 }
 
 export interface IUserHello {
-    rates: ExchangeRatesAttributes[];
+    rates: ExchangeRatesAttributes[]; // TODO: to be removed
     isBeneficiary: boolean;
     isManager: boolean;
-    community?: CommunityAttributes;
+    community?: CommunityAttributes; // TODO: to be removed
+    communityId?: number;
     blocked: boolean;
     // to users not yet registered, the values below do not exist
     verifiedPN: boolean | undefined;

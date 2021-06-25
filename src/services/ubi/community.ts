@@ -1,6 +1,7 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
+import { UbiCommunityLabel } from '@interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
@@ -177,49 +178,14 @@ export default class CommunityService {
         }
     }
 
-    /**
-     * @deprecated
-     */
-    public static async request(
-        requestByAddress: string,
-        name: string,
-        description: string,
-        language: string,
-        currency: string,
-        city: string,
-        country: string,
-        gps: {
-            latitude: number;
-            longitude: number;
-        },
-        email: string,
-        coverMediaId: number,
-        contractParams: ICommunityContractParams
-    ): Promise<Community> {
-        // TODO: improve, insert with unique transaction (see sequelize eager loading)
-        const media = await this.appMediaContent.findOne({
-            where: { id: coverMediaId },
-        });
-        const community = await this.community.create({
-            requestByAddress,
-            name,
-            description,
-            language,
-            currency,
-            city,
-            country,
-            gps,
-            email,
-            visibility: 'public',
-            coverMediaId,
-            coverImage: media!.url,
-            status: 'pending',
-            started: new Date(),
-        });
-        await CommunityContractService.add(community.id, contractParams);
-        await CommunityStateService.add(community.id);
-        await CommunityDailyStateService.populateNext5Days(community.id);
-        return community;
+    public static async pictureAdd(
+        isPromoter: boolean,
+        file: Express.Multer.File
+    ) {
+        if (isPromoter) {
+            return this.promoterContentStorage.uploadContent(file);
+        }
+        return this.communityContentStorage.uploadContent(file);
     }
 
     public static async edit(
@@ -266,6 +232,564 @@ export default class CommunityService {
         }
         return this._findCommunityBy({ id });
     }
+
+    public static async delete(id: number): Promise<boolean> {
+        const c = await this.community.findOne({
+            where: {
+                id,
+                status: 'pending',
+                visibility: 'public',
+            },
+            raw: true,
+        });
+        if (c) {
+            await this.community.destroy({
+                where: {
+                    id,
+                },
+            });
+            await this.communityContentStorage.deleteContent(c.coverMediaId!); // TODO: will be required once next version is released
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * List all valid communities, both public and private
+     */
+    public static async listCommunitiesStructOnly(): Promise<Community[]> {
+        return await this.community.findAll({
+            where: {
+                status: 'valid',
+            },
+            raw: true,
+        });
+    }
+
+    /**
+     * Count public valid communities
+     */
+    public static async countPublicCommunities(): Promise<number> {
+        const communities = (await this.community.findAll({
+            attributes: [[fn('count', col('contractAddress')), 'total']],
+            where: {
+                status: 'valid',
+                visibility: 'public',
+            },
+            raw: true,
+        })) as any;
+        return communities[0].total;
+    }
+
+    public static async list(query: {
+        orderBy?: string;
+        filter?: string;
+        extended?: string;
+        offset?: string;
+        limit?: string;
+        lat?: string;
+        lng?: string;
+    }): Promise<{ count: number; rows: CommunityAttributes[] }> {
+        let extendedWhere: WhereOptions<CommunityAttributes> = {};
+        let orderOption: string | Literal | OrderItem[] | undefined;
+        const extendedInclude: Includeable[] = [];
+
+        switch (query.orderBy) {
+            case 'nearest': {
+                if (query.lat === undefined || query.lng === undefined) {
+                    throw new Error('invalid coordinates');
+                }
+                const lat = parseInt(query.lat, 10);
+                const lng = parseInt(query.lng, 10);
+                if (typeof lat !== 'number' || typeof lng !== 'number') {
+                    throw new Error('NaN');
+                }
+                orderOption = [
+                    [
+                        literal(
+                            '(6371*acos(cos(radians(' +
+                                lat +
+                                "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
+                                lng +
+                                '))+sin(radians(' +
+                                lat +
+                                "))*sin(radians(cast(gps->>'latitude' as float)))))"
+                        ),
+                        'ASC',
+                    ],
+                ];
+                break;
+            }
+            case 'out_of_funds': {
+                // this requires extended
+                query.extended = 'true';
+                extendedWhere = {
+                    '$state.beneficiaries$': {
+                        [Op.not]: 0,
+                    },
+                } as any;
+                orderOption = [
+                    [
+                        literal(
+                            '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
+                        ),
+                        'ASC',
+                    ],
+                ];
+                break;
+            }
+            case 'newest':
+                orderOption = [[literal('"Community".started'), 'DESC']];
+                break;
+            default:
+                orderOption = [[literal('state.beneficiaries'), 'DESC']];
+                break;
+        }
+
+        if (query.filter === 'featured') {
+            const featuredIds = (
+                await this.ubiCommunityLabels.findAll({
+                    attributes: ['communityId'],
+                    where: { label: 'featured' },
+                })
+            ).map((c) => (c.toJSON() as UbiCommunityLabel).communityId);
+            extendedWhere = {
+                ...extendedWhere,
+                id: { [Op.in]: featuredIds },
+            };
+        }
+
+        if (query.extended) {
+            extendedInclude.push(
+                {
+                    model: this.ubiCommunityContract,
+                    as: 'contract',
+                },
+                {
+                    model: this.ubiCommunityDailyMetrics,
+                    required: false,
+                    duplicating: false,
+                    as: 'metrics',
+                    where: {
+                        date: {
+                            [Op.eq]: literal(
+                                '(select date from ubi_community_daily_metrics order by date desc limit 1)'
+                            ),
+                        },
+                    },
+                }
+            );
+        }
+        const communitiesResult = await this.community.findAndCountAll({
+            where: {
+                status: 'valid',
+                visibility: 'public',
+                ...extendedWhere,
+            },
+            include: [
+                {
+                    model: this.ubiCommunityState,
+                    as: 'state',
+                },
+                {
+                    model: this.appMediaContent,
+                    as: 'cover',
+                    duplicating: false,
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                            separate: true,
+                        },
+                    ],
+                },
+                ...extendedInclude,
+            ],
+            order: orderOption,
+            offset: query.offset ? parseInt(query.offset, 10) : undefined,
+            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+        });
+
+        const communities = communitiesResult.rows.map((c) =>
+            c.toJSON()
+        ) as CommunityAttributes[];
+
+        return {
+            count: communitiesResult.count,
+            rows: communities,
+        };
+    }
+
+    public static async listBeneficiaries(
+        managerAddress: string,
+        active: boolean,
+        offset: number,
+        limit: number
+    ): Promise<IManagerDetailsBeneficiary[]> {
+        return BeneficiaryService.listBeneficiaries(
+            managerAddress,
+            active,
+            offset,
+            limit
+        );
+    }
+
+    public static async searchBeneficiary(
+        managerAddress: string,
+        beneficiaryQuery: string,
+        active?: boolean
+    ): Promise<IManagerDetailsBeneficiary[]> {
+        return await BeneficiaryService.search(
+            managerAddress,
+            beneficiaryQuery,
+            active
+        );
+    }
+
+    public static getResquestChangeUbiParams(
+        publicId: string
+    ): Promise<UbiRequestChangeParams | null> {
+        return this.ubiRequestChangeParams.findOne({
+            where: { communityId: publicId },
+        });
+    }
+
+    public static async findResquestChangeUbiParams(
+        id: number
+    ): Promise<UbiRequestChangeParams | null> {
+        const community = (await this.community.findOne({
+            attributes: ['publicId'],
+            where: { id },
+            raw: true,
+        }))!;
+        return this.ubiRequestChangeParams.findOne({
+            where: { communityId: community.publicId },
+        });
+    }
+
+    public static async findById(id: number): Promise<CommunityAttributes> {
+        return this._findCommunityBy({
+            id,
+        });
+    }
+
+    public static async findByContractAddress(
+        contractAddress: string
+    ): Promise<CommunityAttributes> {
+        return this._findCommunityBy({
+            contractAddress,
+        });
+    }
+
+    public static async getDashboard(id: string) {
+        const result = await this.community.findOne({
+            include: [
+                {
+                    model: this.ubiCommunityState,
+                    as: 'state',
+                },
+                {
+                    model: this.ubiCommunityContract,
+                    as: 'contract',
+                },
+                {
+                    model: this.ubiCommunityDailyMetrics,
+                    required: false,
+                    as: 'metrics',
+                    order: [['date', 'DESC']],
+                    limit: 30,
+                },
+                {
+                    model: this.ubiCommunityDailyState,
+                    as: 'dailyState',
+                    order: [['date', 'DESC']],
+                    limit: 30,
+                    where: {
+                        date: { [Op.lt]: new Date() },
+                    },
+                },
+            ],
+            where: {
+                id,
+            },
+        });
+        // add reachedLastMonth
+        const aMonthAgo = new Date();
+        aMonthAgo.setDate(aMonthAgo.getDate() - 30);
+        aMonthAgo.setHours(0, 0, 0, 0);
+        const reachedLastMonth: {
+            reach: string;
+            reachOut: string;
+        } = (await this.community.findOne({
+            attributes: [
+                [
+                    fn(
+                        'count',
+                        fn(
+                            'distinct',
+                            col('"beneficiaries->transactions"."withAddress"')
+                        )
+                    ),
+                    'reach',
+                ],
+                [
+                    literal(
+                        'count(distinct "beneficiaries->transactions"."withAddress") filter (where "beneficiaries->transactions"."withAddress" not in (select distinct address from beneficiary where active = true))'
+                    ),
+                    'reachOut',
+                ],
+            ],
+            include: [
+                {
+                    model: models.beneficiary,
+                    as: 'beneficiaries',
+                    attributes: [],
+                    required: false,
+                    include: [
+                        {
+                            model: models.beneficiaryTransaction,
+                            as: 'transactions',
+                            where: literal(
+                                `date("beneficiaries->transactions"."date") = '${
+                                    aMonthAgo.toISOString().split('T')[0]
+                                }'`
+                            ),
+                            attributes: [],
+                            required: false,
+                        },
+                    ],
+                },
+            ],
+            where: {
+                id,
+            },
+            raw: true,
+        })) as any;
+        return {
+            ...result!.toJSON(),
+            reachedLastMonth,
+        } as CommunityAttributes & {
+            reachedLastMonth: {
+                reach: string;
+                reachOut: string;
+            };
+        };
+    }
+
+    public static async getClaimLocation(id: string) {
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setDate(threeMonthsAgo.getDate() - 90);
+        threeMonthsAgo.setHours(0, 0, 0, 0);
+
+        const community = (await this.community.findOne({ where: { id } }))!;
+        const res = await this.claimLocation.findAll({
+            attributes: ['gps'],
+            where: {
+                createdAt: { [Op.gte]: threeMonthsAgo },
+                communityId: community.publicId,
+            },
+        });
+        return res.map((r) => r.gps);
+    }
+
+    public static async getDemographics(id: string) {
+        return this.ubiCommunityDemographics.findAll({
+            where: { communityId: id },
+            order: [['date', 'DESC']],
+            limit: 1,
+        });
+    }
+
+    public static async getManagers(communityId: number) {
+        const community = (await this.community.findOne({
+            where: { id: communityId },
+        }))!;
+        const result = await this.manager.findAll({
+            include: [
+                {
+                    model: this.user,
+                    as: 'user',
+                    include: [
+                        {
+                            model: this.appMediaContent,
+                            as: 'avatar',
+                            required: false,
+                            include: [
+                                {
+                                    model: this.appMediaThumbnail,
+                                    as: 'thumbnails',
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            where: {
+                communityId: community.publicId,
+                active: true,
+            },
+        });
+        return result.map((r) => r.toJSON() as ManagerAttributes);
+    }
+
+    public static async getPromoter(communityId: number) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const result = await this.ubiPromoter.findOne({
+            include: [
+                {
+                    model: this.community,
+                    as: 'community',
+                    required: true,
+                    attributes: [],
+                    where: {
+                        id: communityId,
+                    },
+                },
+                {
+                    model: this.ubiPromoterSocialMedia,
+                    as: 'socialMedia',
+                },
+                {
+                    model: this.appMediaContent,
+                    as: 'logo',
+                    include: [
+                        {
+                            model: this.appMediaThumbnail,
+                            as: 'thumbnails',
+                            separate: true,
+                        },
+                    ],
+                },
+            ],
+        });
+        return result !== null ? (result.toJSON() as UbiPromoter) : null;
+    }
+
+    public static async getSuspect(communityId: number) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const result = await this.ubiCommunitySuspect.findOne({
+            where: {
+                communityId,
+                createdAt: {
+                    [Op.lte]: yesterday.toISOString().split('T')[0],
+                },
+            },
+        });
+        return result !== null
+            ? (result.toJSON() as UbiCommunitySuspect)
+            : null;
+    }
+
+    public static async getContract(communityId: number) {
+        const result = await this.ubiCommunityContract.findOne({
+            where: {
+                communityId,
+            },
+        });
+        return result !== null
+            ? (result.toJSON() as UbiCommunityContract)
+            : null;
+    }
+
+    public static async getState(communityId: number) {
+        const result = await this.ubiCommunityState.findOne({
+            where: {
+                communityId,
+            },
+        });
+        return result !== null ? (result.toJSON() as UbiCommunityState) : null;
+    }
+
+    public static async getMetrics(communityId: number) {
+        const result = await this.ubiCommunityDailyMetrics.findAll({
+            where: {
+                communityId,
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 1,
+        });
+        return result.length > 0
+            ? (result[0].toJSON() as UbiCommunityDailyMetrics)
+            : null;
+    }
+
+    public static async getCommunityOnlyByPublicId(
+        publicId: string
+    ): Promise<Community | null> {
+        return this.community.findOne({
+            where: {
+                publicId,
+            },
+            raw: true,
+        });
+    }
+
+    public static async getCommunityOnlyById(
+        id: number
+    ): Promise<Community | null> {
+        return this.community.findOne({
+            where: {
+                id,
+            },
+            raw: true,
+        });
+    }
+
+    public static async existsByContractAddress(
+        contractAddress: string
+    ): Promise<boolean> {
+        const community = await this.community.count({
+            where: {
+                contractAddress,
+            },
+        });
+        return community !== 0;
+    }
+
+    public static async getAllAddressesAndIds(): Promise<Map<string, string>> {
+        const result = await this.community.findAll({
+            attributes: ['contractAddress', 'publicId'],
+            where: {
+                contractAddress: {
+                    [Op.ne]: null,
+                },
+            },
+            raw: true,
+        });
+        return new Map(result.map((c) => [c.contractAddress!, c.publicId]));
+    }
+
+    public static async findByFirstManager(
+        requestByAddress: string
+    ): Promise<string | null> {
+        const community = await this.community.findOne({
+            attributes: ['publicId'],
+            where: {
+                requestByAddress,
+                status: {
+                    [Op.or]: ['valid', 'pending'],
+                },
+            },
+            raw: true,
+        });
+        if (community) {
+            return community.publicId;
+        }
+        return null;
+    }
+
+    public static async getOnlyCommunityByContractAddress(
+        contractAddress: string
+    ): Promise<Community | null> {
+        return await this.community.findOne({
+            where: { contractAddress },
+            raw: true,
+        });
+    }
+
+    // ADMIN METHODS
 
     public static async pending(): Promise<ICommunityPendingDetails[]> {
         // by the time of writting, sequelize
@@ -371,16 +895,14 @@ export default class CommunityService {
 
             const t = await this.sequelize.transaction();
             try {
-                const dbUpdate: [
-                    number,
-                    Community[]
-                ] = await this.community.update(
-                    {
-                        contractAddress: communityContractAddress,
-                        status: 'valid',
-                    },
-                    { returning: true, where: { publicId }, transaction: t }
-                );
+                const dbUpdate: [number, Community[]] =
+                    await this.community.update(
+                        {
+                            contractAddress: communityContractAddress,
+                            status: 'valid',
+                        },
+                        { returning: true, where: { publicId }, transaction: t }
+                    );
                 if (dbUpdate[0] === 1) {
                     notifyManagerAdded(
                         dbUpdate[1][0].requestByAddress,
@@ -414,36 +936,7 @@ export default class CommunityService {
         return null;
     }
 
-    public static async pictureAdd(
-        isPromoter: boolean,
-        file: Express.Multer.File
-    ) {
-        if (isPromoter) {
-            return this.promoterContentStorage.uploadContent(file);
-        }
-        return this.communityContentStorage.uploadContent(file);
-    }
-
-    public static async delete(id: number): Promise<boolean> {
-        const c = await this.community.findOne({
-            where: {
-                id,
-                status: 'pending',
-                visibility: 'public',
-            },
-            raw: true,
-        });
-        if (c) {
-            await this.community.destroy({
-                where: {
-                    id,
-                },
-            });
-            await this.communityContentStorage.deleteContent(c.coverMediaId!); // TODO: will be required once next version is released
-            return true;
-        }
-        return false;
-    }
+    // TODO: DEPRECATED METHODS
 
     /**
      * @deprecated Use delete
@@ -467,33 +960,6 @@ export default class CommunityService {
             return true;
         }
         return false;
-    }
-
-    /**
-     * List all valid communities, both public and private
-     */
-    public static async listCommunitiesStructOnly(): Promise<Community[]> {
-        return await this.community.findAll({
-            where: {
-                status: 'valid',
-            },
-            raw: true,
-        });
-    }
-
-    /**
-     * Count public valid communities
-     */
-    public static async countPublicCommunities(): Promise<number> {
-        const communities = (await this.community.findAll({
-            attributes: [[fn('count', col('contractAddress')), 'total']],
-            where: {
-                status: 'valid',
-                visibility: 'public',
-            },
-            raw: true,
-        })) as any;
-        return communities[0].total;
     }
 
     /**
@@ -587,143 +1053,6 @@ export default class CommunityService {
             { returning: true, where: { publicId } }
         );
         return result[0] > 0;
-    }
-
-    public static async list(query: {
-        orderBy?: string;
-        filter?: string;
-        extended?: string;
-        offset?: string;
-        limit?: string;
-        lat?: string;
-        lng?: string;
-    }): Promise<{ count: number; rows: CommunityAttributes[] }> {
-        let extendedWhere: WhereOptions<CommunityAttributes> = {};
-        let orderOption: string | Literal | OrderItem[] | undefined;
-        const extendedInclude: Includeable[] = [];
-
-        switch (query.orderBy) {
-            case 'nearest': {
-                if (query.lat === undefined || query.lng === undefined) {
-                    throw new Error('invalid coordinates');
-                }
-                const lat = parseInt(query.lat, 10);
-                const lng = parseInt(query.lng, 10);
-                if (typeof lat !== 'number' || typeof lng !== 'number') {
-                    throw new Error('NaN');
-                }
-                orderOption = [
-                    [
-                        literal(
-                            '(6371*acos(cos(radians(' +
-                                lat +
-                                "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
-                                lng +
-                                '))+sin(radians(' +
-                                lat +
-                                "))*sin(radians(cast(gps->>'latitude' as float)))))"
-                        ),
-                        'ASC',
-                    ],
-                ];
-                break;
-            }
-            case 'out_of_funds': {
-                // this requires extended
-                query.extended = 'true';
-                extendedWhere = {
-                    '$state.beneficiaries$': {
-                        [Op.not]: 0,
-                    },
-                } as any;
-                orderOption = [
-                    [
-                        literal(
-                            '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
-                        ),
-                        'ASC',
-                    ],
-                ];
-                break;
-            }
-            case 'newest':
-                orderOption = [[literal('"Community".started'), 'DESC']];
-                break;
-            default:
-                orderOption = [[literal('state.beneficiaries'), 'DESC']];
-                break;
-        }
-
-        if (query.filter === 'featured') {
-            extendedInclude.push({
-                model: this.ubiCommunityLabels,
-                as: 'labels',
-                where: {
-                    label: 'featured',
-                },
-                duplicating: false,
-            });
-        }
-
-        if (query.extended) {
-            extendedInclude.push(
-                {
-                    model: this.ubiCommunityContract,
-                    as: 'contract',
-                },
-                {
-                    model: this.ubiCommunityDailyMetrics,
-                    required: false,
-                    duplicating: false,
-                    as: 'metrics',
-                    where: {
-                        date: {
-                            [Op.eq]: literal(
-                                '(select date from ubi_community_daily_metrics order by date desc limit 1)'
-                            ),
-                        },
-                    },
-                }
-            );
-        }
-        const communitiesResult = await this.community.findAndCountAll({
-            where: {
-                status: 'valid',
-                visibility: 'public',
-                ...extendedWhere,
-            },
-            include: [
-                {
-                    model: this.ubiCommunityState,
-                    as: 'state',
-                },
-                {
-                    model: this.appMediaContent,
-                    as: 'cover',
-                    duplicating: false,
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
-                },
-                ...extendedInclude,
-            ],
-            order: orderOption,
-            offset: query.offset ? parseInt(query.offset, 10) : undefined,
-            limit: query.limit ? parseInt(query.limit, 10) : undefined,
-        });
-
-        const communities = communitiesResult.rows.map((c) =>
-            c.toJSON()
-        ) as CommunityAttributes[];
-
-        return {
-            count: communitiesResult.count,
-            rows: communities,
-        };
     }
 
     /**
@@ -829,6 +1158,9 @@ export default class CommunityService {
         return results;
     }
 
+    /**
+     * @deprecated
+     */
     public static async fullList(
         order?: string
     ): Promise<CommunityAttributes[]> {
@@ -1009,20 +1341,6 @@ export default class CommunityService {
         return results;
     }
 
-    public static async listBeneficiaries(
-        managerAddress: string,
-        active: boolean,
-        offset: number,
-        limit: number
-    ): Promise<IManagerDetailsBeneficiary[]> {
-        return BeneficiaryService.listBeneficiaries(
-            managerAddress,
-            active,
-            offset,
-            limit
-        );
-    }
-
     /**
      * @deprecated Since mobile version 1.1.0
      */
@@ -1034,18 +1352,6 @@ export default class CommunityService {
         return ManagerService.listManagers(managerAddress, offset, limit);
     }
 
-    public static async searchBeneficiary(
-        managerAddress: string,
-        beneficiaryQuery: string,
-        active?: boolean
-    ): Promise<IManagerDetailsBeneficiary[]> {
-        return await BeneficiaryService.search(
-            managerAddress,
-            beneficiaryQuery,
-            active
-        );
-    }
-
     /**
      * @deprecated Since mobile version 1.1.0
      */
@@ -1054,69 +1360,6 @@ export default class CommunityService {
         beneficiaryQuery: string
     ): Promise<IManagerDetailsManager[]> {
         return await ManagerService.search(managerAddress, beneficiaryQuery);
-    }
-
-    /**
-     * @deprecated Since mobile version 0.1.8
-     */
-    public static async managers(managerAddress: string): Promise<IManagers> {
-        const manager = await ManagerService.get(managerAddress);
-        if (manager === null) {
-            throw new Error('Not a manager ' + managerAddress);
-        }
-        const managers = await ManagerService.countManagers(
-            manager.communityId
-        );
-        const beneficiaries = await BeneficiaryService.countInCommunity(
-            manager.communityId
-        );
-        return {
-            managers,
-            beneficiaries,
-        };
-    }
-
-    /**
-     * @deprecated Since mobile version 0.1.8
-     */
-    public static async managersDetails(
-        managerAddress: string
-    ): Promise<IManagersDetails> {
-        const manager = await ManagerService.get(managerAddress);
-        if (manager === null) {
-            throw new Error('Not a manager ' + managerAddress);
-        }
-        const managers = await ManagerService.managersInCommunity(
-            manager.communityId
-        );
-        const beneficiaries = await BeneficiaryService.listAllInCommunity(
-            manager.communityId
-        );
-        return {
-            managers,
-            beneficiaries,
-        };
-    }
-
-    public static getResquestChangeUbiParams(
-        publicId: string
-    ): Promise<UbiRequestChangeParams | null> {
-        return this.ubiRequestChangeParams.findOne({
-            where: { communityId: publicId },
-        });
-    }
-
-    public static async findResquestChangeUbiParams(
-        id: number
-    ): Promise<UbiRequestChangeParams | null> {
-        const community = (await this.community.findOne({
-            attributes: ['publicId'],
-            where: { id },
-            raw: true,
-        }))!;
-        return this.ubiRequestChangeParams.findOne({
-            where: { communityId: community.publicId },
-        });
     }
 
     /**
@@ -1169,16 +1412,15 @@ export default class CommunityService {
             },
             raw: true,
         });
-        const communityDailyMetrics = await this.ubiCommunityDailyMetrics.findAll(
-            {
+        const communityDailyMetrics =
+            await this.ubiCommunityDailyMetrics.findAll({
                 where: {
                     communityId: community.id,
                 },
                 order: [['createdAt', 'DESC']],
                 limit: 1,
                 raw: true,
-            }
-        );
+            });
 
         // because promoter as a many-to-many (see association file)
         // needs to be broken
@@ -1197,19 +1439,51 @@ export default class CommunityService {
         } as any;
     }
 
-    public static async findById(id: number): Promise<CommunityAttributes> {
-        return this._findCommunityBy({
-            id,
+    /**
+     * @deprecated
+     */
+    public static async getByContractAddress(
+        contractAddress: string
+    ): Promise<ICommunity | null> {
+        const community = await this.community.findOne({
+            where: {
+                contractAddress,
+            },
+            raw: true,
         });
+        if (community === null) {
+            throw new Error('Not found community ' + contractAddress);
+        }
+        const communityState = await this.ubiCommunityState.findOne({
+            where: {
+                communityId: community.id,
+            },
+            raw: true,
+        });
+        const communityContract = await this.ubiCommunityContract.findOne({
+            where: {
+                communityId: community.id,
+            },
+            raw: true,
+        });
+        const communityDailyMetrics =
+            await this.ubiCommunityDailyMetrics.findAll({
+                where: {
+                    communityId: community.id,
+                },
+                order: [['createdAt', 'DESC']],
+                limit: 1,
+                raw: true,
+            });
+        return {
+            ...community,
+            state: communityState!,
+            contract: communityContract!,
+            metrics: communityDailyMetrics[0]!,
+        } as any;
     }
 
-    public static async findByContractAddress(
-        contractAddress: string
-    ): Promise<CommunityAttributes> {
-        return this._findCommunityBy({
-            contractAddress,
-        });
-    }
+    // PRIVATE METHODS
 
     private static async _findCommunityBy(
         where: WhereOptions<CommunityAttributes>
@@ -1269,369 +1543,5 @@ export default class CommunityService {
             throw new Error('Not found community ' + where);
         }
         return community.toJSON() as CommunityAttributes;
-    }
-
-    public static async getDashboard(id: string) {
-        const result = await this.community.findOne({
-            include: [
-                {
-                    model: this.ubiCommunityState,
-                    as: 'state',
-                },
-                {
-                    model: this.ubiCommunityContract,
-                    as: 'contract',
-                },
-                {
-                    model: this.ubiCommunityDemographics,
-                    required: false,
-                    as: 'demographics',
-                    order: [['date', 'DESC']],
-                    limit: 1,
-                },
-                {
-                    model: this.ubiCommunityDailyMetrics,
-                    required: false,
-                    as: 'metrics',
-                    order: [['date', 'DESC']],
-                    limit: 30,
-                },
-                {
-                    model: this.ubiCommunityDailyState,
-                    as: 'dailyState',
-                    order: [['date', 'DESC']],
-                    limit: 30,
-                    where: {
-                        date: { [Op.lt]: new Date() },
-                    },
-                },
-            ],
-            where: {
-                id,
-            },
-        });
-        // add reachedLastMonth
-        const aMonthAgo = new Date();
-        aMonthAgo.setDate(aMonthAgo.getDate() - 30);
-        aMonthAgo.setHours(0, 0, 0, 0);
-        const reachedLastMonth: {
-            reach: string;
-            reachOut: string;
-        } = (await this.community.findOne({
-            attributes: [
-                [
-                    fn(
-                        'count',
-                        fn(
-                            'distinct',
-                            col('"beneficiaries->transactions"."withAddress"')
-                        )
-                    ),
-                    'reach',
-                ],
-                [
-                    literal(
-                        'count(distinct "beneficiaries->transactions"."withAddress") filter (where "beneficiaries->transactions"."withAddress" not in (select distinct address from beneficiary where active = true))'
-                    ),
-                    'reachOut',
-                ],
-            ],
-            include: [
-                {
-                    model: models.beneficiary,
-                    as: 'beneficiaries',
-                    attributes: [],
-                    required: false,
-                    include: [
-                        {
-                            model: models.beneficiaryTransaction,
-                            as: 'transactions',
-                            where: literal(
-                                `date("beneficiaries->transactions"."date") = '${
-                                    aMonthAgo.toISOString().split('T')[0]
-                                }'`
-                            ),
-                            attributes: [],
-                            required: false,
-                        },
-                    ],
-                },
-            ],
-            where: {
-                id,
-            },
-            raw: true,
-        })) as any;
-        return {
-            ...result!.toJSON(),
-            reachedLastMonth,
-        } as CommunityAttributes & {
-            reachedLastMonth: {
-                reach: string;
-                reachOut: string;
-            };
-        };
-    }
-
-    public static async getClaimLocation(id: string) {
-        const threeMonthsAgo = new Date();
-        threeMonthsAgo.setDate(threeMonthsAgo.getDate() - 90);
-        threeMonthsAgo.setHours(0, 0, 0, 0);
-
-        const community = (await this.community.findOne({ where: { id } }))!;
-        const res = await this.claimLocation.findAll({
-            attributes: ['gps'],
-            where: {
-                createdAt: { [Op.gte]: threeMonthsAgo },
-                communityId: community.publicId,
-            },
-        });
-        return res.map((r) => r.gps);
-    }
-
-    public static async getManagers(communityId: number) {
-        const community = (await this.community.findOne({
-            where: { id: communityId },
-        }))!;
-        const result = await this.manager.findAll({
-            include: [
-                {
-                    model: this.user,
-                    as: 'user',
-                    include: [
-                        {
-                            model: this.appMediaContent,
-                            as: 'avatar',
-                            required: false,
-                            include: [
-                                {
-                                    model: this.appMediaThumbnail,
-                                    as: 'thumbnails',
-                                },
-                            ],
-                        },
-                    ],
-                },
-            ],
-            where: {
-                communityId: community.publicId,
-                active: true,
-            },
-        });
-        return result.map((r) => r.toJSON() as ManagerAttributes);
-    }
-
-    public static async getPromoter(communityId: number) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const result = await this.ubiPromoter.findOne({
-            include: [
-                {
-                    model: this.community,
-                    as: 'community',
-                    required: true,
-                    attributes: [],
-                    where: {
-                        id: communityId,
-                    },
-                },
-                {
-                    model: this.ubiPromoterSocialMedia,
-                    as: 'socialMedia',
-                },
-                {
-                    model: this.appMediaContent,
-                    as: 'logo',
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
-                },
-            ],
-        });
-        return result !== null ? (result.toJSON() as UbiPromoter) : null;
-    }
-
-    public static async getSuspect(communityId: number) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const result = await this.ubiCommunitySuspect.findOne({
-            where: {
-                communityId,
-                createdAt: {
-                    [Op.lte]: yesterday.toISOString().split('T')[0],
-                },
-            },
-        });
-        return result !== null
-            ? (result.toJSON() as UbiCommunitySuspect)
-            : null;
-    }
-
-    public static async getContract(communityId: number) {
-        const result = await this.ubiCommunityContract.findOne({
-            where: {
-                communityId,
-            },
-        });
-        return result !== null
-            ? (result.toJSON() as UbiCommunityContract)
-            : null;
-    }
-
-    public static async getState(communityId: number) {
-        const result = await this.ubiCommunityState.findOne({
-            where: {
-                communityId,
-            },
-        });
-        return result !== null ? (result.toJSON() as UbiCommunityState) : null;
-    }
-
-    public static async getMetrics(communityId: number) {
-        const result = await this.ubiCommunityDailyMetrics.findAll({
-            where: {
-                communityId,
-            },
-            order: [['createdAt', 'DESC']],
-            limit: 1,
-        });
-        return result.length > 0
-            ? (result[0].toJSON() as UbiCommunityDailyMetrics)
-            : null;
-    }
-
-    public static async getCommunityOnlyByPublicId(
-        publicId: string
-    ): Promise<Community | null> {
-        return this.community.findOne({
-            where: {
-                publicId,
-            },
-            raw: true,
-        });
-    }
-
-    public static async getCommunityOnlyById(
-        id: number
-    ): Promise<Community | null> {
-        return this.community.findOne({
-            where: {
-                id,
-            },
-            raw: true,
-        });
-    }
-
-    // public static async findByContractAddress(
-    //     contractAddress: string
-    // ): Promise<CommunityAttributes | null> {
-    //     const community = await this.community.findOne({
-    //         where: {
-    //             contractAddress,
-    //         },
-    //         raw: true,
-    //     });
-    //     return community?.toJSON() as CommunityAttributes | null;
-    // }
-
-    /**
-     * @deprecated (create a new method)
-     */
-    public static async getByContractAddress(
-        contractAddress: string
-    ): Promise<ICommunity | null> {
-        const community = await this.community.findOne({
-            where: {
-                contractAddress,
-            },
-            raw: true,
-        });
-        if (community === null) {
-            throw new Error('Not found community ' + contractAddress);
-        }
-        const communityState = await this.ubiCommunityState.findOne({
-            where: {
-                communityId: community.id,
-            },
-            raw: true,
-        });
-        const communityContract = await this.ubiCommunityContract.findOne({
-            where: {
-                communityId: community.id,
-            },
-            raw: true,
-        });
-        const communityDailyMetrics = await this.ubiCommunityDailyMetrics.findAll(
-            {
-                where: {
-                    communityId: community.id,
-                },
-                order: [['createdAt', 'DESC']],
-                limit: 1,
-                raw: true,
-            }
-        );
-        return {
-            ...community,
-            state: communityState!,
-            contract: communityContract!,
-            metrics: communityDailyMetrics[0]!,
-        } as any;
-    }
-
-    public static async existsByContractAddress(
-        contractAddress: string
-    ): Promise<boolean> {
-        const community = await this.community.count({
-            where: {
-                contractAddress,
-            },
-        });
-        return community !== 0;
-    }
-
-    public static async getAllAddressesAndIds(): Promise<Map<string, string>> {
-        const result = await this.community.findAll({
-            attributes: ['contractAddress', 'publicId'],
-            where: {
-                contractAddress: {
-                    [Op.ne]: null,
-                },
-            },
-            raw: true,
-        });
-        return new Map(result.map((c) => [c.contractAddress!, c.publicId]));
-    }
-
-    public static async findByFirstManager(
-        requestByAddress: string
-    ): Promise<string | null> {
-        const community = await this.community.findOne({
-            attributes: ['publicId'],
-            where: {
-                requestByAddress,
-                status: {
-                    [Op.or]: ['valid', 'pending'],
-                },
-            },
-            raw: true,
-        });
-        if (community) {
-            return community.publicId;
-        }
-        return null;
-    }
-
-    public static async getOnlyCommunityByContractAddress(
-        contractAddress: string
-    ): Promise<Community | null> {
-        return await this.community.findOne({
-            where: { contractAddress },
-            raw: true,
-        });
     }
 }

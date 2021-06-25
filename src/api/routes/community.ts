@@ -117,18 +117,6 @@ export default (app: Router): void => {
         communityController.listManagers
     );
     /**
-     * @deprecated Deprecated in mobile-app@1.0.2
-     */
-    route.get('/managers', authenticateToken, communityController.managers);
-    /**
-     * @deprecated Deprecated in mobile-app@1.0.2
-     */
-    route.get(
-        '/managers/details',
-        authenticateToken,
-        communityController.managersDetails
-    );
-    /**
      * @deprecated
      */
     route.post(
@@ -378,6 +366,35 @@ export default (app: Router): void => {
         '/:id/dashboard',
         cacheWithRedis('1 hour'),
         controller.getDashboard
+    );
+
+    /**
+     * @swagger
+     *
+     * /community/{id}/demographics:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community demographics
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityDemographics'
+     */
+    route.get(
+        '/:id/demographics',
+        cacheWithRedis('1 day'),
+        controller.getDemographics
     );
 
     /**

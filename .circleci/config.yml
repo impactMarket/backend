@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  coveralls: coveralls/coveralls@1.0.4
+  coveralls: coveralls/coveralls@1.0.6
 
 jobs:
   coverage:
@@ -21,10 +21,24 @@ jobs:
           environment:
             DATABASE_URL: postgresql://citest:test101@localhost:5432/impactmarkettest
       - store_artifacts:
-          path: coverage
+          path: ./coverage
+      - run:
+          name: "run cmd"
+          command: ls -a
+      - coveralls/upload:
+          path_to_lcov: ./coverage/lcov.info
+  lint:
+    docker:
+      - image: circleci/node:14.15.1
+    steps:
+      - checkout
+      - run: yarn
+      - run: yarn eslint-no-fix
+      - run: yarn prettier-no-fix
 
 workflows:
   version: 2
   test:
     jobs:
       - coverage
+      - lint

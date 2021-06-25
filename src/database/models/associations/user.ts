@@ -1,21 +1,18 @@
 import { Sequelize } from 'sequelize';
 
 export function userAssociation(sequelize: Sequelize) {
-    // used to query from the user with incude
-    sequelize.models.UserModel.hasMany(sequelize.models.Beneficiary, {
-        foreignKey: 'address',
-        as: 'beneficiary',
-    });
     sequelize.models.Beneficiary.hasMany(sequelize.models.Claim, {
         sourceKey: 'address',
         foreignKey: 'address',
         as: 'claim',
     });
+
     // used to query from the beneficiary with incude
     sequelize.models.Beneficiary.belongsTo(sequelize.models.UserModel, {
         foreignKey: 'address',
         as: 'user',
     });
+
     // used to query from the beneficiarytransaction with incude
     sequelize.models.Beneficiary.hasMany(
         sequelize.models.BeneficiaryTransaction,
@@ -34,25 +31,14 @@ export function userAssociation(sequelize: Sequelize) {
         constraints: false,
     });
 
-    // used to query from the user with incude
-    sequelize.models.UserModel.hasMany(sequelize.models.Manager, {
-        foreignKey: 'address',
-        as: 'manager',
-    });
     // used to query from the manager with incude
     sequelize.models.Manager.belongsTo(sequelize.models.UserModel, {
         foreignKey: 'address',
         as: 'user',
     });
 
-    // beneficiaries are linked to manager through communityId
-    sequelize.models.Beneficiary.belongsTo(sequelize.models.Manager, {
-        foreignKey: 'communityId',
-        targetKey: 'communityId',
-        as: 'manager',
-    });
-
     // used to query from the user with incude
+    // TODO: maybe remove
     sequelize.models.UserModel.belongsToMany(
         sequelize.models.AppUserTrustModel,
         {
@@ -62,7 +48,9 @@ export function userAssociation(sequelize: Sequelize) {
             as: 'throughTrust',
         }
     );
+
     // used to query from the AppUserTrust with incude
+    // TODO: maybe remove
     sequelize.models.AppUserTrustModel.belongsToMany(
         sequelize.models.UserModel,
         {
@@ -72,6 +60,7 @@ export function userAssociation(sequelize: Sequelize) {
             as: 'throughTrust',
         }
     );
+
     // self association to find repeated values on those keys
     sequelize.models.AppUserTrustModel.hasMany(
         sequelize.models.AppUserTrustModel,

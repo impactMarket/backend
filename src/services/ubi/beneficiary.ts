@@ -1,22 +1,15 @@
 import { User } from '@interfaces/app/user';
 import { IManagerDetailsBeneficiary } from '@ipcttypes/endpoints';
 import { Beneficiary, BeneficiaryAttributes } from '@models/ubi/beneficiary';
+import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
-import { isUUID, isAddress } from '@utils/util';
-import {
-    Op,
-    fn,
-    col,
-    QueryTypes,
-    OrderItem,
-    WhereAttributeHash,
-} from 'sequelize';
+import { isAddress } from '@utils/util';
+import { Op, fn, col, OrderItem, WhereAttributeHash } from 'sequelize';
 import { Col, Fn, Literal, Where } from 'sequelize/types/lib/utils';
 
 import { models, sequelize } from '../../database';
 import CommunityService from './community';
 
-// const db = database();
 export default class BeneficiaryService {
     public static beneficiary = models.beneficiary;
     public static manager = models.manager;
@@ -51,6 +44,16 @@ export default class BeneficiaryService {
         return true;
     }
 
+    public static async remove(
+        address: string,
+        communityId: string
+    ): Promise<void> {
+        await this.beneficiary.update(
+            { active: false },
+            { where: { address, communityId } }
+        );
+    }
+
     public static findByAddress(
         address: string,
         active?: boolean
@@ -58,49 +61,6 @@ export default class BeneficiaryService {
         return this.beneficiary.findOne({
             where: { address, active },
         });
-    }
-
-    public static async getAllAddressesInPublicValidCommunities(): Promise<
-        string[]
-    > {
-        // select address from beneficiary b, community c
-        // where b."communityId" = c."publicId"
-        // and c.status = 'valid'
-        // and c.visibility = 'public'
-        // and b.active = true
-        const publicCommunities: string[] = (
-            await this.community.findAll({
-                attributes: ['publicId'],
-                where: { visibility: 'public', status: 'valid' },
-                raw: true,
-            })
-        ).map((c) => c.publicId);
-
-        return (
-            await this.beneficiary.findAll({
-                attributes: ['address'],
-                where: {
-                    communityId: { [Op.in]: publicCommunities },
-                    active: true,
-                },
-                raw: true,
-            })
-        ).map((b) => b.address);
-    }
-
-    public static listActiveInCommunity(
-        communityId: string
-    ): Promise<
-        { claims: number; lastClaimAt: Date; penultimateClaimAt: Date }[]
-    > {
-        return this.beneficiary.findAll({
-            attributes: ['claims', 'lastClaimAt', 'penultimateClaimAt'],
-            where: {
-                communityId,
-                active: true,
-            },
-            raw: true,
-        }) as any;
     }
 
     public static async search(
@@ -145,16 +105,17 @@ export default class BeneficiaryService {
             ['user', 'throughTrust', 'suspect', 'DESC'],
         ]; // it's default order for now.
 
+        const manager = await this.manager.findOne({
+            attributes: ['communityId'],
+            where: { address: managerAddress, active: true },
+        });
+        if (manager === null) {
+            return [];
+        }
+        const communityId = (manager.toJSON() as ManagerAttributes).communityId;
         const x = await this.beneficiary.findAll({
-            where: whereActive,
+            where: { ...whereActive, communityId },
             include: [
-                {
-                    model: this.manager,
-                    as: 'manager',
-                    where: {
-                        address: managerAddress,
-                    },
-                },
                 {
                     model: this.user,
                     as: 'user',
@@ -209,6 +170,21 @@ export default class BeneficiaryService {
         return result;
     }
 
+    public static listActiveInCommunity(
+        communityId: string
+    ): Promise<
+        { claims: number; lastClaimAt: Date; penultimateClaimAt: Date }[]
+    > {
+        return this.beneficiary.findAll({
+            attributes: ['claims', 'lastClaimAt', 'penultimateClaimAt'],
+            where: {
+                communityId,
+                active: true,
+            },
+            raw: true,
+        }) as any;
+    }
+
     public static async listBeneficiaries(
         managerAddress: string,
         active: boolean,
@@ -236,16 +212,17 @@ export default class BeneficiaryService {
             ['user', 'throughTrust', 'suspect', 'DESC'],
         ]; // it's default order for now.
 
+        const manager = await this.manager.findOne({
+            attributes: ['communityId'],
+            where: { address: managerAddress, active: true },
+        });
+        if (manager === null) {
+            return [];
+        }
+        const communityId = (manager.toJSON() as ManagerAttributes).communityId;
         const x = await this.beneficiary.findAll({
-            where: { active },
+            where: { active, communityId },
             include: [
-                {
-                    model: this.manager,
-                    as: 'manager',
-                    where: {
-                        address: managerAddress,
-                    },
-                },
                 {
                     model: this.user,
                     as: 'user',
@@ -300,79 +277,32 @@ export default class BeneficiaryService {
         return result;
     }
 
-    /**
-     * @deprecated Since mobile version 0.1.8
-     */
-    public static async countInCommunity(
-        communityId: string
-    ): Promise<{ active: number; inactive: number }> {
-        const active: { total: string } = (
+    public static async getAllAddressesInPublicValidCommunities(): Promise<
+        string[]
+    > {
+        // select address from beneficiary b, community c
+        // where b."communityId" = c."publicId"
+        // and c.status = 'valid'
+        // and c.visibility = 'public'
+        // and b.active = true
+        const publicCommunities: string[] = (
+            await this.community.findAll({
+                attributes: ['publicId'],
+                where: { visibility: 'public', status: 'valid' },
+                raw: true,
+            })
+        ).map((c) => c.publicId);
+
+        return (
             await this.beneficiary.findAll({
-                attributes: [[fn('count', col('address')), 'total']],
+                attributes: ['address'],
                 where: {
-                    communityId,
+                    communityId: { [Op.in]: publicCommunities },
                     active: true,
                 },
                 raw: true,
             })
-        )[0] as any;
-        const inactive: { total: string } = (
-            await this.beneficiary.findAll({
-                attributes: [[fn('count', col('address')), 'total']],
-                where: {
-                    communityId,
-                    active: false,
-                },
-                raw: true,
-            })
-        )[0] as any;
-        return {
-            active: parseInt(active.total, 10),
-            inactive: parseInt(inactive.total, 10),
-        };
-    }
-
-    /**
-     * @deprecated Since mobile version 0.1.8
-     */
-    public static async listAllInCommunity(
-        communityId: string
-    ): Promise<{
-        active: IManagerDetailsBeneficiary[];
-        inactive: IManagerDetailsBeneficiary[];
-    }> {
-        // sequelize still has a bug related to eager loading when using global raw:false
-
-        // select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed
-        // from beneficiary b
-        //     left join "user" u on b.address = u.address
-        //     left join claim c on b.address = c.address
-        // where b."communityId" = 'ca16d975-4a11-4cdc-baa9-91442c534125'
-        // group by b.address, u.username, b."txAt"
-        // order by b."txAt" desc
-
-        if (!isUUID(communityId)) {
-            throw new Error('Not valid UUID ' + communityId);
-        }
-
-        const active: IManagerDetailsBeneficiary[] = await this.sequelize.query(
-            'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address where b."communityId" = \'' +
-                communityId +
-                '\' and b.active = true group by b.address, u.username, b."txAt" order by b."txAt" desc',
-            { type: QueryTypes.SELECT }
-        );
-
-        const inactive: IManagerDetailsBeneficiary[] = await this.sequelize.query(
-            'select b.address, u.username, b."txAt" "timestamp", COALESCE(sum(c.amount), 0) claimed from beneficiary b left join "user" u on b.address = u.address left join claim c on b.address = c.address where b."communityId" = \'' +
-                communityId +
-                '\' and b.active = false group by b.address, u.username, b."txAt" order by b."txAt" desc',
-            { type: QueryTypes.SELECT }
-        );
-
-        return {
-            active,
-            inactive,
-        };
+        ).map((b) => b.address);
     }
 
     public static async getAllAddresses(): Promise<string[]> {
@@ -382,16 +312,6 @@ export default class BeneficiaryService {
                 raw: true,
             })
         ).map((b) => b.address);
-    }
-
-    public static async remove(
-        address: string,
-        communityId: string
-    ): Promise<void> {
-        await this.beneficiary.update(
-            { active: false },
-            { where: { address, communityId } }
-        );
     }
 
     public static async getActiveBeneficiariesLast30Days(): Promise<

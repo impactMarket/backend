@@ -18,6 +18,7 @@ import { Includeable, literal, Op, QueryTypes } from 'sequelize';
 
 import config from '../config';
 import { models, sequelize } from '../database';
+import Email from './email';
 import { StoryContentStorage } from './storage';
 
 export default class StoryService {
@@ -35,6 +36,7 @@ export default class StoryService {
     public sequelize = sequelize;
 
     private storyContentStorage = new StoryContentStorage();
+    private email = new Email();
 
     public pictureAdd(file: Express.Multer.File) {
         return this.storyContentStorage.uploadContent(file);
@@ -494,6 +496,25 @@ export default class StoryService {
             await this.storyUserReport.create({
                 contentId,
                 address: userAddress,
+            });
+            // eslint-disable-next-line no-new
+            new Promise(async () => {
+                const storyContent = (await this.storyContent.findOne({
+                    include: [
+                        {
+                            model: this.appMediaContent,
+                            as: 'media',
+                            required: false,
+                        },
+                    ],
+                    where: { id: contentId },
+                }))!.toJSON() as StoryContent;
+                await this.email.notify({
+                    to: config.internalEmailToNotify,
+                    from: config.internalEmailNotifying,
+                    subject: 'Story Marked as Inapropriate',
+                    text: `Story with id ${contentId} with media " ${storyContent.media?.url} " and message " ${storyContent.message} " was marked as inapropriate. See here https://impactmarket-cms-${process.env.API_ENVIRONMENT}.herokuapp.com/admin/collections/story_content/${contentId}`,
+                });
             });
         } catch (e) {
             await this.storyUserReport.destroy({

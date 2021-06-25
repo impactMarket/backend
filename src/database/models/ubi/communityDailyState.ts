@@ -15,6 +15,7 @@ export class UbiCommunityDailyStateModel extends Model<
     public beneficiaries!: number;
     public raised!: string;
     public backers!: number;
+    public monthlyBackers!: number;
     public volume!: string;
     public transactions!: number;
     public reach!: number;
@@ -65,6 +66,10 @@ export function initializeUbiCommunityDailyState(sequelize: Sequelize): void {
                 defaultValue: 0,
             },
             backers: {
+                type: DataTypes.INTEGER, // max 2,147,483,647
+                defaultValue: 0,
+            },
+            monthlyBackers: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
             },
