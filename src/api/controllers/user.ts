@@ -9,8 +9,8 @@ import config from '../../config';
 
 class UserController {
     public report = (req: Request, res: Response) => {
-        const { communityId, message } = req.body;
-        UserService.report(communityId, message)
+        const { communityId, message, category } = req.body;
+        UserService.report(communityId, message, category)
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
