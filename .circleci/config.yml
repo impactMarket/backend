@@ -41,7 +41,7 @@ workflows:
   version: 2
   test:
     jobs:
-      - coverage
+      - coverage:
+          post-steps:
+            - jira/notify
       - lint
-      post-steps:
-        - jira/notify
