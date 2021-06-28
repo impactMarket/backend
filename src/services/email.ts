@@ -4,7 +4,7 @@ import config from '../config';
 
 export default class Email {
     constructor() {
-        if (!config.sendgridApi.startsWith('SG.')) {
+        if (config.sendgridApi.startsWith('SG.')) {
             sgMail.setApiKey(config.sendgridApi);
         }
     }
