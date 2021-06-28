@@ -1,6 +1,5 @@
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { User } from '@interfaces/app/user';
-import { StoryContent } from '@interfaces/story/storyContent';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
@@ -100,33 +99,6 @@ export interface IUserAuth extends IUserHello {
     token: string;
 }
 
-/**
- * @swagger
- *  components:
- *    schemas:
- *      IAddStory:
- *        type: object
- *        required:
- *          - byAddress
- *          - communityId
- *          - mediaId
- *          - message
- *        properties:
- *          byAddress:
- *            type: string
- *            description: The author of the story
- *          communityId:
- *            type: integer
- *            description: The community id
- *          mediaId:
- *            type: integer
- *            nullable: true
- *            description: Id of the media in media registry (currently support only image)
- *          message:
- *            type: string
- *            nullable: true
- *            description: Story message
- */
 export interface IAddStory {
     byAddress: string;
     communityId?: number;
@@ -134,6 +106,43 @@ export interface IAddStory {
     message?: string;
 }
 
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      ICommunityStory:
+ *        type: object
+ *        required:
+ *          - id
+ *          - message
+ *          - byAddress
+ *          - media
+ *          - loves
+ *          - userLoved
+ *          - userReported
+ *        properties:
+ *          id:
+ *            type: integer
+ *            description: New story id
+ *          message:
+ *            type: string
+ *            nullable: true
+ *            description: Story message
+ *          byAddress:
+ *            type: string
+ *            description: The author of the story
+ *          media:
+ *            $ref: '#/components/schemas/AppMediaContent'
+ *          loves:
+ *            type: integer
+ *            description: Story total number of loves
+ *          userLoved:
+ *            type: boolean
+ *            description: Has user loved this story?
+ *          userReported:
+ *            type: boolean
+ *            description: Has used reported this story?
+ */
 export interface ICommunityStory {
     id: number;
     message: string | null;
@@ -144,6 +153,36 @@ export interface ICommunityStory {
     userReported: boolean;
 }
 
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      ICommunitiesListStories:
+ *        type: object
+ *        required:
+ *          - id
+ *          - name
+ *          - cover
+ *          - story
+ *        properties:
+ *          id:
+ *            type: integer
+ *            description: Community id
+ *          name:
+ *            type: string
+ *            description: Community name
+ *          cover:
+ *            $ref: '#/components/schemas/AppMediaContent'
+ *          story:
+ *            type: object
+ *            properties:
+ *              media:
+ *                $ref: '#/components/schemas/AppMediaContent'
+ *              message:
+ *                type: string
+ *                nullable: true
+ *                description: Most recent story message
+ */
 export interface ICommunitiesListStories {
     id: number;
     name: string;
@@ -155,19 +194,44 @@ export interface ICommunitiesListStories {
     }; // most recent
 }
 
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      ICommunityStories:
+ *        type: object
+ *        required:
+ *          - id
+ *          - name
+ *          - city
+ *          - country
+ *          - cover
+ *          - stories
+ *        properties:
+ *          id:
+ *            type: integer
+ *            description: Community id
+ *          name:
+ *            type: string
+ *            description: Community name
+ *          city:
+ *            type: string
+ *            description: Community city
+ *          country:
+ *            type: string
+ *            description: Community country
+ *          cover:
+ *            $ref: '#/components/schemas/AppMediaContent'
+ *          stories:
+ *            type: array
+ *            items:
+ *              $ref: '#/components/schemas/ICommunityStory'
+ */
 export interface ICommunityStories {
     id: number;
-    // publicId: string; // temporary
     name: string;
     city: string;
     country: string;
     cover: AppMediaContent;
     stories: ICommunityStory[];
 }
-
-// export interface UserStory {
-//     id: number;
-//     media?: AppMediaContent;
-//     message: string | null;
-//     loves: number;
-// }
