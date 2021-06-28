@@ -110,12 +110,18 @@ export default (app: Router): void => {
      *       - "story"
      *     summary: List user stories only
      *     parameters:
-     *       - in: path
-     *         name: query
+     *       - in: query
+     *         name: offset
      *         schema:
-     *           type: string
+     *           type: integer
      *         required: false
-     *         description: Stories' list query (eg. ?offset=0&limit=5)
+     *         description: offset used for user's stories pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for user's stories pagination
      *     responses:
      *       "200":
      *         description: "Success"
@@ -134,12 +140,18 @@ export default (app: Router): void => {
      *       - "story"
      *     summary: List all communities (with at least one story) with the most recent story
      *     parameters:
-     *       - in: path
-     *         name: query
+     *       - in: query
+     *         name: offset
      *         schema:
-     *           type: string
+     *           type: integer
      *         required: false
-     *         description: Stories' user list query (eg. ?offset=0&limit=5)
+     *         description: offset used for stories pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for stories pagination
      *     responses:
      *       "200":
      *         description: OK
@@ -153,7 +165,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /story/community/{id}/{order}:
+     * /story/community/{id}/{query}:
      *   get:
      *     tags:
      *       - "story"
@@ -165,19 +177,24 @@ export default (app: Router): void => {
      *           type: integer
      *         required: true
      *         description: Community id to fetch stories from
-     *       - in: path
-     *         name: query
+     *       - in: query
+     *         name: offset
      *         schema:
-     *           type: string
+     *           type: integer
      *         required: false
-     *         description: Stories' community query (eg. ?offset=0&limit=5)
+     *         description: offset used for stories pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for stories pagination
      *     responses:
      *       "200":
      *         description: OK
      */
     route.get(
         '/community/:id/:query?',
-        // cacheWithRedis('1 hour'), - can't cache due to user specific results
         (req, res, next) => {
             (req as any).authTokenIsOptional = true;
             next();
