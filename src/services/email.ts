@@ -4,7 +4,9 @@ import config from '../config';
 
 export default class Email {
     constructor() {
-        sgMail.setApiKey(config.sendgridApi);
+        if (!config.sendgridApi.startsWith('SG.')) {
+            sgMail.setApiKey(config.sendgridApi);
+        }
     }
 
     public async notify(msg: MailDataRequired) {
