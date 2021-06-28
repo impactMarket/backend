@@ -107,6 +107,7 @@ export default (app: express.Application): void => {
                 './src/api/routes/*.ts',
                 './src/types/*.ts',
                 './src/interfaces/ubi/*.ts',
+                './src/interfaces/app/*.ts',
             ],
         };
         const swaggerSpec = swaggerJsdoc(options);
