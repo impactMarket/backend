@@ -28,20 +28,27 @@ export default (app: Router): void => {
      *           schema:
      *             type: object
      *             properties:
+     *               byAddress:
+     *                 type: string
+     *                 description: The author of the story
      *               communityId:
      *                 type: integer
+     *                 description: The community id
+     *               mediaId:
+     *                 type: integer
+     *                 nullable: true
+     *                 description: Id of the media in media registry (currently support only image)
      *               message:
      *                 type: string
-     *               mediaUrl:
-     *                 type: string
-     *                 required: false
+     *                 nullable: true
+     *                 description: Story message
      *     responses:
      *       "200":
      *         description: "Success"
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/IAddStory'
+     *               $ref: '#/components/schemas/ICommunityStory'
      *     security:
      *     - api_auth:
      *       - "write:modify":
@@ -129,6 +136,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: "Success"
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ICommunityStories'
      *     security:
      *     - api_auth:
      *       - "read:read":
@@ -138,7 +149,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /story/list/{order}:
+     * /story/list/{query}:
      *   get:
      *     tags:
      *       - "story"
@@ -159,6 +170,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ICommunitiesListStories'
      */
     route.get(
         '/list/:query?',
@@ -196,6 +211,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ICommunityStories'
      */
     route.get(
         '/community/:id/:query?',
