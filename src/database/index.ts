@@ -144,16 +144,11 @@ const models: DbModels = {
         .StoryUserReportModel as ModelCtor<StoryUserReportModel>,
 };
 
-let redisClient: redis.RedisClient;
-if (process.env.NODE_ENV === 'test') {
-    redisClient = undefined as any;
-} else {
-    redisClient = redis.createClient(config.redis, {
-        tls: {
-            rejectUnauthorized: false,
-        },
-    });
-}
+const redisClient = redis.createClient(config.redis, {
+    tls: {
+        rejectUnauthorized: false,
+    },
+});
 const cacheWithRedis = apicache.options(
     process.env.NODE_ENV === 'test'
         ? {}
