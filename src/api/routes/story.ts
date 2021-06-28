@@ -38,6 +38,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: "Success"
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/IAddStory'
      *     security:
      *     - api_auth:
      *       - "write:modify":

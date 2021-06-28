@@ -100,6 +100,33 @@ export interface IUserAuth extends IUserHello {
     token: string;
 }
 
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      IAddStory:
+ *        type: object
+ *        required:
+ *          - byAddress
+ *          - communityId
+ *          - mediaId
+ *          - message
+ *        properties:
+ *          byAddress:
+ *            type: string
+ *            description: The author of the story
+ *          communityId:
+ *            type: integer
+ *            description: The community id
+ *          mediaId:
+ *            type: integer
+ *            nullable: true
+ *            description: Id of the media in media registry (currently support only image)
+ *          message:
+ *            type: string
+ *            nullable: true
+ *            description: Story message
+ */
 export interface IAddStory {
     byAddress: string;
     communityId?: number;
