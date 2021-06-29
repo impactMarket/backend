@@ -71,6 +71,7 @@ function validateEnv() {
         SENDGRID_API_KEY: str({ default: 'xyz' }),
         INTERNAL_EMAIL_NOTIFYING: str({ default: 'none@none.none' }),
         INTERNAL_EMAIL_TO_NOTIFY: str({ default: 'none@none.none' }),
+        HAS_REDIS_TLS: bool({ default: true }),
     });
 }
 

@@ -215,4 +215,6 @@ export default {
     sendgridApi: validatedEnv.SENDGRID_API_KEY,
     internalEmailNotifying: validatedEnv.INTERNAL_EMAIL_NOTIFYING,
     internalEmailToNotify: validatedEnv.INTERNAL_EMAIL_TO_NOTIFY,
+
+    hasRedisTls: validatedEnv.HAS_REDIS_TLS,
 };

@@ -148,7 +148,15 @@ let redisClient: redis.RedisClient;
 if (process.env.NODE_ENV === 'test') {
     redisClient = undefined as any;
 } else {
-    redisClient = redis.createClient(config.redis);
+    redisClient = redis.createClient(config.redis, {
+        ...(config.hasRedisTls
+            ? {
+                  tls: {
+                      rejectUnauthorized: false,
+                  },
+              }
+            : {}),
+    });
 }
 const cacheWithRedis = apicache.options(
     process.env.NODE_ENV === 'test'
