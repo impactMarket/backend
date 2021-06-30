@@ -7,7 +7,7 @@ module.exports = {
             return;
         }
         await queryInterface.addColumn('user', 'suspect', {
-            type: Sequelize.BOLLEAN,
+            type: Sequelize.BOOLEAN,
             defaultValue: false,
             allowNull: false,
         });
