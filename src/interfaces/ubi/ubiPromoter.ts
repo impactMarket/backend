@@ -15,15 +15,20 @@ import { UbiPromoterSocialMedia } from './ubiPromoterSocialMedia';
  *        properties:
  *          category:
  *            type: string
- *            description: Promoter gategory
+ *            enum: [organization, company, individual]
+ *            description: Promoter category
  *          name:
  *            type: string
  *            description: Promoter name
  *          description:
  *            type: string
  *            description: Promoter description
+ *          logo:
+ *            $ref: '#/components/schemas/AppMediaContent'
  *          socialMedia:
- *            $ref: '#/components/schemas/UbiPromoterSocialMedia'
+ *            type: array
+ *            items:
+ *              $ref: '#/components/schemas/UbiPromoterSocialMedia'
  */
 export interface UbiPromoter {
     id: number;
