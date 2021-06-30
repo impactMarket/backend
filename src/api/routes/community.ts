@@ -105,6 +105,33 @@ import { adminAuthentication, authenticateToken } from '../middlewares';
  *            description: Community date of last update
  *          cover:
  *            $ref: '#/components/schemas/AppMediaContent'
+ *      UbiManager:
+ *        type: object
+ *        required:
+ *          - address
+ *          - communityId
+ *          - active
+ *          - createdAt
+ *          - updatedAt
+ *          - user
+ *        properties:
+ *          address:
+ *            type: string
+ *            description: Manager address
+ *          communityId:
+ *            type: string
+ *            description: Manager's community publicId
+ *          active:
+ *            type: boolean
+ *            description: If true, it's a current active manager
+ *          createdAt:
+ *            type: date
+ *            description: Manager date of submission
+ *          updatedAt:
+ *            type: date
+ *            description: Manager date of last update
+ *          user:
+ *            $ref: '#/components/schemas/AppUser'
  */
 export default (app: Router): void => {
     const controller = new communityController.CommunityController();
@@ -259,35 +286,6 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/address/{address}:
-     *   get:
-     *     tags:
-     *       - "community"
-     *     summary: Get community by contract address
-     *     parameters:
-     *       - in: path
-     *         name: address
-     *         schema:
-     *           type: string
-     *         required: true
-     *         description: community contract address
-     *     responses:
-     *       "200":
-     *         description: OK
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/UbiCommunity'
-     */
-    route.get(
-        '/address/:address',
-        cacheWithRedis('10 minutes'),
-        controller.findByContractAddress
-    );
-
-    /**
-     * @swagger
-     *
      * /community/create:
      *   post:
      *     tags:
@@ -392,6 +390,35 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /community/address/{address}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community by contract address
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: community contract address
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunity'
+     */
+    route.get(
+        '/address/:address',
+        cacheWithRedis('10 minutes'),
+        controller.findByContractAddress
+    );
+
+    /**
+     * @swagger
+     *
      * /community/list:
      *   get:
      *     tags:
@@ -448,28 +475,6 @@ export default (app: Router): void => {
      */
     route.get('/list/:query?', cacheWithRedis('10 minutes'), controller.list);
 
-    /**
-     * @swagger
-     *
-     * /community/create:
-     *   post:
-     *     tags:
-     *       - "community"
-     *     summary: Add a new community
-     *     responses:
-     *       "200":
-     *         description: OK
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.post(
-        '/create',
-        authenticateToken,
-        communityValidators.create,
-        communityController.create
-    );
-
     route.get(
         '/:id/ubi',
         cacheWithRedis('10 minutes'),
@@ -494,6 +499,12 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: integer
      */
     route.get(
         '/:id/past-ssi',
@@ -573,6 +584,17 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   latitude:
+     *                     type: integer
+     *                   longitude:
+     *                     type: integer
      */
     route.get(
         '/:id/claim-location',
@@ -598,6 +620,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiManager'
      */
     route.get('/:id/managers', controller.getManagers);
 
