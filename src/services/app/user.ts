@@ -324,7 +324,7 @@ export default class UserService {
     public static report(
         message: string,
         communityId: string | undefined,
-        category: 'general' | 'fraud' | undefined
+        category: 'general' | 'potential-fraud' | undefined
     ): Promise<AppAnonymousReport> {
         let newReport: AppAnonymousReportCreation = { message };
         if (communityId) {

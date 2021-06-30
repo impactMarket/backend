@@ -21,7 +21,7 @@ module.exports = {
                 allowNull: false,
             },
             category: {
-                type: Sequelize.ENUM('general', 'fraud'),
+                type: Sequelize.ENUM('general', 'potential-fraud'),
                 allowNull: false,
                 defaultValue: 'general',
             },
