@@ -586,6 +586,7 @@ export default class CommunityService {
                                 {
                                     model: this.appMediaThumbnail,
                                     as: 'thumbnails',
+                                    separate: true,
                                 },
                             ],
                         },
