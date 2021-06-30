@@ -16,7 +16,7 @@ module.exports = {
         for (const user in suspectUsers) {
             const element = suspectUsers[user];
             await queryInterface.sequelize.query(
-                `update "user" set suspect=true where address=${element.address}`
+                `update "user" set suspect=true where address='${element.address}'`
             );
         }
     },
