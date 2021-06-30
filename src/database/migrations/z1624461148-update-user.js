@@ -7,7 +7,7 @@ module.exports = {
             return;
         }
         const query =
-            'select "user".address from "user" left join app_user_through_trust autt on "user".address = autt."userAddress" left join app_user_trust aut on autt."appUserTrustId" = aut.id where suspect = true';
+            'select "user".address from "user" left join app_user_through_trust autt on "user".address = autt."userAddress" left join app_user_trust aut on autt."appUserTrustId" = aut.id where aut.suspect = true';
 
         const suspectUsers = await queryInterface.sequelize.query(query, {
             raw: true,
