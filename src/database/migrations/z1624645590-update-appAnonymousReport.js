@@ -7,7 +7,7 @@ module.exports = {
             return;
         }
         await queryInterface.addColumn('app_anonymous_report', 'category', {
-            type: Sequelize.ENUM('general'),
+            type: Sequelize.ENUM('general', 'fraud'),
             allowNull: false,
             defaultValue: 'general',
         });
