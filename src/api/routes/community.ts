@@ -39,6 +39,72 @@ import { adminAuthentication, authenticateToken } from '../middlewares';
  *          suspect:
  *            type: boolean
  *            description: Is the beneficiary suspect?
+ *      UbiCommunity:
+ *        type: object
+ *        required:
+ *          - id
+ *          - requestByAddress
+ *          - contractAddress
+ *          - name
+ *          - description
+ *          - language
+ *          - currency
+ *          - city
+ *          - country
+ *          - gps
+ *          - visibility
+ *          - status
+ *          - createdAt
+ *          - updatedAt
+ *          - cover
+ *        properties:
+ *          id:
+ *            type: integer
+ *            description: Community id
+ *          requestByAddress:
+ *            type: string
+ *            description: Address of the user who requested to create the community
+ *          contractAddress:
+ *            type: string
+ *            nullable: true
+ *            description: Community contract address
+ *          name:
+ *            type: string
+ *            description: Community name
+ *          description:
+ *            type: string
+ *            description: Community description
+ *          language:
+ *            type: string
+ *            description: Community language (used to verify if description needs translation to user language)
+ *          currency:
+ *            type: string
+ *            description: Community FIAT currency (country currency)
+ *          city:
+ *            type: string
+ *            description: Community city location
+ *          country:
+ *            type: string
+ *            description: Community country location
+ *          gps:
+ *            type: string
+ *            description: Community gps location
+ *          visibility:
+ *            type: string
+ *            enum: [public, private]
+ *            description: Community visibility
+ *          status:
+ *            type: string
+ *            enum: [pending, valid, removed]
+ *            description: Community status
+ *          createdAt:
+ *            type: date
+ *            description: Community date of submission
+ *          updatedAt:
+ *            type: date
+ *            description: Community date of last update
+ *          cover:
+ *            $ref: '#/components/schemas/AppMediaContent'
  */
 export default (app: Router): void => {
     const controller = new communityController.CommunityController();
@@ -190,6 +256,29 @@ export default (app: Router): void => {
 
     // --------------------------------------------------------------- new
 
+    /**
+     * @swagger
+     *
+     * /community/address/{address}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community by contract address
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: community contract address
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunity'
+     */
     route.get(
         '/address/:address',
         cacheWithRedis('10 minutes'),
@@ -644,7 +733,7 @@ export default (app: Router): void => {
      *   get:
      *     tags:
      *       - "community"
-     *     summary: Find a beneficiary in manager's community
+     *     summary: Get community by id
      *     parameters:
      *       - in: path
      *         name: id
@@ -655,6 +744,10 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunity'
      */
     route.get('/:id', cacheWithRedis('10 minutes'), controller.findById);
 
