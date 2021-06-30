@@ -1455,6 +1455,9 @@ export default class CommunityService {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const community = await this.community.findOne({
+            attributes: {
+                exclude: ['email'],
+            },
             include: [
                 {
                     model: this.ubiCommunitySuspect,
