@@ -124,7 +124,10 @@ export class ContentStorage {
             imgBuffer = file.buffer;
         }
 
-        const [filePath, filename] = this._generatedStorageFileName(category);
+        const [filePath, filename] = this._generatedStorageFileName(
+            category,
+            ''
+        );
         const uploadResult = await this._uploadContentToS3(
             category,
             filePath,
@@ -159,6 +162,7 @@ export class ContentStorage {
 
     protected _generatedStorageFileName(
         category: StorageCategory,
+        mimetype: string,
         thumbnail?: { width: number; height: number },
         pixelRatio?: number,
         filenameNoExt?: string
@@ -182,7 +186,7 @@ export class ContentStorage {
         }
         const filename = `${filenameNoExt ? filenameNoExt : now.getTime()}${
             pixelRatio && pixelRatio > 1 ? '@' + pixelRatio + 'x' : ''
-        }.jpeg`;
+        }${mimetype.length > 0 ? mimetype : '.jpeg'}`;
         return [
             `${filePrefix}${
                 thumbnail ? thumbnail.width + 'x' + thumbnail.height + '/' : ''
@@ -226,6 +230,7 @@ export class ContentStorage {
 
             const [filePath] = this._generatedStorageFileName(
                 jobData.category,
+                '',
                 thumbnailSize,
                 jobData.pixelRatio,
                 jobData.filenameNoExt
@@ -360,9 +365,40 @@ export class ContentStorage {
         }
         throw new Error('invalid category');
     }
+
+    protected async _getPresignedUrlPutObject(
+        mime: string,
+        category: StorageCategory
+    ) {
+        const [filePath, filename] = this._generatedStorageFileName(
+            category,
+            `.${mime}`
+        );
+        const params: AWS.S3.PutObjectRequest = {
+            Bucket: config.aws.bucket.temporary,
+            Key: filePath,
+            ACL: 'public-read',
+            ContentType: 'image/' + mime,
+        };
+        const s3 = new AWS.S3();
+        const uploadURL = await s3.getSignedUrlPromise('putObject', params);
+        const mediaContent = await this.appMediaContent.create({
+            url: `${config.cloudfrontUrl}/${filePath.replace(
+                `.${mime}`,
+                '.jpeg'
+            )}`,
+            width: 0, // updated later
+            height: 0, // updated later
+        });
+        return { uploadURL, filename, media: mediaContent };
+    }
 }
 
 interface IContentStorage {
+    getPresignedUrlPutObject(mime: string): Promise<{
+        uploadURL: string;
+        filename: string;
+    }>;
     uploadContent(file: Express.Multer.File): Promise<AppMediaContent>;
     deleteContent(mediaId: number): Promise<void>;
     deleteBulkContent(mediaId: number[]): Promise<void>;
@@ -370,7 +406,15 @@ interface IContentStorage {
 
 export class StoryContentStorage
     extends ContentStorage
-    implements IContentStorage {
+    implements IContentStorage
+{
+    getPresignedUrlPutObject(mime: string): Promise<{
+        uploadURL: string;
+        filename: string;
+    }> {
+        return this._getPresignedUrlPutObject(mime, StorageCategory.story);
+    }
+
     uploadContent(file: Express.Multer.File): Promise<AppMediaContent> {
         return this._processAndUpload(file, StorageCategory.story);
     }
@@ -403,7 +447,18 @@ export class StoryContentStorage
 
 export class CommunityContentStorage
     extends ContentStorage
-    implements IContentStorage {
+    implements IContentStorage
+{
+    getPresignedUrlPutObject(mime: string): Promise<{
+        uploadURL: string;
+        filename: string;
+    }> {
+        return this._getPresignedUrlPutObject(
+            mime,
+            StorageCategory.communityCover
+        );
+    }
+
     uploadContent(file: Express.Multer.File): Promise<AppMediaContent> {
         return this._processAndUpload(file, StorageCategory.communityCover);
     }
@@ -429,7 +484,18 @@ export class CommunityContentStorage
 
 export class PromoterContentStorage
     extends ContentStorage
-    implements IContentStorage {
+    implements IContentStorage
+{
+    getPresignedUrlPutObject(mime: string): Promise<{
+        uploadURL: string;
+        filename: string;
+    }> {
+        return this._getPresignedUrlPutObject(
+            mime,
+            StorageCategory.promoterLogo
+        );
+    }
+
     uploadContent(file: Express.Multer.File): Promise<AppMediaContent> {
         return this._processAndUpload(file, StorageCategory.promoterLogo);
     }
@@ -455,7 +521,15 @@ export class PromoterContentStorage
 
 export class ProfileContentStorage
     extends ContentStorage
-    implements IContentStorage {
+    implements IContentStorage
+{
+    getPresignedUrlPutObject(mime: string): Promise<{
+        uploadURL: string;
+        filename: string;
+    }> {
+        return this._getPresignedUrlPutObject(mime, StorageCategory.profile);
+    }
+
     uploadContent(file: Express.Multer.File): Promise<AppMediaContent> {
         return this._processAndUpload(file, StorageCategory.profile);
     }

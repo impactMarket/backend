@@ -281,6 +281,13 @@ export default (app: Router): void => {
         communityController.getHistoricalSSI
     );
 
+    route.post(
+        '/picture/:isPromoter?',
+        upload.single('imageFile'),
+        authenticateToken,
+        controller.pictureAdd
+    );
+
     // --------------------------------------------------------------- new
 
     /**
@@ -308,20 +315,24 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/picture:
-     *   post:
+     * /community/{mime}/{isPromoter}:
+     *   get:
      *     tags:
      *       - "community"
-     *     summary: Add a community picture
-     *     requestBody:
-     *       content:
-     *         multipart/form-data:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               imageFile:
-     *                 type: string
-     *                 format: binary
+     *     summary: Make a request for a presigned URL
+     *     parameters:
+     *       - in: path
+     *         name: mime
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: media mimetype
+     *       - in: path
+     *         name: isPromoter
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: true to upload an image to promoter, false to community
      *     responses:
      *       "200":
      *         description: OK
@@ -329,11 +340,10 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.post(
-        '/picture/:isPromoter?',
-        upload.single('imageFile'),
+    route.get(
+        '/media/:mime/:isPromoter?',
         authenticateToken,
-        controller.pictureAdd
+        controller.getPresignedUrlMedia
     );
 
     /**

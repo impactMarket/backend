@@ -39,6 +39,7 @@ function validateEnv() {
         AWS_BUCKET_COMMUNITY: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_BUCKET_STORY: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_BUCKET_PROFILE: str({ devDefault: onlyOnTestEnv('xyz') }),
+        AWS_BUCKET_TEMPORARY: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_REGION: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_BASE_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
