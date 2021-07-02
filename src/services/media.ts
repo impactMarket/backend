@@ -5,6 +5,7 @@ import { models } from '../database';
 
 export class MediaService {
     async updateMedia(content: AppMediaContentCreation) {
+        console.log(content);
         const r = await models.appMediaContent.update(
             {
                 height: content.height,
