@@ -9,7 +9,7 @@ export class MediaController {
         const { url, width, height } = req.body;
         this.mediaService
             .updateMedia({ url, width, height })
-            .then((r) => res.send(r))
+            .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
@@ -17,7 +17,7 @@ export class MediaController {
         const { url, width, height, mediaContentId, pixelRatio } = req.body;
         this.mediaService
             .postThumbnail({ url, width, height, mediaContentId, pixelRatio })
-            .then((r) => res.send(r))
+            .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
