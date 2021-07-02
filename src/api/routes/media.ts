@@ -3,8 +3,11 @@ import { Router } from 'express';
 
 export default (app: Router): void => {
     const controller = new MediaController();
+    const route = Router();
 
-    app.post('/thumbnail', controller.postThumbnail);
+    app.use('/media', route);
 
-    app.put('/', controller.updateMedia);
+    route.post('/thumbnail', controller.postThumbnail);
+
+    route.put('/', controller.updateMedia);
 };
