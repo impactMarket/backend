@@ -315,7 +315,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/{mime}/{isPromoter}:
+     * /community/media/{mime}/{isPromoter}:
      *   get:
      *     tags:
      *       - "community"

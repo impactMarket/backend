@@ -175,6 +175,24 @@ export default class UserService {
         return await UserService.loadUser(user.address);
     }
 
+    public static async getPresignedUrlMedia(mime: string): Promise<{
+        uploadURL: string;
+        filename: string;
+    }> {
+        return this.profileContentStorage.getPresignedUrlPutObject(mime);
+    }
+
+    public static async updateAvatar(
+        address: string,
+        mediaId: number
+    ): Promise<boolean> {
+        const updated = await this.user.update(
+            { avatarMediaId: mediaId },
+            { returning: true, where: { address } }
+        );
+        return updated[0] > 0;
+    }
+
     public static async setUsername(
         address: string,
         username: string

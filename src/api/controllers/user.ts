@@ -16,13 +16,8 @@ class UserController {
     };
 
     public auth = (req: Request, res: Response) => {
-        const {
-            address,
-            language,
-            currency,
-            pushNotificationToken,
-            phone,
-        } = req.body;
+        const { address, language, currency, pushNotificationToken, phone } =
+            req.body;
         UserService.authenticate(
             address,
             language,
@@ -48,6 +43,31 @@ class UserController {
     public userExist = (req: Request, res: Response) => {
         UserService.exists(req.params.address)
             .then((user) => standardResponse(res, 201, true, user))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    public getPresignedUrlMedia = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+        UserService.getPresignedUrlMedia(req.params.mime)
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    public updateAvatar = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+        const { mediaId } = req.body;
+        UserService.updateAvatar(req.user.address, mediaId)
+            .then((r) => standardResponse(res, 201, r, ''))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
@@ -171,13 +191,8 @@ class UserController {
      * @deprecated
      */
     public authenticate = (req: Request, res: Response) => {
-        const {
-            address,
-            language,
-            currency,
-            pushNotificationToken,
-            phone,
-        } = req.body;
+        const { address, language, currency, pushNotificationToken, phone } =
+            req.body;
         UserService.authenticate(
             address,
             language,
