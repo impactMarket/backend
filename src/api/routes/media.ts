@@ -7,7 +7,7 @@ export default (app: Router): void => {
 
     app.use('/media', route);
 
-    route.post('/thumbnail', controller.postThumbnail);
+    route.post('/thumbnails', controller.postThumbnails);
 
     route.put('/', controller.updateMedia);
 };

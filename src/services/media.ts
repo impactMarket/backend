@@ -19,7 +19,7 @@ export class MediaService {
         throw new Error('not updated!');
     }
 
-    postThumbnail(content: AppMediaThumbnailCreation) {
-        return models.appMediaThumbnail.create(content);
+    postThumbnails(content: AppMediaThumbnailCreation[]) {
+        return models.appMediaThumbnail.bulkCreate(content);
     }
 }
