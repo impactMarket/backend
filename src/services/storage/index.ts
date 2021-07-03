@@ -370,6 +370,10 @@ export class ContentStorage {
         mime: string,
         category: StorageCategory
     ) {
+        // jpg or jpe are not a mimetype
+        if (mime === 'jpg' || mime === 'jpe') {
+            mime = 'jpeg';
+        }
         const [filePath, filename] = this._generatedStorageFileName(
             category,
             `.${mime}`
