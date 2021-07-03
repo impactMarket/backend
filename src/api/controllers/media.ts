@@ -17,7 +17,7 @@ export class MediaController {
     postThumbnails = (req: Request, res: Response) => {
         const thumbnailMedias: AppMediaThumbnailCreation[] = [];
         const { body } = req;
-        for (let i = 0; i < body; i++) {
+        for (let i = 0; i < body.length; i++) {
             const { url, width, height, mediaContentId, pixelRatio } = body[i];
             thumbnailMedias.push({
                 url,
