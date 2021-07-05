@@ -1477,46 +1477,13 @@ export default class CommunityService {
             },
             include: [
                 {
-                    model: this.ubiCommunitySuspect,
-                    as: 'suspect',
-                    required: false,
-                    where: {
-                        createdAt: {
-                            [Op.eq]: literal(
-                                '(select max("createdAt") from ubi_community_suspect where "communityId" = "suspect"."communityId" and "createdAt" >= \'' +
-                                    yesterday.toISOString().split('T')[0] +
-                                    "')"
-                            ),
-                        },
-                    },
-                },
-                {
-                    model: this.ubiCommunityContract,
-                    as: 'contract',
-                },
-                {
-                    model: this.ubiCommunityState,
-                    as: 'state',
-                },
-                {
-                    model: this.ubiCommunityDailyMetrics,
-                    as: 'metrics',
-                    required: false,
-                    where: {
-                        createdAt: {
-                            [Op.eq]: literal(
-                                '(select max("createdAt") from ubi_community_daily_metrics where "communityId" = "metrics"."communityId")'
-                            ),
-                        },
-                    },
-                },
-                {
                     model: this.appMediaContent,
                     as: 'cover',
                     include: [
                         {
                             model: this.appMediaThumbnail,
                             as: 'thumbnails',
+                            separate: true,
                         },
                     ],
                 },
@@ -1526,6 +1493,16 @@ export default class CommunityService {
         if (community === null) {
             throw new Error('Not found community ' + where);
         }
-        return community.toJSON() as CommunityAttributes;
+        const suspect = await this.getSuspect(community.id);
+        const contract = (await this.getContract(community.id))!;
+        const state = (await this.getState(community.id))!;
+        const metrics = await this.getMetrics(community.id);
+        return {
+            ...(community.toJSON() as CommunityAttributes),
+            suspect: suspect !== null ? [suspect] : undefined,
+            contract,
+            state,
+            metrics: metrics !== null ? [metrics] : undefined,
+        };
     }
 }
