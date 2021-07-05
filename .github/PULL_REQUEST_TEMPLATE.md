@@ -1,12 +1,3 @@
----
-name: Feature
-about: adds something
-title: ''
-labels: 'feature'
-assignees: ''
-
----
-
 
 This PR fixes [IPCT1-X] at https://impactmarket.atlassian.net/browse/IPCT1-X
 
