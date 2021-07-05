@@ -33,17 +33,17 @@ export class ContentStorage {
 
     constructor() {
         if (process.env.NODE_ENV !== 'test') {
-            const re = /redis:\/\/([\w\d]*):([\w\d]*)@([\w\d-.]*):([\d]*)/i;
+            const re = /redis:\/\/(([\w\d]*):([\w\d]*)@)?([\w\d-.]*):([\d]*)/i;
             const found = config.redis.match(re);
             if (found) {
                 this.queueThumbnail = new Queue<IJobThumbnail>(
                     this.queueThumbnailName,
                     {
                         connection: {
-                            username: found[1],
-                            password: found[2],
-                            host: found[3],
-                            port: parseInt(found[4], 10),
+                            username: found[2],
+                            password: found[3],
+                            host: found[4],
+                            port: parseInt(found[5], 10),
                         },
                     }
                 );
@@ -53,7 +53,7 @@ export class ContentStorage {
 
     listenToJobs() {
         if (process.env.NODE_ENV !== 'test') {
-            const re = /redis:\/\/([\w\d]*):([\w\d]*)@([\w\d-.]*):([\d]*)/i;
+            const re = /redis:\/\/(([\w\d]*):([\w\d]*)@)?([\w\d-.]*):([\d]*)/i;
             const found = config.redis.match(re);
             if (found) {
                 const worker = new Worker<IJobThumbnail>(
@@ -61,10 +61,10 @@ export class ContentStorage {
                     (job) => this._createThumbnailFromJob(job.data),
                     {
                         connection: {
-                            username: found[1],
-                            password: found[2],
-                            host: found[3],
-                            port: parseInt(found[4], 10),
+                            username: found[2],
+                            password: found[3],
+                            host: found[4],
+                            port: parseInt(found[5], 10),
                         },
                         // concurrency: config.bullJobsConcurrency,
                     }
