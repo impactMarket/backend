@@ -1,6 +1,6 @@
 ---
 name: Bugfix
-about: [IPCT1-X] fix something
+about: fix something
 title: ''
 labels: 'bug'
 assignees: ''
