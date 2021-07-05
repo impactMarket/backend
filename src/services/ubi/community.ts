@@ -182,6 +182,16 @@ export default class CommunityService {
         return this.communityContentStorage.uploadContent(file);
     }
 
+    public static async getPresignedUrlMedia(
+        mime: string,
+        isPromoter: boolean
+    ) {
+        if (isPromoter) {
+            return this.promoterContentStorage.getPresignedUrlPutObject(mime);
+        }
+        return this.communityContentStorage.getPresignedUrlPutObject(mime);
+    }
+
     public static async edit(
         id: number,
         name: string,

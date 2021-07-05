@@ -4,6 +4,7 @@ import claimLocation from './claimLocation';
 import community from './community';
 import exchange from './exchangeRates';
 import global from './global';
+import media from './media';
 import mobile from './mobile';
 import storage from './storage';
 import story from './story';
@@ -21,6 +22,7 @@ export default (): Router => {
     storage(app);
     system(app);
     story(app);
+    media(app);
 
     return app;
 };

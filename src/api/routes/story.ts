@@ -56,34 +56,41 @@ export default (app: Router): void => {
     route.post('/', authenticateToken, storyValidator.add, storyController.add);
 
     /**
-     * @swagger
-     *
-     * /story/picture:
-     *   post:
-     *     tags:
-     *       - "story"
-     *     summary: Add a new picture to the story bucket
-     *     requestBody:
-     *       content:
-     *         multipart/form-data:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               imageFile:
-     *                 type: string
-     *                 format: binary
-     *     responses:
-     *       "200":
-     *         description: "Success"
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     * @deprecated in mobile@1.1.3
      */
     route.post(
         '/picture',
         authenticateToken,
         upload.single('imageFile'),
         storyController.pictureAdd
+    );
+
+    /**
+     * @swagger
+     *
+     * /story/media/{mime}:
+     *   get:
+     *     tags:
+     *       - "story"
+     *     summary: Make a request for a presigned URL
+     *     parameters:
+     *       - in: path
+     *         name: mime
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: media mimetype
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/media/:mime',
+        authenticateToken,
+        storyController.getPresignedUrlMedia
     );
 
     route.post('/has', authenticateToken, storyController.has);

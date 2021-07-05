@@ -93,6 +93,7 @@ export default {
             community: validatedEnv.AWS_BUCKET_COMMUNITY,
             story: validatedEnv.AWS_BUCKET_STORY,
             profile: validatedEnv.AWS_BUCKET_PROFILE,
+            temporary: validatedEnv.AWS_BUCKET_TEMPORARY,
         },
     },
 
