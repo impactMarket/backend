@@ -1,6 +1,6 @@
 ---
 name: Feature
-about: [IPCT1-X] adds something
+about: adds something
 title: ''
 labels: 'feature'
 assignees: ''
