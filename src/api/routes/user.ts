@@ -73,6 +73,14 @@ export default (app: Router): void => {
      */
     route.post('/auth', userValidators.auth, userController.auth);
 
+    route.get(
+        '/media/:mime',
+        authenticateToken,
+        userController.getPresignedUrlMedia
+    );
+
+    route.put('/avatar', authenticateToken, userController.updateAvatar);
+
     route.post(
         '/welcome',
         authenticateToken,

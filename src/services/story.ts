@@ -42,6 +42,10 @@ export default class StoryService {
         return this.storyContentStorage.uploadContent(file);
     }
 
+    public getPresignedUrlMedia(mime: string) {
+        return this.storyContentStorage.getPresignedUrlPutObject(mime);
+    }
+
     public async add(
         fromAddress: string,
         story: IAddStory
