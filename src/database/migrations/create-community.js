@@ -75,6 +75,16 @@ module.exports = {
                 type: Sequelize.ENUM('pending', 'valid', 'removed'),
                 allowNull: false,
             },
+            review: {
+                type: Sequelize.ENUM(
+                    'pending',
+                    'in-progress',
+                    'halted',
+                    'closed'
+                ),
+                default: 'pending',
+                allowNull: false,
+            },
             started: {
                 type: Sequelize.DATEONLY,
                 allowNull: false,
