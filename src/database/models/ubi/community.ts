@@ -33,6 +33,7 @@ export interface CommunityAttributes {
     coverImage: string; // TODO: to be removed
     coverMediaId: number;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
+    review: 'pending' | 'in-progress' | 'halted' | 'closed';
     started: Date; // TODO: to be removed
 
     // timestamps
@@ -70,6 +71,7 @@ export interface CommunityCreationAttributes {
     coverImage?: string; // TODO: will be required once next version is released
     coverMediaId?: number; // TODO: will be required once next version is released
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
+    review: 'pending' | 'in-progress' | 'halted' | 'closed';
     started: Date;
 }
 
@@ -97,6 +99,7 @@ export class Community extends Model<
     public coverImage!: string;
     public coverMediaId!: number | null; // TODO: will be required once next version is released
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
+    public review!: 'pending' | 'in-progress' | 'halted' | 'closed';
     public started!: Date;
 
     // timestamps!
@@ -186,6 +189,16 @@ export function initializeCommunity(sequelize: Sequelize): void {
             },
             status: {
                 type: DataTypes.ENUM('pending', 'valid', 'removed'),
+                allowNull: false,
+            },
+            review: {
+                type: DataTypes.ENUM(
+                    'pending',
+                    'in-progress',
+                    'halted',
+                    'closed'
+                ),
+                defaultValue: 'pending',
                 allowNull: false,
             },
             started: {
