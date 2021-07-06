@@ -71,7 +71,6 @@ export interface CommunityCreationAttributes {
     coverImage?: string; // TODO: will be required once next version is released
     coverMediaId?: number; // TODO: will be required once next version is released
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    review: 'pending' | 'in-progress' | 'halted' | 'closed';
     started: Date;
 }
 
