@@ -191,49 +191,55 @@ function cron() {
     //     true
     // );
 
-    // at 7:12pm
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '12 19 * * *',
-        () => {
-            internalNotifyLowCommunityFunds()
-                .then(() => {
-                    CronJobExecutedService.add(
-                        'internalNotifyLowCommunityFunds'
-                    );
-                    Logger.info(
-                        'internalNotifyLowCommunityFunds successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    Logger.error(
-                        'internalNotifyLowCommunityFunds FAILED! ' + e
-                    );
-                });
-        },
-        null,
-        true
-    );
+    if (config.internalNotifications) {
+        // at 7:12pm
+        // eslint-disable-next-line no-new
+        new CronJob(
+            '12 19 * * *',
+            () => {
+                internalNotifyLowCommunityFunds()
+                    .then(() => {
+                        CronJobExecutedService.add(
+                            'internalNotifyLowCommunityFunds'
+                        );
+                        Logger.info(
+                            'internalNotifyLowCommunityFunds successfully executed!'
+                        );
+                    })
+                    .catch((e) => {
+                        Logger.error(
+                            'internalNotifyLowCommunityFunds FAILED! ' + e
+                        );
+                    });
+            },
+            null,
+            true
+        );
 
-    // at 7:30am on Wednesday
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '30 7 * * 3',
-        () => {
-            internalNotifyNewCommunities()
-                .then(() => {
-                    CronJobExecutedService.add('internalNotifyNewCommunities');
-                    Logger.info(
-                        'internalNotifyNewCommunities successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    Logger.error('internalNotifyNewCommunities FAILED! ' + e);
-                });
-        },
-        null,
-        true
-    );
+        // at 7:30am on Wednesday
+        // eslint-disable-next-line no-new
+        new CronJob(
+            '30 7 * * 3',
+            () => {
+                internalNotifyNewCommunities()
+                    .then(() => {
+                        CronJobExecutedService.add(
+                            'internalNotifyNewCommunities'
+                        );
+                        Logger.info(
+                            'internalNotifyNewCommunities successfully executed!'
+                        );
+                    })
+                    .catch((e) => {
+                        Logger.error(
+                            'internalNotifyNewCommunities FAILED! ' + e
+                        );
+                    });
+            },
+            null,
+            true
+        );
+    }
 
     // once a day
 

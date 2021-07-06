@@ -218,4 +218,6 @@ export default {
     internalEmailToNotify: validatedEnv.INTERNAL_EMAIL_TO_NOTIFY,
 
     hasRedisTls: validatedEnv.HAS_REDIS_TLS,
+
+    internalNotifications: validatedEnv.INTERNAL_NOTIFICATIONS,
 };
