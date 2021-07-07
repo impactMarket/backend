@@ -91,11 +91,15 @@ export interface User {
 
 export interface UserCreationAttributes {
     address: string;
-    language: string;
+    language?: string;
     currency?: string;
-    gender?: string;
     suspect?: boolean; // for test purposes
-    pushNotificationToken: string;
+    username?: string;
+    gender?: string;
+    year?: number;
+    children?: number;
+    avatarMediaId?: number;
+    pushNotificationToken?: string;
 
     trust?: AppUserTrustCreation;
 }

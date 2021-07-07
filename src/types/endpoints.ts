@@ -83,14 +83,14 @@ export interface IManagersDetails {
 }
 
 export interface IUserHello {
-    rates: ExchangeRatesAttributes[]; // TODO: to be removed
+    rates: ExchangeRatesAttributes[]; // TODO: deprecated in mobile-app@1.1.5
     isBeneficiary: boolean;
     isManager: boolean;
-    community?: CommunityAttributes; // TODO: to be removed
+    community?: CommunityAttributes; // TODO: deprecated in mobile-app@1.1.5
     communityId?: number;
     blocked: boolean;
     // to users not yet registered, the values below do not exist
-    verifiedPN: boolean | undefined;
+    verifiedPN: boolean | undefined; // TODO: deprecated in mobile-app@1.1.5
     suspect: boolean | undefined;
 }
 

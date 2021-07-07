@@ -46,25 +46,44 @@ export default (app: Router): void => {
      *     - "user"
      *     summary: "Authenticate user"
      *     requestBody:
-     *       description: Optional description in *Markdown*
      *       required: true
      *       content:
      *         application/json:
      *           schema:
-     *             type: "object"
+     *             type: object
      *             properties:
      *               address:
-     *                 type: "string"
+     *                 type: string
+     *                 required: true
+     *               phone:
+     *                 type: string
+     *                 description: phone number (hashed once it reaches the backend)
+     *                 required: true
      *               language:
-     *                 type: "string"
+     *                 type: string
+     *                 required: false
      *               currency:
-     *                 type: "string"
+     *                 type: string
+     *                 required: false
      *               pushNotificationToken:
-     *                 type: "string"
-     *             example:
-     *               address: "0x8770b4Df915cb92F53Bc01cC9Ab15F51e5DBb52f"
-     *               language: "pt"
-     *               pushNotificationToken: ""
+     *                 type: string
+     *                 required: false
+     *               username:
+     *                 type: string
+     *                 required: false
+     *               gender:
+     *                 type: string
+     *                 enum: [u, m, f, o]
+     *                 required: false
+     *               year:
+     *                 type: number
+     *                 required: false
+     *               children:
+     *                 type: number
+     *                 required: false
+     *               avatarMediaId:
+     *                 type: number
+     *                 required: false
      *     responses:
      *       "200":
      *         description: "Success"
