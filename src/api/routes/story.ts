@@ -68,6 +68,30 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /story/{id}:
+     *   delete:
+     *     tags:
+     *       - "story"
+     *     summary: Delete a story
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id to remove
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.delete('/:id', authenticateToken, storyController.remove);
+
+    /**
+     * @swagger
+     *
      * /story/media/{mime}:
      *   get:
      *     tags:
@@ -98,30 +122,6 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /story/{id}:
-     *   delete:
-     *     tags:
-     *       - "story"
-     *     summary: Delete a story
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         schema:
-     *           type: integer
-     *         required: true
-     *         description: Story id to remove
-     *     responses:
-     *       "200":
-     *         description: OK
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.delete('/:id', authenticateToken, storyController.remove);
-
-    /**
-     * @swagger
-     *
      * /story/me:
      *   get:
      *     tags:
@@ -146,7 +146,12 @@ export default (app: Router): void => {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ICommunityStories'
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   $ref: '#/components/schemas/ICommunityStories'
+     *                 count:
+     *                   type: integer
      *     security:
      *     - api_auth:
      *       - "read:read":
@@ -180,11 +185,18 @@ export default (app: Router): void => {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ICommunitiesListStories'
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   items:
+     *                     $ref: '#/components/schemas/ICommunitiesListStories'
+     *                 count:
+     *                   type: integer
      */
     route.get(
         '/list/:query?',
-        cacheWithRedis('1 hour'),
+        cacheWithRedis('10 minutes'),
         storyController.listByOrder
     );
 
@@ -221,7 +233,12 @@ export default (app: Router): void => {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/ICommunityStories'
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   $ref: '#/components/schemas/ICommunityStories'
+     *                 count:
+     *                   type: integer
      */
     route.get(
         '/community/:id/:query?',
