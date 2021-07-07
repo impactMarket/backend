@@ -2,15 +2,12 @@ import { RequestWithUser } from '@ipcttypes/core';
 import UserService from '@services/app/user';
 import { standardResponse } from '@utils/api';
 import { Logger } from '@utils/logger';
-import crypto from 'crypto';
 import { Request, Response } from 'express';
-
-import config from '../../config';
 
 class UserController {
     public report = (req: Request, res: Response) => {
         const { communityId, message, category } = req.body;
-        UserService.report(communityId, message, category)
+        UserService.report(message, communityId, category)
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
