@@ -13,28 +13,54 @@ class UserController {
     };
 
     public auth = (req: Request, res: Response) => {
-        const { address, language, currency, pushNotificationToken, phone } =
-            req.body;
-        UserService.authenticate(
+        const {
+            address,
+            phone,
+            language,
+            currency,
+            pushNotificationToken,
+            username,
+            year,
+            children,
+            avatarMediaId,
+        } = req.body;
+        UserService.authenticate({
             address,
             language,
             currency,
             pushNotificationToken,
-            phone
-        )
+            username,
+            year,
+            children,
+            avatarMediaId,
+            trust: {
+                phone,
+            },
+        })
             .then((user) => standardResponse(res, 201, true, user))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public welcome = (req: Request, res: Response) => {
-        const { address, token, phone } = req.body;
-        if (token.length > 0) {
-            // failing to set the push notification, should not be a blocker!
-            UserService.setPushNotificationsToken(address, token);
+        const { address, token, phone, pushNotificationToken } = req.body;
+        if (pushNotificationToken) {
+            UserService.welcome(address, pushNotificationToken)
+                .then((user) => standardResponse(res, 201, true, user))
+                .catch((e) =>
+                    standardResponse(res, 400, false, '', { error: e })
+                );
+        } else {
+            // TODO: deprecated in mobile-app@1.1.5
+            if (token.length > 0) {
+                // failing to set the push notification, should not be a blocker!
+                UserService.setPushNotificationsToken(address, token);
+            }
+            UserService.hello(address, phone)
+                .then((user) => standardResponse(res, 201, true, user))
+                .catch((e) =>
+                    standardResponse(res, 400, false, '', { error: e })
+                );
         }
-        UserService.hello(address, phone)
-            .then((user) => standardResponse(res, 201, true, user))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public userExist = (req: Request, res: Response) => {
@@ -188,15 +214,30 @@ class UserController {
      * @deprecated
      */
     public authenticate = (req: Request, res: Response) => {
-        const { address, language, currency, pushNotificationToken, phone } =
-            req.body;
-        UserService.authenticate(
+        const {
+            address,
+            phone,
+            language,
+            currency,
+            pushNotificationToken,
+            username,
+            year,
+            children,
+            avatarMediaId,
+        } = req.body;
+        UserService.authenticate({
             address,
             language,
             currency,
             pushNotificationToken,
-            phone
-        )
+            username,
+            year,
+            children,
+            avatarMediaId,
+            trust: {
+                phone,
+            },
+        })
             .then((user) => res.send(user))
             .catch((e) => res.status(403).send(e));
     };

@@ -28,97 +28,91 @@ export default class UserService {
     private static profileContentStorage = new ProfileContentStorage();
 
     public static async authenticate(
-        address: string,
-        language: string,
-        currency: string | undefined,
-        pushNotificationToken: string,
-        phone?: string // until the user updates to new version, this can be undefined
+        user: UserCreationAttributes
     ): Promise<IUserAuth> {
         try {
-            const token = generateAccessToken(address);
-            let userResult = await this.user.findOne({
-                include: [
-                    {
-                        model: this.appMediaContent,
-                        as: 'avatar',
-                        required: false,
+            // generate access token for future interactions that require authentication
+            const token = generateAccessToken(user.address);
+            const exists = await this.exists(user.address);
+            let userFromRegistry: User;
+            if (!exists) {
+                // create new user, including their phone number information
+                userFromRegistry = (
+                    await this.user.create(user, {
                         include: [
                             {
-                                model: this.appMediaThumbnail,
-                                as: 'thumbnails',
-                                separate: true,
+                                model: this.appUserTrust,
+                                as: 'trust',
                             },
                         ],
-                    },
-                ],
-                where: { address },
-            });
-            if (userResult === null) {
-                try {
-                    await this.sequelize.transaction(async (t) => {
-                        let createUser: UserCreationAttributes = {
-                            address,
-                            language,
-                            pushNotificationToken,
-                        };
-                        if (currency) {
-                            // TODO: temporary fix. Solved in mobile verion 1.1.0
-                            if (currency.indexOf(',') !== -1) {
-                                currency = currency.split(',')[0];
-                            }
-                            // TODO: temporary fix. Solved in mobile verion 1.1.2
-                            if (currency.indexOf('MWK') !== -1) {
-                                currency = 'USD';
-                            }
-                            createUser = {
-                                ...createUser,
-                                currency,
-                            };
-                        }
-                        userResult = await this.user.create(createUser, {
-                            transaction: t,
-                        });
-                        if (phone) {
-                            const userTrust = await this.appUserTrust.create(
-                                {
-                                    phone,
-                                },
-                                { transaction: t }
-                            );
-                            await this.appUserThroughTrust.create(
-                                {
-                                    userAddress: address,
-                                    appUserTrustId: userTrust.id,
-                                },
-                                { transaction: t }
-                            );
-                        }
-                    });
-                } catch (e) {
-                    Logger.error('creating account ' + e);
-                }
+                    })
+                ).toJSON() as User;
             } else {
-                await this.user.update(
-                    { pushNotificationToken },
-                    { where: { address } }
-                );
+                if (user.pushNotificationToken) {
+                    this.user.update(
+                        { pushNotificationToken: user.pushNotificationToken },
+                        { where: { address: user.address } }
+                    );
+                }
+                // it's not null at this point
+                userFromRegistry = (await this.user.findOne({
+                    include: [
+                        {
+                            model: this.appMediaContent,
+                            as: 'avatar',
+                            required: false,
+                            include: [
+                                {
+                                    model: this.appMediaThumbnail,
+                                    as: 'thumbnails',
+                                    separate: true,
+                                },
+                            ],
+                        },
+                    ],
+                    where: { address: user.address },
+                }))!.toJSON() as User;
             }
-            if (userResult === null) {
-                throw new Error('User was not defined!');
-            }
-            const user = userResult.toJSON() as User;
-            const userHello = await this.loadUser(user.address);
+            const userHello = await this.loadUser(userFromRegistry);
             return {
                 token,
-                user,
+                user: userFromRegistry,
                 ...userHello,
             };
         } catch (e) {
-            Logger.warn(`Error while auth user ${address} ${e}`);
+            Logger.warn(`Error while auth user ${user.address} ${e}`);
             throw new Error(e);
         }
     }
 
+    public static async welcome(
+        address: string,
+        pushNotificationToken?: string
+    ): Promise<IUserHello> {
+        let user: User;
+        if (pushNotificationToken) {
+            const updated = await this.user.update(
+                { pushNotificationToken },
+                { where: { address }, returning: true }
+            );
+            if (updated.length > 0) {
+                user = updated[1][0].toJSON() as User;
+            } else {
+                user = (await this.user.findOne({
+                    where: { address },
+                }))!.toJSON() as User;
+            }
+        } else {
+            user = (await this.user.findOne({
+                where: { address },
+            }))!.toJSON() as User;
+        }
+        return UserService.loadUser(user);
+    }
+
+    /**
+     * @deprecated
+     */
     public static async hello(
         address: string,
         phone?: string
@@ -128,12 +122,6 @@ export default class UserService {
                 {
                     model: this.appUserTrust,
                     as: 'trust',
-                    include: [
-                        {
-                            model: this.appUserTrust,
-                            as: 'selfTrust',
-                        },
-                    ],
                 },
             ],
             where: { address },
@@ -169,7 +157,7 @@ export default class UserService {
                 }
             }
         }
-        return await UserService.loadUser(user.address);
+        return UserService.loadUser(user);
     }
 
     public static async getPresignedUrlMedia(mime: string): Promise<{
@@ -314,7 +302,6 @@ export default class UserService {
             where: { address },
             raw: true,
         });
-        console.log(exists);
         return exists !== null;
     }
 
@@ -340,35 +327,29 @@ export default class UserService {
     /**
      * TODO: improve
      */
-    private static async loadUser(userAddress: string): Promise<IUserHello> {
-        const user = await this.user.findOne({
-            include: [
-                {
-                    model: this.appUserTrust,
-                    as: 'trust',
-                    include: [
-                        {
-                            model: this.appUserTrust,
-                            as: 'selfTrust',
-                        },
-                    ],
-                },
-            ],
-            where: { address: userAddress },
-        });
-        if (user === null) {
-            throw new Error('User is null?');
-        }
-        const fUser = user.toJSON() as User;
+    private static async loadUser(user: User): Promise<IUserHello> {
+        // const user = await this.user.findOne({
+        //     include: [
+        //         {
+        //             model: this.appUserTrust,
+        //             as: 'trust',
+        //         },
+        //     ],
+        //     where: { address: userAddress },
+        // });
+        // if (user === null) {
+        //     throw new Error('User is null?');
+        // }
+        // const fUser = user.toJSON() as User;
         const beneficiary = await this.beneficiary.findOne({
-            where: { active: true, address: userAddress },
+            where: { active: true, address: user.address },
         });
         const manager = await this.manager.findOne({
-            where: { active: true, address: userAddress },
+            where: { active: true, address: user.address },
         });
 
         // get user community
-        // TODO: part of the block below should be removed
+        // TODO: deprecated in mobile-app@1.1.5
         let community: CommunityAttributes | null = null;
         let managerInPendingCommunity = false;
         // reusable method
@@ -387,7 +368,7 @@ export default class UserService {
             community = await getCommunity(manager.communityId);
         } else {
             const communityId = await CommunityService.findByFirstManager(
-                fUser.address
+                user.address
             );
             if (communityId) {
                 community = await getCommunity(communityId);
@@ -401,12 +382,12 @@ export default class UserService {
             isManager: manager !== null || managerInPendingCommunity,
             blocked: beneficiary !== null ? beneficiary.blocked : false,
             verifiedPN:
-                fUser.trust?.length !== 0
-                    ? fUser.trust![0].verifiedPhoneNumber
-                    : undefined,
-            suspect: fUser.suspect,
-            rates: await ExchangeRatesService.get(),
-            community: community ? community : undefined,
+                user.trust?.length !== 0
+                    ? user.trust![0].verifiedPhoneNumber
+                    : undefined, // TODO: deprecated in mobile-app@1.1.5
+            suspect: user.suspect,
+            rates: await ExchangeRatesService.get(), // TODO: deprecated in mobile-app@1.1.5
+            community: community ? community : undefined, // TODO: deprecated in mobile-app@1.1.5
             communityId: community ? community.id : undefined,
         };
     }

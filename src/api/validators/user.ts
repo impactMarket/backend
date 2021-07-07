@@ -10,18 +10,24 @@ const report = celebrate({
 const auth = celebrate({
     body: Joi.object({
         address: Joi.string().required(),
-        language: Joi.string().required(),
-        currency: Joi.string().required(),
-        pushNotificationToken: Joi.string().required().allow(''),
-        phone: Joi.string().optional(), // TODO: make it required once 1.0.7 is the minimal mobile version!
+        phone: Joi.string().required(),
+        language: Joi.string().optional(),
+        currency: Joi.string().optional(),
+        pushNotificationToken: Joi.string().optional().allow(''),
+        username: Joi.string().optional(),
+        gender: Joi.string().optional(),
+        year: Joi.number().optional(),
+        children: Joi.number().optional(),
+        avatarMediaId: Joi.number().optional(),
     }),
 });
 
 const welcome = celebrate({
     body: Joi.object({
-        address: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
-        token: Joi.string().allow(''),
-        phone: Joi.string().optional(), // TODO: change to required once 1.0.7 is the minimal mobile version!
+        address: Joi.string().optional(), // TODO: deprecated in mobile@1.1.5
+        token: Joi.string().allow(''), // TODO: deprecated in mobile@1.1.5
+        phone: Joi.string().optional(), // TODO: deprecated in mobile@1.1.5
+        pushNotificationToken: Joi.string().optional(), // TODO: required in mobile@1.1.5
     }),
 });
 
