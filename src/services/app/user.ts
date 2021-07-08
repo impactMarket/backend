@@ -69,6 +69,10 @@ export default class UserService {
                                 },
                             ],
                         },
+                        {
+                            model: this.appUserTrust,
+                            as: 'trust',
+                        },
                     ],
                     where: { address: user.address },
                 }))!.toJSON() as User;
@@ -382,8 +386,8 @@ export default class UserService {
             isManager: manager !== null || managerInPendingCommunity,
             blocked: beneficiary !== null ? beneficiary.blocked : false,
             verifiedPN:
-                user.trust?.length !== 0
-                    ? user.trust![0].verifiedPhoneNumber
+                user.trust && user.trust.length !== 0
+                    ? user.trust[0].verifiedPhoneNumber
                     : undefined, // TODO: deprecated in mobile-app@1.1.5
             suspect: user.suspect,
             rates: await ExchangeRatesService.get(), // TODO: deprecated in mobile-app@1.1.5
