@@ -1,17 +1,11 @@
 import { expect } from 'chai';
-import { Sequelize } from 'sequelize';
 import { ethers } from 'ethers';
 import faker from 'faker';
+import { Sequelize } from 'sequelize';
 
-import { CommunityAttributes } from '../../../src/database/models/ubi/community';
-import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
-import { User } from '../../../src/interfaces/app/user';
 import UserService from '../../../src/services/app/user';
-import { IListBeneficiary, IUserAuth } from '../../../src/types/endpoints';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
-import { match } from 'sinon';
 
-// in this test there are users being assined with suspicious activity and others being removed
 describe('user service', () => {
     let sequelize: Sequelize;
     before(async () => {
@@ -183,6 +177,55 @@ describe('user service', () => {
                 avatarMediaId: 5,
                 pushNotificationToken: 'ckniwoaicoska',
             });
+        });
+    });
+
+    describe('welcome', () => {
+        it('welcome existing account (no push notification token)', async () => {
+            const randomWallet = ethers.Wallet.createRandom();
+            const address = await randomWallet.getAddress();
+            const phone = faker.phone.phoneNumber();
+            const newUser = await UserService.authenticate({
+                address,
+                trust: {
+                    phone,
+                },
+            });
+            const logged = await UserService.welcome(newUser.user.address);
+            // eslint-disable-next-line no-unused-expressions
+            expect(logged).to.not.be.null;
+        });
+
+        it('welcome existing account (with push notification token)', async () => {
+            const randomWallet = ethers.Wallet.createRandom();
+            const address = await randomWallet.getAddress();
+            const phone = faker.phone.phoneNumber();
+            const newUser = await UserService.authenticate({
+                address,
+                trust: {
+                    phone,
+                },
+            });
+            const logged = await UserService.welcome(
+                newUser.user.address,
+                'sjdhkjsfdksjfks'
+            );
+            // eslint-disable-next-line no-unused-expressions
+            expect(logged).to.not.be.null;
+        });
+
+        it('fails to welcome not existing account', async () => {
+            const randomWallet = ethers.Wallet.createRandom();
+            const address = await randomWallet.getAddress();
+            // const invalidLogin = await UserService.welcome(address);
+            // eslint-disable-next-line no-unused-expressions
+            UserService.welcome(address)
+                .catch((e) => expect(e).to.be.equal('user not found'))
+                .then(() => {
+                    throw new Error(
+                        "'fails to welcome not existing account' expected to fail"
+                    );
+                });
         });
     });
 });
