@@ -14,13 +14,7 @@ import CommunityFactory from '../../../factories/community';
 import InflowFactory from '../../../factories/inflow';
 import UserFactory from '../../../factories/user';
 import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
-
-function jumpToTomorrowMidnight() {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 1);
-    return tomorrow;
-}
+import { jumpToTomorrowMidnight } from '../../../utils/utils';
 
 describe('#calcuateGlobalMetrics()', () => {
     let communities: CommunityAttributes[] = [];
@@ -52,6 +46,7 @@ describe('#calcuateGlobalMetrics()', () => {
 
     it('first day, one community', async () => {
         // THIS IS HAPPENNING TODAY
+        tk.travel(jumpToTomorrowMidnight());
         const users = await UserFactory({ n: 2 });
         communities = await CommunityFactory([
             {
@@ -92,7 +87,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await ClaimFactory(beneficiaries[1], community);
 
         // THIS IS HAPPENING TOMORROW
-        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000);
+        tk.travel(jumpToTomorrowMidnight());
         await calcuateCommunitiesMetrics();
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
@@ -107,7 +102,7 @@ describe('#calcuateGlobalMetrics()', () => {
         });
 
         // THIS IS HAPPENING TWO DAYS FROM NOW
-        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000);
+        tk.travel(jumpToTomorrowMidnight());
         await calcuateCommunitiesMetrics();
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
@@ -122,7 +117,7 @@ describe('#calcuateGlobalMetrics()', () => {
         });
 
         // THIS IS HAPPENING THREE DAYS FROM NOW
-        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000);
+        tk.travel(jumpToTomorrowMidnight());
         await calcuateCommunitiesMetrics();
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
@@ -137,7 +132,7 @@ describe('#calcuateGlobalMetrics()', () => {
         });
 
         // THIS IS HAPPENING FOUR DAYS FROM NOW
-        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000);
+        tk.travel(jumpToTomorrowMidnight());
         await calcuateCommunitiesMetrics();
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
@@ -152,7 +147,7 @@ describe('#calcuateGlobalMetrics()', () => {
         });
 
         // THIS IS HAPPENING FIVE DAYS FROM NOW
-        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000);
+        tk.travel(jumpToTomorrowMidnight());
         await calcuateCommunitiesMetrics();
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
@@ -167,7 +162,7 @@ describe('#calcuateGlobalMetrics()', () => {
         });
 
         // THIS IS HAPPENING SIX DAYS FROM NOW
-        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 24 + 36 * 60 * 1000);
+        tk.travel(jumpToTomorrowMidnight());
         await calcuateCommunitiesMetrics();
         await calcuateGlobalMetrics();
 

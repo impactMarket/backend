@@ -11,6 +11,7 @@ import CommunityFactory from '../../../factories/community';
 import InflowFactory from '../../../factories/inflow';
 import UserFactory from '../../../factories/user';
 import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
+import { jumpToTomorrowMidnight } from '../../../utils/utils';
 
 /**
  * IMPORTANT NOTE: this tests use time travel to test different scenarios
@@ -43,6 +44,7 @@ describe('calcuateCommunitiesMetrics', () => {
             sequelize = sequelizeSetup();
 
             // THIS IS HAPPENING TODAY
+            tk.travel(jumpToTomorrowMidnight());
             const users = await UserFactory({ n: 2 });
             communities = await CommunityFactory([
                 {
@@ -80,18 +82,14 @@ describe('calcuateCommunitiesMetrics', () => {
             await ClaimFactory(beneficiaries[1], community);
 
             // THIS IS HAPPENING TOMORROW
-            tk.travel(
-                new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000
-            );
+            tk.travel(jumpToTomorrowMidnight());
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await ClaimFactory(beneficiaries[1], community);
             await calcuateCommunitiesMetrics();
 
             // THIS IS HAPPENING TWO DAYS FROM NOW
-            tk.travel(
-                new Date().getTime() + 1000 * 60 * 60 * 24 + 36 * 60 * 1000
-            );
+            tk.travel(jumpToTomorrowMidnight());
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await ClaimFactory(beneficiaries[1], community);
@@ -108,9 +106,7 @@ describe('calcuateCommunitiesMetrics', () => {
             await InflowFactory(community);
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
-            tk.travel(
-                new Date().getTime() + 1000 * 60 * 60 * 24 + 30 * 60 * 1000
-            );
+            tk.travel(jumpToTomorrowMidnight());
             ubiCommunityDailyStateCreate.resetHistory();
         });
 
@@ -184,18 +180,14 @@ describe('calcuateCommunitiesMetrics', () => {
             await ClaimFactory(beneficiaries[1], community);
 
             // THIS IS HAPPENING TOMORROW
-            tk.travel(
-                new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000
-            );
+            tk.travel(jumpToTomorrowMidnight());
             await calcuateCommunitiesMetrics();
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await ClaimFactory(beneficiaries[1], community);
 
             // THIS IS HAPPENING TWO DAYS FROM NOW
-            tk.travel(
-                new Date().getTime() + 1000 * 60 * 60 * 24 + 36 * 60 * 1000
-            );
+            tk.travel(jumpToTomorrowMidnight());
             await calcuateCommunitiesMetrics();
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
@@ -203,9 +195,7 @@ describe('calcuateCommunitiesMetrics', () => {
             await InflowFactory(community);
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
-            tk.travel(
-                new Date().getTime() + 1000 * 60 * 60 * 24 + 30 * 60 * 1000
-            );
+            tk.travel(jumpToTomorrowMidnight());
             ubiCommunityDailyStateCreate.resetHistory();
         });
 
@@ -279,9 +269,7 @@ describe('calcuateCommunitiesMetrics', () => {
             await ClaimFactory(beneficiaries[1], community);
 
             // THIS IS HAPPENING TOMORROW
-            tk.travel(
-                new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000
-            );
+            tk.travel(jumpToTomorrowMidnight());
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await ClaimFactory(beneficiaries[1], community);
@@ -401,9 +389,7 @@ describe('calcuateCommunitiesMetrics', () => {
             await InflowFactory(community);
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
-            tk.travel(
-                new Date().getTime() + 1000 * 60 * 60 * 24 * 3 + 30 * 60 * 1000
-            );
+            tk.travel(jumpToTomorrowMidnight());
             ubiCommunityDailyStateCreate.resetHistory();
         });
 
