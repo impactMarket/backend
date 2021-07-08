@@ -94,6 +94,13 @@ export default class UserService {
         pushNotificationToken?: string
     ): Promise<IUserHello> {
         let user: User;
+        const found = await this.user.findOne({
+            where: { address },
+        });
+        if (found === null) {
+            throw new Error('user not found');
+        }
+        user = found.toJSON() as User;
         if (pushNotificationToken) {
             const updated = await this.user.update(
                 { pushNotificationToken },
@@ -101,15 +108,7 @@ export default class UserService {
             );
             if (updated.length > 0) {
                 user = updated[1][0].toJSON() as User;
-            } else {
-                user = (await this.user.findOne({
-                    where: { address },
-                }))!.toJSON() as User;
             }
-        } else {
-            user = (await this.user.findOne({
-                where: { address },
-            }))!.toJSON() as User;
         }
         return UserService.loadUser(user);
     }
