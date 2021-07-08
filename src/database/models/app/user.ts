@@ -42,6 +42,7 @@ export function initializeUser(sequelize: Sequelize): typeof UserModel {
             },
             language: {
                 type: DataTypes.STRING(8),
+                defaultValue: 'en',
                 allowNull: false,
             },
             currency: {

@@ -21,6 +21,7 @@ module.exports = {
             },
             language: {
                 type: Sequelize.STRING(8),
+                defaultValue: 'en',
                 allowNull: false,
             },
             currency: {
