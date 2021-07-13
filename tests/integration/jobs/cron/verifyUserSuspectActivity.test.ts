@@ -150,7 +150,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
                 suspect: true,
             },
             {
-                where: { address: user[0].address },
+                where: { address: user[1].address },
                 returning: false,
             }
         );
@@ -160,7 +160,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
                 suspect: true,
             },
             {
-                where: { address: user[1].address },
+                where: { address: user[0].address },
                 returning: false,
             }
         );
