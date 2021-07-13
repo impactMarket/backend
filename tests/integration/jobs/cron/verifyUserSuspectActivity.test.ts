@@ -145,17 +145,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
         await verifyUserSuspectActivity();
         assert.callCount(userUpdateStub, 3);
         assert.calledWith(
-            userUpdateStub.getCall(0),
-            {
-                suspect: true,
-            },
-            {
-                where: { address: user[1].address },
-                returning: false,
-            }
-        );
-        assert.calledWith(
-            userUpdateStub.getCall(1),
+            userUpdateStub,
             {
                 suspect: true,
             },
@@ -165,7 +155,17 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
             }
         );
         assert.calledWith(
-            userUpdateStub.getCall(2),
+            userUpdateStub,
+            {
+                suspect: true,
+            },
+            {
+                where: { address: user[1].address },
+                returning: false,
+            }
+        );
+        assert.calledWith(
+            userUpdateStub,
             {
                 suspect: false,
             },
