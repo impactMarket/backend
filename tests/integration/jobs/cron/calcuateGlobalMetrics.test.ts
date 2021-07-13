@@ -91,7 +91,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await calcuateCommunitiesMetrics();
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[1], community);
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
             amount: '500000000000000000',
@@ -106,7 +106,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await calcuateCommunitiesMetrics();
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[1], community);
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
             amount: '500000000000000000',
@@ -121,7 +121,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await calcuateCommunitiesMetrics();
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[1], community);
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
             amount: '500000000000000000',
@@ -136,7 +136,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await calcuateCommunitiesMetrics();
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[1], community);
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
             amount: '500000000000000000',
@@ -151,7 +151,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await calcuateCommunitiesMetrics();
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[1], community);
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
             amount: '500000000000000000',
@@ -164,6 +164,21 @@ describe('#calcuateGlobalMetrics()', () => {
         // THIS IS HAPPENING SIX DAYS FROM NOW
         tk.travel(jumpToTomorrowMidnight());
         await calcuateCommunitiesMetrics();
+        await InflowFactory(community);
+        await ClaimFactory(beneficiaries[0], community);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[1], community);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+
+        // THIS IS HAPPENING SEVEN DAYS FROM NOW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
         await calcuateGlobalMetrics();
 
         assert.callCount(globalDailyStateCreate, 1);
@@ -174,21 +189,21 @@ describe('#calcuateGlobalMetrics()', () => {
             claims: 2,
             beneficiaries: 0,
             raised: '5000000000000000000',
-            backers: 8,
+            backers: 9,
             volume: '1500000000000000000',
             transactions: 2,
             reach: 2,
             reachOut: 1,
             totalRaised: '5000000000000000000',
-            totalDistributed: '14000000000000000000',
-            totalBackers: 8,
+            totalDistributed: '15000000000000000000',
+            totalBackers: 9,
             totalBeneficiaries: 2,
             givingRate: 0.16,
-            ubiRate: 0.85,
-            fundingRate: 70,
+            ubiRate: 1,
+            fundingRate: 71.11,
             spendingRate: 0,
             avgComulativeUbi: '450000000000000000000',
-            avgUbiDuration: 17.64,
+            avgUbiDuration: 15,
             totalVolume: '1500000000000000000',
             totalTransactions: BigInt(2),
             totalReach: BigInt(2),
@@ -281,7 +296,7 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await InflowFactory(community1);
         await ClaimFactory(beneficiaries[0], community1);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[1], community1);
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
             amount: '500000000000000000',
@@ -293,7 +308,7 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await InflowFactory(community2);
         await ClaimFactory(beneficiaries[2], community2);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await ClaimFactory(beneficiaries[4], community2);
@@ -311,7 +326,7 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await InflowFactory(community1);
         await ClaimFactory(beneficiaries[0], community1);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[1], community1);
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
             amount: '500000000000000000',
@@ -323,9 +338,9 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await InflowFactory(community2);
         await ClaimFactory(beneficiaries[2], community2);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[3], community2);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[4], community2);
         await BeneficiaryTransactionFactory(beneficiaries[2], true, {
             amount: '40000000000000000',
@@ -341,7 +356,7 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await InflowFactory(community1);
         await ClaimFactory(beneficiaries[0], community1);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[1], community1);
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
             amount: '500000000000000000',
@@ -353,7 +368,7 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await InflowFactory(community2);
         await ClaimFactory(beneficiaries[2], community2);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 4);
         await ClaimFactory(beneficiaries[4], community2);
@@ -371,7 +386,7 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await InflowFactory(community1);
         await ClaimFactory(beneficiaries[0], community1);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[1], community1);
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
             amount: '500000000000000000',
@@ -383,7 +398,7 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await InflowFactory(community2);
         await ClaimFactory(beneficiaries[2], community2);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[3], community2);
         // no claim, on purpose
         // tk.travel(new Date().getTime() + 1000 * 60 * 4);
@@ -402,7 +417,7 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await InflowFactory(community1);
         await ClaimFactory(beneficiaries[0], community1);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[1], community1);
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
             amount: '500000000000000000',
@@ -415,9 +430,9 @@ describe('#calcuateGlobalMetrics()', () => {
         await InflowFactory(community2);
         await ClaimFactory(beneficiaries[2], community2);
         // no claim, on purpose
-        // tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         // await ClaimFactory(beneficiaries[3], community2);
-        tk.travel(new Date().getTime() + 1000 * 60 * 3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await ClaimFactory(beneficiaries[4], community2);
         await BeneficiaryTransactionFactory(beneficiaries[2], true, {
             amount: '500000000000000000',
@@ -430,6 +445,37 @@ describe('#calcuateGlobalMetrics()', () => {
         // THIS IS HAPPENING SIX DAYS FROM NOW
         tk.travel(jumpToTomorrowMidnight());
         await calcuateCommunitiesMetrics();
+        // community 1
+        await InflowFactory(community1);
+        await ClaimFactory(beneficiaries[0], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[1], community1);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+        // community 2
+        await InflowFactory(community2);
+        await ClaimFactory(beneficiaries[2], community2);
+        // no claim, on purpose
+        // tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        // await ClaimFactory(beneficiaries[3], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[4], community2);
+        await BeneficiaryTransactionFactory(beneficiaries[2], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[4], true, {
+            toBeneficiary: beneficiaries[2],
+            amount: '1000000000000000000',
+        });
+
+        // THIS IS HAPPENING SEVEN DAYS FROM NOW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
         await calcuateGlobalMetrics();
 
         assert.callCount(globalDailyStateCreate, 1);
@@ -440,22 +486,22 @@ describe('#calcuateGlobalMetrics()', () => {
             claims: 4,
             beneficiaries: 0,
             raised: '8750000000000000000',
-            backers: 16,
-            volume: '1650000000000000000',
+            backers: 17,
+            volume: '3000000000000000000',
             transactions: 4,
             reach: 4,
             reachOut: 2,
             totalRaised: '8750000000000000000',
-            totalDistributed: '27500000000000000000',
-            totalBackers: 16,
+            totalDistributed: '28500000000000000000',
+            totalBackers: 18,
             totalBeneficiaries: 5,
             givingRate: 0.14,
-            ubiRate: 0,
-            fundingRate: 65.71,
+            ubiRate: 0.72,
+            fundingRate: 66.66,
             spendingRate: 0,
             avgComulativeUbi: '375000000000000000000',
-            avgUbiDuration: 0,
-            totalVolume: '1650000000000000000',
+            avgUbiDuration: 17.545,
+            totalVolume: '3000000000000000000',
             totalTransactions: BigInt(4),
             totalReach: BigInt(4),
             totalReachOut: BigInt(2),
@@ -498,28 +544,28 @@ describe('#calcuateGlobalMetrics()', () => {
         assert.calledWith(globalDailyStateCreate.getCall(0), {
             date: match.any,
             avgMedianSSI: 0,
-            claimed: '4250000000000000000',
-            claims: 5,
+            claimed: '6750000000000000000',
+            claims: 8,
             beneficiaries: 0,
-            raised: '8750000000000000000',
-            backers: 18,
+            raised: '12500000000000000000',
+            backers: 20,
             volume: '3000000000000000000',
             transactions: 4,
             reach: 4,
             reachOut: 2,
-            totalRaised: '8750000000000000000',
-            totalDistributed: '32500000000000000000',
-            totalBackers: 18,
+            totalRaised: '12500000000000000000',
+            totalDistributed: '38500000000000000000',
+            totalBackers: 20,
             totalBeneficiaries: 5,
             givingRate: 0.14,
-            ubiRate: 0.84,
-            fundingRate: 64.12,
+            ubiRate: 0.73,
+            fundingRate: 63.71,
             spendingRate: 0,
             avgComulativeUbi: '375000000000000000000',
-            avgUbiDuration: 14.96,
+            avgUbiDuration: 17.14,
             totalVolume: '3000000000000000000',
             totalTransactions: BigInt(4),
-            totalReach: BigInt(7),
+            totalReach: BigInt(6),
             totalReachOut: BigInt(4),
         });
     });
