@@ -484,7 +484,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
 
         const totalBeneficiaries = await models.beneficiary.count({
             where: {
-                txAt: { [Op.lt]: todayMidnightTime },
+                txAt: { [Op.lt]: yesterdayDateOnly },
                 communityId: { [Op.in]: communitiesPublicId },
                 active: true,
             },
@@ -495,13 +495,34 @@ export async function calcuateGlobalMetrics(): Promise<void> {
                 await models.claim.findAll({
                     attributes: [[fn('sum', col('amount')), 'claimed']],
                     where: {
-                        txAt: { [Op.lt]: todayMidnightTime },
+                        txAt: { [Op.lt]: yesterdayDateOnly },
                         communityId: { [Op.in]: communitiesPublicId },
                     },
                     raw: true,
                 })
             )[0] as any
         ).claimed;
+
+        const volumeAndTransactions = (
+            await models.beneficiaryTransaction.findAll({
+                attributes: [
+                    [fn('coalesce', fn('sum', col('amount')), 0), 'volume'],
+                    [fn('count', col('tx')), 'transactions'],
+                ],
+                where: {
+                    date: { [Op.lt]: yesterdayDateOnly },
+                },
+                raw: true,
+            })
+        )[0] as any; // this is a single result, that, if there's nothing, the result is zero
+
+        const totalActivity = {
+            volume:
+                volumeAndTransactions.volume === null
+                    ? '0'
+                    : volumeAndTransactions.volume,
+            transactions: parseInt(volumeAndTransactions.transactions, 10),
+        };
 
         lastGlobalMetrics = {
             avgComulativeUbi: '0',
@@ -523,8 +544,8 @@ export async function calcuateGlobalMetrics(): Promise<void> {
             totalRaised: '0',
             totalReach: BigInt(0),
             totalReachOut: BigInt(0),
-            totalTransactions: BigInt(0),
-            totalVolume: '0',
+            totalTransactions: BigInt(totalActivity.transactions),
+            totalVolume: totalActivity.volume,
             transactions: 0,
             ubiRate: 0,
             volume: '0',
