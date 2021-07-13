@@ -47,13 +47,17 @@ export default class BeneficiaryService {
         );
     }
 
-    public static findByAddress(
+    public static async findByAddress(
         address: string,
         active?: boolean
-    ): Promise<Beneficiary | null> {
-        return models.beneficiary.findOne({
+    ): Promise<BeneficiaryAttributes | null> {
+        const beneficiary = await models.beneficiary.findOne({
             where: { address, active },
         });
+        if (beneficiary) {
+            return beneficiary.toJSON() as BeneficiaryAttributes;
+        }
+        return null;
     }
 
     public static async search(
