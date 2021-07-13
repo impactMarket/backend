@@ -426,14 +426,6 @@ export default class CommunityService {
         };
     }
 
-    public static getResquestChangeUbiParams(
-        publicId: string
-    ): Promise<UbiRequestChangeParams | null> {
-        return this.ubiRequestChangeParams.findOne({
-            where: { communityId: publicId },
-        });
-    }
-
     public static async findResquestChangeUbiParams(
         id: number
     ): Promise<UbiRequestChangeParams | null> {

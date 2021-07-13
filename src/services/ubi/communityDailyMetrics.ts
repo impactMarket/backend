@@ -68,29 +68,6 @@ export default class CommunityDailyMetricsService {
         };
     }
 
-    public static async getHistoricalSSIByPublicId(
-        publicId: string
-    ): Promise<number[]> {
-        const community = await this.community.findOne({ where: { publicId } });
-        if (community === null) {
-            return [];
-        }
-        const historical = await this.ubiCommunityDailyMetrics.findAll({
-            attributes: ['ssi'],
-            where: {
-                communityId: community.id,
-            },
-            order: [['date', 'DESC']],
-            limit: 15,
-            raw: true,
-        });
-        if (historical.length < 5) {
-            // at least 5 days until showing data
-            return [];
-        }
-        return historical.map((h) => h.ssi);
-    }
-
     public static async getHistoricalSSI(
         communityId: number
     ): Promise<number[]> {
@@ -141,9 +118,7 @@ export default class CommunityDailyMetricsService {
         return result;
     }
 
-    public static async getCommunitiesAvg(
-        date: Date
-    ): Promise<{
+    public static async getCommunitiesAvg(date: Date): Promise<{
         medianSSI: number;
         avgUbiRate: number;
         avgEstimatedDuration: number;
