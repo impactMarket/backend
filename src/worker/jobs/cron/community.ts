@@ -88,7 +88,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             reach: string;
             reachOut: string;
             fundingRate: string;
-            newBeneficiaries: string;
+            beneficiaries: number;
         };
     };
 
@@ -232,11 +232,11 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
     const communityNewBeneficiaryActivity: {
         id: string;
-        newBeneficiaries: string;
+        beneficiaries: string;
     }[] = (await models.community.findAll({
         attributes: [
             'id',
-            [fn('count', col('beneficiaries.address')), 'newBeneficiaries'],
+            [fn('count', col('beneficiaries.address')), 'beneficiaries'],
         ],
         include: [
             {
@@ -246,6 +246,35 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 required: false,
                 where: {
                     txAt: { [Op.between]: [yesterday, today] },
+                },
+            },
+        ],
+        where: {
+            status: 'valid',
+            visibility: 'public',
+        },
+        group: ['Community.id'],
+        order: [['id', 'DESC']],
+        raw: true,
+    })) as any;
+
+    const communityRemovedBeneficiaryActivity: {
+        id: string;
+        beneficiaries: string;
+    }[] = (await models.community.findAll({
+        attributes: [
+            'id',
+            [fn('count', col('beneficiaries.address')), 'beneficiaries'],
+        ],
+        include: [
+            {
+                model: models.beneficiary,
+                as: 'beneficiaries',
+                attributes: [],
+                required: false,
+                where: {
+                    updatedAt: { [Op.between]: [yesterday, today] },
+                    active: false,
                 },
             },
         ],
@@ -463,6 +492,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const cnb = communityNewBeneficiaryActivity.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
+        const crb = communityRemovedBeneficiaryActivity.find(
+            (c) => parseInt(c.id, 10) === communitiesState[index].id
+        );
         communities.push({
             ...communitiesState[index],
             beneficiariesClaiming: cn
@@ -485,7 +517,13 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                           .multipliedBy(100)
                           .toFixed(2, 1)
                     : '0',
-                ...(cnb ? cnb : { newBeneficiaries: '0' }),
+                ...(cnb && crb
+                    ? {
+                          beneficiaries:
+                              parseInt(cnb.beneficiaries, 10) -
+                              parseInt(crb.beneficiaries, 10),
+                      }
+                    : { beneficiaries: 0 }),
             },
         });
     }
@@ -611,7 +649,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             claimed: community.activity.claimed,
             claims: parseInt(community.activity.claims, 10),
             fundingRate: parseFloat(community.activity.fundingRate),
-            beneficiaries: parseInt(community.activity.newBeneficiaries, 10),
+            beneficiaries: community.activity.beneficiaries,
             communityId: community.id,
             date: yesterday,
         });
