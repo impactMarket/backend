@@ -611,7 +611,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         fundingRate,
         spendingRate,
         avgComulativeUbi,
-        avgUbiDuration,
+        avgUbiDuration: Math.round(avgUbiDuration * 100) / 100,
         totalVolume,
         totalTransactions: BigInt(totalTransactions),
         totalReach: BigInt(allReachEver.reach),

@@ -494,13 +494,13 @@ describe('#calcuateGlobalMetrics()', () => {
             fundingRate: 65.07,
             spendingRate: 0,
             avgComulativeUbi: '375000000000000000000',
-            avgUbiDuration: 17.545,
+            avgUbiDuration: 17.55,
             totalVolume: '14460000000000000000',
             totalTransactions: BigInt(24),
             totalReach: BigInt(4),
             totalReachOut: BigInt(2),
         });
-        globalDailyStateCreate.resetHistory();
+        await globalDailyStateCreate.resetHistory();
 
         // community 1
         await InflowFactory(community1);
@@ -562,7 +562,7 @@ describe('#calcuateGlobalMetrics()', () => {
             totalReach: BigInt(6),
             totalReachOut: BigInt(4),
         });
-        globalDailyStateCreate.resetHistory();
+        await globalDailyStateCreate.resetHistory();
 
         // community 1
         beneficiaries = beneficiaries.concat(
@@ -631,7 +631,7 @@ describe('#calcuateGlobalMetrics()', () => {
             totalReach: BigInt(8),
             totalReachOut: BigInt(6),
         });
-        globalDailyStateCreate.resetHistory();
+        await globalDailyStateCreate.resetHistory();
 
         // community 1
         await BeneficiaryFactory(users.slice(5, 7), community1.publicId, true);
@@ -693,7 +693,7 @@ describe('#calcuateGlobalMetrics()', () => {
             fundingRate: 59.04,
             spendingRate: 0,
             avgComulativeUbi: '375000000000000000000',
-            avgUbiDuration: 16.525,
+            avgUbiDuration: 16.52,
             totalVolume: '23460000000000000000',
             totalTransactions: BigInt(36),
             totalReach: BigInt(10),
@@ -1167,13 +1167,13 @@ describe('#calcuateGlobalMetrics()', () => {
             fundingRate: 59.62,
             spendingRate: 0,
             avgComulativeUbi: '375000000000000000000',
-            avgUbiDuration: 28.7366666666667,
+            avgUbiDuration: 28.74,
             totalVolume: '17880000000000000000',
             totalTransactions: BigInt(36),
             totalReach: BigInt(6),
             totalReachOut: BigInt(3),
         });
-        globalDailyStateCreate.resetHistory();
+        await globalDailyStateCreate.resetHistory();
 
         // community 1
         await InflowFactory(community1);
@@ -1245,13 +1245,13 @@ describe('#calcuateGlobalMetrics()', () => {
             fundingRate: 60.5,
             spendingRate: 0,
             avgComulativeUbi: '375000000000000000000',
-            avgUbiDuration: 28.4333333333333,
+            avgUbiDuration: 28.43,
             totalVolume: '20880000000000000000',
             totalTransactions: BigInt(40),
             totalReach: BigInt(8),
             totalReachOut: BigInt(5),
         });
-        globalDailyStateCreate.resetHistory();
+        await globalDailyStateCreate.resetHistory();
 
         // community 1
         beneficiaries = beneficiaries.concat(
@@ -1330,13 +1330,13 @@ describe('#calcuateGlobalMetrics()', () => {
             fundingRate: 58.73,
             spendingRate: 0,
             avgComulativeUbi: '375000000000000000000',
-            avgUbiDuration: 27.6466666666667,
+            avgUbiDuration: 27.65,
             totalVolume: '23880000000000000000',
             totalTransactions: BigInt(44),
             totalReach: BigInt(10),
             totalReachOut: BigInt(7),
         });
-        globalDailyStateCreate.resetHistory();
+        await globalDailyStateCreate.resetHistory();
 
         // community 1
         await BeneficiaryFactory(users.slice(5, 7), community1.publicId, true);
@@ -1418,7 +1418,7 @@ describe('#calcuateGlobalMetrics()', () => {
             fundingRate: 55.62,
             spendingRate: 0,
             avgComulativeUbi: '375000000000000000000',
-            avgUbiDuration: 29.2633333333333,
+            avgUbiDuration: 29.26,
             totalVolume: '27450000000000000000',
             totalTransactions: BigInt(50),
             totalReach: BigInt(13),
