@@ -20,13 +20,8 @@ export class UbiCommunityDailyStateModel extends Model<
     public transactions!: number;
     public reach!: number;
     public reachOut!: number;
-    public ubiRate!: number;
     public fundingRate!: number;
     public date!: Date;
-
-    // timestamps!
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
 }
 
 export function initializeUbiCommunityDailyState(sequelize: Sequelize): void {
@@ -90,10 +85,6 @@ export function initializeUbiCommunityDailyState(sequelize: Sequelize): void {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
             },
-            ubiRate: {
-                type: DataTypes.FLOAT,
-                defaultValue: 0,
-            },
             fundingRate: {
                 type: DataTypes.FLOAT,
                 defaultValue: 0,
@@ -102,18 +93,11 @@ export function initializeUbiCommunityDailyState(sequelize: Sequelize): void {
                 type: DataTypes.DATEONLY,
                 allowNull: false,
             },
-            createdAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
         },
         {
             tableName: 'ubi_community_daily_state',
             sequelize,
+            timestamps: false,
         }
     );
 }

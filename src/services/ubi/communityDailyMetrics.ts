@@ -1,6 +1,5 @@
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
-import { median } from 'mathjs';
-import { col, fn, Op } from 'sequelize';
+import { Op } from 'sequelize';
 
 import { models } from '../../database';
 import { ICommunityMetrics } from '../../types';
@@ -68,29 +67,6 @@ export default class CommunityDailyMetricsService {
         };
     }
 
-    public static async getHistoricalSSIByPublicId(
-        publicId: string
-    ): Promise<number[]> {
-        const community = await this.community.findOne({ where: { publicId } });
-        if (community === null) {
-            return [];
-        }
-        const historical = await this.ubiCommunityDailyMetrics.findAll({
-            attributes: ['ssi'],
-            where: {
-                communityId: community.id,
-            },
-            order: [['date', 'DESC']],
-            limit: 15,
-            raw: true,
-        });
-        if (historical.length < 5) {
-            // at least 5 days until showing data
-            return [];
-        }
-        return historical.map((h) => h.ssi);
-    }
-
     public static async getHistoricalSSI(
         communityId: number
     ): Promise<number[]> {
@@ -139,87 +115,5 @@ export default class CommunityDailyMetricsService {
             result.set(element.communityId, nc);
         }
         return result;
-    }
-
-    public static async getCommunitiesAvg(
-        date: Date
-    ): Promise<{
-        medianSSI: number;
-        avgUbiRate: number;
-        avgEstimatedDuration: number;
-    }> {
-        const fiveDaysAgo = new Date();
-        fiveDaysAgo.setDate(date.getDate() - 5);
-
-        const onlyPublicValidCommunities = (
-            await this.community.findAll({
-                attributes: ['id'],
-                where: {
-                    visibility: 'public',
-                    status: 'valid',
-                    started: {
-                        [Op.lt]: fiveDaysAgo,
-                    },
-                },
-                raw: true,
-            })
-        ).map((c) => c.id);
-
-        // select cm.ssi from ubi_community_daily_metrics cm, community c, ubi_community_state cs
-        // where cm.date = '2021-01-30'
-        // and cm."communityId" = c.id
-        // and cs."communityId" = c.id
-        // and c.status = 'valid'
-        // and c.visibility = 'public'
-        // and c.started < '2021-01-25'
-        // and cs.beneficiaries > 1
-        // and cs.claimed > 1
-
-        // TODO: only communities with more that 5 days
-        const medianSSI = median(
-            (
-                await this.ubiCommunityDailyMetrics.findAll({
-                    attributes: ['ssi'],
-                    where: {
-                        date,
-                        communityId: { [Op.in]: onlyPublicValidCommunities },
-                    },
-                    raw: true,
-                })
-            ).map((m) => m.ssi)
-        );
-
-        // select avg(cm."ubiRate") avgUbiRate, avg(cm."estimatedDuration") avgEstimatedDuration
-        // from ubi_community_daily_metrics cm, community c, ubi_community_state cs
-        // where cm.date = '2021-01-30'
-        // and cm."communityId" = c.id
-        // and cs."communityId" = c.id
-        // and c.status = 'valid'
-        // and c.visibility = 'public'
-        // and c.started < '2021-01-25'
-        // and cs.beneficiaries > 1
-        // and cs.claimed > 1
-
-        const raw = (
-            await this.ubiCommunityDailyMetrics.findAll({
-                attributes: [
-                    [fn('avg', col('ubiRate')), 'avgUbiRate'],
-                    [
-                        fn('avg', col('estimatedDuration')),
-                        'avgEstimatedDuration',
-                    ],
-                ],
-                where: {
-                    date,
-                    communityId: { [Op.in]: onlyPublicValidCommunities },
-                },
-                raw: true,
-            })
-        )[0];
-        return {
-            medianSSI,
-            avgUbiRate: parseFloat((raw as any).avgUbiRate),
-            avgEstimatedDuration: parseFloat((raw as any).avgEstimatedDuration),
-        };
     }
 }

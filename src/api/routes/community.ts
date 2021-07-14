@@ -145,34 +145,21 @@ export default (app: Router): void => {
     // admin endpoints
 
     route.delete('/:id', adminAuthentication, controller.delete);
+    // TODO: add verification (not urgent, as it highly depends on the contract transaction)
     route.post(
         '/accept',
         communityValidators.accept,
         communityController.accept
     );
     route.get('/pending', communityController.pending);
+    route.post(
+        '/remove',
+        adminAuthentication,
+        communityValidators.remove,
+        communityController.remove
+    );
 
     // end admin endpoints
-
-    /**
-     * @deprecated
-     */
-    route.get(
-        '/ubiparams/:publicId',
-        cacheWithRedis('10 minutes'),
-        communityController.getResquestChangeUbiParams
-    );
-    /**
-     * @swagger
-     *
-     * /community/publicid/publicId:
-     *   deprecated: true
-     */
-    route.get(
-        '/publicid/:publicId',
-        cacheWithRedis('10 minutes'),
-        communityController.getByPublicId
-    );
     /**
      * @deprecated use /list
      */
@@ -186,54 +173,12 @@ export default (app: Router): void => {
      */
     route.get('/list/full/:order?', communityController.listFull);
     /**
-     * @deprecated
-     */
-    route.get('/contract/:address', communityController.getByContractAddress);
-    /**
-     * @swagger
-     *
-     * /community/hssi/publicId:
-     *   deprecated: true
-     */
-    route.get(
-        '/hssi/:publicId',
-        communityController.getHistoricalSSIByPublicId
-    );
-    /**
-     * @deprecated
-     */
-    route.get(
-        '/beneficiaries/find/:beneficiaryQuery/:active?',
-        authenticateToken,
-        communityController.searchBeneficiary
-    );
-
-    /**
-     * @swagger
-     *
-     * /community/beneficiaries/search/{active}/beneficiaryQuery:
-     *   deprecated: true
-     */
-    route.get(
-        '/beneficiaries/search/:active/:beneficiaryQuery',
-        authenticateToken,
-        communityController.searchBeneficiary
-    );
-    /**
      * @deprecated Deprecated in mobile-app@1.1.0
      */
     route.get(
         '/managers/search/:managerQuery',
         authenticateToken,
         communityController.searchManager
-    );
-    /**
-     * @deprecated
-     */
-    route.get(
-        '/beneficiaries/list/:active/:offset/:limit',
-        authenticateToken,
-        communityController.listBeneficiaries
     );
     /**
      * @deprecated Deprecated in mobile-app@1.1.0
@@ -243,37 +188,6 @@ export default (app: Router): void => {
         authenticateToken,
         communityController.listManagers
     );
-    /**
-     * @deprecated
-     */
-    route.post(
-        '/add',
-        authenticateToken,
-        communityValidators.add,
-        communityController.add
-    );
-    /**
-     * @deprecated
-     */
-    route.post(
-        '/edit',
-        authenticateToken,
-        communityValidators.edit,
-        communityController.edit
-    );
-    // TODO: add verification (not urgent, as it highly depends on the contract transaction)
-    // route.post(
-    //     '/accept',
-    //     communityValidators.accept,
-    //     communityController.accept
-    // );
-    route.post(
-        '/remove',
-        adminAuthentication,
-        communityValidators.remove,
-        communityController.remove
-    );
-    // route.get('/pending', communityController.pending);
 
     route.get(
         '/:id/historical-ssi',

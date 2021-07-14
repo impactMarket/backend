@@ -33,35 +33,6 @@ export default class ClaimService {
         }
     }
 
-    /**
-     * Get total monthly (last 30 days, starting todayMidnightTime) claimed.
-     *
-     * **NOTE**: claimed amounts will always be bigger than zero though,
-     * a community might not be listed if no claim has ever happened!
-     *
-     * @returns string
-     */
-    public static async getMonthlyClaimed(from: Date): Promise<string> {
-        // 30 days ago, from todayMidnightTime
-        const aMonthAgo = new Date();
-        aMonthAgo.setDate(from.getDate() - 30);
-        //
-        const claimed: { claimed: string } = (
-            await this.claim.findAll({
-                attributes: [[fn('sum', col('amount')), 'claimed']],
-                where: {
-                    txAt: {
-                        [Op.lt]: from,
-                        [Op.gte]: aMonthAgo,
-                    },
-                },
-                raw: true,
-            })
-        )[0] as any;
-        // there will always be claimed.lenght > 0 (were only zero at the begining)
-        return claimed.claimed;
-    }
-
     public static async uniqueBeneficiariesAndClaimedLast7Days(): Promise<{
         beneficiaries: number;
         claimed: string;

@@ -26,30 +26,34 @@ export default class ClaimLocationService {
             longitude: number;
         }
     ): Promise<void> {
-        if (config.claimVerification === false) {
-            await this.claimLocation.create({
-                communityId,
-                gps,
-            });
-            return;
-        }
-        const community = await this.community.findOne({
-            attributes: ['country'],
-            where: { publicId: communityId },
+        // if (config.claimVerification === false) {
+        //     await this.claimLocation.create({
+        //         communityId,
+        //         gps,
+        //     });
+        //     return;
+        // }
+        // const community = await this.community.findOne({
+        //     attributes: ['country'],
+        //     where: { publicId: communityId },
+        // });
+        // if (community === null) {
+        //     throw new Error('no community found!');
+        // }
+        // const query = await axios.get(
+        //     `${config.positionStackApiBaseUrl}?access_key=${config.positionStackApiKey}&query=${gps.latitude},${gps.longitude}`
+        // );
+        // // country code are 3 chars, we use 2 chars
+        // if (countries[community.country].name === query.data.data[0].country) {
+        //     await this.claimLocation.create({
+        //         communityId,
+        //         gps,
+        //     });
+        // }
+        await this.claimLocation.create({
+            communityId,
+            gps,
         });
-        if (community === null) {
-            throw new Error('no community found!');
-        }
-        const query = await axios.get(
-            `${config.positionStackApiBaseUrl}?access_key=${config.positionStackApiKey}&query=${gps.latitude},${gps.longitude}`
-        );
-        // country code are 3 chars, we use 2 chars
-        if (countries[community.country].name === query.data.data[0].country) {
-            await this.claimLocation.create({
-                communityId,
-                gps,
-            });
-        }
     }
 
     public static async getAll(): Promise<

@@ -30,8 +30,21 @@ const data = async (user: User, communityId: string) => {
  *
  * @return {Object}       A user instance
  */
-const BeneficiaryFactory = async (user: User[], communityId: string) => {
+const BeneficiaryFactory = async (
+    user: User[],
+    communityId: string,
+    isRemoving: boolean = false
+) => {
     const result: BeneficiaryAttributes[] = [];
+    if (isRemoving) {
+        for (let index = 0; index < user.length; index++) {
+            await Beneficiary.update(
+                { active: false },
+                { where: { address: user[index].address, communityId } }
+            );
+        }
+        return result;
+    }
     for (let index = 0; index < user.length; index++) {
         const newBneficiary: any = await Beneficiary.create(
             await data(user[index], communityId)

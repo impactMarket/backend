@@ -13,8 +13,6 @@ import {
     calcuateCommunitiesMetrics,
     internalNotifyLowCommunityFunds,
     internalNotifyNewCommunities,
-    populateCommunityDailyState,
-    verifyCommunityFunds,
     verifyCommunitySuspectActivity,
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
@@ -382,26 +380,6 @@ function cron() {
                 })
                 .catch((e) => {
                     Logger.error('verifyUserSuspectActivity FAILED! ' + e);
-                });
-        },
-        null,
-        true
-    );
-
-    // everyday at 3:35pm (odd times), insert community daily rows with 5 days in advance
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '35 15 * * *',
-        () => {
-            populateCommunityDailyState()
-                .then(() => {
-                    CronJobExecutedService.add('populateCommunityDailyState');
-                    Logger.info(
-                        'populateCommunityDailyState successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    Logger.error('populateCommunityDailyState FAILED! ' + e);
                 });
         },
         null,
