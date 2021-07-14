@@ -1,5 +1,5 @@
 import { CreateOptions, Sequelize } from 'sequelize';
-import Sinon, { assert, match, stub } from 'sinon';
+import Sinon, { assert, match, spy } from 'sinon';
 import tk from 'timekeeper';
 
 import { models } from '../../../../src/database';
@@ -21,7 +21,7 @@ import { jumpToTomorrowMidnight } from '../../../utils/utils';
 describe('calcuateCommunitiesMetrics', () => {
     let communities: any[] = [];
     let sequelize: Sequelize;
-    let ubiCommunityDailyStateCreate: Sinon.SinonStub<
+    let ubiCommunityDailyStateCreate: Sinon.SinonSpy<
         [
             any,
             CreateOptions<any> & {
@@ -33,11 +33,10 @@ describe('calcuateCommunitiesMetrics', () => {
 
     before(async () => {
         sequelize = sequelizeSetup();
-        ubiCommunityDailyStateCreate = stub(
+        ubiCommunityDailyStateCreate = spy(
             models.ubiCommunityDailyState,
             'create'
         );
-        ubiCommunityDailyStateCreate.returns(Promise.resolve({} as any));
     });
 
     after(() => {
@@ -116,12 +115,10 @@ describe('calcuateCommunitiesMetrics', () => {
         });
 
         afterEach(async () => {
-            await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
-            await truncate(sequelize, 'BeneficiaryTransaction');
+            // this two has to come first!
+            await truncate(sequelize, 'Manager');
             await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize, 'UserModel');
-            await truncate(sequelize, 'Community');
+            await truncate(sequelize);
         });
 
         it('few claims', async () => {

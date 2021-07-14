@@ -27,15 +27,10 @@ describe('#calcuateGlobalMetrics()', () => {
     });
 
     afterEach(async () => {
-        await truncate(sequelize, 'Inflow');
-        await truncate(sequelize, 'Claim');
-        await truncate(sequelize, 'BeneficiaryTransaction');
+        // this two has to come first!
+        await truncate(sequelize, 'Manager');
         await truncate(sequelize, 'Beneficiary');
-        await truncate(sequelize, 'UserModel');
-        await truncate(sequelize, 'Community');
-        await truncate(sequelize, 'UbiCommunityDailyStateModel');
-        await truncate(sequelize, 'GlobalDailyState');
-        await truncate(sequelize, 'ReachedAddress');
+        await truncate(sequelize);
         await globalDailyStateCreate.resetHistory();
     });
 
@@ -210,7 +205,7 @@ describe('#calcuateGlobalMetrics()', () => {
         });
     });
 
-    it('five days, two communities', async () => {
+    it('four days, two communities', async () => {
         // THIS IS HAPPENNING TODAY
         tk.travel(jumpToTomorrowMidnight());
         const users = await UserFactory({ n: 10 }); // 2 to one, 3 to other, 1 not beneficiary neither manager, 4 added later
@@ -703,6 +698,731 @@ describe('#calcuateGlobalMetrics()', () => {
             totalTransactions: BigInt(36),
             totalReach: BigInt(10),
             totalReachOut: BigInt(8),
+        });
+    });
+
+    it('four days, four communities, one intermitente activity, one inactive', async () => {
+        // THIS IS HAPPENNING TODAY
+        tk.travel(jumpToTomorrowMidnight());
+        const users = await UserFactory({ n: 40 }); // 10 fo each community
+        communities = await CommunityFactory([
+            {
+                requestByAddress: users[0].address,
+                started: new Date(),
+                status: 'valid',
+                visibility: 'public',
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '1000000000000000000',
+                    communityId: 0,
+                    incrementInterval: 5 * 60,
+                    maxClaim: '450000000000000000000',
+                },
+                hasAddress: true,
+            },
+            {
+                requestByAddress: users[10].address,
+                started: new Date(),
+                status: 'valid',
+                visibility: 'public',
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '750000000000000000',
+                    communityId: 0,
+                    incrementInterval: 10 * 60,
+                    maxClaim: '300000000000000000000',
+                },
+                hasAddress: true,
+            },
+            {
+                requestByAddress: users[20].address,
+                started: new Date(),
+                status: 'valid',
+                visibility: 'public',
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '1000000000000000000',
+                    communityId: 0,
+                    incrementInterval: 5 * 60,
+                    maxClaim: '450000000000000000000',
+                },
+                hasAddress: true,
+            },
+            {
+                requestByAddress: users[30].address,
+                started: new Date(),
+                status: 'valid',
+                visibility: 'public',
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '750000000000000000',
+                    communityId: 0,
+                    incrementInterval: 10 * 60,
+                    maxClaim: '300000000000000000000',
+                },
+                hasAddress: true,
+            },
+        ]);
+        const community1 = {
+            ...communities[0],
+            contract: {
+                baseInterval: 60 * 60 * 24,
+                claimAmount: '1000000000000000000',
+                communityId: 0,
+                incrementInterval: 5 * 60,
+                maxClaim: '450000000000000000000',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        };
+        const community2 = {
+            ...communities[1],
+            contract: {
+                baseInterval: 60 * 60 * 24,
+                claimAmount: '750000000000000000',
+                communityId: 0,
+                incrementInterval: 10 * 60,
+                maxClaim: '300000000000000000000',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        };
+        const community3 = {
+            ...communities[2],
+            contract: {
+                baseInterval: 60 * 60 * 24,
+                claimAmount: '1000000000000000000',
+                communityId: 0,
+                incrementInterval: 5 * 60,
+                maxClaim: '450000000000000000000',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        };
+        const community4 = {
+            ...communities[3],
+            contract: {
+                baseInterval: 60 * 60 * 24,
+                claimAmount: '750000000000000000',
+                communityId: 0,
+                incrementInterval: 10 * 60,
+                maxClaim: '300000000000000000000',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            },
+        };
+        let beneficiaries: BeneficiaryAttributes[] = [];
+        // community 1
+        await InflowFactory(community1);
+        await InflowFactory(community1);
+        await InflowFactory(community1);
+        beneficiaries = beneficiaries.concat(
+            await BeneficiaryFactory(users.slice(0, 2), community1.publicId)
+        );
+        await ClaimFactory(beneficiaries[0], community1);
+        await ClaimFactory(beneficiaries[1], community1);
+        // community 2
+        await InflowFactory(community2);
+        await InflowFactory(community2);
+        await InflowFactory(community2);
+        beneficiaries = beneficiaries.concat(
+            await BeneficiaryFactory(users.slice(10, 13), community2.publicId)
+        );
+        await ClaimFactory(beneficiaries[2], community2);
+        await ClaimFactory(beneficiaries[3], community2);
+        await ClaimFactory(beneficiaries[4], community2);
+        // community 3
+        await InflowFactory(community3);
+        await InflowFactory(community3);
+        await InflowFactory(community3);
+        beneficiaries = beneficiaries.concat(
+            await BeneficiaryFactory(users.slice(20, 24), community3.publicId)
+        );
+        await ClaimFactory(beneficiaries[5], community3);
+        await ClaimFactory(beneficiaries[6], community3);
+        await ClaimFactory(beneficiaries[7], community3);
+        await ClaimFactory(beneficiaries[8], community3);
+        // community 4
+        await InflowFactory(community4);
+        await InflowFactory(community4);
+        await InflowFactory(community4);
+        beneficiaries = beneficiaries.concat(
+            await BeneficiaryFactory(users.slice(30, 34), community4.publicId)
+        );
+        await ClaimFactory(beneficiaries[9], community4);
+        await ClaimFactory(beneficiaries[10], community4);
+        await ClaimFactory(beneficiaries[11], community4);
+        await ClaimFactory(beneficiaries[12], community4);
+
+        // THIS IS HAPPENING TOMORROW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
+        // community 1
+        await InflowFactory(community1);
+        await ClaimFactory(beneficiaries[0], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[1], community1);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+        // community 2
+        await InflowFactory(community2);
+        await ClaimFactory(beneficiaries[2], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[3], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[4], community2);
+        await BeneficiaryTransactionFactory(beneficiaries[2], true, {
+            amount: '70000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[3], true, {
+            toBeneficiary: beneficiaries[4],
+            amount: '500000000000000000',
+        });
+        // community 3
+        await InflowFactory(community3);
+        await ClaimFactory(beneficiaries[5], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[6], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[7], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[8], community3);
+        await BeneficiaryTransactionFactory(beneficiaries[5], true, {
+            amount: '70000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[6], true, {
+            toBeneficiary: beneficiaries[7],
+            amount: '500000000000000000',
+        });
+
+        // THIS IS HAPPENING TWO DAYS FROM NOW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
+        // community 1
+        await InflowFactory(community1);
+        await ClaimFactory(beneficiaries[0], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[1], community1);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+        // community 2
+        await InflowFactory(community2);
+        await ClaimFactory(beneficiaries[2], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[3], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[4], community2);
+        await BeneficiaryTransactionFactory(beneficiaries[2], true, {
+            amount: '40000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[4], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '200000000000000000',
+        });
+        // community 3
+        await InflowFactory(community3);
+        await ClaimFactory(beneficiaries[5], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 12);
+        await ClaimFactory(beneficiaries[6], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[7], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        // await ClaimFactory(beneficiaries[8], community3);
+        await BeneficiaryTransactionFactory(beneficiaries[8], true, {
+            amount: '70000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[6], true, {
+            toBeneficiary: beneficiaries[5],
+            amount: '500000000000000000',
+        });
+
+        // THIS IS HAPPENING THREE DAYS FROM NOW
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000);
+        await calcuateCommunitiesMetrics();
+        // community 1
+        await InflowFactory(community1);
+        await ClaimFactory(beneficiaries[0], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[1], community1);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+        // community 2
+        await InflowFactory(community2);
+        await ClaimFactory(beneficiaries[2], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[3], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 4);
+        await ClaimFactory(beneficiaries[4], community2);
+        await BeneficiaryTransactionFactory(beneficiaries[3], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[4], true, {
+            toBeneficiary: beneficiaries[3],
+            amount: '1000000000000000000',
+        });
+        // community 3
+        await InflowFactory(community3);
+        await ClaimFactory(beneficiaries[5], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 15);
+        await ClaimFactory(beneficiaries[6], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        // await ClaimFactory(beneficiaries[7], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[8], community3);
+        await BeneficiaryTransactionFactory(beneficiaries[5], true, {
+            amount: '70000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[6], true, {
+            toBeneficiary: beneficiaries[7],
+            amount: '500000000000000000',
+        });
+
+        // THIS IS HAPPENING FOUR DAYS FROM NOW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
+        // community 1
+        await InflowFactory(community1);
+        await ClaimFactory(beneficiaries[0], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[1], community1);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+        // community 2
+        await InflowFactory(community2);
+        await ClaimFactory(beneficiaries[2], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[3], community2);
+        // no claim, on purpose
+        // tk.travel(new Date().getTime() + 1000 * 60 * 4);
+        // await ClaimFactory(beneficiaries[3], community2);
+        await BeneficiaryTransactionFactory(beneficiaries[2], true, {
+            amount: '50000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[3], true, {
+            toBeneficiary: beneficiaries[4],
+            amount: '100000000000000000',
+        });
+        // community 3
+        await InflowFactory(community3);
+        await ClaimFactory(beneficiaries[5], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[6], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[7], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[8], community3);
+        await BeneficiaryTransactionFactory(beneficiaries[5], true, {
+            amount: '70000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[6], true, {
+            toBeneficiary: beneficiaries[7],
+            amount: '500000000000000000',
+        });
+
+        // THIS IS HAPPENING FIVE DAYS FROM NOW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
+        // community 1
+        await InflowFactory(community1);
+        await ClaimFactory(beneficiaries[0], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[1], community1);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+        // community 2
+        await InflowFactory(community2);
+        await ClaimFactory(beneficiaries[2], community2);
+        // no claim, on purpose
+        // tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        // await ClaimFactory(beneficiaries[3], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        await ClaimFactory(beneficiaries[4], community2);
+        await BeneficiaryTransactionFactory(beneficiaries[2], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[4], true, {
+            toBeneficiary: beneficiaries[2],
+            amount: '1000000000000000000',
+        });
+        // community 3
+        await InflowFactory(community3);
+        // await ClaimFactory(beneficiaries[5], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        // await ClaimFactory(beneficiaries[6], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        // await ClaimFactory(beneficiaries[7], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        // await ClaimFactory(beneficiaries[8], community3);
+        await BeneficiaryTransactionFactory(beneficiaries[5], true, {
+            amount: '70000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[6], true, {
+            toBeneficiary: beneficiaries[7],
+            amount: '500000000000000000',
+        });
+
+        // THIS IS HAPPENING SIX DAYS FROM NOW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
+        // community 1
+        await InflowFactory(community1);
+        await ClaimFactory(beneficiaries[0], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 2);
+        await ClaimFactory(beneficiaries[1], community1);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+        // community 2
+        await InflowFactory(community2);
+        await ClaimFactory(beneficiaries[2], community2);
+        // no claim, on purpose
+        // tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
+        // await ClaimFactory(beneficiaries[3], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 2);
+        await ClaimFactory(beneficiaries[4], community2);
+        await BeneficiaryTransactionFactory(beneficiaries[2], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[4], true, {
+            toBeneficiary: beneficiaries[2],
+            amount: '1000000000000000000',
+        });
+        // community 3
+        beneficiaries = beneficiaries.concat(
+            await BeneficiaryFactory(users.slice(24, 26), community3.publicId)
+        );
+        await InflowFactory(community3);
+        await ClaimFactory(beneficiaries[5], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 60 * 2);
+        await ClaimFactory(beneficiaries[6], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[7], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[8], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[13], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[14], community3);
+        await BeneficiaryTransactionFactory(beneficiaries[5], true, {
+            amount: '70000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[6], true, {
+            toBeneficiary: beneficiaries[7],
+            amount: '500000000000000000',
+        });
+
+        // THIS IS HAPPENING SEVEN DAYS FROM NOW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
+        await calcuateGlobalMetrics();
+
+        assert.callCount(globalDailyStateCreate, 1);
+        assert.calledWith(globalDailyStateCreate.getCall(0), {
+            date: match.any,
+            avgMedianSSI: 36.27,
+            claimed: '9500000000000000000',
+            claims: 10,
+            beneficiaries: 2,
+            raised: '13750000000000000000',
+            backers: 30,
+            volume: '3570000000000000000',
+            transactions: 6,
+            reach: 6,
+            reachOut: 3,
+            totalRaised: '13750000000000000000',
+            totalDistributed: '54500000000000000000',
+            totalBackers: 30,
+            totalBeneficiaries: 15,
+            givingRate: 0.15,
+            ubiRate: 0.47,
+            fundingRate: 59.62,
+            spendingRate: 0,
+            avgComulativeUbi: '375000000000000000000',
+            avgUbiDuration: 28.7366666666667,
+            totalVolume: '17880000000000000000',
+            totalTransactions: BigInt(36),
+            totalReach: BigInt(6),
+            totalReachOut: BigInt(3),
+        });
+        globalDailyStateCreate.resetHistory();
+
+        // community 1
+        await InflowFactory(community1);
+        await ClaimFactory(beneficiaries[0], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 8);
+        await ClaimFactory(beneficiaries[1], community1);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+        // community 2
+        await InflowFactory(community2);
+        await ClaimFactory(beneficiaries[2], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 5);
+        await ClaimFactory(beneficiaries[3], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 12);
+        await ClaimFactory(beneficiaries[4], community2);
+        await BeneficiaryTransactionFactory(beneficiaries[2], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[4], true, {
+            toBeneficiary: beneficiaries[2],
+            amount: '1000000000000000000',
+        });
+        // community 3
+        await InflowFactory(community3);
+        // await ClaimFactory(beneficiaries[5], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 60 * 2);
+        // await ClaimFactory(beneficiaries[6], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        // await ClaimFactory(beneficiaries[7], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        // await ClaimFactory(beneficiaries[8], community3);
+        // await BeneficiaryTransactionFactory(beneficiaries[5], true, {
+        //     amount: '70000000000000000',
+        // });
+        // await BeneficiaryTransactionFactory(beneficiaries[6], true, {
+        //     toBeneficiary: beneficiaries[7],
+        //     amount: '500000000000000000',
+        // });
+
+        // THIS IS HAPPENING SEVEN DAYS FROM NOW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
+        await calcuateGlobalMetrics();
+
+        assert.callCount(globalDailyStateCreate, 1);
+        assert.calledWith(globalDailyStateCreate.getCall(0), {
+            date: match.any,
+            avgMedianSSI: 36.57,
+            claimed: '4250000000000000000',
+            claims: 5,
+            beneficiaries: 0,
+            raised: '13750000000000000000',
+            backers: 33,
+            volume: '3000000000000000000',
+            transactions: 4,
+            reach: 4,
+            reachOut: 2,
+            totalRaised: '27500000000000000000',
+            totalDistributed: '58750000000000000000',
+            totalBackers: 33,
+            totalBeneficiaries: 15,
+            givingRate: 0.15,
+            ubiRate: 0.48,
+            fundingRate: 60.5,
+            spendingRate: 0,
+            avgComulativeUbi: '375000000000000000000',
+            avgUbiDuration: 28.4333333333333,
+            totalVolume: '20880000000000000000',
+            totalTransactions: BigInt(40),
+            totalReach: BigInt(8),
+            totalReachOut: BigInt(5),
+        });
+        globalDailyStateCreate.resetHistory();
+
+        // community 1
+        beneficiaries = beneficiaries.concat(
+            await BeneficiaryFactory(users.slice(5, 7), community1.publicId)
+        );
+        await InflowFactory(community1);
+        await ClaimFactory(beneficiaries[0], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 8);
+        await ClaimFactory(beneficiaries[1], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 1);
+        await ClaimFactory(beneficiaries[5], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 1);
+        await ClaimFactory(beneficiaries[6], community1);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+        // community 2
+        await InflowFactory(community2);
+        await ClaimFactory(beneficiaries[2], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 5);
+        await ClaimFactory(beneficiaries[3], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 12);
+        await ClaimFactory(beneficiaries[4], community2);
+        await BeneficiaryTransactionFactory(beneficiaries[2], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[4], true, {
+            toBeneficiary: beneficiaries[2],
+            amount: '1000000000000000000',
+        });
+        // community 3
+        // await InflowFactory(community3);
+        // await ClaimFactory(beneficiaries[5], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 60 * 2);
+        // await ClaimFactory(beneficiaries[6], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        // await ClaimFactory(beneficiaries[7], community3);
+        // tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        // await ClaimFactory(beneficiaries[8], community3);
+        // await BeneficiaryTransactionFactory(beneficiaries[5], true, {
+        //     amount: '70000000000000000',
+        // });
+        // await BeneficiaryTransactionFactory(beneficiaries[6], true, {
+        //     toBeneficiary: beneficiaries[7],
+        //     amount: '500000000000000000',
+        // });
+
+        // THIS IS HAPPENING SEVEN DAYS FROM NOW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
+        await calcuateGlobalMetrics();
+
+        assert.callCount(globalDailyStateCreate, 1);
+        assert.calledWith(globalDailyStateCreate.getCall(0), {
+            date: match.any,
+            avgMedianSSI: 35.71,
+            claimed: '6250000000000000000',
+            claims: 7,
+            beneficiaries: 2,
+            raised: '8750000000000000000',
+            backers: 35,
+            volume: '3000000000000000000',
+            transactions: 4,
+            reach: 4,
+            reachOut: 2,
+            totalRaised: '36250000000000000000',
+            totalDistributed: '65000000000000000000',
+            totalBackers: 35,
+            totalBeneficiaries: 17,
+            givingRate: 0.15,
+            ubiRate: 0.49,
+            fundingRate: 58.73,
+            spendingRate: 0,
+            avgComulativeUbi: '375000000000000000000',
+            avgUbiDuration: 27.6466666666667,
+            totalVolume: '23880000000000000000',
+            totalTransactions: BigInt(44),
+            totalReach: BigInt(10),
+            totalReachOut: BigInt(7),
+        });
+        globalDailyStateCreate.resetHistory();
+
+        // community 1
+        await BeneficiaryFactory(users.slice(5, 7), community1.publicId, true);
+        await InflowFactory(community1);
+        await ClaimFactory(beneficiaries[0], community1);
+        tk.travel(new Date().getTime() + 1000 * 60 * 8);
+        await ClaimFactory(beneficiaries[1], community1);
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+            toBeneficiary: beneficiaries[1],
+            amount: '1000000000000000000',
+        });
+        // community 2
+        beneficiaries = beneficiaries.concat(
+            await BeneficiaryFactory([users[14]], community2.publicId)
+        );
+        await InflowFactory(community2);
+        await ClaimFactory(beneficiaries[2], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 5);
+        await ClaimFactory(beneficiaries[3], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 12);
+        await ClaimFactory(beneficiaries[4], community2);
+        tk.travel(new Date().getTime() + 1000 * 60 * 12);
+        await ClaimFactory(beneficiaries[15], community2);
+        await BeneficiaryTransactionFactory(beneficiaries[2], true, {
+            amount: '500000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[4], true, {
+            toBeneficiary: beneficiaries[2],
+            amount: '1000000000000000000',
+        });
+        // community 3
+        await InflowFactory(community3);
+        await ClaimFactory(beneficiaries[5], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 9);
+        await ClaimFactory(beneficiaries[6], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[7], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[8], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[13], community3);
+        tk.travel(new Date().getTime() + 1000 * 60 * 2);
+        await ClaimFactory(beneficiaries[14], community3);
+        await BeneficiaryTransactionFactory(beneficiaries[5], true, {
+            amount: '70000000000000000',
+        });
+        await BeneficiaryTransactionFactory(beneficiaries[6], true, {
+            toBeneficiary: beneficiaries[7],
+            amount: '500000000000000000',
+        });
+
+        // THIS IS HAPPENING SEVEN DAYS FROM NOW
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
+        await calcuateGlobalMetrics();
+
+        assert.callCount(globalDailyStateCreate, 1);
+        assert.calledWith(globalDailyStateCreate.getCall(0), {
+            date: match.any,
+            avgMedianSSI: 34.89,
+            claimed: '11000000000000000000',
+            claims: 12,
+            beneficiaries: -1,
+            raised: '13750000000000000000',
+            backers: 38,
+            volume: '3570000000000000000',
+            transactions: 6,
+            reach: 6,
+            reachOut: 3,
+            totalRaised: '50000000000000000000',
+            totalDistributed: '76000000000000000000',
+            totalBackers: 38,
+            totalBeneficiaries: 16,
+            givingRate: 0.15,
+            ubiRate: 0.49,
+            fundingRate: 55.62,
+            spendingRate: 0,
+            avgComulativeUbi: '375000000000000000000',
+            avgUbiDuration: 29.2633333333333,
+            totalVolume: '27450000000000000000',
+            totalTransactions: BigInt(50),
+            totalReach: BigInt(13),
+            totalReachOut: BigInt(10),
         });
     });
 });
