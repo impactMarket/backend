@@ -2,7 +2,6 @@ import GlobalDailyStateService from '@services/global/globalDailyState';
 import GlobalDemographicsService from '@services/global/globalDemographics';
 import GlobalGrowthService from '@services/global/globalGrowth';
 import ReachedAddressService from '@services/reachedAddress';
-import CommunityDailyStateService from '@services/ubi/communityDailyState';
 import InflowService from '@services/ubi/inflow';
 import { standardResponse } from '@utils/api';
 import { Request, Response } from 'express';
@@ -16,10 +15,12 @@ const globalStatus = (req: Request, res: Response) => {
         try {
             resolve({
                 monthly: await globalDailyStateService.getLast30Days(),
-                lastQuarterAvgSSI: await globalDailyStateService.last90DaysAvgSSI(),
-                today: await CommunityDailyStateService.notYetCountedToday(),
+                lastQuarterAvgSSI:
+                    await globalDailyStateService.last90DaysAvgSSI(),
+                today: await globalDailyStateService.notYetCountedToday(),
                 totalBackers: await InflowService.countEvergreenBackers(),
-                reachedLastMonth: await reachedAddressService.getAllReachedLast30Days(),
+                reachedLastMonth:
+                    await reachedAddressService.getAllReachedLast30Days(),
                 growth: await globalGrowth.getLast(),
             });
         } catch (e) {

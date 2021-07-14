@@ -2,7 +2,6 @@ import { CommunityAttributes } from '@models/ubi/community';
 import UserService from '@services/app/user';
 import NotifiedBackerService from '@services/notifiedBacker';
 import CommunityService from '@services/ubi/community';
-import CommunityDailyStateService from '@services/ubi/communityDailyState';
 import CommunityStateService from '@services/ubi/communityState';
 import InflowService from '@services/ubi/inflow';
 import { WebClient } from '@slack/web-api';
@@ -89,14 +88,18 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             reach: string;
             reachOut: string;
             fundingRate: string;
+            beneficiaries: number;
         };
     };
 
     const aMonthAgo = new Date();
     aMonthAgo.setDate(aMonthAgo.getDate() - 30);
-    aMonthAgo.setHours(0, 0, 0, 0);
+    aMonthAgo.setUTCHours(0, 0, 0, 0);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setUTCHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
 
     // query communities data
 
@@ -211,13 +214,68 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                         as: 'claim',
                         attributes: [],
                         required: false,
-                        where: literal(
-                            `date("beneficiaries->claim"."txAt") = '${
-                                yesterday.toISOString().split('T')[0]
-                            }'`
-                        ),
+                        where: {
+                            txAt: { [Op.between]: [yesterday, today] },
+                        },
                     },
                 ],
+            },
+        ],
+        where: {
+            status: 'valid',
+            visibility: 'public',
+        },
+        group: ['Community.id'],
+        order: [['id', 'DESC']],
+        raw: true,
+    })) as any;
+
+    const communityNewBeneficiaryActivity: {
+        id: string;
+        beneficiaries: string;
+    }[] = (await models.community.findAll({
+        attributes: [
+            'id',
+            [fn('count', col('beneficiaries.address')), 'beneficiaries'],
+        ],
+        include: [
+            {
+                model: models.beneficiary,
+                as: 'beneficiaries',
+                attributes: [],
+                required: false,
+                where: {
+                    txAt: { [Op.between]: [yesterday, today] },
+                },
+            },
+        ],
+        where: {
+            status: 'valid',
+            visibility: 'public',
+        },
+        group: ['Community.id'],
+        order: [['id', 'DESC']],
+        raw: true,
+    })) as any;
+
+    const communityRemovedBeneficiaryActivity: {
+        id: string;
+        beneficiaries: string;
+    }[] = (await models.community.findAll({
+        attributes: [
+            'id',
+            [fn('count', col('beneficiaries.address')), 'beneficiaries'],
+        ],
+        include: [
+            {
+                model: models.beneficiary,
+                as: 'beneficiaries',
+                attributes: [],
+                required: false,
+                where: {
+                    updatedAt: { [Op.between]: [yesterday, today] },
+                    active: false,
+                },
             },
         ],
         where: {
@@ -245,11 +303,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 as: 'inflow',
                 attributes: [],
                 required: false,
-                where: literal(
-                    `date(inflow."txAt") = '${
-                        yesterday.toISOString().split('T')[0]
-                    }'`
-                ),
+                where: {
+                    txAt: { [Op.between]: [yesterday, today] },
+                },
             },
         ],
         where: {
@@ -278,11 +334,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 as: 'inflow',
                 attributes: [],
                 required: false,
-                where: literal(
-                    `date(inflow."txAt") >= '${
-                        aMonthAgo.toISOString().split('T')[0]
-                    }'`
-                ),
+                where: {
+                    txAt: { [Op.between]: [aMonthAgo, today] },
+                },
             },
         ],
         where: {
@@ -342,13 +396,11 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     {
                         model: models.beneficiaryTransaction,
                         as: 'transactions',
-                        where: literal(
-                            `date("beneficiaries->transactions"."date") = '${
-                                yesterday.toISOString().split('T')[0]
-                            }'`
-                        ),
                         attributes: [],
                         required: false,
+                        where: {
+                            date: { [Op.between]: [yesterday, today] },
+                        },
                     },
                 ],
             },
@@ -437,6 +489,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const cm = communityMonthly.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
+        const cnb = communityNewBeneficiaryActivity.find(
+            (c) => parseInt(c.id, 10) === communitiesState[index].id
+        );
+        const crb = communityRemovedBeneficiaryActivity.find(
+            (c) => parseInt(c.id, 10) === communitiesState[index].id
+        );
         communities.push({
             ...communitiesState[index],
             beneficiariesClaiming: cn
@@ -459,6 +517,13 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                           .multipliedBy(100)
                           .toFixed(2, 1)
                     : '0',
+                ...(cnb && crb
+                    ? {
+                          beneficiaries:
+                              parseInt(cnb.beneficiaries, 10) -
+                              parseInt(crb.beneficiaries, 10),
+                      }
+                    : { beneficiaries: 0 }),
             },
         });
     }
@@ -573,21 +638,21 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             estimatedDuration,
             date: yesterday,
         });
-        await models.ubiCommunityDailyState.update(
-            {
-                transactions: parseInt(community.activity.txs, 10),
-                reach: parseInt(community.activity.reach, 10),
-                reachOut: parseInt(community.activity.reachOut, 10),
-                volume: community.activity.volume,
-                backers: parseInt(community.activity.backers, 10),
-                monthlyBackers: parseInt(community.activity.monthlyBackers, 10),
-                raised: community.activity.raised,
-                claimed: community.activity.claimed,
-                claims: parseInt(community.activity.claims, 10),
-                fundingRate: parseFloat(community.activity.fundingRate),
-            },
-            { where: { communityId: community.id, date: yesterday } }
-        );
+        await models.ubiCommunityDailyState.create({
+            transactions: parseInt(community.activity.txs, 10),
+            reach: parseInt(community.activity.reach, 10),
+            reachOut: parseInt(community.activity.reachOut, 10),
+            volume: community.activity.volume,
+            backers: parseInt(community.activity.backers, 10),
+            monthlyBackers: parseInt(community.activity.monthlyBackers, 10),
+            raised: community.activity.raised,
+            claimed: community.activity.claimed,
+            claims: parseInt(community.activity.claims, 10),
+            fundingRate: parseFloat(community.activity.fundingRate),
+            beneficiaries: community.activity.beneficiaries,
+            communityId: community.id,
+            date: yesterday,
+        });
     };
 
     const pending: Promise<void>[] = [];
@@ -677,13 +742,4 @@ export async function internalNotifyLowCommunityFunds(): Promise<void> {
             mrkdwn: true,
         });
     }
-}
-
-export async function populateCommunityDailyState(): Promise<void> {
-    Logger.info('Inserting community empty daily state...');
-    const communities = await CommunityService.listCommunitiesStructOnly();
-
-    communities.forEach((community) => {
-        CommunityDailyStateService.populateNext5Days(community.id);
-    });
 }

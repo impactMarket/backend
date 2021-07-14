@@ -3,6 +3,9 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     up: async (queryInterface, Sequelize) => {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         // use datagrip for better understanding + highlight
 
         // create trigger to update total beneficiaries ina  given community, by day and since ever
@@ -39,7 +42,6 @@ EXECUTE PROCEDURE update_beneficiaries_community_states();`);
     RETURNS TRIGGER AS $$
     declare
         state_claimed numeric(29);
-        -- state_daily_claimed numeric(29);
         beneficiary_claimed numeric(22);
         beneficiary_last_claim_at timestamp with time zone;
         community_id integer;
@@ -47,7 +49,6 @@ EXECUTE PROCEDURE update_beneficiaries_community_states();`);
         SELECT id INTO community_id FROM community where "publicId"=NEW."communityId";
         -- update claims
         UPDATE ubi_community_state SET claims = claims + 1 WHERE "communityId"=community_id;
-        -- UPDATE ubi_community_daily_state SET claims = claims + 1 WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         -- update beneficiary table as well
         SELECT "lastClaimAt" INTO beneficiary_last_claim_at FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address;
         UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt" WHERE "communityId"=NEW."communityId" AND address=NEW.address;
@@ -56,49 +57,15 @@ EXECUTE PROCEDURE update_beneficiaries_community_states();`);
         -- update total claimed
         SELECT SUM(claimed + NEW.amount) INTO state_claimed FROM ubi_community_state WHERE "communityId"=community_id;
         UPDATE ubi_community_state SET claimed = state_claimed WHERE "communityId"=community_id;
-        -- SELECT SUM(claimed + NEW.amount) INTO state_daily_claimed FROM ubi_community_daily_state WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
-        -- UPDATE ubi_community_daily_state SET claimed = state_daily_claimed WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         return NEW;
     END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_claim_states
-BEFORE INSERT
-ON claim
-FOR EACH ROW
-EXECUTE PROCEDURE update_claim_states();`);
-
-        await queryInterface.sequelize.query(`
-        CREATE OR REPLACE FUNCTION update_managers_community_state()
-    RETURNS TRIGGER AS
-$$
-declare
-    community_id integer;
-BEGIN
-    SELECT id INTO community_id FROM community where "publicId" = NEW."communityId";
-    IF (TG_OP = 'INSERT') THEN -- INSERT operations
-    -- update overall state
-        UPDATE ubi_community_state SET managers = managers + 1 WHERE "communityId" = community_id;
-    ELSEIF (OLD.active IS TRUE AND NEW.active IS FALSE) THEN -- manager being removed from community
-    -- update overall state
-        UPDATE ubi_community_state SET managers = managers - 1 WHERE "communityId" = community_id;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_managers_community_state
-BEFORE INSERT OR UPDATE
-ON manager
-FOR EACH ROW
-EXECUTE PROCEDURE update_managers_community_state();`);
+$$ LANGUAGE plpgsql;`);
 
         await queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_inflow_community_states()
     RETURNS TRIGGER AS $$
     declare
         state_raised numeric(29);
-        -- state_daily_raised numeric(29);
         n_backer bigint;
         community_id integer;
     BEGIN
@@ -111,17 +78,9 @@ EXECUTE PROCEDURE update_managers_community_state();`);
         -- update total raised
         SELECT SUM(raised + NEW.amount) INTO state_raised FROM ubi_community_state WHERE "communityId"=community_id;
         UPDATE ubi_community_state SET raised = state_raised WHERE "communityId"=community_id;
-        -- SELECT SUM(raised + NEW.amount) INTO state_daily_raised FROM ubi_community_daily_state WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
-        -- UPDATE ubi_community_daily_state SET raised = state_daily_raised WHERE "communityId"=community_id AND date=DATE(NEW."txAt");
         return NEW;
     END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_inflow_community_states
-BEFORE INSERT
-ON inflow
-FOR EACH ROW
-EXECUTE PROCEDURE update_inflow_community_states();`);
+$$ LANGUAGE plpgsql;`);
 
         return queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_loves_stories()
@@ -134,13 +93,7 @@ EXECUTE PROCEDURE update_inflow_community_states();`);
         END IF;
         RETURN NEW;
     END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_loves_stories
-BEFORE INSERT OR DELETE
-ON story_user_engagement
-FOR EACH ROW
-EXECUTE PROCEDURE update_loves_stories();`);
+$$ LANGUAGE plpgsql;`);
     },
 
     down(queryInterface, Sequelize) {},

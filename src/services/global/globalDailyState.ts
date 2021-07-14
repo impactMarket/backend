@@ -53,35 +53,12 @@ export default class GlobalDailyStateService {
         };
     }
 
-    public async getLast4AvgMedianSSI(): Promise<number[]> {
-        // it was null just once at the system's begin.
-        const last = await this.globalDailyState.findAll({
-            attributes: ['avgMedianSSI'],
-            order: [['date', 'DESC']],
-            limit: 4,
-            raw: true,
-        });
-        return last.map((g) => g.avgMedianSSI);
-    }
-
-    public async getLast(): Promise<GlobalDailyState> {
-        // it was null just once at the system's begin.
-        const last = await this.globalDailyState.findAll({
-            order: [['date', 'DESC']],
-            limit: 1,
-            raw: true,
-        });
-        return last[0];
-    }
-
     public async count(): Promise<number> {
         // it was null just once at the system's begin.
         return await this.globalDailyState.count();
     }
 
-    public async sumLast30Days(
-        from: Date
-    ): Promise<{
+    public async sumLast30Days(from: Date): Promise<{
         tClaimed: string;
         tClaims: number;
         tBeneficiaries: number;
@@ -182,5 +159,54 @@ export default class GlobalDailyStateService {
             date: g.date,
             avgMedianSSI: g.avgMedianSSI,
         }));
+    }
+
+    public async notYetCountedToday() {
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+
+        const communitiesPublicId = (
+            await models.community.findAll({
+                attributes: ['publicId'],
+                where: { status: 'valid', visibility: 'public' },
+            })
+        ).map((c) => c.publicId);
+
+        const claimed: string = (
+            (
+                await models.claim.findAll({
+                    attributes: [[fn('sum', col('amount')), 'claimed']],
+                    where: {
+                        txAt: { [Op.gte]: today },
+                        communityId: { [Op.in]: communitiesPublicId },
+                    },
+                })
+            )[0] as any
+        ).claimed;
+
+        const raised: string = (
+            (
+                await models.inflow.findAll({
+                    attributes: [[fn('sum', col('amount')), 'raised']],
+                    where: {
+                        txAt: { [Op.gte]: today },
+                        communityId: { [Op.in]: communitiesPublicId },
+                    },
+                })
+            )[0] as any
+        ).raised;
+
+        const beneficiaries = await models.beneficiary.count({
+            where: {
+                txAt: { [Op.gte]: today },
+                communityId: { [Op.in]: communitiesPublicId },
+            },
+        });
+
+        return {
+            claimed,
+            raised,
+            beneficiaries,
+        };
     }
 }

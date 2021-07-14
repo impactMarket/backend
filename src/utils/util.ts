@@ -1,10 +1,39 @@
 import { Community } from '@models/ubi/community';
 import UserService from '@services/app/user';
 import axios from 'axios';
+import BigNumber from 'bignumber.js';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
 import config from '../config';
 import { Logger } from './logger';
+
+BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
+
+export function calculateGrowth(
+    past: string | BigInt | number,
+    now: string | BigInt | number
+): number {
+    let r: number | undefined = undefined;
+    if (typeof past === 'string' && typeof now === 'string') {
+        r = new BigNumber(now)
+            .minus(new BigNumber(past))
+            .dividedBy(new BigNumber(past))
+            .multipliedBy(100)
+            .toNumber();
+    } else if (typeof past === 'bigint' && typeof now === 'bigint') {
+        r = new BigNumber(now.toString())
+            .minus(new BigNumber(past.toString()))
+            .dividedBy(new BigNumber(past.toString()))
+            .multipliedBy(100)
+            .toNumber();
+    } else if (typeof past === 'number' && typeof now === 'number') {
+        r = ((now - past) / past) * 100;
+    }
+    if (r !== undefined) {
+        return Math.round(r * 10) / 10;
+    }
+    throw new Error('Invalid input!');
+}
 
 // Accepts the array and key
 export function groupBy<T>(array: any[], key: string): Map<string, T[]> {

@@ -3,8 +3,7 @@ import faker from 'faker';
 
 import {
     Community,
-    // CommunityAttributes,
-    // CommunityCreationAttributes,
+    CommunityAttributes,
 } from '../../src/database/models/ubi/community';
 import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
 import { UbiCommunityStateModel } from '../../src/database/models/ubi/communityState';
@@ -59,10 +58,10 @@ const data = async (props: ICreateProps) => {
  * @return {Object}       A user instance
  */
 const CommunityFactory = async (props: ICreateProps[]) => {
-    const result: any /*CommunityAttributes*/[] = [];
+    const result: CommunityAttributes[] = [];
     for (let index = 0; index < props.length; index++) {
         const newCommunity = await Community.create(await data(props[index]));
-        result.push(newCommunity.toJSON());
+        result.push(newCommunity.toJSON() as CommunityAttributes);
         await UbiCommunityContractModel.create({
             ...props[index].contract,
             communityId: newCommunity.id,
