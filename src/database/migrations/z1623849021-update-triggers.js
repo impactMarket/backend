@@ -29,13 +29,7 @@ module.exports = {
         END IF;
         RETURN NEW;
     END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_beneficiaries_community_states
-BEFORE INSERT OR UPDATE
-ON beneficiary
-FOR EACH ROW
-EXECUTE PROCEDURE update_beneficiaries_community_states();`);
+$$ LANGUAGE plpgsql;`);
 
         await queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_claim_states()
