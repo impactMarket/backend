@@ -14,7 +14,7 @@ import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { CommunityAttributes } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
-import { Includeable, literal, Op, QueryTypes } from 'sequelize';
+import { Includeable, literal, Op } from 'sequelize';
 
 import config from '../config';
 import { models, sequelize } from '../database';
@@ -531,24 +531,49 @@ export default class StoryService {
         const tenDaysAgo = new Date();
         tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
         //
-        const storiesToDelete: {
-            contentId: string;
-            mediaMediaId: number;
-        }[] = await this.sequelize.query(
-            'select SC."contentId", ST."mediaMediaId" from community c, (select "communityId" from story_community group by "communityId" having count("contentId") > 1) SC1, (select max("postedAt") r from story_content) recent, story_community SC, story_content ST where date(ST."postedAt") < \'?\' and ST."postedAt" != recent.r and c.id = SC1."communityId" and c.id = SC."communityId" and ST.id = SC."contentId"',
-            {
-                replacements: [tenDaysAgo.toISOString().split('T')[0]],
-                raw: true,
-                type: QueryTypes.SELECT,
-            }
-        );
+        const mostRecentStoryByCommunity = await models.storyContent.findAll({
+            attributes: ['id'],
+            include: [
+                {
+                    model: this.storyCommunity,
+                    as: 'storyCommunity',
+                    attributes: [],
+                },
+            ],
+            where: {
+                postedAt: {
+                    // TODO: use query builder instead
+                    [Op.eq]: literal(
+                        `(select max("postedAt") from story_content sc, story_community sm where sc.id=sm."contentId" and sm."communityId"="storyCommunity"."communityId" and sc."isPublic"=true)`
+                    ),
+                },
+            },
+            order: [['postedAt', 'DESC']],
+        });
 
-        await this.storyContent.destroy({
+        if (mostRecentStoryByCommunity.length === 0) {
+            return;
+        }
+
+        const storiesToDelete = await models.storyContent.findAll({
+            attributes: ['id', 'mediaMediaId'],
+            where: {
+                postedAt: {
+                    [Op.lte]: tenDaysAgo,
+                },
+                id: {
+                    [Op.notIn]: mostRecentStoryByCommunity.map((sbc) => sbc.id),
+                },
+            },
+        });
+
+        if (storiesToDelete.length === 0) {
+            return;
+        }
+        await models.storyContent.destroy({
             where: {
                 id: {
-                    [Op.in]: storiesToDelete.map((s) =>
-                        parseInt(s.contentId, 10)
-                    ),
+                    [Op.in]: storiesToDelete.map((s) => s.id),
                 },
             },
         });
