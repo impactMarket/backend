@@ -577,9 +577,11 @@ export default class StoryService {
                 },
             },
         });
-        await this.storyContentStorage
-            .deleteBulkContent(storiesToDelete.map((s) => s.mediaMediaId))
-            .catch(Logger.error);
+        await this.storyContentStorage.deleteBulkContent(
+            storiesToDelete
+                .filter((s) => s.mediaMediaId !== null)
+                .map((s) => s.mediaMediaId!) // not null here
+        );
     }
 
     public async _listImpactMarketOnly(

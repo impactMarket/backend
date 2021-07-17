@@ -16,6 +16,5 @@ export interface StoryCommunityCreation {
     communityId: number;
 }
 export interface StoryCommunityCreationEager {
-    // contentId: number;
     communityId: number;
 }
