@@ -1,20 +1,7 @@
-import axios from 'axios';
 import { Op } from 'sequelize';
 
-import config from '../../config/index';
 import { models } from '../../database';
-import countriesJSON from '../../utils/countries.json';
 
-const countries: {
-    [key: string]: {
-        name: string;
-        native: string;
-        phone: string;
-        currency: string;
-        languages: string[];
-        emoji: string;
-    };
-} = countriesJSON;
 export default class ClaimLocationService {
     public static claimLocation = models.claimLocation;
     public static community = models.community;
@@ -26,30 +13,6 @@ export default class ClaimLocationService {
             longitude: number;
         }
     ): Promise<void> {
-        // if (config.claimVerification === false) {
-        //     await this.claimLocation.create({
-        //         communityId,
-        //         gps,
-        //     });
-        //     return;
-        // }
-        // const community = await this.community.findOne({
-        //     attributes: ['country'],
-        //     where: { publicId: communityId },
-        // });
-        // if (community === null) {
-        //     throw new Error('no community found!');
-        // }
-        // const query = await axios.get(
-        //     `${config.positionStackApiBaseUrl}?access_key=${config.positionStackApiKey}&query=${gps.latitude},${gps.longitude}`
-        // );
-        // // country code are 3 chars, we use 2 chars
-        // if (countries[community.country].name === query.data.data[0].country) {
-        //     await this.claimLocation.create({
-        //         communityId,
-        //         gps,
-        //     });
-        // }
         await this.claimLocation.create({
             communityId,
             gps,
@@ -62,15 +25,13 @@ export default class ClaimLocationService {
             longitude: number;
         }[]
     > {
-        const todayMidnightTime = new Date();
-        todayMidnightTime.setHours(0, 0, 0, 0);
-        // a month ago, from todayMidnightTime
-        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+        const fiveMonthsAgo = new Date();
+        fiveMonthsAgo.setDate(fiveMonthsAgo.getDate() - 30 * 5);
         return this.claimLocation.findAll({
             attributes: ['gps'],
             where: {
                 createdAt: {
-                    [Op.gte]: aMonthAgo,
+                    [Op.gte]: fiveMonthsAgo,
                 },
             },
             raw: true,
