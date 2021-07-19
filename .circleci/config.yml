@@ -36,6 +36,7 @@ jobs:
       - run: yarn
       - run: yarn eslint-no-fix
       - run: yarn prettier-no-fix
+      - run: yarn tsc
 
 workflows:
   version: 2
