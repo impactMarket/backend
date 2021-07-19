@@ -13,7 +13,6 @@ import {
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { CommunityAttributes } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
-import { Logger } from '@utils/logger';
 import { Includeable, literal, Op } from 'sequelize';
 
 import config from '../config';
