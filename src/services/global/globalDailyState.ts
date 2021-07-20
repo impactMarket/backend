@@ -172,10 +172,10 @@ export default class GlobalDailyStateService {
             })
         ).map((c) => c.publicId);
 
-        const claimed: string = (
+        const totalClaimed: string = (
             (
                 await models.claim.findAll({
-                    attributes: [[fn('sum', col('amount')), 'claimed']],
+                    attributes: [[fn('sum', col('amount')), 'totalClaimed']],
                     where: {
                         txAt: { [Op.gte]: today },
                         communityId: { [Op.in]: communitiesPublicId },
@@ -184,10 +184,10 @@ export default class GlobalDailyStateService {
             )[0] as any
         ).claimed;
 
-        const raised: string = (
+        const totalRaised: string = (
             (
                 await models.inflow.findAll({
-                    attributes: [[fn('sum', col('amount')), 'raised']],
+                    attributes: [[fn('sum', col('amount')), 'totalRaised']],
                     where: {
                         txAt: { [Op.gte]: today },
                         communityId: { [Op.in]: communitiesPublicId },
@@ -196,7 +196,7 @@ export default class GlobalDailyStateService {
             )[0] as any
         ).raised;
 
-        const beneficiaries = await models.beneficiary.count({
+        const totalBeneficiaries = await models.beneficiary.count({
             where: {
                 txAt: { [Op.gte]: today },
                 communityId: { [Op.in]: communitiesPublicId },
@@ -204,9 +204,9 @@ export default class GlobalDailyStateService {
         });
 
         return {
-            claimed,
-            raised,
-            beneficiaries,
+            totalClaimed,
+            totalRaised,
+            totalBeneficiaries,
         };
     }
 }

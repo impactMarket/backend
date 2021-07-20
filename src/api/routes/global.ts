@@ -9,7 +9,7 @@ export default (app: Router): void => {
 
     route.get(
         '/status',
-        cacheWithRedis('1 hour'),
+        // cacheWithRedis('1 hour'),
         globalController.globalStatus
     );
 
