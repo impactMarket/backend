@@ -204,8 +204,8 @@ export default class GlobalDailyStateService {
         });
 
         return {
-            totalClaimed,
-            totalRaised,
+            totalClaimed: 0,
+            totalRaised: 0,
             totalBeneficiaries,
         };
     }
