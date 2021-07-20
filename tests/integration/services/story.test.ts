@@ -156,7 +156,7 @@ describe('story service', () => {
         });
         it('not enough stories to delete (some communities)', async () => {
             const tenDaysAgo = new Date();
-            tenDaysAgo.setDate(tenDaysAgo.getDate() - 12);
+            tenDaysAgo.setDate(tenDaysAgo.getDate() - 32);
             await StoryFactory([
                 {
                     address: users[0].address,
@@ -188,7 +188,7 @@ describe('story service', () => {
         });
         it('delete older stories', async () => {
             const tenDaysAgo = new Date();
-            tenDaysAgo.setDate(tenDaysAgo.getDate() - 12);
+            tenDaysAgo.setDate(tenDaysAgo.getDate() - 32);
             const stories = await StoryFactory([
                 {
                     address: users[0].address,

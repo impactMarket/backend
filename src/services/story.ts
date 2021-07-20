@@ -528,7 +528,7 @@ export default class StoryService {
 
     public async deleteOlderStories() {
         const tenDaysAgo = new Date();
-        tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+        tenDaysAgo.setDate(tenDaysAgo.getDate() - 30);
         //
         const mostRecentStoryByCommunity = await models.storyContent.findAll({
             attributes: ['id'],
