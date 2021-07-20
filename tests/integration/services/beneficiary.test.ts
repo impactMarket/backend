@@ -22,7 +22,7 @@ describe('beneficiary service', () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        users = await UserFactory({ n: 8 });
+        users = await UserFactory({ n: 10 });
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -50,7 +50,7 @@ describe('beneficiary service', () => {
             },
         };
         managers = await ManagerFactory([users[0]], community.publicId);
-        await BeneficiaryFactory(users, community.publicId);
+        await BeneficiaryFactory(users.slice(0, 8), community.publicId);
     });
 
     after(async () => {
@@ -123,6 +123,91 @@ describe('beneficiary service', () => {
         expect(result[4]).to.include({
             address: users[4].address,
             suspect: false,
+        });
+    });
+
+    describe('search', () => {
+        it('by name (full)', async () => {
+            const user = users[3];
+            const result: IListBeneficiary[] = await BeneficiaryService.search(
+                users[0].address,
+                user.username!
+            );
+            expect(result.length).to.be.equal(1);
+            expect(result[0]).to.contain({
+                address: user.address,
+                username: user.username!,
+            });
+        });
+
+        it('by name (partially)', async () => {
+            const user = users[4];
+            const result = await BeneficiaryService.search(
+                users[0].address,
+                user.username!.slice(0, user.username!.length / 2)
+            );
+            expect(result.length).to.be.equal(1);
+            expect(result[0]).to.contain({
+                address: user.address,
+                username: user.username!,
+            });
+        });
+
+        it('by name (not case sensitive)', async () => {
+            const user = users[5];
+            const result = await BeneficiaryService.search(
+                users[0].address,
+                user.username!.toUpperCase()
+            );
+            expect(result.length).to.be.equal(1);
+            expect(result[0]).to.contain({
+                address: user.address,
+                username: user.username!,
+            });
+        });
+
+        it('by address (checksumed)', async () => {
+            const user = users[6];
+            const result = await BeneficiaryService.search(
+                users[0].address,
+                user.address
+            );
+            expect(result.length).to.be.equal(1);
+            expect(result[0]).to.contain({
+                address: user.address,
+                username: user.username!,
+            });
+        });
+
+        it('by address (not checksumed)', async () => {
+            const user = users[7];
+            const result = await BeneficiaryService.search(
+                users[0].address,
+                user.address.toLowerCase()
+            );
+            expect(result.length).to.be.equal(1);
+            expect(result[0]).to.contain({
+                address: user.address,
+                username: user.username!,
+            });
+        });
+
+        it('by non (beneficiary) existing address', async () => {
+            const user = users[8];
+            const result = await BeneficiaryService.search(
+                users[0].address,
+                user.address.toLowerCase()
+            );
+            expect(result.length).to.be.equal(0);
+        });
+
+        it('by non (beneficiary) existing name', async () => {
+            const user = users[9];
+            const result = await BeneficiaryService.search(
+                users[0].address,
+                user.username!.toUpperCase()
+            );
+            expect(result.length).to.be.equal(0);
         });
     });
 });
