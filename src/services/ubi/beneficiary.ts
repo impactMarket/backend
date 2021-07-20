@@ -1,9 +1,10 @@
 import { User } from '@interfaces/app/user';
 import { IListBeneficiary } from '@ipcttypes/endpoints';
-import { Beneficiary, BeneficiaryAttributes } from '@models/ubi/beneficiary';
+import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isAddress } from '@utils/util';
+import { ethers } from 'ethers';
 import { Op, WhereAttributeHash, literal } from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 
@@ -79,16 +80,15 @@ export default class BeneficiaryService {
         }
         if (isAddress(searchInput)) {
             whereSearchCondition = {
-                address: searchInput,
+                address: ethers.utils.getAddress(searchInput),
             };
         } else if (
             searchInput.toLowerCase().indexOf('drop') === -1 &&
             searchInput.toLowerCase().indexOf('delete') === -1 &&
-            searchInput.toLowerCase().indexOf('update') === -1 &&
-            searchInput.length < 16
+            searchInput.toLowerCase().indexOf('update') === -1
         ) {
             whereSearchCondition = {
-                username: { [Op.like]: `%${searchInput}%` },
+                username: { [Op.iLike]: `%${searchInput.slice(0, 16)}%` },
             };
         } else {
             throw new Error('Not valid search!');

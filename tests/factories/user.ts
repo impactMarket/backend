@@ -16,6 +16,7 @@ const data = async () => {
     const randomWallet = ethers.Wallet.createRandom();
     const defaultProps: UserCreationAttributes = {
         address: await randomWallet.getAddress(),
+        username: faker.internet.userName(),
         language: 'pt',
         currency: faker.finance.currencyCode(),
         gender: 'u',
