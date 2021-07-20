@@ -172,29 +172,27 @@ export default class GlobalDailyStateService {
             })
         ).map((c) => c.publicId);
 
-        const totalClaimed: string = (
-            (
-                await models.claim.findAll({
-                    attributes: [[fn('sum', col('amount')), 'totalClaimed']],
-                    where: {
-                        txAt: { [Op.gte]: today },
-                        communityId: { [Op.in]: communitiesPublicId },
-                    },
-                })
-            )[0] as any
-        ).claimed;
+        const claimed: any = await models.claim.findAll({
+            attributes: [
+                [fn('coalesce', fn('sum', col('amount')), '0'), 'totalClaimed'],
+            ],
+            where: {
+                txAt: { [Op.gte]: today },
+                communityId: { [Op.in]: communitiesPublicId },
+            },
+            raw: true,
+        });
 
-        const totalRaised: string = (
-            (
-                await models.inflow.findAll({
-                    attributes: [[fn('sum', col('amount')), 'totalRaised']],
-                    where: {
-                        txAt: { [Op.gte]: today },
-                        communityId: { [Op.in]: communitiesPublicId },
-                    },
-                })
-            )[0] as any
-        ).raised;
+        const raised: any = await models.inflow.findAll({
+            attributes: [
+                [fn('coalesce', fn('sum', col('amount')), '0'), 'totalRaised'],
+            ],
+            where: {
+                txAt: { [Op.gte]: today },
+                communityId: { [Op.in]: communitiesPublicId },
+            },
+            raw: true,
+        });
 
         const totalBeneficiaries = await models.beneficiary.count({
             where: {
@@ -204,8 +202,8 @@ export default class GlobalDailyStateService {
         });
 
         return {
-            totalClaimed: 0,
-            totalRaised: 0,
+            totalClaimed: claimed[0].totalClaimed,
+            totalRaised: raised[0].totalRaised,
             totalBeneficiaries,
         };
     }
