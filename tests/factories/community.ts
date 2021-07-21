@@ -16,6 +16,7 @@ interface ICreateProps {
     visibility: 'public' | 'private';
     contract: UbiCommunityContractCreation;
     hasAddress?: boolean;
+    name?: string;
 }
 /**
  * Generate an object which container attributes needed
@@ -37,7 +38,7 @@ const data = async (props: ICreateProps) => {
             longitude: 0,
         },
         language: 'pt',
-        name: faker.company.companyName(),
+        name: props.name ? props.name : faker.company.companyName(),
         coverMediaId: 0,
         ...props,
     };
