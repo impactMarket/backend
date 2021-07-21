@@ -288,6 +288,7 @@ export default class CommunityService {
     public static async list(query: {
         orderBy?: string;
         filter?: string;
+        name?: string;
         extended?: string;
         offset?: string;
         limit?: string;
@@ -363,6 +364,7 @@ export default class CommunityService {
             };
         }
 
+        // TODO: deprecated in mobile@1.1.6
         if (query.extended) {
             extendedInclude.push(
                 {
@@ -384,6 +386,16 @@ export default class CommunityService {
                 }
             );
         }
+
+        if (query.name) {
+            extendedWhere = {
+                ...extendedWhere,
+                name: {
+                    [Op.iLike]: `%${query.name}%`,
+                },
+            };
+        }
+
         const communitiesResult = await this.community.findAndCountAll({
             where: {
                 status: 'valid',
