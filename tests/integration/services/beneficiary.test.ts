@@ -1,6 +1,8 @@
-import { expect } from 'chai';
+import { use, expect } from 'chai';
+import chaiSubset from 'chai-subset';
 import { Sequelize } from 'sequelize';
 
+import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { User } from '../../../src/interfaces/app/user';
@@ -12,17 +14,20 @@ import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 
+use(chaiSubset);
+
 // in this test there are users being assined with suspicious activity and others being removed
 describe('beneficiary service', () => {
     let sequelize: Sequelize;
     let users: User[];
     let communities: CommunityAttributes[];
     let managers: ManagerAttributes[];
+    let beneficiaries: BeneficiaryAttributes[];
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        users = await UserFactory({ n: 10 });
+        users = await UserFactory({ n: 15 });
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -39,18 +44,11 @@ describe('beneficiary service', () => {
                 hasAddress: true,
             },
         ]);
-        const community = {
-            ...communities[0],
-            contract: {
-                baseInterval: 60 * 60 * 24,
-                claimAmount: '1000000000000000000',
-                communityId: 0,
-                incrementInterval: 5 * 60,
-                maxClaim: '450000000000000000000',
-            },
-        };
-        managers = await ManagerFactory([users[0]], community.publicId);
-        await BeneficiaryFactory(users.slice(0, 8), community.publicId);
+        managers = await ManagerFactory([users[0]], communities[0].publicId);
+        beneficiaries = await BeneficiaryFactory(
+            users.slice(0, 8),
+            communities[0].publicId
+        );
     });
 
     after(async () => {
@@ -73,26 +71,30 @@ describe('beneficiary service', () => {
         // test results
         let result: IListBeneficiary[];
         result = await BeneficiaryService.list(managers[0].address, true, 0, 5);
-        expect(result[0]).to.include({
-            address: users[4].address,
-            suspect: true,
-        });
-        expect(result[1]).to.include({
-            address: users[2].address,
-            suspect: true,
-        });
-        expect(result[2]).to.include({
-            address: users[7].address,
-            suspect: false,
-        });
-        expect(result[3]).to.include({
-            address: users[6].address,
-            suspect: false,
-        });
-        expect(result[4]).to.include({
-            address: users[5].address,
-            suspect: false,
-        });
+        (expect(result.slice(0, 2)).to as any).containSubset([
+            {
+                address: users[4].address,
+                suspect: true,
+            },
+            {
+                address: users[2].address,
+                suspect: true,
+            },
+        ]);
+        (expect(result.slice(2, 5)).to as any).containSubset([
+            {
+                address: users[7].address,
+                suspect: false,
+            },
+            {
+                address: users[6].address,
+                suspect: false,
+            },
+            {
+                address: users[5].address,
+                suspect: false,
+            },
+        ]);
         // change suspects
         await sequelize.models.UserModel.update(
             { suspect: false },
@@ -102,28 +104,38 @@ describe('beneficiary service', () => {
             { suspect: true },
             { where: { address: users[5].address } }
         );
+        beneficiaries = beneficiaries.concat(
+            await BeneficiaryFactory(
+                users.slice(10, 15),
+                communities[0].publicId
+            )
+        );
         // test results
         result = await BeneficiaryService.list(managers[0].address, true, 0, 5);
-        expect(result[0]).to.include({
-            address: users[5].address,
-            suspect: true,
-        });
-        expect(result[1]).to.include({
-            address: users[2].address,
-            suspect: true,
-        });
-        expect(result[2]).to.include({
-            address: users[7].address,
-            suspect: false,
-        });
-        expect(result[3]).to.include({
-            address: users[6].address,
-            suspect: false,
-        });
-        expect(result[4]).to.include({
-            address: users[4].address,
-            suspect: false,
-        });
+        (expect(result.slice(0, 2)).to as any).containSubset([
+            {
+                address: users[5].address,
+                suspect: true,
+            },
+            {
+                address: users[2].address,
+                suspect: true,
+            },
+        ]);
+        (expect(result.slice(2, 5)).to as any).containSubset([
+            {
+                address: users[14].address,
+                suspect: false,
+            },
+            {
+                address: users[13].address,
+                suspect: false,
+            },
+            {
+                address: users[12].address,
+                suspect: false,
+            },
+        ]);
     });
 
     describe('search', () => {
