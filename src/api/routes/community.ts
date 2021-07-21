@@ -405,11 +405,7 @@ export default (app: Router): void => {
      */
     route.get('/list/:query?', cacheWithRedis('10 minutes'), controller.list);
 
-    route.get(
-        '/:id/ubi',
-        cacheWithRedis('10 minutes'),
-        controller.findRequestChangeUbiParams
-    );
+    route.get('/:id/ubi', controller.findRequestChangeUbiParams);
 
     /**
      * @swagger
