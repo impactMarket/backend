@@ -7,7 +7,10 @@ import {
 } from '../../src/database/models/ubi/community';
 import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
 import { UbiCommunityStateModel } from '../../src/database/models/ubi/communityState';
-import { UbiCommunityContractCreation } from '../../src/interfaces/ubi/ubiCommunityContract';
+import {
+    UbiCommunityContract,
+    UbiCommunityContractCreation,
+} from '../../src/interfaces/ubi/ubiCommunityContract';
 
 interface ICreateProps {
     requestByAddress: string;
@@ -61,10 +64,13 @@ const CommunityFactory = async (props: ICreateProps[]) => {
     const result: CommunityAttributes[] = [];
     for (let index = 0; index < props.length; index++) {
         const newCommunity = await Community.create(await data(props[index]));
-        result.push(newCommunity.toJSON() as CommunityAttributes);
-        await UbiCommunityContractModel.create({
+        const newContract = await UbiCommunityContractModel.create({
             ...props[index].contract,
             communityId: newCommunity.id,
+        });
+        result.push({
+            ...(newCommunity.toJSON() as CommunityAttributes),
+            contract: newContract.toJSON() as UbiCommunityContract,
         });
         await UbiCommunityStateModel.create({ communityId: newCommunity.id });
     }

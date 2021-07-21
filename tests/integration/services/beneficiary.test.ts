@@ -9,6 +9,7 @@ import { User } from '../../../src/interfaces/app/user';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
 import { IListBeneficiary } from '../../../src/types/endpoints';
 import BeneficiaryFactory from '../../factories/beneficiary';
+import ClaimFactory from '../../factories/claim';
 import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
@@ -68,6 +69,9 @@ describe('beneficiary service', () => {
             { suspect: true },
             { where: { address: users[4].address } }
         );
+        for (let index = 0; index < 8; index++) {
+            await ClaimFactory(beneficiaries[index], communities[0]);
+        }
         // test results
         let result: IListBeneficiary[];
         result = await BeneficiaryService.list(managers[0].address, true, 0, 5);
