@@ -357,6 +357,12 @@ export default (app: Router): void => {
      *         required: false
      *         description: communities list order (bigger by default)
      *       - in: query
+     *         name: name
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: communities name to search
+     *       - in: query
      *         name: filter
      *         schema:
      *           type: string
