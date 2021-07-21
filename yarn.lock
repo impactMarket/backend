@@ -1793,6 +1793,11 @@ chai-http@4.3.0:
     qs "^6.5.1"
     superagent "^3.7.0"
 
+chai-subset@1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/chai-subset/-/chai-subset-1.6.0.tgz#a5d0ca14e329a79596ed70058b6646bd6988cfe9"
+  integrity sha1-pdDKFOMpp5WW7XAFi2ZGvWmIz+k=
+
 chai@4.3.4:
   version "4.3.4"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.3.4.tgz#b55e655b31e1eac7099be4c08c21964fce2e6c49"
