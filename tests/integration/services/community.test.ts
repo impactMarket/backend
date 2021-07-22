@@ -219,6 +219,70 @@ describe('community service', () => {
                 });
             });
         });
+
+        it('by country', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                    country: 'PT',
+                },
+                {
+                    requestByAddress: users[1].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                    country: 'PT',
+                },
+                {
+                    requestByAddress: users[2].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                    country: 'ES',
+                },
+            ]);
+
+            const result = await CommunityService.list({ country: 'PT' });
+
+            expect(result.count).to.be.equal(2);
+            (expect(result.rows).to as any).containSubset([
+                {
+                    id: communities[0].id,
+                },
+                {
+                    id: communities[1].id,
+                },
+            ]);
+
+            await truncate(sequelize, 'Community');
+        });
     });
 
     describe('count', () => {
