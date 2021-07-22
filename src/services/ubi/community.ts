@@ -312,6 +312,7 @@ export default class CommunityService {
         orderBy?: string;
         filter?: string;
         name?: string;
+        country?: string;
         extended?: string;
         offset?: string;
         limit?: string;
@@ -416,6 +417,13 @@ export default class CommunityService {
                 name: {
                     [Op.iLike]: `%${query.name}%`,
                 },
+            };
+        }
+
+        if (query.country) {
+            extendedWhere = {
+                ...extendedWhere,
+                country: query.country,
             };
         }
 
