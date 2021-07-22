@@ -39,6 +39,19 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    count = (req: Request, res: Response) => {
+        const { groupBy } = req.query;
+        if (groupBy === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: 'not a valid group by',
+            });
+            return;
+        }
+        CommunityService.count(groupBy as string)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     beneficiaries = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {

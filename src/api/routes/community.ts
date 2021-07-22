@@ -405,6 +405,40 @@ export default (app: Router): void => {
      */
     route.get('/list/:query?', cacheWithRedis('10 minutes'), controller.list);
 
+    /**
+     * @swagger
+     *
+     * /community/count:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Count grouped communities communities
+     *     parameters:
+     *       - in: query
+     *         name: groupBy
+     *         schema:
+     *           type: string
+     *           enum: [country]
+     *         required: true
+     *         description: count communities by a grouped value
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   unknown:
+     *                     type: string
+     *                     description: this variable name changes depending on the request. If the groupBy is "country" then this variable is named "country" and the value is the country.
+     *                   count:
+     *                     type: string
+     */
+    route.get('/count/:query?', cacheWithRedis('10 minutes'), controller.count);
+
     route.get('/:id/ubi', controller.findRequestChangeUbiParams);
 
     /**

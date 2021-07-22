@@ -220,4 +220,75 @@ describe('community service', () => {
             });
         });
     });
+
+    describe('count', () => {
+        describe('by country', () => {
+            afterEach(async () => {
+                await truncate(sequelize, 'Community');
+            });
+
+            it('full name', async () => {
+                await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'PT',
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'PT',
+                    },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'ES',
+                    },
+                ]);
+
+                const result = await CommunityService.count('country');
+
+                (expect(result).to as any).containSubset([
+                    {
+                        country: 'PT',
+                        count: '2',
+                    },
+                    {
+                        country: 'ES',
+                        count: '1',
+                    },
+                ]);
+            });
+        });
+    });
 });
