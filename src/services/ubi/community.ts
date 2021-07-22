@@ -687,7 +687,7 @@ export default class CommunityService {
             where: {
                 communityId,
                 createdAt: {
-                    [Op.lte]: yesterday.toISOString().split('T')[0],
+                    [Op.gte]: yesterday.toISOString().split('T')[0],
                 },
             },
         });
