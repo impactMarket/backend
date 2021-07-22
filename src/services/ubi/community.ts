@@ -285,6 +285,29 @@ export default class CommunityService {
         return communities[0].total;
     }
 
+    public static async count(groupBy: string): Promise<any[]> {
+        let groupName = '';
+        switch (groupBy) {
+            case 'country':
+                groupName = 'country';
+                break;
+        }
+        if (groupName.length === 0) {
+            throw new Error('invalid group');
+        }
+        const result = (await models.community.findAll({
+            attributes: [groupName, [fn('count', col(groupName)), 'count']],
+            where: {
+                visibility: 'public',
+                status: 'valid',
+            },
+            group: [groupName],
+            raw: true,
+        })) as any;
+
+        return result;
+    }
+
     public static async list(query: {
         orderBy?: string;
         filter?: string;

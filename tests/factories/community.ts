@@ -20,6 +20,7 @@ interface ICreateProps {
     contract: UbiCommunityContractCreation;
     hasAddress?: boolean;
     name?: string;
+    country?: string;
 }
 /**
  * Generate an object which container attributes needed
@@ -32,7 +33,7 @@ interface ICreateProps {
 const data = async (props: ICreateProps) => {
     let defaultProps: any /*CommunityCreationAttributes */ = {
         city: faker.address.city(),
-        country: faker.address.countryCode(),
+        country: props.country ? props.country : faker.address.countryCode(),
         currency: faker.finance.currencyCode(),
         description: faker.lorem.sentence(),
         email: faker.internet.email(),
