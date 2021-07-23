@@ -16,7 +16,6 @@ import ExchangeRatesService from './exchangeRates';
 
 export default class UserService {
     public static sequelize = sequelize;
-    public static anonymousReport = models.anonymousReport;
     public static user = models.user;
     public static beneficiary = models.beneficiary;
     public static manager = models.manager;
@@ -278,25 +277,34 @@ export default class UserService {
         return this.user.findOne({ where: { address }, raw: true });
     }
 
-    public static report(
+    public static async report(
         message: string,
-        communityId: string | undefined,
-        category: 'general' | 'potential-fraud' | undefined
+        communityId: number | string, // TODO: in-migration-process
+        category?: 'general' | 'potential-fraud'
     ): Promise<AppAnonymousReport> {
-        let newReport: AppAnonymousReportCreation = { message };
-        if (communityId) {
-            newReport = {
-                ...newReport,
-                communityId,
-            };
+        let nCommunityId = 0;
+        if (typeof communityId === 'string') {
+            const r = await models.community.findOne({
+                attributes: ['id'],
+                where: {
+                    publicId: communityId,
+                },
+            });
+            nCommunityId = r!.id;
+        } else {
+            nCommunityId = communityId;
         }
+        let newReport: AppAnonymousReportCreation = {
+            message,
+            communityId: nCommunityId,
+        };
         if (category) {
             newReport = {
                 ...newReport,
                 category,
             };
         }
-        return this.anonymousReport.create(newReport);
+        return models.anonymousReport.create(newReport);
     }
 
     public static async exists(address: string): Promise<boolean> {
