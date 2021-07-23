@@ -1,19 +1,19 @@
 'use strict';
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable('claimlocation', {
+        return queryInterface.createTable('ubi_claim_location', {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
                 primaryKey: true,
             },
             communityId: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'publicId',
+                    key: 'id',
                 },
-                onDelete: 'SET NULL',
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             gps: {
@@ -24,13 +24,9 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.DATE,
             },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
-            },
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable('claimlocation');
+        return queryInterface.dropTable('ubi_claim_location');
     },
 };

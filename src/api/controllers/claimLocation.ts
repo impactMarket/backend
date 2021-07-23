@@ -12,6 +12,7 @@ const getAll = (req: Request, res: Response) => {
 
 const add = (req: Request, res: Response) => {
     const { communityId, gps } = req.body;
+    // TODO: IPCT1-345
     ClaimLocationService.add(communityId, gps)
         .then(() => {
             res.sendStatus(200);

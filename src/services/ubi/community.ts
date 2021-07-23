@@ -53,7 +53,7 @@ export default class CommunityService {
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
     public static ubiCommunityDailyState = models.ubiCommunityDailyState;
     public static ubiCommunityDemographics = models.ubiCommunityDemographics;
-    public static claimLocation = models.claimLocation;
+    // public static claimLocation = models.claimLocation;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiPromoter = models.ubiPromoter;
@@ -587,22 +587,6 @@ export default class CommunityService {
                 reachOut: string;
             };
         };
-    }
-
-    public static async getClaimLocation(id: string) {
-        const threeMonthsAgo = new Date();
-        threeMonthsAgo.setDate(threeMonthsAgo.getDate() - 90);
-        threeMonthsAgo.setHours(0, 0, 0, 0);
-
-        const community = (await this.community.findOne({ where: { id } }))!;
-        const res = await this.claimLocation.findAll({
-            attributes: ['gps'],
-            where: {
-                createdAt: { [Op.gte]: threeMonthsAgo },
-                communityId: community.publicId,
-            },
-        });
-        return res.map((r) => r.gps);
     }
 
     public static async getDemographics(id: string) {
