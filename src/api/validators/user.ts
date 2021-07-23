@@ -2,7 +2,7 @@ import { celebrate, Joi } from 'celebrate';
 
 const report = celebrate({
     body: Joi.object({
-        communityId: Joi.string().optional(),
+        communityId: Joi.any().required(),
         message: Joi.string().required().allow(''), // TODO: temporary, fixed in mobile-app@1.0.7
     }),
 });
