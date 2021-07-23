@@ -8,12 +8,12 @@ module.exports = {
                 primaryKey: true,
             },
             communityId: {
-                type: Sequelize.UUID,
+                type: Sequelize.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'publicId',
+                    key: 'id',
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: true,
             },
             message: {
@@ -25,7 +25,7 @@ module.exports = {
                 allowNull: false,
                 defaultValue: 'general',
             },
-            status: {
+            review: {
                 type: Sequelize.ENUM(
                     'pending',
                     'in-progress',
@@ -36,8 +36,8 @@ module.exports = {
                 defaultValue: 'pending',
             },
             createdAt: {
-                type: Sequelize.DATEONLY,
-                defaultValue: Sequelize.fn('now'),
+                allowNull: false,
+                type: Sequelize.DATE,
             },
         });
     },

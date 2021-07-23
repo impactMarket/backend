@@ -9,10 +9,10 @@ export class AppAnonymousReportModel extends Model<
     AppAnonymousReportCreation
 > {
     public id!: number;
-    public communityId!: string;
+    public communityId!: number;
     public message!: string;
     public category!: 'general' | 'potential-fraud';
-    public status!: 'pending' | 'in-progress' | 'halted' | 'closed';
+    public review!: 'pending' | 'in-progress' | 'halted' | 'closed';
     public createdAt!: Date;
 }
 
@@ -25,12 +25,12 @@ export function initializeAppAnonymousReport(sequelize: Sequelize): void {
                 primaryKey: true,
             },
             communityId: {
-                type: DataTypes.UUID,
+                type: DataTypes.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'publicId',
+                    key: 'id',
                 },
-                onDelete: 'RESTRICT',
+                onDelete: 'CASCADE',
                 allowNull: true,
             },
             message: {
@@ -42,7 +42,7 @@ export function initializeAppAnonymousReport(sequelize: Sequelize): void {
                 allowNull: false,
                 defaultValue: 'general',
             },
-            status: {
+            review: {
                 type: DataTypes.ENUM(
                     'pending',
                     'in-progress',
@@ -53,13 +53,13 @@ export function initializeAppAnonymousReport(sequelize: Sequelize): void {
                 defaultValue: 'pending',
             },
             createdAt: {
-                type: DataTypes.DATEONLY,
-                defaultValue: Sequelize.fn('now'),
+                type: DataTypes.DATE,
+                allowNull: false,
             },
         },
         {
             tableName: 'app_anonymous_report',
-            timestamps: false,
+            updatedAt: false,
             sequelize,
         }
     );
