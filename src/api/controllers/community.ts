@@ -1,5 +1,6 @@
 import { RequestWithUser } from '@ipcttypes/core';
 import BeneficiaryService from '@services/ubi/beneficiary';
+import ClaimLocationService from '@services/ubi/claimLocation';
 import CommunityService from '@services/ubi/community';
 import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
 import ManagerService from '@services/ubi/managers';
@@ -128,7 +129,7 @@ class CommunityController {
     };
 
     getClaimLocation = (req: Request, res: Response) => {
-        CommunityService.getClaimLocation(req.params.id)
+        ClaimLocationService.getByCommunity(parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
