@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 // import { Transaction } from 'sequelize';
 import { stub, assert, match, SinonStub } from 'sinon';
+import { models } from '../../../src/database';
 
 import { Community } from '../../../src/database/models/ubi/community';
 import ImMetadataService from '../../../src/services/app/imMetadata';
@@ -25,6 +26,7 @@ describe('[jobs] subscribers', () => {
     let provider: ethers.providers.Web3Provider;
     let communityContract: ethers.Contract;
     const communities = new Map<string, string>();
+    const communitiesId = new Map<string, number>();
     const communitiesVisibility = new Map<string, boolean>();
     let accounts: string[] = [];
     let beneficiaryAdd: SinonStub<any, any>;
@@ -115,6 +117,33 @@ describe('[jobs] subscribers', () => {
         managerAdd.returns(Promise.resolve(true));
         communityEdit = stub(CommunityContractService, 'update');
         communityEdit.returns(Promise.resolve(true));
+        stub(models.community, 'findOne')
+            .withArgs({
+                attributes: ['id'],
+                where: { publicId: thisCommunityPublicId },
+            })
+            .returns(
+                Promise.resolve({
+                    id: thisCommunityId,
+                    publicId: thisCommunityPublicId,
+                    visibility: 'public',
+                    // anything below, does not matter
+                    city: 'Love',
+                    contractAddress: '0x0',
+                    country: 'Love',
+                    coverImage: '',
+                    currency: 'cUSD',
+                    description: '',
+                    email: '',
+                    language: 'en',
+                    name: 'Love',
+                    requestByAddress: accounts[1],
+                    started: new Date(),
+                    status: 'valid',
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                } as Community)
+            );
         managerRemove = stub(ManagerService, 'remove');
         managerRemove.returns(Promise.resolve());
         getAllAddressesAndIds = stub(CommunityService, 'getAllAddressesAndIds');
@@ -138,6 +167,7 @@ describe('[jobs] subscribers', () => {
             provider,
             [],
             communities,
+            communitiesId,
             communitiesVisibility
         );
         //
@@ -180,6 +210,7 @@ describe('[jobs] subscribers', () => {
             provider,
             [],
             communities,
+            communitiesId,
             communitiesVisibility
         );
     });
@@ -199,6 +230,7 @@ describe('[jobs] subscribers', () => {
             )
         ).connect(provider.getSigner(1));
         communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesId.set(communityContract.address, thisCommunityId);
         communitiesVisibility.set(communityContract.address, true);
         const newCommunityAddressesAndIds = new Map([
             ...communityAddressesAndIds,
@@ -235,6 +267,7 @@ describe('[jobs] subscribers', () => {
             )
         ).connect(provider.getSigner(1));
         communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesId.set(communityContract.address, thisCommunityId);
         communitiesVisibility.set(communityContract.address, true);
         const newCommunityAddressesAndIds = new Map([
             ...communityAddressesAndIds,
@@ -279,6 +312,7 @@ describe('[jobs] subscribers', () => {
                 )
             ).connect(provider.getSigner(1));
             communities.set(communityContract.address, thisCommunityPublicId);
+            communitiesId.set(communityContract.address, thisCommunityId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
@@ -320,6 +354,7 @@ describe('[jobs] subscribers', () => {
                 )
             ).connect(provider.getSigner(1));
             communities.set(communityContract.address, thisCommunityPublicId);
+            communitiesId.set(communityContract.address, thisCommunityId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
@@ -357,6 +392,7 @@ describe('[jobs] subscribers', () => {
                 )
             ).connect(provider.getSigner(1));
             communities.set(communityContract.address, thisCommunityPublicId);
+            communitiesId.set(communityContract.address, thisCommunityId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
@@ -373,14 +409,13 @@ describe('[jobs] subscribers', () => {
             await communityContract.connect(provider.getSigner(5)).claim();
             await waitForStubCall(claimAdd, 1);
             assert.callCount(claimAdd, 1);
-            assert.calledWith(
-                claimAdd.getCall(0),
-                accounts[5],
-                thisCommunityPublicId,
-                match.any,
-                match.any,
-                match.any
-            );
+            assert.calledWith(claimAdd.getCall(0), {
+                address: accounts[5],
+                communityId: thisCommunityId,
+                amount: match.any,
+                tx: match.any,
+                txAt: match.any,
+            });
         });
     });
 
@@ -401,6 +436,7 @@ describe('[jobs] subscribers', () => {
                 )
             ).connect(provider.getSigner(1));
             communities.set(communityContract.address, thisCommunityPublicId);
+            communitiesId.set(communityContract.address, thisCommunityId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
@@ -447,6 +483,7 @@ describe('[jobs] subscribers', () => {
                 )
             ).connect(provider.getSigner(1));
             communities.set(communityContract.address, thisCommunityPublicId);
+            communitiesId.set(communityContract.address, thisCommunityId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
@@ -491,6 +528,7 @@ describe('[jobs] subscribers', () => {
                 )
             ).connect(provider.getSigner(1));
             communities.set(communityContract.address, thisCommunityPublicId);
+            communitiesId.set(communityContract.address, thisCommunityId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
@@ -538,6 +576,7 @@ describe('[jobs] subscribers', () => {
                 )
             ).connect(provider.getSigner(1));
             communities.set(communityContract.address, thisCommunityPublicId);
+            communitiesId.set(communityContract.address, thisCommunityId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,
@@ -593,6 +632,7 @@ describe('[jobs] subscribers', () => {
                 )
             ).connect(provider.getSigner(1));
             communities.set(communityContract.address, thisCommunityPublicId);
+            communitiesId.set(communityContract.address, thisCommunityId);
             communitiesVisibility.set(communityContract.address, true);
             const newCommunityAddressesAndIds = new Map([
                 ...communityAddressesAndIds,

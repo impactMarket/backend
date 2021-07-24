@@ -390,7 +390,7 @@ async function calculateChartsData(
         aMonthAgo.setDate(from.getDate() - 30);
         //
         const claimed: { claimed: string } = (
-            await models.claim.findAll({
+            await models.ubiClaim.findAll({
                 attributes: [[fn('sum', col('amount')), 'claimed']],
                 where: {
                     txAt: {
@@ -481,6 +481,12 @@ export async function calcuateGlobalMetrics(): Promise<void> {
                 where: { status: 'valid', visibility: 'public' },
             })
         ).map((c) => c.publicId);
+        const communitiesId = (
+            await models.community.findAll({
+                attributes: ['id'],
+                where: { status: 'valid', visibility: 'public' },
+            })
+        ).map((c) => c.id);
 
         const totalBeneficiaries = await models.beneficiary.count({
             where: {
@@ -492,11 +498,11 @@ export async function calcuateGlobalMetrics(): Promise<void> {
 
         const totalDistributed: string = (
             (
-                await models.claim.findAll({
+                await models.ubiClaim.findAll({
                     attributes: [[fn('sum', col('amount')), 'claimed']],
                     where: {
                         txAt: { [Op.lt]: yesterdayDateOnly },
-                        communityId: { [Op.in]: communitiesPublicId },
+                        communityId: { [Op.in]: communitiesId },
                     },
                     raw: true,
                 })

@@ -4,6 +4,7 @@ import tk from 'timekeeper';
 
 import { models } from '../../../../src/database';
 import { BeneficiaryAttributes } from '../../../../src/database/models/ubi/beneficiary';
+import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { User } from '../../../../src/interfaces/app/user';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import BeneficiaryFactory from '../../../factories/beneficiary';
@@ -69,16 +70,7 @@ describe('calcuateCommunitiesMetrics', () => {
                     hasAddress: true,
                 },
             ]);
-            community = {
-                ...communities[0],
-                contract: {
-                    baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
-                    communityId: 0,
-                    incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
-                },
-            };
+            community = communities[0];
             await InflowFactory(community);
             await InflowFactory(community);
             beneficiaries = await BeneficiaryFactory(users, community.publicId);
@@ -315,7 +307,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
         after(async () => {
             await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
+            await truncate(sequelize, 'UbiClaimModel');
             await truncate(sequelize, 'BeneficiaryTransaction');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'UserModel');
@@ -404,7 +396,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
         after(async () => {
             await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
+            await truncate(sequelize, 'UbiClaimModel');
             await truncate(sequelize, 'BeneficiaryTransaction');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'UserModel');
@@ -481,7 +473,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
         after(async () => {
             await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
+            await truncate(sequelize, 'UbiClaimModel');
             await truncate(sequelize, 'BeneficiaryTransaction');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'UserModel');
@@ -546,7 +538,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
         after(async () => {
             await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
+            await truncate(sequelize, 'UbiClaimModel');
             await truncate(sequelize, 'BeneficiaryTransaction');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'UserModel');
@@ -598,7 +590,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
         after(async () => {
             await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
+            await truncate(sequelize, 'UbiClaimModel');
             await truncate(sequelize, 'BeneficiaryTransaction');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'UserModel');
