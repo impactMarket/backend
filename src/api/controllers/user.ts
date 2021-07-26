@@ -41,10 +41,16 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public welcome = (req: Request, res: Response) => {
-        const { address, token, phone, pushNotificationToken } = req.body;
-        if (pushNotificationToken) {
-            UserService.welcome(address, pushNotificationToken)
+    public welcome = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+        const { token, phone, pushNotificationToken } = req.body;
+        if (pushNotificationToken !== undefined) {
+            UserService.welcome(req.user.address, pushNotificationToken)
                 .then((user) => standardResponse(res, 201, true, user))
                 .catch((e) =>
                     standardResponse(res, 400, false, '', { error: e })
@@ -53,9 +59,9 @@ class UserController {
             // TODO: deprecated in mobile-app@1.1.5
             if (token.length > 0) {
                 // failing to set the push notification, should not be a blocker!
-                UserService.setPushNotificationsToken(address, token);
+                UserService.setPushNotificationsToken(req.user.address, token);
             }
-            UserService.hello(address, phone)
+            UserService.hello(req.user.address, phone)
                 .then((user) => standardResponse(res, 201, true, user))
                 .catch((e) =>
                     standardResponse(res, 400, false, '', { error: e })
