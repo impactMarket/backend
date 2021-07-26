@@ -213,34 +213,26 @@ class CommunityController {
     };
 
     edit = (req: RequestWithUser, res: Response) => {
-        const {
-            name,
-            description,
-            language,
-            currency,
-            city,
-            country,
-            email,
-            coverMediaId,
-        } = req.body;
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+        const { name, description, currency, coverMediaId } = req.body;
         // verify if the current user is manager in this community
-        ManagerService.get(req.user!.address)
+        ManagerService.get(req.user.address)
             .then(async (manager) => {
                 if (manager !== null) {
                     const community = await CommunityService.getByPublicId(
                         manager.communityId
                     );
-                    CommunityService.edit(
-                        community!.id,
+                    CommunityService.edit(community!.id, {
                         name,
                         description,
-                        language,
                         currency,
-                        city,
-                        country,
-                        email,
-                        coverMediaId
-                    )
+                        coverMediaId,
+                    })
                         .then((community) =>
                             standardResponse(res, 200, true, community)
                         )

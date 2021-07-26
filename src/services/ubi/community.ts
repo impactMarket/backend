@@ -194,14 +194,12 @@ export default class CommunityService {
 
     public static async edit(
         id: number,
-        name: string,
-        description: string,
-        language: string,
-        currency: string,
-        city: string,
-        country: string,
-        email: string,
-        coverMediaId: number
+        params: {
+            name: string;
+            description: string;
+            currency: string;
+            coverMediaId: number;
+        }
     ): Promise<CommunityAttributes> {
         const community = await this.community.findOne({
             attributes: ['coverMediaId'],
@@ -211,20 +209,8 @@ export default class CommunityService {
             throw new Error('community not found!');
         }
         // since cover can't be null, we first update and then remove
-        const update = await this.community.update(
-            {
-                name,
-                description,
-                language,
-                currency,
-                city,
-                country,
-                email,
-                coverMediaId,
-            },
-            { where: { id } }
-        );
-        if (community.coverMediaId !== coverMediaId) {
+        const update = await this.community.update(params, { where: { id } });
+        if (community.coverMediaId !== params.coverMediaId) {
             // image has been replaced
             // delete previous one! new one was already uploaded, will be updated below
             await this.communityContentStorage.deleteContent(
