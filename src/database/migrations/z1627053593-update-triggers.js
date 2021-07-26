@@ -3,6 +3,9 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         // use datagrip for better understanding + highlight
 
         // create trigger to update total beneficiaries ina  given community, by day and since ever
