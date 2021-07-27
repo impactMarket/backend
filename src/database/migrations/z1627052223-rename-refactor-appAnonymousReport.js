@@ -4,24 +4,24 @@ module.exports = {
         if (process.env.NODE_ENV === 'test') {
             return;
         }
-        await queryInterface.renameColumn(
-            'app_anonymous_report',
-            'status',
-            'review'
-        );
-        await queryInterface.changeColumn('app_anonymous_report', 'createdAt', {
-            type: Sequelize.DATE,
-            allowNull: false,
-        });
+        // await queryInterface.renameColumn(
+        //     'app_anonymous_report',
+        //     'status',
+        //     'review'
+        // );
+        // await queryInterface.changeColumn('app_anonymous_report', 'createdAt', {
+        //     type: Sequelize.DATE,
+        //     allowNull: false,
+        // });
 
-        await queryInterface.renameColumn(
-            'app_anonymous_report',
-            'communityId',
-            'communityPublicId'
-        );
+        // await queryInterface.renameColumn(
+        //     'app_anonymous_report',
+        //     'communityId',
+        //     'communityPublicId'
+        // );
         await queryInterface.removeConstraint(
             'app_anonymous_report',
-            'app_anonymous_report_communityId_fkey'
+            'AppAnonymousReport_communityId_fkey'
         );
         await queryInterface.addColumn('app_anonymous_report', 'communityId', {
             type: Sequelize.INTEGER,
