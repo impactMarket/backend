@@ -40,6 +40,8 @@ module.exports = {
         port: 5432,
         dialect: 'postgres',
         migrationStorageTableName: 'sequelize_meta',
+        seederStorage: 'sequelize',
+        seederStorageTableName: 'sequelize_data',
     },
     staging: {
         username,
@@ -49,6 +51,8 @@ module.exports = {
         port: 5432,
         dialect: 'postgres',
         migrationStorageTableName: 'sequelize_meta',
+        seederStorage: 'sequelize',
+        seederStorageTableName: 'sequelize_data',
         dialectOptions: {
             ssl: {
                 rejectUnauthorized: false,
