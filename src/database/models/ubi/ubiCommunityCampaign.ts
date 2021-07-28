@@ -8,7 +8,7 @@ export class UbiCommunityCampaignModel extends Model<
     UbiCommunityCampaign,
     UbiCommunityCampaignCreation
 > {
-    public communityId!: string;
+    public communityId!: number;
     public campaignUrl!: string;
 }
 

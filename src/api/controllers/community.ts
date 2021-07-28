@@ -176,6 +176,12 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    getCampaign = (req: Request, res: Response) => {
+        CommunityService.getCampaign(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     create = (req: Request, res: Response) => {
         const {
             requestByAddress, // the address making the request (will be community manager)

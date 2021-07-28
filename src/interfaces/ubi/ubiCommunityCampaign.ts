@@ -15,7 +15,7 @@
  *            type: string
  *            description: esolidar campaign URL
  */
- export interface UbiCommunityCampaign {
+export interface UbiCommunityCampaign {
     id: number;
     communityId: number;
     campaignUrl: string;
@@ -25,4 +25,3 @@ export interface UbiCommunityCampaignCreation {
     communityId: number;
     campaignUrl: string;
 }
-

@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import faker from 'faker';
 import { Sequelize } from 'sequelize';
 
 import { User } from '../../../src/interfaces/app/user';
@@ -338,12 +339,9 @@ describe('community service', () => {
         }).timeout(120000); // exceptionally 120s timeout
     });
 
-    describe('find', () => {
-        afterEach(async () => {
-            await truncate(sequelize, 'Community');
-        });
-
-        it('by id', async () => {
+    describe('campaign', () => {
+        let communityId: number;
+        before(async () => {
             const communities = await CommunityFactory([
                 {
                     requestByAddress: users[0].address,
@@ -360,14 +358,31 @@ describe('community service', () => {
                     hasAddress: true,
                 },
             ]);
+            communityId = communities[0].id;
+        });
 
-            const result = await CommunityService.findById(communities[0].id);
+        after(async () => {
+            await truncate(sequelize, 'Community');
+            await truncate(sequelize);
+        });
+
+        it('community without campaign', async () => {
+            const result = await CommunityService.getCampaign(communityId);
+            expect(result).to.be.null;
+        });
+
+        it('community with campaign', async () => {
+            const campaignUrl = faker.internet.url();
+            await sequelize.models.UbiCommunityCampaignModel.create({
+                communityId,
+                campaignUrl,
+            });
+
+            const result = await CommunityService.getCampaign(communityId);
+            expect(result).to.not.be.null;
             expect(result).to.include({
-                id: communities[0].id,
-                name: communities[0].name,
-                country: communities[0].country,
-                requestByAddress: users[0].address,
-                campaign: undefined,
+                communityId,
+                campaignUrl,
             });
         });
     });

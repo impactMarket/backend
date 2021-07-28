@@ -1,11 +1,11 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
+import { UbiCommunityCampaign } from '@interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { UbiCommunityLabel } from '@interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
-import { UbiCommunityCampaign } from '@interfaces/ubi/ubiCommunityCampaign';
 import {
     Community,
     CommunityAttributes,
@@ -694,7 +694,9 @@ export default class CommunityService {
                 communityId,
             },
         });
-        return result !== null ? (result.toJSON() as UbiCommunityCampaign) : null;
+        return result !== null
+            ? (result.toJSON() as UbiCommunityCampaign)
+            : null;
     }
 
     public static async getMetrics(communityId: number) {
@@ -1443,14 +1445,12 @@ export default class CommunityService {
         const contract = (await this.getContract(community.id))!;
         const state = (await this.getState(community.id))!;
         const metrics = await this.getMetrics(community.id);
-        const campaign = await this.getCampaign(community.id);
         return {
             ...(community.toJSON() as CommunityAttributes),
             suspect: suspect !== null ? [suspect] : undefined,
             contract,
             state,
             metrics: metrics !== null ? [metrics] : undefined,
-            campaign: campaign ? campaign.campaignUrl : undefined,
         };
     }
 }
