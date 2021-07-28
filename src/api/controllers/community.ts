@@ -1,5 +1,6 @@
 import { RequestWithUser } from '@ipcttypes/core';
 import BeneficiaryService from '@services/ubi/beneficiary';
+import ClaimLocationService from '@services/ubi/claimLocation';
 import CommunityService from '@services/ubi/community';
 import CommunityDailyMetricsService from '@services/ubi/communityDailyMetrics';
 import ManagerService from '@services/ubi/managers';
@@ -128,7 +129,7 @@ class CommunityController {
     };
 
     getClaimLocation = (req: Request, res: Response) => {
-        CommunityService.getClaimLocation(req.params.id)
+        ClaimLocationService.getByCommunity(parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -212,34 +213,26 @@ class CommunityController {
     };
 
     edit = (req: RequestWithUser, res: Response) => {
-        const {
-            name,
-            description,
-            language,
-            currency,
-            city,
-            country,
-            email,
-            coverMediaId,
-        } = req.body;
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+        const { name, description, currency, coverMediaId } = req.body;
         // verify if the current user is manager in this community
-        ManagerService.get(req.user!.address)
+        ManagerService.get(req.user.address)
             .then(async (manager) => {
                 if (manager !== null) {
                     const community = await CommunityService.getByPublicId(
                         manager.communityId
                     );
-                    CommunityService.edit(
-                        community!.id,
+                    CommunityService.edit(community!.id, {
                         name,
                         description,
-                        language,
                         currency,
-                        city,
-                        country,
-                        email,
-                        coverMediaId
-                    )
+                        coverMediaId,
+                    })
                         .then((community) =>
                             standardResponse(res, 200, true, community)
                         )

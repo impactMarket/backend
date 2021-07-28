@@ -3,7 +3,11 @@ import { ethers } from 'ethers';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
 
+import { models } from '../../../src/database';
+import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import UserService from '../../../src/services/app/user';
+import CommunityFactory from '../../factories/community';
+import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 
 describe('user service', () => {
@@ -226,6 +230,77 @@ describe('user service', () => {
                         "'fails to welcome not existing account' expected to fail"
                     );
                 });
+        });
+    });
+
+    describe('report', () => {
+        let communities: CommunityAttributes[] = [];
+        before(async () => {
+            const users = await UserFactory({ n: 1 });
+            communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+        });
+
+        afterEach(async () => {
+            await truncate(sequelize, 'AppAnonymousReportModel');
+        });
+
+        it('submit a report with community publicId', async () => {
+            const report = await UserService.report(
+                faker.lorem.sentence(),
+                communities[0].publicId
+            );
+            // eslint-disable-next-line no-unused-expressions
+            expect(report).to.not.be.null;
+            const result = await models.anonymousReport.findOne({
+                where: { communityId: communities[0].id },
+            });
+            // eslint-disable-next-line no-unused-expressions
+            expect(result).to.not.be.null;
+        });
+
+        it('submit a report with community id', async () => {
+            const report = await UserService.report(
+                faker.lorem.sentence(),
+                communities[0].id
+            );
+            // eslint-disable-next-line no-unused-expressions
+            expect(report).to.not.be.null;
+            const result = await models.anonymousReport.findOne({
+                where: { communityId: communities[0].id },
+            });
+            // eslint-disable-next-line no-unused-expressions
+            expect(result).to.not.be.null;
+        });
+
+        it('submit a report with community with category', async () => {
+            const report = await UserService.report(
+                faker.lorem.sentence(),
+                communities[0].id,
+                'potential-fraud'
+            );
+            // eslint-disable-next-line no-unused-expressions
+            expect(report).to.not.be.null;
+            const result = await models.anonymousReport.findOne({
+                where: { communityId: communities[0].id },
+            });
+            // eslint-disable-next-line no-unused-expressions
+            expect(result).to.not.be.null;
+            expect(result!.category).to.be.equal('potential-fraud');
         });
     });
 });

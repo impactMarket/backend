@@ -54,7 +54,7 @@ export default class CommunityService {
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
     public static ubiCommunityDailyState = models.ubiCommunityDailyState;
     public static ubiCommunityDemographics = models.ubiCommunityDemographics;
-    public static claimLocation = models.claimLocation;
+    // public static claimLocation = models.claimLocation;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiPromoter = models.ubiPromoter;
@@ -196,14 +196,12 @@ export default class CommunityService {
 
     public static async edit(
         id: number,
-        name: string,
-        description: string,
-        language: string,
-        currency: string,
-        city: string,
-        country: string,
-        email: string,
-        coverMediaId: number
+        params: {
+            name: string;
+            description: string;
+            currency: string;
+            coverMediaId: number;
+        }
     ): Promise<CommunityAttributes> {
         const community = await this.community.findOne({
             attributes: ['coverMediaId'],
@@ -213,20 +211,8 @@ export default class CommunityService {
             throw new Error('community not found!');
         }
         // since cover can't be null, we first update and then remove
-        const update = await this.community.update(
-            {
-                name,
-                description,
-                language,
-                currency,
-                city,
-                country,
-                email,
-                coverMediaId,
-            },
-            { where: { id } }
-        );
-        if (community.coverMediaId !== coverMediaId) {
+        const update = await this.community.update(params, { where: { id } });
+        if (community.coverMediaId !== params.coverMediaId) {
             // image has been replaced
             // delete previous one! new one was already uploaded, will be updated below
             await this.communityContentStorage.deleteContent(
@@ -589,22 +575,6 @@ export default class CommunityService {
                 reachOut: string;
             };
         };
-    }
-
-    public static async getClaimLocation(id: string) {
-        const threeMonthsAgo = new Date();
-        threeMonthsAgo.setDate(threeMonthsAgo.getDate() - 90);
-        threeMonthsAgo.setHours(0, 0, 0, 0);
-
-        const community = (await this.community.findOne({ where: { id } }))!;
-        const res = await this.claimLocation.findAll({
-            attributes: ['gps'],
-            where: {
-                createdAt: { [Op.gte]: threeMonthsAgo },
-                communityId: community.publicId,
-            },
-        });
-        return res.map((r) => r.gps);
     }
 
     public static async getDemographics(id: string) {
@@ -1388,76 +1358,12 @@ export default class CommunityService {
      */
     public static async getByPublicId(
         publicId: string
-    ): Promise<ICommunity | null> {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const rawCommunity = await this.community.findOne({
-            include: [
-                {
-                    model: this.ubiCommunitySuspect,
-                    as: 'suspect',
-                    required: false,
-                    where: {
-                        createdAt: {
-                            [Op.eq]: literal(
-                                '(select max("createdAt") from ubi_community_suspect where "communityId" = "suspect"."communityId" and "createdAt" > \'' +
-                                    yesterday.toISOString().split('T')[0] +
-                                    "')"
-                            ),
-                        },
-                    },
-                },
-                {
-                    model: this.ubiPromoter,
-                    as: 'promoter',
-                    required: false,
-                },
-            ],
+    ): Promise<Community | null> {
+        return this.community.findOne({
             where: {
                 publicId,
             },
         });
-        if (rawCommunity === null) {
-            throw new Error('Not found community ' + publicId);
-        }
-        const community = rawCommunity.toJSON() as CommunityAttributes;
-        const communityState = await this.ubiCommunityState.findOne({
-            where: {
-                communityId: community.id,
-            },
-            raw: true,
-        });
-        const communityContract = await this.ubiCommunityContract.findOne({
-            where: {
-                communityId: community.id,
-            },
-            raw: true,
-        });
-        const communityDailyMetrics =
-            await this.ubiCommunityDailyMetrics.findAll({
-                where: {
-                    communityId: community.id,
-                },
-                order: [['createdAt', 'DESC']],
-                limit: 1,
-                raw: true,
-            });
-
-        // because promoter as a many-to-many (see association file)
-        // needs to be broken
-        // let promoter: UbiPromoter | undefined = undefined;
-        // if (community.promoter && (community.promoter as any).length > 0) {
-        //     promoter = (community.promoter as any)[0];
-        // }
-        return {
-            ...community,
-            // promoter,
-            state: communityState!,
-            contract: communityContract
-                ? (communityContract as any)
-                : undefined,
-            metrics: communityDailyMetrics[0]!,
-        } as any;
     }
 
     /**

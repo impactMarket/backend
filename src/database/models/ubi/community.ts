@@ -1,5 +1,6 @@
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { StoryCommunity } from '@interfaces/story/storyCommunity';
+import { UbiClaimLocation } from '@interfaces/ubi/ubiClaimLocation';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { UbiCommunityDailyState } from '@interfaces/ubi/ubiCommunityDailyState';
@@ -10,7 +11,6 @@ import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { BeneficiaryAttributes } from './beneficiary';
-import { ClaimLocationAttributes } from './claimLocation';
 
 export interface CommunityAttributes {
     id: number; // Note that the `null assertion` `!` is required in strict mode.
@@ -48,7 +48,7 @@ export interface CommunityAttributes {
     suspect?: UbiCommunitySuspect[]; // TODO: to be removed
     beneficiaries?: BeneficiaryAttributes[]; // TODO: to be removed
     // promoter?: UbiPromoter;
-    claimLocation?: ClaimLocationAttributes[]; // TODO: to be removed
+    claimLocation?: UbiClaimLocation[]; // TODO: to be removed
     demographics?: UbiCommunityDemographics[]; // TODO: to be removed
     dailyState?: UbiCommunityDailyState[]; // TODO: to be removed
     campaign?: string;

@@ -334,11 +334,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunity'
      */
-    route.get(
-        '/address/:address',
-        cacheWithRedis('10 minutes'),
-        controller.findByContractAddress
-    );
+    route.get('/address/:address', controller.findByContractAddress);
 
     /**
      * @swagger
@@ -409,7 +405,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/list/:query?', cacheWithRedis('10 minutes'), controller.list);
+    route.get('/list/:query?', cacheWithRedis('5 minutes'), controller.list);
 
     /**
      * @swagger
@@ -443,7 +439,7 @@ export default (app: Router): void => {
      *                   count:
      *                     type: string
      */
-    route.get('/count/:query?', cacheWithRedis('10 minutes'), controller.count);
+    route.get('/count/:query?', cacheWithRedis('5 minutes'), controller.count);
 
     route.get('/:id/ubi', controller.findRequestChangeUbiParams);
 
@@ -472,11 +468,7 @@ export default (app: Router): void => {
      *               items:
      *                 type: integer
      */
-    route.get(
-        '/:id/past-ssi',
-        cacheWithRedis('10 minutes'),
-        controller.getPastSSI
-    );
+    route.get('/:id/past-ssi', cacheWithRedis('1 hour'), controller.getPastSSI);
 
     /**
      * @swagger
@@ -641,7 +633,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunitySuspect'
      */
-    route.get('/:id/suspect', controller.getSuspect);
+    route.get('/:id/suspect', cacheWithRedis('1 hour'), controller.getSuspect);
 
     /**
      * @swagger
@@ -716,7 +708,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityDailyMetrics'
      */
-    route.get('/:id/metrics', controller.getMetrics);
+    route.get('/:id/metrics', cacheWithRedis('1 hour'), controller.getMetrics);
 
     /**
      * @swagger
@@ -741,7 +733,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunity'
      */
-    route.get('/:id', cacheWithRedis('10 minutes'), controller.findById);
+    route.get('/:id', controller.findById);
 
     /**
      * @swagger
