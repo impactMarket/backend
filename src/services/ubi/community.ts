@@ -210,7 +210,10 @@ export default class CommunityService {
         }
         // since cover can't be null, we first update and then remove
         const update = await this.community.update(params, { where: { id } });
-        if (community.coverMediaId !== params.coverMediaId) {
+        if (
+            params.coverMediaId !== -1 &&
+            community.coverMediaId !== params.coverMediaId
+        ) {
             // image has been replaced
             // delete previous one! new one was already uploaded, will be updated below
             await this.communityContentStorage.deleteContent(
