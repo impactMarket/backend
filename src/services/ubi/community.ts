@@ -209,16 +209,18 @@ export default class CommunityService {
             throw new Error('community not found!');
         }
         // since cover can't be null, we first update and then remove
-        const update = await this.community.update(params, { where: { id } });
-        if (
-            params.coverMediaId !== -1 &&
-            community.coverMediaId !== params.coverMediaId
-        ) {
+        const { name, description, currency, coverMediaId } = params;
+        const update = await this.community.update(
+            { name, description, currency },
+            { where: { id } }
+        );
+        if (coverMediaId !== -1 && community.coverMediaId !== coverMediaId) {
             // image has been replaced
             // delete previous one! new one was already uploaded, will be updated below
             await this.communityContentStorage.deleteContent(
-                community.coverMediaId! // TODO: will be required once next version is released
+                community.coverMediaId!
             );
+            await this.community.update({ coverMediaId }, { where: { id } });
         }
         if (update[0] === 0) {
             throw new Error('community was not updated!');
