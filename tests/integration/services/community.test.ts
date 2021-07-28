@@ -338,6 +338,40 @@ describe('community service', () => {
         }).timeout(120000); // exceptionally 120s timeout
     });
 
+    describe('find', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'Community');
+        });
+
+        it('by id', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const result = await CommunityService.findById(communities[0].id);
+            expect(result).to.include({
+                id: communities[0].id,
+                name: communities[0].name,
+                country: communities[0].country,
+                requestByAddress: users[0].address,
+                campaign: undefined,
+            });
+        });
+    });
+
     describe('count', () => {
         describe('by country', () => {
             afterEach(async () => {
