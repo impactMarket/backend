@@ -4,12 +4,7 @@ const faker = require('faker');
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        if (
-            process.env.API_ENVIRONMENT === 'production' ||
-            process.env.NODE_ENV === 'production' ||
-            process.env.NODE_ENV === 'prod' ||
-            process.env.NODE_ENV === 'PROD'
-        ) {
+        if (process.env.API_ENVIRONMENT === 'production') {
             return;
         }
         const totalNewUsers = 50;
