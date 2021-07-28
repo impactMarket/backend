@@ -30,6 +30,15 @@ describe('calcuateCommunitiesMetrics', () => {
         ],
         Promise<void>
     >;
+    let ubiCommunityDailyMetricsCreate: Sinon.SinonSpy<
+        [
+            any,
+            CreateOptions<any> & {
+                returning: false;
+            }
+        ],
+        Promise<void>
+    >;
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -37,10 +46,15 @@ describe('calcuateCommunitiesMetrics', () => {
             models.ubiCommunityDailyState,
             'create'
         );
+        ubiCommunityDailyMetricsCreate = spy(
+            models.ubiCommunityDailyMetrics,
+            'create'
+        );
     });
 
     after(() => {
         ubiCommunityDailyStateCreate.restore();
+        ubiCommunityDailyMetricsCreate.restore();
     });
 
     describe('recent community with beneficiaries, txs and inflow', () => {
@@ -48,8 +62,6 @@ describe('calcuateCommunitiesMetrics', () => {
         let beneficiaries: BeneficiaryAttributes[];
         let community: any;
         beforeEach(async () => {
-            sequelize = sequelizeSetup();
-
             // THIS IS HAPPENING TODAY
             tk.travel(jumpToTomorrowMidnight());
             users = await UserFactory({ n: 2 });
@@ -226,8 +238,6 @@ describe('calcuateCommunitiesMetrics', () => {
 
     describe('recent community with added/removed beneficiaries, txs and inflow', () => {
         before(async () => {
-            sequelize = sequelizeSetup();
-
             // THIS IS HAPPENING TODAY
             tk.travel(jumpToTomorrowMidnight());
             const users = await UserFactory({ n: 6 });
@@ -432,6 +442,76 @@ describe('calcuateCommunitiesMetrics', () => {
         });
     });
 
+    describe('recent community with beneficiaries, inflow no claims', () => {
+        before(async () => {
+            // THIS IS HAPPENING TODAY
+            tk.travel(jumpToTomorrowMidnight());
+            const users = await UserFactory({ n: 2 });
+            communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+            const community = {
+                ...communities[0],
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '1000000000000000000',
+                    communityId: 0,
+                    incrementInterval: 5 * 60,
+                    maxClaim: '450000000000000000000',
+                },
+            };
+            await InflowFactory(community);
+            await InflowFactory(community);
+            await BeneficiaryFactory(users, community.publicId);
+
+            // THIS IS HAPPENING TOMORROW
+            tk.travel(jumpToTomorrowMidnight());
+            ubiCommunityDailyStateCreate.resetHistory();
+            ubiCommunityDailyMetricsCreate.resetHistory();
+        });
+
+        after(async () => {
+            await truncate(sequelize, 'Inflow');
+            await truncate(sequelize, 'Beneficiary');
+            await truncate(sequelize, 'UserModel');
+            await truncate(sequelize, 'Community');
+        });
+
+        it('no claims', async () => {
+            await calcuateCommunitiesMetrics();
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.callCount(ubiCommunityDailyMetricsCreate, 0);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 2,
+                monthlyBackers: 2,
+                raised: match.any,
+                claimed: '0',
+                claims: 0,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 2,
+            });
+        });
+    });
+
     describe('recent community with beneficiaries, first metrics', () => {
         before(async () => {
             // THIS IS HAPPENING TODAY
@@ -542,6 +622,7 @@ describe('calcuateCommunitiesMetrics', () => {
             await InflowFactory(community);
             await BeneficiaryFactory(users, community.publicId);
             ubiCommunityDailyStateCreate.resetHistory();
+            ubiCommunityDailyMetricsCreate.resetHistory();
         });
 
         after(async () => {
@@ -555,7 +636,23 @@ describe('calcuateCommunitiesMetrics', () => {
 
         it('few claims', async () => {
             await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateCreate, 0);
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.callCount(ubiCommunityDailyMetricsCreate, 0);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 1,
+                monthlyBackers: 1,
+                raised: match.any,
+                claimed: '0',
+                claims: 0,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 2,
+            });
         });
     });
 
@@ -594,6 +691,7 @@ describe('calcuateCommunitiesMetrics', () => {
             // THIS IS HAPPENING THREE DAYS FROM NOW
             tk.travel(jumpToTomorrowMidnight());
             ubiCommunityDailyStateCreate.resetHistory();
+            ubiCommunityDailyMetricsCreate.resetHistory();
         });
 
         after(async () => {
@@ -607,7 +705,23 @@ describe('calcuateCommunitiesMetrics', () => {
 
         it('few claims', async () => {
             await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateCreate, 0);
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.callCount(ubiCommunityDailyMetricsCreate, 0);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 1,
+                monthlyBackers: 1,
+                raised: match.any,
+                claimed: '0',
+                claims: 0,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 0,
+            });
         });
     });
 });

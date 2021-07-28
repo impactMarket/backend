@@ -114,9 +114,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 model: models.ubiCommunityState,
                 as: 'state',
                 where: {
-                    claimed: { [Op.ne]: 0 },
                     raised: { [Op.ne]: 0 },
-                    beneficiaries: { [Op.gt]: 1 },
                 },
             },
             {
@@ -130,6 +128,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             {
                 model: models.beneficiary,
                 as: 'beneficiaries',
+                required: false,
                 where: {
                     claims: { [Op.gt]: 1 },
                     lastClaimAt: { [Op.gte]: aMonthAgo },
@@ -252,7 +251,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         where: {
             status: 'valid',
             visibility: 'public',
-        },
+        } as any,
         group: ['Community.id'],
         order: [['id', 'DESC']],
         raw: true,
@@ -529,13 +528,31 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     }
 
     const calculateMetrics = async (community: ICommunityToMetrics) => {
+        //
+        if (community.activity !== undefined) {
+            await models.ubiCommunityDailyState.create({
+                transactions: parseInt(community.activity.txs, 10),
+                reach: parseInt(community.activity.reach, 10),
+                reachOut: parseInt(community.activity.reachOut, 10),
+                volume: community.activity.volume,
+                backers: parseInt(community.activity.backers, 10),
+                monthlyBackers: parseInt(community.activity.monthlyBackers, 10),
+                raised: community.activity.raised,
+                claimed: community.activity.claimed,
+                claims: parseInt(community.activity.claims, 10),
+                fundingRate: parseFloat(community.activity.fundingRate),
+                beneficiaries: community.activity.beneficiaries,
+                communityId: community.id,
+                date: yesterday,
+            });
+        }
         // if no activity, do not calculate
         if (
             community.state === undefined ||
             community.contract === undefined ||
             community.beneficiaries === undefined ||
+            community.beneficiaries.length === 0 ||
             community.metrics === undefined ||
-            community.activity === undefined ||
             community.beneficiariesClaiming.claimed === '0'
         ) {
             return;
@@ -636,21 +653,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             ssi,
             ubiRate,
             estimatedDuration,
-            date: yesterday,
-        });
-        await models.ubiCommunityDailyState.create({
-            transactions: parseInt(community.activity.txs, 10),
-            reach: parseInt(community.activity.reach, 10),
-            reachOut: parseInt(community.activity.reachOut, 10),
-            volume: community.activity.volume,
-            backers: parseInt(community.activity.backers, 10),
-            monthlyBackers: parseInt(community.activity.monthlyBackers, 10),
-            raised: community.activity.raised,
-            claimed: community.activity.claimed,
-            claims: parseInt(community.activity.claims, 10),
-            fundingRate: parseFloat(community.activity.fundingRate),
-            beneficiaries: community.activity.beneficiaries,
-            communityId: community.id,
             date: yesterday,
         });
     };
