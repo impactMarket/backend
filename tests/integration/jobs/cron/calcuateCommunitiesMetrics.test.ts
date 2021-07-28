@@ -30,6 +30,15 @@ describe('calcuateCommunitiesMetrics', () => {
         ],
         Promise<void>
     >;
+    let ubiCommunityDailyMetricsCreate: Sinon.SinonSpy<
+        [
+            any,
+            CreateOptions<any> & {
+                returning: false;
+            }
+        ],
+        Promise<void>
+    >;
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -37,19 +46,22 @@ describe('calcuateCommunitiesMetrics', () => {
             models.ubiCommunityDailyState,
             'create'
         );
+        ubiCommunityDailyMetricsCreate = spy(
+            models.ubiCommunityDailyMetrics,
+            'create'
+        );
     });
 
     after(() => {
         ubiCommunityDailyStateCreate.restore();
+        ubiCommunityDailyMetricsCreate.restore();
     });
 
-    describe('recent community with beneficiaries, txs and inflow', () => {
+    describe('recent community with beneficiaries', () => {
         let users: User[];
         let beneficiaries: BeneficiaryAttributes[];
         let community: any;
         beforeEach(async () => {
-            sequelize = sequelizeSetup();
-
             // THIS IS HAPPENING TODAY
             tk.travel(jumpToTomorrowMidnight());
             users = await UserFactory({ n: 2 });
@@ -69,16 +81,20 @@ describe('calcuateCommunitiesMetrics', () => {
                     hasAddress: true,
                 },
             ]);
-            community = {
-                ...communities[0],
-                contract: {
-                    baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
-                    communityId: 0,
-                    incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
-                },
-            };
+            community = communities[0];
+        });
+
+        afterEach(async () => {
+            // this two has to come first!
+            await truncate(sequelize, 'Inflow');
+            await truncate(sequelize, 'Claim');
+            await truncate(sequelize, 'BeneficiaryTransaction');
+            await truncate(sequelize, 'Beneficiary');
+            await truncate(sequelize, 'UserModel');
+            await truncate(sequelize);
+        });
+
+        it('txs and inflow, few claims', async () => {
             await InflowFactory(community);
             await InflowFactory(community);
             beneficiaries = await BeneficiaryFactory(users, community.publicId);
@@ -112,16 +128,8 @@ describe('calcuateCommunitiesMetrics', () => {
             // THIS IS HAPPENING THREE DAYS FROM NOW
             tk.travel(jumpToTomorrowMidnight());
             ubiCommunityDailyStateCreate.resetHistory();
-        });
 
-        afterEach(async () => {
-            // this two has to come first!
-            await truncate(sequelize, 'Manager');
-            await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize);
-        });
-
-        it('few claims', async () => {
+            // test
             await calcuateCommunitiesMetrics();
             assert.callCount(ubiCommunityDailyStateCreate, 1);
             assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
@@ -141,7 +149,42 @@ describe('calcuateCommunitiesMetrics', () => {
             });
         });
 
-        it('stops activity for four days', async () => {
+        it('txs and inflow, stops activity for four days', async () => {
+            await InflowFactory(community);
+            await InflowFactory(community);
+            beneficiaries = await BeneficiaryFactory(users, community.publicId);
+            await ClaimFactory(beneficiaries[0], community);
+            await ClaimFactory(beneficiaries[1], community);
+
+            // THIS IS HAPPENING TOMORROW
+            tk.travel(jumpToTomorrowMidnight());
+            await ClaimFactory(beneficiaries[0], community);
+            tk.travel(new Date().getTime() + 1000 * 60 * 3);
+            await ClaimFactory(beneficiaries[1], community);
+            await calcuateCommunitiesMetrics();
+
+            // THIS IS HAPPENING TWO DAYS FROM NOW
+            tk.travel(jumpToTomorrowMidnight());
+            await ClaimFactory(beneficiaries[0], community);
+            tk.travel(new Date().getTime() + 1000 * 60 * 8);
+            await ClaimFactory(beneficiaries[1], community);
+            await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+                amount: '500000000000000000',
+            });
+            await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+                toBeneficiary: beneficiaries[1],
+                amount: '1000000000000000000',
+            });
+            await BeneficiaryTransactionFactory(beneficiaries[1], false, {
+                amount: '1000000000000000000',
+            });
+            await InflowFactory(community);
+
+            // THIS IS HAPPENING THREE DAYS FROM NOW
+            tk.travel(jumpToTomorrowMidnight());
+            ubiCommunityDailyStateCreate.resetHistory();
+
+            // test
             // THIS IS HAPPENING THREE DAYS FROM NOW
             await calcuateCommunitiesMetrics();
 
@@ -175,7 +218,42 @@ describe('calcuateCommunitiesMetrics', () => {
             });
         });
 
-        it('stops activity for two days and gets activity again', async () => {
+        it('txs and inflow, stops activity for two days and gets activity again', async () => {
+            await InflowFactory(community);
+            await InflowFactory(community);
+            beneficiaries = await BeneficiaryFactory(users, community.publicId);
+            await ClaimFactory(beneficiaries[0], community);
+            await ClaimFactory(beneficiaries[1], community);
+
+            // THIS IS HAPPENING TOMORROW
+            tk.travel(jumpToTomorrowMidnight());
+            await ClaimFactory(beneficiaries[0], community);
+            tk.travel(new Date().getTime() + 1000 * 60 * 3);
+            await ClaimFactory(beneficiaries[1], community);
+            await calcuateCommunitiesMetrics();
+
+            // THIS IS HAPPENING TWO DAYS FROM NOW
+            tk.travel(jumpToTomorrowMidnight());
+            await ClaimFactory(beneficiaries[0], community);
+            tk.travel(new Date().getTime() + 1000 * 60 * 8);
+            await ClaimFactory(beneficiaries[1], community);
+            await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+                amount: '500000000000000000',
+            });
+            await BeneficiaryTransactionFactory(beneficiaries[0], true, {
+                toBeneficiary: beneficiaries[1],
+                amount: '1000000000000000000',
+            });
+            await BeneficiaryTransactionFactory(beneficiaries[1], false, {
+                amount: '1000000000000000000',
+            });
+            await InflowFactory(community);
+
+            // THIS IS HAPPENING THREE DAYS FROM NOW
+            tk.travel(jumpToTomorrowMidnight());
+            ubiCommunityDailyStateCreate.resetHistory();
+
+            // test
             // THIS IS HAPPENING THREE DAYS FROM NOW
             await calcuateCommunitiesMetrics();
 
@@ -222,12 +300,222 @@ describe('calcuateCommunitiesMetrics', () => {
                 beneficiaries: 0,
             });
         });
+
+        it('inflow no txs, few claims', async () => {
+            // THIS IS HAPPENING TODAY
+            await InflowFactory(community);
+            await InflowFactory(community);
+            const beneficiaries = await BeneficiaryFactory(
+                users,
+                community.publicId
+            );
+            await ClaimFactory(beneficiaries[0], community);
+            await ClaimFactory(beneficiaries[1], community);
+
+            // THIS IS HAPPENING TOMORROW
+            tk.travel(jumpToTomorrowMidnight());
+            await calcuateCommunitiesMetrics();
+            await ClaimFactory(beneficiaries[0], community);
+            tk.travel(new Date().getTime() + 1000 * 60 * 3);
+            await ClaimFactory(beneficiaries[1], community);
+
+            // THIS IS HAPPENING TWO DAYS FROM NOW
+            tk.travel(jumpToTomorrowMidnight());
+            await calcuateCommunitiesMetrics();
+            await ClaimFactory(beneficiaries[0], community);
+            tk.travel(new Date().getTime() + 1000 * 60 * 8);
+            await ClaimFactory(beneficiaries[1], community);
+            await InflowFactory(community);
+
+            // THIS IS HAPPENING THREE DAYS FROM NOW
+            tk.travel(jumpToTomorrowMidnight());
+            ubiCommunityDailyStateCreate.resetHistory();
+
+            //tests
+            await calcuateCommunitiesMetrics();
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 1,
+                monthlyBackers: 3,
+                raised: match.any,
+                claimed: '2000000000000000000',
+                claims: 2,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 0,
+            });
+        });
+
+        it('inflow beneficiaries, no claims', async () => {
+            await InflowFactory(community);
+            await InflowFactory(community);
+            await BeneficiaryFactory(users, community.publicId);
+
+            // THIS IS HAPPENING TOMORROW
+            tk.travel(jumpToTomorrowMidnight());
+            ubiCommunityDailyStateCreate.resetHistory();
+            ubiCommunityDailyMetricsCreate.resetHistory();
+
+            // tests
+            await calcuateCommunitiesMetrics();
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.callCount(ubiCommunityDailyMetricsCreate, 0);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 2,
+                monthlyBackers: 2,
+                raised: match.any,
+                claimed: '0',
+                claims: 0,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 2,
+            });
+        });
+
+        it('no claims', async () => {
+            await InflowFactory(community);
+            await BeneficiaryFactory(users, community.publicId);
+
+            // THIS IS HAPPENING TOMORROW
+            tk.travel(jumpToTomorrowMidnight());
+            ubiCommunityDailyStateCreate.resetHistory();
+            ubiCommunityDailyMetricsCreate.resetHistory();
+
+            // test
+            await calcuateCommunitiesMetrics();
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.callCount(ubiCommunityDailyMetricsCreate, 0);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 1,
+                monthlyBackers: 1,
+                raised: match.any,
+                claimed: '0',
+                claims: 0,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 2,
+            });
+        });
+
+        it('first metrics, few claims', async () => {
+            await InflowFactory(community);
+            await InflowFactory(community);
+            const beneficiaries = await BeneficiaryFactory(
+                users,
+                community.publicId
+            );
+            await ClaimFactory(beneficiaries[0], community);
+            await ClaimFactory(beneficiaries[1], community);
+
+            // THIS IS HAPPENING TOMORROW
+            tk.travel(jumpToTomorrowMidnight());
+            await ClaimFactory(beneficiaries[0], community);
+            tk.travel(new Date().getTime() + 1000 * 60 * 3);
+            await ClaimFactory(beneficiaries[1], community);
+            ubiCommunityDailyStateCreate.resetHistory();
+
+            // test
+            await calcuateCommunitiesMetrics();
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 2,
+                monthlyBackers: 2,
+                raised: match.any,
+                claimed: '2000000000000000000',
+                claims: 2,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 2,
+            });
+        });
+
+        it('first metrics, not enough claims', async () => {
+            await InflowFactory(community);
+            await InflowFactory(community);
+            const beneficiaries = await BeneficiaryFactory(
+                users,
+                community.publicId
+            );
+            await ClaimFactory(beneficiaries[0], community);
+
+            // THIS IS HAPPENING TOMORROW
+            tk.travel(jumpToTomorrowMidnight());
+            ubiCommunityDailyStateCreate.resetHistory();
+            ubiCommunityDailyMetricsCreate.resetHistory();
+
+            // test
+            await calcuateCommunitiesMetrics();
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.callCount(ubiCommunityDailyMetricsCreate, 0);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 2,
+                monthlyBackers: 2,
+                raised: match.any,
+                claimed: '1000000000000000000',
+                claims: 1,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 2,
+            });
+        });
+
+        it('no beneficiaries', async () => {
+            await InflowFactory(community);
+
+            // THIS IS HAPPENING THREE DAYS FROM NOW
+            tk.travel(jumpToTomorrowMidnight());
+            ubiCommunityDailyStateCreate.resetHistory();
+            ubiCommunityDailyMetricsCreate.resetHistory();
+
+            // test
+            await calcuateCommunitiesMetrics();
+            assert.callCount(ubiCommunityDailyStateCreate, 1);
+            assert.callCount(ubiCommunityDailyMetricsCreate, 0);
+            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
+                transactions: 0,
+                reach: 0,
+                reachOut: 0,
+                volume: '0',
+                backers: 1,
+                monthlyBackers: 1,
+                raised: match.any,
+                claimed: '0',
+                claims: 0,
+                fundingRate: match.any,
+                communityId: communities[0].id,
+                date: match.any,
+                beneficiaries: 0,
+            });
+        });
     });
 
     describe('recent community with added/removed beneficiaries, txs and inflow', () => {
         before(async () => {
-            sequelize = sequelizeSetup();
-
             // THIS IS HAPPENING TODAY
             tk.travel(jumpToTomorrowMidnight());
             const users = await UserFactory({ n: 6 });
@@ -340,274 +628,6 @@ describe('calcuateCommunitiesMetrics', () => {
                 communityId: communities[0].id,
                 date: match.any,
             });
-        });
-    });
-
-    describe('recent community with beneficiaries, inflow no txs', () => {
-        before(async () => {
-            // THIS IS HAPPENING TODAY
-            const users = await UserFactory({ n: 2 });
-            communities = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-            const community = {
-                ...communities[0],
-                contract: {
-                    baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
-                    communityId: 0,
-                    incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
-                },
-            };
-            await InflowFactory(community);
-            await InflowFactory(community);
-            const beneficiaries = await BeneficiaryFactory(
-                users,
-                community.publicId
-            );
-            await ClaimFactory(beneficiaries[0], community);
-            await ClaimFactory(beneficiaries[1], community);
-
-            // THIS IS HAPPENING TOMORROW
-            tk.travel(jumpToTomorrowMidnight());
-            await calcuateCommunitiesMetrics();
-            await ClaimFactory(beneficiaries[0], community);
-            tk.travel(new Date().getTime() + 1000 * 60 * 3);
-            await ClaimFactory(beneficiaries[1], community);
-
-            // THIS IS HAPPENING TWO DAYS FROM NOW
-            tk.travel(jumpToTomorrowMidnight());
-            await calcuateCommunitiesMetrics();
-            await ClaimFactory(beneficiaries[0], community);
-            tk.travel(new Date().getTime() + 1000 * 60 * 8);
-            await ClaimFactory(beneficiaries[1], community);
-            await InflowFactory(community);
-
-            // THIS IS HAPPENING THREE DAYS FROM NOW
-            tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
-        });
-
-        after(async () => {
-            await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
-            await truncate(sequelize, 'BeneficiaryTransaction');
-            await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize, 'UserModel');
-            await truncate(sequelize, 'Community');
-        });
-
-        it('few claims', async () => {
-            await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateCreate, 1);
-            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
-                transactions: 0,
-                reach: 0,
-                reachOut: 0,
-                volume: '0',
-                backers: 1,
-                monthlyBackers: 3,
-                raised: match.any,
-                claimed: '2000000000000000000',
-                claims: 2,
-                fundingRate: match.any,
-                communityId: communities[0].id,
-                date: match.any,
-                beneficiaries: 0,
-            });
-        });
-    });
-
-    describe('recent community with beneficiaries, first metrics', () => {
-        before(async () => {
-            // THIS IS HAPPENING TODAY
-            const users = await UserFactory({ n: 2 });
-            communities = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-            const community = {
-                ...communities[0],
-                contract: {
-                    baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
-                    communityId: 0,
-                    incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
-                },
-            };
-            await InflowFactory(community);
-            await InflowFactory(community);
-            const beneficiaries = await BeneficiaryFactory(
-                users,
-                community.publicId
-            );
-            await ClaimFactory(beneficiaries[0], community);
-            await ClaimFactory(beneficiaries[1], community);
-
-            // THIS IS HAPPENING TOMORROW
-            tk.travel(jumpToTomorrowMidnight());
-            await ClaimFactory(beneficiaries[0], community);
-            tk.travel(new Date().getTime() + 1000 * 60 * 3);
-            await ClaimFactory(beneficiaries[1], community);
-            ubiCommunityDailyStateCreate.resetHistory();
-        });
-
-        after(async () => {
-            await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
-            await truncate(sequelize, 'BeneficiaryTransaction');
-            await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize, 'UserModel');
-            await truncate(sequelize, 'Community');
-        });
-
-        it('few claims', async () => {
-            await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateCreate, 1);
-            assert.calledWith(ubiCommunityDailyStateCreate.getCall(0), {
-                transactions: 0,
-                reach: 0,
-                reachOut: 0,
-                volume: '0',
-                backers: 2,
-                monthlyBackers: 2,
-                raised: match.any,
-                claimed: '2000000000000000000',
-                claims: 2,
-                fundingRate: match.any,
-                communityId: communities[0].id,
-                date: match.any,
-                beneficiaries: 2,
-            });
-        });
-    });
-
-    describe('recent community with beneficiaries, no claims', () => {
-        before(async () => {
-            // THIS IS HAPPENING TODAY
-            const users = await UserFactory({ n: 2 });
-            communities = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-            const community = {
-                ...communities[0],
-                contract: {
-                    baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
-                    communityId: 0,
-                    incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
-                },
-            };
-            await InflowFactory(community);
-            await BeneficiaryFactory(users, community.publicId);
-            ubiCommunityDailyStateCreate.resetHistory();
-        });
-
-        after(async () => {
-            await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
-            await truncate(sequelize, 'BeneficiaryTransaction');
-            await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize, 'UserModel');
-            await truncate(sequelize, 'Community');
-        });
-
-        it('few claims', async () => {
-            await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateCreate, 0);
-        });
-    });
-
-    describe('recent community with no beneficiaries', () => {
-        before(async () => {
-            // THIS IS HAPPENING TODAY
-            const users = await UserFactory({ n: 2 });
-            communities = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-            const community = {
-                ...communities[0],
-                contract: {
-                    baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
-                    communityId: 0,
-                    incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
-                },
-            };
-            await InflowFactory(community);
-
-            // THIS IS HAPPENING THREE DAYS FROM NOW
-            tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
-        });
-
-        after(async () => {
-            await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
-            await truncate(sequelize, 'BeneficiaryTransaction');
-            await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize, 'UserModel');
-            await truncate(sequelize, 'Community');
-        });
-
-        it('few claims', async () => {
-            await calcuateCommunitiesMetrics();
-            assert.callCount(ubiCommunityDailyStateCreate, 0);
         });
     });
 });
