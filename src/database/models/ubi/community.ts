@@ -51,6 +51,7 @@ export interface CommunityAttributes {
     claimLocation?: ClaimLocationAttributes[]; // TODO: to be removed
     demographics?: UbiCommunityDemographics[]; // TODO: to be removed
     dailyState?: UbiCommunityDailyState[]; // TODO: to be removed
+    campaign?: string;
 }
 export interface CommunityCreationAttributes {
     requestByAddress: string;

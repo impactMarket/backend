@@ -5,6 +5,7 @@ import { UbiCommunityLabel } from '@interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
+import { UbiCommunityCampaign } from '@interfaces/ubi/ubiCommunityCampaign';
 import {
     Community,
     CommunityAttributes,
@@ -59,6 +60,7 @@ export default class CommunityService {
     public static ubiPromoter = models.ubiPromoter;
     public static ubiPromoterSocialMedia = models.ubiPromoterSocialMedia;
     public static ubiCommunityLabels = models.ubiCommunityLabels;
+    public static ubiCommunityCampaign = models.ubiCommunityCampaign;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static sequelize = sequelize;
@@ -714,6 +716,15 @@ export default class CommunityService {
             },
         });
         return result !== null ? (result.toJSON() as UbiCommunityState) : null;
+    }
+
+    public static async getCampaign(communityId: number) {
+        const result = await this.ubiCommunityCampaign.findOne({
+            where: {
+                communityId,
+            },
+        });
+        return result !== null ? (result.toJSON() as UbiCommunityCampaign) : null;
     }
 
     public static async getMetrics(communityId: number) {
@@ -1526,12 +1537,14 @@ export default class CommunityService {
         const contract = (await this.getContract(community.id))!;
         const state = (await this.getState(community.id))!;
         const metrics = await this.getMetrics(community.id);
+        const campaign = await this.getCampaign(community.id);
         return {
             ...(community.toJSON() as CommunityAttributes),
             suspect: suspect !== null ? [suspect] : undefined,
             contract,
             state,
             metrics: metrics !== null ? [metrics] : undefined,
+            campaign: campaign ? campaign.campaignUrl : undefined,
         };
     }
 }
