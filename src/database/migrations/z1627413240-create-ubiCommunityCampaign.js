@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
-    up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable('ubi_claim_location', {
+    up(queryInterface, Sequelize) {
+        return queryInterface.createTable('ubi_community_campaign', {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
@@ -16,17 +16,13 @@ module.exports = {
                 onDelete: 'CASCADE',
                 allowNull: false,
             },
-            gps: {
-                type: Sequelize.JSON,
+            campaignUrl: {
+                type: Sequelize.STRING(128),
                 allowNull: false,
-            },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
             },
         });
     },
-    down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable('ubi_claim_location');
+    down(queryInterface, Sequelize) {
+        return queryInterface.dropTable('ubi_community_campaign');
     },
 };

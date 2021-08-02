@@ -1,3 +1,3 @@
-release: npx sequelize db:migrate --env $API_ENVIRONMENT
+release: ./release-tasks.sh
 web: yarn serve
 worker: yarn worker

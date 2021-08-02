@@ -56,11 +56,11 @@ const edit = celebrate({
     body: Joi.object({
         name: Joi.string().required(),
         description: Joi.string().required(),
-        language: Joi.string().required(),
+        language: Joi.string().optional(), // TODO: to remove
         currency: Joi.string().required(),
-        city: Joi.string().required(),
-        country: Joi.string().required(),
-        email: Joi.string().required(),
+        city: Joi.string().optional(), // TODO: to remove
+        country: Joi.string().optional(), // TODO: to remove
+        email: Joi.string().optional(), // TODO: to remove
         coverMediaId: Joi.number().required(),
     }),
 });

@@ -1,8 +1,10 @@
 import { expect } from 'chai';
+import faker from 'faker';
 import { Sequelize } from 'sequelize';
 
 import { User } from '../../../src/interfaces/app/user';
 import CommunityService from '../../../src/services/ubi/community';
+import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
@@ -18,6 +20,11 @@ describe('community service', () => {
     });
 
     describe('list', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'Beneficiary');
+            await truncate(sequelize);
+        });
+
         describe('by name', () => {
             afterEach(async () => {
                 await truncate(sequelize, 'Community');
@@ -282,6 +289,101 @@ describe('community service', () => {
             ]);
 
             await truncate(sequelize, 'Community');
+        });
+
+        it('large lists', async () => {
+            const totalCommunities = 80;
+            const communityManagers = await UserFactory({
+                n: totalCommunities,
+            });
+            const createObject: any[] = [];
+            for (let index = 0; index < totalCommunities; index++) {
+                createObject.push({
+                    requestByAddress: communityManagers[index].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                });
+            }
+            const communities = await CommunityFactory(createObject);
+
+            for (const community of communities) {
+                await BeneficiaryFactory(
+                    await UserFactory({
+                        n: Math.floor(Math.random() * 20),
+                    }),
+                    community.publicId
+                );
+            }
+
+            //
+
+            const result: any[] = [];
+
+            for (let index = 0; index < totalCommunities / 5; index++) {
+                const r = await CommunityService.list({
+                    offset: (index * 5).toString(),
+                    limit: '5',
+                });
+                expect(result).to.not.have.members(r.rows);
+                result.push(r.rows);
+            }
+        }).timeout(120000); // exceptionally 120s timeout
+    });
+
+    describe('campaign', () => {
+        let communityId: number;
+        before(async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+            communityId = communities[0].id;
+        });
+
+        after(async () => {
+            await truncate(sequelize, 'Community');
+            await truncate(sequelize);
+        });
+
+        it('community without campaign', async () => {
+            const result = await CommunityService.getCampaign(communityId);
+            expect(result).to.be.null;
+        });
+
+        it('community with campaign', async () => {
+            const campaignUrl = faker.internet.url();
+            await sequelize.models.UbiCommunityCampaignModel.create({
+                communityId,
+                campaignUrl,
+            });
+
+            const result = await CommunityService.getCampaign(communityId);
+            expect(result).to.not.be.null;
+            expect(result).to.include({
+                communityId,
+                campaignUrl,
+            });
         });
     });
 
