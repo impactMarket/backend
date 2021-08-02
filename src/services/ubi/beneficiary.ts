@@ -1,4 +1,8 @@
 import { User } from '@interfaces/app/user';
+import {
+    UbiBeneficiaryRegistryCreation,
+    UbiBeneficiaryRegistryType,
+} from '@interfaces/ubi/ubiBeneficiaryRegistry';
 import { IListBeneficiary } from '@ipcttypes/endpoints';
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
@@ -26,7 +30,18 @@ export default class BeneficiaryService {
             txAt,
         };
         try {
+            const community = await models.community.findOne({
+                attributes: ['id'],
+                where: { publicId: communityId },
+            });
             await models.beneficiary.create(beneficiaryData);
+            await this._addRegistry({
+                address,
+                communityId: community!.id,
+                activity: UbiBeneficiaryRegistryType.add,
+                tx,
+                txAt,
+            });
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
@@ -41,12 +56,25 @@ export default class BeneficiaryService {
 
     public static async remove(
         address: string,
-        communityId: string
+        communityId: string,
+        tx: string,
+        txAt: Date
     ): Promise<void> {
+        const community = await models.community.findOne({
+            attributes: ['id'],
+            where: { publicId: communityId },
+        });
         await models.beneficiary.update(
             { active: false },
             { where: { address, communityId } }
         );
+        await this._addRegistry({
+            address,
+            communityId: community!.id,
+            activity: UbiBeneficiaryRegistryType.remove,
+            tx,
+            txAt,
+        });
     }
 
     public static async findByAddress(
@@ -248,6 +276,22 @@ export default class BeneficiaryService {
                 Logger.error(
                     'Error inserting new BeneficiaryTransaction. Data = ' +
                         JSON.stringify(beneficiaryTx)
+                );
+                Logger.error(e);
+            }
+        }
+    }
+
+    private static async _addRegistry(
+        registry: UbiBeneficiaryRegistryCreation
+    ): Promise<void> {
+        try {
+            await models.ubiBeneficiaryRegistry.create(registry);
+        } catch (e) {
+            if (e.name !== 'SequelizeUniqueConstraintError') {
+                Logger.error(
+                    'Error inserting new BeneficiaryTransaction. Data = ' +
+                        JSON.stringify(registry)
                 );
                 Logger.error(e);
             }

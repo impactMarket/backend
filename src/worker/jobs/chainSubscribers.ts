@@ -211,8 +211,8 @@ class ChainSubscribers {
         if (parsedLog.name === 'BeneficiaryAdded') {
             const beneficiaryAddress = parsedLog.args[0];
             const communityAddress = log.address;
-            let communityId = this.communities.get(communityAddress);
-            if (communityId === undefined) {
+            let communityPublicId = this.communities.get(communityAddress);
+            if (communityPublicId === undefined) {
                 // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
                 const community =
                     await CommunityService.getOnlyCommunityByContractAddress(
@@ -229,7 +229,7 @@ class ChainSubscribers {
                     );
                     this.communities.set(communityAddress, community.publicId);
                     this.allCommunitiesAddresses.push(communityAddress);
-                    communityId = community.publicId;
+                    communityPublicId = community.publicId;
                 }
             }
             const isThisCommunityPublic =
@@ -243,7 +243,7 @@ class ChainSubscribers {
                 const txAt = await getBlockTime(log.blockHash);
                 await BeneficiaryService.add(
                     beneficiaryAddress,
-                    communityId!,
+                    communityPublicId!,
                     log.transactionHash,
                     txAt
                 );
@@ -252,10 +252,15 @@ class ChainSubscribers {
         } else if (parsedLog.name === 'BeneficiaryRemoved') {
             const beneficiaryAddress = parsedLog.args[0];
             const communityAddress = log.address;
-            await BeneficiaryService.remove(
-                beneficiaryAddress,
-                this.communities.get(communityAddress)!
-            );
+            try {
+                const txAt = await getBlockTime(log.blockHash);
+                await BeneficiaryService.remove(
+                    beneficiaryAddress,
+                    this.communities.get(communityAddress)!,
+                    log.transactionHash,
+                    txAt
+                );
+            } catch (e) {}
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryClaim') {
             const beneficiaryAddress = parsedLog.args[0];
