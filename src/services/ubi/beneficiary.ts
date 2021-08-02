@@ -229,43 +229,6 @@ export default class BeneficiaryService {
         return result;
     }
 
-    public static async getAllAddressesInPublicValidCommunities(): Promise<
-        string[]
-    > {
-        // select address from beneficiary b, community c
-        // where b."communityId" = c."publicId"
-        // and c.status = 'valid'
-        // and c.visibility = 'public'
-        // and b.active = true
-        const publicCommunities: string[] = (
-            await models.community.findAll({
-                attributes: ['publicId'],
-                where: { visibility: 'public', status: 'valid' },
-                raw: true,
-            })
-        ).map((c) => c.publicId);
-
-        return (
-            await models.beneficiary.findAll({
-                attributes: ['address'],
-                where: {
-                    communityId: { [Op.in]: publicCommunities },
-                    active: true,
-                },
-                raw: true,
-            })
-        ).map((b) => b.address);
-    }
-
-    public static async getAllAddresses(): Promise<string[]> {
-        return (
-            await models.beneficiary.findAll({
-                attributes: ['address'],
-                raw: true,
-            })
-        ).map((b) => b.address);
-    }
-
     public static async addTransaction(
         beneficiaryTx: BeneficiaryTransactionCreationAttributes
     ): Promise<void> {

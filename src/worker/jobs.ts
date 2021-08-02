@@ -1,13 +1,13 @@
 import CronJobExecutedService from '@services/app/cronJobExecuted';
 import GlobalDemographicsService from '@services/global/globalDemographics';
 import { ContentStorage } from '@services/storage';
-import BeneficiaryService from '@services/ubi/beneficiary';
 import CommunityService from '@services/ubi/community';
 import { Logger } from '@utils/logger';
 import { CronJob } from 'cron';
 import { ethers } from 'ethers';
 
 import config from '../config';
+import { models } from '../database';
 import { ChainSubscribers } from './jobs/chainSubscribers';
 import {
     calcuateCommunitiesMetrics,
@@ -34,11 +34,26 @@ export default async (): Promise<void> => {
 
     const availableCommunities =
         await CommunityService.listCommunitiesStructOnly();
-    const beneficiariesInPublicCommunities =
-        await BeneficiaryService.getAllAddressesInPublicValidCommunities();
+    const beneficiaries = (
+        await models.beneficiary.findAll({
+            attributes: ['address'],
+            include: [
+                {
+                    model: models.community,
+                    as: 'community',
+                    attributes: [],
+                    where: { visibility: 'public', status: 'valid' },
+                },
+            ],
+            where: {
+                active: true,
+            },
+            raw: true,
+        })
+    ).map((b) => b.address);
     const subscribers = new ChainSubscribers(
         provider,
-        beneficiariesInPublicCommunities,
+        beneficiaries,
         new Map(
             availableCommunities.map((c) => [c.contractAddress!, c.publicId])
         ),

@@ -3,6 +3,7 @@ import ganache from 'ganache-cli';
 // import { Transaction } from 'sequelize';
 import { stub, assert, match, SinonStub } from 'sinon';
 
+import { Beneficiary } from '../../../src/database/models/ubi/beneficiary';
 import { Community } from '../../../src/database/models/ubi/community';
 import ImMetadataService from '../../../src/services/app/imMetadata';
 import TransactionsService from '../../../src/services/transactions';
@@ -90,10 +91,7 @@ describe('[jobs] subscribers', () => {
         inflowAdd = stub(InflowService, 'add');
         inflowAdd.returns(Promise.resolve());
         // stub(BeneficiaryService, 'getAllAddresses').returns(Promise.resolve(accounts.slice(5, 9)));
-        stub(
-            BeneficiaryService,
-            'getAllAddressesInPublicValidCommunities'
-        ).returns(Promise.resolve([]));
+        stub(Beneficiary, 'findAll').returns(Promise.resolve([]));
         stub(ImMetadataService, 'setLastBlock').callsFake(async (v) => {
             lastBlock = v;
         });
