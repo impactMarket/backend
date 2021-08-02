@@ -713,6 +713,35 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /community/{id}/campaign:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community campaign
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityCampaign'
+     */
+    route.get(
+        '/:id/campaign',
+        cacheWithRedis('1 hour'),
+        controller.getCampaign
+    );
+
+    /**
+     * @swagger
+     *
      * /community/{id}:
      *   get:
      *     tags:

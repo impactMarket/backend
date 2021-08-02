@@ -41,6 +41,7 @@ import { initializeInflow } from './ubi/inflow';
 import { initializeManager } from './ubi/manager';
 import { initializeUbiRequestChangeParams } from './ubi/requestChangeParams';
 import { initializeUbiClaimLocation } from './ubi/ubiClaimLocation';
+import { initializeUbiCommunityCampaign } from './ubi/ubiCommunityCampaign';
 import { initializeUbiCommunityLabel } from './ubi/ubiCommunityLabel';
 import { initializeUbiCommunityPromoter } from './ubi/ubiCommunityPromoter';
 import { initializeUbiCommunitySuspect } from './ubi/ubiCommunitySuspect';
@@ -81,6 +82,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeUbiPromoter(sequelize);
     initializeUbiPromoterSocialMedia(sequelize);
     initializeUbiCommunityLabel(sequelize);
+    initializeUbiCommunityCampaign(sequelize);
 
     // others
     initializeNotifiedBacker(sequelize);

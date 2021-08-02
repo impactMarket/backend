@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import faker from 'faker';
 import { Sequelize } from 'sequelize';
 
 import { User } from '../../../src/interfaces/app/user';
@@ -336,6 +337,54 @@ describe('community service', () => {
                 result.push(r.rows);
             }
         }).timeout(120000); // exceptionally 120s timeout
+    });
+
+    describe('campaign', () => {
+        let communityId: number;
+        before(async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+            communityId = communities[0].id;
+        });
+
+        after(async () => {
+            await truncate(sequelize, 'Community');
+            await truncate(sequelize);
+        });
+
+        it('community without campaign', async () => {
+            const result = await CommunityService.getCampaign(communityId);
+            expect(result).to.be.null;
+        });
+
+        it('community with campaign', async () => {
+            const campaignUrl = faker.internet.url();
+            await sequelize.models.UbiCommunityCampaignModel.create({
+                communityId,
+                campaignUrl,
+            });
+
+            const result = await CommunityService.getCampaign(communityId);
+            expect(result).to.not.be.null;
+            expect(result).to.include({
+                communityId,
+                campaignUrl,
+            });
+        });
     });
 
     describe('count', () => {

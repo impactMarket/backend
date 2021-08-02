@@ -32,6 +32,7 @@ import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
 import { ClaimLocationModel } from '@models/ubi/ubiClaimLocation';
+import { UbiCommunityCampaignModel } from '@models/ubi/ubiCommunityCampaign';
 import { UbiCommunityLabelModel } from '@models/ubi/ubiCommunityLabel';
 import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
 import { UbiPromoterModel } from '@models/ubi/ubiPromoter';
@@ -97,6 +98,8 @@ const models: DbModels = {
         .UbiPromoterSocialMediaModel as ModelCtor<UbiPromoterSocialMediaModel>,
     ubiCommunityLabels: sequelize.models
         .UbiCommunityLabelModel as ModelCtor<UbiCommunityLabelModel>,
+    ubiCommunityCampaign: sequelize.models
+        .UbiCommunityCampaignModel as ModelCtor<UbiCommunityCampaignModel>,
     ubiRequestChangeParams: sequelize.models
         .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParamsModel>,
     claim: sequelize.models.Claim as ModelCtor<Claim>,
