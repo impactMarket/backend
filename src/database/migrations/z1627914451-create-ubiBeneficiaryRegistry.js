@@ -28,7 +28,7 @@ module.exports = {
                 allowNull: false,
             },
             activity: {
-                type: Sequelize.TINYINT,
+                type: Sequelize.INTEGER,
                 allowNull: false,
             },
             tx: {

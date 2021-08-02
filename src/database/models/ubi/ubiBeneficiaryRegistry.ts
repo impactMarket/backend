@@ -44,7 +44,7 @@ export function initializeUbiBeneficiaryRegistry(sequelize: Sequelize): void {
                 allowNull: false,
             },
             activity: {
-                type: DataTypes.TINYINT,
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
             tx: {
