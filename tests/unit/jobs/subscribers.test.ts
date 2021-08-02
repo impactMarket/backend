@@ -7,7 +7,6 @@ import { Community } from '../../../src/database/models/ubi/community';
 import ImMetadataService from '../../../src/services/app/imMetadata';
 import TransactionsService from '../../../src/services/transactions';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
-import BeneficiaryTransactionService from '../../../src/services/ubi/beneficiaryTransaction';
 import ClaimsService from '../../../src/services/ubi/claim';
 import CommunityService from '../../../src/services/ubi/community';
 import CommunityContractService from '../../../src/services/ubi/communityContract';
@@ -84,7 +83,7 @@ describe('[jobs] subscribers', () => {
         stub(utils, 'getBlockTime').returns(Promise.resolve(blockTimeDate));
         beneficiaryAdd = stub(BeneficiaryService, 'add');
         beneficiaryAdd.returns(Promise.resolve(true));
-        beneficiaryTransactionAdd = stub(BeneficiaryTransactionService, 'add');
+        beneficiaryTransactionAdd = stub(BeneficiaryService, 'addTransaction');
         beneficiaryTransactionAdd.returns(Promise.resolve());
         beneficiaryRemove = stub(BeneficiaryService, 'remove');
         beneficiaryRemove.returns(Promise.resolve());

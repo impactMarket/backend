@@ -1,7 +1,6 @@
 import ImMetadataService from '@services/app/imMetadata';
 // import TransactionsService from '@services/transactions';
 import BeneficiaryService from '@services/ubi/beneficiary';
-import BeneficiaryTransactionService from '@services/ubi/beneficiaryTransaction';
 import ClaimsService from '@services/ubi/claim';
 import CommunityService from '@services/ubi/community';
 import CommunityContractService from '@services/ubi/communityContract';
@@ -189,7 +188,7 @@ class ChainSubscribers {
                 ? parsedLog.args[1]
                 : parsedLog.args[0];
             // save to table to calculate txs and volume
-            await BeneficiaryTransactionService.add({
+            await BeneficiaryService.addTransaction({
                 beneficiary: beneficiaryAddress,
                 withAddress,
                 amount: parsedLog.args[2].toString(),

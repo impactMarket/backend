@@ -1,6 +1,7 @@
 import { User } from '@interfaces/app/user';
 import { IListBeneficiary } from '@ipcttypes/endpoints';
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
+import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isAddress } from '@utils/util';
@@ -235,5 +236,21 @@ export default class BeneficiaryService {
                 raw: true,
             })
         ).map((b) => b.address);
+    }
+
+    public static async addTransaction(
+        beneficiaryTx: BeneficiaryTransactionCreationAttributes
+    ): Promise<void> {
+        try {
+            await models.beneficiaryTransaction.create(beneficiaryTx);
+        } catch (e) {
+            if (e.name !== 'SequelizeUniqueConstraintError') {
+                Logger.error(
+                    'Error inserting new BeneficiaryTransaction. Data = ' +
+                        JSON.stringify(beneficiaryTx)
+                );
+                Logger.error(e);
+            }
+        }
     }
 }
