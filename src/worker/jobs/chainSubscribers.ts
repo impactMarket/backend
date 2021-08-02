@@ -9,12 +9,12 @@ import InflowService from '@services/ubi/inflow';
 import ManagerService from '@services/ubi/managers';
 import { Logger } from '@utils/logger';
 import { getBlockTime, notifyBeneficiaryAdded } from '@utils/util';
-import { models } from 'database';
 import { ethers } from 'ethers';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
+import { models } from '../../database';
 
 /* istanbul ignore next */
 function asyncTxsFailure(error: any) {
