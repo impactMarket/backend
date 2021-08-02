@@ -8,14 +8,14 @@ export enum UbiBeneficiaryRegistryType {
 export interface UbiBeneficiaryRegistry {
     id: number;
     address: string;
-    communityId: string;
+    communityId: number;
     activity: UbiBeneficiaryRegistryType;
     tx: string;
     txAt: Date;
 }
 export interface UbiBeneficiaryRegistryCreation {
     address: string;
-    communityId: string;
+    communityId: number;
     activity: UbiBeneficiaryRegistryType;
     tx: string;
     txAt: Date;
