@@ -41,7 +41,8 @@ class ChainSubscribers {
         this.ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
         this.ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
 
-        this.beneficiariesInPublicCommunities = beneficiariesInPublicCommunities;
+        this.beneficiariesInPublicCommunities =
+            beneficiariesInPublicCommunities;
         this.communities = communities;
         this.allCommunitiesAddresses = Array.from(communities.keys());
         this.isCommunityPublic = isCommunityPublic;
@@ -178,9 +179,10 @@ class ChainSubscribers {
             // any values >0.0009cUSD (999999999999999) [eg. cUSD fees]
             parsedLog.args[2].toString().length > 15
         ) {
-            const isFromBeneficiary = this.beneficiariesInPublicCommunities.includes(
-                parsedLog.args[0]
-            );
+            const isFromBeneficiary =
+                this.beneficiariesInPublicCommunities.includes(
+                    parsedLog.args[0]
+                );
             const beneficiaryAddress = isFromBeneficiary
                 ? parsedLog.args[0]
                 : parsedLog.args[1];
@@ -212,9 +214,10 @@ class ChainSubscribers {
             let communityId = this.communities.get(communityAddress);
             if (communityId === undefined) {
                 // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
-                const community = await CommunityService.getOnlyCommunityByContractAddress(
-                    communityAddress
-                );
+                const community =
+                    await CommunityService.getOnlyCommunityByContractAddress(
+                        communityAddress
+                    );
                 if (community === null) {
                     Logger.error(
                         `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
@@ -229,9 +232,8 @@ class ChainSubscribers {
                     communityId = community.publicId;
                 }
             }
-            const isThisCommunityPublic = this.isCommunityPublic.get(
-                communityAddress
-            );
+            const isThisCommunityPublic =
+                this.isCommunityPublic.get(communityAddress);
             if (isThisCommunityPublic) {
                 this.beneficiariesInPublicCommunities.push(beneficiaryAddress);
             }
@@ -315,20 +317,21 @@ class ChainSubscribers {
                         this.communities.get(communityAddress)!
                     );
                 } else {
-                    const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
+                    const communityAddressesAndIds =
+                        await CommunityService.getAllAddressesAndIds();
                     if (
                         Array.from(communityAddressesAndIds.keys()).includes(
                             communityAddress
                         )
                     ) {
                         // in case new manager means new community
-                        const communityId = communityAddressesAndIds.get(
-                            communityAddress
-                        )!;
+                        const communityId =
+                            communityAddressesAndIds.get(communityAddress)!;
                         ManagerService.add(managerAddress, communityId);
-                        const community = await CommunityService.getOnlyCommunityByContractAddress(
-                            communityAddress
-                        );
+                        const community =
+                            await CommunityService.getOnlyCommunityByContractAddress(
+                                communityAddress
+                            );
                         if (community === null) {
                             Logger.error(
                                 `Community with address ${communityAddress} wasn't found at "ManagerAdded"`
@@ -353,7 +356,8 @@ class ChainSubscribers {
                                 Logger.warn(
                                     `Community ${_communityAddress} was not in the database when "ManagerAdded".`
                                 );
-                                const communityAddressesAndIds = await CommunityService.getAllAddressesAndIds();
+                                const communityAddressesAndIds =
+                                    await CommunityService.getAllAddressesAndIds();
                                 if (
                                     Array.from(
                                         communityAddressesAndIds.keys()
@@ -363,16 +367,18 @@ class ChainSubscribers {
                                     )
                                 ) {
                                     // new community
-                                    const communityId = communityAddressesAndIds.get(
-                                        communityAddress
-                                    )!;
+                                    const communityId =
+                                        communityAddressesAndIds.get(
+                                            communityAddress
+                                        )!;
                                     ManagerService.add(
                                         _managerAddress,
                                         communityId
                                     );
-                                    const community = await CommunityService.getOnlyCommunityByContractAddress(
-                                        communityAddress
-                                    );
+                                    const community =
+                                        await CommunityService.getOnlyCommunityByContractAddress(
+                                            communityAddress
+                                        );
                                     if (community === null) {
                                         Logger.error(
                                             `Community with address ${communityAddress} wasn't found at "ManagerAdded"`
