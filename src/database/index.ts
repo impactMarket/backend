@@ -31,6 +31,7 @@ import { UbiCommunityStateModel } from '@models/ubi/communityState';
 import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
+import { UbiBeneficiaryRegistryModel } from '@models/ubi/ubiBeneficiaryRegistry';
 import { ClaimLocationModel } from '@models/ubi/ubiClaimLocation';
 import { UbiCommunityLabelModel } from '@models/ubi/ubiCommunityLabel';
 import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
@@ -103,6 +104,8 @@ const models: DbModels = {
     ubiClaimLocation: sequelize.models
         .ClaimLocationModel as ModelCtor<ClaimLocationModel>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
+    ubiBeneficiaryRegistry: sequelize.models
+        .UbiBeneficiaryRegistryModel as ModelCtor<UbiBeneficiaryRegistryModel>,
     anonymousReport: sequelize.models
         .AppAnonymousReportModel as ModelCtor<AppAnonymousReportModel>,
     beneficiaryTransaction: sequelize.models
