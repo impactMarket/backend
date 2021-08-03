@@ -23,6 +23,7 @@ class UserController {
             year,
             children,
             avatarMediaId,
+            overwrite,
         } = req.body;
         UserService.authenticate({
             address,
@@ -36,9 +37,10 @@ class UserController {
             trust: {
                 phone,
             },
+            overwrite,
         })
             .then((user) => standardResponse(res, 201, true, user))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .catch((e) => standardResponse(res, 400, false, '', { error: e.message }));
     };
 
     public welcome = (req: RequestWithUser, res: Response) => {

@@ -19,6 +19,7 @@ const auth = celebrate({
         year: Joi.number().optional(),
         children: Joi.number().optional(),
         avatarMediaId: Joi.number().optional(),
+        overwrite: Joi.boolean().optional(),
     }),
 });
 
