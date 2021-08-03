@@ -33,14 +33,14 @@ export default class UserService {
             // generate access token for future interactions that require authentication
             const token = generateAccessToken(user.address);
             const exists = await this.exists(user.address);
-            const existsPhone = await this.existsPhone(user.trust?.phone);
+            const existsPhone = user.trust?.phone
+                ? await this.existsAccountByPhone(user.trust.phone)
+                : false;
 
-            if(!exists && existsPhone) {
-                if(user.overwrite) {
-                    await this.overwriteUser(user);
-                } else {
-                    throw 'phone associated with other account';
-                }
+            if (user.overwrite) {
+                await this.overwriteUser(user);
+            } else if (!exists && existsPhone) {
+                throw 'phone associated with another account';
             }
 
             let userFromRegistry: User;
@@ -87,7 +87,9 @@ export default class UserService {
                 }))!.toJSON() as User;
             }
 
-            // TODO: verify if inactive
+            if (!userFromRegistry.active) {
+                throw 'user inactive';
+            }
 
             const userHello = await this.loadUser(userFromRegistry);
             return {
@@ -110,26 +112,42 @@ export default class UserService {
                         as: 'trust',
                         where: {
                             phone: user.trust?.phone,
-                        }
+                        },
                     },
                 ],
                 where: {
                     address: {
                         [Op.not]: user.address,
-                    }
-                }
+                    },
+                },
             });
-        
-            const promises = usersToInactive.map(el => 
-                this.user.update({
-                    active: false
-                }, {
-                    where: {
-                        address: el.address,
+
+            const promises = usersToInactive.map((el) =>
+                this.user.update(
+                    {
+                        active: false,
+                    },
+                    {
+                        where: {
+                            address: el.address,
+                        },
                     }
-                })
+                )
             );
-    
+
+            promises.push(
+                this.user.update(
+                    {
+                        active: true,
+                    },
+                    {
+                        where: {
+                            address: user.address,
+                        },
+                    }
+                )
+            );
+
             await Promise.all(promises);
         } catch (error) {
             throw new Error(error);
@@ -364,10 +382,19 @@ export default class UserService {
         return exists !== null;
     }
 
-    public static async existsPhone(phone?: string): Promise<boolean> {
-        const exists = await this.appUserTrust.findAll({
+    public static async existsAccountByPhone(phone: string): Promise<boolean> {
+        const exists = await this.appUserTrust.findOne({
             attributes: ['phone'],
             where: { phone },
+            include: [
+                {
+                    model: this.user,
+                    as: 'throughTrust',
+                    where: {
+                        active: true,
+                    },
+                },
+            ],
             raw: true,
         });
         return exists !== null;

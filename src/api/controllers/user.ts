@@ -40,7 +40,9 @@ class UserController {
             overwrite,
         })
             .then((user) => standardResponse(res, 201, true, user))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e.message }));
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 
     public welcome = (req: RequestWithUser, res: Response) => {

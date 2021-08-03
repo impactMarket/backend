@@ -6,8 +6,8 @@ module.exports = {
         if (process.env.NODE_ENV === 'test') {
             return;
         }
-        await queryInterface.changeColumn('user', 'active', {
-            type: Sequelize.BOOLEAN(),
+        await queryInterface.addColumn('user', 'active', {
+            type: Sequelize.BOOLEAN,
             defaultValue: true,
             allowNull: false,
         });
