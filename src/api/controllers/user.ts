@@ -25,20 +25,22 @@ class UserController {
             avatarMediaId,
             overwrite,
         } = req.body;
-        UserService.authenticate({
-            address,
-            language,
-            currency,
-            pushNotificationToken,
-            username,
-            year,
-            children,
-            avatarMediaId,
-            trust: {
-                phone,
+        UserService.authenticate(
+            {
+                address,
+                language,
+                currency,
+                pushNotificationToken,
+                username,
+                year,
+                children,
+                avatarMediaId,
+                trust: {
+                    phone,
+                },
             },
-            overwrite,
-        })
+            overwrite
+        )
             .then((user) => standardResponse(res, 201, true, user))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })

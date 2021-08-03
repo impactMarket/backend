@@ -103,5 +103,4 @@ export interface UserCreationAttributes {
     pushNotificationToken?: string;
 
     trust?: AppUserTrustCreation;
-    overwrite?: boolean;
 }

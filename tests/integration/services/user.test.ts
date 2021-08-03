@@ -4,8 +4,8 @@ import faker from 'faker';
 import { Sequelize } from 'sequelize';
 
 import { models } from '../../../src/database';
-import { UserModel } from '../../../src/database/models/app/user';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
+import { User } from '../../../src/interfaces/app/user';
 import UserService from '../../../src/services/app/user';
 import CommunityFactory from '../../factories/community';
 import UserFactory from '../../factories/user';
@@ -33,7 +33,7 @@ describe('user service', () => {
                     phone,
                 },
             });
-            const findUser = await sequelize.models.UserModel.findOne({
+            const findUser = await models.user.findOne({
                 where: { address: newUser.user.address },
             });
             const findPhone = await sequelize.models.AppUserTrustModel.findOne({
@@ -67,7 +67,7 @@ describe('user service', () => {
                     phone,
                 },
             });
-            const findUser = await sequelize.models.UserModel.findOne({
+            const findUser = await models.user.findOne({
                 where: { address: newUser.user.address },
             });
             const findPhone = await sequelize.models.AppUserTrustModel.findOne({
@@ -108,7 +108,7 @@ describe('user service', () => {
                     phone,
                 },
             });
-            const findUser = await sequelize.models.UserModel.findOne({
+            const findUser = await models.user.findOne({
                 where: { address: loadUser.user.address },
             });
             const findPhone = await sequelize.models.AppUserTrustModel.findOne({
@@ -160,7 +160,7 @@ describe('user service', () => {
                     phone,
                 },
             });
-            const findUser = await sequelize.models.UserModel.findOne({
+            const findUser = await models.user.findOne({
                 where: { address: loadUser.user.address },
             });
             const findPhone = await sequelize.models.AppUserTrustModel.findOne({
@@ -203,11 +203,13 @@ describe('user service', () => {
                 trust: {
                     phone,
                 },
-            }).catch(err => {
+            }).catch((err) => {
                 error = err;
             });
 
-            expect(error.message).to.equal('phone associated with another account')
+            expect(error.message).to.equal(
+                'phone associated with another account'
+            );
         });
 
         it('authentication should inactivate the old account and create a new', async () => {
@@ -232,15 +234,15 @@ describe('user service', () => {
                 overwrite: true,
             });
 
-            const findUser = await sequelize.models.UserModel.findOne({
+            const findUser = await models.user.findOne({
                 where: { address: firstAddress },
             });
-            const user = findUser?.toJSON() as UserModel
+            const user = findUser?.toJSON() as User;
 
             expect(loadUser.user).to.include({
                 address: secondAddress,
                 suspect: false,
-                active: true
+                active: true,
             });
 
             expect(user.active).to.be.false;
@@ -278,11 +280,11 @@ describe('user service', () => {
                 trust: {
                     phone,
                 },
-            }).catch(err => {
+            }).catch((err) => {
                 error = err;
-            })
+            });
 
-            expect(error.message).to.equal('user inactive')
+            expect(error.message).to.equal('user inactive');
         });
     });
 
