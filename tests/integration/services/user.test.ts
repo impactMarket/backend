@@ -231,8 +231,7 @@ describe('user service', () => {
                 trust: {
                     phone,
                 },
-                overwrite: true,
-            });
+            }, true);
 
             const findUser = await models.user.findOne({
                 where: { address: firstAddress },
@@ -269,8 +268,7 @@ describe('user service', () => {
                 trust: {
                     phone,
                 },
-                overwrite: true,
-            });
+            }, true);
 
             let error: any;
 
