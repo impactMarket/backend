@@ -363,7 +363,7 @@ export default (app: Router): void => {
      *         schema:
      *           type: string
      *         required: false
-     *         description: communities country (identifier, like PT for Portugal) to search
+     *         description: communities country (identifier, like PT for Portugal) to search, separated by ; (PT;FR)
      *       - in: query
      *         name: filter
      *         schema:

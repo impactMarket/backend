@@ -19,7 +19,7 @@ describe('community service', () => {
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
-        users = await UserFactory({ n: 3 });
+        users = await UserFactory({ n: 5 });
 
         replace(
             CommunityContentStorage.prototype,
@@ -243,68 +243,172 @@ describe('community service', () => {
             });
         });
 
-        it('by country', async () => {
-            const communities = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                    country: 'PT',
-                },
-                {
-                    requestByAddress: users[1].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                    country: 'PT',
-                },
-                {
-                    requestByAddress: users[2].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                    country: 'ES',
-                },
-            ]);
+        describe('by country', () => {
+            afterEach(async () => {
+                await truncate(sequelize, 'Community');
+            });
 
-            const result = await CommunityService.list({ country: 'PT' });
+            it('single country', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'PT',
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'PT',
+                    },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'ES',
+                    },
+                ]);
 
-            expect(result.count).to.be.equal(2);
-            (expect(result.rows).to as any).containSubset([
-                {
-                    id: communities[0].id,
-                },
-                {
-                    id: communities[1].id,
-                },
-            ]);
+                const result = await CommunityService.list({ country: 'PT' });
 
-            await truncate(sequelize, 'Community');
+                expect(result.count).to.be.equal(2);
+                (expect(result.rows).to as any).containSubset([
+                    {
+                        id: communities[0].id,
+                    },
+                    {
+                        id: communities[1].id,
+                    },
+                ]);
+            });
+
+            it('many country', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'PT',
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'PT',
+                    },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'ES',
+                    },
+                    {
+                        requestByAddress: users[3].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'FR',
+                    },
+                    {
+                        requestByAddress: users[4].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        country: 'MZ',
+                    },
+                ]);
+
+                const result = await CommunityService.list({
+                    country: 'PT;ES;FR',
+                });
+
+                expect(result.count).to.be.equal(4);
+                (expect(result.rows).to as any).containSubset([
+                    {
+                        id: communities[0].id,
+                    },
+                    {
+                        id: communities[1].id,
+                    },
+                    {
+                        id: communities[2].id,
+                    },
+                    {
+                        id: communities[3].id,
+                    },
+                ]);
+            });
         });
 
         it('large lists', async () => {
