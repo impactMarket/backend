@@ -27,7 +27,8 @@ export default class UserService {
     private static profileContentStorage = new ProfileContentStorage();
 
     public static async authenticate(
-        user: UserCreationAttributes
+        user: UserCreationAttributes,
+        overwrite: boolean = false
     ): Promise<IUserAuth> {
         try {
             // generate access token for future interactions that require authentication
@@ -37,7 +38,7 @@ export default class UserService {
                 ? await this.existsAccountByPhone(user.trust.phone)
                 : false;
 
-            if (user.overwrite) {
+            if (overwrite) {
                 await this.overwriteUser(user);
             } else if (!exists && existsPhone) {
                 throw 'phone associated with another account';
