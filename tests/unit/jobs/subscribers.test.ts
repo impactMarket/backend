@@ -3,10 +3,10 @@ import ganache from 'ganache-cli';
 // import { Transaction } from 'sequelize';
 import { stub, assert, match, SinonStub } from 'sinon';
 
-import { Beneficiary } from '../../../src/database/models/ubi/beneficiary';
+// import { Beneficiary } from '../../../src/database/models/ubi/beneficiary';
 import { Community } from '../../../src/database/models/ubi/community';
 import ImMetadataService from '../../../src/services/app/imMetadata';
-import TransactionsService from '../../../src/services/transactions';
+// import TransactionsService from '../../../src/services/transactions';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
 import ClaimsService from '../../../src/services/ubi/claim';
 import CommunityService from '../../../src/services/ubi/community';
@@ -91,7 +91,7 @@ describe('[jobs] subscribers', () => {
         inflowAdd = stub(InflowService, 'add');
         inflowAdd.returns(Promise.resolve());
         // stub(BeneficiaryService, 'getAllAddresses').returns(Promise.resolve(accounts.slice(5, 9)));
-        stub(Beneficiary, 'findAll').returns(Promise.resolve([]));
+        // stub(Beneficiary, 'findAll').returns(Promise.resolve([]));
         stub(ImMetadataService, 'setLastBlock').callsFake(async (v) => {
             lastBlock = v;
         });
@@ -105,7 +105,7 @@ describe('[jobs] subscribers', () => {
         getRecoverBlockStub = stub(ImMetadataService, 'getRecoverBlock');
         getLastBlockStub.returns(Promise.resolve(lastBlock));
         getRecoverBlockStub.returns(Promise.resolve(lastBlock));
-        stub(TransactionsService, 'add').returns(Promise.resolve({} as any));
+        // stub(TransactionsService, 'add').returns(Promise.resolve({} as any));
         claimAdd = stub(ClaimsService, 'add');
         claimAdd.returns(Promise.resolve());
         managerAdd = stub(ManagerService, 'add');
@@ -118,26 +118,6 @@ describe('[jobs] subscribers', () => {
         getAllAddressesAndIds.returns(
             Promise.resolve(communityAddressesAndIds)
         );
-        // init factories
-        const cUSDFactory = new ethers.ContractFactory(
-            cUSDContractJSON.abi,
-            cUSDContractJSON.bytecode,
-            provider.getSigner(0)
-        );
-        communityFactory = new ethers.ContractFactory(
-            CommunityContractJSON.abi,
-            CommunityContractJSON.bytecode,
-            provider.getSigner(0)
-        );
-        cUSD = await cUSDFactory.deploy();
-        // init event subscribers
-        subscribers = new ChainSubscribers(
-            provider,
-            [],
-            communities,
-            communitiesVisibility
-        );
-        //
         stub(CommunityService, 'getOnlyCommunityByContractAddress').returns(
             Promise.resolve({
                 id: thisCommunityId,
@@ -159,6 +139,25 @@ describe('[jobs] subscribers', () => {
                 createdAt: new Date(),
                 updatedAt: new Date(),
             } as Community)
+        );
+        // init factories
+        const cUSDFactory = new ethers.ContractFactory(
+            cUSDContractJSON.abi,
+            cUSDContractJSON.bytecode,
+            provider.getSigner(0)
+        );
+        communityFactory = new ethers.ContractFactory(
+            CommunityContractJSON.abi,
+            CommunityContractJSON.bytecode,
+            provider.getSigner(0)
+        );
+        cUSD = await cUSDFactory.deploy();
+        // init event subscribers
+        subscribers = new ChainSubscribers(
+            provider,
+            [],
+            communities,
+            communitiesVisibility
         );
     });
 
@@ -298,6 +297,7 @@ describe('[jobs] subscribers', () => {
                 match.any,
                 match.any
             );
+            // TODO: verify user registry was also called
         });
     });
 
@@ -335,6 +335,7 @@ describe('[jobs] subscribers', () => {
             await waitForStubCall(beneficiaryRemove, 1);
             assert.callCount(beneficiaryRemove, 1);
             assert.calledWith(beneficiaryRemove.getCall(0), accounts[5]);
+            // TODO: verify user registry was also called
         });
     });
 
