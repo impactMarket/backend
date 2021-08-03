@@ -4,6 +4,7 @@ import faker from 'faker';
 import { Sequelize } from 'sequelize';
 
 import { models } from '../../../src/database';
+import { UserModel } from '../../../src/database/models/app/user';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import UserService from '../../../src/services/app/user';
 import CommunityFactory from '../../factories/community';
@@ -181,6 +182,107 @@ describe('user service', () => {
                 avatarMediaId: 5,
                 pushNotificationToken: 'ckniwoaicoska',
             });
+        });
+
+        it('authentication should return an error when trying to create a new account with an already used phone', async () => {
+            const firstRandomWallet = ethers.Wallet.createRandom();
+            const secondRandomWallet = ethers.Wallet.createRandom();
+            const firstAddress = await firstRandomWallet.getAddress();
+            const secondAddress = await secondRandomWallet.getAddress();
+            const phone = faker.phone.phoneNumber();
+
+            await UserService.authenticate({
+                address: firstAddress,
+                trust: {
+                    phone,
+                },
+            });
+            let error: any;
+            await UserService.authenticate({
+                address: secondAddress,
+                trust: {
+                    phone,
+                },
+            }).catch(err => {
+                error = err;
+            });
+
+            expect(error.message).to.equal('phone associated with another account')
+        });
+
+        it('authentication should inactivate the old account and create a new', async () => {
+            const firstRandomWallet = ethers.Wallet.createRandom();
+            const secondRandomWallet = ethers.Wallet.createRandom();
+            const firstAddress = await firstRandomWallet.getAddress();
+            const secondAddress = await secondRandomWallet.getAddress();
+            const phone = faker.phone.phoneNumber();
+
+            await UserService.authenticate({
+                address: firstAddress,
+                trust: {
+                    phone,
+                },
+            });
+
+            const loadUser = await UserService.authenticate({
+                address: secondAddress,
+                trust: {
+                    phone,
+                },
+                overwrite: true,
+            });
+
+            const findUser = await sequelize.models.UserModel.findOne({
+                where: { address: firstAddress },
+            });
+            const user = findUser?.toJSON() as UserModel
+
+            expect(loadUser.user).to.include({
+                address: secondAddress,
+                suspect: false,
+                active: true
+            });
+
+            expect(user.active).to.be.false;
+        });
+
+        it('authentication should return error when trying to access an inactive account', async () => {
+            const firstRandomWallet = ethers.Wallet.createRandom();
+            const secondRandomWallet = ethers.Wallet.createRandom();
+            const firstAddress = await firstRandomWallet.getAddress();
+            const secondAddress = await secondRandomWallet.getAddress();
+            const phone = faker.phone.phoneNumber();
+
+            // create the first account
+            await UserService.authenticate({
+                address: firstAddress,
+                trust: {
+                    phone,
+                },
+            });
+
+            // replace by a new account
+            await UserService.authenticate({
+                address: secondAddress,
+                trust: {
+                    phone,
+                },
+                overwrite: true,
+            });
+
+            let error: any;
+
+            // try to login with the first account again
+            await UserService.authenticate({
+                address: firstAddress,
+                trust: {
+                    phone,
+                },
+            }).catch(err => {
+                error = err;
+            })
+
+            expect(error.message).to.equal('user inactive')
         });
     });
 
