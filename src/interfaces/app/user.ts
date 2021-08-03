@@ -78,6 +78,7 @@ export interface User {
     children: number | null;
     lastLogin: Date;
     suspect: boolean;
+    active: boolean;
 
     // timestamps
     createdAt: Date;
@@ -102,4 +103,5 @@ export interface UserCreationAttributes {
     pushNotificationToken?: string;
 
     trust?: AppUserTrustCreation;
+    overwrite?: boolean;
 }
