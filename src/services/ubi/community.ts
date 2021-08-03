@@ -416,7 +416,9 @@ export default class CommunityService {
         if (query.country) {
             extendedWhere = {
                 ...extendedWhere,
-                country: query.country,
+                country: {
+                    [Op.in]: query.country.split(';'),
+                },
             };
         }
 
