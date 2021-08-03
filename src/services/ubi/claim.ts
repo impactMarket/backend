@@ -1,27 +1,13 @@
+import { UbiClaimCreation } from '@interfaces/ubi/ubiClaim';
 import { Logger } from '@utils/logger';
 import { col, fn, Op } from 'sequelize';
 
 import { models } from '../../database';
 
 export default class ClaimService {
-    public static claim = models.claim;
-
-    public static async add(
-        address: string,
-        communityId: string,
-        amount: string,
-        tx: string,
-        txAt: Date
-    ): Promise<void> {
-        const claimData = {
-            address,
-            communityId,
-            amount,
-            tx,
-            txAt,
-        };
+    public static async add(claimData: UbiClaimCreation): Promise<void> {
         try {
-            await this.claim.create(claimData);
+            await models.ubiClaim.create(claimData);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
@@ -42,7 +28,7 @@ export default class ClaimService {
         // seven days ago, from todayMidnightTime
         const sevenDaysAgo = new Date(todayMidnightTime.getTime() - 604800000); // 7 * 24 * 60 * 60 * 1000
         const result = (
-            await this.claim.findAll({
+            await models.ubiClaim.findAll({
                 attributes: [
                     [
                         fn('count', fn('distinct', col('address'))),

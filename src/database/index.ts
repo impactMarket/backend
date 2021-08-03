@@ -21,7 +21,6 @@ import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 import { StoryUserReportModel } from '@models/story/storyUserReport';
 import { Beneficiary } from '@models/ubi/beneficiary';
 import { BeneficiaryTransaction } from '@models/ubi/beneficiaryTransaction';
-import { Claim } from '@models/ubi/claim';
 import { Community } from '@models/ubi/community';
 import { UbiCommunityContractModel } from '@models/ubi/communityContract';
 import { UbiCommunityDailyMetricsModel } from '@models/ubi/communityDailyMetrics';
@@ -31,6 +30,7 @@ import { UbiCommunityStateModel } from '@models/ubi/communityState';
 import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
+import { UbiClaimModel } from '@models/ubi/ubiClaim';
 import { ClaimLocationModel } from '@models/ubi/ubiClaimLocation';
 import { UbiCommunityCampaignModel } from '@models/ubi/ubiCommunityCampaign';
 import { UbiCommunityLabelModel } from '@models/ubi/ubiCommunityLabel';
@@ -102,7 +102,7 @@ const models: DbModels = {
         .UbiCommunityCampaignModel as ModelCtor<UbiCommunityCampaignModel>,
     ubiRequestChangeParams: sequelize.models
         .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParamsModel>,
-    claim: sequelize.models.Claim as ModelCtor<Claim>,
+    ubiClaim: sequelize.models.UbiClaimModel as ModelCtor<UbiClaimModel>,
     ubiClaimLocation: sequelize.models
         .ClaimLocationModel as ModelCtor<ClaimLocationModel>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,

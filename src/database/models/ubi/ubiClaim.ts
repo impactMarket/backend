@@ -1,40 +1,17 @@
+import { UbiClaim, UbiClaimCreation } from '@interfaces/ubi/ubiClaim';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-interface ClaimAttributes {
-    id: number;
-    address: string;
-    communityId: string;
-    amount: string;
-    tx: string;
-    txAt: Date;
-
-    // timestamps
-    createdAt: Date;
-    updatedAt: Date;
-}
-export interface ClaimCreationAttributes {
-    address: string;
-    communityId: string;
-    amount: string;
-    tx: string;
-    txAt: Date;
-}
-
-export class Claim extends Model<ClaimAttributes, ClaimCreationAttributes> {
+export class UbiClaimModel extends Model<UbiClaim, UbiClaimCreation> {
     public id!: number;
     public address!: string;
-    public communityId!: string;
+    public communityId!: number;
     public amount!: string;
     public tx!: string;
     public txAt!: Date;
-
-    // timestamps!
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
 }
 
-export function initializeClaim(sequelize: Sequelize): void {
-    Claim.init(
+export function initializeUbiClaim(sequelize: Sequelize): void {
+    UbiClaimModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -47,10 +24,10 @@ export function initializeClaim(sequelize: Sequelize): void {
                 allowNull: false,
             },
             communityId: {
-                type: DataTypes.UUID,
+                type: DataTypes.INTEGER,
                 references: {
-                    model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
+                    model: 'community',
+                    key: 'id',
                 },
                 onDelete: 'CASCADE',
                 allowNull: false,
@@ -69,17 +46,10 @@ export function initializeClaim(sequelize: Sequelize): void {
                 type: DataTypes.DATE,
                 allowNull: false,
             },
-            createdAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
-            updatedAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
         },
         {
-            tableName: 'claim',
+            tableName: 'ubi_claim',
+            timestamps: false,
             sequelize,
         }
     );

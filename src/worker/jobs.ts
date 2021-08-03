@@ -42,6 +42,7 @@ export default async (): Promise<void> => {
         new Map(
             availableCommunities.map((c) => [c.contractAddress!, c.publicId])
         ),
+        new Map(availableCommunities.map((c) => [c.contractAddress!, c.id])),
         new Map(
             availableCommunities.map((c) => [
                 c.contractAddress!,

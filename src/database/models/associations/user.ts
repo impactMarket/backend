@@ -1,7 +1,7 @@
 import { Sequelize } from 'sequelize';
 
 export function userAssociation(sequelize: Sequelize) {
-    sequelize.models.Beneficiary.hasMany(sequelize.models.Claim, {
+    sequelize.models.Beneficiary.hasMany(sequelize.models.UbiClaimModel, {
         sourceKey: 'address',
         foreignKey: 'address',
         as: 'claim',
