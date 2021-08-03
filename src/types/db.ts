@@ -32,6 +32,7 @@ import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
 import { ClaimLocationModel } from '@models/ubi/ubiClaimLocation';
+import { UbiCommunityCampaignModel } from '@models/ubi/ubiCommunityCampaign';
 import { UbiCommunityLabelModel } from '@models/ubi/ubiCommunityLabel';
 import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
 import { UbiPromoterModel } from '@models/ubi/ubiPromoter';
@@ -63,6 +64,7 @@ export interface DbModels {
     ubiPromoter: ModelCtor<UbiPromoterModel>;
     ubiPromoterSocialMedia: ModelCtor<UbiPromoterSocialMediaModel>;
     ubiCommunityLabels: ModelCtor<UbiCommunityLabelModel>;
+    ubiCommunityCampaign: ModelCtor<UbiCommunityCampaignModel>;
     ubiRequestChangeParams: ModelCtor<UbiRequestChangeParamsModel>;
     claim: ModelCtor<Claim>;
     ubiClaimLocation: ModelCtor<ClaimLocationModel>;

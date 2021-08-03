@@ -1,7 +1,10 @@
 import { expect } from 'chai';
+import faker from 'faker';
 import { Sequelize } from 'sequelize';
+import Sinon, { assert, replace, spy } from 'sinon';
 
 import { User } from '../../../src/interfaces/app/user';
+import { CommunityContentStorage } from '../../../src/services/storage';
 import CommunityService from '../../../src/services/ubi/community';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
@@ -12,10 +15,24 @@ import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 describe('community service', () => {
     let sequelize: Sequelize;
     let users: User[];
+    let communityContentStorageDelete: Sinon.SinonSpy<[number], Promise<void>>;
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
         users = await UserFactory({ n: 3 });
+
+        replace(
+            CommunityContentStorage.prototype,
+            'deleteContent',
+            async (mediaId: number) => {
+                //
+            }
+        );
+
+        communityContentStorageDelete = spy(
+            CommunityContentStorage.prototype,
+            'deleteContent'
+        );
     });
 
     describe('list', () => {
@@ -338,6 +355,54 @@ describe('community service', () => {
         }).timeout(120000); // exceptionally 120s timeout
     });
 
+    describe('campaign', () => {
+        let communityId: number;
+        before(async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+            communityId = communities[0].id;
+        });
+
+        after(async () => {
+            await truncate(sequelize, 'Community');
+            await truncate(sequelize);
+        });
+
+        it('community without campaign', async () => {
+            const result = await CommunityService.getCampaign(communityId);
+            expect(result).to.be.null;
+        });
+
+        it('community with campaign', async () => {
+            const campaignUrl = faker.internet.url();
+            await sequelize.models.UbiCommunityCampaignModel.create({
+                communityId,
+                campaignUrl,
+            });
+
+            const result = await CommunityService.getCampaign(communityId);
+            expect(result).to.not.be.null;
+            expect(result).to.include({
+                communityId,
+                campaignUrl,
+            });
+        });
+    });
+
     describe('count', () => {
         describe('by country', () => {
             afterEach(async () => {
@@ -406,6 +471,94 @@ describe('community service', () => {
                     },
                 ]);
             });
+        });
+    });
+
+    describe('edit', () => {
+        afterEach(async () => {
+            await truncate(sequelize);
+        });
+
+        it('without media', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const communityNewDescription =
+                'bla bla bla, this community to the moon!';
+            const updatedCommunity = await CommunityService.edit(
+                communities[0].id,
+                {
+                    currency: communities[0].currency,
+                    description: communityNewDescription,
+                    name: communities[0].name,
+                    coverMediaId: -1,
+                }
+            );
+
+            expect(updatedCommunity.description).to.be.equal(
+                communityNewDescription
+            );
+
+            assert.callCount(communityContentStorageDelete, 0);
+            expect(updatedCommunity.coverMediaId).to.not.be.equal(-1);
+            expect(updatedCommunity.coverMediaId).to.be.equal(
+                communities[0].coverMediaId
+            );
+        });
+
+        it('with media', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const communityNewDescription =
+                'bla bla bla, this community to the moon!';
+            const updatedCommunity = await CommunityService.edit(
+                communities[0].id,
+                {
+                    currency: communities[0].currency,
+                    description: communityNewDescription,
+                    name: communities[0].name,
+                    coverMediaId: 1,
+                }
+            );
+
+            expect(updatedCommunity.description).to.be.equal(
+                communityNewDescription
+            );
+
+            assert.callCount(communityContentStorageDelete, 1);
+            expect(updatedCommunity.coverMediaId).to.not.be.equal(
+                communities[0].coverMediaId
+            );
+            expect(updatedCommunity.coverMediaId).to.be.equal(1);
         });
     });
 });
