@@ -1,11 +1,14 @@
 import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
 import { Sequelize } from 'sequelize';
+import { assert, spy } from 'sinon';
 
+import { models } from '../../../src/database';
 import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { User } from '../../../src/interfaces/app/user';
+import { UbiBeneficiaryRegistryType } from '../../../src/interfaces/ubi/ubiBeneficiaryRegistry';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
 import { IListBeneficiary } from '../../../src/types/endpoints';
 import BeneficiaryFactory from '../../factories/beneficiary';
@@ -14,6 +17,7 @@ import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
+import { randomTx } from '../../utils/utils';
 
 use(chaiSubset);
 
@@ -28,7 +32,7 @@ describe('beneficiary service', () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        users = await UserFactory({ n: 15 });
+        users = await UserFactory({ n: 16 });
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -55,6 +59,7 @@ describe('beneficiary service', () => {
     after(async () => {
         // this two has to come first!
         await truncate(sequelize, 'Manager');
+        await truncate(sequelize, 'UbiBeneficiaryRegistryModel');
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize);
     });
@@ -140,6 +145,94 @@ describe('beneficiary service', () => {
                 suspect: false,
             },
         ]);
+    });
+
+    it('add to public community', async () => {
+        const spyBeneficiaryRegistryAdd = spy(
+            models.ubiBeneficiaryRegistry,
+            'create'
+        );
+        const spyBeneficiaryAdd = spy(models.beneficiary, 'create');
+        // add
+        const tx = randomTx();
+        const txAt = new Date();
+        await BeneficiaryService.add(
+            users[15].address,
+            communities[0].publicId,
+            tx,
+            txAt
+        );
+
+        //
+        assert.callCount(spyBeneficiaryAdd, 1);
+        assert.calledWith(spyBeneficiaryAdd.getCall(0), {
+            address: users[15].address,
+            communityId: communities[0].publicId,
+            tx,
+            txAt,
+        });
+        //
+        assert.callCount(spyBeneficiaryRegistryAdd, 1);
+        assert.calledWith(spyBeneficiaryRegistryAdd.getCall(0), {
+            address: users[15].address,
+            communityId: communities[0].id,
+            activity: UbiBeneficiaryRegistryType.add,
+            tx,
+            txAt,
+        });
+        //
+        spyBeneficiaryAdd.restore();
+        spyBeneficiaryRegistryAdd.restore();
+    });
+
+    it('remove from public community', async () => {
+        const spyBeneficiaryRegistryAdd = spy(
+            models.ubiBeneficiaryRegistry,
+            'create'
+        );
+        const spyBeneficiaryUpdate = spy(models.beneficiary, 'update');
+        // add
+        await BeneficiaryService.add(
+            users[15].address,
+            communities[0].publicId,
+            randomTx(),
+            new Date()
+        );
+        const tx = randomTx();
+        const txAt = new Date();
+        await BeneficiaryService.remove(
+            users[15].address,
+            communities[0].publicId,
+            tx,
+            txAt
+        );
+
+        //
+        assert.callCount(spyBeneficiaryUpdate, 1);
+        assert.calledWith(
+            spyBeneficiaryUpdate.getCall(0),
+            {
+                active: false,
+            },
+            {
+                where: {
+                    address: users[15].address,
+                    communityId: communities[0].publicId,
+                },
+            }
+        );
+        //
+        assert.callCount(spyBeneficiaryRegistryAdd, 1);
+        assert.calledWith(spyBeneficiaryRegistryAdd.getCall(0), {
+            address: users[15].address,
+            communityId: communities[0].id,
+            activity: UbiBeneficiaryRegistryType.remove,
+            tx,
+            txAt,
+        });
+        //
+        spyBeneficiaryUpdate.restore();
+        spyBeneficiaryRegistryAdd.restore();
     });
 
     describe('search', () => {

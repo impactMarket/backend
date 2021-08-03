@@ -162,6 +162,7 @@ describe('[jobs] subscribers', () => {
     });
 
     after(() => {
+        beneficiaryAdd.restore();
         provider.removeAllListeners();
     });
 
@@ -297,7 +298,6 @@ describe('[jobs] subscribers', () => {
                 match.any,
                 match.any
             );
-            // TODO: verify user registry was also called
         });
     });
 
@@ -334,8 +334,13 @@ describe('[jobs] subscribers', () => {
             await communityContract.removeBeneficiary(accounts[5]);
             await waitForStubCall(beneficiaryRemove, 1);
             assert.callCount(beneficiaryRemove, 1);
-            assert.calledWith(beneficiaryRemove.getCall(0), accounts[5]);
-            // TODO: verify user registry was also called
+            assert.calledWith(
+                beneficiaryRemove.getCall(0),
+                accounts[5],
+                thisCommunityPublicId,
+                match.any,
+                match.any
+            );
         });
     });
 
