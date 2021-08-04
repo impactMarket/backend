@@ -6,7 +6,7 @@ module.exports = {
         }
 
         await queryInterface.sequelize.query(
-            'DROP TRIGGER update_beneficiaries_community_states ON claim;'
+            'DROP TRIGGER update_claim_states ON claim;'
         );
         await queryInterface.renameColumn(
             'claim',
