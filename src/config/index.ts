@@ -220,4 +220,6 @@ export default {
     hasRedisTls: validatedEnv.HAS_REDIS_TLS,
 
     internalNotifications: validatedEnv.INTERNAL_NOTIFICATIONS,
+
+    maxRequestPerUser: validatedEnv.MAX_REQUEST_PER_USER,
 };

@@ -74,6 +74,7 @@ function validateEnv() {
         INTERNAL_EMAIL_TO_NOTIFY: str({ default: 'none@none.none' }),
         HAS_REDIS_TLS: bool({ default: true }),
         INTERNAL_NOTIFICATIONS: bool({ default: false }),
+        MAX_REQUEST_PER_USER: num({ default: 900 }),
     });
 }
 

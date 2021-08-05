@@ -1,9 +1,12 @@
 // import { Logger } from '@utils/logger';
 import { RequestWithUser, UserInRequest } from '@ipcttypes/core';
 import { Response, NextFunction, Request } from 'express';
+import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
+import redisStore from 'rate-limit-redis';
 
 import config from '../../config';
+import { redisClient } from '../../database';
 
 export function authenticateToken(
     req: RequestWithUser,
@@ -84,3 +87,13 @@ export function adminAuthentication(
         next(); // pass the execution off to whatever request the client intended
     });
 }
+
+export const rateLimiter = rateLimit({
+    max: config.maxRequestPerUser,
+    message: `You have exceeded the ${config.maxRequestPerUser} requests in 15 minutes limit!`,
+    headers: true,
+    store: new redisStore({
+        client: redisClient,
+        expiry: 900, // 15 minutes in seconds
+    }),
+});
