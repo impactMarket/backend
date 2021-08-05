@@ -9,6 +9,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
 import config from '../config';
+import { rateLimiter } from './middlewares';
 import routes from './routes';
 
 export default (app: express.Application): void => {
@@ -139,6 +140,9 @@ export default (app: express.Application): void => {
     // Middleware that transforms the raw string of req.body into json
     app.use(express.json());
     // app.use(express.urlencoded({ extended: true }));
+
+    app.use(rateLimiter);
+
     // Load API routes
     app.use(config.api.prefix, routes());
 
