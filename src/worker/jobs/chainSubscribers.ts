@@ -241,8 +241,12 @@ class ChainSubscribers {
             notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
             try {
                 const txAt = await getBlockTime(log.blockHash);
+                const txResponse = await this.provider.getTransaction(
+                    log.transactionHash
+                );
                 await BeneficiaryService.add(
                     beneficiaryAddress,
+                    txResponse.from,
                     communityPublicId!,
                     log.transactionHash,
                     txAt
@@ -254,8 +258,12 @@ class ChainSubscribers {
             const communityAddress = log.address;
             try {
                 const txAt = await getBlockTime(log.blockHash);
+                const txResponse = await this.provider.getTransaction(
+                    log.transactionHash
+                );
                 await BeneficiaryService.remove(
                     beneficiaryAddress,
+                    txResponse.from,
                     this.communities.get(communityAddress)!,
                     log.transactionHash,
                     txAt

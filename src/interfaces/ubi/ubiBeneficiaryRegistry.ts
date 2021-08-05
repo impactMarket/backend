@@ -8,6 +8,7 @@ export enum UbiBeneficiaryRegistryType {
 export interface UbiBeneficiaryRegistry {
     id: number;
     address: string;
+    from: string;
     communityId: number;
     activity: UbiBeneficiaryRegistryType;
     tx: string;
@@ -15,6 +16,7 @@ export interface UbiBeneficiaryRegistry {
 }
 export interface UbiBeneficiaryRegistryCreation {
     address: string;
+    from: string;
     communityId: number;
     activity: UbiBeneficiaryRegistryType;
     tx: string;

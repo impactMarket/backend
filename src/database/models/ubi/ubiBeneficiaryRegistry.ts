@@ -11,6 +11,7 @@ export class UbiBeneficiaryRegistryModel extends Model<
 > {
     public id!: number;
     public address!: string;
+    public from!: string;
     public communityId!: number;
     public activity!: UbiBeneficiaryRegistryType;
     public tx!: string;
@@ -26,6 +27,15 @@ export function initializeUbiBeneficiaryRegistry(sequelize: Sequelize): void {
                 primaryKey: true,
             },
             address: {
+                type: DataTypes.STRING(44),
+                references: {
+                    model: 'user',
+                    key: 'address',
+                },
+                onDelete: 'RESTRICT',
+                allowNull: false,
+            },
+            from: {
                 type: DataTypes.STRING(44),
                 references: {
                     model: 'user',

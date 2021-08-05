@@ -19,6 +19,7 @@ import CommunityService from './community';
 export default class BeneficiaryService {
     public static async add(
         address: string,
+        from: string,
         communityId: string,
         tx: string,
         txAt: Date
@@ -37,6 +38,7 @@ export default class BeneficiaryService {
             await models.beneficiary.create(beneficiaryData);
             await this._addRegistry({
                 address,
+                from,
                 communityId: community!.id,
                 activity: UbiBeneficiaryRegistryType.add,
                 tx,
@@ -56,6 +58,7 @@ export default class BeneficiaryService {
 
     public static async remove(
         address: string,
+        from: string,
         communityId: string,
         tx: string,
         txAt: Date
@@ -70,6 +73,7 @@ export default class BeneficiaryService {
         );
         await this._addRegistry({
             address,
+            from,
             communityId: community!.id,
             activity: UbiBeneficiaryRegistryType.remove,
             tx,

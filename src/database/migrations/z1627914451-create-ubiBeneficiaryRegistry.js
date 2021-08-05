@@ -18,6 +18,15 @@ module.exports = {
                 onDelete: 'RESTRICT',
                 allowNull: false,
             },
+            from: {
+                type: Sequelize.STRING(44),
+                references: {
+                    model: 'user',
+                    key: 'address',
+                },
+                onDelete: 'RESTRICT',
+                allowNull: false,
+            },
             communityId: {
                 type: Sequelize.INTEGER,
                 references: {
