@@ -28,6 +28,14 @@ describe('beneficiary service', () => {
     let communities: CommunityAttributes[];
     let managers: ManagerAttributes[];
     let beneficiaries: BeneficiaryAttributes[];
+
+    const spyBeneficiaryRegistryAdd = spy(
+        models.ubiBeneficiaryRegistry,
+        'create'
+    );
+    const spyBeneficiaryAdd = spy(models.beneficiary, 'create');
+    const spyBeneficiaryUpdate = spy(models.beneficiary, 'update');
+
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
@@ -62,6 +70,9 @@ describe('beneficiary service', () => {
         await truncate(sequelize, 'UbiBeneficiaryRegistryModel');
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize);
+        //
+        spyBeneficiaryAdd.restore();
+        spyBeneficiaryRegistryAdd.restore();
     });
 
     it('order by suspicious activity', async () => {
@@ -148,16 +159,14 @@ describe('beneficiary service', () => {
     });
 
     it('add to public community', async () => {
-        const spyBeneficiaryRegistryAdd = spy(
-            models.ubiBeneficiaryRegistry,
-            'create'
-        );
-        const spyBeneficiaryAdd = spy(models.beneficiary, 'create');
+        spyBeneficiaryAdd.resetHistory();
+        spyBeneficiaryRegistryAdd.resetHistory();
         // add
         const tx = randomTx();
         const txAt = new Date();
         await BeneficiaryService.add(
             users[15].address,
+            users[0].address,
             communities[0].publicId,
             tx,
             txAt
@@ -175,25 +184,21 @@ describe('beneficiary service', () => {
         assert.callCount(spyBeneficiaryRegistryAdd, 1);
         assert.calledWith(spyBeneficiaryRegistryAdd.getCall(0), {
             address: users[15].address,
+            from: users[0].address,
             communityId: communities[0].id,
             activity: UbiBeneficiaryRegistryType.add,
             tx,
             txAt,
         });
-        //
-        spyBeneficiaryAdd.restore();
-        spyBeneficiaryRegistryAdd.restore();
     });
 
     it('remove from public community', async () => {
-        const spyBeneficiaryRegistryAdd = spy(
-            models.ubiBeneficiaryRegistry,
-            'create'
-        );
-        const spyBeneficiaryUpdate = spy(models.beneficiary, 'update');
+        spyBeneficiaryUpdate.resetHistory();
+        spyBeneficiaryRegistryAdd.resetHistory();
         // add
         await BeneficiaryService.add(
             users[15].address,
+            users[0].address,
             communities[0].publicId,
             randomTx(),
             new Date()
@@ -202,6 +207,7 @@ describe('beneficiary service', () => {
         const txAt = new Date();
         await BeneficiaryService.remove(
             users[15].address,
+            users[0].address,
             communities[0].publicId,
             tx,
             txAt
@@ -225,14 +231,12 @@ describe('beneficiary service', () => {
         assert.callCount(spyBeneficiaryRegistryAdd, 1);
         assert.calledWith(spyBeneficiaryRegistryAdd.getCall(0), {
             address: users[15].address,
+            from: users[0].address,
             communityId: communities[0].id,
             activity: UbiBeneficiaryRegistryType.remove,
             tx,
             txAt,
         });
-        //
-        spyBeneficiaryUpdate.restore();
-        spyBeneficiaryRegistryAdd.restore();
     });
 
     describe('search', () => {

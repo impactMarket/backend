@@ -1,7 +1,7 @@
-import { SinonStub } from 'sinon';
+import { SinonSpy, SinonStub } from 'sinon';
 
 export async function waitForStubCall(
-    stub: SinonStub<any, any>,
+    stub: SinonStub<any, any> | SinonSpy<any, any>,
     callNumber: number
 ) {
     return new Promise((resolve) => {
