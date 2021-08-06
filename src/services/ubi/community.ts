@@ -1,4 +1,5 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
+import { UbiCommunityCampaign } from '@interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
 import { UbiCommunityLabel } from '@interfaces/ubi/ubiCommunityLabel';
@@ -59,6 +60,7 @@ export default class CommunityService {
     public static ubiPromoter = models.ubiPromoter;
     public static ubiPromoterSocialMedia = models.ubiPromoterSocialMedia;
     public static ubiCommunityLabels = models.ubiCommunityLabels;
+    public static ubiCommunityCampaign = models.ubiCommunityCampaign;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static sequelize = sequelize;
@@ -414,7 +416,9 @@ export default class CommunityService {
         if (query.country) {
             extendedWhere = {
                 ...extendedWhere,
-                country: query.country,
+                country: {
+                    [Op.in]: query.country.split(';'),
+                },
             };
         }
 
@@ -689,6 +693,17 @@ export default class CommunityService {
             },
         });
         return result !== null ? (result.toJSON() as UbiCommunityState) : null;
+    }
+
+    public static async getCampaign(communityId: number) {
+        const result = await this.ubiCommunityCampaign.findOne({
+            where: {
+                communityId,
+            },
+        });
+        return result !== null
+            ? (result.toJSON() as UbiCommunityCampaign)
+            : null;
     }
 
     public static async getMetrics(communityId: number) {

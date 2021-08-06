@@ -4,6 +4,7 @@ import tk from 'timekeeper';
 
 import { models } from '../../../../src/database';
 import { BeneficiaryAttributes } from '../../../../src/database/models/ubi/beneficiary';
+import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { User } from '../../../../src/interfaces/app/user';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import BeneficiaryFactory from '../../../factories/beneficiary';
@@ -87,7 +88,7 @@ describe('calcuateCommunitiesMetrics', () => {
         afterEach(async () => {
             // this two has to come first!
             await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
+            await truncate(sequelize, 'UbiClaimModel');
             await truncate(sequelize, 'BeneficiaryTransaction');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'UserModel');
@@ -603,7 +604,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
         after(async () => {
             await truncate(sequelize, 'Inflow');
-            await truncate(sequelize, 'Claim');
+            await truncate(sequelize, 'UbiClaimModel');
             await truncate(sequelize, 'BeneficiaryTransaction');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'UserModel');

@@ -30,7 +30,6 @@ import { initializeStoryUserReport } from './story/storyUserReport';
 // import { initializeTransactions } from './transactions';
 import { initializeBeneficiary } from './ubi/beneficiary';
 import { initializeBeneficiaryTransaction } from './ubi/beneficiaryTransaction';
-import { initializeClaim } from './ubi/claim';
 import { initializeCommunity } from './ubi/community';
 import { initializeUbiCommunityContract } from './ubi/communityContract';
 import { initializeUbiCommunityDailyMetrics } from './ubi/communityDailyMetrics';
@@ -41,7 +40,9 @@ import { initializeInflow } from './ubi/inflow';
 import { initializeManager } from './ubi/manager';
 import { initializeUbiRequestChangeParams } from './ubi/requestChangeParams';
 import { initializeUbiBeneficiaryRegistry } from './ubi/ubiBeneficiaryRegistry';
+import { initializeUbiClaim } from './ubi/ubiClaim';
 import { initializeUbiClaimLocation } from './ubi/ubiClaimLocation';
+import { initializeUbiCommunityCampaign } from './ubi/ubiCommunityCampaign';
 import { initializeUbiCommunityLabel } from './ubi/ubiCommunityLabel';
 import { initializeUbiCommunityPromoter } from './ubi/ubiCommunityPromoter';
 import { initializeUbiCommunitySuspect } from './ubi/ubiCommunitySuspect';
@@ -77,12 +78,13 @@ export default function initModels(sequelize: Sequelize): void {
     initializeBeneficiary(sequelize);
     initializeUbiBeneficiaryRegistry(sequelize);
     initializeBeneficiaryTransaction(sequelize);
-    initializeClaim(sequelize);
+    initializeUbiClaim(sequelize);
     initializeInflow(sequelize);
     initializeUbiCommunityPromoter(sequelize);
     initializeUbiPromoter(sequelize);
     initializeUbiPromoterSocialMedia(sequelize);
     initializeUbiCommunityLabel(sequelize);
+    initializeUbiCommunityCampaign(sequelize);
 
     // others
     initializeNotifiedBacker(sequelize);

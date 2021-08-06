@@ -13,6 +13,7 @@ import { ethers } from 'ethers';
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
+import { models } from '../../database';
 
 /* istanbul ignore next */
 function asyncTxsFailure(error: any) {
@@ -26,7 +27,8 @@ class ChainSubscribers {
     ifaceERC20: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
     allCommunitiesAddresses: string[];
-    communities: Map<string, string>;
+    communities: Map<string, string>; // TODO: to be removed
+    communitiesId: Map<string, number>;
     beneficiariesInPublicCommunities: string[];
     isCommunityPublic: Map<string, boolean>;
     filterTopics: string[][];
@@ -35,6 +37,7 @@ class ChainSubscribers {
         provider: ethers.providers.JsonRpcProvider,
         beneficiariesInPublicCommunities: string[],
         communities: Map<string, string>, // <address, publicId>
+        communitiesId: Map<string, number>, // <address, id>
         isCommunityPublic: Map<string, boolean> // true if public community
     ) {
         this.provider = provider;
@@ -44,6 +47,7 @@ class ChainSubscribers {
         this.beneficiariesInPublicCommunities =
             beneficiariesInPublicCommunities;
         this.communities = communities;
+        this.communitiesId = communitiesId;
         this.allCommunitiesAddresses = Array.from(communities.keys());
         this.isCommunityPublic = isCommunityPublic;
         this.filterTopics = [
@@ -271,17 +275,13 @@ class ChainSubscribers {
             } catch (e) {}
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryClaim') {
-            const beneficiaryAddress = parsedLog.args[0];
-            const amount = parsedLog.args[1];
-            const communityId = this.communities.get(log.address)!;
-            const txAt = await getBlockTime(log.blockHash);
-            await ClaimsService.add(
-                beneficiaryAddress,
-                communityId,
-                amount,
-                log.transactionHash,
-                txAt
-            );
+            await ClaimsService.add({
+                address: parsedLog.args[0],
+                communityId: this.communitiesId.get(log.address)!,
+                amount: parsedLog.args[1],
+                tx: log.transactionHash,
+                txAt: await getBlockTime(log.blockHash),
+            });
             result = parsedLog;
         } else if (parsedLog.name === 'ManagerAdded') {
             // new managers in existing community
@@ -325,7 +325,7 @@ class ChainSubscribers {
                 const managerAddress = parsedLog.args[0];
                 const communityAddress = log.address;
                 if (this.allCommunitiesAddresses.includes(communityAddress)) {
-                    ManagerService.add(
+                    await ManagerService.add(
                         managerAddress,
                         this.communities.get(communityAddress)!
                     );
@@ -340,7 +340,7 @@ class ChainSubscribers {
                         // in case new manager means new community
                         const communityId =
                             communityAddressesAndIds.get(communityAddress)!;
-                        ManagerService.add(managerAddress, communityId);
+                        await ManagerService.add(managerAddress, communityId);
                         const community =
                             await CommunityService.getOnlyCommunityByContractAddress(
                                 communityAddress
@@ -354,7 +354,16 @@ class ChainSubscribers {
                                 communityAddress,
                                 community.visibility === 'public'
                             );
+                            const findCommunity =
+                                await models.community.findOne({
+                                    attributes: ['id'],
+                                    where: { publicId: communityId },
+                                });
                             this.communities.set(communityAddress, communityId);
+                            this.communitiesId.set(
+                                communityAddress,
+                                findCommunity!.id
+                            );
                             this.allCommunitiesAddresses.push(communityAddress);
                         }
                     } else {
@@ -426,7 +435,7 @@ class ChainSubscribers {
         } catch (e) {
             // as this else catch events from anywhere, it might catch unwanted events
             if (e.reason !== 'no matching event') {
-                Logger.error(e);
+                Logger.error('no matching event ' + e);
             }
         }
     }

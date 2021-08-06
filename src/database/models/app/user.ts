@@ -13,6 +13,7 @@ export class UserModel extends Model<User, UserCreationAttributes> {
     public children!: number | null;
     public lastLogin!: Date;
     public suspect!: boolean;
+    public active!: boolean;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -69,6 +70,11 @@ export function initializeUser(sequelize: Sequelize): typeof UserModel {
             suspect: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: false,
+                allowNull: false,
+            },
+            active: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: true,
                 allowNull: false,
             },
             createdAt: {

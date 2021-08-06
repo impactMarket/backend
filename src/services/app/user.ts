@@ -27,12 +27,23 @@ export default class UserService {
     private static profileContentStorage = new ProfileContentStorage();
 
     public static async authenticate(
-        user: UserCreationAttributes
+        user: UserCreationAttributes,
+        overwrite: boolean = false
     ): Promise<IUserAuth> {
         try {
             // generate access token for future interactions that require authentication
             const token = generateAccessToken(user.address);
             const exists = await this.exists(user.address);
+            const existsPhone = user.trust?.phone
+                ? await this.existsAccountByPhone(user.trust.phone)
+                : false;
+
+            if (overwrite) {
+                await this.overwriteUser(user);
+            } else if (!exists && existsPhone) {
+                throw 'phone associated with another account';
+            }
+
             let userFromRegistry: User;
             if (!exists) {
                 // create new user, including their phone number information
@@ -76,6 +87,11 @@ export default class UserService {
                     where: { address: user.address },
                 }))!.toJSON() as User;
             }
+
+            if (!userFromRegistry.active) {
+                throw 'user inactive';
+            }
+
             const userHello = await this.loadUser(userFromRegistry);
             return {
                 token,
@@ -85,6 +101,57 @@ export default class UserService {
         } catch (e) {
             Logger.warn(`Error while auth user ${user.address} ${e}`);
             throw new Error(e);
+        }
+    }
+
+    public static async overwriteUser(user: UserCreationAttributes) {
+        try {
+            const usersToInactive = await this.user.findAll({
+                include: [
+                    {
+                        model: this.appUserTrust,
+                        as: 'trust',
+                        where: {
+                            phone: user.trust?.phone,
+                        },
+                    },
+                ],
+                where: {
+                    address: {
+                        [Op.not]: user.address,
+                    },
+                },
+            });
+
+            const promises = usersToInactive.map((el) =>
+                this.user.update(
+                    {
+                        active: false,
+                    },
+                    {
+                        where: {
+                            address: el.address,
+                        },
+                    }
+                )
+            );
+
+            promises.push(
+                this.user.update(
+                    {
+                        active: true,
+                    },
+                    {
+                        where: {
+                            address: user.address,
+                        },
+                    }
+                )
+            );
+
+            await Promise.all(promises);
+        } catch (error) {
+            throw new Error(error);
         }
     }
 
@@ -311,6 +378,24 @@ export default class UserService {
         const exists = await this.user.findOne({
             attributes: ['address'],
             where: { address },
+            raw: true,
+        });
+        return exists !== null;
+    }
+
+    public static async existsAccountByPhone(phone: string): Promise<boolean> {
+        const exists = await this.appUserTrust.findOne({
+            attributes: ['phone'],
+            where: { phone },
+            include: [
+                {
+                    model: this.user,
+                    as: 'throughTrust',
+                    where: {
+                        active: true,
+                    },
+                },
+            ],
             raw: true,
         });
         return exists !== null;

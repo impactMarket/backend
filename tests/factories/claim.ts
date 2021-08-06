@@ -1,9 +1,7 @@
 import { BeneficiaryAttributes } from '../../src/database/models/ubi/beneficiary';
-import {
-    Claim,
-    ClaimCreationAttributes,
-} from '../../src/database/models/ubi/claim';
 import { CommunityAttributes } from '../../src/database/models/ubi/community';
+import { UbiClaimModel } from '../../src/database/models/ubi/ubiClaim';
+import { UbiClaimCreation } from '../../src/interfaces/ubi/ubiClaim';
 import { randomTx } from '../utils/utils';
 /**
  * Generate an object which container attributes needed
@@ -17,10 +15,10 @@ const data = async (
     beneficiary: BeneficiaryAttributes,
     community: CommunityAttributes
 ) => {
-    const defaultProps: ClaimCreationAttributes = {
+    const defaultProps: UbiClaimCreation = {
         address: beneficiary.address,
         amount: community.contract!.claimAmount,
-        communityId: community.publicId,
+        communityId: community.id,
         tx: randomTx(),
         txAt: new Date(),
     };
@@ -37,6 +35,6 @@ const ClaimFactory = async (
     beneficiary: BeneficiaryAttributes,
     community: CommunityAttributes
 ) => {
-    return await Claim.create(await data(beneficiary, community));
+    return await UbiClaimModel.create(await data(beneficiary, community));
 };
 export default ClaimFactory;

@@ -363,7 +363,7 @@ export default (app: Router): void => {
      *         schema:
      *           type: string
      *         required: false
-     *         description: communities country (identifier, like PT for Portugal) to search
+     *         description: communities country (identifier, like PT for Portugal) to search, separated by ; (PT;FR)
      *       - in: query
      *         name: filter
      *         schema:
@@ -709,6 +709,35 @@ export default (app: Router): void => {
      *               $ref: '#/components/schemas/UbiCommunityDailyMetrics'
      */
     route.get('/:id/metrics', cacheWithRedis('1 hour'), controller.getMetrics);
+
+    /**
+     * @swagger
+     *
+     * /community/{id}/campaign:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community campaign
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityCampaign'
+     */
+    route.get(
+        '/:id/campaign',
+        cacheWithRedis('1 hour'),
+        controller.getCampaign
+    );
 
     /**
      * @swagger

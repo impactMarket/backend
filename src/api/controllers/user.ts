@@ -23,22 +23,28 @@ class UserController {
             year,
             children,
             avatarMediaId,
+            overwrite,
         } = req.body;
-        UserService.authenticate({
-            address,
-            language,
-            currency,
-            pushNotificationToken,
-            username,
-            year,
-            children,
-            avatarMediaId,
-            trust: {
-                phone,
+        UserService.authenticate(
+            {
+                address,
+                language,
+                currency,
+                pushNotificationToken,
+                username,
+                year,
+                children,
+                avatarMediaId,
+                trust: {
+                    phone,
+                },
             },
-        })
+            overwrite
+        )
             .then((user) => standardResponse(res, 201, true, user))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 
     public welcome = (req: RequestWithUser, res: Response) => {

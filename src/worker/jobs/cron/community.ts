@@ -168,7 +168,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 required: false,
                 include: [
                     {
-                        model: models.claim,
+                        model: models.ubiClaim,
                         as: 'claim',
                         attributes: [],
                         required: false,
@@ -209,7 +209,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 required: false,
                 include: [
                     {
-                        model: models.claim,
+                        model: models.ubiClaim,
                         as: 'claim',
                         attributes: [],
                         required: false,
@@ -434,7 +434,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 required: false,
                 include: [
                     {
-                        model: models.claim,
+                        model: models.ubiClaim,
                         as: 'claim',
                         attributes: [],
                         required: false,

@@ -165,6 +165,13 @@ export default class GlobalDailyStateService {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
 
+        const communitiesId = (
+            await models.community.findAll({
+                attributes: ['id'],
+                where: { status: 'valid', visibility: 'public' },
+            })
+        ).map((c) => c.id);
+
         const communitiesPublicId = (
             await models.community.findAll({
                 attributes: ['publicId'],
@@ -172,13 +179,13 @@ export default class GlobalDailyStateService {
             })
         ).map((c) => c.publicId);
 
-        const claimed: any = await models.claim.findAll({
+        const claimed: any = await models.ubiClaim.findAll({
             attributes: [
                 [fn('coalesce', fn('sum', col('amount')), '0'), 'totalClaimed'],
             ],
             where: {
                 txAt: { [Op.gte]: today },
-                communityId: { [Op.in]: communitiesPublicId },
+                communityId: { [Op.in]: communitiesId },
             },
             raw: true,
         });
@@ -198,8 +205,11 @@ export default class GlobalDailyStateService {
             where: {
                 txAt: { [Op.gte]: today },
                 communityId: { [Op.in]: communitiesPublicId },
+                active: true,
             },
         });
+
+        // TODO: subtract removed
 
         return {
             totalClaimed: claimed[0].totalClaimed,
