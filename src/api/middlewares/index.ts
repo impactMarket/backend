@@ -92,8 +92,14 @@ export const rateLimiter = rateLimit({
     max: config.maxRequestPerUser,
     message: `You have exceeded the ${config.maxRequestPerUser} requests in 15 minutes limit!`,
     headers: true,
-    store: new redisStore({
-        client: redisClient,
-        expiry: 900, // 15 minutes in seconds
-    }),
+    ...(process.env.NODE_ENV === 'test'
+        ? {
+              windowMs: 900000, // 15 minutes in milliseconds
+          }
+        : {
+              store: new redisStore({
+                  client: redisClient,
+                  expiry: 900, // 15 minutes in seconds
+              }),
+          }),
 });
