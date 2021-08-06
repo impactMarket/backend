@@ -1,7 +1,6 @@
 import ImMetadataService from '@services/app/imMetadata';
 // import TransactionsService from '@services/transactions';
 import BeneficiaryService from '@services/ubi/beneficiary';
-import BeneficiaryTransactionService from '@services/ubi/beneficiaryTransaction';
 import ClaimsService from '@services/ubi/claim';
 import CommunityService from '@services/ubi/community';
 import CommunityContractService from '@services/ubi/communityContract';
@@ -195,7 +194,7 @@ class ChainSubscribers {
                 ? parsedLog.args[1]
                 : parsedLog.args[0];
             // save to table to calculate txs and volume
-            await BeneficiaryTransactionService.add({
+            await BeneficiaryService.addTransaction({
                 beneficiary: beneficiaryAddress,
                 withAddress,
                 amount: parsedLog.args[2].toString(),
@@ -216,8 +215,8 @@ class ChainSubscribers {
         if (parsedLog.name === 'BeneficiaryAdded') {
             const beneficiaryAddress = parsedLog.args[0];
             const communityAddress = log.address;
-            let communityId = this.communities.get(communityAddress);
-            if (communityId === undefined) {
+            let communityPublicId = this.communities.get(communityAddress);
+            if (communityPublicId === undefined) {
                 // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
                 const community =
                     await CommunityService.getOnlyCommunityByContractAddress(
@@ -234,7 +233,7 @@ class ChainSubscribers {
                     );
                     this.communities.set(communityAddress, community.publicId);
                     this.allCommunitiesAddresses.push(communityAddress);
-                    communityId = community.publicId;
+                    communityPublicId = community.publicId;
                 }
             }
             const isThisCommunityPublic =
@@ -246,9 +245,13 @@ class ChainSubscribers {
             notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
             try {
                 const txAt = await getBlockTime(log.blockHash);
+                const txResponse = await this.provider.getTransaction(
+                    log.transactionHash
+                );
                 await BeneficiaryService.add(
                     beneficiaryAddress,
-                    communityId!,
+                    txResponse.from,
+                    communityPublicId!,
                     log.transactionHash,
                     txAt
                 );
@@ -257,10 +260,19 @@ class ChainSubscribers {
         } else if (parsedLog.name === 'BeneficiaryRemoved') {
             const beneficiaryAddress = parsedLog.args[0];
             const communityAddress = log.address;
-            await BeneficiaryService.remove(
-                beneficiaryAddress,
-                this.communities.get(communityAddress)!
-            );
+            try {
+                const txAt = await getBlockTime(log.blockHash);
+                const txResponse = await this.provider.getTransaction(
+                    log.transactionHash
+                );
+                await BeneficiaryService.remove(
+                    beneficiaryAddress,
+                    txResponse.from,
+                    this.communities.get(communityAddress)!,
+                    log.transactionHash,
+                    txAt
+                );
+            } catch (e) {}
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryClaim') {
             await ClaimsService.add({

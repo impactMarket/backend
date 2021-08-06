@@ -1,14 +1,14 @@
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 // import { Transaction } from 'sequelize';
-import { stub, assert, match, SinonStub } from 'sinon';
+import { stub, assert, match, SinonStub, spy, SinonSpy } from 'sinon';
 import { models } from '../../../src/database';
 
+// import { Beneficiary } from '../../../src/database/models/ubi/beneficiary';
 import { Community } from '../../../src/database/models/ubi/community';
 import ImMetadataService from '../../../src/services/app/imMetadata';
-import TransactionsService from '../../../src/services/transactions';
+// import TransactionsService from '../../../src/services/transactions';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
-import BeneficiaryTransactionService from '../../../src/services/ubi/beneficiaryTransaction';
 import ClaimsService from '../../../src/services/ubi/claim';
 import CommunityService from '../../../src/services/ubi/community';
 import CommunityContractService from '../../../src/services/ubi/communityContract';
@@ -30,13 +30,14 @@ describe('[jobs] subscribers', () => {
     const communitiesVisibility = new Map<string, boolean>();
     let accounts: string[] = [];
     let beneficiaryAdd: SinonStub<any, any>;
-    let beneficiaryTransactionAdd: SinonStub<any, any>;
+    let beneficiaryTransactionAdd: SinonStub<[any], Promise<void>>;
     let beneficiaryRemove: SinonStub<any, any>;
     let claimAdd: SinonStub<any, any>;
     let managerAdd: SinonStub<any, any>;
     let communityEdit: SinonStub<any, any>;
     let managerRemove: SinonStub<any, any>;
     let inflowAdd: SinonStub<any, any>;
+    let imMetadataRemoveRecoverSpy: SinonSpy<[], Promise<void>>;
     // let beneficiaryAdd: SinonStub<
     //     [address: string, communityId: string, tx: string, txAt: Date],
     //     Promise<boolean>
@@ -86,17 +87,14 @@ describe('[jobs] subscribers', () => {
         stub(utils, 'getBlockTime').returns(Promise.resolve(blockTimeDate));
         beneficiaryAdd = stub(BeneficiaryService, 'add');
         beneficiaryAdd.returns(Promise.resolve(true));
-        beneficiaryTransactionAdd = stub(BeneficiaryTransactionService, 'add');
+        beneficiaryTransactionAdd = stub(BeneficiaryService, 'addTransaction');
         beneficiaryTransactionAdd.returns(Promise.resolve());
         beneficiaryRemove = stub(BeneficiaryService, 'remove');
         beneficiaryRemove.returns(Promise.resolve());
         inflowAdd = stub(InflowService, 'add');
         inflowAdd.returns(Promise.resolve());
         // stub(BeneficiaryService, 'getAllAddresses').returns(Promise.resolve(accounts.slice(5, 9)));
-        stub(
-            BeneficiaryService,
-            'getAllAddressesInPublicValidCommunities'
-        ).returns(Promise.resolve([]));
+        // stub(Beneficiary, 'findAll').returns(Promise.resolve([]));
         stub(ImMetadataService, 'setLastBlock').callsFake(async (v) => {
             lastBlock = v;
         });
@@ -110,7 +108,7 @@ describe('[jobs] subscribers', () => {
         getRecoverBlockStub = stub(ImMetadataService, 'getRecoverBlock');
         getLastBlockStub.returns(Promise.resolve(lastBlock));
         getRecoverBlockStub.returns(Promise.resolve(lastBlock));
-        stub(TransactionsService, 'add').returns(Promise.resolve({} as any));
+        // stub(TransactionsService, 'add').returns(Promise.resolve({} as any));
         claimAdd = stub(ClaimsService, 'add');
         claimAdd.returns(Promise.resolve());
         managerAdd = stub(ManagerService, 'add');
@@ -150,27 +148,10 @@ describe('[jobs] subscribers', () => {
         getAllAddressesAndIds.returns(
             Promise.resolve(communityAddressesAndIds)
         );
-        // init factories
-        const cUSDFactory = new ethers.ContractFactory(
-            cUSDContractJSON.abi,
-            cUSDContractJSON.bytecode,
-            provider.getSigner(0)
+        imMetadataRemoveRecoverSpy = spy(
+            ImMetadataService,
+            'removeRecoverBlock'
         );
-        communityFactory = new ethers.ContractFactory(
-            CommunityContractJSON.abi,
-            CommunityContractJSON.bytecode,
-            provider.getSigner(0)
-        );
-        cUSD = await cUSDFactory.deploy();
-        // init event subscribers
-        subscribers = new ChainSubscribers(
-            provider,
-            [],
-            communities,
-            communitiesId,
-            communitiesVisibility
-        );
-        //
         stub(CommunityService, 'getOnlyCommunityByContractAddress').returns(
             Promise.resolve({
                 id: thisCommunityId,
@@ -193,9 +174,29 @@ describe('[jobs] subscribers', () => {
                 updatedAt: new Date(),
             } as Community)
         );
+        // init factories
+        const cUSDFactory = new ethers.ContractFactory(
+            cUSDContractJSON.abi,
+            cUSDContractJSON.bytecode,
+            provider.getSigner(0)
+        );
+        communityFactory = new ethers.ContractFactory(
+            CommunityContractJSON.abi,
+            CommunityContractJSON.bytecode,
+            provider.getSigner(0)
+        );
+        cUSD = await cUSDFactory.deploy();
+        // // init event subscribers
+        // subscribers = new ChainSubscribers(
+        //     provider,
+        //     [],
+        //     communities,
+        //     communitiesVisibility
+        // );
     });
 
     after(() => {
+        beneficiaryAdd.restore();
         provider.removeAllListeners();
     });
 
@@ -204,7 +205,9 @@ describe('[jobs] subscribers', () => {
         getLastBlockStub.returns(Promise.resolve(lastBlock));
         getRecoverBlockStub.returns(Promise.resolve(lastBlock));
         // stop previous listeners
-        subscribers.stop();
+        if (subscribers !== undefined) {
+            subscribers.stop();
+        }
         // create new object
         subscribers = new ChainSubscribers(
             provider,
@@ -296,374 +299,356 @@ describe('[jobs] subscribers', () => {
         });
     });
 
-    context('add beneficiary', () => {
-        it('to public valid community', async () => {
-            // deploy a community
-            communityContract = (
-                await communityFactory.deploy(
-                    accounts[1],
-                    '2000000000000000000',
-                    '1500000000000000000000',
-                    86400,
-                    300,
-                    '0x0000000000000000000000000000000000000000',
-                    cUSD.address,
-                    '0x0000000000000000000000000000000000000000'
-                )
-            ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityPublicId);
-            communitiesId.set(communityContract.address, thisCommunityId);
-            communitiesVisibility.set(communityContract.address, true);
-            const newCommunityAddressesAndIds = new Map([
-                ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityPublicId],
-            ]);
-            getAllAddressesAndIds.returns(
-                Promise.resolve(newCommunityAddressesAndIds)
-            );
-            await cUSD
-                .connect(provider.getSigner(0))
-                .testFakeFundAddress(communityContract.address);
-            //
-            await communityContract.addBeneficiary(accounts[5]);
-            await waitForStubCall(beneficiaryAdd, 1);
-            assert.callCount(beneficiaryAdd, 1);
-            assert.calledWith(
-                beneficiaryAdd.getCall(0),
-                accounts[5],
-                thisCommunityPublicId,
-                match.any,
-                match.any
-            );
-        });
-    });
-
-    context('remove beneficiary', () => {
-        it('from public valid community', async () => {
-            // deploy a community
-            communityContract = (
-                await communityFactory.deploy(
-                    accounts[1],
-                    '2000000000000000000',
-                    '1500000000000000000000',
-                    86400,
-                    300,
-                    '0x0000000000000000000000000000000000000000',
-                    cUSD.address,
-                    '0x0000000000000000000000000000000000000000'
-                )
-            ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityPublicId);
-            communitiesId.set(communityContract.address, thisCommunityId);
-            communitiesVisibility.set(communityContract.address, true);
-            const newCommunityAddressesAndIds = new Map([
-                ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityPublicId],
-            ]);
-            getAllAddressesAndIds.returns(
-                Promise.resolve(newCommunityAddressesAndIds)
-            );
-            await cUSD
-                .connect(provider.getSigner(0))
-                .testFakeFundAddress(communityContract.address);
-            //
-            await communityContract.addBeneficiary(accounts[5]);
-            await waitForStubCall(beneficiaryAdd, 1);
-            await communityContract.removeBeneficiary(accounts[5]);
-            await waitForStubCall(beneficiaryRemove, 1);
-            assert.callCount(beneficiaryRemove, 1);
-            assert.calledWith(beneficiaryRemove.getCall(0), accounts[5]);
-        });
-    });
-
-    context('beneficiary claim', () => {
-        it('from public valid community', async () => {
-            // deploy a community
-            communityContract = (
-                await communityFactory.deploy(
-                    accounts[1],
-                    '2000000000000000000',
-                    '1500000000000000000000',
-                    86400,
-                    300,
-                    '0x0000000000000000000000000000000000000000',
-                    cUSD.address,
-                    '0x0000000000000000000000000000000000000000'
-                )
-            ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityPublicId);
-            communitiesId.set(communityContract.address, thisCommunityId);
-            communitiesVisibility.set(communityContract.address, true);
-            const newCommunityAddressesAndIds = new Map([
-                ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityPublicId],
-            ]);
-            getAllAddressesAndIds.returns(
-                Promise.resolve(newCommunityAddressesAndIds)
-            );
-            await cUSD
-                .connect(provider.getSigner(0))
-                .testFakeFundAddress(communityContract.address);
-            //
-            await communityContract.addBeneficiary(accounts[5]);
-            await communityContract.connect(provider.getSigner(5)).claim();
-            await waitForStubCall(claimAdd, 1);
-            assert.callCount(claimAdd, 1);
-            assert.calledWith(claimAdd.getCall(0), {
-                address: accounts[5],
-                communityId: thisCommunityId,
-                amount: match.any,
-                tx: match.any,
-                txAt: match.any,
-            });
-        });
-    });
-
-    context('add manager', () => {
-        it('to public valid community', async () => {
-            managerAdd.reset();
-            // deploy a community
-            communityContract = (
-                await communityFactory.deploy(
-                    accounts[1],
-                    '2000000000000000000',
-                    '1500000000000000000000',
-                    86400,
-                    300,
-                    '0x0000000000000000000000000000000000000000',
-                    cUSD.address,
-                    '0x0000000000000000000000000000000000000000'
-                )
-            ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityPublicId);
-            communitiesId.set(communityContract.address, thisCommunityId);
-            communitiesVisibility.set(communityContract.address, true);
-            const newCommunityAddressesAndIds = new Map([
-                ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityPublicId],
-            ]);
-            getAllAddressesAndIds.returns(
-                Promise.resolve(newCommunityAddressesAndIds)
-            );
-            await cUSD
-                .connect(provider.getSigner(0))
-                .testFakeFundAddress(communityContract.address);
-            //
-            await communityContract.addManager(accounts[2]);
-            await waitForStubCall(managerAdd, 2);
-            assert.callCount(managerAdd, 2);
-            assert.calledWith(
-                managerAdd.getCall(0),
+    it('add beneficiary: to public valid community', async () => {
+        // deploy a community
+        communityContract = (
+            await communityFactory.deploy(
                 accounts[1],
-                thisCommunityPublicId
-            );
-            assert.calledWith(
-                managerAdd.getCall(1),
-                accounts[2],
-                thisCommunityPublicId
-            );
-        });
-    });
-
-    context('remove manager', () => {
-        it('from public valid community', async () => {
-            managerAdd.reset();
-            managerRemove.reset();
-            // deploy a community
-            communityContract = (
-                await communityFactory.deploy(
-                    accounts[1],
-                    '2000000000000000000',
-                    '1500000000000000000000',
-                    86400,
-                    300,
-                    '0x0000000000000000000000000000000000000000',
-                    cUSD.address,
-                    '0x0000000000000000000000000000000000000000'
-                )
-            ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityPublicId);
-            communitiesId.set(communityContract.address, thisCommunityId);
-            communitiesVisibility.set(communityContract.address, true);
-            const newCommunityAddressesAndIds = new Map([
-                ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityPublicId],
-            ]);
-            getAllAddressesAndIds.returns(
-                Promise.resolve(newCommunityAddressesAndIds)
-            );
-            await cUSD
-                .connect(provider.getSigner(0))
-                .testFakeFundAddress(communityContract.address);
-            //
-            await communityContract.addManager(accounts[2]);
-            await waitForStubCall(managerAdd, 2);
-            await communityContract.removeManager(accounts[2]);
-            await waitForStubCall(managerRemove, 1);
-            assert.callCount(managerRemove, 1);
-            assert.calledWith(
-                managerRemove.getCall(0),
-                accounts[2],
-                thisCommunityPublicId
-            );
-        });
-    });
-
-    context('donation', () => {
-        it('to public valid community', async () => {
-            managerAdd.reset();
-            managerRemove.reset();
-            inflowAdd.reset();
-            // deploy a community
-            communityContract = (
-                await communityFactory.deploy(
-                    accounts[1],
-                    '2000000000000000000',
-                    '1500000000000000000000',
-                    86400,
-                    300,
-                    '0x0000000000000000000000000000000000000000',
-                    cUSD.address,
-                    '0x0000000000000000000000000000000000000000'
-                )
-            ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityPublicId);
-            communitiesId.set(communityContract.address, thisCommunityId);
-            communitiesVisibility.set(communityContract.address, true);
-            const newCommunityAddressesAndIds = new Map([
-                ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityPublicId],
-            ]);
-            getAllAddressesAndIds.returns(
-                Promise.resolve(newCommunityAddressesAndIds)
-            );
-            await cUSD
-                .connect(provider.getSigner(0))
-                .testFakeFundAddress(accounts[2]);
-            //
-            await cUSD
-                .connect(provider.getSigner(2))
-                .transfer(communityContract.address, '2000000000000000000');
-            await waitForStubCall(inflowAdd, 1);
-            assert.callCount(inflowAdd, 1);
-            assert.calledWith(
-                inflowAdd.getCall(0),
-                accounts[2],
-                thisCommunityPublicId,
                 '2000000000000000000',
-                match.any,
-                match.any
-            );
+                '1500000000000000000000',
+                86400,
+                300,
+                '0x0000000000000000000000000000000000000000',
+                cUSD.address,
+                '0x0000000000000000000000000000000000000000'
+            )
+        ).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([
+            ...communityAddressesAndIds,
+            [communityContract.address, thisCommunityPublicId],
+        ]);
+        getAllAddressesAndIds.returns(
+            Promise.resolve(newCommunityAddressesAndIds)
+        );
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(communityContract.address);
+        //
+        await communityContract.addBeneficiary(accounts[5]);
+        await waitForStubCall(beneficiaryAdd, 1);
+        assert.callCount(beneficiaryAdd, 1);
+        assert.calledWith(
+            beneficiaryAdd.getCall(0),
+            accounts[5],
+            accounts[1],
+            thisCommunityPublicId,
+            match.any,
+            match.any
+        );
+    });
+
+    it('remove beneficiary: from public valid community', async () => {
+        // deploy a community
+        communityContract = (
+            await communityFactory.deploy(
+                accounts[1],
+                '2000000000000000000',
+                '1500000000000000000000',
+                86400,
+                300,
+                '0x0000000000000000000000000000000000000000',
+                cUSD.address,
+                '0x0000000000000000000000000000000000000000'
+            )
+        ).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([
+            ...communityAddressesAndIds,
+            [communityContract.address, thisCommunityPublicId],
+        ]);
+        getAllAddressesAndIds.returns(
+            Promise.resolve(newCommunityAddressesAndIds)
+        );
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(communityContract.address);
+        //
+        await communityContract.addBeneficiary(accounts[5]);
+        await waitForStubCall(beneficiaryAdd, 1);
+        await communityContract.removeBeneficiary(accounts[5]);
+        await waitForStubCall(beneficiaryRemove, 1);
+        assert.callCount(beneficiaryRemove, 1);
+        assert.calledWith(
+            beneficiaryRemove.getCall(0),
+            accounts[5],
+            accounts[1],
+            thisCommunityPublicId,
+            match.any,
+            match.any
+        );
+    });
+
+    it('beneficiary claim: from public valid community', async () => {
+        // deploy a community
+        communityContract = (
+            await communityFactory.deploy(
+                accounts[1],
+                '2000000000000000000',
+                '1500000000000000000000',
+                86400,
+                300,
+                '0x0000000000000000000000000000000000000000',
+                cUSD.address,
+                '0x0000000000000000000000000000000000000000'
+            )
+        ).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([
+            ...communityAddressesAndIds,
+            [communityContract.address, thisCommunityPublicId],
+        ]);
+        getAllAddressesAndIds.returns(
+            Promise.resolve(newCommunityAddressesAndIds)
+        );
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(communityContract.address);
+        //
+        await communityContract.addBeneficiary(accounts[5]);
+        await communityContract.connect(provider.getSigner(5)).claim();
+        await waitForStubCall(claimAdd, 1);
+        assert.callCount(claimAdd, 1);
+        assert.calledWith(claimAdd.getCall(0), {
+            address: accounts[5],
+            communityId: thisCommunityId,
+            amount: match.any,
+            tx: match.any,
+            txAt: match.any,
         });
     });
 
-    context('beneficiary transaction', () => {
-        it('to a non beneficiary user', async () => {
-            managerAdd.reset();
-            managerRemove.reset();
-            inflowAdd.reset();
-            // deploy a community
-            communityContract = (
-                await communityFactory.deploy(
-                    accounts[1],
-                    '2000000000000000000',
-                    '1500000000000000000000',
-                    86400,
-                    300,
-                    '0x0000000000000000000000000000000000000000',
-                    cUSD.address,
-                    '0x0000000000000000000000000000000000000000'
-                )
-            ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityPublicId);
-            communitiesId.set(communityContract.address, thisCommunityId);
-            communitiesVisibility.set(communityContract.address, true);
-            const newCommunityAddressesAndIds = new Map([
-                ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityPublicId],
-            ]);
-            getAllAddressesAndIds.returns(
-                Promise.resolve(newCommunityAddressesAndIds)
-            );
-            await cUSD
-                .connect(provider.getSigner(0))
-                .testFakeFundAddress(communityContract.address);
-            await cUSD
-                .connect(provider.getSigner(0))
-                .testFakeFundAddress(accounts[5]);
-            //
-            await communityContract.addBeneficiary(accounts[5]);
-            await waitForStubCall(beneficiaryAdd, 1);
-            await cUSD
-                .connect(provider.getSigner(5))
-                .transfer(accounts[6], '2000000000000000000');
-            await waitForStubCall(beneficiaryTransactionAdd, 1);
-            assert.callCount(beneficiaryTransactionAdd, 1);
-            assert.calledWith(beneficiaryTransactionAdd.getCall(0), {
-                beneficiary: accounts[5],
-                withAddress: accounts[6],
-                amount: '2000000000000000000',
-                isFromBeneficiary: true,
-                tx: match.any,
-                date: match.any,
-            });
+    it('add manager: to public valid community', async () => {
+        managerAdd.reset();
+        // deploy a community
+        communityContract = (
+            await communityFactory.deploy(
+                accounts[1],
+                '2000000000000000000',
+                '1500000000000000000000',
+                86400,
+                300,
+                '0x0000000000000000000000000000000000000000',
+                cUSD.address,
+                '0x0000000000000000000000000000000000000000'
+            )
+        ).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([
+            ...communityAddressesAndIds,
+            [communityContract.address, thisCommunityPublicId],
+        ]);
+        getAllAddressesAndIds.returns(
+            Promise.resolve(newCommunityAddressesAndIds)
+        );
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(communityContract.address);
+        //
+        await communityContract.addManager(accounts[2]);
+        await waitForStubCall(managerAdd, 2);
+        assert.callCount(managerAdd, 2);
+        assert.calledWith(
+            managerAdd.getCall(0),
+            accounts[1],
+            thisCommunityPublicId
+        );
+        assert.calledWith(
+            managerAdd.getCall(1),
+            accounts[2],
+            thisCommunityPublicId
+        );
+    });
+
+    it('remove manager: from public valid community', async () => {
+        managerAdd.reset();
+        managerRemove.reset();
+        // deploy a community
+        communityContract = (
+            await communityFactory.deploy(
+                accounts[1],
+                '2000000000000000000',
+                '1500000000000000000000',
+                86400,
+                300,
+                '0x0000000000000000000000000000000000000000',
+                cUSD.address,
+                '0x0000000000000000000000000000000000000000'
+            )
+        ).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([
+            ...communityAddressesAndIds,
+            [communityContract.address, thisCommunityPublicId],
+        ]);
+        getAllAddressesAndIds.returns(
+            Promise.resolve(newCommunityAddressesAndIds)
+        );
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(communityContract.address);
+        //
+        await communityContract.addManager(accounts[2]);
+        await waitForStubCall(managerAdd, 2);
+        await communityContract.removeManager(accounts[2]);
+        await waitForStubCall(managerRemove, 1);
+        assert.callCount(managerRemove, 1);
+        assert.calledWith(
+            managerRemove.getCall(0),
+            accounts[2],
+            thisCommunityPublicId
+        );
+    });
+
+    it('donation: to public valid community', async () => {
+        inflowAdd.reset();
+        // deploy a community
+        communityContract = (
+            await communityFactory.deploy(
+                accounts[1],
+                '2000000000000000000',
+                '1500000000000000000000',
+                86400,
+                300,
+                '0x0000000000000000000000000000000000000000',
+                cUSD.address,
+                '0x0000000000000000000000000000000000000000'
+            )
+        ).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([
+            ...communityAddressesAndIds,
+            [communityContract.address, thisCommunityPublicId],
+        ]);
+        getAllAddressesAndIds.returns(
+            Promise.resolve(newCommunityAddressesAndIds)
+        );
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(accounts[2]);
+        //
+        await cUSD
+            .connect(provider.getSigner(2))
+            .transfer(communityContract.address, '2000000000000000000');
+        await waitForStubCall(inflowAdd, 1);
+        assert.callCount(inflowAdd, 1);
+        assert.calledWith(
+            inflowAdd.getCall(0),
+            accounts[2],
+            thisCommunityPublicId,
+            '2000000000000000000',
+            match.any,
+            match.any
+        );
+    });
+
+    it('beneficiary transaction: to a non beneficiary user', async () => {
+        // deploy a community
+        communityContract = (
+            await communityFactory.deploy(
+                accounts[1],
+                '2000000000000000000',
+                '1500000000000000000000',
+                86400,
+                300,
+                '0x0000000000000000000000000000000000000000',
+                cUSD.address,
+                '0x0000000000000000000000000000000000000000'
+            )
+        ).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([
+            ...communityAddressesAndIds,
+            [communityContract.address, thisCommunityPublicId],
+        ]);
+        getAllAddressesAndIds.returns(
+            Promise.resolve(newCommunityAddressesAndIds)
+        );
+        await waitForStubCall(imMetadataRemoveRecoverSpy, 1);
+        beneficiaryAdd.resetHistory();
+        beneficiaryTransactionAdd.resetHistory();
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(communityContract.address);
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(accounts[7]);
+        //
+        await communityContract.addBeneficiary(accounts[7]);
+        await waitForStubCall(beneficiaryAdd, 1);
+        await cUSD
+            .connect(provider.getSigner(7))
+            .transfer(accounts[8], '2200000000000000000');
+        await waitForStubCall(beneficiaryTransactionAdd, 1);
+        assert.callCount(beneficiaryTransactionAdd, 1);
+        assert.calledWith(beneficiaryTransactionAdd.getCall(0), {
+            beneficiary: accounts[7],
+            withAddress: accounts[8],
+            amount: '2200000000000000000',
+            isFromBeneficiary: true,
+            tx: match.any,
+            date: match.any,
         });
     });
 
-    context('recover missing transactions', () => {
-        it('to a non beneficiary user', async () => {
-            managerAdd.reset();
-            managerRemove.reset();
-            inflowAdd.reset();
-            beneficiaryTransactionAdd.reset();
-            communities.clear();
-            communitiesVisibility.clear();
-            // deploy a community
-            communityContract = (
-                await communityFactory.deploy(
-                    accounts[1],
-                    '2000000000000000000',
-                    '1500000000000000000000',
-                    86400,
-                    300,
-                    '0x0000000000000000000000000000000000000000',
-                    cUSD.address,
-                    '0x0000000000000000000000000000000000000000'
-                )
-            ).connect(provider.getSigner(1));
-            communities.set(communityContract.address, thisCommunityPublicId);
-            communitiesId.set(communityContract.address, thisCommunityId);
-            communitiesVisibility.set(communityContract.address, true);
-            const newCommunityAddressesAndIds = new Map([
-                ...communityAddressesAndIds,
-                [communityContract.address, thisCommunityPublicId],
-            ]);
-            getAllAddressesAndIds.returns(
-                Promise.resolve(newCommunityAddressesAndIds)
-            );
-            subscribers.stop();
-            await cUSD
-                .connect(provider.getSigner(0))
-                .testFakeFundAddress(communityContract.address);
-            await cUSD
-                .connect(provider.getSigner(0))
-                .testFakeFundAddress(accounts[5]);
-            await communityContract.addBeneficiary(accounts[5]);
-            await cUSD
-                .connect(provider.getSigner(5))
-                .transfer(accounts[6], '2000000000000000000');
-            subscribers.recover();
-            await waitForStubCall(beneficiaryAdd, 1);
-            await waitForStubCall(beneficiaryTransactionAdd, 1);
-            assert.callCount(beneficiaryTransactionAdd, 1);
-            assert.calledWith(beneficiaryTransactionAdd.getCall(0), {
-                beneficiary: accounts[5],
-                withAddress: accounts[6],
-                amount: '2000000000000000000',
-                isFromBeneficiary: true,
-                tx: match.any,
-                date: match.any,
-            });
+    it('recover missing transactions: to a non beneficiary user', async () => {
+        communities.clear();
+        communitiesVisibility.clear();
+        // deploy a community
+        communityContract = (
+            await communityFactory.deploy(
+                accounts[1],
+                '2000000000000000000',
+                '1500000000000000000000',
+                86400,
+                300,
+                '0x0000000000000000000000000000000000000000',
+                cUSD.address,
+                '0x0000000000000000000000000000000000000000'
+            )
+        ).connect(provider.getSigner(1));
+        communities.set(communityContract.address, thisCommunityPublicId);
+        communitiesVisibility.set(communityContract.address, true);
+        const newCommunityAddressesAndIds = new Map([
+            ...communityAddressesAndIds,
+            [communityContract.address, thisCommunityPublicId],
+        ]);
+        getAllAddressesAndIds.returns(
+            Promise.resolve(newCommunityAddressesAndIds)
+        );
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(accounts[5]);
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(communityContract.address);
+
+        beneficiaryAdd.resetHistory();
+        beneficiaryTransactionAdd.resetHistory();
+        //
+        subscribers.stop();
+        await communityContract.addBeneficiary(accounts[5]);
+        await cUSD
+            .connect(provider.getSigner(5))
+            .transfer(accounts[6], '2000000000000000000');
+        subscribers.recover();
+        await waitForStubCall(beneficiaryAdd, 1);
+        await waitForStubCall(beneficiaryTransactionAdd, 1);
+        assert.callCount(beneficiaryTransactionAdd, 1);
+        assert.calledWith(beneficiaryTransactionAdd.getCall(0), {
+            beneficiary: accounts[5],
+            withAddress: accounts[6],
+            amount: '2000000000000000000',
+            isFromBeneficiary: true,
+            tx: match.any,
+            date: match.any,
         });
     });
 });

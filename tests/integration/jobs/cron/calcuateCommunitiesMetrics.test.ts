@@ -53,9 +53,9 @@ describe('calcuateCommunitiesMetrics', () => {
         );
     });
 
-    after(() => {
-        ubiCommunityDailyStateCreate.restore();
-        ubiCommunityDailyMetricsCreate.restore();
+    after(async () => {
+        await ubiCommunityDailyStateCreate.restore();
+        await ubiCommunityDailyMetricsCreate.restore();
     });
 
     describe('recent community with beneficiaries', () => {
@@ -128,7 +128,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
             tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
+            await ubiCommunityDailyStateCreate.resetHistory();
 
             // test
             await calcuateCommunitiesMetrics();
@@ -183,7 +183,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
             tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
+            await ubiCommunityDailyStateCreate.resetHistory();
 
             // test
             // THIS IS HAPPENING THREE DAYS FROM NOW
@@ -252,7 +252,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
             tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
+            await ubiCommunityDailyStateCreate.resetHistory();
 
             // test
             // THIS IS HAPPENING THREE DAYS FROM NOW
@@ -330,7 +330,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
             tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
+            await ubiCommunityDailyStateCreate.resetHistory();
 
             //tests
             await calcuateCommunitiesMetrics();
@@ -359,8 +359,8 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING TOMORROW
             tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
-            ubiCommunityDailyMetricsCreate.resetHistory();
+            await ubiCommunityDailyStateCreate.resetHistory();
+            await ubiCommunityDailyMetricsCreate.resetHistory();
 
             // tests
             await calcuateCommunitiesMetrics();
@@ -389,8 +389,8 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING TOMORROW
             tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
-            ubiCommunityDailyMetricsCreate.resetHistory();
+            await ubiCommunityDailyStateCreate.resetHistory();
+            await ubiCommunityDailyMetricsCreate.resetHistory();
 
             // test
             await calcuateCommunitiesMetrics();
@@ -428,7 +428,7 @@ describe('calcuateCommunitiesMetrics', () => {
             await ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await ClaimFactory(beneficiaries[1], community);
-            ubiCommunityDailyStateCreate.resetHistory();
+            await ubiCommunityDailyStateCreate.resetHistory();
 
             // test
             await calcuateCommunitiesMetrics();
@@ -461,8 +461,8 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING TOMORROW
             tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
-            ubiCommunityDailyMetricsCreate.resetHistory();
+            await ubiCommunityDailyStateCreate.resetHistory();
+            await ubiCommunityDailyMetricsCreate.resetHistory();
 
             // test
             await calcuateCommunitiesMetrics();
@@ -490,8 +490,8 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
             tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
-            ubiCommunityDailyMetricsCreate.resetHistory();
+            await ubiCommunityDailyStateCreate.resetHistory();
+            await ubiCommunityDailyMetricsCreate.resetHistory();
 
             // test
             await calcuateCommunitiesMetrics();
@@ -599,7 +599,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
             tk.travel(jumpToTomorrowMidnight());
-            ubiCommunityDailyStateCreate.resetHistory();
+            await ubiCommunityDailyStateCreate.resetHistory();
         });
 
         after(async () => {

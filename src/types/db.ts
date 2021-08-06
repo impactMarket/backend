@@ -30,6 +30,7 @@ import { UbiCommunityStateModel } from '@models/ubi/communityState';
 import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
+import { UbiBeneficiaryRegistryModel } from '@models/ubi/ubiBeneficiaryRegistry';
 import { UbiClaimModel } from '@models/ubi/ubiClaim';
 import { ClaimLocationModel } from '@models/ubi/ubiClaimLocation';
 import { UbiCommunityCampaignModel } from '@models/ubi/ubiCommunityCampaign';
@@ -69,6 +70,7 @@ export interface DbModels {
     ubiClaim: ModelCtor<UbiClaimModel>;
     ubiClaimLocation: ModelCtor<ClaimLocationModel>;
     beneficiary: ModelCtor<Beneficiary>;
+    ubiBeneficiaryRegistry: ModelCtor<UbiBeneficiaryRegistryModel>;
     beneficiaryTransaction: ModelCtor<BeneficiaryTransaction>;
     inflow: ModelCtor<Inflow>;
     manager: ModelCtor<Manager>;

@@ -109,7 +109,7 @@ describe('story service', () => {
         afterEach(async () => {
             await truncate(sequelize, 'StoryContentModel');
             await storyContentStorageDeleteBulk.resetHistory();
-            storyContentDestroy.resetHistory();
+            await storyContentDestroy.resetHistory();
         });
         it('no stories to delete', async () => {
             const storyService = new StoryService();
