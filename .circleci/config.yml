@@ -13,7 +13,6 @@ jobs:
           POSTGRES_USER: citest
           POSTGRES_DB: impactmarkettest
           POSTGRES_PASSWORD: test101
-      - image: circleci/redis
     steps:
       - checkout
       - run: yarn
