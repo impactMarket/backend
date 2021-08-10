@@ -303,6 +303,7 @@ export default class CommunityService {
 
     public static async list(query: {
         orderBy?: string;
+        orderType?: string;
         filter?: string;
         name?: string;
         country?: string;
@@ -337,7 +338,7 @@ export default class CommunityService {
                                 lat +
                                 "))*sin(radians(cast(gps->>'latitude' as float)))))"
                         ),
-                        'ASC',
+                        query.orderType ? query.orderType : 'ASC',
                     ],
                 ];
                 break;
@@ -355,16 +356,21 @@ export default class CommunityService {
                         literal(
                             '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
                         ),
-                        'ASC',
+                        query.orderType ? query.orderType : 'ASC',
                     ],
                 ];
                 break;
             }
             case 'newest':
-                orderOption = [[literal('"Community".started'), 'DESC']];
+                orderOption = [[literal('"Community".started'), query.orderType ? query.orderType : 'DESC']];
                 break;
             default:
-                orderOption = [[literal('state.beneficiaries'), 'DESC']];
+                orderOption = [
+                    [
+                        literal('state.beneficiaries'),
+                        query.orderType ? query.orderType : 'DESC',
+                    ],
+                ];
                 break;
         }
 
