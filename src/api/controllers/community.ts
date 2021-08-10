@@ -37,7 +37,9 @@ class CommunityController {
             .then((r) =>
                 standardResponse(res, 200, true, r.rows, { count: r.count })
             )
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 
     count = (req: Request, res: Response) => {

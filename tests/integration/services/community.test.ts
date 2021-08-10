@@ -457,6 +457,122 @@ describe('community service', () => {
                 result.push(r.rows);
             }
         }).timeout(120000); // exceptionally 120s timeout
+
+        describe('sort', () => {
+            afterEach(async () => {
+                await truncate(sequelize, 'Community');
+            });
+
+            it('nearest', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -15.8697203,
+                            longitude: -47.9207824,
+                        },
+                    },
+                ]);
+
+                const result = await CommunityService.list({
+                    orderBy: 'nearest',
+                    orderType: 'asc',
+                    lat: '-23.4378873',
+                    lng: '-46.4841214',
+                });
+
+                expect(result.rows[0]).to.include({
+                    id: communities[0].id,
+                    name: communities[0].name,
+                    country: communities[0].country,
+                    requestByAddress: users[0].address,
+                });
+            });
+
+            it('farthest', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -15.8697203,
+                            longitude: -47.9207824,
+                        },
+                    },
+                ]);
+
+                const result = await CommunityService.list({
+                    orderBy: 'nearest',
+                    orderType: 'desc',
+                    lat: '-23.4378873',
+                    lng: '-46.4841214',
+                });
+
+                expect(result.rows[0]).to.include({
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
+                });
+            });
+        });
     });
 
     describe('campaign', () => {
