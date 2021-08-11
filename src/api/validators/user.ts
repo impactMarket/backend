@@ -90,6 +90,19 @@ const device = celebrate({
     }),
 });
 
+const edit = celebrate({
+    body: Joi.object({
+        language: Joi.string().optional(),
+        currency: Joi.string().optional(),
+        username: Joi.string().optional(),
+        gender: Joi.string().optional(),
+        year: Joi.number().optional(),
+        children: Joi.number().optional(),
+        avatarMediaId: Joi.number().optional(),
+        pushNotificationToken: Joi.string().optional().allow(''),
+    })
+})
+
 export default {
     report,
     auth,
@@ -102,4 +115,5 @@ export default {
     updateAge,
     updateChildren,
     device,
+    edit,
 };

@@ -487,4 +487,24 @@ export default class UserService {
             communityId: community ? community.id : undefined,
         };
     }
+
+    public static async edit(
+        address: string,
+        user: {
+            language?: string,
+            currency?: string,
+            username?: string,
+            gender?: string,
+            year?: number,
+            children?: number,
+            avatarMediaId?: number,
+            pushNotificationToken?: string,
+        }
+    ): Promise<User>  {
+        const updated = await this.user.update(user, {returning: true, where: { address } });
+        if(updated[0] === 0) {
+            throw new Error('user was not updated!')
+        }
+        return updated[1][0];
+    }
 }

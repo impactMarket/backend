@@ -405,4 +405,32 @@ describe('user service', () => {
             expect(result!.category).to.be.equal('potential-fraud');
         });
     });
+
+    describe('update', () => {
+        it('should update user successfully', async () => {
+            const randomWallet = ethers.Wallet.createRandom();
+            const address = await randomWallet.getAddress();
+            const phone = faker.phone.phoneNumber();
+            await UserService.authenticate({
+                address,
+                trust: {
+                    phone,
+                },
+            });
+
+            const data = {
+                language: 'pt',
+                currency: 'rs',
+                username: 'New Name',
+                gender: 'm',
+                year: 22,
+                children: 1,
+                avatarMediaId: 1,
+                pushNotificationToken: 'notification-token',
+            };
+            const userUpdated = await UserService.edit(address, data);
+
+            expect(userUpdated).to.include(data);
+        })
+    })
 });
