@@ -98,6 +98,9 @@ export default (app: Router): void => {
         userController.getPresignedUrlMedia
     );
 
+    /**
+     * @deprecated
+     */
     route.put('/avatar', authenticateToken, userController.updateAvatar);
 
     route.post(
@@ -116,6 +119,9 @@ export default (app: Router): void => {
 
     route.get('/exist/:address', userController.userExist);
 
+    /**
+     * @deprecated
+     */
     route.post(
         '/username',
         authenticateToken,
@@ -123,6 +129,9 @@ export default (app: Router): void => {
         userController.updateUsername
     );
 
+    /**
+     * @deprecated
+     */
     route.post(
         '/currency',
         authenticateToken,
@@ -130,6 +139,9 @@ export default (app: Router): void => {
         userController.updateCurrency
     );
 
+    /**
+     * @deprecated
+     */
     route.post(
         '/push-notifications',
         authenticateToken,
@@ -137,6 +149,9 @@ export default (app: Router): void => {
         userController.updatePushNotificationsToken
     );
 
+    /**
+     * @deprecated
+     */
     route.post(
         '/language',
         authenticateToken,
@@ -144,6 +159,9 @@ export default (app: Router): void => {
         userController.updateLanguage
     );
 
+    /**
+     * @deprecated
+     */
     route.post(
         '/gender',
         authenticateToken,
@@ -151,6 +169,9 @@ export default (app: Router): void => {
         userController.updateGender
     );
 
+    /**
+     * @deprecated
+     */
     route.post(
         '/age',
         authenticateToken,
@@ -158,6 +179,9 @@ export default (app: Router): void => {
         userController.updateAge
     );
 
+    /**
+     * @deprecated
+     */
     route.post(
         '/children',
         authenticateToken,
@@ -178,4 +202,67 @@ export default (app: Router): void => {
         userValidators.device,
         userController.device
     );
+
+    /**
+     * @swagger
+     *
+     * /user:
+     *   put:
+     *     tags:
+     *       - "user"
+     *     summary: Edit existing user
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               language:
+     *                 type: string
+     *                 required: false
+     *               currency:
+     *                 type: string
+     *                 required: false
+     *               pushNotificationToken:
+     *                 type: string
+     *                 required: false
+     *               username:
+     *                 type: string
+     *                 required: false
+     *               gender:
+     *                 type: string
+     *                 enum: [u, m, f, o]
+     *                 required: false
+     *               year:
+     *                 type: number
+     *                 required: false
+     *               children:
+     *                 type: number
+     *                 required: false
+     *               avatarMediaId:
+     *                 type: number
+     *                 required: false
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  user: 
+     *                    $ref: '#/components/schemas/AppUser'
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put(
+        '/',
+        authenticateToken,
+        userValidators.edit,
+        userController.edit
+    )
 };
