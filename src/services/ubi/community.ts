@@ -303,7 +303,6 @@ export default class CommunityService {
 
     public static async list(query: {
         orderBy?: string;
-        orderType?: string;
         filter?: string;
         name?: string;
         country?: string;
@@ -314,64 +313,67 @@ export default class CommunityService {
         lng?: string;
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
-        let orderOption: string | Literal | OrderItem[] | undefined;
+        let orderOption: OrderItem[] = [];
         const extendedInclude: Includeable[] = [];
 
-        switch (query.orderBy) {
-            case 'nearest': {
-                if (query.lat === undefined || query.lng === undefined) {
-                    throw new Error('invalid coordinates');
+        if(query.orderBy) {
+            const orders = query.orderBy.split(';');
+
+            orders.forEach(element => {
+                const [order, orderType] = element.split(':');
+
+                switch (order) {
+                    case 'nearest': {
+                        if (query.lat === undefined || query.lng === undefined) {
+                            throw new Error('invalid coordinates');
+                        }
+                        const lat = parseInt(query.lat, 10);
+                        const lng = parseInt(query.lng, 10);
+                        if (typeof lat !== 'number' || typeof lng !== 'number') {
+                            throw new Error('NaN');
+                        }
+                        
+                        orderOption.push([
+                            literal(
+                                '(6371*acos(cos(radians(' +
+                                    lat +
+                                    "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
+                                    lng +
+                                    '))+sin(radians(' +
+                                    lat +
+                                    "))*sin(radians(cast(gps->>'latitude' as float)))))"
+                            ),
+                            orderType ? orderType : 'ASC',
+                        ])
+                        break;
+                    }
+                    case 'out_of_funds': {
+                        // this requires extended
+                        query.extended = 'true';
+                        extendedWhere = {
+                            '$state.beneficiaries$': {
+                                [Op.not]: 0,
+                            },
+                        } as any;
+                        orderOption.push([
+                            literal(
+                                '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
+                            ),
+                            orderType ? orderType : 'ASC',
+                        ])
+                        break;
+                    }
+                    case 'newest':
+                        orderOption.push([literal('"Community".started'), orderType ? orderType : 'DESC']);
+                        break;
+                    default:
+                        orderOption.push([
+                            literal('state.beneficiaries'),
+                            orderType ? orderType : 'DESC',
+                        ]);
+                        break;
                 }
-                const lat = parseInt(query.lat, 10);
-                const lng = parseInt(query.lng, 10);
-                if (typeof lat !== 'number' || typeof lng !== 'number') {
-                    throw new Error('NaN');
-                }
-                orderOption = [
-                    [
-                        literal(
-                            '(6371*acos(cos(radians(' +
-                                lat +
-                                "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
-                                lng +
-                                '))+sin(radians(' +
-                                lat +
-                                "))*sin(radians(cast(gps->>'latitude' as float)))))"
-                        ),
-                        query.orderType ? query.orderType : 'ASC',
-                    ],
-                ];
-                break;
-            }
-            case 'out_of_funds': {
-                // this requires extended
-                query.extended = 'true';
-                extendedWhere = {
-                    '$state.beneficiaries$': {
-                        [Op.not]: 0,
-                    },
-                } as any;
-                orderOption = [
-                    [
-                        literal(
-                            '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
-                        ),
-                        query.orderType ? query.orderType : 'ASC',
-                    ],
-                ];
-                break;
-            }
-            case 'newest':
-                orderOption = [[literal('"Community".started'), query.orderType ? query.orderType : 'DESC']];
-                break;
-            default:
-                orderOption = [
-                    [
-                        literal('state.beneficiaries'),
-                        query.orderType ? query.orderType : 'DESC',
-                    ],
-                ];
-                break;
+            });
         }
 
         if (query.filter === 'featured') {
