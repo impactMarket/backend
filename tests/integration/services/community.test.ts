@@ -504,8 +504,7 @@ describe('community service', () => {
                 ]);
 
                 const result = await CommunityService.list({
-                    orderBy: 'nearest',
-                    orderType: 'asc',
+                    orderBy: 'nearest:ASC;bigger:DESC',
                     lat: '-23.4378873',
                     lng: '-46.4841214',
                 });
@@ -559,8 +558,7 @@ describe('community service', () => {
                 ]);
 
                 const result = await CommunityService.list({
-                    orderBy: 'nearest',
-                    orderType: 'desc',
+                    orderBy: 'nearest:DESC;bigger:ASC',
                     lat: '-23.4378873',
                     lng: '-46.4841214',
                 });
