@@ -313,26 +313,32 @@ export default class CommunityService {
         lng?: string;
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
-        let orderOption: OrderItem[] = [];
+        const orderOption: OrderItem[] = [];
         const extendedInclude: Includeable[] = [];
 
-        if(query.orderBy) {
+        if (query.orderBy) {
             const orders = query.orderBy.split(';');
 
-            orders.forEach(element => {
+            orders.forEach((element) => {
                 const [order, orderType] = element.split(':');
 
                 switch (order) {
                     case 'nearest': {
-                        if (query.lat === undefined || query.lng === undefined) {
+                        if (
+                            query.lat === undefined ||
+                            query.lng === undefined
+                        ) {
                             throw new Error('invalid coordinates');
                         }
                         const lat = parseInt(query.lat, 10);
                         const lng = parseInt(query.lng, 10);
-                        if (typeof lat !== 'number' || typeof lng !== 'number') {
+                        if (
+                            typeof lat !== 'number' ||
+                            typeof lng !== 'number'
+                        ) {
                             throw new Error('NaN');
                         }
-                        
+
                         orderOption.push([
                             literal(
                                 '(6371*acos(cos(radians(' +
@@ -344,7 +350,7 @@ export default class CommunityService {
                                     "))*sin(radians(cast(gps->>'latitude' as float)))))"
                             ),
                             orderType ? orderType : 'ASC',
-                        ])
+                        ]);
                         break;
                     }
                     case 'out_of_funds': {
@@ -360,11 +366,14 @@ export default class CommunityService {
                                 '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
                             ),
                             orderType ? orderType : 'ASC',
-                        ])
+                        ]);
                         break;
                     }
                     case 'newest':
-                        orderOption.push([literal('"Community".started'), orderType ? orderType : 'DESC']);
+                        orderOption.push([
+                            literal('"Community".started'),
+                            orderType ? orderType : 'DESC',
+                        ]);
                         break;
                     default:
                         orderOption.push([

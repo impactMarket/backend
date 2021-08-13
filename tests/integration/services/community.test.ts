@@ -579,7 +579,10 @@ describe('community service', () => {
                 for (const community of communities) {
                     await BeneficiaryFactory(
                         await UserFactory({
-                            n: community.requestByAddress === users[1].address ? 5 : 4,
+                            n:
+                                community.requestByAddress === users[1].address
+                                    ? 5
+                                    : 4,
                         }),
                         community.publicId
                     );
@@ -672,7 +675,10 @@ describe('community service', () => {
                 for (const community of communities) {
                     await BeneficiaryFactory(
                         await UserFactory({
-                            n: community.requestByAddress === users[2].address ? 3 : 4,
+                            n:
+                                community.requestByAddress === users[2].address
+                                    ? 3
+                                    : 4,
                         }),
                         community.publicId
                     );
