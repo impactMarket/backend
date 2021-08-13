@@ -99,7 +99,7 @@ export default (app: Router): void => {
     );
 
     /**
-     * @deprecated
+     * @deprecated Last used in 1.1.12
      */
     route.put('/avatar', authenticateToken, userController.updateAvatar);
 
