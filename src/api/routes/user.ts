@@ -130,7 +130,7 @@ export default (app: Router): void => {
     );
 
     /**
-     * @deprecated
+     * @deprecated Last used in 1.1.12
      */
     route.post(
         '/currency',
@@ -140,7 +140,7 @@ export default (app: Router): void => {
     );
 
     /**
-     * @deprecated
+     * @deprecated Last used in 1.1.12
      */
     route.post(
         '/push-notifications',
@@ -150,7 +150,7 @@ export default (app: Router): void => {
     );
 
     /**
-     * @deprecated
+     * @deprecated Last used in 1.1.12
      */
     route.post(
         '/language',
@@ -160,7 +160,7 @@ export default (app: Router): void => {
     );
 
     /**
-     * @deprecated
+     * @deprecated Last used in 1.1.12
      */
     route.post(
         '/gender',
@@ -170,7 +170,7 @@ export default (app: Router): void => {
     );
 
     /**
-     * @deprecated
+     * @deprecated Last used in 1.1.12
      */
     route.post(
         '/age',
@@ -180,7 +180,7 @@ export default (app: Router): void => {
     );
 
     /**
-     * @deprecated
+     * @deprecated Last used in 1.1.12
      */
     route.post(
         '/children',

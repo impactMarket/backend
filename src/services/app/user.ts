@@ -501,7 +501,7 @@ export default class UserService {
             pushNotificationToken?: string,
         }
     ): Promise<User>  {
-        const updated = await this.user.update(user, {returning: true, where: { address } });
+        const updated = await this.user.update(user, { returning: true, where: { address } });
         if(updated[0] === 0) {
             throw new Error('user was not updated!')
         }
