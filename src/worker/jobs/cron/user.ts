@@ -12,10 +12,22 @@ export async function verifyUserSuspectActivity(): Promise<void> {
                     {
                         model: models.appUserTrust,
                         as: 'selfTrust',
+                        include: [
+                            {
+                                model: models.user,
+                                as: 'throughTrust',
+                                where: {
+                                    active: true,
+                                },
+                            },
+                        ],
                     },
                 ],
             },
         ],
+        where: {
+            active: true,
+        },
     });
     for (let c = 0; c < users.length; c++) {
         const user = users[c].toJSON() as User;
