@@ -120,7 +120,7 @@ export default (app: Router): void => {
     route.get('/exist/:address', userController.userExist);
 
     /**
-     * @deprecated
+     * @deprecated Last used in 1.1.12
      */
     route.post(
         '/username',
