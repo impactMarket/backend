@@ -460,6 +460,7 @@ describe('community service', () => {
 
         describe('sort', () => {
             afterEach(async () => {
+                await truncate(sequelize, 'Beneficiary');
                 await truncate(sequelize, 'Community');
             });
 
@@ -479,8 +480,8 @@ describe('community service', () => {
                         },
                         hasAddress: true,
                         gps: {
-                            latitude: -23.4378873,
-                            longitude: -46.4841214,
+                            latitude: -15.8697203,
+                            longitude: -47.9207824,
                         },
                     },
                     {
@@ -497,27 +498,27 @@ describe('community service', () => {
                         },
                         hasAddress: true,
                         gps: {
-                            latitude: -15.8697203,
-                            longitude: -47.9207824,
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
                         },
                     },
                 ]);
 
                 const result = await CommunityService.list({
-                    orderBy: 'nearest:ASC;bigger:DESC',
+                    orderBy: 'nearest',
                     lat: '-23.4378873',
                     lng: '-46.4841214',
                 });
 
                 expect(result.rows[0]).to.include({
-                    id: communities[0].id,
-                    name: communities[0].name,
-                    country: communities[0].country,
-                    requestByAddress: users[0].address,
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
                 });
             });
 
-            it('farthest', async () => {
+            it('nearest and most beneficiaries', async () => {
                 const communities = await CommunityFactory([
                     {
                         requestByAddress: users[0].address,
@@ -551,23 +552,155 @@ describe('community service', () => {
                         },
                         hasAddress: true,
                         gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
                             latitude: -15.8697203,
                             longitude: -47.9207824,
                         },
                     },
                 ]);
 
+                for (const community of communities) {
+                    await BeneficiaryFactory(
+                        await UserFactory({
+                            n: community.requestByAddress === users[1].address ? 5 : 4,
+                        }),
+                        community.publicId
+                    );
+                }
+
                 const result = await CommunityService.list({
-                    orderBy: 'nearest:DESC;bigger:ASC',
-                    lat: '-23.4378873',
-                    lng: '-46.4841214',
+                    orderBy: 'nearest:ASC;bigger:DESC',
+                    lat: '-15.8697203',
+                    lng: '-47.9207824',
                 });
 
                 expect(result.rows[0]).to.include({
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address,
+                });
+                expect(result.rows[1]).to.include({
                     id: communities[1].id,
                     name: communities[1].name,
                     country: communities[1].country,
                     requestByAddress: users[1].address,
+                });
+                expect(result.rows[2]).to.include({
+                    id: communities[0].id,
+                    name: communities[0].name,
+                    country: communities[0].country,
+                    requestByAddress: users[0].address,
+                });
+            });
+
+            it('fewer beneficiaries and farthest', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -33.2799527,
+                            longitude: 9.1421702,
+                        },
+                    },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -15.8697203,
+                            longitude: -47.9207824,
+                        },
+                    },
+                ]);
+
+                for (const community of communities) {
+                    await BeneficiaryFactory(
+                        await UserFactory({
+                            n: community.requestByAddress === users[2].address ? 3 : 4,
+                        }),
+                        community.publicId
+                    );
+                }
+
+                const result = await CommunityService.list({
+                    orderBy: 'bigger:ASC;nearest:DESC',
+                    lat: '-15.8697203',
+                    lng: '-47.9207824',
+                });
+
+                expect(result.rows[0]).to.include({
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address,
+                });
+                expect(result.rows[1]).to.include({
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
+                });
+                expect(result.rows[2]).to.include({
+                    id: communities[0].id,
+                    name: communities[0].name,
+                    country: communities[0].country,
+                    requestByAddress: users[0].address,
                 });
             });
         });
