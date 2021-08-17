@@ -1,15 +1,26 @@
 import { User } from '@interfaces/app/user';
 import {
+    UbiBeneficiaryRegistry,
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
 } from '@interfaces/ubi/ubiBeneficiaryRegistry';
+import { UbiClaim } from '@interfaces/ubi/ubiClaim';
 import { IListBeneficiary } from '@ipcttypes/endpoints';
-import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
-import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
+import {
+    BeneficiaryAttributes,
+    IBeneficiaryWithActivities,
+    ActivityType,
+} from '@models/ubi/beneficiary';
+import {
+    BeneficiaryTransactionCreationAttributes,
+    BeneficiaryTransactionAttributes,
+} from '@models/ubi/beneficiaryTransaction';
+import { InflowAttributes } from '@models/ubi/inflow';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isAddress } from '@utils/util';
 import { ethers } from 'ethers';
+import _ from 'lodash';
 import { Op, WhereAttributeHash, literal } from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 
@@ -263,5 +274,186 @@ export default class BeneficiaryService {
                 Logger.error(e);
             }
         }
+    }
+
+    public static async beneficiaryActivity(
+        managerAddress: string,
+        beneficiaryAddress: string
+    ): Promise<any> {
+        try {
+            if (!isAddress(managerAddress)) {
+                throw new Error('Not valid address!');
+            }
+            // prevent add community contracts as beneficiaries
+            if (
+                (await CommunityService.existsByContractAddress(
+                    managerAddress
+                )) === true
+            ) {
+                throw new Error('Not valid address!');
+            }
+
+            const manager = await models.manager.findOne({
+                attributes: ['communityId'],
+                where: { address: managerAddress, active: true },
+            });
+            if (manager === null) {
+                throw new Error('Manager not found');
+            }
+            const communityId = (manager.toJSON() as ManagerAttributes)
+                .communityId;
+            const community = await models.community.findOne({
+                attributes: ['id'],
+                where: {
+                    publicId: communityId,
+                },
+            });
+
+            const beneficiary = await models.beneficiary.findOne({
+                where: {
+                    address: beneficiaryAddress,
+                    communityId,
+                },
+                include: [
+                    {
+                        model: models.user,
+                        as: 'user',
+                    },
+                    {
+                        model: models.beneficiaryTransaction,
+                        as: 'transactions',
+                        include: [
+                            {
+                                model: models.user,
+                                as: 'user',
+                            },
+                        ],
+                    },
+                    {
+                        model: models.ubiClaim,
+                        as: 'claim',
+                    },
+                ],
+            });
+
+            if (!beneficiary) {
+                throw new Error('Beneficiary not found');
+            }
+
+            const beneficiaryRegistry =
+                await models.ubiBeneficiaryRegistry.findAll({
+                    include: [
+                        {
+                            model: models.user,
+                            as: 'user',
+                        },
+                    ],
+                    where: {
+                        address: beneficiaryAddress,
+                        communityId: community?.id,
+                    },
+                });
+
+            const inflow = await models.inflow.findAll({
+                where: {
+                    from: beneficiaryAddress,
+                },
+            });
+
+            const formatedBeneficiary = this.formatActivity({
+                ...(beneficiary.toJSON() as BeneficiaryAttributes),
+                registry: beneficiaryRegistry,
+                inflow,
+            });
+
+            return formatedBeneficiary;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    private static formatActivity(
+        beneficiary: BeneficiaryAttributes & {
+            transactions?: BeneficiaryTransactionAttributes[];
+            claim?: UbiClaim[];
+            registry?: UbiBeneficiaryRegistry[];
+            inflow?: InflowAttributes[];
+        }
+    ): IBeneficiaryWithActivities {
+        const activity: ActivityType[] = [];
+        Object.keys(beneficiary).forEach((key) => {
+            switch (key) {
+                case 'transactions':
+                    const transactions = beneficiary[key]?.map(
+                        (el: BeneficiaryTransactionAttributes) => ({
+                            id: el.id,
+                            type: key,
+                            tx: el.tx,
+                            date: new Date(el.date),
+                            withAddress: el.withAddress,
+                            user: el.user,
+                            isFromBeneficiary: el.isFromBeneficiary,
+                            amount: el.amount,
+                        })
+                    );
+                    if (transactions && transactions.length) {
+                        activity.push(...transactions);
+                    }
+                    delete beneficiary[key];
+                    break;
+                case 'claim':
+                    const claim = beneficiary[key]?.map((el: UbiClaim) => ({
+                        id: el.id,
+                        type: key,
+                        tx: el.tx,
+                        date: new Date(el.txAt),
+                        amount: el.amount,
+                    }));
+                    if (claim && claim.length) {
+                        activity.push(...claim);
+                    }
+                    delete beneficiary[key];
+                    break;
+                case 'registry':
+                    const registry = beneficiary[key]?.map(
+                        (el: UbiBeneficiaryRegistry) => ({
+                            id: el.id,
+                            type: key,
+                            tx: el.tx,
+                            date: new Date(el.txAt),
+                            withAddress: el.address,
+                            user: el.user,
+                            activity: el.activity,
+                        })
+                    );
+                    if (registry && registry.length) {
+                        activity.push(...registry);
+                    }
+                    delete beneficiary[key];
+                    break;
+                case 'inflow':
+                    const inflow = beneficiary[key]?.map(
+                        (el: InflowAttributes) => ({
+                            id: el.id,
+                            type: key,
+                            tx: el.tx,
+                            date: new Date(el.txAt),
+                            amount: el.amount,
+                        })
+                    );
+                    if (inflow && inflow.length) {
+                        activity.push(...inflow);
+                    }
+                    delete beneficiary[key];
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        return {
+            ...beneficiary,
+            activity: _.orderBy(activity, 'date', 'desc'),
+        };
     }
 }

@@ -1,3 +1,5 @@
+import { User } from '@interfaces/app/user';
+
 export enum UbiBeneficiaryRegistryType {
     add,
     remove,
@@ -13,6 +15,8 @@ export interface UbiBeneficiaryRegistry {
     activity: UbiBeneficiaryRegistryType;
     tx: string;
     txAt: Date;
+
+    user?: User;
 }
 export interface UbiBeneficiaryRegistryCreation {
     address: string;

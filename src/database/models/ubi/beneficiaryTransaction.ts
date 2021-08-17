@@ -1,6 +1,7 @@
+import { User } from '@interfaces/app/user';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-interface BeneficiaryTransactionAttributes {
+export interface BeneficiaryTransactionAttributes {
     id: number;
     beneficiary: string;
     withAddress: string;
@@ -8,6 +9,8 @@ interface BeneficiaryTransactionAttributes {
     isFromBeneficiary: boolean;
     tx: string;
     date: Date;
+
+    user?: User;
 
     // timestamps
     createdAt: Date;

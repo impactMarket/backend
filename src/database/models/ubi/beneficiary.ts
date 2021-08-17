@@ -1,6 +1,22 @@
 import { User } from '@interfaces/app/user';
 import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import { CommunityAttributes } from './community';
+
+export type ActivityType = {
+    id: number;
+    type: string;
+    tx: string;
+    date: Date;
+    withAddress?: string;
+    isFromBeneficiary?: boolean;
+    amount?: string;
+    user?: User;
+};
+
+export interface IBeneficiaryWithActivities extends BeneficiaryAttributes {
+    activity?: ActivityType[];
+}
 
 export interface BeneficiaryAttributes {
     id: number;

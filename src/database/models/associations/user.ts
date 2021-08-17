@@ -23,6 +23,22 @@ export function userAssociation(sequelize: Sequelize) {
         }
     );
 
+    sequelize.models.UbiBeneficiaryRegistryModel.belongsTo(
+        sequelize.models.UserModel,
+        {
+            foreignKey: 'from',
+            as: 'user',
+        }
+    );
+
+    sequelize.models.BeneficiaryTransaction.belongsTo(
+        sequelize.models.UserModel,
+        {
+            foreignKey: 'withAddress',
+            as: 'user',
+        }
+    );
+
     // used to query from the community with incude
     sequelize.models.UserModel.hasOne(sequelize.models.AppMediaContentModel, {
         foreignKey: 'id',
