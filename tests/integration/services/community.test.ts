@@ -464,6 +464,74 @@ describe('community service', () => {
                 await truncate(sequelize, 'Community');
             });
 
+            it('without query parameters (most beneficiaries)', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                for (const community of communities) {
+                    await BeneficiaryFactory(
+                        await UserFactory({
+                            n:
+                                community.requestByAddress === users[0].address
+                                    ? 3
+                                    : 4,
+                        }),
+                        community.publicId
+                    );
+                }
+
+                const result = await CommunityService.list({});
+
+                expect(result.rows[0]).to.include({
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
+                });
+                expect(result.rows[1]).to.include({
+                    id: communities[0].id,
+                    name: communities[0].name,
+                    country: communities[0].country,
+                    requestByAddress: users[0].address,
+                });
+            });
+
             it('nearest', async () => {
                 const communities = await CommunityFactory([
                     {

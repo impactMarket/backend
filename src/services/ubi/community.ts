@@ -383,6 +383,8 @@ export default class CommunityService {
                         break;
                 }
             });
+        } else {
+            orderOption.push([literal('state.beneficiaries'), 'DESC']);
         }
 
         if (query.filter === 'featured') {
