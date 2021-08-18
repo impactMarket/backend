@@ -390,7 +390,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/beneficiaries/{address}/activity:
+     * /community/beneficiaries/activity/{address}:
      *   get:
      *     tags:
      *       - "community"
@@ -414,9 +414,41 @@ export default (app: Router): void => {
      *               $ref: '#/components/schemas/BeneficiaryActivities'
      */
     route.get(
-        '/beneficiaries/:address/activity',
+        '/beneficiaries/activity/:address',
         authenticateToken,
-        controller.beneficiaryActivity
+        controller.getBeneficiaryActivity
+    );
+
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries/activity:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get a list of beneficiaries activities
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: beneficiary address
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BeneficiaryActivities'
+     */
+     route.get(
+        '/beneficiaries/activity',
+        authenticateToken,
+        controller.listBeneficiaryActivity
     );
 
     /**

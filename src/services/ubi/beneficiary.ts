@@ -276,7 +276,7 @@ export default class BeneficiaryService {
         }
     }
 
-    public static async beneficiaryActivity(
+    public static async getBeneficiaryActivity(
         managerAddress: string,
         beneficiaryAddress: string
     ): Promise<any> {
@@ -357,6 +357,7 @@ export default class BeneficiaryService {
             const inflow = await models.inflow.findAll({
                 where: {
                     from: beneficiaryAddress,
+                    communityId,
                 },
             });
 
@@ -367,6 +368,107 @@ export default class BeneficiaryService {
             });
 
             return formatedBeneficiary;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    public static async listBeneficiaryActivity(managerAddress: string): Promise<any> {
+        try {
+            if (!isAddress(managerAddress)) {
+                throw new Error('Not valid address!');
+            }
+            // prevent add community contracts as beneficiaries
+            if (
+                (await CommunityService.existsByContractAddress(
+                    managerAddress
+                )) === true
+            ) {
+                throw new Error('Not valid address!');
+            }
+
+            const manager = await models.manager.findOne({
+                attributes: ['communityId'],
+                where: { address: managerAddress, active: true },
+            });
+            if (manager === null) {
+                throw new Error('Manager not found');
+            }
+            const communityId = (manager.toJSON() as ManagerAttributes)
+                .communityId;
+            const community = await models.community.findOne({
+                attributes: ['id'],
+                where: {
+                    publicId: communityId,
+                },
+            });
+
+            const beneficiaryTransaction = await models.beneficiaryTransaction.findAll({
+                include: [
+                    {
+                        model: models.beneficiary,
+                        as: 'beneficiary',
+                        include: [
+                            {
+                                model: models.user,
+                                as: 'user',
+                            }
+                        ],
+                        where: {
+                            communityId,
+                        }
+                    },
+                    {
+                        model: models.user,
+                        as: 'user',
+                    }
+                ]
+            });
+
+            const claim = await models.ubiClaim.findAll({
+                where: {
+                    communityId: community?.id,
+                },
+                include: [
+                    {
+                        model: models.user,
+                        as: 'user',
+                    }
+                ]
+            })
+
+            const beneficiaryRegistry =
+                await models.ubiBeneficiaryRegistry.findAll({
+                    include: [
+                        {
+                            model: models.user,
+                            as: 'user',
+                        },
+                    ],
+                    where: {
+                        communityId: community?.id,
+                    },
+                });
+
+            const inflow = await models.inflow.findAll({
+                include: [
+                    {
+                        model: models.user,
+                        as: 'user',
+                    },
+                ],
+                where: {
+                    communityId,
+                },
+            });
+
+            // const formatedBeneficiary = this.formatActivity({
+            //     ...(beneficiary as BeneficiaryAttributes[]),
+            //     registry: beneficiaryRegistry,
+            //     inflow,
+            // });
+
+            // return formatedBeneficiary;
         } catch (error) {
             throw error;
         }
