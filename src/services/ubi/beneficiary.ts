@@ -1,30 +1,25 @@
 import { User } from '@interfaces/app/user';
 import {
-    UbiBeneficiaryRegistry,
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
 } from '@interfaces/ubi/ubiBeneficiaryRegistry';
-import { UbiClaim } from '@interfaces/ubi/ubiClaim';
 import { IListBeneficiary } from '@ipcttypes/endpoints';
 import {
     BeneficiaryAttributes,
-    IBeneficiaryWithActivities,
-    ActivityType,
+    IBeneficiaryActivities,
 } from '@models/ubi/beneficiary';
 import {
     BeneficiaryTransactionCreationAttributes,
-    BeneficiaryTransactionAttributes,
 } from '@models/ubi/beneficiaryTransaction';
-import { InflowAttributes } from '@models/ubi/inflow';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isAddress } from '@utils/util';
 import { ethers } from 'ethers';
 import _ from 'lodash';
-import { Op, WhereAttributeHash, literal } from 'sequelize';
+import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 
-import { models } from '../../database';
+import { models, sequelize } from '../../database';
 import CommunityService from './community';
 
 export default class BeneficiaryService {
@@ -278,8 +273,10 @@ export default class BeneficiaryService {
 
     public static async getBeneficiaryActivity(
         managerAddress: string,
-        beneficiaryAddress: string
-    ): Promise<any> {
+        beneficiaryAddress: string,
+        offset: number,
+        limit: number,
+    ): Promise<IBeneficiaryActivities[]> {
         try {
             if (!isAddress(managerAddress)) {
                 throw new Error('Not valid address!');
@@ -294,268 +291,41 @@ export default class BeneficiaryService {
             }
 
             const manager = await models.manager.findOne({
-                attributes: ['communityId'],
+                attributes: [],
+                include: [
+                    {
+                        model: models.community,
+                        as: 'community',
+                        attributes: ['id']
+                    }
+                ],
                 where: { address: managerAddress, active: true },
             });
             if (manager === null) {
                 throw new Error('Manager not found');
             }
-            const communityId = (manager.toJSON() as ManagerAttributes)
-                .communityId;
-            const community = await models.community.findOne({
-                attributes: ['id'],
-                where: {
-                    publicId: communityId,
-                },
+            const communityId = (manager.toJSON() as ManagerAttributes).community?.id;
+
+            const query = `SELECT id, 'registry' AS type, tx, "txAt" AS date, "registry"."from" AS "withAddress", activity, null AS "isFromBeneficiary", null AS amount, "user"."username"
+                FROM ubi_beneficiary_registry AS "registry" LEFT JOIN "user" AS "user" ON "registry"."from" = "user"."address"
+                WHERE "registry"."address" = '${beneficiaryAddress}' AND "registry"."communityId" = ${communityId}
+                UNION ALL
+                SELECT id, 'transaction' AS type, tx, "transaction"."createdAt" AS date, "withAddress", null as activity, "isFromBeneficiary", amount, "user"."username"
+                FROM beneficiarytransaction AS "transaction" LEFT JOIN "user" AS "user" ON "transaction"."withAddress" = "user"."address"
+                WHERE "transaction"."beneficiary" = '${beneficiaryAddress}' 
+                UNION ALL
+                SELECT id, 'claim' AS type, tx, "txAt" AS date, null AS "withAddress", null as activity, null AS "isFromBeneficiary", amount, null AS "username"
+                FROM ubi_claim as "claim"
+                WHERE "claim"."address" = '${beneficiaryAddress}' AND "claim"."communityId" = ${communityId}
+                ORDER BY DATE DESC
+                OFFSET ${offset}
+                LIMIT ${limit}`;
+            const data = await sequelize.query<IBeneficiaryActivities>(query, {
+                type: QueryTypes.SELECT
             });
-
-            const beneficiary = await models.beneficiary.findOne({
-                where: {
-                    address: beneficiaryAddress,
-                    communityId,
-                },
-                include: [
-                    {
-                        model: models.user,
-                        as: 'user',
-                    },
-                    {
-                        model: models.beneficiaryTransaction,
-                        as: 'transactions',
-                        include: [
-                            {
-                                model: models.user,
-                                as: 'user',
-                            },
-                        ],
-                    },
-                    {
-                        model: models.ubiClaim,
-                        as: 'claim',
-                    },
-                ],
-            });
-
-            if (!beneficiary) {
-                throw new Error('Beneficiary not found');
-            }
-
-            const beneficiaryRegistry =
-                await models.ubiBeneficiaryRegistry.findAll({
-                    include: [
-                        {
-                            model: models.user,
-                            as: 'user',
-                        },
-                    ],
-                    where: {
-                        address: beneficiaryAddress,
-                        communityId: community?.id,
-                    },
-                });
-
-            const inflow = await models.inflow.findAll({
-                where: {
-                    from: beneficiaryAddress,
-                    communityId,
-                },
-            });
-
-            const formatedBeneficiary = this.formatActivity({
-                ...(beneficiary.toJSON() as BeneficiaryAttributes),
-                registry: beneficiaryRegistry,
-                inflow,
-            });
-
-            return formatedBeneficiary;
+            return data
         } catch (error) {
             throw error;
         }
-    }
-
-    public static async listBeneficiaryActivity(managerAddress: string): Promise<any> {
-        try {
-            if (!isAddress(managerAddress)) {
-                throw new Error('Not valid address!');
-            }
-            // prevent add community contracts as beneficiaries
-            if (
-                (await CommunityService.existsByContractAddress(
-                    managerAddress
-                )) === true
-            ) {
-                throw new Error('Not valid address!');
-            }
-
-            const manager = await models.manager.findOne({
-                attributes: ['communityId'],
-                where: { address: managerAddress, active: true },
-            });
-            if (manager === null) {
-                throw new Error('Manager not found');
-            }
-            const communityId = (manager.toJSON() as ManagerAttributes)
-                .communityId;
-            const community = await models.community.findOne({
-                attributes: ['id'],
-                where: {
-                    publicId: communityId,
-                },
-            });
-
-            const beneficiaryTransaction = await models.beneficiaryTransaction.findAll({
-                include: [
-                    {
-                        model: models.beneficiary,
-                        as: 'beneficiary',
-                        include: [
-                            {
-                                model: models.user,
-                                as: 'user',
-                            }
-                        ],
-                        where: {
-                            communityId,
-                        }
-                    },
-                    {
-                        model: models.user,
-                        as: 'user',
-                    }
-                ]
-            });
-
-            const claim = await models.ubiClaim.findAll({
-                where: {
-                    communityId: community?.id,
-                },
-                include: [
-                    {
-                        model: models.user,
-                        as: 'user',
-                    }
-                ]
-            })
-
-            const beneficiaryRegistry =
-                await models.ubiBeneficiaryRegistry.findAll({
-                    include: [
-                        {
-                            model: models.user,
-                            as: 'user',
-                        },
-                    ],
-                    where: {
-                        communityId: community?.id,
-                    },
-                });
-
-            const inflow = await models.inflow.findAll({
-                include: [
-                    {
-                        model: models.user,
-                        as: 'user',
-                    },
-                ],
-                where: {
-                    communityId,
-                },
-            });
-
-            // const formatedBeneficiary = this.formatActivity({
-            //     ...(beneficiary as BeneficiaryAttributes[]),
-            //     registry: beneficiaryRegistry,
-            //     inflow,
-            // });
-
-            // return formatedBeneficiary;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    private static formatActivity(
-        beneficiary: BeneficiaryAttributes & {
-            transactions?: BeneficiaryTransactionAttributes[];
-            claim?: UbiClaim[];
-            registry?: UbiBeneficiaryRegistry[];
-            inflow?: InflowAttributes[];
-        }
-    ): IBeneficiaryWithActivities {
-        const activity: ActivityType[] = [];
-        Object.keys(beneficiary).forEach((key) => {
-            switch (key) {
-                case 'transactions':
-                    const transactions = beneficiary[key]?.map(
-                        (el: BeneficiaryTransactionAttributes) => ({
-                            id: el.id,
-                            type: key,
-                            tx: el.tx,
-                            date: new Date(el.date),
-                            withAddress: el.withAddress,
-                            user: el.user,
-                            isFromBeneficiary: el.isFromBeneficiary,
-                            amount: el.amount,
-                        })
-                    );
-                    if (transactions && transactions.length) {
-                        activity.push(...transactions);
-                    }
-                    delete beneficiary[key];
-                    break;
-                case 'claim':
-                    const claim = beneficiary[key]?.map((el: UbiClaim) => ({
-                        id: el.id,
-                        type: key,
-                        tx: el.tx,
-                        date: new Date(el.txAt),
-                        amount: el.amount,
-                    }));
-                    if (claim && claim.length) {
-                        activity.push(...claim);
-                    }
-                    delete beneficiary[key];
-                    break;
-                case 'registry':
-                    const registry = beneficiary[key]?.map(
-                        (el: UbiBeneficiaryRegistry) => ({
-                            id: el.id,
-                            type: key,
-                            tx: el.tx,
-                            date: new Date(el.txAt),
-                            withAddress: el.address,
-                            user: el.user,
-                            activity: el.activity,
-                        })
-                    );
-                    if (registry && registry.length) {
-                        activity.push(...registry);
-                    }
-                    delete beneficiary[key];
-                    break;
-                case 'inflow':
-                    const inflow = beneficiary[key]?.map(
-                        (el: InflowAttributes) => ({
-                            id: el.id,
-                            type: key,
-                            tx: el.tx,
-                            date: new Date(el.txAt),
-                            amount: el.amount,
-                        })
-                    );
-                    if (inflow && inflow.length) {
-                        activity.push(...inflow);
-                    }
-                    delete beneficiary[key];
-                    break;
-                default:
-                    break;
-            }
-        });
-
-        return {
-            ...beneficiary,
-            activity: _.orderBy(activity, 'date', 'desc'),
-        };
     }
 }

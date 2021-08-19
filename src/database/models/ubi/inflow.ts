@@ -1,6 +1,6 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export interface InflowAttributes {
+interface InflowAttributes {
     id: number;
     from: string;
     communityId: string;

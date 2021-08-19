@@ -133,81 +133,38 @@ import { adminAuthentication, authenticateToken } from '../middlewares';
  *          user:
  *            $ref: '#/components/schemas/AppUser'
  *      BeneficiaryActivities:
- *        type: object
- *        properties:
- *          address:
- *            type: string
- *            description: Beneficiary address
- *          claimed:
- *            type: string
- *            description: How much has the beneficiary claimed since added as a beneficiary
- *          claims:
- *            type: string
- *            description: How many claims has the beneficiary made since added as a beneficiary
- *          lastClaimAt:
- *            type: string
- *            description: last time that the beneficiary made a claim
- *          penultimateClaimAt:
- *            type: string
- *            description: penultimate time that the beneficiary made a claim
- *          blocked:
- *            type: boolean
- *            description: Is the beneficiary blocked?
- *          suspect:
- *            type: boolean
- *            description: Is the beneficiary suspect?
- *          communityId:
- *            type: string
- *            description: Community publicId
- *          active:
- *            type: boolean
- *            description: If true, it's a current active beneficiary
- *          tx:
- *            type: string
- *            description: Transaction Hash
- *          txAt:
- *            type: string
- *            description: Transaction date
- *          createdAt:
- *            type: date
- *            description: Beneficiary date of submission
- *          updatedAt:
- *            type: date
- *            description: Beneficiary date of last update
- *          user:
- *            $ref: '#/components/schemas/AppUser'
- *          activity:
- *            type: array
- *            items:
- *              type: object
- *              properties:
- *                id:
- *                  type: integer
- *                  description: Activity id
- *                type:
- *                  type: string
- *                  enum: [claim, inflow, transactions, registry]
- *                  description: Activity type
- *                tx:
- *                  type: string
- *                  description: Transaction Hash
- *                date:
- *                  type: string
- *                  description: Activity date
- *                withAddress:
- *                  type: string
- *                  description: User Address that the Beneficiary made the transaction (if the case)
- *                activity:
- *                  type: integer
- *                  description: In case of a registry activity, there is the activity type where: 0 - add, 1 - remove, 2 - lock, 3 - unlock
- *                isFromBeneficiary:
- *                  type: boolean
- *                  description: In case of transaction activity, this property will indicate if the beneficiary is sending or receiving
- *                amount:
- *                  type: string
- *                  description: Transaction amount
- *                user:
- *                  $ref: '#/components/schemas/AppUser'
+ *        type: array
+ *        items:
+ *          type: object
+ *          properties:
+ *            id:
+ *              type: integer
+ *              description: Activity id
+ *            type:
+ *              type: string
+ *              enum: [claim, inflow, transactions, registry]
+ *              description: Activity type
+ *            tx:
+ *              type: string
+ *              description: Transaction Hash
+ *            date:
+ *              type: string
+ *              description: Activity date
+ *            withAddress:
+ *              type: string
+ *              description: User Address that the Beneficiary made the transaction (if the case)
+ *            activity:
+ *              type: integer
+ *              description: In case of a registry activity, there is the activity type where 0=add, 1=remove, 2=lock, 3=unlock
+ *            isFromBeneficiary:
+ *              type: boolean
+ *              description: In case of transaction activity, this property will indicate if the beneficiary is sending or receiving
+ *            amount:
+ *              type: string
+ *              description: Transaction amount
+ *            username:
+ *              type: string
+ *              description: The username that the Beneficiary made the transaction (if the case)
  */
 export default (app: Router): void => {
     const controller = new communityController.CommunityController();
@@ -390,7 +347,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/beneficiaries/activity/{address}:
+     * /community/beneficiaries/activity/{address}/{query}:
      *   get:
      *     tags:
      *       - "community"
@@ -402,6 +359,18 @@ export default (app: Router): void => {
      *           type: string
      *         required: true
      *         description: beneficiary address
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 10)
      *     security:
      *     - api_auth:
      *       - "write:modify":
@@ -414,41 +383,9 @@ export default (app: Router): void => {
      *               $ref: '#/components/schemas/BeneficiaryActivities'
      */
     route.get(
-        '/beneficiaries/activity/:address',
+        '/beneficiaries/activity/:address/:query?',
         authenticateToken,
         controller.getBeneficiaryActivity
-    );
-
-    /**
-     * @swagger
-     *
-     * /community/beneficiaries/activity:
-     *   get:
-     *     tags:
-     *       - "community"
-     *     summary: Get a list of beneficiaries activities
-     *     parameters:
-     *       - in: path
-     *         name: address
-     *         schema:
-     *           type: string
-     *         required: true
-     *         description: beneficiary address
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     *     responses:
-     *       "200":
-     *         description: OK
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/BeneficiaryActivities'
-     */
-     route.get(
-        '/beneficiaries/activity',
-        authenticateToken,
-        controller.listBeneficiaryActivity
     );
 
     /**

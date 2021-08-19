@@ -16,7 +16,7 @@ export function sequelizeSetup() {
         //     idle: 5000,
         // },
         protocol: 'postgres',
-        native: true,
+        // native: true,
         logging: false,
         // query: { raw: true }, // I wish, eager loading gets fixed
     };

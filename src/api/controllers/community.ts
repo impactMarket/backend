@@ -288,25 +288,20 @@ class CommunityController {
             return;
         }
 
-        BeneficiaryService.getBeneficiaryActivity(
-            req.user.address,
-            req.params.address
-        )
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e.message })
-            );
-    };
-
-    listBeneficiaryActivity = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 400, false, '', {
-                error: 'User not identified!',
-            });
-            return;
+        let { offset, limit } = req.query;
+        if (offset === undefined || typeof offset !== 'string') {
+            offset = '0';
+        }
+        if (limit === undefined || typeof limit !== 'string') {
+            limit = '10';
         }
 
-        BeneficiaryService.listBeneficiaryActivity(req.user.address)
+        BeneficiaryService.getBeneficiaryActivity(
+            req.user.address,
+            req.params.address,
+            parseInt(offset, 10),
+            parseInt(limit, 10)
+        )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })

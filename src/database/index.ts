@@ -68,7 +68,7 @@ const dbConfig: Options = {
         idle: 5000,
     },
     protocol: 'postgres',
-    native: true,
+    // native: true,
     logging,
     // query: { raw: true }, // I wish, eager loading gets fixed
 };
