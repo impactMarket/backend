@@ -288,17 +288,21 @@ class CommunityController {
             return;
         }
 
-        let { offset, limit } = req.query;
+        let { offset, limit, type } = req.query;
         if (offset === undefined || typeof offset !== 'string') {
             offset = '0';
         }
         if (limit === undefined || typeof limit !== 'string') {
             limit = '10';
         }
+        if (type === undefined || typeof type !== 'string') {
+            type = 'ALL';
+        }
 
         BeneficiaryService.getBeneficiaryActivity(
             req.user.address,
             req.params.address,
+            type,
             parseInt(offset, 10),
             parseInt(limit, 10)
         )

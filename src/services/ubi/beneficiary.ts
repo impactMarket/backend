@@ -272,6 +272,7 @@ export default class BeneficiaryService {
     public static async getBeneficiaryActivity(
         managerAddress: string,
         beneficiaryAddress: string,
+        type: string,
         offset: number,
         limit: number
     ): Promise<IBeneficiaryActivities[]> {
@@ -305,26 +306,160 @@ export default class BeneficiaryService {
             const communityId = (manager.toJSON() as ManagerAttributes)
                 .community?.id;
 
-            const query = `SELECT id, 'registry' AS type, tx, "txAt" AS date, "registry"."from" AS "withAddress", activity, null AS "isFromBeneficiary", null AS amount, "user"."username"
-                FROM ubi_beneficiary_registry AS "registry" LEFT JOIN "user" AS "user" ON "registry"."from" = "user"."address"
-                WHERE "registry"."address" = '${beneficiaryAddress}' AND "registry"."communityId" = ${communityId}
-                UNION ALL
-                SELECT id, 'transaction' AS type, tx, "transaction"."createdAt" AS date, "withAddress", null as activity, "isFromBeneficiary", amount, "user"."username"
-                FROM beneficiarytransaction AS "transaction" LEFT JOIN "user" AS "user" ON "transaction"."withAddress" = "user"."address"
-                WHERE "transaction"."beneficiary" = '${beneficiaryAddress}' 
-                UNION ALL
-                SELECT id, 'claim' AS type, tx, "txAt" AS date, null AS "withAddress", null as activity, null AS "isFromBeneficiary", amount, null AS "username"
-                FROM ubi_claim as "claim"
-                WHERE "claim"."address" = '${beneficiaryAddress}' AND "claim"."communityId" = ${communityId}
-                ORDER BY DATE DESC
-                OFFSET ${offset}
-                LIMIT ${limit}`;
+            if (!communityId) {
+                throw new Error('Community not found');
+            }
 
-            return sequelize.query<IBeneficiaryActivities>(query, {
-                type: QueryTypes.SELECT,
-            });
+            switch (type.toUpperCase()) {
+                case 'CLAIM':
+                    return this.getClaimActivity(
+                        beneficiaryAddress,
+                        communityId,
+                        offset,
+                        limit
+                    );
+                case 'REGISTRY':
+                    return this.getRegistryActivity(
+                        beneficiaryAddress,
+                        communityId,
+                        offset,
+                        limit
+                    );
+                case 'TRANSACTION':
+                    return this.getTransactionActivity(
+                        beneficiaryAddress,
+                        communityId,
+                        offset,
+                        limit
+                    );
+                default:
+                    return this.getAllActivity(
+                        beneficiaryAddress,
+                        communityId,
+                        offset,
+                        limit
+                    );
+            }
         } catch (error) {
             throw error;
         }
+    }
+
+    private static async getClaimActivity(
+        beneficiaryAddress: string,
+        communityId: number,
+        offset: number,
+        limit: number
+    ): Promise<IBeneficiaryActivities[]> {
+        const claims = await models.ubiClaim.findAll({
+            where: {
+                address: beneficiaryAddress,
+                communityId,
+            },
+            order: [['txAt', 'DESC']],
+            limit,
+            offset,
+        });
+        return claims.map((claim) => ({
+            id: claim.id,
+            type: 'claim',
+            tx: claim.tx,
+            date: claim.txAt,
+            amount: claim.amount,
+        }));
+    }
+
+    private static async getRegistryActivity(
+        beneficiaryAddress: string,
+        communityId: number,
+        offset: number,
+        limit: number
+    ): Promise<IBeneficiaryActivities[]> {
+        const registry = await models.ubiBeneficiaryRegistry.findAll({
+            where: {
+                address: beneficiaryAddress,
+                communityId,
+            },
+            include: [
+                {
+                    attributes: ['username'],
+                    model: models.user,
+                    as: 'user',
+                },
+            ],
+            order: [['txAt', 'DESC']],
+            limit,
+            offset,
+        });
+        return registry.map((el) => ({
+            id: el.id,
+            type: 'registry',
+            tx: el.tx,
+            date: el.txAt,
+            withAddress: el.from,
+            username: el['user'] ? el['user']['username'] : null,
+            activity: el.activity,
+        }));
+    }
+
+    private static async getTransactionActivity(
+        beneficiaryAddress: string,
+        communityId: number,
+        offset: number,
+        limit: number
+    ): Promise<IBeneficiaryActivities[]> {
+        const transactions = await models.beneficiaryTransaction.findAll({
+            where: {
+                beneficiary: beneficiaryAddress,
+            },
+            include: [
+                {
+                    attributes: ['username'],
+                    model: models.user,
+                    as: 'user',
+                },
+            ],
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset,
+        });
+        return transactions.map((transaction) => ({
+            id: transaction.id,
+            type: 'transaction',
+            tx: transaction.tx,
+            date: transaction.createdAt,
+            withAddress: transaction.withAddress,
+            username: transaction['user']
+                ? transaction['user']['username']
+                : null,
+            amount: transaction.amount,
+            isFromBeneficiary: transaction.isFromBeneficiary,
+        }));
+    }
+
+    private static async getAllActivity(
+        beneficiaryAddress: string,
+        communityId: number,
+        offset: number,
+        limit: number
+    ): Promise<IBeneficiaryActivities[]> {
+        const query = `SELECT id, 'registry' AS type, tx, "txAt" AS date, "registry"."from" AS "withAddress", activity, null AS "isFromBeneficiary", null AS amount, "user"."username"
+            FROM ubi_beneficiary_registry AS "registry" LEFT JOIN "user" AS "user" ON "registry"."from" = "user"."address"
+            WHERE "registry"."address" = '${beneficiaryAddress}' AND "registry"."communityId" = ${communityId}
+            UNION ALL
+            SELECT id, 'transaction' AS type, tx, "transaction"."createdAt" AS date, "withAddress", null as activity, "isFromBeneficiary", amount, "user"."username"
+            FROM beneficiarytransaction AS "transaction" LEFT JOIN "user" AS "user" ON "transaction"."withAddress" = "user"."address"
+            WHERE "transaction"."beneficiary" = '${beneficiaryAddress}' 
+            UNION ALL
+            SELECT id, 'claim' AS type, tx, "txAt" AS date, null AS "withAddress", null as activity, null AS "isFromBeneficiary", amount, null AS "username"
+            FROM ubi_claim as "claim"
+            WHERE "claim"."address" = '${beneficiaryAddress}' AND "claim"."communityId" = ${communityId}
+            ORDER BY DATE DESC
+            OFFSET ${offset}
+            LIMIT ${limit}`;
+
+        return sequelize.query<IBeneficiaryActivities>(query, {
+            type: QueryTypes.SELECT,
+        });
     }
 }
