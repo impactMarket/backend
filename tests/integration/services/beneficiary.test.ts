@@ -5,7 +5,7 @@ import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { assert, spy, replace } from 'sinon';
 
-import { models } from '../../../src/database';
+import { models, sequelize as database } from '../../../src/database';
 import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
@@ -20,7 +20,6 @@ import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 import { randomTx } from '../../utils/utils';
-import { sequelize as database } from '../../../src/database';
 
 use(chaiSubset);
 
@@ -66,7 +65,7 @@ describe('beneficiary service', () => {
             communities[0].publicId
         );
 
-        replace(database, 'query', sequelize.query)
+        replace(database, 'query', sequelize.query);
     });
 
     after(async () => {
@@ -332,10 +331,10 @@ describe('beneficiary service', () => {
     describe('beneficiary activity', () => {
         it('get benificiary activity', async () => {
             const randomWallet = ethers.Wallet.createRandom();
-    
+
             const tx = randomTx();
             const tx2 = randomTx();
-    
+
             await BeneficiaryService.add(
                 users[16].address,
                 users[0].address,
@@ -343,7 +342,7 @@ describe('beneficiary service', () => {
                 tx,
                 new Date('2021-01-01')
             );
-    
+
             await BeneficiaryService.addTransaction({
                 beneficiary: users[16].address,
                 withAddress: await randomWallet.getAddress(),
@@ -351,8 +350,8 @@ describe('beneficiary service', () => {
                 isFromBeneficiary: true,
                 tx,
                 date: new Date(), // date only
-            })
-    
+            });
+
             await BeneficiaryService.addTransaction({
                 beneficiary: users[16].address,
                 withAddress: await randomWallet.getAddress(),
@@ -360,8 +359,8 @@ describe('beneficiary service', () => {
                 isFromBeneficiary: false,
                 tx: tx2,
                 date: new Date(), // date only
-            })
-    
+            });
+
             await ClaimsService.add({
                 address: users[16].address,
                 communityId: communities[0].id,
@@ -369,9 +368,14 @@ describe('beneficiary service', () => {
                 tx,
                 txAt: new Date('2021-01-02'),
             });
-    
-            const activities = await BeneficiaryService.getBeneficiaryActivity(users[0].address, users[16].address, 0, 10);
-    
+
+            const activities = await BeneficiaryService.getBeneficiaryActivity(
+                users[0].address,
+                users[16].address,
+                0,
+                10
+            );
+
             expect(activities[0]).to.include({
                 type: 'transaction',
                 amount: '50',
@@ -384,7 +388,7 @@ describe('beneficiary service', () => {
             });
             expect(activities[2]).to.include({
                 type: 'claim',
-                amount: '15'
+                amount: '15',
             });
             expect(activities[3]).to.include({
                 type: 'registry',
@@ -393,5 +397,5 @@ describe('beneficiary service', () => {
                 username: users[0].username,
             });
         });
-    })
+    });
 });

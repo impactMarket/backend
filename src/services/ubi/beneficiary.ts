@@ -8,9 +8,7 @@ import {
     BeneficiaryAttributes,
     IBeneficiaryActivities,
 } from '@models/ubi/beneficiary';
-import {
-    BeneficiaryTransactionCreationAttributes,
-} from '@models/ubi/beneficiaryTransaction';
+import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isAddress } from '@utils/util';
@@ -275,7 +273,7 @@ export default class BeneficiaryService {
         managerAddress: string,
         beneficiaryAddress: string,
         offset: number,
-        limit: number,
+        limit: number
     ): Promise<IBeneficiaryActivities[]> {
         try {
             if (!isAddress(managerAddress)) {
@@ -296,15 +294,16 @@ export default class BeneficiaryService {
                     {
                         model: models.community,
                         as: 'community',
-                        attributes: ['id']
-                    }
+                        attributes: ['id'],
+                    },
                 ],
                 where: { address: managerAddress, active: true },
             });
             if (manager === null) {
                 throw new Error('Manager not found');
             }
-            const communityId = (manager.toJSON() as ManagerAttributes).community?.id;
+            const communityId = (manager.toJSON() as ManagerAttributes)
+                .community?.id;
 
             const query = `SELECT id, 'registry' AS type, tx, "txAt" AS date, "registry"."from" AS "withAddress", activity, null AS "isFromBeneficiary", null AS amount, "user"."username"
                 FROM ubi_beneficiary_registry AS "registry" LEFT JOIN "user" AS "user" ON "registry"."from" = "user"."address"
@@ -320,10 +319,10 @@ export default class BeneficiaryService {
                 ORDER BY DATE DESC
                 OFFSET ${offset}
                 LIMIT ${limit}`;
-            const data = await sequelize.query<IBeneficiaryActivities>(query, {
-                type: QueryTypes.SELECT
+
+            return sequelize.query<IBeneficiaryActivities>(query, {
+                type: QueryTypes.SELECT,
             });
-            return data
         } catch (error) {
             throw error;
         }

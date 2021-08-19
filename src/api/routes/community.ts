@@ -142,7 +142,7 @@ import { adminAuthentication, authenticateToken } from '../middlewares';
  *              description: Activity id
  *            type:
  *              type: string
- *              enum: [claim, inflow, transactions, registry]
+ *              enum: [claim, inflow, transaction, registry]
  *              description: Activity type
  *            tx:
  *              type: string
