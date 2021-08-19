@@ -14,6 +14,7 @@ export async function verifyUserSuspectActivity(): Promise<void> {
                         as: 'selfTrust',
                         include: [
                             {
+                                attributes: [],
                                 model: models.user,
                                 as: 'throughTrust',
                                 where: {
