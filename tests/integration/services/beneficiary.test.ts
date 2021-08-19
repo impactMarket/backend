@@ -330,7 +330,7 @@ describe('beneficiary service', () => {
     });
 
     describe('beneficiary activity', () => {
-        it('get benificiary activity', async () => {
+        before(async () => {
             const randomWallet = ethers.Wallet.createRandom();
 
             const tx = randomTx();
@@ -369,10 +369,13 @@ describe('beneficiary service', () => {
                 tx,
                 txAt: new Date('2021-01-02'),
             });
+        });
 
+        it('get all activities', async () => {
             const activities = await BeneficiaryService.getBeneficiaryActivity(
                 users[0].address,
                 users[16].address,
+                'ALL',
                 0,
                 10
             );
@@ -396,6 +399,59 @@ describe('beneficiary service', () => {
                 activity: 0,
                 withAddress: users[0].address,
                 username: users[0].username,
+            });
+        });
+
+        it('get claim activity', async () => {
+            const activities = await BeneficiaryService.getBeneficiaryActivity(
+                users[0].address,
+                users[16].address,
+                'claim',
+                0,
+                10
+            );
+
+            expect(activities[0]).to.include({
+                type: 'claim',
+                amount: '15',
+            });
+        });
+
+        it('get registry activity', async () => {
+            const activities = await BeneficiaryService.getBeneficiaryActivity(
+                users[0].address,
+                users[16].address,
+                'registry',
+                0,
+                10
+            );
+
+            expect(activities[0]).to.include({
+                type: 'registry',
+                activity: 0,
+                withAddress: users[0].address,
+                username: users[0].username,
+            });
+        });
+
+        it('get transaction activity', async () => {
+            const activities = await BeneficiaryService.getBeneficiaryActivity(
+                users[0].address,
+                users[16].address,
+                'transaction',
+                0,
+                10
+            );
+
+            expect(activities[0]).to.include({
+                type: 'transaction',
+                amount: '50',
+                isFromBeneficiary: false,
+            });
+            expect(activities[1]).to.include({
+                type: 'transaction',
+                amount: '25',
+                isFromBeneficiary: true,
             });
         });
     });
