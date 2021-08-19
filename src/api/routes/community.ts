@@ -360,6 +360,13 @@ export default (app: Router): void => {
      *         required: true
      *         description: beneficiary address
      *       - in: query
+     *         name: type
+     *         schema:
+     *           type: string
+     *           enum: [all, claim, transaction, registry]
+     *         required: false
+     *         description: activity type (all by default)
+     *       - in: query
      *         name: offset
      *         schema:
      *           type: integer
