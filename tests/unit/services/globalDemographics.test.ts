@@ -262,21 +262,27 @@ describe('globalDemographics', () => {
     //     },
     // });
 
-    const dbSequelizeQueryStub = stub(
-        GlobalDemographicsService.sequelize,
-        'query'
-    );
-    const dbGlobalDemographicsInsertStub = stub(
-        GlobalDemographicsService.globalDemographics,
-        'bulkCreate'
-    );
+    let dbGlobalDemographicsInsertStub: SinonStub;
+    let dbSequelizeQueryStub: SinonStub;
 
-    dbSequelizeQueryStub
-        .withArgs(match(/current_date_year/))
-        .returns(Promise.resolve(ageRangeQueryResult as any));
-    dbSequelizeQueryStub
-        .withArgs(match(/gender/))
-        .returns(Promise.resolve(genderQueryResult as any));
+    before(() => {
+        dbSequelizeQueryStub = stub(
+            GlobalDemographicsService.sequelize,
+            'query'
+        );
+    
+        dbSequelizeQueryStub
+            .withArgs(match(/current_date_year/))
+            .returns(Promise.resolve(ageRangeQueryResult as any));
+        dbSequelizeQueryStub
+            .withArgs(match(/gender/))
+            .returns(Promise.resolve(genderQueryResult as any));
+            
+        dbGlobalDemographicsInsertStub = stub(
+            GlobalDemographicsService.globalDemographics,
+            'bulkCreate'
+        );
+    })
 
     it('#calculateDemographics()', async () => {
         await GlobalDemographicsService.calculateDemographics();
