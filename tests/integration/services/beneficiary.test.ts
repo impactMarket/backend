@@ -3,7 +3,7 @@ import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
 import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
-import { assert, spy, replace } from 'sinon';
+import { assert, spy, replace, restore } from 'sinon';
 
 import { models, sequelize as database } from '../../../src/database';
 import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
@@ -77,6 +77,7 @@ describe('beneficiary service', () => {
         //
         spyBeneficiaryAdd.restore();
         spyBeneficiaryRegistryAdd.restore();
+        restore();
     });
 
     it('order by suspicious activity', async () => {
