@@ -3,17 +3,6 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { CommunityAttributes } from './community';
 
-export type IBeneficiaryActivities = {
-    id: number;
-    type: string;
-    tx: string;
-    date: Date;
-    withAddress?: string;
-    isFromBeneficiary?: boolean;
-    amount?: string;
-    username?: string;
-};
-
 export interface BeneficiaryAttributes {
     id: number;
     address: string;

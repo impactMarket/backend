@@ -235,3 +235,14 @@ export interface ICommunityStories {
     cover: AppMediaContent;
     stories: ICommunityStory[];
 }
+
+export type IBeneficiaryActivities = {
+    id: number;
+    type: string;
+    tx: string;
+    date: Date;
+    withAddress?: string;
+    isFromBeneficiary?: boolean;
+    amount?: string;
+    username?: string;
+};

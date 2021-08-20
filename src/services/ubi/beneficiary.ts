@@ -3,21 +3,20 @@ import {
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
 } from '@interfaces/ubi/ubiBeneficiaryRegistry';
-import { IListBeneficiary } from '@ipcttypes/endpoints';
-import {
-    BeneficiaryAttributes,
-    IBeneficiaryActivities,
-} from '@models/ubi/beneficiary';
+import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isAddress } from '@utils/util';
 import { ethers } from 'ethers';
-import _ from 'lodash';
 import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 
 import { models, sequelize } from '../../database';
+import {
+    IBeneficiaryActivities,
+    IListBeneficiary,
+} from '../../types/endpoints';
 import CommunityService from './community';
 
 export default class BeneficiaryService {
@@ -445,21 +444,27 @@ export default class BeneficiaryService {
     ): Promise<IBeneficiaryActivities[]> {
         const query = `SELECT id, 'registry' AS type, tx, "txAt" AS date, "registry"."from" AS "withAddress", activity, null AS "isFromBeneficiary", null AS amount, "user"."username"
             FROM ubi_beneficiary_registry AS "registry" LEFT JOIN "user" AS "user" ON "registry"."from" = "user"."address"
-            WHERE "registry"."address" = '${beneficiaryAddress}' AND "registry"."communityId" = ${communityId}
+            WHERE "registry"."address" = :beneficiaryAddress AND "registry"."communityId" = :communityId
             UNION ALL
             SELECT id, 'transaction' AS type, tx, "transaction"."createdAt" AS date, "withAddress", null as activity, "isFromBeneficiary", amount, "user"."username"
             FROM beneficiarytransaction AS "transaction" LEFT JOIN "user" AS "user" ON "transaction"."withAddress" = "user"."address"
-            WHERE "transaction"."beneficiary" = '${beneficiaryAddress}' 
+            WHERE "transaction"."beneficiary" = :beneficiaryAddress 
             UNION ALL
             SELECT id, 'claim' AS type, tx, "txAt" AS date, null AS "withAddress", null as activity, null AS "isFromBeneficiary", amount, null AS "username"
             FROM ubi_claim as "claim"
-            WHERE "claim"."address" = '${beneficiaryAddress}' AND "claim"."communityId" = ${communityId}
+            WHERE "claim"."address" = :beneficiaryAddress AND "claim"."communityId" = :communityId
             ORDER BY DATE DESC
-            OFFSET ${offset}
-            LIMIT ${limit}`;
+            OFFSET :offset
+            LIMIT :limit`;
 
         return sequelize.query<IBeneficiaryActivities>(query, {
             type: QueryTypes.SELECT,
+            replacements: {
+                beneficiaryAddress,
+                communityId,
+                offset,
+                limit,
+            },
         });
     }
 }
