@@ -6,9 +6,7 @@ import { AppUserTrustModel } from '@models/app/appUserTrust';
 import { CronJobExecuted } from '@models/app/cronJobExecuted';
 import { ExchangeRates } from '@models/app/exchangeRates';
 import { ImMetadata } from '@models/app/imMetadata';
-import { SubscribersModel } from '@models/app/subscribers';
 import { UserModel } from '@models/app/user';
-// import { AppUserDeviceModel } from '@models/app/userDevice';
 import { GlobalDailyState } from '@models/global/globalDailyState';
 import { GlobalDemographics } from '@models/global/globalDemographics';
 import { GlobalGrowthModel } from '@models/global/globalGrowth';
@@ -123,12 +121,9 @@ const models: DbModels = {
     globalGrowth: sequelize.models
         .GlobalGrowthModel as ModelCtor<GlobalGrowthModel>,
     // userDevice: sequelize.models
-    //     .AppUserDeviceModel as ModelCtor<AppUserDeviceModel>,
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager>,
-    subscribers: sequelize.models
-        .SubscribersModel as ModelCtor<SubscribersModel>,
     notifiedBacker: sequelize.models
         .NotifiedBacker as ModelCtor<NotifiedBacker>,
     reachedAddress: sequelize.models

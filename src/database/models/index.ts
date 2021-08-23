@@ -9,9 +9,7 @@ import { initializeAppUserTrust } from './app/appUserTrust';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
 import { initializeExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
-import { initializeSubscribers } from './app/subscribers';
 import { initializeUser } from './app/user';
-// import { initializeAppUserDevice } from './app/userDevice';
 import { appAssociation } from './associations/app';
 import { communityAssociation } from './associations/community';
 import { storyAssociation } from './associations/story';
@@ -21,13 +19,11 @@ import { initializeGlobalDemographics } from './global/globalDemographics';
 import { initializeGlobalGrowth } from './global/globalGrowth';
 import { initializeNotifiedBacker } from './notifiedBacker';
 import { initializeReachedAddress } from './reachedAddress';
-// import { initializeSSI } from './ssi';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryContent } from './story/storyContent';
 import { initializeStoryEngagement } from './story/storyEngagement';
 import { initializeStoryUserEngagement } from './story/storyUserEngagement';
 import { initializeStoryUserReport } from './story/storyUserReport';
-// import { initializeTransactions } from './transactions';
 import { initializeBeneficiary } from './ubi/beneficiary';
 import { initializeBeneficiaryTransaction } from './ubi/beneficiaryTransaction';
 import { initializeCommunity } from './ubi/community';
@@ -52,10 +48,8 @@ import { initializeUbiPromoterSocialMedia } from './ubi/ubiPromoterSocialMedia';
 export default function initModels(sequelize: Sequelize): void {
     // app
     initializeUser(sequelize);
-    initializeSubscribers(sequelize);
     initializeAppUserTrust(sequelize);
     initializeAppUserThroughTrust(sequelize);
-    // initializeAppUserDevice(sequelize);
     initializeAgenda(sequelize);
     initializeExchangeRates(sequelize);
     initializeImMetadata(sequelize);
@@ -107,8 +101,4 @@ export default function initModels(sequelize: Sequelize): void {
     communityAssociation(sequelize);
     storyAssociation(sequelize);
     appAssociation(sequelize);
-
-    // deprecated
-    // initializeSSI(sequelize);
-    // initializeTransactions(sequelize);
 }
