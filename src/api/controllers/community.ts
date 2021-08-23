@@ -100,15 +100,6 @@ class CommunityController {
         }
     };
 
-    /**
-     * @deprecated in mobile@1.1.3
-     */
-    pictureAdd = (req: Request, res: Response) => {
-        CommunityService.pictureAdd(req.params.isPromoter === 'true', req.file)
-            .then((url) => standardResponse(res, 200, true, url))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
     getPresignedUrlMedia = (req: Request, res: Response) => {
         CommunityService.getPresignedUrlMedia(
             req.params.mime,
