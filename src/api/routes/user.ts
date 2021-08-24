@@ -265,4 +265,10 @@ export default (app: Router): void => {
         userValidators.edit,
         userController.edit
     )
+
+    route.delete(
+        '/',
+        authenticateToken,
+        userController.delete
+    )
 };

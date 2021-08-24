@@ -23,6 +23,8 @@ export default class UserService {
     public static appUserThroughTrust = models.appUserThroughTrust;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
+    public static storyContent = models.storyContent;
+    public static storyUserEngagement = models.storyUserEngagement;
 
     private static profileContentStorage = new ProfileContentStorage();
 
@@ -506,5 +508,62 @@ export default class UserService {
             throw new Error('user was not updated!')
         }
         return updated[1][0];
+    }
+
+    public static async delete(address: string): Promise<boolean> {
+        const t = await this.sequelize.transaction();
+        try {
+            const user = (await this.user.findOne({
+                where: {
+                    address,
+                },
+                include: [
+                    {
+                        model: this.appUserTrust,
+                        as: 'trust'
+                    }
+                ]
+            }))!.toJSON() as User;
+    
+            if(!user) {
+                throw new Error('User not found');
+            }
+    
+            user.trust?.forEach(async (el) => {
+                await this.appUserTrust.destroy({
+                    where: {
+                        id: el.id
+                    },
+                    transaction: t
+                })
+            });
+    
+            await this.storyContent.destroy({
+                where: {
+                    byAddress: user.address
+                },
+                transaction: t
+            });
+    
+            await this.storyUserEngagement.destroy({
+                where: {
+                    address: user.address
+                },
+                transaction: t
+            });
+    
+            await this.user.destroy({
+                where: {
+                    address,
+                },
+                transaction: t
+            });
+    
+            await t.commit();
+            return true;
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
     }
 }

@@ -10,6 +10,7 @@ import UserService from '../../../src/services/app/user';
 import CommunityFactory from '../../factories/community';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
+import StoryService from '../../../src/services/story';
 
 describe('user service', () => {
     let sequelize: Sequelize;
@@ -432,5 +433,66 @@ describe('user service', () => {
 
             expect(userUpdated).to.include(data);
         })
+    });
+
+    describe('delete', () => {
+        let users: User[];
+
+        before(async () => {
+            users = await UserFactory({ n: 1 });
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const storyService = new StoryService();
+            const story = await storyService.add(users[0].address, {
+                byAddress: users[0].address,
+                communityId: communities[0].id,
+            });
+            await storyService.love(users[0].address, story.id)
+        });
+
+        it('should delete user successfully', async () => {
+            await UserService.delete(users[0].address);
+
+            const findUser = await models.user.findOne({
+                where: { address: users[0].address },
+            });
+
+            const phone = users[0].trust ? users[0].trust[0].phone : null;
+            const findPhone = await models.appUserTrust.findOne({
+                where: {
+                    phone,
+                },
+            });
+            const findStoryContent = await models.storyContent.findOne({
+                where: {
+                    byAddress: users[0].address,
+                }
+            });
+            const findStoryUserEngagement = await models.storyUserEngagement.findOne({
+                where: {
+                    address: users[0].address,
+                }
+            });
+
+            expect(findUser).to.be.null;
+            expect(findPhone).to.be.null;
+            expect(findStoryContent).to.be.null;
+            expect(findStoryUserEngagement).to.be.null;
+        });
     })
 });
