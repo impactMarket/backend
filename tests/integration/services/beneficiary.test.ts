@@ -1,7 +1,7 @@
 import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
 import { Sequelize } from 'sequelize';
-import { assert, spy } from 'sinon';
+import { assert, spy, SinonSpy } from 'sinon';
 
 import { models } from '../../../src/database';
 import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
@@ -29,12 +29,9 @@ describe('beneficiary service', () => {
     let managers: ManagerAttributes[];
     let beneficiaries: BeneficiaryAttributes[];
 
-    const spyBeneficiaryRegistryAdd = spy(
-        models.ubiBeneficiaryRegistry,
-        'create'
-    );
-    const spyBeneficiaryAdd = spy(models.beneficiary, 'create');
-    const spyBeneficiaryUpdate = spy(models.beneficiary, 'update');
+    let spyBeneficiaryRegistryAdd: SinonSpy;
+    let spyBeneficiaryAdd: SinonSpy;
+    let spyBeneficiaryUpdate: SinonSpy;
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -62,6 +59,13 @@ describe('beneficiary service', () => {
             users.slice(0, 8),
             communities[0].publicId
         );
+
+        spyBeneficiaryRegistryAdd = spy(
+            models.ubiBeneficiaryRegistry,
+            'create'
+        );
+        spyBeneficiaryAdd = spy(models.beneficiary, 'create');
+        spyBeneficiaryUpdate = spy(models.beneficiary, 'update');
     });
 
     after(async () => {
