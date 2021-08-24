@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
+import { replace, restore } from 'sinon';
 
-import { models } from '../../../../src/database';
+import { models, sequelize as database } from '../../../../src/database';
 import { User } from '../../../../src/interfaces/app/user';
 import { verifyUserSuspectActivity } from '../../../../src/worker/jobs/cron/user';
 import UserFactory from '../../../factories/user';
@@ -13,11 +14,17 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
+
+        replace(database, 'query', sequelize.query);
     });
 
     afterEach(async () => {
         await truncate(sequelize, 'UserModel');
         await truncate(sequelize);
+    });
+
+    after(() => {
+        restore();
     });
 
     it('should detect suspicious account', async () => {

@@ -1,68 +1,25 @@
-import { User } from '@interfaces/app/user';
+import { QueryTypes } from 'sequelize';
 
-import { models } from '../../../database';
+import { sequelize } from '../../../database';
 
 export async function verifyUserSuspectActivity(): Promise<void> {
-    const users = await models.user.findAll({
-        include: [
-            {
-                model: models.appUserTrust,
-                as: 'trust',
-                include: [
-                    {
-                        model: models.appUserTrust,
-                        as: 'selfTrust',
-                        include: [
-                            {
-                                attributes: [],
-                                model: models.user,
-                                as: 'throughTrust',
-                                where: {
-                                    active: true,
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
-        where: {
-            active: true,
-        },
+    const query = `WITH 
+    active_users 
+        AS (SELECT "user".address, "trust".phone
+                FROM public.user AS "user" 
+                LEFT OUTER JOIN app_user_through_trust AS "through_trust"
+                    ON "user".address = "through_trust"."userAddress"
+                LEFT OUTER JOIN app_user_trust AS "trust"
+                    ON "through_trust"."appUserTrustId" = "trust".id
+                WHERE "user".active = true),
+    suspect
+        AS (SELECT address FROM (SELECT phone FROM active_users GROUP BY phone HAVING count(phone) > 1) as phones 
+                LEFT OUTER JOIN active_users ON active_users.phone = phones.phone),
+    update_trust
+        AS (UPDATE public.user SET suspect = false WHERE suspect = true AND address NOT IN (SELECT * FROM suspect))
+    UPDATE public.user SET suspect = true WHERE address IN (SELECT * FROM suspect)`;
+
+    await sequelize.query(query, {
+        type: QueryTypes.UPDATE,
     });
-    for (let c = 0; c < users.length; c++) {
-        const user = users[c].toJSON() as User;
-        if (user.trust && user.trust.length > 0) {
-            const couldBeSuspect = user.trust.filter((tt) => {
-                if (tt.selfTrust && tt.selfTrust.length > 1) {
-                    return true;
-                }
-                return false;
-            });
-            if (couldBeSuspect.length > 0) {
-                await models.user.update(
-                    {
-                        suspect: true,
-                    },
-                    {
-                        where: { address: user.address },
-                        returning: false,
-                    }
-                );
-            } else {
-                // was it suspect before?
-                if (user.suspect) {
-                    await models.user.update(
-                        {
-                            suspect: false,
-                        },
-                        {
-                            where: { address: user.address },
-                            returning: false,
-                        }
-                    );
-                }
-            }
-        }
-    }
 }
