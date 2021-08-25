@@ -1,15 +1,12 @@
 import UserController from '@controllers/user';
 import userValidators from '@validators/user';
 import { Router } from 'express';
-import multer from 'multer';
 
 import { authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {
     const route = Router();
     const userController = new UserController();
-    const storage = multer.memoryStorage();
-    const upload = multer({ storage });
 
     app.use('/user', route);
 
@@ -98,11 +95,6 @@ export default (app: Router): void => {
         userController.getPresignedUrlMedia
     );
 
-    /**
-     * @deprecated Last used in 1.1.12
-     */
-    route.put('/avatar', authenticateToken, userController.updateAvatar);
-
     route.post(
         '/welcome',
         authenticateToken,
@@ -190,13 +182,6 @@ export default (app: Router): void => {
     );
 
     route.post(
-        '/picture',
-        upload.single('imageFile'),
-        authenticateToken,
-        userController.pictureAdd
-    );
-
-    route.post(
         '/device',
         authenticateToken,
         userValidators.device,
@@ -253,16 +238,11 @@ export default (app: Router): void => {
      *                properties:
      *                  success:
      *                    type: boolean
-     *                  user: 
+     *                  user:
      *                    $ref: '#/components/schemas/AppUser'
      *     security:
      *     - api_auth:
      *       - "write:modify":
      */
-    route.put(
-        '/',
-        authenticateToken,
-        userValidators.edit,
-        userController.edit
-    )
+    route.put('/', authenticateToken, userValidators.edit, userController.edit);
 };

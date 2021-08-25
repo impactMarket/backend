@@ -1,7 +1,6 @@
 import communityController from '@controllers/community';
 import communityValidators from '@validators/community';
 import { Router } from 'express';
-import multer from 'multer';
 
 import { cacheWithRedis } from '../../database';
 import { adminAuthentication, authenticateToken } from '../middlewares';
@@ -135,10 +134,7 @@ import { adminAuthentication, authenticateToken } from '../middlewares';
  */
 export default (app: Router): void => {
     const controller = new communityController.CommunityController();
-
     const route = Router();
-    const storage = multer.memoryStorage();
-    const upload = multer({ storage });
 
     app.use('/community', route);
 
@@ -193,13 +189,6 @@ export default (app: Router): void => {
         '/:id/historical-ssi',
         cacheWithRedis('1 day'),
         communityController.getHistoricalSSI
-    );
-
-    route.post(
-        '/picture/:isPromoter?',
-        upload.single('imageFile'),
-        authenticateToken,
-        controller.pictureAdd
     );
 
     // --------------------------------------------------------------- new

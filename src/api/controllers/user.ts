@@ -93,19 +93,6 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public updateAvatar = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
-            });
-            return;
-        }
-        const { mediaId } = req.body;
-        UserService.updateAvatar(req.user.address, mediaId)
-            .then((r) => standardResponse(res, 201, r, ''))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
     public updateUsername = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
@@ -203,18 +190,6 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public pictureAdd = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
-            });
-            return;
-        }
-        UserService.setProfilePicture(req.user.address, req.file)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
     /**
      * @deprecated
      */
@@ -295,7 +270,9 @@ class UserController {
 
         UserService.edit(req.user.address, req.body)
             .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e.message }));
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 }
 
