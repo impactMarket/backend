@@ -95,6 +95,8 @@ export default (app: Router): void => {
         userController.getPresignedUrlMedia
     );
 
+    route.put('/avatar', authenticateToken, userController.updateAvatar);
+
     route.post(
         '/welcome',
         authenticateToken,
