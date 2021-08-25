@@ -93,6 +93,19 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    public updateAvatar = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+        const { mediaId } = req.body;
+        UserService.updateAvatar(req.user.address, mediaId)
+            .then((r) => standardResponse(res, 201, r, ''))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     public updateUsername = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
