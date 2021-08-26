@@ -3,7 +3,9 @@ import faker from 'faker';
 import { Sequelize } from 'sequelize';
 import Sinon, { assert, replace, spy } from 'sinon';
 
+import { AppMediaContent } from '../../../src/interfaces/app/appMediaContent';
 import { User } from '../../../src/interfaces/app/user';
+import { UbiPromoter } from '../../../src/interfaces/ubi/ubiPromoter';
 import { CommunityContentStorage } from '../../../src/services/storage';
 import CommunityService from '../../../src/services/ubi/community';
 import BeneficiaryFactory from '../../factories/beneficiary';
@@ -809,6 +811,7 @@ describe('community service', () => {
 
         it('community without campaign', async () => {
             const result = await CommunityService.getCampaign(communityId);
+            // eslint-disable-next-line no-unused-expressions
             expect(result).to.be.null;
         });
 
@@ -820,6 +823,7 @@ describe('community service', () => {
             });
 
             const result = await CommunityService.getCampaign(communityId);
+            // eslint-disable-next-line no-unused-expressions
             expect(result).to.not.be.null;
             expect(result).to.include({
                 communityId,
@@ -984,6 +988,62 @@ describe('community service', () => {
                 communities[0].coverMediaId
             );
             expect(updatedCommunity.coverMediaId).to.be.equal(1);
+        });
+    });
+
+    describe('promoter', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'UbiPromoterModel');
+            await truncate(sequelize);
+        });
+
+        it('get promoter', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const createdMedia =
+                await sequelize.models.AppMediaContentModel.create({
+                    url: faker.image.imageUrl(),
+                    width: 0,
+                    height: 0,
+                });
+
+            const name = faker.company.companyName();
+            const description = faker.lorem.sentence();
+            const media = createdMedia.toJSON() as AppMediaContent;
+            const createdPromoter =
+                await sequelize.models.UbiPromoterModel.create({
+                    category: 'organization',
+                    name,
+                    description,
+                    logoMediaId: media.id, // on purpose
+                });
+
+            const promoter = createdPromoter.toJSON() as UbiPromoter;
+            await sequelize.models.UbiCommunityPromoterModel.create({
+                promoterId: promoter.id,
+                communityId: communities[0].id,
+            });
+            const result: UbiPromoter | null =
+                await CommunityService.getPromoter(communities[0].id);
+            // eslint-disable-next-line no-unused-expressions
+            expect(result).to.not.be.null;
+            expect(result!.name).to.be.equal(name);
+            expect(result!.description).to.be.equal(description);
         });
     });
 });
