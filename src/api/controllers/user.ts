@@ -203,18 +203,6 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public pictureAdd = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
-            });
-            return;
-        }
-        UserService.setProfilePicture(req.user.address, req.file)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
     /**
      * @deprecated
      */
@@ -283,6 +271,21 @@ class UserController {
                 }
             })
             .catch(() => res.sendStatus(404));
+    };
+
+    public edit = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+
+        UserService.edit(req.user.address, req.body)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 }
 

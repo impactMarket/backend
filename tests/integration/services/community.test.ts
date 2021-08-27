@@ -3,7 +3,9 @@ import faker from 'faker';
 import { Sequelize } from 'sequelize';
 import Sinon, { assert, replace, spy } from 'sinon';
 
+import { AppMediaContent } from '../../../src/interfaces/app/appMediaContent';
 import { User } from '../../../src/interfaces/app/user';
+import { UbiPromoter } from '../../../src/interfaces/ubi/ubiPromoter';
 import { CommunityContentStorage } from '../../../src/services/storage';
 import CommunityService from '../../../src/services/ubi/community';
 import BeneficiaryFactory from '../../factories/beneficiary';
@@ -457,6 +459,327 @@ describe('community service', () => {
                 result.push(r.rows);
             }
         }).timeout(120000); // exceptionally 120s timeout
+
+        describe('sort', () => {
+            afterEach(async () => {
+                await truncate(sequelize, 'Beneficiary');
+                await truncate(sequelize, 'Community');
+            });
+
+            it('without query parameters (most beneficiaries)', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                for (const community of communities) {
+                    await BeneficiaryFactory(
+                        await UserFactory({
+                            n:
+                                community.requestByAddress === users[0].address
+                                    ? 3
+                                    : 4,
+                        }),
+                        community.publicId
+                    );
+                }
+
+                const result = await CommunityService.list({});
+
+                expect(result.rows[0]).to.include({
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
+                });
+                expect(result.rows[1]).to.include({
+                    id: communities[0].id,
+                    name: communities[0].name,
+                    country: communities[0].country,
+                    requestByAddress: users[0].address,
+                });
+            });
+
+            it('nearest', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -15.8697203,
+                            longitude: -47.9207824,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                const result = await CommunityService.list({
+                    orderBy: 'nearest',
+                    lat: '-23.4378873',
+                    lng: '-46.4841214',
+                });
+
+                expect(result.rows[0]).to.include({
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
+                });
+            });
+
+            it('nearest and most beneficiaries', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -15.8697203,
+                            longitude: -47.9207824,
+                        },
+                    },
+                ]);
+
+                for (const community of communities) {
+                    await BeneficiaryFactory(
+                        await UserFactory({
+                            n:
+                                community.requestByAddress === users[1].address
+                                    ? 5
+                                    : 4,
+                        }),
+                        community.publicId
+                    );
+                }
+
+                const result = await CommunityService.list({
+                    orderBy: 'nearest:ASC;bigger:DESC',
+                    lat: '-15.8697203',
+                    lng: '-47.9207824',
+                });
+
+                expect(result.rows[0]).to.include({
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address,
+                });
+                expect(result.rows[1]).to.include({
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
+                });
+                expect(result.rows[2]).to.include({
+                    id: communities[0].id,
+                    name: communities[0].name,
+                    country: communities[0].country,
+                    requestByAddress: users[0].address,
+                });
+            });
+
+            it('fewer beneficiaries and farthest', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -33.2799527,
+                            longitude: 9.1421702,
+                        },
+                    },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -15.8697203,
+                            longitude: -47.9207824,
+                        },
+                    },
+                ]);
+
+                for (const community of communities) {
+                    await BeneficiaryFactory(
+                        await UserFactory({
+                            n:
+                                community.requestByAddress === users[2].address
+                                    ? 3
+                                    : 4,
+                        }),
+                        community.publicId
+                    );
+                }
+
+                const result = await CommunityService.list({
+                    orderBy: 'bigger:ASC;nearest:DESC',
+                    lat: '-15.8697203',
+                    lng: '-47.9207824',
+                });
+
+                expect(result.rows[0]).to.include({
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address,
+                });
+                expect(result.rows[1]).to.include({
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
+                });
+                expect(result.rows[2]).to.include({
+                    id: communities[0].id,
+                    name: communities[0].name,
+                    country: communities[0].country,
+                    requestByAddress: users[0].address,
+                });
+            });
+        });
     });
 
     describe('campaign', () => {
@@ -488,6 +811,7 @@ describe('community service', () => {
 
         it('community without campaign', async () => {
             const result = await CommunityService.getCampaign(communityId);
+            // eslint-disable-next-line no-unused-expressions
             expect(result).to.be.null;
         });
 
@@ -499,6 +823,7 @@ describe('community service', () => {
             });
 
             const result = await CommunityService.getCampaign(communityId);
+            // eslint-disable-next-line no-unused-expressions
             expect(result).to.not.be.null;
             expect(result).to.include({
                 communityId,
@@ -663,6 +988,62 @@ describe('community service', () => {
                 communities[0].coverMediaId
             );
             expect(updatedCommunity.coverMediaId).to.be.equal(1);
+        });
+    });
+
+    describe('promoter', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'UbiPromoterModel');
+            await truncate(sequelize);
+        });
+
+        it('get promoter', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const createdMedia =
+                await sequelize.models.AppMediaContentModel.create({
+                    url: faker.image.imageUrl(),
+                    width: 0,
+                    height: 0,
+                });
+
+            const name = faker.company.companyName();
+            const description = faker.lorem.sentence();
+            const media = createdMedia.toJSON() as AppMediaContent;
+            const createdPromoter =
+                await sequelize.models.UbiPromoterModel.create({
+                    category: 'organization',
+                    name,
+                    description,
+                    logoMediaId: media.id, // on purpose
+                });
+
+            const promoter = createdPromoter.toJSON() as UbiPromoter;
+            await sequelize.models.UbiCommunityPromoterModel.create({
+                promoterId: promoter.id,
+                communityId: communities[0].id,
+            });
+            const result: UbiPromoter | null =
+                await CommunityService.getPromoter(communities[0].id);
+            // eslint-disable-next-line no-unused-expressions
+            expect(result).to.not.be.null;
+            expect(result!.name).to.be.equal(name);
+            expect(result!.description).to.be.equal(description);
         });
     });
 });

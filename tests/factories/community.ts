@@ -21,6 +21,10 @@ interface ICreateProps {
     hasAddress?: boolean;
     name?: string;
     country?: string;
+    gps?: {
+        latitude: number;
+        longitude: number;
+    };
 }
 /**
  * Generate an object which container attributes needed
@@ -37,10 +41,12 @@ const data = async (props: ICreateProps) => {
         currency: faker.finance.currencyCode(),
         description: faker.lorem.sentence(),
         email: faker.internet.email(),
-        gps: {
-            latitude: 0,
-            longitude: 0,
-        },
+        gps: props.gps
+            ? props.gps
+            : {
+                  latitude: 0,
+                  longitude: 0,
+              },
         language: 'pt',
         name: props.name ? props.name : faker.company.companyName(),
         coverMediaId: 0,

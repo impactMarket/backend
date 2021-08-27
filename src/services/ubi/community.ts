@@ -13,9 +13,7 @@ import {
 } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { notifyManagerAdded } from '@utils/util';
-import AWS from 'aws-sdk';
 import { ethers } from 'ethers';
-import sizeOf from 'image-size';
 import {
     Op,
     QueryTypes,
@@ -27,7 +25,6 @@ import {
     Includeable,
 } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
-import sharp from 'sharp';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
@@ -174,16 +171,6 @@ export default class CommunityService {
         }
     }
 
-    public static async pictureAdd(
-        isPromoter: boolean,
-        file: Express.Multer.File
-    ) {
-        if (isPromoter) {
-            return this.promoterContentStorage.uploadContent(file);
-        }
-        return this.communityContentStorage.uploadContent(file);
-    }
-
     public static async getPresignedUrlMedia(
         mime: string,
         isPromoter: boolean
@@ -313,59 +300,78 @@ export default class CommunityService {
         lng?: string;
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
-        let orderOption: string | Literal | OrderItem[] | undefined;
+        const orderOption: OrderItem[] = [];
         const extendedInclude: Includeable[] = [];
 
-        switch (query.orderBy) {
-            case 'nearest': {
-                if (query.lat === undefined || query.lng === undefined) {
-                    throw new Error('invalid coordinates');
+        if (query.orderBy) {
+            const orders = query.orderBy.split(';');
+
+            orders.forEach((element) => {
+                const [order, orderType] = element.split(':');
+
+                switch (order) {
+                    case 'nearest': {
+                        if (
+                            query.lat === undefined ||
+                            query.lng === undefined
+                        ) {
+                            throw new Error('invalid coordinates');
+                        }
+                        const lat = parseInt(query.lat, 10);
+                        const lng = parseInt(query.lng, 10);
+                        if (
+                            typeof lat !== 'number' ||
+                            typeof lng !== 'number'
+                        ) {
+                            throw new Error('NaN');
+                        }
+
+                        orderOption.push([
+                            literal(
+                                '(6371*acos(cos(radians(' +
+                                    lat +
+                                    "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
+                                    lng +
+                                    '))+sin(radians(' +
+                                    lat +
+                                    "))*sin(radians(cast(gps->>'latitude' as float)))))"
+                            ),
+                            orderType ? orderType : 'ASC',
+                        ]);
+                        break;
+                    }
+                    case 'out_of_funds': {
+                        // this requires extended
+                        query.extended = 'true';
+                        extendedWhere = {
+                            '$state.beneficiaries$': {
+                                [Op.not]: 0,
+                            },
+                        } as any;
+                        orderOption.push([
+                            literal(
+                                '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
+                            ),
+                            orderType ? orderType : 'ASC',
+                        ]);
+                        break;
+                    }
+                    case 'newest':
+                        orderOption.push([
+                            literal('"Community".started'),
+                            orderType ? orderType : 'DESC',
+                        ]);
+                        break;
+                    default:
+                        orderOption.push([
+                            literal('state.beneficiaries'),
+                            orderType ? orderType : 'DESC',
+                        ]);
+                        break;
                 }
-                const lat = parseInt(query.lat, 10);
-                const lng = parseInt(query.lng, 10);
-                if (typeof lat !== 'number' || typeof lng !== 'number') {
-                    throw new Error('NaN');
-                }
-                orderOption = [
-                    [
-                        literal(
-                            '(6371*acos(cos(radians(' +
-                                lat +
-                                "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
-                                lng +
-                                '))+sin(radians(' +
-                                lat +
-                                "))*sin(radians(cast(gps->>'latitude' as float)))))"
-                        ),
-                        'ASC',
-                    ],
-                ];
-                break;
-            }
-            case 'out_of_funds': {
-                // this requires extended
-                query.extended = 'true';
-                extendedWhere = {
-                    '$state.beneficiaries$': {
-                        [Op.not]: 0,
-                    },
-                } as any;
-                orderOption = [
-                    [
-                        literal(
-                            '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
-                        ),
-                        'ASC',
-                    ],
-                ];
-                break;
-            }
-            case 'newest':
-                orderOption = [[literal('"Community".started'), 'DESC']];
-                break;
-            default:
-                orderOption = [[literal('state.beneficiaries'), 'DESC']];
-                break;
+            });
+        } else {
+            orderOption.push([literal('state.beneficiaries'), 'DESC']);
         }
 
         if (query.filter === 'featured') {
@@ -960,99 +966,6 @@ export default class CommunityService {
             return true;
         }
         return false;
-    }
-
-    /**
-     * @deprecated
-     */
-    public static async updateCoverImage(
-        publicId: string,
-        newPictureUrl: string
-    ): Promise<boolean> {
-        // TODO:
-        const params = {
-            Bucket: config.aws.bucket.community,
-            Key: newPictureUrl.split(config.cloudfrontUrl + '/')[1],
-        };
-        const S3 = new AWS.S3({
-            accessKeyId: config.aws.accessKeyId,
-            secretAccessKey: config.aws.secretAccessKey,
-            region: config.aws.region,
-        });
-        const rg = await S3.getObject(params).promise();
-
-        const dimensions = sizeOf(rg.Body as any);
-
-        const today1 = new Date();
-        const filePrefix1 = 'cover/';
-        const filename1 = `${today1.getTime()}.jpeg`;
-        const filePath1 = `${filePrefix1}${filename1}`;
-
-        const paramsp1 = {
-            Bucket: config.aws.bucket.community,
-            Key: filePath1,
-            Body: rg.Body,
-            ACL: 'public-read',
-        };
-
-        const rp1 = await S3.upload(paramsp1 as any).promise();
-
-        const media = await this.appMediaContent.create({
-            url: config.cloudfrontUrl + '/' + rp1.Key,
-            width: dimensions.width!,
-            height: dimensions.height!,
-        });
-
-        // create thumbnails
-
-        for (let pixelRatio = 1; pixelRatio <= 2; pixelRatio++) {
-            for (const cover of config.thumbnails.community.cover) {
-                const thumbnailBuffer = await sharp(
-                    Buffer.from(rg.Body as any, 'binary')
-                )
-                    .resize({
-                        width: cover.width * pixelRatio,
-                        height: cover.height * pixelRatio,
-                    })
-                    .toBuffer();
-
-                const today = new Date();
-                const filePrefix =
-                    'cover/' + cover.width + 'x' + cover.height + '/';
-                const filename = `${today.getTime()}${
-                    pixelRatio > 1 ? '@' + pixelRatio + 'x' : ''
-                }.jpeg`;
-                const filePath = `${filePrefix}${filename}`;
-
-                const paramsp = {
-                    Bucket: config.aws.bucket.community,
-                    Key: filePath,
-                    Body: thumbnailBuffer,
-                    ACL: 'public-read',
-                };
-
-                const rp = await S3.upload(paramsp as any).promise();
-
-                const thumbnailURL = config.cloudfrontUrl + '/' + rp.Key;
-
-                await this.appMediaThumbnail.create({
-                    mediaContentId: media.id,
-                    url: thumbnailURL,
-                    width: cover.width,
-                    height: cover.height,
-                    pixelRatio,
-                });
-            }
-        }
-
-        const result = await this.community.update(
-            {
-                coverImage: newPictureUrl,
-                coverMediaId: media.id,
-            },
-            { returning: true, where: { publicId } }
-        );
-        return result[0] > 0;
     }
 
     /**

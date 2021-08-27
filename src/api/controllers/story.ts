@@ -6,19 +6,6 @@ import { Request, Response } from 'express';
 class StoryController {
     storyService = new StoryService();
 
-    pictureAdd = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
-            });
-            return;
-        }
-        this.storyService
-            .pictureAdd(req.file)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
     getPresignedUrlMedia = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {

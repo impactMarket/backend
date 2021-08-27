@@ -37,7 +37,9 @@ class CommunityController {
             .then((r) =>
                 standardResponse(res, 200, true, r.rows, { count: r.count })
             )
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 
     count = (req: Request, res: Response) => {
@@ -96,15 +98,6 @@ class CommunityController {
                     standardResponse(res, 400, false, '', { error: e })
                 );
         }
-    };
-
-    /**
-     * @deprecated in mobile@1.1.3
-     */
-    pictureAdd = (req: Request, res: Response) => {
-        CommunityService.pictureAdd(req.params.isPromoter === 'true', req.file)
-            .then((url) => standardResponse(res, 200, true, url))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getPresignedUrlMedia = (req: Request, res: Response) => {
@@ -276,6 +269,38 @@ class CommunityController {
         CommunityService.pending()
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getBeneficiaryActivity = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+
+        let { offset, limit, type } = req.query;
+        if (offset === undefined || typeof offset !== 'string') {
+            offset = '0';
+        }
+        if (limit === undefined || typeof limit !== 'string') {
+            limit = '10';
+        }
+        if (type === undefined || typeof type !== 'string') {
+            type = 'ALL';
+        }
+
+        BeneficiaryService.getBeneficiaryActivity(
+            req.user.address,
+            req.params.address,
+            type,
+            parseInt(offset, 10),
+            parseInt(limit, 10)
+        )
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 }
 

@@ -1,7 +1,6 @@
 import communityController from '@controllers/community';
 import communityValidators from '@validators/community';
 import { Router } from 'express';
-import multer from 'multer';
 
 import { cacheWithRedis } from '../../database';
 import { adminAuthentication, authenticateToken } from '../middlewares';
@@ -132,13 +131,43 @@ import { adminAuthentication, authenticateToken } from '../middlewares';
  *            description: Manager date of last update
  *          user:
  *            $ref: '#/components/schemas/AppUser'
+ *      BeneficiaryActivities:
+ *        type: array
+ *        items:
+ *          type: object
+ *          properties:
+ *            id:
+ *              type: integer
+ *              description: Activity id
+ *            type:
+ *              type: string
+ *              enum: [claim, inflow, transaction, registry]
+ *              description: Activity type
+ *            tx:
+ *              type: string
+ *              description: Transaction Hash
+ *            date:
+ *              type: string
+ *              description: Activity date
+ *            withAddress:
+ *              type: string
+ *              description: User Address that the Beneficiary made the transaction (if the case)
+ *            activity:
+ *              type: integer
+ *              description: In case of a registry activity, there is the activity type where 0=add, 1=remove, 2=lock, 3=unlock
+ *            isFromBeneficiary:
+ *              type: boolean
+ *              description: In case of transaction activity, this property will indicate if the beneficiary is sending or receiving
+ *            amount:
+ *              type: string
+ *              description: Transaction amount
+ *            username:
+ *              type: string
+ *              description: The username that the Beneficiary made the transaction (if the case)
  */
 export default (app: Router): void => {
     const controller = new communityController.CommunityController();
-
     const route = Router();
-    const storage = multer.memoryStorage();
-    const upload = multer({ storage });
 
     app.use('/community', route);
 
@@ -193,13 +222,6 @@ export default (app: Router): void => {
         '/:id/historical-ssi',
         cacheWithRedis('1 day'),
         communityController.getHistoricalSSI
-    );
-
-    route.post(
-        '/picture/:isPromoter?',
-        upload.single('imageFile'),
-        authenticateToken,
-        controller.pictureAdd
     );
 
     // --------------------------------------------------------------- new
@@ -309,6 +331,57 @@ export default (app: Router): void => {
         '/beneficiaries/:query?',
         authenticateToken,
         controller.beneficiaries
+    );
+
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries/activity/{address}/{query}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get beneficiary activity
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: beneficiary address
+     *       - in: query
+     *         name: type
+     *         schema:
+     *           type: string
+     *           enum: [all, claim, transaction, registry]
+     *         required: false
+     *         description: activity type (all by default)
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 10)
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BeneficiaryActivities'
+     */
+    route.get(
+        '/beneficiaries/activity/:address/:query?',
+        authenticateToken,
+        controller.getBeneficiaryActivity
     );
 
     /**

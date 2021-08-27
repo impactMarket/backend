@@ -1,15 +1,12 @@
 import UserController from '@controllers/user';
 import userValidators from '@validators/user';
 import { Router } from 'express';
-import multer from 'multer';
 
 import { authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {
     const route = Router();
     const userController = new UserController();
-    const storage = multer.memoryStorage();
-    const upload = multer({ storage });
 
     app.use('/user', route);
 
@@ -116,6 +113,9 @@ export default (app: Router): void => {
 
     route.get('/exist/:address', userController.userExist);
 
+    /**
+     * @deprecated Last used in 1.1.12
+     */
     route.post(
         '/username',
         authenticateToken,
@@ -123,6 +123,9 @@ export default (app: Router): void => {
         userController.updateUsername
     );
 
+    /**
+     * @deprecated Last used in 1.1.12
+     */
     route.post(
         '/currency',
         authenticateToken,
@@ -130,6 +133,9 @@ export default (app: Router): void => {
         userController.updateCurrency
     );
 
+    /**
+     * @deprecated Last used in 1.1.12
+     */
     route.post(
         '/push-notifications',
         authenticateToken,
@@ -137,6 +143,9 @@ export default (app: Router): void => {
         userController.updatePushNotificationsToken
     );
 
+    /**
+     * @deprecated Last used in 1.1.12
+     */
     route.post(
         '/language',
         authenticateToken,
@@ -144,6 +153,9 @@ export default (app: Router): void => {
         userController.updateLanguage
     );
 
+    /**
+     * @deprecated Last used in 1.1.12
+     */
     route.post(
         '/gender',
         authenticateToken,
@@ -151,6 +163,9 @@ export default (app: Router): void => {
         userController.updateGender
     );
 
+    /**
+     * @deprecated Last used in 1.1.12
+     */
     route.post(
         '/age',
         authenticateToken,
@@ -158,6 +173,9 @@ export default (app: Router): void => {
         userController.updateAge
     );
 
+    /**
+     * @deprecated Last used in 1.1.12
+     */
     route.post(
         '/children',
         authenticateToken,
@@ -166,16 +184,67 @@ export default (app: Router): void => {
     );
 
     route.post(
-        '/picture',
-        upload.single('imageFile'),
-        authenticateToken,
-        userController.pictureAdd
-    );
-
-    route.post(
         '/device',
         authenticateToken,
         userValidators.device,
         userController.device
     );
+
+    /**
+     * @swagger
+     *
+     * /user:
+     *   put:
+     *     tags:
+     *       - "user"
+     *     summary: Edit existing user
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               language:
+     *                 type: string
+     *                 required: false
+     *               currency:
+     *                 type: string
+     *                 required: false
+     *               pushNotificationToken:
+     *                 type: string
+     *                 required: false
+     *               username:
+     *                 type: string
+     *                 required: false
+     *               gender:
+     *                 type: string
+     *                 enum: [u, m, f, o]
+     *                 required: false
+     *               year:
+     *                 type: number
+     *                 required: false
+     *               children:
+     *                 type: number
+     *                 required: false
+     *               avatarMediaId:
+     *                 type: number
+     *                 required: false
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  user:
+     *                    $ref: '#/components/schemas/AppUser'
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put('/', authenticateToken, userValidators.edit, userController.edit);
 };
