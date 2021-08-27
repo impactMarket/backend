@@ -1,9 +1,11 @@
+import ClaimsService from '@services/ubi/claim';
 import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
+import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
-import { assert, spy } from 'sinon';
+import { assert, spy, replace, restore } from 'sinon';
 
-import { models } from '../../../src/database';
+import { models, sequelize as database } from '../../../src/database';
 import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
@@ -40,7 +42,7 @@ describe('beneficiary service', () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        users = await UserFactory({ n: 16 });
+        users = await UserFactory({ n: 17 });
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -62,6 +64,8 @@ describe('beneficiary service', () => {
             users.slice(0, 8),
             communities[0].publicId
         );
+
+        replace(database, 'query', sequelize.query);
     });
 
     after(async () => {
@@ -73,6 +77,7 @@ describe('beneficiary service', () => {
         //
         spyBeneficiaryAdd.restore();
         spyBeneficiaryRegistryAdd.restore();
+        restore();
     });
 
     it('order by suspicious activity', async () => {
@@ -321,6 +326,133 @@ describe('beneficiary service', () => {
                 user.username!.toUpperCase()
             );
             expect(result.length).to.be.equal(0);
+        });
+    });
+
+    describe('beneficiary activity', () => {
+        before(async () => {
+            const randomWallet = ethers.Wallet.createRandom();
+
+            const tx = randomTx();
+            const tx2 = randomTx();
+
+            await BeneficiaryService.add(
+                users[16].address,
+                users[0].address,
+                communities[0].publicId,
+                tx,
+                new Date('2021-01-01')
+            );
+
+            await BeneficiaryService.addTransaction({
+                beneficiary: users[16].address,
+                withAddress: await randomWallet.getAddress(),
+                amount: '25',
+                isFromBeneficiary: true,
+                tx,
+                date: new Date(), // date only
+            });
+
+            await BeneficiaryService.addTransaction({
+                beneficiary: users[16].address,
+                withAddress: await randomWallet.getAddress(),
+                amount: '50',
+                isFromBeneficiary: false,
+                tx: tx2,
+                date: new Date(), // date only
+            });
+
+            await ClaimsService.add({
+                address: users[16].address,
+                communityId: communities[0].id,
+                amount: '15',
+                tx,
+                txAt: new Date('2021-01-02'),
+            });
+        });
+
+        it('get all activities', async () => {
+            const activities = await BeneficiaryService.getBeneficiaryActivity(
+                users[0].address,
+                users[16].address,
+                'ALL',
+                0,
+                10
+            );
+
+            expect(activities[0]).to.include({
+                type: 'transaction',
+                amount: '50',
+                isFromBeneficiary: false,
+            });
+            expect(activities[1]).to.include({
+                type: 'transaction',
+                amount: '25',
+                isFromBeneficiary: true,
+            });
+            expect(activities[2]).to.include({
+                type: 'claim',
+                amount: '15',
+            });
+            expect(activities[3]).to.include({
+                type: 'registry',
+                activity: 0,
+                withAddress: users[0].address,
+                username: users[0].username,
+            });
+        });
+
+        it('get claim activity', async () => {
+            const activities = await BeneficiaryService.getBeneficiaryActivity(
+                users[0].address,
+                users[16].address,
+                'claim',
+                0,
+                10
+            );
+
+            expect(activities[0]).to.include({
+                type: 'claim',
+                amount: '15',
+            });
+        });
+
+        it('get registry activity', async () => {
+            const activities = await BeneficiaryService.getBeneficiaryActivity(
+                users[0].address,
+                users[16].address,
+                'registry',
+                0,
+                10
+            );
+
+            expect(activities[0]).to.include({
+                type: 'registry',
+                activity: 0,
+                withAddress: users[0].address,
+                username: users[0].username,
+            });
+        });
+
+        it('get transaction activity', async () => {
+            const activities = await BeneficiaryService.getBeneficiaryActivity(
+                users[0].address,
+                users[16].address,
+                'transaction',
+                0,
+                10
+            );
+
+            expect(activities[0]).to.include({
+                type: 'transaction',
+                amount: '50',
+                isFromBeneficiary: false,
+            });
+            expect(activities[1]).to.include({
+                type: 'transaction',
+                amount: '25',
+                isFromBeneficiary: true,
+            });
         });
     });
 });

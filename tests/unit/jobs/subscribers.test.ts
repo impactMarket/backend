@@ -7,7 +7,6 @@ import { models } from '../../../src/database';
 // import { Beneficiary } from '../../../src/database/models/ubi/beneficiary';
 import { Community } from '../../../src/database/models/ubi/community';
 import ImMetadataService from '../../../src/services/app/imMetadata';
-// import TransactionsService from '../../../src/services/transactions';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
 import ClaimsService from '../../../src/services/ubi/claim';
 import CommunityService from '../../../src/services/ubi/community';
@@ -108,7 +107,6 @@ describe('[jobs] subscribers', () => {
         getRecoverBlockStub = stub(ImMetadataService, 'getRecoverBlock');
         getLastBlockStub.returns(Promise.resolve(lastBlock));
         getRecoverBlockStub.returns(Promise.resolve(lastBlock));
-        // stub(TransactionsService, 'add').returns(Promise.resolve({} as any));
         claimAdd = stub(ClaimsService, 'add');
         claimAdd.returns(Promise.resolve());
         managerAdd = stub(ManagerService, 'add');

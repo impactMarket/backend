@@ -1,5 +1,6 @@
 import { User } from '@interfaces/app/user';
 import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import { CommunityAttributes } from './community';
 
 export interface BeneficiaryAttributes {

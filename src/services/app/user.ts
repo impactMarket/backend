@@ -326,22 +326,6 @@ export default class UserService {
         return updated[0] > 0;
     }
 
-    public static async setProfilePicture(
-        address: string,
-        file: Express.Multer.File
-    ) {
-        const user = await this.user.findOne({ where: { address } });
-        const media = await this.profileContentStorage.uploadContent(file);
-        await this.user.update(
-            { avatarMediaId: media.id },
-            { returning: true, where: { address } }
-        );
-        if (user!.avatarMediaId !== null && user!.avatarMediaId !== media.id) {
-            await this.profileContentStorage.deleteContent(user!.avatarMediaId);
-        }
-        return media;
-    }
-
     public static async get(address: string): Promise<User | null> {
         return this.user.findOne({ where: { address }, raw: true });
     }
@@ -493,19 +477,22 @@ export default class UserService {
     public static async edit(
         address: string,
         user: {
-            language?: string,
-            currency?: string,
-            username?: string,
-            gender?: string,
-            year?: number,
-            children?: number,
-            avatarMediaId?: number,
-            pushNotificationToken?: string,
+            language?: string;
+            currency?: string;
+            username?: string;
+            gender?: string;
+            year?: number;
+            children?: number;
+            avatarMediaId?: number;
+            pushNotificationToken?: string;
         }
-    ): Promise<User>  {
-        const updated = await this.user.update(user, { returning: true, where: { address } });
-        if(updated[0] === 0) {
-            throw new Error('user was not updated!')
+    ): Promise<User> {
+        const updated = await this.user.update(user, {
+            returning: true,
+            where: { address },
+        });
+        if (updated[0] === 0) {
+            throw new Error('user was not updated!');
         }
         return updated[1][0];
     }

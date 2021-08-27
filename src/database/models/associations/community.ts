@@ -67,9 +67,18 @@ export function communityAssociation(sequelize: Sequelize) {
         sequelize.models.Community,
         {
             through: sequelize.models.UbiCommunityPromoterModel,
-            sourceKey: 'id',
             foreignKey: 'promoterId',
+            sourceKey: 'id',
             as: 'community',
+        }
+    );
+    sequelize.models.Community.belongsToMany(
+        sequelize.models.UbiPromoterModel,
+        {
+            through: sequelize.models.UbiCommunityPromoterModel,
+            foreignKey: 'communityId',
+            sourceKey: 'id',
+            as: 'promoter',
         }
     );
     sequelize.models.UbiPromoterModel.hasMany(

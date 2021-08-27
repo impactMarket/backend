@@ -14,8 +14,4 @@ export default (app: Router): void => {
             timestamp: new Date().getTime(),
         });
     });
-
-    route.post('/error', (req, res) => {
-        res.sendStatus(200);
-    });
 };
