@@ -18,7 +18,7 @@ import {
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { verifyStoriesLifecycle } from './jobs/cron/stories';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
-import { verifyUserSuspectActivity } from './jobs/cron/user';
+import { verifyUserSuspectActivity, verifyDeletedAccounts } from './jobs/cron/user';
 
 export default async (): Promise<void> => {
     const contentStorage = new ContentStorage();
@@ -396,6 +396,27 @@ function cron() {
                 })
                 .catch((e) => {
                     Logger.error('verifyUserSuspectActivity FAILED! ' + e);
+                });
+        },
+        null,
+        true
+    );
+
+    // everyday at 1am
+    // eslint-disable-next-line no-new
+    new CronJob(
+        '0 1 * * *',
+        () => {
+            Logger.info('Verify deleted accounts...');
+            verifyDeletedAccounts()
+                .then(() => {
+                    CronJobExecutedService.add('verifyDeletedAccounts');
+                    Logger.info(
+                        'verifyDeletedAccounts successfully executed!'
+                    );
+                })
+                .catch((e) => {
+                    Logger.error('verifyDeletedAccounts FAILED! ' + e);
                 });
         },
         null,

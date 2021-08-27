@@ -2,9 +2,9 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // if (process.env.NODE_ENV === 'test') {
-    //   return;
-    // }
+    if (process.env.NODE_ENV === 'test') {
+      return;
+    }
 
     return queryInterface.sequelize.query(`
       CREATE OR REPLACE FUNCTION update_loves_stories()

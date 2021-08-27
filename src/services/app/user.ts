@@ -511,59 +511,18 @@ export default class UserService {
     }
 
     public static async delete(address: string): Promise<boolean> {
-        const t = await this.sequelize.transaction();
-        try {
-            const user = (await this.user.findOne({
-                where: {
-                    address,
-                },
-                include: [
-                    {
-                        model: this.appUserTrust,
-                        as: 'trust'
-                    }
-                ]
-            }))!.toJSON() as User;
-    
-            if(!user) {
-                throw new Error('User not found');
-            }
-    
-            user.trust?.forEach(async (el) => {
-                await this.appUserTrust.destroy({
-                    where: {
-                        id: el.id
-                    },
-                    transaction: t
-                })
-            });
-    
-            await this.storyContent.destroy({
-                where: {
-                    byAddress: user.address
-                },
-                transaction: t
-            });
-    
-            await this.storyUserEngagement.destroy({
-                where: {
-                    address: user.address
-                },
-                transaction: t
-            });
-    
-            await this.user.destroy({
-                where: {
-                    address,
-                },
-                transaction: t
-            });
-    
-            await t.commit();
-            return true;
-        } catch (error) {
-            await t.rollback();
-            throw error;
+        const updated = await this.user.update({
+            deletedAt: new Date()
+        }, {
+            where: {
+                address,
+            },
+            returning: true,
+        });
+
+        if(updated[0] === 0) {
+            throw new Error('user was not updated!')
         }
+        return true;
     }
 }
