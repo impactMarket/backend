@@ -1,9 +1,9 @@
-import ClaimsService from '@services/ubi/claim';
+import ClaimsService from '../../../src/services/ubi/claim';
 import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
 import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
-import { assert, spy, replace, restore } from 'sinon';
+import { assert, spy, replace, restore, SinonSpy } from 'sinon';
 
 import { models, sequelize as database } from '../../../src/database';
 import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
@@ -31,12 +31,9 @@ describe('beneficiary service', () => {
     let managers: ManagerAttributes[];
     let beneficiaries: BeneficiaryAttributes[];
 
-    const spyBeneficiaryRegistryAdd = spy(
-        models.ubiBeneficiaryRegistry,
-        'create'
-    );
-    const spyBeneficiaryAdd = spy(models.beneficiary, 'create');
-    const spyBeneficiaryUpdate = spy(models.beneficiary, 'update');
+    let spyBeneficiaryRegistryAdd: SinonSpy;
+    let spyBeneficiaryAdd: SinonSpy;
+    let spyBeneficiaryUpdate: SinonSpy;
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -65,6 +62,12 @@ describe('beneficiary service', () => {
             communities[0].publicId
         );
 
+        spyBeneficiaryRegistryAdd = spy(
+            models.ubiBeneficiaryRegistry,
+            'create'
+        );
+        spyBeneficiaryAdd = spy(models.beneficiary, 'create');
+        spyBeneficiaryUpdate = spy(models.beneficiary, 'update');
         replace(database, 'query', sequelize.query);
     });
 
