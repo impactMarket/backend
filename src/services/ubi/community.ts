@@ -632,8 +632,8 @@ export default class CommunityService {
             const manager = r.toJSON() as ManagerAttributes;
             return {
                 ...manager,
-                isDeleted: !manager.user
-            }
+                isDeleted: !manager.user,
+            };
         });
     }
 

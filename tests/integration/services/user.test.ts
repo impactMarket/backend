@@ -7,10 +7,10 @@ import { models } from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { User } from '../../../src/interfaces/app/user';
 import UserService from '../../../src/services/app/user';
+import StoryService from '../../../src/services/story';
 import CommunityFactory from '../../factories/community';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
-import StoryService from '../../../src/services/story';
 
 describe('user service', () => {
     let sequelize: Sequelize;
@@ -227,12 +227,15 @@ describe('user service', () => {
                 },
             });
 
-            const loadUser = await UserService.authenticate({
-                address: secondAddress,
-                trust: {
-                    phone,
+            const loadUser = await UserService.authenticate(
+                {
+                    address: secondAddress,
+                    trust: {
+                        phone,
+                    },
                 },
-            }, true);
+                true
+            );
 
             const findUser = await models.user.findOne({
                 where: { address: firstAddress },
@@ -264,12 +267,15 @@ describe('user service', () => {
             });
 
             // replace by a new account
-            await UserService.authenticate({
-                address: secondAddress,
-                trust: {
-                    phone,
+            await UserService.authenticate(
+                {
+                    address: secondAddress,
+                    trust: {
+                        phone,
+                    },
                 },
-            }, true);
+                true
+            );
 
             let error: any;
 
@@ -432,7 +438,7 @@ describe('user service', () => {
             const userUpdated = await UserService.edit(address, data);
 
             expect(userUpdated).to.include(data);
-        })
+        });
     });
 
     describe('delete', () => {
@@ -462,7 +468,7 @@ describe('user service', () => {
                 byAddress: users[0].address,
                 communityId: communities[0].id,
             });
-            await storyService.love(users[0].address, story.id)
+            await storyService.love(users[0].address, story.id);
         });
 
         it('should delete user successfully', async () => {
@@ -481,18 +487,19 @@ describe('user service', () => {
             const findStoryContent = await models.storyContent.findOne({
                 where: {
                     byAddress: users[0].address,
-                }
+                },
             });
-            const findStoryUserEngagement = await models.storyUserEngagement.findOne({
-                where: {
-                    address: users[0].address,
-                }
-            });
+            const findStoryUserEngagement =
+                await models.storyUserEngagement.findOne({
+                    where: {
+                        address: users[0].address,
+                    },
+                });
 
             expect(findUser).to.be.null;
             expect(findPhone).to.be.null;
             expect(findStoryContent).to.be.null;
             expect(findStoryUserEngagement).to.be.null;
         });
-    })
+    });
 });

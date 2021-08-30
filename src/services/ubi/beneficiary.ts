@@ -103,7 +103,9 @@ export default class BeneficiaryService {
         active?: boolean
     ): Promise<IListBeneficiary[]> {
         let whereSearchCondition: Where | WhereAttributeHash<User> = {};
-        let whereBeneficiary: Where | WhereAttributeHash<BeneficiaryAttributes> = {};
+        let whereBeneficiary:
+            | Where
+            | WhereAttributeHash<BeneficiaryAttributes> = {};
         let required: boolean;
 
         if (!isAddress(managerAddress)) {
@@ -180,7 +182,7 @@ export default class BeneficiaryService {
                 claimed: b.claimed,
                 blocked: b.blocked,
                 suspect: b.user && b.user.suspect,
-                isDeleted: !b.user
+                isDeleted: !b.user,
             };
         });
         return result;
@@ -238,7 +240,7 @@ export default class BeneficiaryService {
                 claimed: b.claimed,
                 blocked: b.blocked,
                 suspect: b.user && b.user.suspect,
-                isDeleted: !b.user || b.user!.deletedAt
+                isDeleted: !b.user || b.user!.deletedAt,
             };
         });
         return result;

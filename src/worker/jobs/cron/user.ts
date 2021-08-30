@@ -1,8 +1,7 @@
-import { QueryTypes } from 'sequelize';
+import { User } from '@interfaces/app/user';
+import { QueryTypes, Op } from 'sequelize';
 
 import { models, sequelize } from '../../../database';
-import { Op } from 'sequelize';
-import { User } from '@interfaces/app/user';
 
 export async function verifyUserSuspectActivity(): Promise<void> {
     const query = `
@@ -41,13 +40,13 @@ export async function verifyUserSuspectActivity(): Promise<void> {
     await sequelize.query(query, {
         type: QueryTypes.UPDATE,
     });
-};
+}
 
 export async function verifyDeletedAccounts(): Promise<void> {
     const t = await sequelize.transaction();
     try {
-        let date = new Date();
-        date.setDate(date.getDate()-15);
+        const date = new Date();
+        date.setDate(date.getDate() - 15);
 
         const users = await models.user.findAll({
             attributes: ['address'],
@@ -57,43 +56,43 @@ export async function verifyDeletedAccounts(): Promise<void> {
             include: [
                 {
                     model: models.appUserTrust,
-                    as: 'trust'
-                }
-            ]
+                    as: 'trust',
+                },
+            ],
         });
 
-        const addresses = users.map(el => el.address);
-        
+        const addresses = users.map((el) => el.address);
+
         users.forEach((user: User) => {
             user.trust?.forEach(async (el) => {
                 await models.appUserTrust.destroy({
                     where: {
-                        id: el.id
+                        id: el.id,
                     },
-                    transaction: t
-                })
+                    transaction: t,
+                });
             });
         });
 
         await models.storyContent.destroy({
             where: {
-                byAddress: { [Op.in]: addresses }
+                byAddress: { [Op.in]: addresses },
             },
-            transaction: t
+            transaction: t,
         });
 
         await models.storyUserEngagement.destroy({
             where: {
-                address: { [Op.in]: addresses }
+                address: { [Op.in]: addresses },
             },
-            transaction: t
+            transaction: t,
         });
 
         await models.user.destroy({
             where: {
                 address: { [Op.in]: addresses },
             },
-            transaction: t
+            transaction: t,
         });
 
         await t.commit();

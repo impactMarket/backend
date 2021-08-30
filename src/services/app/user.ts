@@ -503,35 +503,40 @@ export default class UserService {
                 where: { active: true, address },
             });
 
-            if(manager) {
+            if (manager) {
                 const managersByCommunity = await this.manager.findAll({
                     where: {
                         active: true,
-                        communityId: manager.communityId
+                        communityId: manager.communityId,
                     },
-                    include: [{
-                        attributes: [],
-                        model: this.user,
-                        as: 'user',
-                        required: true,
-                    }]
+                    include: [
+                        {
+                            attributes: [],
+                            model: this.user,
+                            as: 'user',
+                            required: true,
+                        },
+                    ],
                 });
-                if(managersByCommunity.length <= 2) {
+                if (managersByCommunity.length <= 2) {
                     throw new Error('Not enough managers');
                 }
-            };
+            }
 
-            const updated = await this.user.update({
-                deletedAt: new Date()
-            }, {
-                where: {
-                    address,
+            const updated = await this.user.update(
+                {
+                    deletedAt: new Date(),
                 },
-                returning: true,
-            });
-    
-            if(updated[0] === 0) {
-                throw new Error('user was not updated!')
+                {
+                    where: {
+                        address,
+                    },
+                    returning: true,
+                }
+            );
+
+            if (updated[0] === 0) {
+                throw new Error('user was not updated!');
             }
             return true;
         } catch (error) {

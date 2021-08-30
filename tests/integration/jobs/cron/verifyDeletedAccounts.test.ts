@@ -1,26 +1,28 @@
+import { expect } from 'chai';
+import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { stub, assert, SinonStub, spy, SinonSpy } from 'sinon';
 
 import { models } from '../../../../src/database';
-import { verifyDeletedAccounts } from '../../../../src/worker/jobs/cron/user';
-import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
-import UserFactory from '../../../factories/user';
-import { User } from '../../../../src/interfaces/app/user';
 import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../../src/database/models/ubi/manager';
-import CommunityFactory from '../../../factories/community';
-import ManagerFactory from '../../../factories/manager';
-import { ethers } from 'ethers';
-import { randomTx } from '../../../utils/utils';
+import { User } from '../../../../src/interfaces/app/user';
+import UserService from '../../../../src/services/app/user';
+import GlobalDemographicsService from '../../../../src/services/global/globalDemographics';
 import BeneficiaryService from '../../../../src/services/ubi/beneficiary';
 import ClaimsService from '../../../../src/services/ubi/claim';
 import InflowService from '../../../../src/services/ubi/inflow';
-import { expect } from 'chai';
+
+
 import CommunityService from '../../../../src/services/ubi/community';
-import GlobalDemographicsService from '../../../../src/services/global/globalDemographics';
-import UserService from '../../../../src/services/app/user';
 import { verifyCommunitySuspectActivity } from '../../../../src/worker/jobs/cron/community';
+import { verifyDeletedAccounts } from '../../../../src/worker/jobs/cron/user';
+import CommunityFactory from '../../../factories/community';
+import ManagerFactory from '../../../factories/manager';
+import UserFactory from '../../../factories/user';
 import { waitForStubCall } from '../../../utils';
+import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
+import { randomTx } from '../../../utils/utils';
 
 describe('[jobs - cron] verifyDeletedAccounts', () => {
     let sequelize: Sequelize;
@@ -38,25 +40,23 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             'bulkCreate'
         );
 
-        users = await UserFactory(
-            { 
-                n: 3,
-                props: [
-                    {
-                        gender: 'm',
-                        year: 1990,
-                    },
-                    {
-                        gender: 'f',
-                        year: 1980,
-                    },
-                    {
-                        gender: 'u',
-                        year: 1970
-                    }
-                ]
-            },
-        );
+        users = await UserFactory({
+            n: 3,
+            props: [
+                {
+                    gender: 'm',
+                    year: 1990,
+                },
+                {
+                    gender: 'f',
+                    year: 1980,
+                },
+                {
+                    gender: 'u',
+                    year: 1970,
+                },
+            ],
+        });
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -130,9 +130,9 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
     it('should not delete a user when he is one of the only two managers in the community', async () => {
         UserService.delete(users[0].address)
-            .catch(err => expect(err).to.be.equal('Not enough managers'))
+            .catch((err) => expect(err).to.be.equal('Not enough managers'))
             .then(() => {
-                throw new Error("expected to fail");
+                throw new Error('expected to fail');
             });
     });
 
@@ -140,82 +140,88 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         const date = new Date();
         date.setDate(date.getDate() - 14);
 
-        await models.user.update({
-            deletedAt: date
-        }, {
-            where: {
-                address: users[2].address
+        await models.user.update(
+            {
+                deletedAt: date,
+            },
+            {
+                where: {
+                    address: users[2].address,
+                },
             }
-        });
+        );
 
         await verifyDeletedAccounts();
 
         const user = await models.user.findOne({
             where: {
-                address: users[2].address
-            }
+                address: users[2].address,
+            },
         });
 
         expect(user).to.exist;
         expect(user).to.include({
             address: users[2].address,
-            active: true
-        })
+            active: true,
+        });
     });
 
     it('delete user/beneficiary', async () => {
         const date = new Date();
         date.setDate(date.getDate() - 16);
 
-        await models.user.update({
-            deletedAt: date
-        }, {
-            where: {
-                address: users[1].address
+        await models.user.update(
+            {
+                deletedAt: date,
+            },
+            {
+                where: {
+                    address: users[1].address,
+                },
             }
-        });
+        );
 
         await verifyDeletedAccounts();
 
         const user = await models.user.findOne({
             where: {
-                address: users[1].address
-            }
+                address: users[1].address,
+            },
         });
 
         const beneficiary = await models.beneficiary.findOne({
             where: {
-                address: users[1].address
-            }
+                address: users[1].address,
+            },
         });
 
         const registry = (await models.ubiBeneficiaryRegistry.findOne({
             where: {
-                address: users[1].address
-            }
+                address: users[1].address,
+            },
         }))!.toJSON();
 
         const transactions = (await models.beneficiaryTransaction.findOne({
             where: {
-                beneficiary: users[1].address
-            }
+                beneficiary: users[1].address,
+            },
         }))!.toJSON();
 
         const claims = (await models.ubiClaim.findOne({
             where: {
-                address: users[1].address
-            }
+                address: users[1].address,
+            },
         }))!.toJSON();
 
         const inflow = (await models.inflow.findOne({
             where: {
-                from: users[1].address
-            }
+                from: users[1].address,
+            },
         }))!.toJSON();
 
         expect(user).to.be.null;
         expect(beneficiary).to.include({
-            active: true
+            active: true,
         });
         expect(registry).to.include({
             activity: 0,
@@ -236,53 +242,67 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         const date = new Date();
         date.setDate(date.getDate() - 16);
 
-        await models.user.update({
-            deletedAt: date
-        }, {
-            where: {
-                address: users[0].address
+        await models.user.update(
+            {
+                deletedAt: date,
+            },
+            {
+                where: {
+                    address: users[0].address,
+                },
             }
-        });
+        );
 
         await verifyDeletedAccounts();
 
         const user = await models.user.findOne({
             where: {
-                address: users[0].address
-            }
+                address: users[0].address,
+            },
         });
 
         const manager = await models.manager.findOne({
             where: {
-                address: users[0].address
-            }
+                address: users[0].address,
+            },
         });
 
         expect(user).to.be.null;
         expect(manager).to.include({
-            active: true
+            active: true,
         });
     });
 
     it('search beneficiary by address after delete user', async () => {
-        const beneficiary = await BeneficiaryService.search(users[0].address, users[1].address);
+        const beneficiary = await BeneficiaryService.search(
+            users[0].address,
+            users[1].address
+        );
         expect(beneficiary[0]).to.include({
             address: users[1].address,
             username: null,
-            isDeleted: true
+            isDeleted: true,
         });
     });
     it('search beneficiary by username after delete user', async () => {
-        const beneficiary = await BeneficiaryService.search(users[0].address, users[1].username!);
+        const beneficiary = await BeneficiaryService.search(
+            users[0].address,
+            users[1].username!
+        );
         expect(beneficiary.length).to.be.equal(0);
     });
 
     it('list beneficiaries after delete user', async () => {
-        const beneficiary = await BeneficiaryService.list(users[0].address, true, 0, 10);
+        const beneficiary = await BeneficiaryService.list(
+            users[0].address,
+            true,
+            0,
+            10
+        );
         expect(beneficiary[0]).to.include({
             address: users[1].address,
             username: null,
-            isDeleted: true
+            isDeleted: true,
         });
     });
 
@@ -291,7 +311,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         expect(manager[0]).to.include({
             address: users[0].address,
             user: null,
-            isDeleted: true
+            isDeleted: true,
         });
     });
 
@@ -303,18 +323,18 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
         assert.calledWith(dbGlobalDemographicsStub.getCall(0), [
             {
-              communityId: communities[0].id,
-              date: yesterdayDate,
-              ageRange1: "0",
-              ageRange2: "0",
-              ageRange3: "0",
-              ageRange4: "1",
-              ageRange5: "0",
-              ageRange6: "0",
-              male: "0",
-              female: "0",
-              undisclosed: "1",
-              totalGender: "1",
+                communityId: communities[0].id,
+                date: yesterdayDate,
+                ageRange1: '0',
+                ageRange2: '0',
+                ageRange3: '0',
+                ageRange4: '1',
+                ageRange5: '0',
+                ageRange6: '0',
+                male: '0',
+                female: '0',
+                undisclosed: '1',
+                totalGender: '1',
             },
         ]);
     });

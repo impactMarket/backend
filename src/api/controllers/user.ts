@@ -298,7 +298,9 @@ class UserController {
 
         UserService.delete(req.user.address)
             .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e.message }));
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 }
 

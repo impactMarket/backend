@@ -17,7 +17,10 @@ import {
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { verifyStoriesLifecycle } from './jobs/cron/stories';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
-import { verifyUserSuspectActivity, verifyDeletedAccounts } from './jobs/cron/user';
+import {
+    verifyUserSuspectActivity,
+    verifyDeletedAccounts,
+} from './jobs/cron/user';
 
 export default async (): Promise<void> => {
     cron();
@@ -408,9 +411,7 @@ function cron() {
             verifyDeletedAccounts()
                 .then(() => {
                     CronJobExecutedService.add('verifyDeletedAccounts');
-                    Logger.info(
-                        'verifyDeletedAccounts successfully executed!'
-                    );
+                    Logger.info('verifyDeletedAccounts successfully executed!');
                 })
                 .catch((e) => {
                     Logger.error('verifyDeletedAccounts FAILED! ' + e);
