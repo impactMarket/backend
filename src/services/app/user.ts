@@ -23,8 +23,6 @@ export default class UserService {
     public static appUserThroughTrust = models.appUserThroughTrust;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
-    public static storyContent = models.storyContent;
-    public static storyUserEngagement = models.storyUserEngagement;
 
     private static profileContentStorage = new ProfileContentStorage();
 
@@ -536,7 +534,7 @@ export default class UserService {
             );
 
             if (updated[0] === 0) {
-                throw new Error('user was not updated!');
+                throw new Error('User was not updated');
             }
             return true;
         } catch (error) {

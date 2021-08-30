@@ -137,7 +137,10 @@ export default class BeneficiaryService {
         }
 
         if (active !== undefined) {
-            whereBeneficiary = { active };
+            whereBeneficiary = { 
+                active,
+                ...whereBeneficiary
+            };
         }
 
         // const order: OrderItem[] = [
@@ -182,7 +185,7 @@ export default class BeneficiaryService {
                 claimed: b.claimed,
                 blocked: b.blocked,
                 suspect: b.user && b.user.suspect,
-                isDeleted: !b.user,
+                isDeleted: !b.user || !!b.user!.deletedAt,
             };
         });
         return result;
@@ -240,7 +243,7 @@ export default class BeneficiaryService {
                 claimed: b.claimed,
                 blocked: b.blocked,
                 suspect: b.user && b.user.suspect,
-                isDeleted: !b.user || b.user!.deletedAt,
+                isDeleted: !b.user || !!b.user!.deletedAt,
             };
         });
         return result;

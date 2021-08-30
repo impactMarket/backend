@@ -41,7 +41,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         );
 
         users = await UserFactory({
-            n: 3,
+            n: 4,
             props: [
                 {
                     gender: 'm',
@@ -54,6 +54,10 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 {
                     gender: 'u',
                     year: 1970,
+                },
+                {
+                    gender: 'u',
+                    year: 1965,
                 },
             ],
         });
@@ -78,6 +82,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         const randomWallet = ethers.Wallet.createRandom();
         const tx = randomTx();
         const tx2 = randomTx();
+        const tx3 = randomTx();
 
         await BeneficiaryService.add(
             users[1].address,
@@ -92,6 +97,14 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             users[0].address,
             communities[0].publicId,
             tx2,
+            new Date()
+        );
+
+        await BeneficiaryService.add(
+            users[3].address,
+            users[0].address,
+            communities[0].publicId,
+            tx3,
             new Date()
         );
 
@@ -299,10 +312,27 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             0,
             10
         );
-        expect(beneficiary[0]).to.include({
-            address: users[1].address,
-            username: null,
-            isDeleted: true,
+        
+        beneficiary.forEach(el => {
+            if(el.address === users[1].address) {
+                expect(el).to.include({
+                    address: users[1].address,
+                    username: null,
+                    isDeleted: true,    // deleted
+                });
+            } else if(el.address === users[2].address) {
+                expect(el).to.include({
+                    address: users[2].address,
+                    username: users[2].username,
+                    isDeleted: true,    // target to be deleted
+                });
+            } else if(el.address === users[3].address) {
+                expect(el).to.include({
+                    address: users[3].address,
+                    username: users[3].username,
+                    isDeleted: false,
+                });
+            }
         });
     });
 
@@ -315,7 +345,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         });
     });
 
-    it('calculateCommunitiesDemographics after delete user (should ignore the deleted users)', async () => {
+    it('calculateCommunitiesDemographics after delete user (should ignore deleted users)', async () => {
         await GlobalDemographicsService.calculateCommunitiesDemographics();
         await waitForStubCall(dbGlobalDemographicsStub, 1);
         const yesterdayDateOnly = new Date();
@@ -329,12 +359,12 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 ageRange2: '0',
                 ageRange3: '0',
                 ageRange4: '1',
-                ageRange5: '0',
+                ageRange5: '1',
                 ageRange6: '0',
                 male: '0',
                 female: '0',
-                undisclosed: '1',
-                totalGender: '1',
+                undisclosed: '2',
+                totalGender: '2',
             },
         ]);
     });
