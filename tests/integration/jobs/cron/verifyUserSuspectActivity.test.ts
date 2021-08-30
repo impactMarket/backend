@@ -29,7 +29,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
 
     it('should detect suspicious account', async () => {
         await UserFactory({
-            n: 2,
+            n: 3,
             props: [
                 {
                     phone: '00351969696966',
@@ -63,7 +63,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
 
     it('should remove suspect status from unsuspecting accounts', async () => {
         await UserFactory({
-            n: 2,
+            n: 3,
             props: [
                 {
                     phone: '00351969696969',
