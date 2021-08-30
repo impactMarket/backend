@@ -1,17 +1,15 @@
-import { Op, Sequelize } from 'sequelize';
-import { stub, assert } from 'sinon';
+import { Sequelize } from 'sequelize';
+import { stub, assert, SinonStub, spy, SinonSpy } from 'sinon';
 
 import { models } from '../../../../src/database';
 import { verifyDeletedAccounts } from '../../../../src/worker/jobs/cron/user';
 import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
 import UserFactory from '../../../factories/user';
 import { User } from '../../../../src/interfaces/app/user';
-import { BeneficiaryAttributes } from '../../../../src/database/models/ubi/beneficiary';
 import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../../src/database/models/ubi/manager';
 import CommunityFactory from '../../../factories/community';
 import ManagerFactory from '../../../factories/manager';
-import BeneficiaryFactory from '../../../factories/beneficiary';
 import { ethers } from 'ethers';
 import { randomTx } from '../../../utils/utils';
 import BeneficiaryService from '../../../../src/services/ubi/beneficiary';
@@ -20,18 +18,25 @@ import InflowService from '../../../../src/services/ubi/inflow';
 import { expect } from 'chai';
 import CommunityService from '../../../../src/services/ubi/community';
 import GlobalDemographicsService from '../../../../src/services/global/globalDemographics';
+import UserService from '../../../../src/services/app/user';
 import { verifyCommunitySuspectActivity } from '../../../../src/worker/jobs/cron/community';
+import { waitForStubCall } from '../../../utils';
 
 describe('[jobs - cron] verifyDeletedAccounts', () => {
     let sequelize: Sequelize;
     let users: User[];
     let managers: ManagerAttributes[];
-    let beneficiaries: BeneficiaryAttributes[];
     let communities: CommunityAttributes[];
+    let dbGlobalDemographicsStub: SinonStub;
 
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
+
+        dbGlobalDemographicsStub = stub(
+            GlobalDemographicsService.ubiCommunityDemographics,
+            'bulkCreate'
+        );
 
         users = await UserFactory({ n: 3 });
         communities = await CommunityFactory([
@@ -54,12 +59,21 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         const randomWallet = ethers.Wallet.createRandom();
         const tx = randomTx();
+        const tx2 = randomTx();
 
         await BeneficiaryService.add(
             users[1].address,
             users[0].address,
             communities[0].publicId,
             tx,
+            new Date()
+        );
+
+        await BeneficiaryService.add(
+            users[2].address,
+            users[0].address,
+            communities[0].publicId,
+            tx2,
             new Date()
         );
 
@@ -94,6 +108,14 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         await truncate(sequelize, 'Manager');
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize);
+    });
+
+    it('should not delete a user when he is one of the only two managers in the community', async () => {
+        UserService.delete(users[0].address)
+            .catch(err => expect(err).to.be.equal('Not enough managers'))
+            .then(() => {
+                throw new Error("expected to fail");
+            });
     });
 
     it('delete user/beneficiary', async () => {
@@ -148,7 +170,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         expect(user).to.be.null;
         expect(beneficiary).to.include({
-            active: false
+            active: true
         });
         expect(registry).to.include({
             activity: 0,
@@ -193,27 +215,62 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         expect(user).to.be.null;
         expect(manager).to.include({
-            active: false
+            active: true
         });
     });
 
-    it('search beneficiary after delete user', async () => {
+    it('search beneficiary by address after delete user', async () => {
         const beneficiary = await BeneficiaryService.search(users[0].address, users[1].address);
+        expect(beneficiary[0]).to.include({
+            address: users[1].address,
+            username: null,
+            isDeleted: true
+        });
+    });
+    it('search beneficiary by username after delete user', async () => {
+        const beneficiary = await BeneficiaryService.search(users[0].address, users[1].username!);
         expect(beneficiary.length).to.be.equal(0);
     });
 
     it('list beneficiaries after delete user', async () => {
-        const beneficiary = await BeneficiaryService.list(users[0].address, false, 0, 10);
-        expect(beneficiary.length).to.be.equal(0);
+        const beneficiary = await BeneficiaryService.list(users[0].address, true, 0, 10);
+        expect(beneficiary[0]).to.include({
+            address: users[1].address,
+            username: null,
+            isDeleted: true
+        });
     });
+
     it('get managers after delete user', async () => {
         const manager = await CommunityService.getManagers(communities[0].id);
-        console.log(manager);
-        expect(manager.length).to.be.equal(0);
+        expect(manager[0]).to.include({
+            address: users[0].address,
+            user: null,
+            isDeleted: true
+        });
     });
-    it('calculateCommunitiesDemographics after delete user', async () => {
+
+    it('calculateCommunitiesDemographics after delete user (should ignore the deleted user)', async () => {
         await GlobalDemographicsService.calculateCommunitiesDemographics();
+        await waitForStubCall(dbGlobalDemographicsStub, 1);
+        assert.calledWith(dbGlobalDemographicsStub.getCall(0), [
+            {
+              communityId: communities[0].id,
+              date: "2021-08-29",
+              ageRange1: "0",
+              ageRange2: "0",
+              ageRange3: "0",
+              ageRange4: "0",
+              ageRange5: "0",
+              ageRange6: "0",
+              male: "0",
+              female: "0",
+              undisclosed: "1",
+              totalGender: "1",
+            },
+        ]);
     });
+
     it('verifyCommunitySuspectActivity after delete user', async () => {
         await verifyCommunitySuspectActivity();
     });

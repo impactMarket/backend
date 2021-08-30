@@ -91,22 +91,6 @@ export async function verifyDeletedAccounts(): Promise<void> {
             });
         });
 
-        await models.beneficiary.update({
-            active: false
-        }, {
-            where: {
-                address: { [Op.in]: addresses }
-            }
-        });
-
-        await models.manager.update({
-            active: false
-        }, {
-            where: {
-                address: { [Op.in]: addresses }
-            }
-        });
-
         await models.storyContent.destroy({
             where: {
                 byAddress: { [Op.in]: addresses }

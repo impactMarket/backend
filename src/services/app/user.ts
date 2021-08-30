@@ -498,18 +498,44 @@ export default class UserService {
     }
 
     public static async delete(address: string): Promise<boolean> {
-        const updated = await this.user.update({
-            deletedAt: new Date()
-        }, {
-            where: {
-                address,
-            },
-            returning: true,
-        });
+        try {
+            const manager = await this.manager.findOne({
+                where: { active: true, address },
+            });
 
-        if(updated[0] === 0) {
-            throw new Error('user was not updated!')
+            if(manager) {
+                const managersByCommunity = await this.manager.findAll({
+                    where: {
+                        active: true,
+                        communityId: manager.communityId
+                    },
+                    include: [{
+                        attributes: [],
+                        model: this.user,
+                        as: 'user',
+                        required: true,
+                    }]
+                });
+                if(managersByCommunity.length <= 2) {
+                    throw new Error('Not enough managers');
+                }
+            };
+
+            const updated = await this.user.update({
+                deletedAt: new Date()
+            }, {
+                where: {
+                    address,
+                },
+                returning: true,
+            });
+    
+            if(updated[0] === 0) {
+                throw new Error('user was not updated!')
+            }
+            return true;
+        } catch (error) {
+            throw error;
         }
-        return true;
     }
 }

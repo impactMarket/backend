@@ -101,7 +101,7 @@ export default class GlobalDemographicsService {
                             active: true,
                         },
                         include: [
-                            { model: models.user, as: 'user', attributes: [] },
+                            { model: models.user, as: 'user', required: true, attributes: [] },
                         ],
                     },
                 ],
