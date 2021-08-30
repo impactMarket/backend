@@ -62,10 +62,6 @@ export async function verifyDeletedAccounts(): Promise<void> {
             ]
         });
 
-        if(!users || !users.length) {
-            throw new Error('Users not found');
-        }
-
         const addresses = users.map(el => el.address);
         
         users.forEach((user: User) => {

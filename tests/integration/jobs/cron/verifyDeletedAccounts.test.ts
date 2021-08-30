@@ -38,7 +38,25 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             'bulkCreate'
         );
 
-        users = await UserFactory({ n: 3 });
+        users = await UserFactory(
+            { 
+                n: 3,
+                props: [
+                    {
+                        gender: 'm',
+                        year: 1990,
+                    },
+                    {
+                        gender: 'f',
+                        year: 1980,
+                    },
+                    {
+                        gender: 'u',
+                        year: 1970
+                    }
+                ]
+            },
+        );
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -118,6 +136,33 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             });
     });
 
+    it('should not delete a user before 15 days have passed', async () => {
+        const date = new Date();
+        date.setDate(date.getDate() - 14);
+
+        await models.user.update({
+            deletedAt: date
+        }, {
+            where: {
+                address: users[2].address
+            }
+        });
+
+        await verifyDeletedAccounts();
+
+        const user = await models.user.findOne({
+            where: {
+                address: users[2].address
+            }
+        });
+
+        expect(user).to.exist;
+        expect(user).to.include({
+            address: users[2].address,
+            active: true
+        })
+    });
+
     it('delete user/beneficiary', async () => {
         const date = new Date();
         date.setDate(date.getDate() - 16);
@@ -166,7 +211,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             where: {
                 from: users[1].address
             }
-        }))!.toJSON();;
+        }))!.toJSON();
 
         expect(user).to.be.null;
         expect(beneficiary).to.include({
@@ -250,17 +295,20 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         });
     });
 
-    it('calculateCommunitiesDemographics after delete user (should ignore the deleted user)', async () => {
+    it('calculateCommunitiesDemographics after delete user (should ignore the deleted users)', async () => {
         await GlobalDemographicsService.calculateCommunitiesDemographics();
         await waitForStubCall(dbGlobalDemographicsStub, 1);
+        const yesterdayDateOnly = new Date();
+        yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
+        const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
         assert.calledWith(dbGlobalDemographicsStub.getCall(0), [
             {
               communityId: communities[0].id,
-              date: "2021-08-29",
+              date: yesterdayDate,
               ageRange1: "0",
               ageRange2: "0",
               ageRange3: "0",
-              ageRange4: "0",
+              ageRange4: "1",
               ageRange5: "0",
               ageRange6: "0",
               male: "0",
@@ -269,9 +317,5 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
               totalGender: "1",
             },
         ]);
-    });
-
-    it('verifyCommunitySuspectActivity after delete user', async () => {
-        await verifyCommunitySuspectActivity();
     });
 });
