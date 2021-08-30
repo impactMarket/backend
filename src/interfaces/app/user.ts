@@ -102,6 +102,7 @@ export interface UserCreationAttributes {
     children?: number;
     avatarMediaId?: number;
     pushNotificationToken?: string;
+    active?: boolean;
 
     trust?: AppUserTrustCreation;
 }
