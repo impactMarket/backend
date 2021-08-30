@@ -37,6 +37,9 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
                 {
                     phone: '00351969696966',
                 },
+                {
+                    phone: '00351969696967',
+                },
             ],
         });
         await verifyUserSuspectActivity();
@@ -48,9 +51,13 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
                 },
             ],
         });
-
+      
         users.forEach((user) => {
-            expect(user.suspect).to.be.equal(true);
+            if(user.trust![0].phone === '00351969696966') {
+                expect(user.suspect).to.be.equal(true);
+            } else {
+                expect(user.suspect).to.be.equal(false);
+            }
         });
     });
 
@@ -65,6 +72,9 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
                 {
                     phone: '00351969696970',
                 },
+                {
+                    phone: '00351969696970',
+                },
             ],
         });
         await verifyUserSuspectActivity();
@@ -78,7 +88,11 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
         });
 
         users.forEach((user) => {
-            expect(user.suspect).to.be.equal(false);
+            if(user.trust![0].phone === '00351969696969') {
+                expect(user.suspect).to.be.equal(false);
+            } else {
+                expect(user.suspect).to.be.equal(true);
+            }
         });
     });
 
@@ -92,6 +106,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
                 },
                 {
                     phone: '00351969696970',
+                    suspect: true,
                 },
             ],
         });
