@@ -5,10 +5,11 @@ import { Sequelize } from 'sequelize';
 
 import { models } from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
+import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { User } from '../../../src/interfaces/app/user';
 import UserService from '../../../src/services/app/user';
-import StoryService from '../../../src/services/story';
 import CommunityFactory from '../../factories/community';
+import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 
@@ -20,6 +21,9 @@ describe('user service', () => {
     });
 
     after(async () => {
+        await truncate(sequelize, 'UserModel');
+        await truncate(sequelize, 'Manager');
+        await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize);
     });
 
@@ -443,9 +447,10 @@ describe('user service', () => {
 
     describe('delete', () => {
         let users: User[];
+        let managers: ManagerAttributes[];
 
         before(async () => {
-            users = await UserFactory({ n: 1 });
+            users = await UserFactory({ n: 2 });
             const communities = await CommunityFactory([
                 {
                     requestByAddress: users[0].address,
@@ -462,44 +467,32 @@ describe('user service', () => {
                     hasAddress: true,
                 },
             ]);
-
-            const storyService = new StoryService();
-            const story = await storyService.add(users[0].address, {
-                byAddress: users[0].address,
-                communityId: communities[0].id,
-            });
-            await storyService.love(users[0].address, story.id);
+            managers = await ManagerFactory(
+                [users[0]],
+                communities[0].publicId
+            );
         });
 
-        it('should delete user successfully', async () => {
-            await UserService.delete(users[0].address);
-
-            const findUser = await models.user.findOne({
-                where: { address: users[0].address },
-            });
-
-            const phone = users[0].trust ? users[0].trust[0].phone : null;
-            const findPhone = await models.appUserTrust.findOne({
-                where: {
-                    phone,
-                },
-            });
-            const findStoryContent = await models.storyContent.findOne({
-                where: {
-                    byAddress: users[0].address,
-                },
-            });
-            const findStoryUserEngagement =
-                await models.storyUserEngagement.findOne({
-                    where: {
-                        address: users[0].address,
-                    },
+        it('should not delete a user when he is one of the only two managers in the community', async () => {
+            UserService.delete(users[0].address)
+                .catch((err) => expect(err).to.be.equal('Not enough managers'))
+                .then(() => {
+                    throw new Error('expected to fail');
                 });
+        });
 
-            expect(findUser).to.be.null;
-            expect(findPhone).to.be.null;
-            expect(findStoryContent).to.be.null;
-            expect(findStoryUserEngagement).to.be.null;
+        it('should target to delete successfully', async () => {
+            await UserService.delete(users[1].address);
+
+            const findUser = await models.user.findAll();
+
+            findUser.forEach((user: User) => {
+                if (user.address === users[1].address) {
+                    expect(user.deletedAt).to.be.not.null;
+                } else {
+                    expect(user.deletedAt).to.be.null;
+                }
+            });
         });
     });
 });

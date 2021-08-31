@@ -9,13 +9,11 @@ import { ManagerAttributes } from '../../../../src/database/models/ubi/manager';
 import { User } from '../../../../src/interfaces/app/user';
 import UserService from '../../../../src/services/app/user';
 import GlobalDemographicsService from '../../../../src/services/global/globalDemographics';
+import StoryService from '../../../../src/services/story';
 import BeneficiaryService from '../../../../src/services/ubi/beneficiary';
 import ClaimsService from '../../../../src/services/ubi/claim';
-import InflowService from '../../../../src/services/ubi/inflow';
-
-
 import CommunityService from '../../../../src/services/ubi/community';
-import { verifyCommunitySuspectActivity } from '../../../../src/worker/jobs/cron/community';
+import InflowService from '../../../../src/services/ubi/inflow';
 import { verifyDeletedAccounts } from '../../../../src/worker/jobs/cron/user';
 import CommunityFactory from '../../../factories/community';
 import ManagerFactory from '../../../factories/manager';
@@ -132,6 +130,13 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             tx,
             new Date()
         );
+
+        const storyService = new StoryService();
+        const story = await storyService.add(users[0].address, {
+            byAddress: users[0].address,
+            communityId: communities[0].id,
+        });
+        await storyService.love(users[0].address, story.id);
     });
 
     after(async () => {
@@ -139,14 +144,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         await truncate(sequelize, 'Manager');
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize);
-    });
-
-    it('should not delete a user when he is one of the only two managers in the community', async () => {
-        UserService.delete(users[0].address)
-            .catch((err) => expect(err).to.be.equal('Not enough managers'))
-            .then(() => {
-                throw new Error('expected to fail');
-            });
     });
 
     it('should not delete a user before 15 days have passed', async () => {
@@ -202,6 +199,13 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         });
 
+        const phone = users[0].trust ? users[0].trust[0].phone : null;
+        const findPhone = await models.appUserTrust.findOne({
+            where: {
+                phone,
+            },
+        });
+
         const beneficiary = await models.beneficiary.findOne({
             where: {
                 address: users[1].address,
@@ -233,6 +237,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         }))!.toJSON();
 
         expect(user).to.be.null;
+        expect(findPhone).to.be.null;
         expect(beneficiary).to.include({
             active: true,
         });
@@ -280,10 +285,31 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         });
 
+        const phone = users[0].trust ? users[0].trust[0].phone : null;
+        const findPhone = await models.appUserTrust.findOne({
+            where: {
+                phone,
+            },
+        });
+        const findStoryContent = await models.storyContent.findOne({
+            where: {
+                byAddress: users[0].address,
+            },
+        });
+        const findStoryUserEngagement =
+            await models.storyUserEngagement.findOne({
+                where: {
+                    address: users[0].address,
+                },
+            });
+
         expect(user).to.be.null;
+        expect(findPhone).to.be.null;
         expect(manager).to.include({
             active: true,
         });
+        expect(findStoryContent).to.be.null;
+        expect(findStoryUserEngagement).to.be.null;
     });
 
     it('search beneficiary by address after delete user', async () => {
@@ -312,21 +338,21 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             0,
             10
         );
-        
-        beneficiary.forEach(el => {
-            if(el.address === users[1].address) {
+
+        beneficiary.forEach((el) => {
+            if (el.address === users[1].address) {
                 expect(el).to.include({
                     address: users[1].address,
                     username: null,
-                    isDeleted: true,    // deleted
+                    isDeleted: true, // deleted
                 });
-            } else if(el.address === users[2].address) {
+            } else if (el.address === users[2].address) {
                 expect(el).to.include({
                     address: users[2].address,
                     username: users[2].username,
-                    isDeleted: true,    // target to be deleted
+                    isDeleted: true, // target to be deleted
                 });
-            } else if(el.address === users[3].address) {
+            } else if (el.address === users[3].address) {
                 expect(el).to.include({
                     address: users[3].address,
                     username: users[3].username,

@@ -137,9 +137,9 @@ export default class BeneficiaryService {
         }
 
         if (active !== undefined) {
-            whereBeneficiary = { 
+            whereBeneficiary = {
                 active,
-                ...whereBeneficiary
+                ...whereBeneficiary,
             };
         }
 
