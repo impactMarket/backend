@@ -143,6 +143,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         await truncate(sequelize, 'UserModel');
         await truncate(sequelize, 'Manager');
         await truncate(sequelize, 'Beneficiary');
+        await truncate(sequelize, 'StoryCommunityModel')
         await truncate(sequelize);
     });
 
@@ -199,7 +200,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         });
 
-        const phone = users[0].trust ? users[0].trust[0].phone : null;
+        const phone = users[1].trust ? users[1].trust[0].phone : null;
         const findPhone = await models.appUserTrust.findOne({
             where: {
                 phone,
