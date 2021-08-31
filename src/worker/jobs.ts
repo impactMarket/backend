@@ -402,22 +402,26 @@ function cron() {
         true
     );
 
-    // everyday at 1am
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '0 1 * * *',
-        () => {
-            Logger.info('Verify deleted accounts...');
-            verifyDeletedAccounts()
-                .then(() => {
-                    CronJobExecutedService.add('verifyDeletedAccounts');
-                    Logger.info('verifyDeletedAccounts successfully executed!');
-                })
-                .catch((e) => {
-                    Logger.error('verifyDeletedAccounts FAILED! ' + e);
-                });
-        },
-        null,
-        true
-    );
+    try {
+        // everyday at 1am
+        // eslint-disable-next-line no-new
+        new CronJob(
+            '0 1 * * *',
+            () => {
+                Logger.info('Verify deleted accounts...');
+                verifyDeletedAccounts()
+                    .then(() => {
+                        CronJobExecutedService.add('verifyDeletedAccounts');
+                        Logger.info('verifyDeletedAccounts successfully executed!');
+                    })
+                    .catch((e) => {
+                        Logger.error('verifyDeletedAccounts FAILED! ' + e);
+                    });
+            },
+            null,
+            true
+        );
+    } catch (e) {
+        /** */
+    }
 }
