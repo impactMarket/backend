@@ -407,7 +407,8 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunity'
      */
-    route.get('/address/:address',
+    route.get(
+        '/address/:address',
         (req, res, next) => {
             (req as any).authTokenIsOptional = true;
             next();
@@ -842,7 +843,8 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunity'
      */
-    route.get('/:id',
+    route.get(
+        '/:id',
         (req, res, next) => {
             (req as any).authTokenIsOptional = true;
             next();

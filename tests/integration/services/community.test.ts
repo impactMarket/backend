@@ -10,9 +10,9 @@ import { CommunityContentStorage } from '../../../src/services/storage';
 import CommunityService from '../../../src/services/ubi/community';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
+import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
-import ManagerFactory from '../../factories/manager';
 
 // in this test there are users being assined with suspicious activity and others being removed
 describe('community service', () => {
@@ -281,9 +281,9 @@ describe('community service', () => {
 
                 const result = await CommunityService.list({});
 
-                result.rows.forEach(el => {
-                    expect(el.email).to.be.undefined
-                })
+                result.rows.forEach((el) => {
+                    expect(el.email).to.be.undefined;
+                });
             });
         });
 
@@ -1064,7 +1064,7 @@ describe('community service', () => {
                     coverMediaId: 1,
                     email: 'test@gmail.com',
                 },
-                users[0].address,
+                users[0].address
             );
 
             expect(updatedCommunity.description).to.be.equal(
@@ -1072,7 +1072,7 @@ describe('community service', () => {
             );
             expect(updatedCommunity.coverMediaId).to.be.equal(1);
             expect(updatedCommunity.email).to.be.equal('test@gmail.com');
-        })
+        });
     });
 
     describe('promoter', () => {
@@ -1157,7 +1157,10 @@ describe('community service', () => {
 
             await ManagerFactory([users[0]], communities[0].publicId);
 
-            const result = await CommunityService.findById(communities[0].id, users[0].address);
+            const result = await CommunityService.findById(
+                communities[0].id,
+                users[0].address
+            );
 
             expect(result.publicId).to.be.equal(communities[0].publicId);
             expect(result.email).to.be.equal(communities[0].email);
@@ -1183,7 +1186,10 @@ describe('community service', () => {
 
             await ManagerFactory([users[0]], communities[0].publicId);
 
-            const result = await CommunityService.findById(communities[0].id, users[1].address);
+            const result = await CommunityService.findById(
+                communities[0].id,
+                users[1].address
+            );
 
             expect(result.publicId).to.be.equal(communities[0].publicId);
             expect(result.email).to.be.equal('');
@@ -1209,7 +1215,10 @@ describe('community service', () => {
 
             await ManagerFactory([users[0]], communities[0].publicId);
 
-            const result = await CommunityService.findByContractAddress(communities[0].contractAddress!, users[0].address);
+            const result = await CommunityService.findByContractAddress(
+                communities[0].contractAddress!,
+                users[0].address
+            );
 
             expect(result.publicId).to.be.equal(communities[0].publicId);
             expect(result.email).to.be.equal(communities[0].email);
@@ -1235,7 +1244,10 @@ describe('community service', () => {
 
             await ManagerFactory([users[0]], communities[0].publicId);
 
-            const result = await CommunityService.findByContractAddress(communities[0].contractAddress!, users[1].address);
+            const result = await CommunityService.findByContractAddress(
+                communities[0].contractAddress!,
+                users[1].address
+            );
 
             expect(result.publicId).to.be.equal(communities[0].publicId);
             expect(result.email).to.be.equal('');

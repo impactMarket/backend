@@ -17,7 +17,10 @@ class CommunityController {
     };
 
     findByContractAddress = (req: RequestWithUser, res: Response) => {
-        CommunityService.findByContractAddress(req.params.address, req.user?.address)
+        CommunityService.findByContractAddress(
+            req.params.address,
+            req.user?.address
+        )
             .then((community) =>
                 standardResponse(res, 200, !!community, community)
             )
@@ -110,7 +113,10 @@ class CommunityController {
     };
 
     findById = (req: RequestWithUser, res: Response) => {
-        CommunityService.findById(parseInt(req.params.id, 10), req.user?.address)
+        CommunityService.findById(
+            parseInt(req.params.id, 10),
+            req.user?.address
+        )
             .then((community) => standardResponse(res, 200, true, community))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -235,7 +241,8 @@ class CommunityController {
                             coverMediaId,
                             email,
                         },
-                        req.user?.address)
+                        req.user?.address
+                    )
                         .then((community) =>
                             standardResponse(res, 200, true, community)
                         )

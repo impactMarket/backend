@@ -190,7 +190,7 @@ export default class CommunityService {
             coverMediaId: number;
             email?: string;
         },
-        userAddress?: string,
+        userAddress?: string
     ): Promise<CommunityAttributes> {
         const community = await this.community.findOne({
             attributes: ['coverMediaId'],
@@ -432,7 +432,7 @@ export default class CommunityService {
 
         const communitiesResult = await this.community.findAndCountAll({
             attributes: {
-                exclude: ['email']
+                exclude: ['email'],
             },
             where: {
                 status: 'valid',
@@ -486,13 +486,16 @@ export default class CommunityService {
         });
     }
 
-    public static async findById(id: number, userAddress?: string): Promise<CommunityAttributes> {      
+    public static async findById(
+        id: number,
+        userAddress?: string
+    ): Promise<CommunityAttributes> {
         return this._findCommunityBy({ id }, userAddress);
     }
 
     public static async findByContractAddress(
         contractAddress: string,
-        userAddress?: string,
+        userAddress?: string
     ): Promise<CommunityAttributes> {
         return this._findCommunityBy({ contractAddress }, userAddress);
     }
@@ -500,7 +503,7 @@ export default class CommunityService {
     public static async getDashboard(id: string) {
         const result = await this.community.findOne({
             attributes: {
-                exclude: ['email']
+                exclude: ['email'],
             },
             include: [
                 {
@@ -1370,14 +1373,15 @@ export default class CommunityService {
         const metrics = await this.getMetrics(community.id);
 
         let showEmail = false;
-        if(userAddress) {
+        if (userAddress) {
             const manager = await models.manager.findOne({
                 attributes: ['communityId'],
                 where: { address: userAddress, active: true },
             });
             if (manager !== null) {
-                const communityId = (manager.toJSON() as ManagerAttributes).communityId;
-                showEmail = communityId === community.publicId
+                const communityId = (manager.toJSON() as ManagerAttributes)
+                    .communityId;
+                showEmail = communityId === community.publicId;
             }
         }
 
