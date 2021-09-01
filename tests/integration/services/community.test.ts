@@ -12,6 +12,7 @@ import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
+import ManagerFactory from '../../factories/manager';
 
 // in this test there are users being assined with suspicious activity and others being removed
 describe('community service', () => {
@@ -242,6 +243,47 @@ describe('community service', () => {
                     country: communities[1].country,
                     requestByAddress: users[1].address,
                 });
+            });
+
+            it('list all communities', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        name: 'oreoland', // no space on purpose
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        name: 'oreo sea',
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                    },
+                ]);
+
+                const result = await CommunityService.list({});
+
+                result.rows.forEach(el => {
+                    expect(el.email).to.be.undefined
+                })
             });
         });
 
@@ -905,6 +947,7 @@ describe('community service', () => {
 
     describe('edit', () => {
         afterEach(async () => {
+            await truncate(sequelize, 'Manager');
             await truncate(sequelize);
         });
 
@@ -989,6 +1032,47 @@ describe('community service', () => {
             );
             expect(updatedCommunity.coverMediaId).to.be.equal(1);
         });
+
+        it('update email', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            await ManagerFactory([users[0]], communities[0].publicId);
+
+            const communityNewDescription =
+                'bla bla bla, this community to the moon!';
+            const updatedCommunity = await CommunityService.edit(
+                communities[0].id,
+                {
+                    currency: communities[0].currency,
+                    description: communityNewDescription,
+                    name: communities[0].name,
+                    coverMediaId: 1,
+                    email: 'test@gmail.com',
+                },
+                users[0].address,
+            );
+
+            expect(updatedCommunity.description).to.be.equal(
+                communityNewDescription
+            );
+            expect(updatedCommunity.coverMediaId).to.be.equal(1);
+            expect(updatedCommunity.email).to.be.equal('test@gmail.com');
+        })
     });
 
     describe('promoter', () => {
@@ -1044,6 +1128,117 @@ describe('community service', () => {
             expect(result).to.not.be.null;
             expect(result!.name).to.be.equal(name);
             expect(result!.description).to.be.equal(description);
+        });
+    });
+
+    describe('find', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'Manager');
+            await truncate(sequelize);
+        });
+
+        it('find by id - manager search', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            await ManagerFactory([users[0]], communities[0].publicId);
+
+            const result = await CommunityService.findById(communities[0].id, users[0].address);
+
+            expect(result.publicId).to.be.equal(communities[0].publicId);
+            expect(result.email).to.be.equal(communities[0].email);
+        });
+
+        it('find by id - common user search', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            await ManagerFactory([users[0]], communities[0].publicId);
+
+            const result = await CommunityService.findById(communities[0].id, users[1].address);
+
+            expect(result.publicId).to.be.equal(communities[0].publicId);
+            expect(result.email).to.be.equal('');
+        });
+
+        it('find by Contract Address - manager search', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            await ManagerFactory([users[0]], communities[0].publicId);
+
+            const result = await CommunityService.findByContractAddress(communities[0].contractAddress!, users[0].address);
+
+            expect(result.publicId).to.be.equal(communities[0].publicId);
+            expect(result.email).to.be.equal(communities[0].email);
+        });
+
+        it('find by Contract Address - common user search', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            await ManagerFactory([users[0]], communities[0].publicId);
+
+            const result = await CommunityService.findByContractAddress(communities[0].contractAddress!, users[1].address);
+
+            expect(result.publicId).to.be.equal(communities[0].publicId);
+            expect(result.email).to.be.equal('');
         });
     });
 });
