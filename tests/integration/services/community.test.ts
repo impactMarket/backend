@@ -1034,9 +1034,11 @@ describe('community service', () => {
         });
 
         it('update email', async () => {
+            const manager = await UserFactory({ n: 1 });
+
             const communities = await CommunityFactory([
                 {
-                    requestByAddress: users[0].address,
+                    requestByAddress: manager[0].address,
                     started: new Date(),
                     status: 'valid',
                     visibility: 'public',
@@ -1051,7 +1053,7 @@ describe('community service', () => {
                 },
             ]);
 
-            await ManagerFactory([users[0]], communities[0].publicId);
+            await ManagerFactory([manager[0]], communities[0].publicId);
 
             const communityNewDescription =
                 'bla bla bla, this community to the moon!';
@@ -1064,7 +1066,7 @@ describe('community service', () => {
                     coverMediaId: 1,
                     email: 'test@gmail.com',
                 },
-                users[0].address
+                manager[0].address
             );
 
             expect(updatedCommunity.description).to.be.equal(
@@ -1138,9 +1140,11 @@ describe('community service', () => {
         });
 
         it('find by id - manager request', async () => {
+            const manager = await UserFactory({ n: 1 });
+
             const communities = await CommunityFactory([
                 {
-                    requestByAddress: users[0].address,
+                    requestByAddress: manager[0].address,
                     started: new Date(),
                     status: 'valid',
                     visibility: 'public',
@@ -1155,11 +1159,11 @@ describe('community service', () => {
                 },
             ]);
 
-            await ManagerFactory([users[0]], communities[0].publicId);
+            await ManagerFactory([manager[0]], communities[0].publicId);
 
             const result = await CommunityService.findById(
                 communities[0].id,
-                users[0].address
+                manager[0].address
             );
 
             expect(result.publicId).to.be.equal(communities[0].publicId);
@@ -1167,9 +1171,11 @@ describe('community service', () => {
         });
 
         it('find by id - common user request', async () => {
+            const manager = await UserFactory({ n: 1 });
+
             const communities = await CommunityFactory([
                 {
-                    requestByAddress: users[0].address,
+                    requestByAddress: manager[0].address,
                     started: new Date(),
                     status: 'valid',
                     visibility: 'public',
@@ -1184,21 +1190,20 @@ describe('community service', () => {
                 },
             ]);
 
-            await ManagerFactory([users[0]], communities[0].publicId);
+            await ManagerFactory([manager[0]], communities[0].publicId);
 
-            const result = await CommunityService.findById(
-                communities[0].id,
-                users[1].address
-            );
+            const result = await CommunityService.findById(communities[0].id);
 
             expect(result.publicId).to.be.equal(communities[0].publicId);
             expect(result.email).to.be.equal('');
         });
 
         it('find by Contract Address - manager request', async () => {
+            const manager = await UserFactory({ n: 1 });
+
             const communities = await CommunityFactory([
                 {
-                    requestByAddress: users[0].address,
+                    requestByAddress: manager[0].address,
                     started: new Date(),
                     status: 'valid',
                     visibility: 'public',
@@ -1213,11 +1218,11 @@ describe('community service', () => {
                 },
             ]);
 
-            await ManagerFactory([users[0]], communities[0].publicId);
+            await ManagerFactory([manager[0]], communities[0].publicId);
 
             const result = await CommunityService.findByContractAddress(
                 communities[0].contractAddress!,
-                users[0].address
+                manager[0].address
             );
 
             expect(result.publicId).to.be.equal(communities[0].publicId);
@@ -1225,9 +1230,11 @@ describe('community service', () => {
         });
 
         it('find by Contract Address - common user request', async () => {
+            const manager = await UserFactory({ n: 1 });
+
             const communities = await CommunityFactory([
                 {
-                    requestByAddress: users[0].address,
+                    requestByAddress: manager[0].address,
                     started: new Date(),
                     status: 'valid',
                     visibility: 'public',
@@ -1242,11 +1249,10 @@ describe('community service', () => {
                 },
             ]);
 
-            await ManagerFactory([users[0]], communities[0].publicId);
+            await ManagerFactory([manager[0]], communities[0].publicId);
 
             const result = await CommunityService.findByContractAddress(
-                communities[0].contractAddress!,
-                users[1].address
+                communities[0].contractAddress!
             );
 
             expect(result.publicId).to.be.equal(communities[0].publicId);
