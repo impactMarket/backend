@@ -1137,7 +1137,7 @@ describe('community service', () => {
             await truncate(sequelize);
         });
 
-        it('find by id - manager search', async () => {
+        it('find by id - manager request', async () => {
             const communities = await CommunityFactory([
                 {
                     requestByAddress: users[0].address,
@@ -1163,7 +1163,7 @@ describe('community service', () => {
             expect(result.email).to.be.equal(communities[0].email);
         });
 
-        it('find by id - common user search', async () => {
+        it('find by id - common user request', async () => {
             const communities = await CommunityFactory([
                 {
                     requestByAddress: users[0].address,
@@ -1189,7 +1189,7 @@ describe('community service', () => {
             expect(result.email).to.be.equal('');
         });
 
-        it('find by Contract Address - manager search', async () => {
+        it('find by Contract Address - manager request', async () => {
             const communities = await CommunityFactory([
                 {
                     requestByAddress: users[0].address,
@@ -1215,7 +1215,7 @@ describe('community service', () => {
             expect(result.email).to.be.equal(communities[0].email);
         });
 
-        it('find by Contract Address - common user search', async () => {
+        it('find by Contract Address - common user request', async () => {
             const communities = await CommunityFactory([
                 {
                     requestByAddress: users[0].address,
