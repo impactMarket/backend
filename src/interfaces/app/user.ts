@@ -79,6 +79,7 @@ export interface User {
     lastLogin: Date;
     suspect: boolean;
     active: boolean;
+    email: string;
 
     // timestamps
     createdAt: Date;
@@ -102,6 +103,7 @@ export interface UserCreationAttributes {
     avatarMediaId?: number;
     pushNotificationToken?: string;
     active?: boolean;
+    email?: string;
 
     trust?: AppUserTrustCreation;
 }

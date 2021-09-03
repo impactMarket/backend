@@ -432,5 +432,107 @@ describe('user service', () => {
 
             expect(userUpdated).to.include(data);
         })
-    })
+    });
+
+    describe('newsletter', () => {
+        let users: User[];
+
+        before(async () => {
+            users = await UserFactory({ n: 1 });
+        });
+
+        after(async () => {
+            await truncate(sequelize);
+        });
+
+        it('verify subscription with user without email', async () => {
+            const subscription = await UserService.verifyNewsletterSubscription(
+                users[0].address
+            );
+
+            expect(subscription).to.be.equal(false);
+        });
+
+        it('update email', async () => {
+            const email = faker.internet.email();
+            const user: User = await UserService.edit(users[0].address, {
+                email,
+            });
+            expect(user.email).to.be.equal(email);
+        });
+
+        it('verify subscription before subscription', async () => {
+            const subscription = await UserService.verifyNewsletterSubscription(
+                users[0].address
+            );
+
+            expect(subscription).to.be.equal(false);
+        });
+
+        it('subscribe', async () => {
+            const subscription = await UserService.subscribeNewsletter(
+                users[0].address,
+                { subscribe: true }
+            );
+            expect(subscription).to.be.equal(true);
+        });
+
+        it('should fail when trying to subscribe an existing email', async () => {
+            UserService.subscribeNewsletter(users[0].address, {
+                subscribe: true,
+            })
+                .catch((e) =>
+                    expect(e.message).to.include(
+                        'Contact already exists. Existing ID:'
+                    )
+                )
+                .then(() => {
+                    throw new Error(
+                        "'fails to welcome not existing account' expected to fail"
+                    );
+                });
+        });
+
+        it('verify subscription after subscription', async () => {
+            setTimeout(async () => {
+                const subscription =
+                    await UserService.verifyNewsletterSubscription(
+                        users[0].address
+                    );
+                expect(subscription).to.be.equal(true);
+            }, 100);
+        });
+
+        it('unsubscribe', async () => {
+            setTimeout(async () => {
+                const subscription = await UserService.subscribeNewsletter(
+                    users[0].address,
+                    { subscribe: false }
+                );
+                expect(subscription).to.be.equal(true);
+            }, 100);
+        });
+
+        it('verify subscription after unsubscribe', async () => {
+            const subscription = await UserService.verifyNewsletterSubscription(
+                users[0].address
+            );
+
+            expect(subscription).to.be.equal(false);
+        });
+
+        it('should fail when trying to unsubscribe without be subscribed', async () => {
+            UserService.subscribeNewsletter(users[0].address, {
+                subscribe: false,
+            })
+                .catch((e) =>
+                    expect(e.message).to.be.equal('User not found on HubsPot')
+                )
+                .then(() => {
+                    throw new Error(
+                        "'fails to welcome not existing account' expected to fail"
+                    );
+                });
+        });
+    });
 });

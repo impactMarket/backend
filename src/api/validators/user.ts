@@ -100,8 +100,17 @@ const edit = celebrate({
         children: Joi.number().optional(),
         avatarMediaId: Joi.number().optional(),
         pushNotificationToken: Joi.string().optional().allow(''),
-    })
-})
+        email: Joi.string()
+            .email({ tlds: { allow: false } })
+            .optional(),
+    }),
+});
+
+const subscribeNewsletter = celebrate({
+    body: Joi.object({
+        subscribe: Joi.boolean().required(),
+    }),
+});
 
 export default {
     report,
@@ -116,4 +125,5 @@ export default {
     updateChildren,
     device,
     edit,
+    subscribeNewsletter,
 };

@@ -63,6 +63,10 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.DATE,
             },
+            email: {
+                type: Sequelize.STRING(64),
+                allowNull: false,
+            },
         });
     },
     down: (queryInterface, Sequelize) => {

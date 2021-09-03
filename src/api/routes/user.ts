@@ -247,4 +247,71 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.put('/', authenticateToken, userValidators.edit, userController.edit);
+
+    /**
+     * @swagger
+     *
+     * /user/newsletter:
+     *   get:
+     *     tags:
+     *       - "user"
+     *     summary: Verify newsletter subscription
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    type: boolean
+     *                    description: Is the user subscribed to the newsletter?
+     */
+    route.get(
+        '/newsletter',
+        authenticateToken,
+        userController.verifyNewsletterSubscription
+    );
+
+    /**
+     * @swagger
+     *
+     * /user/newsletter:
+     *   post:
+     *     tags:
+     *       - "user"
+     *     summary: Subscribe or Unsubscribe newsletter
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               subscribe:
+     *                 type: boolean
+     *                 required: true
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    type: boolean
+     *                    description: If success
+     */
+    route.post(
+        '/newsletter',
+        authenticateToken,
+        userValidators.subscribeNewsletter,
+        userController.subscribeNewsletter
+    );
 };

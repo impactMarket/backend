@@ -287,6 +287,39 @@ class UserController {
                 standardResponse(res, 400, false, '', { error: e.message })
             );
     };
+
+    public verifyNewsletterSubscription = (
+        req: RequestWithUser,
+        res: Response
+    ) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+
+        UserService.verifyNewsletterSubscription(req.user.address)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
+
+    public subscribeNewsletter = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+
+        UserService.subscribeNewsletter(req.user.address, req.body)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
 }
 
 export default UserController;
