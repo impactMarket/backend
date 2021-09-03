@@ -28,7 +28,7 @@ export default class UserService {
 
     private static profileContentStorage = new ProfileContentStorage();
 
-    private static hubspotClient = new Client({ apiKey: config.hubspotKey });
+    public static hubspotClient = new Client({ apiKey: config.hubspotKey });
 
     public static async authenticate(
         user: UserCreationAttributes,

@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { ethers } from 'ethers';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
+import { SinonStub, stub } from 'sinon';
 
 import { models } from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
@@ -436,9 +437,30 @@ describe('user service', () => {
 
     describe('newsletter', () => {
         let users: User[];
+        let searchContactStub: SinonStub;
+        let createContactStub: SinonStub;
+        let deleteContactStub: SinonStub;
 
         before(async () => {
             users = await UserFactory({ n: 1 });
+            searchContactStub = stub(
+                UserService.hubspotClient.crm.contacts.searchApi,
+                'doSearch'
+            );
+            createContactStub = stub(
+                UserService.hubspotClient.crm.contacts.basicApi,
+                'create'
+            );
+            deleteContactStub = stub(
+                UserService.hubspotClient.crm.contacts.basicApi,
+                'archive'
+            );
+        });
+
+        after(async () => {
+            searchContactStub.restore();
+            createContactStub.restore();
+            deleteContactStub.restore();
         });
 
         after(async () => {
@@ -462,6 +484,10 @@ describe('user service', () => {
         });
 
         it('verify subscription before subscription', async () => {
+            searchContactStub.returns(
+                Promise.resolve({ body: { results: [] } } as any)
+            );
+
             const subscription = await UserService.verifyNewsletterSubscription(
                 users[0].address
             );
@@ -470,6 +496,10 @@ describe('user service', () => {
         });
 
         it('subscribe', async () => {
+            createContactStub.returns(
+                Promise.resolve({ body: { id: '123' } } as any)
+            );
+
             const subscription = await UserService.subscribeNewsletter(
                 users[0].address,
                 { subscribe: true }
@@ -478,6 +508,12 @@ describe('user service', () => {
         });
 
         it('should fail when trying to subscribe an existing email', async () => {
+            createContactStub.returns(
+                Promise.reject({
+                    message: 'Contact already exists. Existing ID: 123',
+                })
+            );
+
             UserService.subscribeNewsletter(users[0].address, {
                 subscribe: true,
             })
@@ -493,35 +529,24 @@ describe('user service', () => {
                 });
         });
 
-        it('verify subscription after subscription', async () => {
-            setTimeout(async () => {
-                const subscription =
-                    await UserService.verifyNewsletterSubscription(
-                        users[0].address
-                    );
-                expect(subscription).to.be.equal(true);
-            }, 100);
-        });
-
         it('unsubscribe', async () => {
-            setTimeout(async () => {
-                const subscription = await UserService.subscribeNewsletter(
-                    users[0].address,
-                    { subscribe: false }
-                );
-                expect(subscription).to.be.equal(true);
-            }, 100);
-        });
-
-        it('verify subscription after unsubscribe', async () => {
-            const subscription = await UserService.verifyNewsletterSubscription(
-                users[0].address
+            searchContactStub.returns(
+                Promise.resolve({ body: { results: [{ id: '123' }] } } as any)
             );
+            createContactStub.returns(Promise.resolve(true));
 
-            expect(subscription).to.be.equal(false);
+            const subscription = await UserService.subscribeNewsletter(
+                users[0].address,
+                { subscribe: false }
+            );
+            expect(subscription).to.be.equal(true);
         });
 
         it('should fail when trying to unsubscribe without be subscribed', async () => {
+            searchContactStub.returns(
+                Promise.resolve({ body: { results: [] } } as any)
+            );
+
             UserService.subscribeNewsletter(users[0].address, {
                 subscribe: false,
             })
