@@ -65,7 +65,7 @@ module.exports = {
             },
             email: {
                 type: Sequelize.STRING(64),
-                allowNull: false,
+                allowNull: true,
             },
         });
     },
