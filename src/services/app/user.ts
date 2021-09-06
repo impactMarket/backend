@@ -513,6 +513,9 @@ export default class UserService {
                             model: this.user,
                             as: 'user',
                             required: true,
+                            where: {
+                                deletedAt: null,
+                            }
                         },
                     ],
                 });

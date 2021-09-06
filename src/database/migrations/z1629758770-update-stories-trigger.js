@@ -18,16 +18,7 @@ module.exports = {
           RETURN OLD;
       END IF;
     END;
-    $$ LANGUAGE plpgsql;
-
-    DROP TRIGGER IF EXISTS update_loves_stories
-		ON story_user_engagement;
-    
-    CREATE TRIGGER update_loves_stories
-    BEFORE INSERT OR DELETE
-    ON story_user_engagement
-    FOR EACH ROW
-    EXECUTE PROCEDURE update_loves_stories();`);
+    $$ LANGUAGE plpgsql;`);
   },
 
   down: async (queryInterface, Sequelize) => {

@@ -74,20 +74,6 @@ export async function verifyDeletedAccounts(): Promise<void> {
             });
         });
 
-        await models.storyContent.destroy({
-            where: {
-                byAddress: { [Op.in]: addresses },
-            },
-            transaction: t,
-        });
-
-        await models.storyUserEngagement.destroy({
-            where: {
-                address: { [Op.in]: addresses },
-            },
-            transaction: t,
-        });
-
         await models.user.destroy({
             where: {
                 address: { [Op.in]: addresses },
