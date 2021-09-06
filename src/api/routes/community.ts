@@ -3,7 +3,11 @@ import communityValidators from '@validators/community';
 import { Router } from 'express';
 
 import { cacheWithRedis } from '../../database';
-import { adminAuthentication, authenticateToken } from '../middlewares';
+import {
+    adminAuthentication,
+    authenticateToken,
+    optionalAuthentication,
+} from '../middlewares';
 
 /**
  * @swagger
@@ -409,11 +413,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/address/:address',
-        (req, res, next) => {
-            (req as any).authTokenIsOptional = true;
-            next();
-        },
-        authenticateToken,
+        optionalAuthentication,
         controller.findByContractAddress
     );
 
@@ -843,15 +843,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunity'
      */
-    route.get(
-        '/:id',
-        (req, res, next) => {
-            (req as any).authTokenIsOptional = true;
-            next();
-        },
-        authenticateToken,
-        controller.findById
-    );
+    route.get('/:id', optionalAuthentication, controller.findById);
 
     /**
      * @swagger
