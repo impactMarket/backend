@@ -1381,7 +1381,7 @@ export default class CommunityService {
             if (manager !== null) {
                 const communityId = (manager.toJSON() as ManagerAttributes)
                     .communityId;
-                showEmail = communityId === community.publicId;
+                showEmail = manager.communityId === community.publicId;
             }
         }
 
