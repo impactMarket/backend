@@ -91,6 +91,7 @@ module.exports = {
             {
                 tableName: 'ubi_beneficiary_registry',
                 sequelize: queryInterface.sequelize, // this bit is important
+                timestamps: false,
             }
         );
 
@@ -181,6 +182,8 @@ module.exports = {
             }
         );
 
+        const fromBlock = 2578063; // September-18-2020 10:35:31 PM +1 UTC
+
         const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
         const availableCommunities = await Community.findAll({
             where: {
@@ -195,7 +198,7 @@ module.exports = {
         for (let c = 0; c < availableCommunities.length; c++) {
             const logsCommunity = await provider.getLogs({
                 address: availableCommunities[c].contractAddress,
-                fromBlock: 2578063, // September-18-2020 10:35:31 PM +1 UTC
+                fromBlock,
                 toBlock: 'latest',
                 topics: [
                     [
@@ -222,34 +225,38 @@ module.exports = {
                     const beneficiaryAddress = parsedLog.args[0];
                     try {
                         txAt = await getBlockTime(log.blockHash);
-                        const txResponse = await this.provider.getTransaction(
+                        const txResponse = await provider.getTransaction(
                             log.transactionHash
                         );
                         await UbiBeneficiaryRegistry.create({
                             address: beneficiaryAddress,
-                            from: txResponse.from,
+                            from: ethers.utils.getAddress(txResponse.from),
                             communityId: availableCommunities[c].id,
                             activity: 0,
                             tx: log.transactionHash,
                             txAt,
                         });
-                    } catch (e) {}
+                    } catch (e) {
+                        console.log(e);
+                    }
                 } else if (parsedLog.name === 'BeneficiaryRemoved') {
                     const beneficiaryAddress = parsedLog.args[0];
                     try {
                         txAt = await getBlockTime(log.blockHash);
-                        const txResponse = await this.provider.getTransaction(
+                        const txResponse = await provider.getTransaction(
                             log.transactionHash
                         );
                         await UbiBeneficiaryRegistry.create({
                             address: beneficiaryAddress,
-                            from: txResponse.from,
+                            from: ethers.utils.getAddress(txResponse.from),
                             communityId: availableCommunities[c].id,
                             activity: 1,
                             tx: log.transactionHash,
                             txAt,
                         });
-                    } catch (e) {}
+                    } catch (e) {
+                        console.log(e);
+                    }
                 }
             }
         }
