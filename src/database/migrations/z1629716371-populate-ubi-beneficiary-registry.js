@@ -39,6 +39,9 @@ async function getBlockTime(blockHash) {
 // eslint-disable-next-line no-undef
 module.exports = {
     up: async (queryInterface, Sequelize) => {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
         const UbiBeneficiaryRegistry = await queryInterface.sequelize.define(
             'ubi_beneficiary_registry',
             {
@@ -49,20 +52,10 @@ module.exports = {
                 },
                 address: {
                     type: Sequelize.STRING(44),
-                    references: {
-                        model: 'user',
-                        key: 'address',
-                    },
-                    onDelete: 'RESTRICT',
                     allowNull: false,
                 },
                 from: {
                     type: Sequelize.STRING(44),
-                    references: {
-                        model: 'user',
-                        key: 'address',
-                    },
-                    onDelete: 'RESTRICT',
                     allowNull: false,
                 },
                 communityId: {
@@ -182,6 +175,7 @@ module.exports = {
             }
         );
 
+        // const fromBlock = 6805929;
         const fromBlock = 2578063; // September-18-2020 10:35:31 PM +1 UTC
 
         const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
@@ -190,73 +184,79 @@ module.exports = {
                 status: 'valid',
             },
         });
+        const communitiesAddress = availableCommunities.map(
+            (c) => c.contractAddress
+        );
+        const communitiesIds = new Map(
+            availableCommunities.map((c) => [c.contractAddress, c.id])
+        );
 
         const provider = new ethers.providers.JsonRpcProvider(
             process.env.CHAIN_JSON_RPC_URL
         );
         // get past community events
-        for (let c = 0; c < availableCommunities.length; c++) {
-            const logsCommunity = await provider.getLogs({
-                address: availableCommunities[c].contractAddress,
-                fromBlock,
-                toBlock: 'latest',
-                topics: [
-                    [
-                        // ethers.utils.id('ManagerAdded(address)'),
-                        // ethers.utils.id('ManagerRemoved(address)'),
-                        ethers.utils.id('BeneficiaryAdded(address)'),
-                        // ethers.utils.id('BeneficiaryLocked(address)'),
-                        ethers.utils.id('BeneficiaryRemoved(address)'),
-                        // ethers.utils.id('BeneficiaryClaim(address,uint256)'),
-                        // ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
-                    ],
+        const logsCommunity = await provider.getLogs({
+            fromBlock,
+            toBlock: 'latest',
+            topics: [
+                [
+                    // ethers.utils.id('ManagerAdded(address)'),
+                    // ethers.utils.id('ManagerRemoved(address)'),
+                    ethers.utils.id('BeneficiaryAdded(address)'),
+                    // ethers.utils.id('BeneficiaryLocked(address)'),
+                    ethers.utils.id('BeneficiaryRemoved(address)'),
+                    // ethers.utils.id('BeneficiaryClaim(address,uint256)'),
+                    // ethers.utils.id('CommunityEdited(uint256,uint256,uint256,uint256)'),
                 ],
-            });
+            ],
+        });
 
-            const eventsCommunity = logsCommunity.map((log) =>
-                ifaceCommunity.parseLog(log)
-            );
+        const eventsCommunity = logsCommunity.map((log) =>
+            ifaceCommunity.parseLog(log)
+        );
 
-            for (let ec = 0; ec < eventsCommunity.length; ec += 1) {
-                const log = logsCommunity[ec];
-                const parsedLog = eventsCommunity[ec];
-                let txAt;
-                if (parsedLog.name === 'BeneficiaryAdded') {
-                    const beneficiaryAddress = parsedLog.args[0];
-                    try {
-                        txAt = await getBlockTime(log.blockHash);
-                        const txResponse = await provider.getTransaction(
-                            log.transactionHash
-                        );
-                        await UbiBeneficiaryRegistry.create({
-                            address: beneficiaryAddress,
-                            from: ethers.utils.getAddress(txResponse.from),
-                            communityId: availableCommunities[c].id,
-                            activity: 0,
-                            tx: log.transactionHash,
-                            txAt,
-                        });
-                    } catch (e) {
-                        console.log(e);
-                    }
-                } else if (parsedLog.name === 'BeneficiaryRemoved') {
-                    const beneficiaryAddress = parsedLog.args[0];
-                    try {
-                        txAt = await getBlockTime(log.blockHash);
-                        const txResponse = await provider.getTransaction(
-                            log.transactionHash
-                        );
-                        await UbiBeneficiaryRegistry.create({
-                            address: beneficiaryAddress,
-                            from: ethers.utils.getAddress(txResponse.from),
-                            communityId: availableCommunities[c].id,
-                            activity: 1,
-                            tx: log.transactionHash,
-                            txAt,
-                        });
-                    } catch (e) {
-                        console.log(e);
-                    }
+        for (let ec = 0; ec < eventsCommunity.length; ec += 1) {
+            if (!communitiesAddress.includes(logsCommunity[ec].address)) {
+                continue;
+            }
+            const log = logsCommunity[ec];
+            const parsedLog = eventsCommunity[ec];
+            let txAt;
+            if (parsedLog.name === 'BeneficiaryAdded') {
+                const beneficiaryAddress = parsedLog.args[0];
+                try {
+                    txAt = await getBlockTime(log.blockHash);
+                    const txResponse = await provider.getTransaction(
+                        log.transactionHash
+                    );
+                    await UbiBeneficiaryRegistry.create({
+                        address: beneficiaryAddress,
+                        from: ethers.utils.getAddress(txResponse.from),
+                        communityId: communitiesIds.get(log.address),
+                        activity: 0,
+                        tx: log.transactionHash,
+                        txAt,
+                    });
+                } catch (e) {
+                    console.log(e);
+                }
+            } else if (parsedLog.name === 'BeneficiaryRemoved') {
+                const beneficiaryAddress = parsedLog.args[0];
+                try {
+                    txAt = await getBlockTime(log.blockHash);
+                    const txResponse = await provider.getTransaction(
+                        log.transactionHash
+                    );
+                    await UbiBeneficiaryRegistry.create({
+                        address: beneficiaryAddress,
+                        from: ethers.utils.getAddress(txResponse.from),
+                        communityId: communitiesIds.get(log.address),
+                        activity: 1,
+                        tx: log.transactionHash,
+                        txAt,
+                    });
+                } catch (e) {
+                    console.log(e);
                 }
             }
         }
