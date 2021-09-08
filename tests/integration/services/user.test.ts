@@ -448,10 +448,11 @@ describe('user service', () => {
     describe('delete', () => {
         let users: User[];
         let managers: ManagerAttributes[];
+        let communities: CommunityAttributes[];
 
         before(async () => {
-            users = await UserFactory({ n: 2 });
-            const communities = await CommunityFactory([
+            users = await UserFactory({ n: 4 });
+            communities = await CommunityFactory([
                 {
                     requestByAddress: users[0].address,
                     started: new Date(),
@@ -481,18 +482,69 @@ describe('user service', () => {
                 });
         });
 
-        it('should target to delete successfully', async () => {
+        it('manager should be target to be delete', async () => {
+            await ManagerFactory([users[2], users[3]], communities[0].publicId);
+
+            await UserService.delete(users[0].address);
+
+            const user = await models.user.findOne({
+                where: {
+                    address: users[0].address,
+                },
+            });
+
+            expect(user?.deletedAt).to.be.not.null;
+        });
+
+        it('should not delete a user when he is one of the only two managers that are not in a deletion process', async () => {
+            UserService.delete(users[2].address)
+                .catch((err) => expect(err).to.equal('Not enough managers'))
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
+        });
+
+        it('beneficiary should be target to be delete', async () => {
             await UserService.delete(users[1].address);
 
             const findUser = await models.user.findAll();
 
             findUser.forEach((user: User) => {
-                if (user.address === users[1].address) {
+                if (
+                    user.address === users[1].address ||
+                    user.address === users[0].address
+                ) {
                     expect(user.deletedAt).to.be.not.null;
                 } else {
                     expect(user.deletedAt).to.be.null;
                 }
             });
+        });
+
+        it('should return error when trying to login with an account in the deletion process', async () => {
+            UserService.authenticate({
+                address: users[0].address,
+            })
+                .then((res) => {
+                    throw new Error(
+                        "'fails to authenticate deleted account' expected to fail"
+                    );
+                })
+                .catch((err) => {
+                    expect(err.message).to.equal('account in deletion process');
+                });
+        });
+
+        it('should cancel the deletion process', async () => {
+            const resp = await UserService.authenticate(
+                {
+                    address: users[0].address,
+                },
+                undefined,
+                true
+            );
+
+            expect(resp.user.deletedAt).to.be.null;
         });
     });
 });

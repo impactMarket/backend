@@ -24,6 +24,7 @@ class UserController {
             children,
             avatarMediaId,
             overwrite,
+            recover,
         } = req.body;
         UserService.authenticate(
             {
@@ -39,7 +40,8 @@ class UserController {
                     phone,
                 },
             },
-            overwrite
+            overwrite,
+            recover
         )
             .then((user) => standardResponse(res, 201, true, user))
             .catch((e) =>

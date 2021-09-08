@@ -412,7 +412,9 @@ function cron() {
                 verifyDeletedAccounts()
                     .then(() => {
                         CronJobExecutedService.add('verifyDeletedAccounts');
-                        Logger.info('verifyDeletedAccounts successfully executed!');
+                        Logger.info(
+                            'verifyDeletedAccounts successfully executed!'
+                        );
                     })
                     .catch((e) => {
                         Logger.error('verifyDeletedAccounts FAILED! ' + e);

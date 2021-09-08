@@ -20,6 +20,7 @@ const auth = celebrate({
         children: Joi.number().optional(),
         avatarMediaId: Joi.number().optional(),
         overwrite: Joi.boolean().optional(),
+        recover: Joi.boolean().optional(),
     }),
 });
 

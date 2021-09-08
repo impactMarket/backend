@@ -83,7 +83,7 @@ export interface User {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-    deletedAt?: Date;
+    deletedAt: Date | null;
 
     avatar?: AppMediaContent;
     trust?: AppUserTrust[];

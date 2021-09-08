@@ -143,7 +143,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         await truncate(sequelize, 'UserModel');
         await truncate(sequelize, 'Manager');
         await truncate(sequelize, 'Beneficiary');
-        await truncate(sequelize, 'StoryCommunityModel')
+        await truncate(sequelize, 'StoryCommunityModel');
         await truncate(sequelize);
     });
 

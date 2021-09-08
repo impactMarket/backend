@@ -60,12 +60,8 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
                 primaryKey: true,
             },
             address: {
+                // this is associated with user table
                 type: DataTypes.STRING(44),
-                // references: {
-                //     model: 'user',
-                //     key: 'address',
-                // },
-                // onDelete: 'RESTRICT', // delete only if active = false, separately
                 allowNull: false,
             },
             communityId: {
