@@ -3,7 +3,7 @@ import StoryValidator from '@validators/story';
 import { Router } from 'express';
 
 import { cacheWithRedis } from '../../database';
-import { authenticateToken } from '../middlewares';
+import { authenticateToken, optionalAuthentication } from '../middlewares';
 
 export default (app: Router): void => {
     const storyController = new StoryController();
@@ -229,11 +229,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/community/:id/:query?',
-        (req, res, next) => {
-            (req as any).authTokenIsOptional = true;
-            next();
-        },
-        authenticateToken,
+        optionalAuthentication,
         storyController.getByCommunity
     );
 
