@@ -482,7 +482,7 @@ describe('user service', () => {
                 });
         });
 
-        it('manager should be target to be delete', async () => {
+        it('manager should be able to be delete account', async () => {
             await ManagerFactory([users[2], users[3]], communities[0].publicId);
 
             await UserService.delete(users[0].address);
@@ -496,7 +496,7 @@ describe('user service', () => {
             expect(user?.deletedAt).to.be.not.null;
         });
 
-        it('should not delete a user when he is one of the only two managers that are not in a deletion process', async () => {
+        it('should not delete with only two managers (not in deletion process)', async () => {
             UserService.delete(users[2].address)
                 .catch((err) => expect(err).to.equal('Not enough managers'))
                 .then(() => {
@@ -504,7 +504,7 @@ describe('user service', () => {
                 });
         });
 
-        it('beneficiary should be target to be delete', async () => {
+        it('beneficiary should be able to delete account', async () => {
             await UserService.delete(users[1].address);
 
             const findUser = await models.user.findAll();
