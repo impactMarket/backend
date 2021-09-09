@@ -28,7 +28,8 @@ export default class UserService {
 
     public static async authenticate(
         user: UserCreationAttributes,
-        overwrite: boolean = false
+        overwrite: boolean = false,
+        recover: boolean = false
     ): Promise<IUserAuth> {
         try {
             // generate access token for future interactions that require authentication
@@ -42,6 +43,10 @@ export default class UserService {
                 await this.overwriteUser(user);
             } else if (!exists && existsPhone) {
                 throw 'phone associated with another account';
+            }
+
+            if (recover) {
+                await this.recoverAccount(user.address);
             }
 
             let userFromRegistry: User;
@@ -92,6 +97,10 @@ export default class UserService {
                 throw 'user inactive';
             }
 
+            if (userFromRegistry.deletedAt) {
+                throw 'account in deletion process';
+            }
+
             const userHello = await this.loadUser(userFromRegistry);
             return {
                 token,
@@ -101,6 +110,21 @@ export default class UserService {
         } catch (e) {
             Logger.warn(`Error while auth user ${user.address} ${e}`);
             throw new Error(e);
+        }
+    }
+
+    public static async recoverAccount(address: string) {
+        try {
+            await this.user.update(
+                {
+                    deletedAt: null,
+                },
+                {
+                    where: { address },
+                }
+            );
+        } catch (error) {
+            throw error;
         }
     }
 
@@ -493,5 +517,55 @@ export default class UserService {
             throw new Error('user was not updated!');
         }
         return updated[1][0];
+    }
+
+    public static async delete(address: string): Promise<boolean> {
+        try {
+            const manager = await this.manager.findOne({
+                where: { active: true, address },
+            });
+
+            if (manager) {
+                const managersByCommunity = await this.manager.findAll({
+                    where: {
+                        active: true,
+                        communityId: manager.communityId,
+                    },
+                    include: [
+                        {
+                            attributes: [],
+                            model: this.user,
+                            as: 'user',
+                            required: true,
+                            where: {
+                                deletedAt: null,
+                            },
+                        },
+                    ],
+                });
+                if (managersByCommunity.length <= 2) {
+                    throw new Error('Not enough managers');
+                }
+            }
+
+            const updated = await this.user.update(
+                {
+                    deletedAt: new Date(),
+                },
+                {
+                    where: {
+                        address,
+                    },
+                    returning: true,
+                }
+            );
+
+            if (updated[0] === 0) {
+                throw new Error('User was not updated');
+            }
+            return true;
+        } catch (error) {
+            throw error;
+        }
     }
 }

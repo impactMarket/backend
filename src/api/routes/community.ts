@@ -42,6 +42,9 @@ import {
  *          suspect:
  *            type: boolean
  *            description: Is the beneficiary suspect?
+ *          isDeleted:
+ *            type: boolean
+ *            description: If true, the user profile has been or will be deleted
  *      UbiCommunity:
  *        type: object
  *        required:
@@ -135,6 +138,9 @@ import {
  *            description: Manager date of last update
  *          user:
  *            $ref: '#/components/schemas/AppUser'
+ *          isDeleted:
+ *            type: boolean
+ *            description: If true, the user profile has been or will be deleted
  *      BeneficiaryActivities:
  *        type: array
  *        items:
