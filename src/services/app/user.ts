@@ -476,23 +476,10 @@ export default class UserService {
         };
     }
 
-    public static async edit(
-        address: string,
-        user: {
-            language?: string;
-            currency?: string;
-            username?: string;
-            gender?: string;
-            year?: number;
-            children?: number;
-            avatarMediaId?: number;
-            pushNotificationToken?: string;
-            email?: string;
-        }
-    ): Promise<User> {
+    public static async edit(user: User): Promise<User> {
         const updated = await this.user.update(user, {
             returning: true,
-            where: { address },
+            where: { address: user.address },
         });
         if (updated[0] === 0) {
             throw new Error('user was not updated!');
