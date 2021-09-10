@@ -55,6 +55,10 @@ module.exports = {
                 defaultValue: true,
                 allowNull: false,
             },
+            email: {
+                type: Sequelize.STRING(64),
+                allowNull: true,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -63,9 +67,9 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.DATE,
             },
-            email: {
-                type: Sequelize.STRING(64),
+            deletedAt: {
                 allowNull: true,
+                type: Sequelize.DATE,
             },
         });
     },

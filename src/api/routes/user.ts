@@ -314,4 +314,21 @@ export default (app: Router): void => {
         userValidators.subscribeNewsletter,
         userController.subscribeNewsletter
     );
+
+    /**
+     * @swagger
+     *
+     * /user:
+     *   delete:
+     *     tags:
+     *       - "user"
+     *     summary: Delete a user
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.delete('/', authenticateToken, userController.delete);
 };

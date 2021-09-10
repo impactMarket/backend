@@ -3,7 +3,11 @@ import communityValidators from '@validators/community';
 import { Router } from 'express';
 
 import { cacheWithRedis } from '../../database';
-import { adminAuthentication, authenticateToken } from '../middlewares';
+import {
+    adminAuthentication,
+    authenticateToken,
+    optionalAuthentication,
+} from '../middlewares';
 
 /**
  * @swagger
@@ -38,6 +42,9 @@ import { adminAuthentication, authenticateToken } from '../middlewares';
  *          suspect:
  *            type: boolean
  *            description: Is the beneficiary suspect?
+ *          isDeleted:
+ *            type: boolean
+ *            description: If true, the user profile has been or will be deleted
  *      UbiCommunity:
  *        type: object
  *        required:
@@ -131,6 +138,9 @@ import { adminAuthentication, authenticateToken } from '../middlewares';
  *            description: Manager date of last update
  *          user:
  *            $ref: '#/components/schemas/AppUser'
+ *          isDeleted:
+ *            type: boolean
+ *            description: If true, the user profile has been or will be deleted
  *      BeneficiaryActivities:
  *        type: array
  *        items:
@@ -407,7 +417,11 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunity'
      */
-    route.get('/address/:address', controller.findByContractAddress);
+    route.get(
+        '/address/:address',
+        optionalAuthentication,
+        controller.findByContractAddress
+    );
 
     /**
      * @swagger
@@ -835,7 +849,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunity'
      */
-    route.get('/:id', controller.findById);
+    route.get('/:id', optionalAuthentication, controller.findById);
 
     /**
      * @swagger
