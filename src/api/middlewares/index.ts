@@ -50,6 +50,15 @@ export function authenticateToken(
     });
 }
 
+export function optionalAuthentication(
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction
+): void {
+    req['authTokenIsOptional'] = true;
+    authenticateToken(req, res, next);
+}
+
 export function generateAccessToken(userAddress: string): string {
     return jwt.sign(
         { address: userAddress, masterKey: config.masterKey } as UserInRequest,

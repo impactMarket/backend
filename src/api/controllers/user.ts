@@ -24,6 +24,7 @@ class UserController {
             children,
             avatarMediaId,
             overwrite,
+            recover,
         } = req.body;
         UserService.authenticate(
             {
@@ -39,7 +40,8 @@ class UserController {
                     phone,
                 },
             },
-            overwrite
+            overwrite,
+            recover
         )
             .then((user) => standardResponse(res, 201, true, user))
             .catch((e) =>
@@ -327,6 +329,21 @@ class UserController {
         }
 
         UserService.getUnreadNotifications(req.user.address)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
+
+    public delete = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+
+        UserService.delete(req.user.address)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })

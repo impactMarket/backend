@@ -5,9 +5,11 @@ import { Sequelize } from 'sequelize';
 
 import { models } from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
+import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { User } from '../../../src/interfaces/app/user';
 import UserService from '../../../src/services/app/user';
 import CommunityFactory from '../../factories/community';
+import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 
@@ -19,6 +21,9 @@ describe('user service', () => {
     });
 
     after(async () => {
+        await truncate(sequelize, 'UserModel');
+        await truncate(sequelize, 'Manager');
+        await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize);
     });
 
@@ -226,12 +231,15 @@ describe('user service', () => {
                 },
             });
 
-            const loadUser = await UserService.authenticate({
-                address: secondAddress,
-                trust: {
-                    phone,
+            const loadUser = await UserService.authenticate(
+                {
+                    address: secondAddress,
+                    trust: {
+                        phone,
+                    },
                 },
-            }, true);
+                true
+            );
 
             const findUser = await models.user.findOne({
                 where: { address: firstAddress },
@@ -263,12 +271,15 @@ describe('user service', () => {
             });
 
             // replace by a new account
-            await UserService.authenticate({
-                address: secondAddress,
-                trust: {
-                    phone,
+            await UserService.authenticate(
+                {
+                    address: secondAddress,
+                    trust: {
+                        phone,
+                    },
                 },
-            }, true);
+                true
+            );
 
             let error: any;
 
@@ -485,5 +496,108 @@ describe('user service', () => {
             expect(firstUser).to.be.equal(0);
             expect(secondUser).to.be.equal(1);
         });
-    })
+    });
+
+    describe('delete', () => {
+        let users: User[];
+        let managers: ManagerAttributes[];
+        let communities: CommunityAttributes[];
+
+        before(async () => {
+            users = await UserFactory({ n: 4 });
+            communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+            managers = await ManagerFactory(
+                [users[0]],
+                communities[0].publicId
+            );
+        });
+
+        it('should not delete a user when he is one of the only two managers in the community', async () => {
+            UserService.delete(users[0].address)
+                .catch((err) => expect(err).to.be.equal('Not enough managers'))
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
+        });
+
+        it('manager should be able to be delete account', async () => {
+            await ManagerFactory([users[2], users[3]], communities[0].publicId);
+
+            await UserService.delete(users[0].address);
+
+            const user = await models.user.findOne({
+                where: {
+                    address: users[0].address,
+                },
+            });
+
+            expect(user?.deletedAt).to.be.not.null;
+        });
+
+        it('should not delete with only two managers (not in deletion process)', async () => {
+            UserService.delete(users[2].address)
+                .catch((err) => expect(err).to.equal('Not enough managers'))
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
+        });
+
+        it('beneficiary should be able to delete account', async () => {
+            await UserService.delete(users[1].address);
+
+            const findUser = await models.user.findAll();
+
+            findUser.forEach((user: User) => {
+                if (
+                    user.address === users[1].address ||
+                    user.address === users[0].address
+                ) {
+                    expect(user.deletedAt).to.be.not.null;
+                } else {
+                    expect(user.deletedAt).to.be.null;
+                }
+            });
+        });
+
+        it('should return error when trying to login with an account in the deletion process', async () => {
+            UserService.authenticate({
+                address: users[0].address,
+            })
+                .then((res) => {
+                    throw new Error(
+                        "'fails to authenticate deleted account' expected to fail"
+                    );
+                })
+                .catch((err) => {
+                    expect(err.message).to.equal('account in deletion process');
+                });
+        });
+
+        it('should cancel the deletion process', async () => {
+            const resp = await UserService.authenticate(
+                {
+                    address: users[0].address,
+                },
+                undefined,
+                true
+            );
+
+            expect(resp.user.deletedAt).to.be.null;
+        });
+    });
 });
