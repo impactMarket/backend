@@ -1,6 +1,7 @@
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { AppMediaContentModel } from '@models/app/appMediaContent';
 import { AppMediaThumbnailModel } from '@models/app/appMediaThumbnail';
+import { AppNotificationModel } from '@models/app/appNotification';
 import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
 import { AppUserTrustModel } from '@models/app/appUserTrust';
 import { CronJobExecuted } from '@models/app/cronJobExecuted';
@@ -50,6 +51,7 @@ export interface DbModels {
     notifiedBacker: ModelCtor<NotifiedBacker>;
     appMediaContent: ModelCtor<AppMediaContentModel>;
     appMediaThumbnail: ModelCtor<AppMediaThumbnailModel>;
+    appNotification: ModelCtor<AppNotificationModel>;
     //
     community: ModelCtor<Community>;
     ubiCommunitySuspect: ModelCtor<UbiCommunitySuspectModel>;

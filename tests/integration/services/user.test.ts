@@ -432,5 +432,58 @@ describe('user service', () => {
 
             expect(userUpdated).to.include(data);
         })
+    });
+
+    describe('notifications', () => {
+        let users: User[];
+
+        before(async () => {
+            users = await UserFactory({ n: 2 });
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            await models.appNotification.bulkCreate([
+                {
+                    address: users[0].address,
+                    type: 1,
+                    params: {
+                        communityId: 1
+                    },
+                }, {
+                    address: users[0].address,
+                    type: 2,
+                    params: {
+                        communityId: 1
+                    },
+                }, {
+                    address: users[1].address,
+                    type: 1,
+                    params: {
+                        communityId: 2
+                    },
+                }
+            ]);
+        });
+
+        it('get all notifications from a user', async () => {
+            const notifications = await UserService.getNotifications(users[0].address, {
+                limit: '10',
+                offset: '0',
+            });
+
+            expect(notifications.length).to.be.equal(2);
+            notifications.forEach(notification => {
+                expect(notification.read).to.be.false;
+            });
+        });
+
+        it('mark all notifications as read', async () => {
+            await UserService.readNotifications(users[0].address);
+
+            const firstUser = await UserService.getUnreadNotifications(users[0].address);
+            const secondUser = await UserService.getUnreadNotifications(users[1].address);
+
+            expect(firstUser).to.be.equal(0);
+            expect(secondUser).to.be.equal(1);
+        });
     })
 });
