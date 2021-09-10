@@ -440,7 +440,7 @@ describe('user service', () => {
                 avatarMediaId: 1,
                 pushNotificationToken: 'notification-token',
             };
-            const userUpdated = await UserService.edit({ address, ...data });
+            const userUpdated = await UserService.edit({ address, ...data } as User);
 
             expect(userUpdated).to.include(data);
         })
@@ -488,7 +488,7 @@ describe('user service', () => {
 
         it('update email', async () => {
             const email = faker.internet.email();
-            const user: User = await UserService.edit({ address: users[0].address, email });
+            const user: User = await UserService.edit({ address: users[0].address, email } as User);
             expect(user.email).to.be.equal(email);
         });
 
