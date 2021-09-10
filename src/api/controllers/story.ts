@@ -9,7 +9,10 @@ class StoryController {
     getPresignedUrlMedia = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -22,7 +25,10 @@ class StoryController {
     add = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -35,7 +41,10 @@ class StoryController {
     has = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -48,7 +57,10 @@ class StoryController {
     remove = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -61,7 +73,10 @@ class StoryController {
     getByUser = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -98,7 +113,10 @@ class StoryController {
     love = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -111,7 +129,10 @@ class StoryController {
     inapropriate = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }

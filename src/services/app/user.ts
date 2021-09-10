@@ -42,7 +42,10 @@ export default class UserService {
             if (overwrite) {
                 await this.overwriteUser(user);
             } else if (!exists && existsPhone) {
-                throw 'phone associated with another account';
+                throw {
+                    code: 'PHONE_CONFLICT',
+                    message: 'phone associated with another account'
+                };
             }
 
             if (recover) {
@@ -94,11 +97,17 @@ export default class UserService {
             }
 
             if (!userFromRegistry.active) {
-                throw 'user inactive';
+                throw {
+                    code: 'INACTIVE_USER',
+                    message: 'user is inactive'
+                };
             }
 
             if (userFromRegistry.deletedAt) {
-                throw 'account in deletion process';
+                throw {
+                    code: 'DELETION_PROCESS',
+                    message: 'account in deletion process'
+                };
             }
 
             const userHello = await this.loadUser(userFromRegistry);
@@ -109,7 +118,7 @@ export default class UserService {
             };
         } catch (e) {
             Logger.warn(`Error while auth user ${user.address} ${e}`);
-            throw new Error(e);
+            throw e;
         }
     }
 
@@ -124,7 +133,10 @@ export default class UserService {
                 }
             );
         } catch (error) {
-            throw error;
+            throw {
+                code: 'UNEXPECTED_ERROR',
+                message: error
+            };
         }
     }
 
@@ -175,7 +187,10 @@ export default class UserService {
 
             await Promise.all(promises);
         } catch (error) {
-            throw new Error(error);
+            throw {
+                code: 'UNEXPECTED_ERROR',
+                message: error
+            };
         }
     }
 
@@ -188,7 +203,10 @@ export default class UserService {
             where: { address },
         });
         if (found === null) {
-            throw new Error('user not found');
+            throw {
+                code: 'USER_NOT_FOUND',
+                message: 'user not found'
+            };
         }
         user = found.toJSON() as User;
         if (pushNotificationToken) {
@@ -220,7 +238,10 @@ export default class UserService {
             where: { address },
         });
         if (user === null) {
-            throw new Error(address + ' user not found!');
+            throw {
+                code: 'USER_NOT_FOUND',
+                message: address + ' user not found!'
+            };
         }
         if (phone) {
             const uu = user.toJSON() as User;
@@ -514,7 +535,10 @@ export default class UserService {
             where: { address },
         });
         if (updated[0] === 0) {
-            throw new Error('user was not updated!');
+            throw {
+                code: 'UPDATE_FAILED',
+                message: 'user was not updated!'
+            };
         }
         return updated[1][0];
     }
@@ -544,7 +568,10 @@ export default class UserService {
                     ],
                 });
                 if (managersByCommunity.length <= 2) {
-                    throw new Error('Not enough managers');
+                    throw {
+                        code: 'NOT_ENOUGH_MANAGERS',
+                        message: 'Not enough managers'
+                    };
                 }
             }
 
@@ -561,7 +588,10 @@ export default class UserService {
             );
 
             if (updated[0] === 0) {
-                throw new Error('User was not updated');
+                throw {
+                    code: 'UPDATE_FAILED',
+                    message: 'User was not updated',
+                };
             }
             return true;
         } catch (error) {

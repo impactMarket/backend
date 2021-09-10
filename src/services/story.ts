@@ -202,7 +202,10 @@ export default class StoryService {
                 where: { address: onlyFromAddress, active: true },
             });
             if (managerResult === null) {
-                throw new Error('user not found!');
+                throw {
+                    code: 'USER_NOT_FOUND',
+                    message: 'user not found!'
+                };
             }
             result = managerResult.toJSON() as ManagerAttributes;
         } else {
@@ -210,7 +213,10 @@ export default class StoryService {
         }
 
         if (result.community === undefined) {
-            throw new Error('community not found!');
+            throw {
+                code: 'COMMUNITY_NOT_FOUND',
+                message: 'community not found!'
+            };
         }
 
         return {
@@ -424,7 +430,10 @@ export default class StoryService {
         });
 
         if (r.rows.length === 0) {
-            throw new Error('No stories for community ' + communityId);
+            throw {
+                code: 'STORIES_NOT_FOUND',
+                message: 'No stories for community ' + communityId
+            };
         }
 
         // at this point, this is not null

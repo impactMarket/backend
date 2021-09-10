@@ -16,7 +16,10 @@ export class MediaService {
         if (r[0] > 0) {
             return r[1][0];
         }
-        throw new Error('not updated!');
+        throw {
+            code: 'UPDATE_FAILED',
+            message: 'not updated!',
+        };
     }
 
     postThumbnails(content: AppMediaThumbnailCreation[]) {

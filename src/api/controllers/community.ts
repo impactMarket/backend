@@ -41,7 +41,7 @@ class CommunityController {
                 standardResponse(res, 200, true, r.rows, { count: r.count })
             )
             .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e.message })
+                standardResponse(res, 400, false, '', { error: e })
             );
     };
 
@@ -49,7 +49,10 @@ class CommunityController {
         const { groupBy } = req.query;
         if (groupBy === undefined) {
             standardResponse(res, 400, false, '', {
-                error: 'not a valid group by',
+                error: {
+                    code: 'INVALID_GROUP',
+                    message: 'not a valid group by',
+                },
             });
             return;
         }
@@ -61,7 +64,10 @@ class CommunityController {
     beneficiaries = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
-                error: 'User not identified!',
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -220,7 +226,10 @@ class CommunityController {
     edit = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
-                error: 'User not identified!',
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                }
             });
             return;
         }
@@ -251,7 +260,10 @@ class CommunityController {
                         );
                 } else {
                     standardResponse(res, 403, false, '', {
-                        error: `Not manager!`,
+                        error: {
+                            code: 'NOT_MANAGER',
+                            message: 'Not manager!'
+                        },
                     });
                 }
             })
@@ -285,7 +297,10 @@ class CommunityController {
     getBeneficiaryActivity = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
-                error: 'User not identified!',
+                error: {
+                    code: 'USER_NOT_FOUND',
+                    message: 'User not identified!'
+                },
             });
             return;
         }
@@ -310,7 +325,7 @@ class CommunityController {
         )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e.message })
+                standardResponse(res, 400, false, '', { error: e })
             );
     };
 }

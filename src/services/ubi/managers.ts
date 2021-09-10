@@ -72,7 +72,10 @@ export default class ManagerService {
         // order by mq."createdAt" desc
 
         if (!isAddress(managerAddress)) {
-            throw new Error('Not a manager ' + managerAddress);
+            throw {
+                code: 'NOT_MANAGER',
+                message: 'Not a manager ' + managerAddress
+            };
         }
 
         return await this.sequelize.query(
@@ -103,7 +106,10 @@ export default class ManagerService {
         // limit 10
 
         if (!isAddress(managerAddress)) {
-            throw new Error('Not a manager ' + managerAddress);
+            throw {
+                code: 'NOT_MANAGER',
+                message: 'Not a manager ' + managerAddress,
+            };
         }
 
         return await this.sequelize.query(
