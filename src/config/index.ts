@@ -222,4 +222,5 @@ export default {
     internalNotifications: validatedEnv.INTERNAL_NOTIFICATIONS,
 
     maxRequestPerUser: validatedEnv.MAX_REQUEST_PER_USER,
+    hubspotKey: validatedEnv.HUBSPOT_KEY,
 };

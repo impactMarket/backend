@@ -1,3 +1,4 @@
+import { Client } from '@hubspot/api-client';
 import {
     AppAnonymousReport,
     AppAnonymousReportCreation,
@@ -10,6 +11,7 @@ import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
 
 import { generateAccessToken } from '../../api/middlewares';
+import config from '../../config';
 import { models, sequelize } from '../../database';
 import { IUserHello, IUserAuth } from '../../types/endpoints';
 import CommunityService from '../ubi/community';
@@ -26,6 +28,8 @@ export default class UserService {
     public static appMediaThumbnail = models.appMediaThumbnail;
 
     private static profileContentStorage = new ProfileContentStorage();
+
+    public static hubspotClient = new Client({ apiKey: config.hubspotKey });
 
     public static async authenticate(
         user: UserCreationAttributes,
@@ -503,27 +507,102 @@ export default class UserService {
         };
     }
 
-    public static async edit(
-        address: string,
-        user: {
-            language?: string;
-            currency?: string;
-            username?: string;
-            gender?: string;
-            year?: number;
-            children?: number;
-            avatarMediaId?: number;
-            pushNotificationToken?: string;
-        }
-    ): Promise<User> {
+    public static async edit(user: User): Promise<User> {
         const updated = await this.user.update(user, {
             returning: true,
-            where: { address },
+            where: { address: user.address },
         });
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'user was not updated!');
         }
         return updated[1][0];
+    }
+
+    public static async verifyNewsletterSubscription(
+        address: string
+    ): Promise<boolean> {
+        try {
+            const user = await UserService.get(address);
+            if (!user?.email) {
+                return false;
+            }
+            const contacts =
+                await this.hubspotClient.crm.contacts.searchApi.doSearch({
+                    query: user.email,
+                    limit: 1,
+                    properties: ['email', 'address'],
+                    filterGroups: [],
+                    sorts: ['email'],
+                    after: 0,
+                });
+
+            if (contacts.body.results.length > 0) {
+                return (
+                    contacts.body.results[0].properties?.email ===
+                        user.email.toLowerCase() &&
+                    contacts.body.results[0].properties?.address === address
+                );
+            }
+
+            return false;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    public static async subscribeNewsletter(
+        address: string,
+        body: {
+            subscribe: boolean;
+        }
+    ): Promise<boolean> {
+        try {
+            const user = await UserService.get(address);
+            if (!user?.email) {
+                throw new Error('User does not have email');
+            }
+
+            if (body.subscribe) {
+                const createResponse =
+                    await this.hubspotClient.crm.contacts.basicApi.create({
+                        properties: {
+                            email: user.email,
+                            firstname: user.username ? user.username : '',
+                            address,
+                        },
+                    });
+                return !!createResponse && !!createResponse.body.id;
+            } else {
+                const contacts =
+                    await this.hubspotClient.crm.contacts.searchApi.doSearch({
+                        query: user.email,
+                        limit: 1,
+                        properties: ['email', 'address'],
+                        filterGroups: [],
+                        sorts: ['email'],
+                        after: 0,
+                    });
+                if (contacts.body.results.length > 0) {
+                    const hubsPotId = contacts.body.results[0].id;
+
+                    if (!hubsPotId) {
+                        throw new Error('User not found on HubsPot');
+                    }
+
+                    await this.hubspotClient.crm.contacts.basicApi.archive(
+                        hubsPotId
+                    );
+                    return true;
+                } else {
+                    throw new Error('User not found on HubsPot');
+                }
+            }
+        } catch (error) {
+            if (error.response?.body?.category === 'CONFLICT') {
+                throw new Error(error.response.body.message);
+            }
+            throw error;
+        }
     }
 
     public static async delete(address: string): Promise<boolean> {
