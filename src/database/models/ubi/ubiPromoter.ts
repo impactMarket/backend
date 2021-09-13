@@ -2,6 +2,7 @@ import { UbiPromoter, UbiPromoterCreation } from '@interfaces/ubi/ubiPromoter';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiPromoterModel extends Model<UbiPromoter, UbiPromoterCreation> {
+    public id!: number;
     public category!: 'organization' | 'company' | 'individual';
     public name!: string;
     public description!: string;

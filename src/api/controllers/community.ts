@@ -16,8 +16,11 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    findByContractAddress = (req: Request, res: Response) => {
-        CommunityService.findByContractAddress(req.params.address)
+    findByContractAddress = (req: RequestWithUser, res: Response) => {
+        CommunityService.findByContractAddress(
+            req.params.address,
+            req.user?.address
+        )
             .then((community) =>
                 standardResponse(res, 200, !!community, community)
             )
@@ -100,15 +103,6 @@ class CommunityController {
         }
     };
 
-    /**
-     * @deprecated in mobile@1.1.3
-     */
-    pictureAdd = (req: Request, res: Response) => {
-        CommunityService.pictureAdd(req.params.isPromoter === 'true', req.file)
-            .then((url) => standardResponse(res, 200, true, url))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
     getPresignedUrlMedia = (req: Request, res: Response) => {
         CommunityService.getPresignedUrlMedia(
             req.params.mime,
@@ -118,8 +112,11 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    findById = (req: Request, res: Response) => {
-        CommunityService.findById(parseInt(req.params.id, 10))
+    findById = (req: RequestWithUser, res: Response) => {
+        CommunityService.findById(
+            parseInt(req.params.id, 10),
+            req.user?.address
+        )
             .then((community) => standardResponse(res, 200, true, community))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -227,7 +224,7 @@ class CommunityController {
             });
             return;
         }
-        const { name, description, currency, coverMediaId } = req.body;
+        const { name, description, currency, coverMediaId, email } = req.body;
         // verify if the current user is manager in this community
         ManagerService.get(req.user.address)
             .then(async (manager) => {
@@ -235,12 +232,17 @@ class CommunityController {
                     const community = await CommunityService.getByPublicId(
                         manager.communityId
                     );
-                    CommunityService.edit(community!.id, {
-                        name,
-                        description,
-                        currency,
-                        coverMediaId,
-                    })
+                    CommunityService.edit(
+                        community!.id,
+                        {
+                            name,
+                            description,
+                            currency,
+                            coverMediaId,
+                            email,
+                        },
+                        req.user?.address
+                    )
                         .then((community) =>
                             standardResponse(res, 200, true, community)
                         )
@@ -278,6 +280,38 @@ class CommunityController {
         CommunityService.pending()
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getBeneficiaryActivity = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+
+        let { offset, limit, type } = req.query;
+        if (offset === undefined || typeof offset !== 'string') {
+            offset = '0';
+        }
+        if (limit === undefined || typeof limit !== 'string') {
+            limit = '10';
+        }
+        if (type === undefined || typeof type !== 'string') {
+            type = 'ALL';
+        }
+
+        BeneficiaryService.getBeneficiaryActivity(
+            req.user.address,
+            req.params.address,
+            type,
+            parseInt(offset, 10),
+            parseInt(limit, 10)
+        )
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 }
 

@@ -13,9 +13,7 @@ import {
 } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { notifyManagerAdded } from '@utils/util';
-import AWS from 'aws-sdk';
 import { ethers } from 'ethers';
-import sizeOf from 'image-size';
 import {
     Op,
     QueryTypes,
@@ -27,7 +25,6 @@ import {
     Includeable,
 } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
-import sharp from 'sharp';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
@@ -174,16 +171,6 @@ export default class CommunityService {
         }
     }
 
-    public static async pictureAdd(
-        isPromoter: boolean,
-        file: Express.Multer.File
-    ) {
-        if (isPromoter) {
-            return this.promoterContentStorage.uploadContent(file);
-        }
-        return this.communityContentStorage.uploadContent(file);
-    }
-
     public static async getPresignedUrlMedia(
         mime: string,
         isPromoter: boolean
@@ -201,7 +188,9 @@ export default class CommunityService {
             description: string;
             currency: string;
             coverMediaId: number;
-        }
+            email?: string;
+        },
+        userAddress?: string
     ): Promise<CommunityAttributes> {
         const community = await this.community.findOne({
             attributes: ['coverMediaId'],
@@ -211,9 +200,9 @@ export default class CommunityService {
             throw new Error('community not found!');
         }
         // since cover can't be null, we first update and then remove
-        const { name, description, currency, coverMediaId } = params;
+        const { name, description, currency, coverMediaId, email } = params;
         const update = await this.community.update(
-            { name, description, currency },
+            { name, description, currency, email },
             { where: { id } }
         );
         if (coverMediaId !== -1 && community.coverMediaId !== coverMediaId) {
@@ -227,7 +216,7 @@ export default class CommunityService {
         if (update[0] === 0) {
             throw new Error('community was not updated!');
         }
-        return this._findCommunityBy({ id });
+        return this._findCommunityBy({ id }, userAddress);
     }
 
     public static async delete(id: number): Promise<boolean> {
@@ -442,6 +431,9 @@ export default class CommunityService {
         }
 
         const communitiesResult = await this.community.findAndCountAll({
+            attributes: {
+                exclude: ['email'],
+            },
             where: {
                 status: 'valid',
                 visibility: 'public',
@@ -494,22 +486,25 @@ export default class CommunityService {
         });
     }
 
-    public static async findById(id: number): Promise<CommunityAttributes> {
-        return this._findCommunityBy({
-            id,
-        });
+    public static async findById(
+        id: number,
+        userAddress?: string
+    ): Promise<CommunityAttributes> {
+        return this._findCommunityBy({ id }, userAddress);
     }
 
     public static async findByContractAddress(
-        contractAddress: string
+        contractAddress: string,
+        userAddress?: string
     ): Promise<CommunityAttributes> {
-        return this._findCommunityBy({
-            contractAddress,
-        });
+        return this._findCommunityBy({ contractAddress }, userAddress);
     }
 
     public static async getDashboard(id: string) {
         const result = await this.community.findOne({
+            attributes: {
+                exclude: ['email'],
+            },
             include: [
                 {
                     model: this.ubiCommunityState,
@@ -641,7 +636,13 @@ export default class CommunityService {
                 active: true,
             },
         });
-        return result.map((r) => r.toJSON() as ManagerAttributes);
+        return result.map((r) => {
+            const manager = r.toJSON() as ManagerAttributes;
+            return {
+                ...manager,
+                isDeleted: !manager.user,
+            };
+        });
     }
 
     public static async getPromoter(communityId: number) {
@@ -979,99 +980,6 @@ export default class CommunityService {
             return true;
         }
         return false;
-    }
-
-    /**
-     * @deprecated
-     */
-    public static async updateCoverImage(
-        publicId: string,
-        newPictureUrl: string
-    ): Promise<boolean> {
-        // TODO:
-        const params = {
-            Bucket: config.aws.bucket.community,
-            Key: newPictureUrl.split(config.cloudfrontUrl + '/')[1],
-        };
-        const S3 = new AWS.S3({
-            accessKeyId: config.aws.accessKeyId,
-            secretAccessKey: config.aws.secretAccessKey,
-            region: config.aws.region,
-        });
-        const rg = await S3.getObject(params).promise();
-
-        const dimensions = sizeOf(rg.Body as any);
-
-        const today1 = new Date();
-        const filePrefix1 = 'cover/';
-        const filename1 = `${today1.getTime()}.jpeg`;
-        const filePath1 = `${filePrefix1}${filename1}`;
-
-        const paramsp1 = {
-            Bucket: config.aws.bucket.community,
-            Key: filePath1,
-            Body: rg.Body,
-            ACL: 'public-read',
-        };
-
-        const rp1 = await S3.upload(paramsp1 as any).promise();
-
-        const media = await this.appMediaContent.create({
-            url: config.cloudfrontUrl + '/' + rp1.Key,
-            width: dimensions.width!,
-            height: dimensions.height!,
-        });
-
-        // create thumbnails
-
-        for (let pixelRatio = 1; pixelRatio <= 2; pixelRatio++) {
-            for (const cover of config.thumbnails.community.cover) {
-                const thumbnailBuffer = await sharp(
-                    Buffer.from(rg.Body as any, 'binary')
-                )
-                    .resize({
-                        width: cover.width * pixelRatio,
-                        height: cover.height * pixelRatio,
-                    })
-                    .toBuffer();
-
-                const today = new Date();
-                const filePrefix =
-                    'cover/' + cover.width + 'x' + cover.height + '/';
-                const filename = `${today.getTime()}${
-                    pixelRatio > 1 ? '@' + pixelRatio + 'x' : ''
-                }.jpeg`;
-                const filePath = `${filePrefix}${filename}`;
-
-                const paramsp = {
-                    Bucket: config.aws.bucket.community,
-                    Key: filePath,
-                    Body: thumbnailBuffer,
-                    ACL: 'public-read',
-                };
-
-                const rp = await S3.upload(paramsp as any).promise();
-
-                const thumbnailURL = config.cloudfrontUrl + '/' + rp.Key;
-
-                await this.appMediaThumbnail.create({
-                    mediaContentId: media.id,
-                    url: thumbnailURL,
-                    width: cover.width,
-                    height: cover.height,
-                    pixelRatio,
-                });
-            }
-        }
-
-        const result = await this.community.update(
-            {
-                coverImage: newPictureUrl,
-                coverMediaId: media.id,
-            },
-            { returning: true, where: { publicId } }
-        );
-        return result[0] > 0;
     }
 
     /**
@@ -1441,14 +1349,12 @@ export default class CommunityService {
     // PRIVATE METHODS
 
     private static async _findCommunityBy(
-        where: WhereOptions<CommunityAttributes>
+        where: WhereOptions<CommunityAttributes>,
+        userAddress?: string
     ): Promise<CommunityAttributes> {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const community = await this.community.findOne({
-            attributes: {
-                exclude: ['email'],
-            },
             include: [
                 {
                     model: this.appMediaContent,
@@ -1471,8 +1377,21 @@ export default class CommunityService {
         const contract = (await this.getContract(community.id))!;
         const state = (await this.getState(community.id))!;
         const metrics = await this.getMetrics(community.id);
+
+        let showEmail = false;
+        if (userAddress) {
+            const manager = await models.manager.findOne({
+                attributes: ['communityId'],
+                where: { address: userAddress, active: true },
+            });
+            if (manager !== null) {
+                showEmail = manager.communityId === community.publicId;
+            }
+        }
+
         return {
             ...(community.toJSON() as CommunityAttributes),
+            email: showEmail ? community.email : '',
             suspect: suspect !== null ? [suspect] : undefined,
             contract,
             state,

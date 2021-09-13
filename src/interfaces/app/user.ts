@@ -83,6 +83,7 @@ export interface User {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
+    deletedAt: Date | null;
 
     avatar?: AppMediaContent;
     trust?: AppUserTrust[];
@@ -101,6 +102,7 @@ export interface UserCreationAttributes {
     children?: number;
     avatarMediaId?: number;
     pushNotificationToken?: string;
+    active?: boolean;
 
     trust?: AppUserTrustCreation;
 }

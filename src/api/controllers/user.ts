@@ -24,6 +24,7 @@ class UserController {
             children,
             avatarMediaId,
             overwrite,
+            recover,
         } = req.body;
         UserService.authenticate(
             {
@@ -39,7 +40,8 @@ class UserController {
                     phone,
                 },
             },
-            overwrite
+            overwrite,
+            recover
         )
             .then((user) => standardResponse(res, 201, true, user))
             .catch((e) =>
@@ -203,18 +205,6 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public pictureAdd = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
-            });
-            return;
-        }
-        UserService.setProfilePicture(req.user.address, req.file)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
     /**
      * @deprecated
      */
@@ -295,7 +285,24 @@ class UserController {
 
         UserService.edit(req.user.address, req.body)
             .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e.message }));
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
+
+    public delete = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: 'User not identified!',
+            });
+            return;
+        }
+
+        UserService.delete(req.user.address)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 }
 

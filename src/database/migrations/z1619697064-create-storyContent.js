@@ -25,6 +25,11 @@ module.exports = {
             },
             byAddress: {
                 type: Sequelize.STRING(44),
+                references: {
+                    model: 'user',
+                    key: 'address',
+                },
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             isPublic: {

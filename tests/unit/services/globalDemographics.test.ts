@@ -8,67 +8,67 @@ const genderQueryResult = [
     {
         gender: 'f',
         total: 2740,
-        country: 'Brasil',
+        country: 'BR',
     },
     {
         gender: 'm',
         total: 1363,
-        country: 'Brasil',
+        country: 'BR',
     },
     {
         gender: 'u',
         total: 100,
-        country: 'Brasil',
+        country: 'BR',
     },
     {
         gender: 'm',
         total: 1,
-        country: 'Cabo Verde',
+        country: 'CV',
     },
     {
         gender: 'f',
         total: 2,
-        country: 'Cabo Verde',
+        country: 'CV',
     },
     {
         gender: 'u',
         total: 10,
-        country: 'Cabo Verde',
+        country: 'CV',
     },
     {
         gender: 'o',
         total: 10,
-        country: 'Cabo Verde',
+        country: 'CV',
     },
     {
         gender: 'f',
         total: 11,
-        country: 'Ghana',
+        country: 'GH',
     },
     {
         gender: 'm',
         total: 26,
-        country: 'Ghana',
+        country: 'GH',
     },
     {
         gender: 'o',
         total: 10,
-        country: 'Ghana',
+        country: 'GH',
     },
     {
         gender: 'f',
         total: 6,
-        country: 'Philippines',
+        country: 'PH',
     },
     {
         gender: 'm',
         total: 5,
-        country: 'Philippines',
+        country: 'PH',
     },
     {
         gender: 'u',
         total: 0,
-        country: 'Philippines',
+        country: 'PH',
     },
 ];
 
@@ -82,7 +82,7 @@ const ageRangeQueryResult: {
     ageRange6: number;
 }[] = [
     {
-        country: 'Nigeria',
+        country: 'NG',
         ageRange1: 0,
         ageRange2: 0,
         ageRange3: 0,
@@ -91,7 +91,7 @@ const ageRangeQueryResult: {
         ageRange6: 0,
     },
     {
-        country: 'Venezuela',
+        country: 'VE',
         ageRange1: 0,
         ageRange2: 0,
         ageRange3: 0,
@@ -100,7 +100,7 @@ const ageRangeQueryResult: {
         ageRange6: 0,
     },
     {
-        country: 'Honduras',
+        country: 'HN',
         ageRange1: 0,
         ageRange2: 0,
         ageRange3: 0,
@@ -109,7 +109,7 @@ const ageRangeQueryResult: {
         ageRange6: 0,
     },
     {
-        country: 'Ghana',
+        country: 'GH',
         ageRange1: 11,
         ageRange2: 9,
         ageRange3: 3,
@@ -118,7 +118,7 @@ const ageRangeQueryResult: {
         ageRange6: 0,
     },
     {
-        country: 'Brasil',
+        country: 'BR',
         ageRange1: 937,
         ageRange2: 1197,
         ageRange3: 893,
@@ -127,7 +127,7 @@ const ageRangeQueryResult: {
         ageRange6: 40,
     },
     {
-        country: 'Philippines',
+        country: 'PH',
         ageRange1: 3,
         ageRange2: 0,
         ageRange3: 0,
@@ -136,7 +136,7 @@ const ageRangeQueryResult: {
         ageRange6: 0,
     },
     {
-        country: 'Cabo Verde',
+        country: 'CV',
         ageRange1: 0,
         ageRange2: 0,
         ageRange3: 0,
@@ -149,7 +149,7 @@ const ageRangeQueryResult: {
 const results = [
     {
         date: match.any,
-        country: 'Brasil',
+        country: 'BR',
         ageRange1: 937,
         ageRange2: 1197,
         ageRange3: 893,
@@ -163,7 +163,7 @@ const results = [
     },
     {
         date: match.any,
-        country: 'Cabo Verde',
+        country: 'CV',
         ageRange1: 0,
         ageRange2: 0,
         ageRange3: 0,
@@ -177,7 +177,7 @@ const results = [
     },
     {
         date: match.any,
-        country: 'Ghana',
+        country: 'GH',
         ageRange1: 11,
         ageRange2: 9,
         ageRange3: 3,
@@ -191,7 +191,7 @@ const results = [
     },
     {
         date: match.any,
-        country: 'Philippines',
+        country: 'PH',
         ageRange1: 3,
         ageRange2: 0,
         ageRange3: 0,
@@ -205,7 +205,7 @@ const results = [
     },
     {
         date: match.any,
-        country: 'Nigeria',
+        country: 'NG',
         ageRange1: 0,
         ageRange2: 0,
         ageRange3: 0,
@@ -216,7 +216,7 @@ const results = [
     },
     {
         date: match.any,
-        country: 'Venezuela',
+        country: 'VE',
         ageRange1: 0,
         ageRange2: 0,
         ageRange3: 0,
@@ -227,7 +227,7 @@ const results = [
     },
     {
         date: match.any,
-        country: 'Honduras',
+        country: 'HN',
         ageRange1: 0,
         ageRange2: 0,
         ageRange3: 0,
@@ -262,21 +262,27 @@ describe('globalDemographics', () => {
     //     },
     // });
 
-    const dbSequelizeQueryStub = stub(
-        GlobalDemographicsService.sequelize,
-        'query'
-    );
-    const dbGlobalDemographicsInsertStub = stub(
-        GlobalDemographicsService.globalDemographics,
-        'bulkCreate'
-    );
+    let dbGlobalDemographicsInsertStub: SinonStub;
+    let dbSequelizeQueryStub: SinonStub;
 
-    dbSequelizeQueryStub
-        .withArgs(match(/current_date_year/))
-        .returns(Promise.resolve(ageRangeQueryResult as any));
-    dbSequelizeQueryStub
-        .withArgs(match(/gender/))
-        .returns(Promise.resolve(genderQueryResult as any));
+    before(() => {
+        dbSequelizeQueryStub = stub(
+            GlobalDemographicsService.sequelize,
+            'query'
+        );
+
+        dbSequelizeQueryStub
+            .withArgs(match(/current_date_year/))
+            .returns(Promise.resolve(ageRangeQueryResult as any));
+        dbSequelizeQueryStub
+            .withArgs(match(/gender/))
+            .returns(Promise.resolve(genderQueryResult as any));
+
+        dbGlobalDemographicsInsertStub = stub(
+            GlobalDemographicsService.globalDemographics,
+            'bulkCreate'
+        );
+    });
 
     it('#calculateDemographics()', async () => {
         await GlobalDemographicsService.calculateDemographics();

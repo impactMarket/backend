@@ -37,10 +37,6 @@ export default class StoryService {
     private storyContentStorage = new StoryContentStorage();
     private email = new Email();
 
-    public pictureAdd(file: Express.Multer.File) {
-        return this.storyContentStorage.uploadContent(file);
-    }
-
     public getPresignedUrlMedia(mime: string) {
         return this.storyContentStorage.getPresignedUrlPutObject(mime);
     }

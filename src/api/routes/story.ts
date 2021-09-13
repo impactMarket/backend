@@ -1,17 +1,14 @@
 import StoryController from '@controllers/story';
 import StoryValidator from '@validators/story';
 import { Router } from 'express';
-import multer from 'multer';
 
 import { cacheWithRedis } from '../../database';
-import { authenticateToken } from '../middlewares';
+import { authenticateToken, optionalAuthentication } from '../middlewares';
 
 export default (app: Router): void => {
     const storyController = new StoryController();
     const storyValidator = new StoryValidator();
     const route = Router();
-    const storage = multer.memoryStorage();
-    const upload = multer({ storage });
     app.use('/story', route);
 
     /**
@@ -54,16 +51,6 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.post('/', authenticateToken, storyValidator.add, storyController.add);
-
-    /**
-     * @deprecated in mobile@1.1.3
-     */
-    route.post(
-        '/picture',
-        authenticateToken,
-        upload.single('imageFile'),
-        storyController.pictureAdd
-    );
 
     /**
      * @swagger
@@ -242,11 +229,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/community/:id/:query?',
-        (req, res, next) => {
-            (req as any).authTokenIsOptional = true;
-            next();
-        },
-        authenticateToken,
+        optionalAuthentication,
         storyController.getByCommunity
     );
 
