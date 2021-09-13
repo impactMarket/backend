@@ -150,12 +150,11 @@ class ChainSubscribers {
         if (this.allCommunitiesAddresses.includes(parsedLog.args[1])) {
             const from = parsedLog.args[0];
             const toCommunityAddress = parsedLog.args[1];
-            const communityId = this.communities.get(toCommunityAddress)!;
             const amount = parsedLog.args[2].toString();
             getBlockTime(log.blockHash).then((txAt) =>
                 InflowService.add(
                     from,
-                    communityId,
+                    toCommunityAddress,
                     amount,
                     log.transactionHash,
                     txAt

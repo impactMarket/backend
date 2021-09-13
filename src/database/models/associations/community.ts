@@ -51,8 +51,8 @@ export function communityAssociation(sequelize: Sequelize) {
 
     // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.Inflow, {
-        foreignKey: 'communityId',
-        sourceKey: 'publicId',
+        foreignKey: 'contractAddress',
+        sourceKey: 'contractAddress',
         as: 'inflow',
     });
     // used to query from the community with incude

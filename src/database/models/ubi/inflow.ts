@@ -3,10 +3,12 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 interface InflowAttributes {
     id: number;
     from: string;
-    communityId: string;
+    contractAddress: string;
     amount: string;
     tx: string;
     txAt: Date;
+    value: string;
+    asset?: string;
 
     // timestamps
     createdAt: Date;
@@ -14,16 +16,20 @@ interface InflowAttributes {
 }
 export interface InflowCreationAttributes {
     from: string;
-    communityId: string;
+    contractAddress: string;
     amount: string;
+    value: string;
+    asset?: string;
     tx: string;
     txAt: Date;
 }
 export class Inflow extends Model<InflowAttributes, InflowCreationAttributes> {
     public id!: number;
     public from!: string;
-    public communityId!: string;
+    public contractAddress!: string;
     public amount!: string;
+    public value!: string;
+    public asset!: string;
     public tx!: string;
     public txAt!: Date;
 
@@ -45,13 +51,8 @@ export function initializeInflow(sequelize: Sequelize): void {
                 type: DataTypes.STRING(44),
                 allowNull: false,
             },
-            communityId: {
-                type: DataTypes.UUID,
-                references: {
-                    model: 'community', // name of Target model
-                    key: 'publicId', // key in Target model that we're referencing
-                },
-                onDelete: 'CASCADE',
+            contractAddress: {
+                type: DataTypes.STRING(44),
                 allowNull: false,
             },
             amount: {
@@ -66,6 +67,15 @@ export function initializeInflow(sequelize: Sequelize): void {
             },
             txAt: {
                 type: DataTypes.DATE,
+                allowNull: false,
+            },
+            asset: {
+                type: DataTypes.STRING(4),
+                defaultValue: 'cUSD',
+                allowNull: false,
+            },
+            value: {
+                type: DataTypes.DECIMAL(29), // max 9,999,999,999 - plus 18 decimals
                 allowNull: false,
             },
             createdAt: {

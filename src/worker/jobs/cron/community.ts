@@ -683,9 +683,9 @@ export async function verifyCommunityFunds(): Promise<void> {
                 const community = await CommunityService.getCommunityOnlyById(
                     communityState.communityId
                 );
-                if (community !== null) {
+                if (community !== null && community.contractAddress) {
                     const backersAddresses = await NotifiedBackerService.add(
-                        await InflowService.getAllBackers(community.publicId),
+                        await InflowService.getAllBackers(community.contractAddress),
                         community.publicId
                     );
                     const pushTokens =
