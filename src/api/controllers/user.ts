@@ -327,7 +327,10 @@ class UserController {
     ) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -342,7 +345,10 @@ class UserController {
     public subscribeNewsletter = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
