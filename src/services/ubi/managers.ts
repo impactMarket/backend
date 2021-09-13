@@ -74,7 +74,7 @@ export default class ManagerService {
         if (!isAddress(managerAddress)) {
             throw {
                 code: 'NOT_MANAGER',
-                message: 'Not a manager ' + managerAddress
+                message: 'Not a manager ' + managerAddress,
             };
         }
 

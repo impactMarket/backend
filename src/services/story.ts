@@ -13,6 +13,7 @@ import {
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { CommunityAttributes } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
+import { BaseError } from '@utils/baseError';
 import { Includeable, literal, Op } from 'sequelize';
 
 import config from '../config';
@@ -202,10 +203,7 @@ export default class StoryService {
                 where: { address: onlyFromAddress, active: true },
             });
             if (managerResult === null) {
-                throw {
-                    code: 'USER_NOT_FOUND',
-                    message: 'user not found!'
-                };
+                throw new BaseError('USER_NOT_FOUND', 'user not found!');
             }
             result = managerResult.toJSON() as ManagerAttributes;
         } else {
@@ -213,10 +211,7 @@ export default class StoryService {
         }
 
         if (result.community === undefined) {
-            throw {
-                code: 'COMMUNITY_NOT_FOUND',
-                message: 'community not found!'
-            };
+            throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found!');
         }
 
         return {
@@ -430,10 +425,10 @@ export default class StoryService {
         });
 
         if (r.rows.length === 0) {
-            throw {
-                code: 'STORIES_NOT_FOUND',
-                message: 'No stories for community ' + communityId
-            };
+            throw new BaseError(
+                'STORIES_NOT_FOUND',
+                `No stories for community ${communityId}`
+            );
         }
 
         // at this point, this is not null

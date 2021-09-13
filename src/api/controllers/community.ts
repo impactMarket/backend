@@ -40,9 +40,7 @@ class CommunityController {
             .then((r) =>
                 standardResponse(res, 200, true, r.rows, { count: r.count })
             )
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e })
-            );
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     count = (req: Request, res: Response) => {
@@ -50,7 +48,7 @@ class CommunityController {
         if (groupBy === undefined) {
             standardResponse(res, 400, false, '', {
                 error: {
-                    code: 'INVALID_GROUP',
+                    name: 'INVALID_GROUP',
                     message: 'not a valid group by',
                 },
             });
@@ -65,7 +63,7 @@ class CommunityController {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -227,9 +225,9 @@ class CommunityController {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
-                }
+                },
             });
             return;
         }
@@ -261,8 +259,8 @@ class CommunityController {
                 } else {
                     standardResponse(res, 403, false, '', {
                         error: {
-                            code: 'NOT_MANAGER',
-                            message: 'Not manager!'
+                            name: 'NOT_MANAGER',
+                            message: 'Not manager!',
                         },
                     });
                 }
@@ -298,8 +296,8 @@ class CommunityController {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
-                    message: 'User not identified!'
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
                 },
             });
             return;
@@ -324,9 +322,7 @@ class CommunityController {
             parseInt(limit, 10)
         )
             .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e })
-            );
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 

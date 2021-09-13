@@ -13,8 +13,8 @@ export const standardResponse = (
     data: any,
     options?: {
         error?: {
-            code: string,
-            message: string,
+            name: string;
+            message: string;
         };
         count?: number;
     }

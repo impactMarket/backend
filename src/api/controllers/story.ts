@@ -10,7 +10,7 @@ class StoryController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -26,7 +26,7 @@ class StoryController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -42,7 +42,7 @@ class StoryController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -58,7 +58,7 @@ class StoryController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -74,7 +74,7 @@ class StoryController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -114,7 +114,7 @@ class StoryController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -130,7 +130,7 @@ class StoryController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });

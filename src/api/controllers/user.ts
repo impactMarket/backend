@@ -44,16 +44,14 @@ class UserController {
             recover
         )
             .then((user) => standardResponse(res, 201, true, user))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e })
-            );
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public welcome = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -90,7 +88,7 @@ class UserController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -105,7 +103,7 @@ class UserController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -121,7 +119,7 @@ class UserController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -137,7 +135,7 @@ class UserController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -156,7 +154,7 @@ class UserController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -172,7 +170,7 @@ class UserController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -188,7 +186,7 @@ class UserController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -204,7 +202,7 @@ class UserController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -223,7 +221,7 @@ class UserController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -309,7 +307,7 @@ class UserController {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -318,16 +316,14 @@ class UserController {
 
         UserService.edit(req.user.address, req.body)
             .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e })
-            );
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public delete = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
-                    code: 'USER_NOT_FOUND',
+                    name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
                 },
             });
@@ -336,9 +332,7 @@ class UserController {
 
         UserService.delete(req.user.address)
             .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e })
-            );
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 
