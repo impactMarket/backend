@@ -48,4 +48,6 @@ export interface AppNotificationCreation {
     type: number;
     params?: string;
     read?: boolean;
+
+    createdAt: Date;
 }

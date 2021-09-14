@@ -457,21 +457,18 @@ describe('user service', () => {
                 {
                     address: users[0].address,
                     type: 1,
-                    params: {
-                        communityId: 1
-                    },
+                    params: 'param_test',
+                    createdAt: new Date(),
                 }, {
                     address: users[0].address,
                     type: 2,
-                    params: {
-                        communityId: 1
-                    },
+                    params: 'param_test',
+                    createdAt: new Date(),
                 }, {
                     address: users[1].address,
                     type: 1,
-                    params: {
-                        communityId: 2
-                    },
+                    params: 'param_test',
+                    createdAt: new Date(),
                 }
             ]);
         });
