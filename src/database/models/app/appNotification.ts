@@ -11,14 +11,11 @@ export class AppNotificationModel extends Model<
     public id!: number;
     public address!: string;
     public type!: number;
-    public params!: {
-        [key: string]: any;
-    } | null;
+    public params!: string;
     public read!: boolean;
 
     // timestamps!
     public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
 }
 
 export function initializeAppNotification(sequelize: Sequelize): void {
@@ -43,7 +40,7 @@ export function initializeAppNotification(sequelize: Sequelize): void {
                 allowNull: false,
             },
             params: {
-                type: DataTypes.JSON,
+                type: DataTypes.STRING(32),
                 allowNull: true,
             },
             read: {
@@ -55,14 +52,11 @@ export function initializeAppNotification(sequelize: Sequelize): void {
                 type: DataTypes.DATE,
                 allowNull: false,
             },
-            updatedAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
-            },
         },
         {
             tableName: 'app_notification',
             sequelize,
+            timestamps: false,
         }
     );
 }

@@ -36,21 +36,16 @@ export interface AppNotification {
     id: number;
     address: string;
     type: number;
-    params: {
-        [key: string]: any;
-    };
+    params: string;
     read: boolean;
 
     //timestamp
     createdAt: Date;
-    updatedAt: Date;
 }
 
 export interface AppNotificationCreation {
     address: string;
     type: number;
-    params?: {
-        [key: string]: any;
-    };
+    params?: string;
     read?: boolean;
 }
