@@ -6,6 +6,7 @@ import {
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
 import { ManagerAttributes } from '@models/ubi/manager';
+import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';
 import { isAddress } from '@utils/util';
 import { ethers } from 'ethers';
@@ -109,14 +110,14 @@ export default class BeneficiaryService {
         let required: boolean;
 
         if (!isAddress(managerAddress)) {
-            throw new Error('Not valid address!');
+            throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
         }
         // prevent add community contracts as beneficiaries
         if (
             (await CommunityService.existsByContractAddress(managerAddress)) ===
             true
         ) {
-            throw new Error('Not valid address!');
+            throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
         }
         if (isAddress(searchInput)) {
             whereBeneficiary = {
@@ -133,7 +134,7 @@ export default class BeneficiaryService {
             };
             required = true;
         } else {
-            throw new Error('Not valid search!');
+            throw new BaseError('INVALID_SEARCH', 'Not valid search!');
         }
 
         if (active !== undefined) {
@@ -198,7 +199,10 @@ export default class BeneficiaryService {
         limit: number
     ): Promise<IListBeneficiary[]> {
         if (!isAddress(managerAddress)) {
-            throw new Error('Not a manager ' + managerAddress);
+            throw new BaseError(
+                'NOT_MANAGER',
+                'Not a manager ' + managerAddress
+            );
         }
 
         // const order: OrderItem[] = [
@@ -290,7 +294,7 @@ export default class BeneficiaryService {
     ): Promise<IBeneficiaryActivities[]> {
         try {
             if (!isAddress(managerAddress)) {
-                throw new Error('Not valid address!');
+                throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
             }
             // prevent add community contracts as beneficiaries
             if (
@@ -298,7 +302,7 @@ export default class BeneficiaryService {
                     managerAddress
                 )) === true
             ) {
-                throw new Error('Not valid address!');
+                throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
             }
 
             const manager = await models.manager.findOne({
@@ -313,13 +317,16 @@ export default class BeneficiaryService {
                 where: { address: managerAddress, active: true },
             });
             if (manager === null) {
-                throw new Error('Manager not found');
+                throw new BaseError('MANAGER_NOT_FOUND', 'Manager not found');
             }
             const communityId = (manager.toJSON() as ManagerAttributes)
                 .community?.id;
 
             if (!communityId) {
-                throw new Error('Community not found');
+                throw new BaseError(
+                    'COMMUNITY_NOT_FOUND',
+                    'Community not found'
+                );
             }
 
             switch (type.toUpperCase()) {

@@ -6,6 +6,7 @@ import {
 import { User, UserCreationAttributes } from '@interfaces/app/user';
 import { CommunityAttributes } from '@models/ubi/community';
 import { ProfileContentStorage } from '@services/storage';
+import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
 
@@ -46,7 +47,10 @@ export default class UserService {
             if (overwrite) {
                 await this.overwriteUser(user);
             } else if (!exists && existsPhone) {
-                throw 'phone associated with another account';
+                throw new BaseError(
+                    'PHONE_CONFLICT',
+                    'phone associated with another account'
+                );
             }
 
             if (recover) {
@@ -98,11 +102,14 @@ export default class UserService {
             }
 
             if (!userFromRegistry.active) {
-                throw 'user inactive';
+                throw new BaseError('INACTIVE_USER', 'user is inactive');
             }
 
             if (userFromRegistry.deletedAt) {
-                throw 'account in deletion process';
+                throw new BaseError(
+                    'DELETION_PROCESS',
+                    'account in deletion process'
+                );
             }
 
             const userHello = await this.loadUser(userFromRegistry);
@@ -113,7 +120,7 @@ export default class UserService {
             };
         } catch (e) {
             Logger.warn(`Error while auth user ${user.address} ${e}`);
-            throw new Error(e);
+            throw e;
         }
     }
 
@@ -128,7 +135,7 @@ export default class UserService {
                 }
             );
         } catch (error) {
-            throw error;
+            throw new BaseError('UNEXPECTED_ERROR', error.message);
         }
     }
 
@@ -179,7 +186,7 @@ export default class UserService {
 
             await Promise.all(promises);
         } catch (error) {
-            throw new Error(error);
+            throw new BaseError('UNEXPECTED_ERROR', error.message);
         }
     }
 
@@ -192,7 +199,7 @@ export default class UserService {
             where: { address },
         });
         if (found === null) {
-            throw new Error('user not found');
+            throw new BaseError('USER_NOT_FOUND', 'user not found');
         }
         user = found.toJSON() as User;
         if (pushNotificationToken) {
@@ -224,7 +231,7 @@ export default class UserService {
             where: { address },
         });
         if (user === null) {
-            throw new Error(address + ' user not found!');
+            throw new BaseError('USER_NOT_FOUND', address + ' user not found!');
         }
         if (phone) {
             const uu = user.toJSON() as User;
@@ -506,7 +513,7 @@ export default class UserService {
             where: { address: user.address },
         });
         if (updated[0] === 0) {
-            throw new Error('user was not updated!');
+            throw new BaseError('UPDATE_FAILED', 'user was not updated!');
         }
         return updated[1][0];
     }
@@ -623,7 +630,10 @@ export default class UserService {
                     ],
                 });
                 if (managersByCommunity.length <= 2) {
-                    throw new Error('Not enough managers');
+                    throw new BaseError(
+                        'NOT_ENOUGH_MANAGERS',
+                        'Not enough managers'
+                    );
                 }
             }
 
@@ -640,7 +650,7 @@ export default class UserService {
             );
 
             if (updated[0] === 0) {
-                throw new Error('User was not updated');
+                throw new BaseError('UPDATE_FAILED', 'User was not updated');
             }
             return true;
         } catch (error) {

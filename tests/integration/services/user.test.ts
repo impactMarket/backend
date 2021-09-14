@@ -294,7 +294,7 @@ describe('user service', () => {
                 error = err;
             });
 
-            expect(error.message).to.equal('user inactive');
+            expect(error.message).to.equal('user is inactive');
         });
     });
 

@@ -1,5 +1,6 @@
 import { AppMediaContentCreation } from '@interfaces/app/appMediaContent';
 import { AppMediaThumbnailCreation } from '@interfaces/app/appMediaThumbnail';
+import { BaseError } from '@utils/baseError';
 
 import { models } from '../database';
 
@@ -16,7 +17,7 @@ export class MediaService {
         if (r[0] > 0) {
             return r[1][0];
         }
-        throw new Error('not updated!');
+        throw new BaseError('UPDATE_FAILED', 'not updated!');
     }
 
     postThumbnails(content: AppMediaThumbnailCreation[]) {
