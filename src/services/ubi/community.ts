@@ -12,6 +12,7 @@ import {
     CommunityCreationAttributes,
 } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
+import { BaseError } from '@utils/baseError';
 import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
 import {
@@ -132,7 +133,7 @@ export default class CommunityService {
             if (index !== -1) {
                 managerAddress = eventsCoomunity[index].args[0];
             } else {
-                throw new Error('Event not found!');
+                throw new BaseError('EVENT_NOT_FOUND', 'Event not found!');
             }
             createObject = {
                 ...createObject,
@@ -167,7 +168,7 @@ export default class CommunityService {
             await t.rollback();
             // Since this is the service, we throw the error back to the controller,
             // so the route returns an error.
-            throw new Error(error);
+            throw error;
         }
     }
 
@@ -197,7 +198,7 @@ export default class CommunityService {
             where: { id },
         });
         if (community === null) {
-            throw new Error('community not found!');
+            throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found!');
         }
         // since cover can't be null, we first update and then remove
         const { name, description, currency, coverMediaId, email } = params;
@@ -214,7 +215,7 @@ export default class CommunityService {
             await this.community.update({ coverMediaId }, { where: { id } });
         }
         if (update[0] === 0) {
-            throw new Error('community was not updated!');
+            throw new BaseError('UPDATE_FAILED', 'community was not updated!');
         }
         return this._findCommunityBy({ id }, userAddress);
     }
@@ -275,7 +276,7 @@ export default class CommunityService {
                 break;
         }
         if (groupName.length === 0) {
-            throw new Error('invalid group');
+            throw new BaseError('INVALID_GROUP', 'invalid group');
         }
         const result = (await models.community.findAll({
             attributes: [groupName, [fn('count', col(groupName)), 'count']],
@@ -317,7 +318,10 @@ export default class CommunityService {
                             query.lat === undefined ||
                             query.lng === undefined
                         ) {
-                            throw new Error('invalid coordinates');
+                            throw new BaseError(
+                                'INVALID_COORDINATES',
+                                'invalid coordinates'
+                            );
                         }
                         const lat = parseInt(query.lat, 10);
                         const lng = parseInt(query.lng, 10);
@@ -325,7 +329,7 @@ export default class CommunityService {
                             typeof lat !== 'number' ||
                             typeof lng !== 'number'
                         ) {
-                            throw new Error('NaN');
+                            throw new BaseError('NaN', 'not a number');
                         }
 
                         orderOption.push([
@@ -933,7 +937,8 @@ export default class CommunityService {
                         communityContractAddress
                     );
                 } else {
-                    throw new Error(
+                    throw new BaseError(
+                        'UPDATE_FAILED',
                         'Did not update ' +
                             dbUpdate[1][0].id +
                             ' after acceptance!'
@@ -950,7 +955,7 @@ export default class CommunityService {
                 await t.rollback();
                 // Since this is the service, we throw the error back to the controller,
                 // so the route returns an error.
-                throw new Error(error);
+                throw error;
             }
         }
         return null;
@@ -998,7 +1003,7 @@ export default class CommunityService {
             const offset = parseInt(query.offset, 10);
             const limit = parseInt(query.limit, 10);
             if (typeof offset !== 'number' || typeof limit !== 'number') {
-                throw new Error('NaN');
+                throw new BaseError('NaN', 'not a number');
             }
         }
 
@@ -1012,7 +1017,7 @@ export default class CommunityService {
                 const lat = parseInt(query.lat, 10);
                 const lng = parseInt(query.lng, 10);
                 if (typeof lat !== 'number' || typeof lng !== 'number') {
-                    throw new Error('NaN');
+                    throw new BaseError('NaN', 'not a number');
                 }
                 orderOption = [
                     [
@@ -1315,7 +1320,10 @@ export default class CommunityService {
             raw: true,
         });
         if (community === null) {
-            throw new Error('Not found community ' + contractAddress);
+            throw new BaseError(
+                'COMMUNITY_NOT_FOUND',
+                'Not found community ' + contractAddress
+            );
         }
         const communityState = await this.ubiCommunityState.findOne({
             where: {
@@ -1371,7 +1379,10 @@ export default class CommunityService {
             where,
         });
         if (community === null) {
-            throw new Error('Not found community ' + where);
+            throw new BaseError(
+                'COMMUNITY_NOT_FOUND',
+                'Not found community ' + where
+            );
         }
         const suspect = await this.getSuspect(community.id);
         const contract = (await this.getContract(community.id))!;

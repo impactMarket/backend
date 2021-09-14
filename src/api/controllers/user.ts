@@ -44,15 +44,16 @@ class UserController {
             recover
         )
             .then((user) => standardResponse(res, 201, true, user))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e.message })
-            );
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public welcome = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -86,7 +87,10 @@ class UserController {
     public getPresignedUrlMedia = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -98,7 +102,10 @@ class UserController {
     public updateAvatar = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -111,7 +118,10 @@ class UserController {
     public updateUsername = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -124,7 +134,10 @@ class UserController {
     public updateCurrency = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -140,7 +153,10 @@ class UserController {
     ) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -153,7 +169,10 @@ class UserController {
     public updateLanguage = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -166,7 +185,10 @@ class UserController {
     public updateGender = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -179,7 +201,10 @@ class UserController {
     public updateAge = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -195,7 +220,10 @@ class UserController {
     public updateChildren = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -278,12 +306,15 @@ class UserController {
     public edit = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
 
-        UserService.edit(req.user.address, req.body)
+        UserService.edit({ address: req.user.address, ...req.body })
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })
@@ -293,7 +324,10 @@ class UserController {
     public getNotifications = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -308,7 +342,10 @@ class UserController {
     public readNotifications = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -323,7 +360,10 @@ class UserController {
     public getUnreadNotifications = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
@@ -335,19 +375,58 @@ class UserController {
             );
     };
 
+    // public delete = (req: RequestWithUser, res: Response) => {
+    public verifyNewsletterSubscription = (
+        req: RequestWithUser,
+        res: Response
+    ) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        UserService.verifyNewsletterSubscription(req.user.address)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
+
+    public subscribeNewsletter = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        UserService.subscribeNewsletter(req.user.address, req.body)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     public delete = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
-                error: 'User not identified!',
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
             });
             return;
         }
 
         UserService.delete(req.user.address)
             .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e.message })
-            );
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 
