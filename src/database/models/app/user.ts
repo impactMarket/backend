@@ -14,6 +14,7 @@ export class UserModel extends Model<User, UserCreationAttributes> {
     public lastLogin!: Date;
     public suspect!: boolean;
     public active!: boolean;
+    public email!: string;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -62,6 +63,9 @@ export function initializeUser(sequelize: Sequelize): typeof UserModel {
             },
             children: {
                 type: DataTypes.INTEGER,
+            },
+            email: {
+                type: DataTypes.STRING(64),
             },
             lastLogin: {
                 type: DataTypes.DATE,

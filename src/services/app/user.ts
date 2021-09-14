@@ -1,3 +1,4 @@
+import { Client } from '@hubspot/api-client';
 import {
     AppAnonymousReport,
     AppAnonymousReportCreation,
@@ -5,10 +6,12 @@ import {
 import { User, UserCreationAttributes } from '@interfaces/app/user';
 import { CommunityAttributes } from '@models/ubi/community';
 import { ProfileContentStorage } from '@services/storage';
+import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';
 import { Op } from 'sequelize';
 
 import { generateAccessToken } from '../../api/middlewares';
+import config from '../../config';
 import { models, sequelize } from '../../database';
 import { IUserHello, IUserAuth } from '../../types/endpoints';
 import CommunityService from '../ubi/community';
@@ -26,6 +29,8 @@ export default class UserService {
 
     private static profileContentStorage = new ProfileContentStorage();
 
+    public static hubspotClient = new Client({ apiKey: config.hubspotKey });
+
     public static async authenticate(
         user: UserCreationAttributes,
         overwrite: boolean = false,
@@ -42,7 +47,10 @@ export default class UserService {
             if (overwrite) {
                 await this.overwriteUser(user);
             } else if (!exists && existsPhone) {
-                throw 'phone associated with another account';
+                throw new BaseError(
+                    'PHONE_CONFLICT',
+                    'phone associated with another account'
+                );
             }
 
             if (recover) {
@@ -94,11 +102,14 @@ export default class UserService {
             }
 
             if (!userFromRegistry.active) {
-                throw 'user inactive';
+                throw new BaseError('INACTIVE_USER', 'user is inactive');
             }
 
             if (userFromRegistry.deletedAt) {
-                throw 'account in deletion process';
+                throw new BaseError(
+                    'DELETION_PROCESS',
+                    'account in deletion process'
+                );
             }
 
             const userHello = await this.loadUser(userFromRegistry);
@@ -109,7 +120,7 @@ export default class UserService {
             };
         } catch (e) {
             Logger.warn(`Error while auth user ${user.address} ${e}`);
-            throw new Error(e);
+            throw e;
         }
     }
 
@@ -124,7 +135,7 @@ export default class UserService {
                 }
             );
         } catch (error) {
-            throw error;
+            throw new BaseError('UNEXPECTED_ERROR', error.message);
         }
     }
 
@@ -175,7 +186,7 @@ export default class UserService {
 
             await Promise.all(promises);
         } catch (error) {
-            throw new Error(error);
+            throw new BaseError('UNEXPECTED_ERROR', error.message);
         }
     }
 
@@ -188,7 +199,7 @@ export default class UserService {
             where: { address },
         });
         if (found === null) {
-            throw new Error('user not found');
+            throw new BaseError('USER_NOT_FOUND', 'user not found');
         }
         user = found.toJSON() as User;
         if (pushNotificationToken) {
@@ -220,7 +231,7 @@ export default class UserService {
             where: { address },
         });
         if (user === null) {
-            throw new Error(address + ' user not found!');
+            throw new BaseError('USER_NOT_FOUND', address + ' user not found!');
         }
         if (phone) {
             const uu = user.toJSON() as User;
@@ -496,27 +507,102 @@ export default class UserService {
         };
     }
 
-    public static async edit(
-        address: string,
-        user: {
-            language?: string;
-            currency?: string;
-            username?: string;
-            gender?: string;
-            year?: number;
-            children?: number;
-            avatarMediaId?: number;
-            pushNotificationToken?: string;
-        }
-    ): Promise<User> {
+    public static async edit(user: User): Promise<User> {
         const updated = await this.user.update(user, {
             returning: true,
-            where: { address },
+            where: { address: user.address },
         });
         if (updated[0] === 0) {
-            throw new Error('user was not updated!');
+            throw new BaseError('UPDATE_FAILED', 'user was not updated!');
         }
         return updated[1][0];
+    }
+
+    public static async verifyNewsletterSubscription(
+        address: string
+    ): Promise<boolean> {
+        try {
+            const user = await UserService.get(address);
+            if (!user?.email) {
+                return false;
+            }
+            const contacts =
+                await this.hubspotClient.crm.contacts.searchApi.doSearch({
+                    query: user.email,
+                    limit: 1,
+                    properties: ['email', 'address'],
+                    filterGroups: [],
+                    sorts: ['email'],
+                    after: 0,
+                });
+
+            if (contacts.body.results.length > 0) {
+                return (
+                    contacts.body.results[0].properties?.email ===
+                        user.email.toLowerCase() &&
+                    contacts.body.results[0].properties?.address === address
+                );
+            }
+
+            return false;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    public static async subscribeNewsletter(
+        address: string,
+        body: {
+            subscribe: boolean;
+        }
+    ): Promise<boolean> {
+        try {
+            const user = await UserService.get(address);
+            if (!user?.email) {
+                throw new Error('User does not have email');
+            }
+
+            if (body.subscribe) {
+                const createResponse =
+                    await this.hubspotClient.crm.contacts.basicApi.create({
+                        properties: {
+                            email: user.email,
+                            firstname: user.username ? user.username : '',
+                            address,
+                        },
+                    });
+                return !!createResponse && !!createResponse.body.id;
+            } else {
+                const contacts =
+                    await this.hubspotClient.crm.contacts.searchApi.doSearch({
+                        query: user.email,
+                        limit: 1,
+                        properties: ['email', 'address'],
+                        filterGroups: [],
+                        sorts: ['email'],
+                        after: 0,
+                    });
+                if (contacts.body.results.length > 0) {
+                    const hubsPotId = contacts.body.results[0].id;
+
+                    if (!hubsPotId) {
+                        throw new Error('User not found on HubsPot');
+                    }
+
+                    await this.hubspotClient.crm.contacts.basicApi.archive(
+                        hubsPotId
+                    );
+                    return true;
+                } else {
+                    throw new Error('User not found on HubsPot');
+                }
+            }
+        } catch (error) {
+            if (error.response?.body?.category === 'CONFLICT') {
+                throw new Error(error.response.body.message);
+            }
+            throw error;
+        }
     }
 
     public static async delete(address: string): Promise<boolean> {
@@ -544,7 +630,10 @@ export default class UserService {
                     ],
                 });
                 if (managersByCommunity.length <= 2) {
-                    throw new Error('Not enough managers');
+                    throw new BaseError(
+                        'NOT_ENOUGH_MANAGERS',
+                        'Not enough managers'
+                    );
                 }
             }
 
@@ -561,7 +650,7 @@ export default class UserService {
             );
 
             if (updated[0] === 0) {
-                throw new Error('User was not updated');
+                throw new BaseError('UPDATE_FAILED', 'User was not updated');
             }
             return true;
         } catch (error) {

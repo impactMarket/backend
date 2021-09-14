@@ -10,21 +10,13 @@ module.exports = {
                 primaryKey: true,
             },
             address: {
+                // this is associated with "user"
                 type: Sequelize.STRING(44),
-                // references: {
-                //     model: 'user',
-                //     key: 'address',
-                // },
-                // onDelete: 'RESTRICT',
                 allowNull: false,
             },
             from: {
+                // this is associated with "user"
                 type: Sequelize.STRING(44),
-                // references: {
-                //     model: 'user',
-                //     key: 'address',
-                // },
-                // onDelete: 'RESTRICT',
                 allowNull: false,
             },
             communityId: {

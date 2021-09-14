@@ -12,7 +12,10 @@ export const standardResponse = (
     success: boolean,
     data: any,
     options?: {
-        error?: string;
+        error?: {
+            name: string;
+            message: string;
+        };
         count?: number;
     }
 ) => {
