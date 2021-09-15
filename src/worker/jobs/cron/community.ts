@@ -665,40 +665,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     await Promise.all(pending);
 }
 
-export async function verifyCommunityFunds(): Promise<void> {
-    Logger.info('Verifying community funds...');
-    const communitiesState =
-        await CommunityStateService.getAllCommunitiesState();
-
-    communitiesState.forEach(async (communityState) => {
-        if (communityState.backers > 0 && communityState.claimed !== '0') {
-            const isLessThan10 =
-                parseFloat(
-                    new BigNumber(communityState.claimed)
-                        .div(communityState.raised)
-                        .toString()
-                ) >= 0.9;
-
-            if (isLessThan10) {
-                const community = await CommunityService.getCommunityOnlyById(
-                    communityState.communityId
-                );
-                if (community !== null && community.contractAddress) {
-                    const backersAddresses = await NotifiedBackerService.add(
-                        await InflowService.getAllBackers(community.contractAddress),
-                        community.publicId
-                    );
-                    const pushTokens =
-                        await UserService.getPushTokensFromAddresses(
-                            backersAddresses
-                        );
-                    notifyBackersCommunityLowFunds(community, pushTokens);
-                }
-            }
-        }
-    });
-}
-
 export async function internalNotifyLowCommunityFunds(): Promise<void> {
     const web = new WebClient(config.slackApi);
 

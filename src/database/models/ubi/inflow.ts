@@ -1,5 +1,11 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
+export enum AssetType {
+    cUSD,
+    cEUR,
+    CELO,
+}
+
 interface InflowAttributes {
     id: number;
     from: string;
@@ -8,7 +14,7 @@ interface InflowAttributes {
     tx: string;
     txAt: Date;
     value: string;
-    asset?: string;
+    asset?: AssetType;
 
     // timestamps
     createdAt: Date;
@@ -19,7 +25,7 @@ export interface InflowCreationAttributes {
     contractAddress: string;
     amount: string;
     value: string;
-    asset?: string;
+    asset?: AssetType;
     tx: string;
     txAt: Date;
 }
@@ -29,7 +35,7 @@ export class Inflow extends Model<InflowAttributes, InflowCreationAttributes> {
     public contractAddress!: string;
     public amount!: string;
     public value!: string;
-    public asset!: string;
+    public asset!: number;
     public tx!: string;
     public txAt!: Date;
 
@@ -70,8 +76,8 @@ export function initializeInflow(sequelize: Sequelize): void {
                 allowNull: false,
             },
             asset: {
-                type: DataTypes.STRING(4),
-                defaultValue: 'cUSD',
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
                 allowNull: false,
             },
             value: {

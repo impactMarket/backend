@@ -6,7 +6,6 @@ module.exports = {
       return;
     }
 
-    //add column
     await queryInterface.addColumn('inflow', 'contractAddress', {
         type: Sequelize.STRING(44),
         allowNull: false,
@@ -14,8 +13,8 @@ module.exports = {
     });
 
     await queryInterface.addColumn('inflow', 'asset', {
-      type: Sequelize.STRING(4),
-      defaultValue: 'cUSD',
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
       allowNull: false,
     });
 
@@ -25,7 +24,6 @@ module.exports = {
       defaultValue: 0,
     });
 
-    // populate new column
     const query = `
       UPDATE inflow
       SET "contractAddress" = community."contractAddress", "value" = "amount"
@@ -37,7 +35,11 @@ module.exports = {
       type: Sequelize.QueryTypes.UPDATE,
     });
 
-    // remove old column
+    await queryInterface.removeConstraint(
+      'inflow',
+      'inflow_communityId_fkey'
+    );
+
     await queryInterface.removeColumn(
       'inflow',
       'communityId'

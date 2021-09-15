@@ -2,7 +2,7 @@ import { Logger } from '@utils/logger';
 import { col, fn } from 'sequelize';
 
 import { models } from '../../database';
-
+import { AssetType } from '@models/ubi/inflow';
 export default class InflowService {
     public static inflow = models.inflow;
 
@@ -20,6 +20,7 @@ export default class InflowService {
             tx,
             txAt,
             value: amount,
+            asset: AssetType.cUSD,
         };
         try {
             await this.inflow.create(inflowData);
