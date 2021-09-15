@@ -543,8 +543,6 @@ describe('[jobs] subscribers', () => {
             '2000000000000000000',
             match.any,
             match.any,
-            '2000000000000000000',
-            0,
         );
     });
 
