@@ -450,7 +450,7 @@ describe('user service', () => {
         let users: User[];
 
         before(async () => {
-            users = await UserFactory({ n: 2 });
+            users = await UserFactory({ n: 3 });
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             await models.appNotification.bulkCreate([
@@ -466,6 +466,11 @@ describe('user service', () => {
                     createdAt: new Date(),
                 }, {
                     address: users[1].address,
+                    type: 1,
+                    params: 'param_test',
+                    createdAt: new Date(),
+                }, {
+                    address: users[2].address,
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
@@ -486,13 +491,13 @@ describe('user service', () => {
         });
 
         it('mark all notifications as read', async () => {
-            await UserService.readNotifications(users[0].address);
+            await UserService.readNotifications(users[1].address);
 
-            const firstUser = await UserService.getUnreadNotifications(users[0].address);
-            const secondUser = await UserService.getUnreadNotifications(users[1].address);
+            const readNotifications = await UserService.getUnreadNotifications(users[1].address);
+            const unreadNotifications = await UserService.getUnreadNotifications(users[2].address);
 
-            expect(firstUser).to.be.equal(0);
-            expect(secondUser).to.be.equal(1);
+            expect(readNotifications).to.be.equal(0);
+            expect(unreadNotifications).to.be.equal(1);
         });
     });
     
