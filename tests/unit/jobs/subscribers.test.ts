@@ -539,10 +539,12 @@ describe('[jobs] subscribers', () => {
         assert.calledWith(
             inflowAdd.getCall(0),
             accounts[2],
-            thisCommunityPublicId,
+            communityContract.address,
             '2000000000000000000',
             match.any,
-            match.any
+            match.any,
+            '2000000000000000000',
+            0,
         );
     });
 
