@@ -165,19 +165,19 @@ export default class GlobalDailyStateService {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
 
-        const communitiesId = (
+        const [communitiesContractAddress, communitiesPublicId, communitiesId] = (
             await models.community.findAll({
-                attributes: ['id'],
+                attributes: ['contractAddress', 'publicId', 'id'],
                 where: { status: 'valid', visibility: 'public' },
             })
-        ).map((c) => c.id);
-
-        const communitiesPublicId = (
-            await models.community.findAll({
-                attributes: ['publicId'],
-                where: { status: 'valid', visibility: 'public' },
-            })
-        ).map((c) => c.publicId);
+        ).reduce((acc: [string[], string[], number[]], el) => {
+            if(el.contractAddress) {
+                acc[0].push(el.contractAddress)
+            }
+            acc[1].push(el.publicId);
+            acc[2].push(el.id);
+            return acc
+        }, [[], [], []]);
 
         const claimed: any = await models.ubiClaim.findAll({
             attributes: [
@@ -196,7 +196,7 @@ export default class GlobalDailyStateService {
             ],
             where: {
                 txAt: { [Op.gte]: today },
-                communityId: { [Op.in]: communitiesPublicId },
+                contractAddress: { [Op.in]: communitiesContractAddress },
             },
             raw: true,
         });

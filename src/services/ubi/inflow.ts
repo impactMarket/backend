@@ -2,23 +2,25 @@ import { Logger } from '@utils/logger';
 import { col, fn } from 'sequelize';
 
 import { models } from '../../database';
-
+import { AssetType } from '@models/ubi/inflow';
 export default class InflowService {
     public static inflow = models.inflow;
 
     public static async add(
         from: string,
-        communityId: string,
+        contractAddress: string,
         amount: string,
         tx: string,
         txAt: Date
     ): Promise<void> {
         const inflowData = {
             from,
-            communityId,
+            contractAddress,
             amount,
             tx,
             txAt,
+            value: amount,
+            asset: AssetType.cUSD,
         };
         try {
             await this.inflow.create(inflowData);
@@ -33,11 +35,11 @@ export default class InflowService {
         }
     }
 
-    public static async getAllBackers(communityId: string): Promise<string[]> {
+    public static async getAllBackers(contractAddress: string): Promise<string[]> {
         const backers = (
             await this.inflow.findAll({
                 attributes: [[fn('distinct', col('from')), 'backerAddress']],
-                where: { communityId },
+                where: { contractAddress },
                 raw: true,
             })
         ).map((b: any) => b.backerAddress);

@@ -17,12 +17,14 @@ import { randomTx } from '../utils/utils';
  */
 const data = async (community: CommunityAttributes) => {
     const randomWallet = ethers.Wallet.createRandom();
+    const amount = new BigNumber(community.contract!.claimAmount)
+    .multipliedBy(5)
+    .toString();
     const defaultProps: InflowCreationAttributes = {
         from: await randomWallet.getAddress(),
-        amount: new BigNumber(community.contract!.claimAmount)
-            .multipliedBy(5)
-            .toString(),
-        communityId: community.publicId,
+        amount,
+        contractAddress: community.contractAddress!,
+        value: amount,
         tx: randomTx(),
         txAt: new Date(),
     };

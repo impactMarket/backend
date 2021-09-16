@@ -14,17 +14,21 @@ module.exports = {
                 type: Sequelize.STRING(44),
                 allowNull: false,
             },
-            communityId: {
-                type: Sequelize.UUID,
-                references: {
-                    model: 'community',
-                    key: 'publicId',
-                },
-                onDelete: 'CASCADE',
-                allowNull: false,
-            },
             amount: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
+                type: Sequelize.DECIMAL(29), // max 9,999,999,999 - plus 18 decimals
+                allowNull: false,
+            },
+            contractAddress: {
+                type: Sequelize.STRING(44),
+                allowNull: false,
+            },
+            asset: {
+                type: Sequelize.INTEGER,
+                defaultValue: 0,
+                allowNull: false,
+            },
+            value: {
                 type: Sequelize.DECIMAL(29), // max 9,999,999,999 - plus 18 decimals
                 allowNull: false,
             },

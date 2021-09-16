@@ -102,9 +102,14 @@ EXECUTE PROCEDURE update_managers_community_state();`);
         n_backer bigint;
         community_id integer;
     BEGIN
-        SELECT id INTO community_id FROM community where "publicId"=NEW."communityId";
+        SELECT id INTO community_id FROM community where "contractAddress"=NEW."contractAddress";
+        
+        IF community_id is null THEN
+			return new;
+		end if;
+
         -- if this address never donated, it's a new backer
-        SELECT count(*) INTO n_backer FROM inflow WHERE "from" = NEW."from" AND "communityId"=NEW."communityId";
+        SELECT count(*) INTO n_backer FROM inflow WHERE "from" = NEW."from" AND "contractAddress"=NEW."contractAddress";
         IF n_backer = 0 THEN
             UPDATE ubi_community_state SET backers = backers + 1 WHERE "communityId"=community_id;
         end if;
