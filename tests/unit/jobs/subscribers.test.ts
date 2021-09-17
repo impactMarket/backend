@@ -19,11 +19,14 @@ import { communityAddressesAndIds } from '../../fake/community';
 import { waitForStubCall } from '../../utils';
 import CommunityContractJSON from './Community.json';
 import cUSDContractJSON from './cUSD.json';
+import DAOContractJSON from './DAO.json';
+import config from '../../../src/config';
 
 describe('[jobs] subscribers', () => {
     const blockTimeDate = new Date();
     let provider: ethers.providers.Web3Provider;
     let communityContract: ethers.Contract;
+    let DAOContract: ethers.Contract;
     const communities = new Map<string, string>();
     const communitiesId = new Map<string, number>();
     const communitiesVisibility = new Map<string, boolean>();
@@ -65,6 +68,7 @@ describe('[jobs] subscribers', () => {
     let getRecoverBlockStub: SinonStub<any, any>;
     let cUSD: ethers.Contract;
     let communityFactory: ethers.ContractFactory;
+    let DAOFactory: ethers.ContractFactory;
     let subscribers: ChainSubscribers;
 
     const ganacheProvider = ganache.provider({
@@ -183,7 +187,22 @@ describe('[jobs] subscribers', () => {
             CommunityContractJSON.bytecode,
             provider.getSigner(0)
         );
+        DAOFactory = new ethers.ContractFactory(
+            DAOContractJSON.abi,
+            DAOContractJSON.bytecode,
+            provider.getSigner(0)
+        );
+        
         cUSD = await cUSDFactory.deploy();
+
+        DAOContract = (await DAOFactory.deploy(
+            cUSD.address,
+            accounts[1],
+            accounts[1],
+        )).connect(provider.getSigner(0));
+
+        stub(config, 'DAOContractAddress').value(DAOContract.address);
+
         // // init event subscribers
         // subscribers = new ChainSubscribers(
         //     provider,
@@ -540,6 +559,26 @@ describe('[jobs] subscribers', () => {
             inflowAdd.getCall(0),
             accounts[2],
             communityContract.address,
+            '2000000000000000000',
+            match.any,
+            match.any,
+        );
+    });
+
+    it('donation: to DAO', async () => {
+        inflowAdd.reset();
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(accounts[2]);
+        await cUSD
+            .connect(provider.getSigner(2))
+            .transfer(DAOContract.address, '2000000000000000000');
+        await waitForStubCall(inflowAdd, 1);
+        assert.callCount(inflowAdd, 1);
+        assert.calledWith(
+            inflowAdd.getCall(0),
+            accounts[2],
+            DAOContract.address,
             '2000000000000000000',
             match.any,
             match.any,

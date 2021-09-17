@@ -76,6 +76,7 @@ function validateEnv() {
         INTERNAL_NOTIFICATIONS: bool({ default: false }),
         MAX_REQUEST_PER_USER: num({ default: 900 }),
         HUBSPOT_KEY: str({ devDefault: 'xyz' }),
+        DAO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 
