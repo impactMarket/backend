@@ -549,7 +549,7 @@ describe('[jobs] subscribers', () => {
         await cUSD
             .connect(provider.getSigner(0))
             .testFakeFundAddress(accounts[2]);
-        //
+        
         await cUSD
             .connect(provider.getSigner(2))
             .transfer(communityContract.address, '2000000000000000000');
@@ -566,18 +566,20 @@ describe('[jobs] subscribers', () => {
     });
 
     it('donation: to DAO', async () => {
-        inflowAdd.reset();
         await cUSD
             .connect(provider.getSigner(0))
-            .testFakeFundAddress(accounts[2]);
+            .testFakeFundAddress(accounts[3]);
+
+        inflowAdd.reset();
+
         await cUSD
-            .connect(provider.getSigner(2))
+            .connect(provider.getSigner(3))
             .transfer(DAOContract.address, '2000000000000000000');
         await waitForStubCall(inflowAdd, 1);
         assert.callCount(inflowAdd, 1);
         assert.calledWith(
             inflowAdd.getCall(0),
-            accounts[2],
+            accounts[3],
             DAOContract.address,
             '2000000000000000000',
             match.any,
