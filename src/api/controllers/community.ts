@@ -339,7 +339,7 @@ class CommunityController {
         BeneficiaryService.readRules(req.user.address)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    }
+    };
 }
 
 const getHistoricalSSI = (req: Request, res: Response) => {

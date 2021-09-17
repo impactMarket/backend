@@ -10,6 +10,7 @@ import { CommunityAttributes } from '../../../src/database/models/ubi/community'
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { User } from '../../../src/interfaces/app/user';
 import { UbiBeneficiaryRegistryType } from '../../../src/interfaces/ubi/ubiBeneficiaryRegistry';
+import UserService from '../../../src/services/app/user';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
 import ClaimsService from '../../../src/services/ubi/claim';
 import { IListBeneficiary } from '../../../src/types/endpoints';
@@ -39,7 +40,7 @@ describe('beneficiary service', () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        users = await UserFactory({ n: 17 });
+        users = await UserFactory({ n: 18 });
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -455,6 +456,42 @@ describe('beneficiary service', () => {
                 type: 'transaction',
                 amount: '25',
                 isFromBeneficiary: true,
+            });
+        });
+    });
+
+    describe('beneficiary rules', () => {
+        before(async () => {
+            const tx = randomTx();
+
+            await BeneficiaryService.add(
+                users[17].address,
+                users[0].address,
+                communities[0].publicId,
+                tx,
+                new Date()
+            );
+        });
+
+        it('readRules should be false after a beneficiary has been added', async () => {
+            const user = await UserService.welcome(users[17].address);
+
+            expect(user).to.include({
+                isBeneficiary: true,
+                readBeneficiaryRules: false,
+            });
+        });
+
+        it('should read the beneficiary rules successfully', async () => {
+            const readRules = await BeneficiaryService.readRules(
+                users[17].address
+            );
+            const user = await UserService.welcome(users[17].address);
+
+            expect(readRules).to.be.true;
+            expect(user).to.include({
+                isBeneficiary: true,
+                readBeneficiaryRules: true,
             });
         });
     });

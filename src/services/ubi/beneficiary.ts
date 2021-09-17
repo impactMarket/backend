@@ -490,14 +490,20 @@ export default class BeneficiaryService {
 
     public static async readRules(address: string): Promise<boolean> {
         try {
-            const updated = await models.beneficiary.update({
-                readRules: true
-            }, {
-                where: { address }
-            });
+            const updated = await models.beneficiary.update(
+                {
+                    readRules: true,
+                },
+                {
+                    where: { address },
+                }
+            );
 
             if (updated[0] === 0) {
-                throw new BaseError('UPDATE_FAILED', 'Beneficiary was not updated');
+                throw new BaseError(
+                    'UPDATE_FAILED',
+                    'Beneficiary was not updated'
+                );
             }
             return true;
         } catch (error) {
