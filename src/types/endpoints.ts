@@ -86,6 +86,7 @@ export interface IUserHello {
     rates: ExchangeRatesAttributes[]; // TODO: deprecated in mobile-app@1.1.5
     isBeneficiary: boolean;
     isManager: boolean;
+    readBeneficiaryRules: boolean;
     community?: CommunityAttributes; // TODO: deprecated in mobile-app@1.1.5
     communityId?: number;
     blocked: boolean;

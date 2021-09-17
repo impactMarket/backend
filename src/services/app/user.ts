@@ -478,7 +478,11 @@ export default class UserService {
             }
             return null;
         };
+
+        let readBeneficiaryRules = false;
+
         if (beneficiary) {
+            readBeneficiaryRules = beneficiary.readRules;
             community = await getCommunity(beneficiary.communityId);
         } else if (manager) {
             community = await getCommunity(manager.communityId);
@@ -496,6 +500,7 @@ export default class UserService {
         return {
             isBeneficiary: beneficiary !== null,
             isManager: manager !== null || managerInPendingCommunity,
+            readBeneficiaryRules,
             blocked: beneficiary !== null ? beneficiary.blocked : false,
             verifiedPN:
                 user.trust && user.trust.length !== 0

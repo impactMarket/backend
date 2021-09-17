@@ -872,4 +872,34 @@ export default (app: Router): void => {
         communityValidators.edit,
         controller.edit
     );
+
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries/read-rules:
+     *   put:
+     *     tags:
+     *       - "community"
+     *     summary: Read beneficiary rules
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                 data:
+     *                   type: boolean
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+     route.put(
+        '/beneficiaries/read-rules',
+        authenticateToken,
+        controller.readBeneficiaryRules
+    );
 };
