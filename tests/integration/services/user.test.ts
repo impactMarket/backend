@@ -446,6 +446,61 @@ describe('user service', () => {
         })
     });
 
+    describe('notifications', () => {
+        let users: User[];
+
+        before(async () => {
+            users = await UserFactory({ n: 3 });
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            await models.appNotification.bulkCreate([
+                {
+                    address: users[0].address,
+                    type: 1,
+                    params: 'param_test',
+                    createdAt: new Date(),
+                }, {
+                    address: users[0].address,
+                    type: 2,
+                    params: 'param_test',
+                    createdAt: new Date(),
+                }, {
+                    address: users[1].address,
+                    type: 1,
+                    params: 'param_test',
+                    createdAt: new Date(),
+                }, {
+                    address: users[2].address,
+                    type: 1,
+                    params: 'param_test',
+                    createdAt: new Date(),
+                }
+            ]);
+        });
+
+        it('get all notifications from a user', async () => {
+            const notifications = await UserService.getNotifications(users[0].address, {
+                limit: '10',
+                offset: '0',
+            });
+
+            expect(notifications.length).to.be.equal(2);
+            notifications.forEach(notification => {
+                expect(notification.read).to.be.false;
+            });
+        });
+
+        it('mark all notifications as read', async () => {
+            await UserService.readNotifications(users[1].address);
+
+            const readNotifications = await UserService.getUnreadNotifications(users[1].address);
+            const unreadNotifications = await UserService.getUnreadNotifications(users[2].address);
+
+            expect(readNotifications).to.be.equal(0);
+            expect(unreadNotifications).to.be.equal(1);
+        });
+    });
+    
     describe('newsletter', () => {
         let users: User[];
         let searchContactStub: SinonStub;

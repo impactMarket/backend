@@ -251,16 +251,90 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user/newsletter:
+     * /user/notifications/unread:
      *   get:
      *     tags:
      *       - "user"
-     *     summary: Verify newsletter subscription
+     *     summary: Get the number of unread notifications from a user
      *     responses:
      *       "200":
-     *         description: OK
-     *         content:
-     *           application/json:
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    type: integer
+     *                    description: number of unread notifications
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/notifications/unread',
+        authenticateToken,
+        userController.getUnreadNotifications
+    );
+
+    /**
+     * @swagger
+     *
+     * /user/notifications:
+     *   get:
+     *     tags:
+     *       - "user"
+     *     summary: Get all notifications from a user
+     *     parameters:
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 10)
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    $ref: '#/components/schemas/AppNotification'
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/notifications/:query?',
+        authenticateToken,
+        userController.getNotifications
+    );
+
+    /**
+     * @swagger
+     *
+     * /user/notifications/read:
+     *   put:
+     *     tags:
+     *       - "user"
+     *     summary: Mark all notifications as read
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
      *              schema:
      *                type: object
      *                properties:
@@ -268,12 +342,15 @@ export default (app: Router): void => {
      *                    type: boolean
      *                  data:
      *                    type: boolean
-     *                    description: Is the user subscribed to the newsletter?
+     *                    description: if true the notification was updated
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
      */
-    route.get(
-        '/newsletter',
+    route.put(
+        '/notifications/read',
         authenticateToken,
-        userController.verifyNewsletterSubscription
+        userController.readNotifications
     );
 
     /**
@@ -313,6 +390,34 @@ export default (app: Router): void => {
         authenticateToken,
         userValidators.subscribeNewsletter,
         userController.subscribeNewsletter
+    );
+
+    /**
+     * @swagger
+     *
+     * /user/newsletter:
+     *   get:
+     *     tags:
+     *       - "user"
+     *     summary: Verify newsletter subscription
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    type: boolean
+     *                    description: Is the user subscribed to the newsletter?
+     */
+     route.get(
+        '/newsletter',
+        authenticateToken,
+        userController.verifyNewsletterSubscription
     );
 
     /**

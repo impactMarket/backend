@@ -3,6 +3,7 @@ import {
     AppAnonymousReport,
     AppAnonymousReportCreation,
 } from '@interfaces/app/appAnonymousReport';
+import { AppNotification } from '@interfaces/app/appNotification';
 import { User, UserCreationAttributes } from '@interfaces/app/user';
 import { CommunityAttributes } from '@models/ubi/community';
 import { ProfileContentStorage } from '@services/storage';
@@ -16,7 +17,6 @@ import { models, sequelize } from '../../database';
 import { IUserHello, IUserAuth } from '../../types/endpoints';
 import CommunityService from '../ubi/community';
 import ExchangeRatesService from './exchangeRates';
-
 export default class UserService {
     public static sequelize = sequelize;
     public static user = models.user;
@@ -26,6 +26,7 @@ export default class UserService {
     public static appUserThroughTrust = models.appUserThroughTrust;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
+    public static appNotification = models.appNotification;
 
     private static profileContentStorage = new ProfileContentStorage();
 
@@ -518,6 +519,49 @@ export default class UserService {
         return updated[1][0];
     }
 
+    public static async getNotifications(
+        address: string,
+        query: {
+            offset?: string;
+            limit?: string;
+        }
+    ): Promise<AppNotification[]> {
+        const notifications = await this.appNotification.findAll({
+            where: { address },
+            offset: query.offset ? parseInt(query.offset, 10) : undefined,
+            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+            order: [['createdAt', 'DESC']],
+        });
+        return notifications as AppNotification[];
+    }
+
+    public static async readNotifications(address: string): Promise<boolean> {
+        const updated = await this.appNotification.update(
+            {
+                read: true,
+            },
+            {
+                returning: true,
+                where: { address },
+            }
+        );
+        if (updated[0] === 0) {
+            throw new Error('notifications were not updated!');
+        }
+        return true;
+    }
+
+    public static async getUnreadNotifications(
+        address: string
+    ): Promise<number> {
+        return this.appNotification.count({
+            where: {
+                address,
+                read: false,
+            },
+        });
+    }
+    
     public static async verifyNewsletterSubscription(
         address: string
     ): Promise<boolean> {

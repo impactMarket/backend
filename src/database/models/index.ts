@@ -4,6 +4,7 @@ import { initializeAgenda } from './app/agenda';
 import { initializeAppAnonymousReport } from './app/anonymousReport';
 import { initializeAppMediaContent } from './app/appMediaContent';
 import { initializeAppMediaThumbnail } from './app/appMediaThumbnail';
+import { initializeAppNotification } from './app/appNotification';
 import { initializeAppUserThroughTrust } from './app/appUserThroughTrust';
 import { initializeAppUserTrust } from './app/appUserTrust';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
@@ -57,6 +58,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeCronJobExecuted(sequelize);
     initializeAppMediaContent(sequelize);
     initializeAppMediaThumbnail(sequelize);
+    initializeAppNotification(sequelize);
 
     // ubi
     initializeCommunity(sequelize);
