@@ -82,17 +82,33 @@ export interface IManagersDetails {
     };
 }
 
+interface IManager {
+    communityId: number | undefined;
+}
+
+interface IBeneficiary {
+    communityId: number | undefined;
+    blocked: boolean;
+    readRules: boolean;
+}
+
+interface IUser {
+    suspect: boolean | undefined;
+}
+
 export interface IUserHello {
     rates: ExchangeRatesAttributes[]; // TODO: deprecated in mobile-app@1.1.5
-    isBeneficiary: boolean;
-    isManager: boolean;
-    readBeneficiaryRules: boolean;
+    isBeneficiary: boolean; // TODO: deprecated
+    isManager: boolean; // TODO: deprecated
     community?: CommunityAttributes; // TODO: deprecated in mobile-app@1.1.5
-    communityId?: number;
-    blocked: boolean;
+    communityId?: number; // TODO: deprecated
+    blocked: boolean; // TODO: deprecated
     // to users not yet registered, the values below do not exist
     verifiedPN: boolean | undefined; // TODO: deprecated in mobile-app@1.1.5
-    suspect: boolean | undefined;
+    suspect: boolean | undefined; // TODO: deprecated
+    beneficiary?: IBeneficiary;
+    manager?: IManager;
+    user: IUser;
 }
 
 export interface IUserAuth extends IUserHello {

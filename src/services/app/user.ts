@@ -115,9 +115,9 @@ export default class UserService {
 
             const userHello = await this.loadUser(userFromRegistry);
             return {
+                ...userHello,
                 token,
                 user: userFromRegistry,
-                ...userHello,
             };
         } catch (e) {
             Logger.warn(`Error while auth user ${user.address} ${e}`);
@@ -498,18 +498,28 @@ export default class UserService {
         // until here
 
         return {
-            isBeneficiary: beneficiary !== null,
-            isManager: manager !== null || managerInPendingCommunity,
-            readBeneficiaryRules,
-            blocked: beneficiary !== null ? beneficiary.blocked : false,
+            isBeneficiary: beneficiary !== null, // TODO: deprecated
+            isManager: manager !== null || managerInPendingCommunity, // TODO: deprecated
+            blocked: beneficiary !== null ? beneficiary.blocked : false, // TODO: deprecated
             verifiedPN:
                 user.trust && user.trust.length !== 0
                     ? user.trust[0].verifiedPhoneNumber
                     : undefined, // TODO: deprecated in mobile-app@1.1.5
-            suspect: user.suspect,
+            suspect: user.suspect, // TODO: deprecated
             rates: await ExchangeRatesService.get(), // TODO: deprecated in mobile-app@1.1.5
             community: community ? community : undefined, // TODO: deprecated in mobile-app@1.1.5
-            communityId: community ? community.id : undefined,
+            communityId: community ? community.id : undefined, // TODO: deprecated
+            beneficiary: {
+                blocked: beneficiary !== null ? beneficiary.blocked : false,
+                readRules: readBeneficiaryRules,
+                communityId: community ? community.id : undefined,
+            },
+            manager: {
+                communityId: community ? community.id : undefined,
+            },
+            user: {
+                suspect: user.suspect,
+            },
         };
     }
 
@@ -566,7 +576,7 @@ export default class UserService {
             },
         });
     }
-    
+
     public static async verifyNewsletterSubscription(
         address: string
     ): Promise<boolean> {

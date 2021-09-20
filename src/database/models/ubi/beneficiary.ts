@@ -15,7 +15,7 @@ export interface BeneficiaryAttributes {
     claimed: string;
     lastClaimAt: Date | null;
     penultimateClaimAt: Date | null;
-    readRules: boolean | null;
+    readRules: boolean;
 
     // timestamps
     createdAt: Date;
