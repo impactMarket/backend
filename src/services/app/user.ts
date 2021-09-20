@@ -497,6 +497,32 @@ export default class UserService {
         }
         // until here
 
+        let response: IUserHello = {
+            user: {
+                suspect: user.suspect,
+            },
+        };
+
+        if (manager) {
+            response = {
+                ...response,
+                manager: {
+                    communityId: community ? community.id : undefined,
+                },
+            };
+        }
+
+        if (beneficiary) {
+            response = {
+                ...response,
+                beneficiary: {
+                    blocked: beneficiary !== null ? beneficiary.blocked : false,
+                    readRules: readBeneficiaryRules,
+                    communityId: community ? community.id : undefined,
+                },
+            };
+        }
+
         return {
             isBeneficiary: beneficiary !== null, // TODO: deprecated
             isManager: manager !== null || managerInPendingCommunity, // TODO: deprecated
@@ -509,17 +535,7 @@ export default class UserService {
             rates: await ExchangeRatesService.get(), // TODO: deprecated in mobile-app@1.1.5
             community: community ? community : undefined, // TODO: deprecated in mobile-app@1.1.5
             communityId: community ? community.id : undefined, // TODO: deprecated
-            beneficiary: {
-                blocked: beneficiary !== null ? beneficiary.blocked : false,
-                readRules: readBeneficiaryRules,
-                communityId: community ? community.id : undefined,
-            },
-            manager: {
-                communityId: community ? community.id : undefined,
-            },
-            user: {
-                suspect: user.suspect,
-            },
+            ...response,
         };
     }
 

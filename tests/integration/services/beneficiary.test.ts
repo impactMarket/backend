@@ -476,9 +476,11 @@ describe('beneficiary service', () => {
         it('readRules should be false after a beneficiary has been added', async () => {
             const user = await UserService.welcome(users[17].address);
 
-            expect(user).to.include({
-                isBeneficiary: true,
-                readBeneficiaryRules: false,
+            expect(user.beneficiary).to.be.not.null;
+            expect(user.beneficiary).to.include({
+                readRules: false,
+                blocked: false,
+                communityId: communities[0].id,
             });
         });
 
@@ -489,9 +491,11 @@ describe('beneficiary service', () => {
             const user = await UserService.welcome(users[17].address);
 
             expect(readRules).to.be.true;
-            expect(user).to.include({
-                isBeneficiary: true,
-                readBeneficiaryRules: true,
+            expect(user.beneficiary).to.be.not.null;
+            expect(user.beneficiary).to.include({
+                readRules: true,
+                blocked: false,
+                communityId: communities[0].id,
             });
         });
     });

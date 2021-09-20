@@ -97,15 +97,15 @@ interface IUser {
 }
 
 export interface IUserHello {
-    rates: ExchangeRatesAttributes[]; // TODO: deprecated in mobile-app@1.1.5
-    isBeneficiary: boolean; // TODO: deprecated
-    isManager: boolean; // TODO: deprecated
+    rates?: ExchangeRatesAttributes[]; // TODO: deprecated in mobile-app@1.1.5
+    isBeneficiary?: boolean; // TODO: deprecated
+    isManager?: boolean; // TODO: deprecated
     community?: CommunityAttributes; // TODO: deprecated in mobile-app@1.1.5
     communityId?: number; // TODO: deprecated
-    blocked: boolean; // TODO: deprecated
+    blocked?: boolean; // TODO: deprecated
     // to users not yet registered, the values below do not exist
-    verifiedPN: boolean | undefined; // TODO: deprecated in mobile-app@1.1.5
-    suspect: boolean | undefined; // TODO: deprecated
+    verifiedPN?: boolean | undefined; // TODO: deprecated in mobile-app@1.1.5
+    suspect?: boolean | undefined; // TODO: deprecated
     beneficiary?: IBeneficiary;
     manager?: IManager;
     user: IUser;
