@@ -83,11 +83,11 @@ export interface IManagersDetails {
 }
 
 interface IManager {
-    communityId: number | undefined;
+    communityId: number;
 }
 
 interface IBeneficiary {
-    communityId: number | undefined;
+    communityId: number;
     blocked: boolean;
     readRules: boolean;
 }
