@@ -507,7 +507,7 @@ export default class UserService {
             response = {
                 ...response,
                 manager: {
-                    communityId: community ? community.id : undefined,
+                    communityId: community!.id,
                 },
             };
         }
@@ -518,7 +518,7 @@ export default class UserService {
                 beneficiary: {
                     blocked: beneficiary !== null ? beneficiary.blocked : false,
                     readRules: readBeneficiaryRules,
-                    communityId: community ? community.id : undefined,
+                    communityId: community!.id,
                 },
             };
         }
