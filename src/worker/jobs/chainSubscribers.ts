@@ -146,8 +146,8 @@ class ChainSubscribers {
     ): Promise<ethers.utils.LogDescription | undefined> {
         const parsedLog = this.ifaceERC20.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
-        // only transactions to community contracts (donations)
-        if (this.allCommunitiesAddresses.includes(parsedLog.args[1])) {
+        // only transactions to community contracts (donations) or DAO
+        if (this.allCommunitiesAddresses.includes(parsedLog.args[1]) || parsedLog.args[1] === config.DAOContractAddress) {
             const from = parsedLog.args[0];
             const toCommunityAddress = parsedLog.args[1];
             const amount = parsedLog.args[2].toString();
