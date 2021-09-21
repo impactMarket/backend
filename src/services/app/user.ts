@@ -9,7 +9,7 @@ import { CommunityAttributes } from '@models/ubi/community';
 import { ProfileContentStorage } from '@services/storage';
 import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 
 import { generateAccessToken } from '../../api/middlewares';
 import config from '../../config';
@@ -41,17 +41,19 @@ export default class UserService {
             // generate access token for future interactions that require authentication
             const token = generateAccessToken(user.address);
             const exists = await this.exists(user.address);
-            const existsPhone = user.trust?.phone
-                ? await this.existsAccountByPhone(user.trust.phone)
-                : false;
 
             if (overwrite) {
                 await this.overwriteUser(user);
-            } else if (!exists && existsPhone) {
-                throw new BaseError(
-                    'PHONE_CONFLICT',
-                    'phone associated with another account'
-                );
+            } else if (!exists) {
+                const existsPhone = user.trust?.phone
+                    ? await this.existsAccountByPhone(user.trust.phone)
+                    : false;
+
+                if (existsPhone)
+                    throw new BaseError(
+                        'PHONE_CONFLICT',
+                        'phone associated with another account'
+                    );
             }
 
             if (recover) {
@@ -404,21 +406,22 @@ export default class UserService {
     }
 
     public static async existsAccountByPhone(phone: string): Promise<boolean> {
-        const exists = await this.appUserTrust.findOne({
-            attributes: ['phone'],
-            where: { phone },
-            include: [
-                {
-                    model: this.user,
-                    as: 'throughTrust',
-                    where: {
-                        active: true,
-                    },
-                },
-            ],
-            raw: true,
+        const query = `
+            SELECT phone, address
+            FROM app_user_trust
+            LEFT JOIN app_user_through_trust ON "appUserTrustId" = id
+            LEFT JOIN "user" ON "user".address = "userAddress"
+            WHERE phone = :phone
+            AND "user".active = TRUE`;
+
+        const exists = await sequelize.query(query, {
+            type: QueryTypes.SELECT,
+            replacements: {
+                phone,
+            },
         });
-        return exists !== null;
+
+        return exists.length > 0;
     }
 
     public static async getAllAddresses(): Promise<string[]> {
@@ -561,7 +564,7 @@ export default class UserService {
             },
         });
     }
-    
+
     public static async verifyNewsletterSubscription(
         address: string
     ): Promise<boolean> {
