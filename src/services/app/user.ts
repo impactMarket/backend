@@ -515,11 +515,7 @@ export default class UserService {
         if (beneficiary) {
             response = {
                 ...response,
-                beneficiary: {
-                    blocked: beneficiary !== null ? beneficiary.blocked : false,
-                    readRules: readBeneficiaryRules,
-                    communityId: community ? community.id : undefined,
-                },
+                beneficiary,
             };
         }
 
