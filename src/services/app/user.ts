@@ -14,7 +14,12 @@ import { Op } from 'sequelize';
 import { generateAccessToken } from '../../api/middlewares';
 import config from '../../config';
 import { models, sequelize } from '../../database';
-import { IUserHello, IUserAuth } from '../../types/endpoints';
+import {
+    IUserHello,
+    IUserAuth,
+    IBeneficiary,
+    IManager,
+} from '../../types/endpoints';
 import CommunityService from '../ubi/community';
 import ExchangeRatesService from './exchangeRates';
 export default class UserService {
@@ -457,10 +462,14 @@ export default class UserService {
         //     throw new Error('User is null?');
         // }
         // const fUser = user.toJSON() as User;
-        const beneficiary = await this.beneficiary.findOne({
-            where: { active: true, address: user.address },
-        });
-        const manager = await this.manager.findOne({
+        const beneficiary: IBeneficiary | null = await this.beneficiary.findOne(
+            {
+                attributes: ['blocked', 'readRules', 'communityId'],
+                where: { active: true, address: user.address },
+            }
+        );
+        const manager: IManager | null = await this.manager.findOne({
+            attributes: ['communityId'],
             where: { active: true, address: user.address },
         });
 
@@ -479,10 +488,7 @@ export default class UserService {
             return null;
         };
 
-        let readBeneficiaryRules = false;
-
         if (beneficiary) {
-            readBeneficiaryRules = beneficiary.readRules;
             community = await getCommunity(beneficiary.communityId);
         } else if (manager) {
             community = await getCommunity(manager.communityId);
@@ -497,28 +503,6 @@ export default class UserService {
         }
         // until here
 
-        let response: IUserHello = {
-            user: {
-                suspect: user.suspect,
-            },
-        };
-
-        if (manager) {
-            response = {
-                ...response,
-                manager: {
-                    communityId: community!.id,
-                },
-            };
-        }
-
-        if (beneficiary) {
-            response = {
-                ...response,
-                beneficiary,
-            };
-        }
-
         return {
             isBeneficiary: beneficiary !== null, // TODO: deprecated
             isManager: manager !== null || managerInPendingCommunity, // TODO: deprecated
@@ -531,7 +515,11 @@ export default class UserService {
             rates: await ExchangeRatesService.get(), // TODO: deprecated in mobile-app@1.1.5
             community: community ? community : undefined, // TODO: deprecated in mobile-app@1.1.5
             communityId: community ? community.id : undefined, // TODO: deprecated
-            ...response,
+            user: {
+                suspect: user.suspect,
+            },
+            manager,
+            beneficiary,
         };
     }
 
