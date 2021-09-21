@@ -106,8 +106,8 @@ export interface IUserHello {
     // to users not yet registered, the values below do not exist
     verifiedPN?: boolean | undefined; // TODO: deprecated in mobile-app@1.1.5
     suspect?: boolean | undefined; // TODO: deprecated
-    beneficiary?: IBeneficiary;
-    manager?: IManager;
+    beneficiary: IBeneficiary | null;
+    manager: IManager | null;
     user: IUser;
 }
 
