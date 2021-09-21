@@ -480,7 +480,7 @@ describe('beneficiary service', () => {
             expect(user.beneficiary).to.include({
                 readRules: false,
                 blocked: false,
-                communityId: communities[0].id,
+                communityId: communities[0].publicId,
             });
         });
 
@@ -495,7 +495,7 @@ describe('beneficiary service', () => {
             expect(user.beneficiary).to.include({
                 readRules: true,
                 blocked: false,
-                communityId: communities[0].id,
+                communityId: communities[0].publicId,
             });
         });
     });
