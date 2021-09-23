@@ -30,7 +30,7 @@ module.exports = {
                 defaultValue: true,
             },
             readRules: {
-                type: DataTypes.BOOLEAN,
+                type: Sequelize.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,
             },
