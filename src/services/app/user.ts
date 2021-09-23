@@ -14,7 +14,12 @@ import { Op, QueryTypes } from 'sequelize';
 import { generateAccessToken } from '../../api/middlewares';
 import config from '../../config';
 import { models, sequelize } from '../../database';
-import { IUserHello, IUserAuth } from '../../types/endpoints';
+import {
+    IUserHello,
+    IUserAuth,
+    IBeneficiary,
+    IManager,
+} from '../../types/endpoints';
 import CommunityService from '../ubi/community';
 import ExchangeRatesService from './exchangeRates';
 export default class UserService {
@@ -117,9 +122,9 @@ export default class UserService {
 
             const userHello = await this.loadUser(userFromRegistry);
             return {
+                ...userHello,
                 token,
                 user: userFromRegistry,
-                ...userHello,
             };
         } catch (e) {
             Logger.warn(`Error while auth user ${user.address} ${e}`);
@@ -460,10 +465,14 @@ export default class UserService {
         //     throw new Error('User is null?');
         // }
         // const fUser = user.toJSON() as User;
-        const beneficiary = await this.beneficiary.findOne({
-            where: { active: true, address: user.address },
-        });
-        const manager = await this.manager.findOne({
+        const beneficiary: IBeneficiary | null = await this.beneficiary.findOne(
+            {
+                attributes: ['blocked', 'readRules', 'communityId'],
+                where: { active: true, address: user.address },
+            }
+        );
+        const manager: IManager | null = await this.manager.findOne({
+            attributes: ['communityId'],
             where: { active: true, address: user.address },
         });
 
@@ -481,6 +490,7 @@ export default class UserService {
             }
             return null;
         };
+
         if (beneficiary) {
             community = await getCommunity(beneficiary.communityId);
         } else if (manager) {
@@ -497,17 +507,22 @@ export default class UserService {
         // until here
 
         return {
-            isBeneficiary: beneficiary !== null,
-            isManager: manager !== null || managerInPendingCommunity,
-            blocked: beneficiary !== null ? beneficiary.blocked : false,
+            isBeneficiary: beneficiary !== null, // TODO: deprecated
+            isManager: manager !== null || managerInPendingCommunity, // TODO: deprecated
+            blocked: beneficiary !== null ? beneficiary.blocked : false, // TODO: deprecated
             verifiedPN:
                 user.trust && user.trust.length !== 0
                     ? user.trust[0].verifiedPhoneNumber
                     : undefined, // TODO: deprecated in mobile-app@1.1.5
-            suspect: user.suspect,
+            suspect: user.suspect, // TODO: deprecated
             rates: await ExchangeRatesService.get(), // TODO: deprecated in mobile-app@1.1.5
             community: community ? community : undefined, // TODO: deprecated in mobile-app@1.1.5
-            communityId: community ? community.id : undefined,
+            communityId: community ? community.id : undefined, // TODO: deprecated
+            user: {
+                suspect: user.suspect,
+            },
+            manager,
+            beneficiary,
         };
     }
 
