@@ -61,6 +61,7 @@ export default class CommunityService {
     public static ubiCommunityCampaign = models.ubiCommunityCampaign;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
+    public static ubiBeneficiaryRegistry = models.ubiBeneficiaryRegistry;
     public static sequelize = sequelize;
 
     private static communityContentStorage = new CommunityContentStorage();
@@ -634,6 +635,15 @@ export default class CommunityService {
                         },
                     ],
                 },
+                {
+                    model: this.ubiBeneficiaryRegistry,
+                    as: 'beneficiaryRegistry',
+                    attributes: ['address'],
+                    required: false,
+                    where: {
+                        activity: 0,
+                    },
+                },
             ],
             where: {
                 communityId: community.publicId,
@@ -645,6 +655,7 @@ export default class CommunityService {
             return {
                 ...manager,
                 isDeleted: !manager.user,
+                beneficiaryRegistry: manager.beneficiaryRegistry?.length,
             };
         });
     }

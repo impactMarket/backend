@@ -101,4 +101,14 @@ export function userAssociation(sequelize: Sequelize) {
         targetKey: 'publicId',
         as: 'community',
     });
+
+    // Managers are linked to BeneficiaryRegistry through from
+    sequelize.models.Manager.hasMany(
+        sequelize.models.UbiBeneficiaryRegistryModel,
+        {
+            foreignKey: 'from',
+            sourceKey: 'address',
+            as: 'beneficiaryRegistry',
+        }
+    );
 }

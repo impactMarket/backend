@@ -15,6 +15,11 @@ export interface ManagerAttributes {
 
     user?: User;
     community?: CommunityAttributes;
+    beneficiaryRegistry?: [
+        {
+            address: string;
+        }
+    ];
 }
 export interface ManagerCreationAttributes {
     address: string;

@@ -7,12 +7,15 @@ import { AppMediaContent } from '../../../src/interfaces/app/appMediaContent';
 import { User } from '../../../src/interfaces/app/user';
 import { UbiPromoter } from '../../../src/interfaces/ubi/ubiPromoter';
 import { CommunityContentStorage } from '../../../src/services/storage';
+import BeneficiaryService from '../../../src/services/ubi/beneficiary';
 import CommunityService from '../../../src/services/ubi/community';
+import ManagerService from '../../../src/services/ubi/managers';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
+import { randomTx } from '../../utils/utils';
 
 // in this test there are users being assined with suspicious activity and others being removed
 describe('community service', () => {
@@ -1257,6 +1260,61 @@ describe('community service', () => {
 
             expect(result.publicId).to.be.equal(communities[0].publicId);
             expect(result.email).to.be.equal('');
+        });
+    });
+
+    describe('get manager', () => {
+        it('should return a list of managers', async () => {
+            const users = await UserFactory({ n: 4 });
+            const community = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const tx = randomTx();
+            const tx2 = randomTx();
+
+            await ManagerFactory(users.slice(0, 2), community[0].publicId),
+                await Promise.all([
+                    BeneficiaryService.add(
+                        users[2].address,
+                        users[0].address,
+                        community[0].publicId,
+                        tx,
+                        new Date()
+                    ),
+                    BeneficiaryService.add(
+                        users[3].address,
+                        users[0].address,
+                        community[0].publicId,
+                        tx2,
+                        new Date()
+                    ),
+                ]);
+
+            const managers = await CommunityService.getManagers(
+                community[0].id
+            );
+
+            managers.forEach((manager) => {
+                if (manager.address === users[0].address) {
+                    expect(manager.beneficiaryRegistry).to.be.equal(2);
+                } else {
+                    expect(manager.beneficiaryRegistry).to.be.equal(0);
+                }
+            });
         });
     });
 });
