@@ -1,4 +1,5 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
+import { UbiBeneficiaryRegistryType } from '@interfaces/ubi/ubiBeneficiaryRegistry';
 import { UbiCommunityCampaign } from '@interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
@@ -641,7 +642,7 @@ export default class CommunityService {
                     attributes: ['address'],
                     required: false,
                     where: {
-                        activity: 0,
+                        activity: UbiBeneficiaryRegistryType.add,
                     },
                 },
             ],
