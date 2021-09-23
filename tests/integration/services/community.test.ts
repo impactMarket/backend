@@ -1264,6 +1264,13 @@ describe('community service', () => {
     });
 
     describe('get manager', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'Manager');
+            await truncate(sequelize, 'Beneficiary');
+            await truncate(sequelize, 'Community');
+            await truncate(sequelize);
+        });
+
         it('should return a list of managers', async () => {
             const users = await UserFactory({ n: 4 });
             const community = await CommunityFactory([
