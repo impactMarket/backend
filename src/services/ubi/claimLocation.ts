@@ -1,3 +1,5 @@
+import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
+import { BaseError } from '@utils/baseError';
 import { Op } from 'sequelize';
 
 import { models } from '../../database';
@@ -8,24 +10,40 @@ export default class ClaimLocationService {
         gps: {
             latitude: number;
             longitude: number;
-        }
+        },
+        address: string
     ): Promise<void> {
-        let nCommunityId = 0;
-        if (typeof communityId === 'string') {
-            const r = await models.community.findOne({
-                attributes: ['id'],
-                where: {
-                    publicId: communityId,
-                },
+        const beneficiary: BeneficiaryAttributes | null =
+            await models.beneficiary.findOne({
+                attributes: [],
+                include: [
+                    {
+                        attributes: ['id', 'publicId'],
+                        model: models.community,
+                        as: 'community',
+                    },
+                ],
+                where: { address },
             });
-            nCommunityId = r!.id;
-        } else {
-            nCommunityId = communityId;
+
+        if (!beneficiary || !beneficiary.community) {
+            throw new BaseError('NOT_BENEFICIARY', 'Not a beneficiary');
         }
-        await models.ubiClaimLocation.create({
-            communityId: nCommunityId,
-            gps,
-        });
+
+        if (
+            beneficiary.community.id === communityId ||
+            beneficiary.community.publicId === communityId
+        ) {
+            await models.ubiClaimLocation.create({
+                communityId: beneficiary.community.id,
+                gps,
+            });
+        } else {
+            throw new BaseError(
+                'NOT_ALLOWED',
+                'Beneficiary does not belong to this community'
+            );
+        }
     }
 
     public static async getByCommunity(communityId: number) {
