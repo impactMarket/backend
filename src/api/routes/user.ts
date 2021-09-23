@@ -466,4 +466,34 @@ export default (app: Router): void => {
         authenticateToken,
         userController.readBeneficiaryRules
     );
+
+    /**
+     * @swagger
+     *
+     * /user/read-rules/manager:
+     *   put:
+     *     tags:
+     *       - "user"
+     *     summary: Read manager rules
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                 data:
+     *                   type: boolean
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+     route.put(
+        '/read-rules/manager',
+        authenticateToken,
+        userController.readManagerRules
+    );
 };

@@ -84,6 +84,7 @@ export interface IManagersDetails {
 
 export interface IManager {
     communityId: string;
+    readRules: boolean;
 }
 
 export interface IBeneficiary {
