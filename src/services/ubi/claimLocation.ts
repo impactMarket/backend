@@ -69,7 +69,7 @@ export default class ClaimLocationService {
         }[]
     > {
         const fiveMonthsAgo = new Date();
-        fiveMonthsAgo.setDate(fiveMonthsAgo.getDate() - config.timeframe);
+        fiveMonthsAgo.setDate(fiveMonthsAgo.getDate() - config.claimLocationTimeframe);
         return models.ubiClaimLocation.findAll({
             attributes: ['gps'],
             where: {

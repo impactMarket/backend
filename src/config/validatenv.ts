@@ -77,7 +77,7 @@ function validateEnv() {
         MAX_REQUEST_PER_USER: num({ default: 900 }),
         HUBSPOT_KEY: str({ devDefault: 'xyz' }),
         DAO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
-        TIMEFRAME: num({ default: 150 }),
+        CLAIM_LOCATION_TIMEFRAME: num({ default: 150 }),
     });
 }
 
