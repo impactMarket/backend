@@ -1,5 +1,6 @@
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { BaseError } from '@utils/baseError';
+import config from '../../config';
 import { Op } from 'sequelize';
 
 import { models } from '../../database';
@@ -68,7 +69,7 @@ export default class ClaimLocationService {
         }[]
     > {
         const fiveMonthsAgo = new Date();
-        fiveMonthsAgo.setDate(fiveMonthsAgo.getDate() - 30 * 5);
+        fiveMonthsAgo.setDate(fiveMonthsAgo.getDate() - config.claimLocationTimeframe);
         return models.ubiClaimLocation.findAll({
             attributes: ['gps'],
             where: {

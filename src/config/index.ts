@@ -224,5 +224,6 @@ export default {
     maxRequestPerUser: validatedEnv.MAX_REQUEST_PER_USER,
     hubspotKey: validatedEnv.HUBSPOT_KEY,
 
-    DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS
+    DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
+    claimLocationTimeframe: validatedEnv.CLAIM_LOCATION_TIMEFRAME,
 };
