@@ -638,7 +638,7 @@ export default class CommunityService {
                 },
                 {
                     model: this.ubiBeneficiaryRegistry,
-                    as: 'beneficiaryRegistry',
+                    as: 'addedBeneficiaries',
                     attributes: ['address'],
                     required: false,
                     where: {
@@ -656,7 +656,7 @@ export default class CommunityService {
             return {
                 ...manager,
                 isDeleted: !manager.user,
-                beneficiaryRegistry: manager.beneficiaryRegistry?.length,
+                addedBeneficiaries: manager.addedBeneficiaries?.length,
             };
         });
     }

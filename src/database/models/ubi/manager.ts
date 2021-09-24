@@ -1,4 +1,5 @@
 import { User } from '@interfaces/app/user';
+import { UbiBeneficiaryRegistry } from '@interfaces/ubi/ubiBeneficiaryRegistry'
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { CommunityAttributes } from './community';
@@ -15,11 +16,7 @@ export interface ManagerAttributes {
 
     user?: User;
     community?: CommunityAttributes;
-    beneficiaryRegistry?: [
-        {
-            address: string;
-        }
-    ];
+    addedBeneficiaries?: UbiBeneficiaryRegistry[];
 }
 export interface ManagerCreationAttributes {
     address: string;

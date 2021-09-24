@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
 import Sinon, { assert, replace, spy } from 'sinon';
+import { models } from '../../../src/database';
 
 import { AppMediaContent } from '../../../src/interfaces/app/appMediaContent';
 import { User } from '../../../src/interfaces/app/user';
@@ -16,6 +17,7 @@ import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 import { randomTx } from '../../utils/utils';
+import { verifyDeletedAccounts } from '../../../src/worker/jobs/cron/user';
 
 // in this test there are users being assined with suspicious activity and others being removed
 describe('community service', () => {
@@ -1271,7 +1273,7 @@ describe('community service', () => {
             await truncate(sequelize);
         });
 
-        it('should return a list of managers', async () => {
+        it('should return a list of added beneficiaries by current managers', async () => {
             const users = await UserFactory({ n: 4 });
             const community = await CommunityFactory([
                 {
@@ -1317,9 +1319,69 @@ describe('community service', () => {
 
             managers.forEach((manager) => {
                 if (manager.address === users[0].address) {
-                    expect(manager.beneficiaryRegistry).to.be.equal(2);
+                    expect(manager.addedBeneficiaries).to.be.equal(2);
                 } else {
-                    expect(manager.beneficiaryRegistry).to.be.equal(0);
+                    expect(manager.addedBeneficiaries).to.be.equal(0);
+                }
+            });
+        });
+
+        it('should return a list of added beneficiaries by previous managers (deleted accounts)', async () => {
+            const users = await UserFactory({ n: 4 });
+            const community = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const tx = randomTx();
+
+            await ManagerFactory(users.slice(0, 3), community[0].publicId),
+            await BeneficiaryService.add(
+                users[3].address,
+                users[0].address,
+                community[0].publicId,
+                tx,
+                new Date()
+            );
+
+            let sixteenDaysAgo = new Date();
+            sixteenDaysAgo.setDate(sixteenDaysAgo.getDate() - 16);
+            await models.user.update(
+                {
+                    deletedAt: sixteenDaysAgo,
+                },
+                {
+                    where: {
+                        address: users[0].address,
+                    },
+                }
+            );
+
+            await verifyDeletedAccounts();
+
+            const managers = await CommunityService.getManagers(
+                community[0].id
+            );
+
+            managers.forEach((manager) => {
+                if (manager.address === users[0].address) {
+                    expect(manager.addedBeneficiaries).to.be.equal(1);
+                    expect(manager.user).to.be.null;
+                    expect(manager.isDeleted).to.be.true;
+                } else {
+                    expect(manager.addedBeneficiaries).to.be.equal(0);
                 }
             });
         });

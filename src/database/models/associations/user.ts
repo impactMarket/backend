@@ -108,7 +108,7 @@ export function userAssociation(sequelize: Sequelize) {
         {
             foreignKey: 'from',
             sourceKey: 'address',
-            as: 'beneficiaryRegistry',
+            as: 'addedBeneficiaries',
         }
     );
 }
