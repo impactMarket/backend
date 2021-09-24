@@ -431,7 +431,7 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    readBeneficiaryRules = (req: RequestWithUser, res: Response) => {
+    readRules = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
@@ -442,25 +442,21 @@ class UserController {
             return;
         }
 
-        BeneficiaryService.readRules(req.user.address)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
-    readManagerRules = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 401, false, '', {
-                error: {
-                    name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
-            });
-            return;
+        const paths = req.path.split('/');
+        if(paths.includes('beneficiary')) {
+            BeneficiaryService.readRules(req.user.address)
+                .then((r) => standardResponse(res, 200, true, r))
+                .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+        } else if (paths.includes('manager')){
+            ManagerService.readRules(req.user.address)
+                .then((r) => standardResponse(res, 200, true, r))
+                .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+        } else {
+            standardResponse(res, 404, false, '', { error: {
+                name: 'NOT_FOUND',
+                message: 'invalid endpoint address'
+            }})
         }
-
-        ManagerService.readRules(req.user.address)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 
