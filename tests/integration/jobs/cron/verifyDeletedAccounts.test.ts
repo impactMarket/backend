@@ -151,7 +151,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         const date = new Date();
         date.setDate(date.getDate() - 14);
 
-        await models.user.update(
+        await models.appUser.update(
             {
                 deletedAt: date,
             },
@@ -164,7 +164,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         await verifyDeletedAccounts();
 
-        const user = await models.user.findOne({
+        const user = await models.appUser.findOne({
             where: {
                 address: users[2].address,
             },
@@ -181,7 +181,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         const date = new Date();
         date.setDate(date.getDate() - 16);
 
-        await models.user.update(
+        await models.appUser.update(
             {
                 deletedAt: date,
             },
@@ -194,7 +194,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         await verifyDeletedAccounts();
 
-        const user = await models.user.findOne({
+        const user = await models.appUser.findOne({
             where: {
                 address: users[1].address,
             },
@@ -261,7 +261,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         const date = new Date();
         date.setDate(date.getDate() - 16);
 
-        await models.user.update(
+        await models.appUser.update(
             {
                 deletedAt: date,
             },
@@ -274,7 +274,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         await verifyDeletedAccounts();
 
-        const user = await models.user.findOne({
+        const user = await models.appUser.findOne({
             where: {
                 address: users[0].address,
             },

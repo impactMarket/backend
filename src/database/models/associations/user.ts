@@ -8,9 +8,10 @@ export function userAssociation(sequelize: Sequelize) {
     });
 
     // used to query from the beneficiary with incude
-    sequelize.models.Beneficiary.belongsTo(sequelize.models.UserModel, {
+    sequelize.models.Beneficiary.belongsTo(sequelize.models.AppUserModel, {
         foreignKey: 'address',
         as: 'user',
+        targetKey: 'address',
     });
 
     // used to query from the beneficiarytransaction with incude
@@ -25,24 +26,26 @@ export function userAssociation(sequelize: Sequelize) {
 
     // used to query from the beneficiarytransaction with incude
     sequelize.models.BeneficiaryTransaction.belongsTo(
-        sequelize.models.UserModel,
+        sequelize.models.AppUserModel,
         {
             foreignKey: 'withAddress',
             as: 'user',
+            targetKey: 'address'
         }
     );
 
     // used to query from the ubiBeneficiaryRegistry with incude
     sequelize.models.UbiBeneficiaryRegistryModel.belongsTo(
-        sequelize.models.UserModel,
+        sequelize.models.AppUserModel,
         {
             foreignKey: 'from',
             as: 'user',
+            targetKey: 'address'
         }
     );
 
     // used to query from the community with incude
-    sequelize.models.UserModel.hasOne(sequelize.models.AppMediaContentModel, {
+    sequelize.models.AppUserModel.hasOne(sequelize.models.AppMediaContentModel, {
         foreignKey: 'id',
         sourceKey: 'avatarMediaId',
         as: 'avatar',
@@ -50,13 +53,14 @@ export function userAssociation(sequelize: Sequelize) {
     });
 
     // used to query from the manager with incude
-    sequelize.models.Manager.belongsTo(sequelize.models.UserModel, {
+    sequelize.models.Manager.belongsTo(sequelize.models.AppUserModel, {
         foreignKey: 'address',
         as: 'user',
+        targetKey: 'address',
     });
 
     // used to query from the user with incude
-    sequelize.models.UserModel.belongsToMany(
+    sequelize.models.AppUserModel.belongsToMany(
         sequelize.models.AppUserTrustModel,
         {
             through: sequelize.models.AppUserThroughTrustModel,
@@ -69,7 +73,7 @@ export function userAssociation(sequelize: Sequelize) {
     // used to query from the AppUserTrust with incude
     // TODO: maybe remove
     sequelize.models.AppUserTrustModel.belongsToMany(
-        sequelize.models.UserModel,
+        sequelize.models.AppUserModel,
         {
             through: sequelize.models.AppUserThroughTrustModel,
             foreignKey: 'appUserTrustId',

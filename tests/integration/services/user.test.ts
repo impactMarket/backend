@@ -39,7 +39,7 @@ describe('user service', () => {
                     phone,
                 },
             });
-            const findUser = await models.user.findOne({
+            const findUser = await models.appUser.findOne({
                 where: { address: newUser.user.address },
             });
             const findPhone = await sequelize.models.AppUserTrustModel.findOne({
@@ -73,7 +73,7 @@ describe('user service', () => {
                     phone,
                 },
             });
-            const findUser = await models.user.findOne({
+            const findUser = await models.appUser.findOne({
                 where: { address: newUser.user.address },
             });
             const findPhone = await sequelize.models.AppUserTrustModel.findOne({
@@ -114,7 +114,7 @@ describe('user service', () => {
                     phone,
                 },
             });
-            const findUser = await models.user.findOne({
+            const findUser = await models.appUser.findOne({
                 where: { address: loadUser.user.address },
             });
             const findPhone = await sequelize.models.AppUserTrustModel.findOne({
@@ -166,7 +166,7 @@ describe('user service', () => {
                     phone,
                 },
             });
-            const findUser = await models.user.findOne({
+            const findUser = await models.appUser.findOne({
                 where: { address: loadUser.user.address },
             });
             const findPhone = await sequelize.models.AppUserTrustModel.findOne({
@@ -242,7 +242,7 @@ describe('user service', () => {
                 true
             );
 
-            const findUser = await models.user.findOne({
+            const findUser = await models.appUser.findOne({
                 where: { address: firstAddress },
             });
             const user = findUser?.toJSON() as User;
@@ -667,7 +667,7 @@ describe('user service', () => {
 
             await UserService.delete(users[0].address);
 
-            const user = await models.user.findOne({
+            const user = await models.appUser.findOne({
                 where: {
                     address: users[0].address,
                 },
@@ -687,7 +687,7 @@ describe('user service', () => {
         it('beneficiary should be able to delete account', async () => {
             await UserService.delete(users[1].address);
 
-            const findUser = await models.user.findAll();
+            const findUser = await models.appUser.findAll();
 
             findUser.forEach((user: User) => {
                 if (

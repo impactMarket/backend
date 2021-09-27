@@ -86,11 +86,11 @@ describe('beneficiary service', () => {
 
     it('order by suspicious activity', async () => {
         // set some as suspect
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: true },
             { where: { address: users[2].address } }
         );
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: true },
             { where: { address: users[4].address } }
         );
@@ -125,11 +125,11 @@ describe('beneficiary service', () => {
             },
         ]);
         // change suspects
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: false },
             { where: { address: users[4].address } }
         );
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: true },
             { where: { address: users[5].address } }
         );

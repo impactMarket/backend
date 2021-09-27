@@ -79,7 +79,7 @@ export default class ManagerService {
         }
 
         return await this.sequelize.query(
-            'select mq."address" address, u.username username, mq."createdAt" "timestamp" from manager m, manager mq left join "user" u on u.address = mq."address" where mq.active = true and m."communityId" = mq."communityId" and m."address" = \'' +
+            'select mq."address" address, u.username username, mq."createdAt" "timestamp" from manager m, manager mq left join "app_user" u on u.address = mq."address" where mq.active = true and m."communityId" = mq."communityId" and m."address" = \'' +
                 managerAddress +
                 '\'  and mq."address" = \'' +
                 address +
@@ -113,7 +113,7 @@ export default class ManagerService {
         }
 
         return await this.sequelize.query(
-            'select mq."address" address, u.username username, mq."createdAt" "timestamp" from manager m, manager mq left join "user" u on u.address = mq."address" where mq.active = true and m."communityId" = mq."communityId" and m."address" = \'' +
+            'select mq."address" address, u.username username, mq."createdAt" "timestamp" from manager m, manager mq left join "app_user" u on u.address = mq."address" where mq.active = true and m."communityId" = mq."communityId" and m."address" = \'' +
                 managerAddress +
                 '\' order by mq."createdAt" desc offset ' +
                 offset +

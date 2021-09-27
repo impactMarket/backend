@@ -9,7 +9,7 @@ module.exports = {
         await queryInterface.changeColumn('story_content', 'byAddress', {
           type: Sequelize.STRING(44),
           references: {
-              model: 'user',
+              model: 'app_user',
               key: 'address',
           },
           onDelete: 'CASCADE',

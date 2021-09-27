@@ -22,12 +22,17 @@ module.exports = {
         }
 
         const User = await queryInterface.sequelize.define(
-            'user',
+            'app_user',
             {
+                id: {
+                    type: Sequelize.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
                 address: {
                     type: Sequelize.STRING(44),
-                    primaryKey: true,
                     allowNull: false,
+                    unique: true,
                 },
                 avatarMediaId: {
                     type: Sequelize.INTEGER,

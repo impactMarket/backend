@@ -10,7 +10,7 @@ import { initializeAppUserTrust } from './app/appUserTrust';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
 import { initializeExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
-import { initializeUser } from './app/user';
+import { initializeAppUser } from './app/appUser';
 import { appAssociation } from './associations/app';
 import { communityAssociation } from './associations/community';
 import { storyAssociation } from './associations/story';
@@ -48,7 +48,7 @@ import { initializeUbiPromoterSocialMedia } from './ubi/ubiPromoterSocialMedia';
 
 export default function initModels(sequelize: Sequelize): void {
     // app
-    initializeUser(sequelize);
+    initializeAppUser(sequelize);
     initializeAppUserTrust(sequelize);
     initializeAppUserThroughTrust(sequelize);
     initializeAgenda(sequelize);

@@ -43,7 +43,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
             ],
         });
         await verifyUserSuspectActivity();
-        const users: User[] = await models.user.findAll({
+        const users: User[] = await models.appUser.findAll({
             include: [
                 {
                     model: models.appUserTrust,
@@ -78,7 +78,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
             ],
         });
         await verifyUserSuspectActivity();
-        const users: User[] = await models.user.findAll({
+        const users: User[] = await models.appUser.findAll({
             include: [
                 {
                     model: models.appUserTrust,
@@ -111,7 +111,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
             ],
         });
         await verifyUserSuspectActivity();
-        const users: User[] = await models.user.findAll({
+        const users: User[] = await models.appUser.findAll({
             include: [
                 {
                     model: models.appUserTrust,

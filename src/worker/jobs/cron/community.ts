@@ -26,7 +26,7 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
                 },
                 include: [
                     {
-                        model: models.user,
+                        model: models.appUser,
                         as: 'user',
                         include: [
                             {

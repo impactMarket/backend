@@ -7,7 +7,7 @@ import { AppUserTrustModel } from '@models/app/appUserTrust';
 import { CronJobExecuted } from '@models/app/cronJobExecuted';
 import { ExchangeRates } from '@models/app/exchangeRates';
 import { ImMetadata } from '@models/app/imMetadata';
-import { UserModel } from '@models/app/user';
+import { AppUserModel } from '@models/app/appUser';
 import { GlobalDailyState } from '@models/global/globalDailyState';
 import { GlobalDemographics } from '@models/global/globalDemographics';
 import { GlobalGrowthModel } from '@models/global/globalGrowth';
@@ -40,7 +40,7 @@ import { UbiPromoterSocialMediaModel } from '@models/ubi/ubiPromoterSocialMedia'
 import { ModelCtor, Sequelize } from 'sequelize/types';
 
 export interface DbModels {
-    user: ModelCtor<UserModel>;
+    appUser: ModelCtor<AppUserModel>;
     appUserTrust: ModelCtor<AppUserTrustModel>;
     appUserThroughTrust: ModelCtor<AppUserThroughTrustModel>;
     anonymousReport: ModelCtor<AppAnonymousReportModel>;

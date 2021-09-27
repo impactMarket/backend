@@ -29,7 +29,7 @@ export function initializeAppNotification(sequelize: Sequelize): void {
             address: {
                 type: DataTypes.STRING(44),
                 references: {
-                    model: sequelize.models.UserModel,
+                    model: sequelize.models.AppUserModel,
                     key: 'address',
                 },
                 onDelete: 'CASCADE',

@@ -1,5 +1,5 @@
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
-import { User } from '@interfaces/app/user';
+import { AppUser } from '@interfaces/app/appUser';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
@@ -112,7 +112,7 @@ export interface IUserHello {
 }
 
 export interface IUserAuth extends IUserHello {
-    user: User;
+    user: AppUser;
     token: string;
 }
 
