@@ -4,7 +4,7 @@ import { Sequelize } from 'sequelize';
 import Sinon, { assert, replace, spy } from 'sinon';
 
 import { AppMediaContent } from '../../../src/interfaces/app/appMediaContent';
-import { User } from '../../../src/interfaces/app/user';
+import { AppUser } from '../../../src/interfaces/app/appUser';
 import { UbiPromoter } from '../../../src/interfaces/ubi/ubiPromoter';
 import { CommunityContentStorage } from '../../../src/services/storage';
 import CommunityService from '../../../src/services/ubi/community';
@@ -17,7 +17,7 @@ import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 // in this test there are users being assined with suspicious activity and others being removed
 describe('community service', () => {
     let sequelize: Sequelize;
-    let users: User[];
+    let users: AppUser[];
     let communityContentStorageDelete: Sinon.SinonSpy<[number], Promise<void>>;
     before(async () => {
         sequelize = sequelizeSetup();

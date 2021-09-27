@@ -7,7 +7,7 @@ import { SinonStub, stub } from 'sinon';
 import { models } from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
-import { User } from '../../../src/interfaces/app/user';
+import { AppUser } from '../../../src/interfaces/app/appUser';
 import UserService from '../../../src/services/app/user';
 import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
@@ -22,7 +22,7 @@ describe('user service', () => {
     });
 
     after(async () => {
-        await truncate(sequelize, 'UserModel');
+        await truncate(sequelize, 'AppUserModel');
         await truncate(sequelize, 'Manager');
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize);
@@ -245,7 +245,7 @@ describe('user service', () => {
             const findUser = await models.appUser.findOne({
                 where: { address: firstAddress },
             });
-            const user = findUser?.toJSON() as User;
+            const user = findUser?.toJSON() as AppUser;
 
             expect(loadUser.user).to.include({
                 address: secondAddress,
@@ -440,14 +440,14 @@ describe('user service', () => {
                 avatarMediaId: 1,
                 pushNotificationToken: 'notification-token',
             };
-            const userUpdated = await UserService.edit({ address, ...data } as User);
+            const userUpdated = await UserService.edit({ address, ...data } as AppUser);
 
             expect(userUpdated).to.include(data);
         })
     });
 
     describe('notifications', () => {
-        let users: User[];
+        let users: AppUser[];
 
         before(async () => {
             users = await UserFactory({ n: 3 });
@@ -502,7 +502,7 @@ describe('user service', () => {
     });
     
     describe('newsletter', () => {
-        let users: User[];
+        let users: AppUser[];
         let searchContactStub: SinonStub;
         let createContactStub: SinonStub;
         let deleteContactStub: SinonStub;
@@ -543,7 +543,7 @@ describe('user service', () => {
 
         it('update email', async () => {
             const email = faker.internet.email();
-            const user: User = await UserService.edit({ address: users[0].address, email } as User);
+            const user: AppUser = await UserService.edit({ address: users[0].address, email } as AppUser);
             expect(user.email).to.be.equal(email);
         });
 
@@ -626,7 +626,7 @@ describe('user service', () => {
     });
 
     describe('delete', () => {
-        let users: User[];
+        let users: AppUser[];
         let managers: ManagerAttributes[];
         let communities: CommunityAttributes[];
 
@@ -689,7 +689,7 @@ describe('user service', () => {
 
             const findUser = await models.appUser.findAll();
 
-            findUser.forEach((user: User) => {
+            findUser.forEach((user: AppUser) => {
                 if (
                     user.address === users[1].address ||
                     user.address === users[0].address

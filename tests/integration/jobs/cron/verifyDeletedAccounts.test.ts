@@ -6,7 +6,7 @@ import { stub, assert, SinonStub, spy, SinonSpy } from 'sinon';
 import { models } from '../../../../src/database';
 import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../../src/database/models/ubi/manager';
-import { User } from '../../../../src/interfaces/app/user';
+import { AppUser } from '../../../../src/interfaces/app/appUser';
 import UserService from '../../../../src/services/app/user';
 import GlobalDemographicsService from '../../../../src/services/global/globalDemographics';
 import StoryService from '../../../../src/services/story';
@@ -24,7 +24,7 @@ import { randomTx } from '../../../utils/utils';
 
 describe('[jobs - cron] verifyDeletedAccounts', () => {
     let sequelize: Sequelize;
-    let users: User[];
+    let users: AppUser[];
     let managers: ManagerAttributes[];
     let communities: CommunityAttributes[];
     let dbGlobalDemographicsStub: SinonStub;
@@ -140,7 +140,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     });
 
     after(async () => {
-        await truncate(sequelize, 'UserModel');
+        await truncate(sequelize, 'AppUserModel');
         await truncate(sequelize, 'Manager');
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize, 'StoryCommunityModel');
