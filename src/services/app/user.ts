@@ -70,21 +70,14 @@ export default class UserService {
                 // create new user, including their phone number information
                 userFromRegistry = (
                     await this.appUser.create(user, {
-                        // include: [
-                        //     {
-                        //         model: this.appUserTrust,
-                        //         as: 'trust',
-                        //     },
-                        // ],
+                        include: [
+                            {
+                                model: this.appUserTrust,
+                                as: 'trust',
+                            },
+                        ],
                     })
                 ).toJSON() as AppUser;
-                userFromRegistry.trust = [(await this.appUserTrust.create({
-                    phone: user.trust!.phone
-                }))];
-                await this.appUserThroughTrust.create({
-                    appUserTrustId: userFromRegistry.trust![0].id,
-                    userAddress: user.address,
-                });
             } else {
                 if (user.pushNotificationToken) {
                     this.appUser.update(

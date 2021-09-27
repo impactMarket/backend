@@ -29,12 +29,12 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                unique: true,
             },
             address: {
                 type: DataTypes.STRING(44),
                 allowNull: false,
-                unique: true,
+                primaryKey: true,
             },
             avatarMediaId: {
                 type: DataTypes.INTEGER,

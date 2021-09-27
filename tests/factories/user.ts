@@ -46,32 +46,23 @@ const data = async (props?: ICreateProps) => {
  *
  * @return {Object}       A user instance
  */
-const UserFactory = async (
+ const UserFactory = async (
     options: { n: number; props?: ICreateProps[] } = { n: 1 }
 ) => {
     const result: AppUser[] = [];
     for (let index = 0; index < options.n; index++) {
-        let newData = await data(options.props ? options.props[index] : undefined); 
-        let newUser: AppUser = (await AppUserModel.create(
-            newData,
-            // {
-            //     include: [
-            //         {
-            //             model: AppUserTrustModel,
-            //             as: 'trust',
-
-            //         },
-            //     ],
-            // } as any
-        )).toJSON() as AppUser; // use any :facepalm:
-        newUser.trust = [(await AppUserTrustModel.create({
-            phone: newData.trust!.phone
-        }))];
-        await AppUserThroughTrustModel.create({
-            appUserTrustId: newUser.trust![0].id,
-            userAddress: newUser.address,
-        });
-        result.push(newUser);
+        const newUser: AppUserModel = await AppUserModel.create(
+            await data(options.props ? options.props[index] : undefined),
+            {
+                include: [
+                    {
+                        model: AppUserTrustModel,
+                        as: 'trust',
+                    },
+                ],
+            } as any
+        ); // use any :facepalm:
+        result.push(newUser.toJSON() as AppUser);
     }
     return result;
 };
