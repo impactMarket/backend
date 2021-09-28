@@ -1,6 +1,7 @@
 import { RequestWithUser } from '@ipcttypes/core';
 import UserService from '@services/app/user';
 import BeneficiaryService from '@services/ubi/beneficiary';
+import ManagerService from '@services/ubi/managers';
 import { standardResponse } from '@utils/api';
 import { Logger } from '@utils/logger';
 import { Request, Response } from 'express';
@@ -430,7 +431,7 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    readBeneficiaryRules = (req: RequestWithUser, res: Response) => {
+    readRules = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
@@ -441,9 +442,21 @@ class UserController {
             return;
         }
 
-        BeneficiaryService.readRules(req.user.address)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+        const paths = req.path.split('/');
+        if(paths.includes('beneficiary')) {
+            BeneficiaryService.readRules(req.user.address)
+                .then((r) => standardResponse(res, 200, true, r))
+                .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+        } else if (paths.includes('manager')){
+            ManagerService.readRules(req.user.address)
+                .then((r) => standardResponse(res, 200, true, r))
+                .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+        } else {
+            standardResponse(res, 404, false, '', { error: {
+                name: 'NOT_FOUND',
+                message: 'invalid endpoint address'
+            }})
+        }
     };
 }
 

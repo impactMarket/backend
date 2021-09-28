@@ -29,6 +29,11 @@ module.exports = {
                 type: Sequelize.BOOLEAN,
                 defaultValue: true,
             },
+            readRules: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,

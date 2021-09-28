@@ -440,11 +440,11 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user/read-rules/beneficiary:
+     * /user/read-rules/(|beneficiary|manager):
      *   put:
      *     tags:
      *       - "user"
-     *     summary: Read beneficiary rules
+     *     summary: Read beneficiary/manager rules
      *     responses:
      *       "200":
      *         description: OK
@@ -462,8 +462,8 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.put(
-        '/read-rules/beneficiary',
+        '/read-rules/(|beneficiary|manager)',
         authenticateToken,
-        userController.readBeneficiaryRules
+        userController.readRules
     );
 };

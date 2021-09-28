@@ -2,6 +2,7 @@ import { ManagerAttributes } from '@models/ubi/manager';
 import { Logger } from '@utils/logger';
 import { isAddress, isUUID } from '@utils/util';
 import { col, fn, QueryTypes, Transaction } from 'sequelize';
+import { BaseError } from '@utils/baseError';
 
 import { models, sequelize } from '../../database';
 import { IManagerDetailsManager } from '../../types/endpoints';
@@ -133,5 +134,28 @@ export default class ManagerService {
                 where: { address, communityId },
             }
         );
+    }
+
+    public static async readRules(address: string): Promise<boolean> {
+        try {
+            const updated = await models.manager.update(
+                {
+                    readRules: true,
+                },
+                {
+                    where: { address },
+                }
+            );
+
+            if (updated[0] === 0) {
+                throw new BaseError(
+                    'UPDATE_FAILED',
+                    'Manager was not updated'
+                );
+            }
+            return true;
+        } catch (error) {
+            throw new BaseError('UPDATE_FAILED', 'Manager was not updated');
+        }
     }
 }
