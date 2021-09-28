@@ -2,7 +2,7 @@ import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
 import { Sequelize } from 'sequelize';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
-import { User } from '../../../src/interfaces/app/user';
+import { AppUser } from '../../../src/interfaces/app/appUser';
 import UserService from '../../../src/services/app/user';
 import ManagerService from '../../../src/services/ubi/managers';
 import CommunityFactory from '../../factories/community';
@@ -15,7 +15,7 @@ use(chaiSubset);
 // in this test there are users being assined with suspicious activity and others being removed
 describe('manager service', () => {
     let sequelize: Sequelize;
-    let users: User[];
+    let users: AppUser[];
     let communities: CommunityAttributes[];
 
     before(async () => {
