@@ -34,7 +34,7 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             address: {
                 type: DataTypes.STRING(44),
                 allowNull: false,
-                primaryKey: true,
+                primaryKey: true, // TODO: remove and set "id" as the primary key
             },
             avatarMediaId: {
                 type: DataTypes.INTEGER,

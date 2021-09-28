@@ -1,10 +1,12 @@
 import { ethers } from 'ethers';
 import faker from 'faker';
 
-import { AppUserTrustModel } from '../../src/database/models/app/appUserTrust';
 import { AppUserModel } from '../../src/database/models/app/appUser';
-import { AppUser, AppUserCreationAttributes } from '../../src/interfaces/app/appUser';
-import { AppUserThroughTrustModel } from '../../src/database/models/app/appUserThroughTrust';
+import { AppUserTrustModel } from '../../src/database/models/app/appUserTrust';
+import {
+    AppUser,
+    AppUserCreationAttributes,
+} from '../../src/interfaces/app/appUser';
 
 interface ICreateProps {
     phone?: string;
@@ -46,7 +48,7 @@ const data = async (props?: ICreateProps) => {
  *
  * @return {Object}       A user instance
  */
- const UserFactory = async (
+const UserFactory = async (
     options: { n: number; props?: ICreateProps[] } = { n: 1 }
 ) => {
     const result: AppUser[] = [];
