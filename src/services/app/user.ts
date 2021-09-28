@@ -472,7 +472,7 @@ export default class UserService {
             }
         );
         const manager: IManager | null = await this.manager.findOne({
-            attributes: ['communityId'],
+            attributes: ['readRules', 'communityId'],
             where: { active: true, address: user.address },
         });
 
