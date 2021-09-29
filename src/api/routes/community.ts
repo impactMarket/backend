@@ -255,7 +255,7 @@ export default (app: Router): void => {
         '/create',
         authenticateToken,
         communityValidators.create,
-        communityController.create
+        controller.create
     );
 
     /**
