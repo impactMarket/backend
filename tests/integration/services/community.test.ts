@@ -1385,5 +1385,104 @@ describe('community service', () => {
                 }
             });
         });
+
+        it('should return a list of added beneficiaries by previous managers (existing accounts but not managers)', async () => {
+            const users = await UserFactory({ n: 4 });
+            const community = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const tx = randomTx();
+
+            await ManagerFactory(users.slice(0, 2), community[0].publicId),
+            await BeneficiaryService.add(
+                users[2].address,
+                users[0].address,
+                community[0].publicId,
+                tx,
+                new Date()
+            );
+
+            await ManagerService.remove(users[0].address, community[0].publicId);
+
+            const managers = await CommunityService.getManagers(
+                community[0].id,
+                false
+            );
+
+            expect(managers[0].addedBeneficiaries).to.be.equal(1);
+            expect(managers[0].active).to.be.false;
+            expect(managers[0].isDeleted).to.be.false;
+        });
+
+        it('should return a list of added beneficiaries by previous managers (managers in a different community)', async () => {
+            const users = await UserFactory({ n: 4 });
+            const community = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+                {
+                    requestByAddress: users[1].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const tx = randomTx();
+
+            await ManagerFactory(users.slice(0, 2), community[0].publicId),
+            await BeneficiaryService.add(
+                users[2].address,
+                users[0].address,
+                community[0].publicId,
+                tx,
+                new Date()
+            );
+
+            await ManagerService.remove(users[0].address, community[0].publicId);
+            const t = await sequelize.transaction();
+            await ManagerService.add(users[0].address, community[1].publicId, t)
+            const managers = await CommunityService.getManagers(
+                community[0].id,
+                false
+            );
+
+            expect(managers[0].addedBeneficiaries).to.be.equal(1);
+            expect(managers[0].active).to.be.false;
+            expect(managers[0].isDeleted).to.be.false;
+        });
     });
 });

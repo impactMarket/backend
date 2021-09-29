@@ -612,10 +612,18 @@ export default class CommunityService {
         });
     }
 
-    public static async getManagers(communityId: number) {
+    public static async getManagers(communityId: number, active?: boolean) {
         const community = (await this.community.findOne({
             where: { id: communityId },
         }))!;
+        
+        let activeCondition = {};
+        if(active !== undefined) {
+            activeCondition = {
+                active,
+            }
+        };
+
         const result = await this.manager.findAll({
             include: [
                 {
@@ -648,7 +656,7 @@ export default class CommunityService {
             ],
             where: {
                 communityId: community.publicId,
-                active: true,
+                ...activeCondition,
             },
         });
         return result.map((r) => {

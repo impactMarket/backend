@@ -650,12 +650,18 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/{id}/managers:
+     * /community/{id}/managers/{query}:
      *   get:
      *     tags:
      *       - "community"
      *     summary: Get community managers
      *     parameters:
+     *       - in: query
+     *         name: filterByActive
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: filter by active/inactive/both (if filterByActive = undefined return both)
      *       - in: path
      *         name: id
      *         schema:
@@ -670,7 +676,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiManager'
      */
-    route.get('/:id/managers', controller.getManagers);
+    route.get('/:id/managers/:query?', controller.getManagers);
 
     /**
      * @swagger
