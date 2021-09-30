@@ -73,9 +73,23 @@ module.exports = {
             },
         });
 
-        await queryInterface.sequelize.query('insert into app_user (address, "avatarMediaId", username, language, currency, "pushNotificationToken", gender, year, children, "lastLogin", suspect, active, email, "createdAt", "updatedAt", "deletedAt") select * from "user"', {
-            type: Sequelize.QueryTypes.SELECT,
-        });
+        // get the user table columns
+        const insertQuery = (await queryInterface.sequelize.query(`
+            SELECT format(
+                'INSERT INTO app_user ("%1$s")
+                    SELECT "%1$s"
+                    FROM "user"
+                ',
+                (select string_agg( column_name, '","' ) from information_schema.columns
+                where table_schema = 'public' and table_name = 'user')
+            )`, 
+            {
+                type: Sequelize.QueryTypes.SELECT
+            }
+        ))[0];
+
+        // populate app_user table
+        await queryInterface.sequelize.query(insertQuery.format);
 
         await Promise.all([
             queryInterface.removeConstraint('app_user_through_trust', 'app_user_through_trust_userAddress_fkey'),
