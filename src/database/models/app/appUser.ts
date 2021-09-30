@@ -1,7 +1,8 @@
-import { User, UserCreationAttributes } from '@interfaces/app/user';
+import { AppUser, AppUserCreationAttributes } from '@interfaces/app/appUser';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class UserModel extends Model<User, UserCreationAttributes> {
+export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
+    public id!: number;
     public address!: string;
     public username!: string | null;
     public avatarMediaId!: number | null;
@@ -22,14 +23,18 @@ export class UserModel extends Model<User, UserCreationAttributes> {
     public readonly deletedAt!: Date;
 }
 
-export function initializeUser(sequelize: Sequelize): typeof UserModel {
-    UserModel.init(
+export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
+    AppUserModel.init(
         {
+            id: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
+                unique: true,
+            },
             address: {
                 type: DataTypes.STRING(44),
                 allowNull: false,
-                primaryKey: true,
-                unique: true,
+                primaryKey: true, // TODO: remove and set "id" as the primary key
             },
             avatarMediaId: {
                 type: DataTypes.INTEGER,
@@ -96,9 +101,9 @@ export function initializeUser(sequelize: Sequelize): typeof UserModel {
             },
         },
         {
-            tableName: 'user',
+            tableName: 'app_user',
             sequelize,
         }
     );
-    return UserModel;
+    return AppUserModel;
 }

@@ -46,7 +46,7 @@ import ManagerService from './managers';
 export default class CommunityService {
     public static community = models.community;
     public static manager = models.manager;
-    public static user = models.user;
+    public static appUser = models.appUser;
     public static ubiCommunityContract = models.ubiCommunityContract;
     public static ubiCommunityState = models.ubiCommunityState;
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
@@ -617,7 +617,7 @@ export default class CommunityService {
         const result = await this.manager.findAll({
             include: [
                 {
-                    model: this.user,
+                    model: this.appUser,
                     as: 'user',
                     include: [
                         {

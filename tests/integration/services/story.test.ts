@@ -3,7 +3,7 @@ import Sinon, { assert, replace, spy } from 'sinon';
 
 import { models } from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
-import { User } from '../../../src/interfaces/app/user';
+import { AppUser } from '../../../src/interfaces/app/appUser';
 import { StoryContentStorage } from '../../../src/services/storage';
 import StoryService from '../../../src/services/story';
 import BeneficiaryFactory from '../../factories/beneficiary';
@@ -14,7 +14,7 @@ import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 
 describe('story service', () => {
     let sequelize: Sequelize;
-    let users: User[];
+    let users: AppUser[];
     let communities: CommunityAttributes[];
     let storyContentStorageDeleteBulk: Sinon.SinonSpy<
         [number[]],

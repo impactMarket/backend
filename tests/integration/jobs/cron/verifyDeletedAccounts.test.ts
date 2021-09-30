@@ -6,7 +6,7 @@ import { stub, assert, SinonStub, spy, SinonSpy } from 'sinon';
 import { models } from '../../../../src/database';
 import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../../src/database/models/ubi/manager';
-import { User } from '../../../../src/interfaces/app/user';
+import { AppUser } from '../../../../src/interfaces/app/appUser';
 import UserService from '../../../../src/services/app/user';
 import GlobalDemographicsService from '../../../../src/services/global/globalDemographics';
 import StoryService from '../../../../src/services/story';
@@ -24,7 +24,7 @@ import { randomTx } from '../../../utils/utils';
 
 describe('[jobs - cron] verifyDeletedAccounts', () => {
     let sequelize: Sequelize;
-    let users: User[];
+    let users: AppUser[];
     let managers: ManagerAttributes[];
     let communities: CommunityAttributes[];
     let dbGlobalDemographicsStub: SinonStub;
@@ -140,7 +140,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     });
 
     after(async () => {
-        await truncate(sequelize, 'UserModel');
+        await truncate(sequelize, 'AppUserModel');
         await truncate(sequelize, 'Manager');
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize, 'StoryCommunityModel');
@@ -151,7 +151,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         const date = new Date();
         date.setDate(date.getDate() - 14);
 
-        await models.user.update(
+        await models.appUser.update(
             {
                 deletedAt: date,
             },
@@ -164,7 +164,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         await verifyDeletedAccounts();
 
-        const user = await models.user.findOne({
+        const user = await models.appUser.findOne({
             where: {
                 address: users[2].address,
             },
@@ -181,7 +181,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         const date = new Date();
         date.setDate(date.getDate() - 16);
 
-        await models.user.update(
+        await models.appUser.update(
             {
                 deletedAt: date,
             },
@@ -194,7 +194,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         await verifyDeletedAccounts();
 
-        const user = await models.user.findOne({
+        const user = await models.appUser.findOne({
             where: {
                 address: users[1].address,
             },
@@ -261,7 +261,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         const date = new Date();
         date.setDate(date.getDate() - 16);
 
-        await models.user.update(
+        await models.appUser.update(
             {
                 deletedAt: date,
             },
@@ -274,7 +274,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         await verifyDeletedAccounts();
 
-        const user = await models.user.findOne({
+        const user = await models.appUser.findOne({
             where: {
                 address: users[0].address,
             },

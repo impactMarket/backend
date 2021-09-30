@@ -102,7 +102,7 @@ export default class GlobalDemographicsService {
                         },
                         include: [
                             {
-                                model: models.user,
+                                model: models.appUser,
                                 as: 'user',
                                 required: true,
                                 attributes: [],
@@ -136,7 +136,7 @@ export default class GlobalDemographicsService {
               , count(*) FILTER (WHERE current_year-u.year BETWEEN 45 AND 54) AS "ageRange4"
               , count(*) FILTER (WHERE current_year-u.year BETWEEN 55 AND 64) AS "ageRange5"
               , count(*) FILTER (WHERE current_year-u.year BETWEEN 65 AND 120) AS "ageRange6"
-         from "user" u, "current_date_year", beneficiary b, community c
+         from "app_user" u, "current_date_year", beneficiary b, community c
          where u.address = b.address
          and b."communityId" = c."publicId"
          and c.visibility = 'public'
@@ -144,7 +144,7 @@ export default class GlobalDemographicsService {
          group by c.country`;
 
         const sqlGenderQuery = `select u.gender, count(u.gender) total, c.country
-        from "user" u, beneficiary b, community c
+        from "app_user" u, beneficiary b, community c
         where u.address = b.address
         and b.active = true
         and b."communityId" = c."publicId"

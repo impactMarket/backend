@@ -90,7 +90,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
             },
         ]);
 
-        await sequelize.models.UserModel.bulkCreate([
+        await sequelize.models.AppUserModel.bulkCreate([
             {
                 address: '0xd55Fae4769e3240FfFf4c17cd2CC03143e55E420',
                 username: 'x1',
@@ -344,7 +344,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await sequelize.models.AppUserTrustModel.destroy({
             where: {},
         });
-        await sequelize.models.UserModel.destroy({
+        await sequelize.models.AppUserModel.destroy({
             where: {},
         });
         await sequelize.models.Community.destroy({
