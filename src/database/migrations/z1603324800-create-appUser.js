@@ -1,19 +1,19 @@
 'use strict';
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable('user', {
+        return queryInterface.createTable('app_user', {
+            id: {
+                type: Sequelize.INTEGER,
+                autoIncrement: true,
+                primaryKey: true,
+            },
             address: {
                 type: Sequelize.STRING(44),
-                primaryKey: true,
                 allowNull: false,
+                unique: true,
             },
             avatarMediaId: {
                 type: Sequelize.INTEGER,
-                // references: {
-                //     model: 'app_media_content',
-                //     key: 'id',
-                // },
-                // // onDelete: 'SET NULL', // default
                 allowNull: true,
             },
             username: {
@@ -74,6 +74,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable('user');
+        return queryInterface.dropTable('app_user');
     },
 };
