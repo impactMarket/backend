@@ -676,7 +676,7 @@ export default class CommunityService {
             return {
                 ...manager,
                 isDeleted: !manager.user,
-                addedBeneficiaries: Number(addedBeneficiaries?.count),
+                addedBeneficiaries: addedBeneficiaries ? Number(addedBeneficiaries?.count) : 0,
             };
         });
     }
