@@ -414,7 +414,7 @@ export default (app: Router): void => {
      *                    type: boolean
      *                    description: Is the user subscribed to the newsletter?
      */
-     route.get(
+    route.get(
         '/newsletter',
         authenticateToken,
         userController.verifyNewsletterSubscription
@@ -436,4 +436,34 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.delete('/', authenticateToken, userController.delete);
+
+    /**
+     * @swagger
+     *
+     * /user/read-rules/(|beneficiary|manager):
+     *   put:
+     *     tags:
+     *       - "user"
+     *     summary: Read beneficiary/manager rules
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                 data:
+     *                   type: boolean
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put(
+        '/read-rules/(|beneficiary|manager)',
+        authenticateToken,
+        userController.readRules
+    );
 };

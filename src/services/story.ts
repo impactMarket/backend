@@ -32,7 +32,7 @@ export default class StoryService {
     public appMediaThumbnail = models.appMediaThumbnail;
     public beneficiary = models.beneficiary;
     public manager = models.manager;
-    public user = models.user;
+    public user = models.appUser;
     public sequelize = sequelize;
 
     private storyContentStorage = new StoryContentStorage();

@@ -1,5 +1,5 @@
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
-import { User } from '@interfaces/app/user';
+import { AppUser } from '@interfaces/app/appUser';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
@@ -82,20 +82,38 @@ export interface IManagersDetails {
     };
 }
 
-export interface IUserHello {
-    rates: ExchangeRatesAttributes[]; // TODO: deprecated in mobile-app@1.1.5
-    isBeneficiary: boolean;
-    isManager: boolean;
-    community?: CommunityAttributes; // TODO: deprecated in mobile-app@1.1.5
-    communityId?: number;
+export interface IManager {
+    communityId: string;
+    readRules: boolean;
+}
+
+export interface IBeneficiary {
+    communityId: string;
     blocked: boolean;
-    // to users not yet registered, the values below do not exist
-    verifiedPN: boolean | undefined; // TODO: deprecated in mobile-app@1.1.5
+    readRules: boolean;
+}
+
+interface IUser {
     suspect: boolean | undefined;
 }
 
+export interface IUserHello {
+    rates?: ExchangeRatesAttributes[]; // TODO: deprecated in mobile-app@1.1.5
+    isBeneficiary?: boolean; // TODO: deprecated
+    isManager?: boolean; // TODO: deprecated
+    community?: CommunityAttributes; // TODO: deprecated in mobile-app@1.1.5
+    communityId?: number; // TODO: deprecated
+    blocked?: boolean; // TODO: deprecated
+    // to users not yet registered, the values below do not exist
+    verifiedPN?: boolean | undefined; // TODO: deprecated in mobile-app@1.1.5
+    suspect?: boolean | undefined; // TODO: deprecated
+    beneficiary: IBeneficiary | null;
+    manager: IManager | null;
+    user: IUser;
+}
+
 export interface IUserAuth extends IUserHello {
-    user: User;
+    user: AppUser;
     token: string;
 }
 

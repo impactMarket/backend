@@ -3,7 +3,7 @@ import {
     ManagerAttributes,
     ManagerCreationAttributes,
 } from '../../src/database/models/ubi/manager';
-import { User } from '../../src/interfaces/app/user';
+import { AppUser } from '../../src/interfaces/app/appUser';
 
 /**
  * Generate an object which container attributes needed
@@ -13,7 +13,7 @@ import { User } from '../../src/interfaces/app/user';
  *
  * @return {Object}       An object to build the user from.
  */
-const data = async (user: User, communityId: string) => {
+const data = async (user: AppUser, communityId: string) => {
     const defaultProps: ManagerCreationAttributes = {
         address: user.address,
         communityId,
@@ -27,7 +27,7 @@ const data = async (user: User, communityId: string) => {
  *
  * @return {Object}       A user instance
  */
-const ManagerFactory = async (user: User[], communityId: string) => {
+const ManagerFactory = async (user: AppUser[], communityId: string) => {
     const result: ManagerAttributes[] = [];
     for (let index = 0; index < user.length; index++) {
         const newBneficiary: any = await Manager.create(

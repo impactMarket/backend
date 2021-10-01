@@ -1,5 +1,5 @@
-import { User } from '@interfaces/app/user';
 import { UbiBeneficiaryRegistry } from '@interfaces/ubi/ubiBeneficiaryRegistry';
+import { AppUser } from '@interfaces/app/appUser';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { CommunityAttributes } from './community';
@@ -9,12 +9,13 @@ export interface ManagerAttributes {
     address: string;
     communityId: string;
     active: boolean;
+    readRules: boolean;
 
     // timestamps
     createdAt: Date;
     updatedAt: Date;
 
-    user?: User;
+    user?: AppUser;
     community?: CommunityAttributes;
     addedBeneficiaries?: UbiBeneficiaryRegistry[];
 }
@@ -30,6 +31,7 @@ export class Manager extends Model<
     public address!: string;
     public communityId!: string;
     public active!: boolean;
+    public readRules!: boolean;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -47,7 +49,7 @@ export function initializeManager(sequelize: Sequelize): void {
             address: {
                 type: DataTypes.STRING(44),
                 references: {
-                    model: sequelize.models.UserModel,
+                    model: sequelize.models.AppUserModel,
                     key: 'address',
                 },
                 onDelete: 'RESTRICT',
@@ -65,6 +67,11 @@ export function initializeManager(sequelize: Sequelize): void {
             active: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: true,
+            },
+            readRules: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
             },
             createdAt: {
                 type: DataTypes.DATE,

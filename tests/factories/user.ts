@@ -1,9 +1,12 @@
 import { ethers } from 'ethers';
 import faker from 'faker';
 
+import { AppUserModel } from '../../src/database/models/app/appUser';
 import { AppUserTrustModel } from '../../src/database/models/app/appUserTrust';
-import { UserModel } from '../../src/database/models/app/user';
-import { User, UserCreationAttributes } from '../../src/interfaces/app/user';
+import {
+    AppUser,
+    AppUserCreationAttributes,
+} from '../../src/interfaces/app/appUser';
 
 interface ICreateProps {
     phone?: string;
@@ -22,7 +25,7 @@ interface ICreateProps {
  */
 const data = async (props?: ICreateProps) => {
     const randomWallet = ethers.Wallet.createRandom();
-    const defaultProps: UserCreationAttributes = {
+    const defaultProps: AppUserCreationAttributes = {
         address: await randomWallet.getAddress(),
         username: faker.internet.userName(),
         language: 'pt',
@@ -48,9 +51,9 @@ const data = async (props?: ICreateProps) => {
 const UserFactory = async (
     options: { n: number; props?: ICreateProps[] } = { n: 1 }
 ) => {
-    const result: User[] = [];
+    const result: AppUser[] = [];
     for (let index = 0; index < options.n; index++) {
-        const newUser: UserModel = await UserModel.create(
+        const newUser: AppUserModel = await AppUserModel.create(
             await data(options.props ? options.props[index] : undefined),
             {
                 include: [
@@ -61,7 +64,7 @@ const UserFactory = async (
                 ],
             } as any
         ); // use any :facepalm:
-        result.push(newUser.toJSON() as User);
+        result.push(newUser.toJSON() as AppUser);
     }
     return result;
 };

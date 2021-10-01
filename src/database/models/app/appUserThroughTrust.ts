@@ -18,7 +18,7 @@ export function initializeAppUserThroughTrust(sequelize: Sequelize): void {
             userAddress: {
                 type: DataTypes.STRING(44),
                 references: {
-                    model: 'user',
+                    model: 'app_user',
                     key: 'address',
                 },
                 onDelete: 'CASCADE',

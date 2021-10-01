@@ -4,7 +4,7 @@ import {
     AppAnonymousReportCreation,
 } from '@interfaces/app/appAnonymousReport';
 import { AppNotification } from '@interfaces/app/appNotification';
-import { User, UserCreationAttributes } from '@interfaces/app/user';
+import { AppUser, AppUserCreationAttributes } from '@interfaces/app/appUser';
 import { CommunityAttributes } from '@models/ubi/community';
 import { ProfileContentStorage } from '@services/storage';
 import { BaseError } from '@utils/baseError';
@@ -14,12 +14,17 @@ import { Op, QueryTypes } from 'sequelize';
 import { generateAccessToken } from '../../api/middlewares';
 import config from '../../config';
 import { models, sequelize } from '../../database';
-import { IUserHello, IUserAuth } from '../../types/endpoints';
+import {
+    IUserHello,
+    IUserAuth,
+    IBeneficiary,
+    IManager,
+} from '../../types/endpoints';
 import CommunityService from '../ubi/community';
 import ExchangeRatesService from './exchangeRates';
 export default class UserService {
     public static sequelize = sequelize;
-    public static user = models.user;
+    public static appUser = models.appUser;
     public static beneficiary = models.beneficiary;
     public static manager = models.manager;
     public static appUserTrust = models.appUserTrust;
@@ -33,7 +38,7 @@ export default class UserService {
     public static hubspotClient = new Client({ apiKey: config.hubspotKey });
 
     public static async authenticate(
-        user: UserCreationAttributes,
+        user: AppUserCreationAttributes,
         overwrite: boolean = false,
         recover: boolean = false
     ): Promise<IUserAuth> {
@@ -60,11 +65,11 @@ export default class UserService {
                 await this.recoverAccount(user.address);
             }
 
-            let userFromRegistry: User;
+            let userFromRegistry: AppUser;
             if (!exists) {
                 // create new user, including their phone number information
                 userFromRegistry = (
-                    await this.user.create(user, {
+                    await this.appUser.create(user, {
                         include: [
                             {
                                 model: this.appUserTrust,
@@ -72,16 +77,16 @@ export default class UserService {
                             },
                         ],
                     })
-                ).toJSON() as User;
+                ).toJSON() as AppUser;
             } else {
                 if (user.pushNotificationToken) {
-                    this.user.update(
+                    this.appUser.update(
                         { pushNotificationToken: user.pushNotificationToken },
                         { where: { address: user.address } }
                     );
                 }
                 // it's not null at this point
-                userFromRegistry = (await this.user.findOne({
+                userFromRegistry = (await this.appUser.findOne({
                     include: [
                         {
                             model: this.appMediaContent,
@@ -101,7 +106,7 @@ export default class UserService {
                         },
                     ],
                     where: { address: user.address },
-                }))!.toJSON() as User;
+                }))!.toJSON() as AppUser;
             }
 
             if (!userFromRegistry.active) {
@@ -117,9 +122,9 @@ export default class UserService {
 
             const userHello = await this.loadUser(userFromRegistry);
             return {
+                ...userHello,
                 token,
                 user: userFromRegistry,
-                ...userHello,
             };
         } catch (e) {
             Logger.warn(`Error while auth user ${user.address} ${e}`);
@@ -129,7 +134,7 @@ export default class UserService {
 
     public static async recoverAccount(address: string) {
         try {
-            await this.user.update(
+            await this.appUser.update(
                 {
                     deletedAt: null,
                 },
@@ -142,9 +147,9 @@ export default class UserService {
         }
     }
 
-    public static async overwriteUser(user: UserCreationAttributes) {
+    public static async overwriteUser(user: AppUserCreationAttributes) {
         try {
-            const usersToInactive = await this.user.findAll({
+            const usersToInactive = await this.appUser.findAll({
                 include: [
                     {
                         model: this.appUserTrust,
@@ -162,7 +167,7 @@ export default class UserService {
             });
 
             const promises = usersToInactive.map((el) =>
-                this.user.update(
+                this.appUser.update(
                     {
                         active: false,
                     },
@@ -175,7 +180,7 @@ export default class UserService {
             );
 
             promises.push(
-                this.user.update(
+                this.appUser.update(
                     {
                         active: true,
                     },
@@ -197,21 +202,21 @@ export default class UserService {
         address: string,
         pushNotificationToken?: string
     ): Promise<IUserHello> {
-        let user: User;
-        const found = await this.user.findOne({
+        let user: AppUser;
+        const found = await this.appUser.findOne({
             where: { address },
         });
         if (found === null) {
             throw new BaseError('USER_NOT_FOUND', 'user not found');
         }
-        user = found.toJSON() as User;
+        user = found.toJSON() as AppUser;
         if (pushNotificationToken) {
-            const updated = await this.user.update(
+            const updated = await this.appUser.update(
                 { pushNotificationToken },
                 { where: { address }, returning: true }
             );
             if (updated.length > 0) {
-                user = updated[1][0].toJSON() as User;
+                user = updated[1][0].toJSON() as AppUser;
             }
         }
         return UserService.loadUser(user);
@@ -224,7 +229,7 @@ export default class UserService {
         address: string,
         phone?: string
     ): Promise<IUserHello> {
-        const user = await this.user.findOne({
+        const user = await this.appUser.findOne({
             include: [
                 {
                     model: this.appUserTrust,
@@ -237,7 +242,7 @@ export default class UserService {
             throw new BaseError('USER_NOT_FOUND', address + ' user not found!');
         }
         if (phone) {
-            const uu = user.toJSON() as User;
+            const uu = user.toJSON() as AppUser;
             const userTrustId =
                 uu.trust && uu.trust.length > 0 ? uu.trust[0].id : undefined;
             if (userTrustId === undefined) {
@@ -278,7 +283,7 @@ export default class UserService {
         address: string,
         mediaId: number
     ): Promise<boolean> {
-        const updated = await this.user.update(
+        const updated = await this.appUser.update(
             { avatarMediaId: mediaId },
             { returning: true, where: { address } }
         );
@@ -289,7 +294,7 @@ export default class UserService {
         address: string,
         username: string
     ): Promise<boolean> {
-        const updated = await this.user.update(
+        const updated = await this.appUser.update(
             { username },
             { returning: true, where: { address } }
         );
@@ -300,7 +305,7 @@ export default class UserService {
         address: string,
         currency: string
     ): Promise<boolean> {
-        const updated = await this.user.update(
+        const updated = await this.appUser.update(
             { currency },
             { returning: true, where: { address } }
         );
@@ -311,7 +316,7 @@ export default class UserService {
         address: string,
         pushNotificationToken: string
     ): Promise<boolean> {
-        const updated = await this.user.update(
+        const updated = await this.appUser.update(
             { pushNotificationToken },
             { returning: true, where: { address } }
         );
@@ -322,7 +327,7 @@ export default class UserService {
         address: string,
         language: string
     ): Promise<boolean> {
-        const updated = await this.user.update(
+        const updated = await this.appUser.update(
             { language },
             { returning: true, where: { address } }
         );
@@ -333,7 +338,7 @@ export default class UserService {
         address: string,
         gender: string
     ): Promise<boolean> {
-        const updated = await this.user.update(
+        const updated = await this.appUser.update(
             { gender },
             { returning: true, where: { address } }
         );
@@ -344,7 +349,7 @@ export default class UserService {
         address: string,
         year: number | null
     ): Promise<boolean> {
-        const updated = await this.user.update(
+        const updated = await this.appUser.update(
             { year },
             { returning: true, where: { address } }
         );
@@ -355,15 +360,15 @@ export default class UserService {
         address: string,
         children: number | null
     ): Promise<boolean> {
-        const updated = await this.user.update(
+        const updated = await this.appUser.update(
             { children },
             { returning: true, where: { address } }
         );
         return updated[0] > 0;
     }
 
-    public static async get(address: string): Promise<User | null> {
-        return this.user.findOne({ where: { address }, raw: true });
+    public static async get(address: string): Promise<AppUser | null> {
+        return this.appUser.findOne({ where: { address }, raw: true });
     }
 
     public static async report(
@@ -397,7 +402,7 @@ export default class UserService {
     }
 
     public static async exists(address: string): Promise<boolean> {
-        const exists = await this.user.findOne({
+        const exists = await this.appUser.findOne({
             attributes: ['address'],
             where: { address },
             raw: true,
@@ -410,7 +415,7 @@ export default class UserService {
             SELECT phone, address
             FROM app_user_trust
             LEFT JOIN app_user_through_trust ON "appUserTrustId" = id
-            LEFT JOIN "user" ON "user".address = "userAddress"
+            LEFT JOIN "app_user" as "user" ON "user".address = "userAddress"
             WHERE phone = :phone
             AND "user".active = TRUE`;
 
@@ -426,14 +431,14 @@ export default class UserService {
 
     public static async getAllAddresses(): Promise<string[]> {
         return (
-            await this.user.findAll({ attributes: ['address'], raw: true })
+            await this.appUser.findAll({ attributes: ['address'], raw: true })
         ).map((u) => u.address);
     }
 
     public static async getPushTokensFromAddresses(
         addresses: string[]
     ): Promise<string[]> {
-        const users = await this.user.findAll({
+        const users = await this.appUser.findAll({
             attributes: ['pushNotificationToken'],
             where: { address: { [Op.in]: addresses } },
             raw: true,
@@ -446,8 +451,8 @@ export default class UserService {
     /**
      * TODO: improve
      */
-    private static async loadUser(user: User): Promise<IUserHello> {
-        // const user = await this.user.findOne({
+    private static async loadUser(user: AppUser): Promise<IUserHello> {
+        // const user = await this.appUser.findOne({
         //     include: [
         //         {
         //             model: this.appUserTrust,
@@ -460,10 +465,14 @@ export default class UserService {
         //     throw new Error('User is null?');
         // }
         // const fUser = user.toJSON() as User;
-        const beneficiary = await this.beneficiary.findOne({
-            where: { active: true, address: user.address },
-        });
-        const manager = await this.manager.findOne({
+        const beneficiary: IBeneficiary | null = await this.beneficiary.findOne(
+            {
+                attributes: ['blocked', 'readRules', 'communityId'],
+                where: { active: true, address: user.address },
+            }
+        );
+        const manager: IManager | null = await this.manager.findOne({
+            attributes: ['readRules', 'communityId'],
             where: { active: true, address: user.address },
         });
 
@@ -481,6 +490,7 @@ export default class UserService {
             }
             return null;
         };
+
         if (beneficiary) {
             community = await getCommunity(beneficiary.communityId);
         } else if (manager) {
@@ -497,22 +507,27 @@ export default class UserService {
         // until here
 
         return {
-            isBeneficiary: beneficiary !== null,
-            isManager: manager !== null || managerInPendingCommunity,
-            blocked: beneficiary !== null ? beneficiary.blocked : false,
+            isBeneficiary: beneficiary !== null, // TODO: deprecated
+            isManager: manager !== null || managerInPendingCommunity, // TODO: deprecated
+            blocked: beneficiary !== null ? beneficiary.blocked : false, // TODO: deprecated
             verifiedPN:
                 user.trust && user.trust.length !== 0
                     ? user.trust[0].verifiedPhoneNumber
                     : undefined, // TODO: deprecated in mobile-app@1.1.5
-            suspect: user.suspect,
+            suspect: user.suspect, // TODO: deprecated
             rates: await ExchangeRatesService.get(), // TODO: deprecated in mobile-app@1.1.5
             community: community ? community : undefined, // TODO: deprecated in mobile-app@1.1.5
-            communityId: community ? community.id : undefined,
+            communityId: community ? community.id : undefined, // TODO: deprecated
+            user: {
+                suspect: user.suspect,
+            },
+            manager,
+            beneficiary,
         };
     }
 
-    public static async edit(user: User): Promise<User> {
-        const updated = await this.user.update(user, {
+    public static async edit(user: AppUser): Promise<AppUser> {
+        const updated = await this.appUser.update(user, {
             returning: true,
             where: { address: user.address },
         });
@@ -667,7 +682,7 @@ export default class UserService {
                     include: [
                         {
                             attributes: [],
-                            model: this.user,
+                            model: this.appUser,
                             as: 'user',
                             required: true,
                             where: {
@@ -684,7 +699,7 @@ export default class UserService {
                 }
             }
 
-            const updated = await this.user.update(
+            const updated = await this.appUser.update(
                 {
                     deletedAt: new Date(),
                 },

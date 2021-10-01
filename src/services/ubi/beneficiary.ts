@@ -1,4 +1,4 @@
-import { User } from '@interfaces/app/user';
+import { AppUser } from '@interfaces/app/appUser';
 import {
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
@@ -103,7 +103,7 @@ export default class BeneficiaryService {
         searchInput: string,
         active?: boolean
     ): Promise<IListBeneficiary[]> {
-        let whereSearchCondition: Where | WhereAttributeHash<User> = {};
+        let whereSearchCondition: Where | WhereAttributeHash<AppUser> = {};
         let whereBeneficiary:
             | Where
             | WhereAttributeHash<BeneficiaryAttributes> = {};
@@ -165,7 +165,7 @@ export default class BeneficiaryService {
             where: { ...whereBeneficiary, communityId },
             include: [
                 {
-                    model: models.user,
+                    model: models.appUser,
                     as: 'user',
                     where: whereSearchCondition,
                     required,
@@ -226,7 +226,7 @@ export default class BeneficiaryService {
             where: { active, communityId },
             include: [
                 {
-                    model: models.user,
+                    model: models.appUser,
                     as: 'user',
                     required: false,
                 },
@@ -402,7 +402,7 @@ export default class BeneficiaryService {
             include: [
                 {
                     attributes: ['username'],
-                    model: models.user,
+                    model: models.appUser,
                     as: 'user',
                 },
             ],
@@ -434,7 +434,7 @@ export default class BeneficiaryService {
             include: [
                 {
                     attributes: ['username'],
-                    model: models.user,
+                    model: models.appUser,
                     as: 'user',
                 },
             ],
@@ -462,12 +462,12 @@ export default class BeneficiaryService {
         offset: number,
         limit: number
     ): Promise<IBeneficiaryActivities[]> {
-        const query = `SELECT id, 'registry' AS type, tx, "txAt" AS date, "registry"."from" AS "withAddress", activity, null AS "isFromBeneficiary", null AS amount, "user"."username"
-            FROM ubi_beneficiary_registry AS "registry" LEFT JOIN "user" AS "user" ON "registry"."from" = "user"."address"
+        const query = `SELECT "registry".id, 'registry' AS type, tx, "txAt" AS date, "registry"."from" AS "withAddress", activity, null AS "isFromBeneficiary", null AS amount, "user"."username"
+            FROM ubi_beneficiary_registry AS "registry" LEFT JOIN "app_user" AS "user" ON "registry"."from" = "user"."address"
             WHERE "registry"."address" = :beneficiaryAddress AND "registry"."communityId" = :communityId
             UNION ALL
-            SELECT id, 'transaction' AS type, tx, "transaction"."createdAt" AS date, "withAddress", null as activity, "isFromBeneficiary", amount, "user"."username"
-            FROM beneficiarytransaction AS "transaction" LEFT JOIN "user" AS "user" ON "transaction"."withAddress" = "user"."address"
+            SELECT "transaction".id, 'transaction' AS type, tx, "transaction"."createdAt" AS date, "withAddress", null as activity, "isFromBeneficiary", amount, "user"."username"
+            FROM beneficiarytransaction AS "transaction" LEFT JOIN "app_user" AS "user" ON "transaction"."withAddress" = "user"."address"
             WHERE "transaction"."beneficiary" = :beneficiaryAddress 
             UNION ALL
             SELECT id, 'claim' AS type, tx, "txAt" AS date, null AS "withAddress", null as activity, null AS "isFromBeneficiary", amount, null AS "username"
@@ -486,5 +486,28 @@ export default class BeneficiaryService {
                 limit,
             },
         });
+    }
+
+    public static async readRules(address: string): Promise<boolean> {
+        try {
+            const updated = await models.beneficiary.update(
+                {
+                    readRules: true,
+                },
+                {
+                    where: { address },
+                }
+            );
+
+            if (updated[0] === 0) {
+                throw new BaseError(
+                    'UPDATE_FAILED',
+                    'Beneficiary was not updated'
+                );
+            }
+            return true;
+        } catch (error) {
+            throw new BaseError('UPDATE_FAILED', 'Beneficiary was not updated');
+        }
     }
 }

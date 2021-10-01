@@ -1,4 +1,4 @@
-import { User } from '@interfaces/app/user';
+import { AppUser } from '@interfaces/app/appUser';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { CommunityAttributes } from './community';
@@ -15,12 +15,13 @@ export interface BeneficiaryAttributes {
     claimed: string;
     lastClaimAt: Date | null;
     penultimateClaimAt: Date | null;
+    readRules: boolean;
 
     // timestamps
     createdAt: Date;
     updatedAt: Date;
 
-    user?: User;
+    user?: AppUser;
     community?: CommunityAttributes;
 }
 export interface BeneficiaryCreationAttributes {
@@ -45,6 +46,7 @@ export class Beneficiary extends Model<
     public claimed!: string;
     public lastClaimAt!: Date | null;
     public penultimateClaimAt!: Date | null;
+    public readRules!: boolean;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -105,6 +107,11 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
             penultimateClaimAt: {
                 type: DataTypes.DATE,
                 allowNull: true,
+            },
+            readRules: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
             },
             createdAt: {
                 type: DataTypes.DATE,

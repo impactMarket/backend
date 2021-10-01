@@ -8,8 +8,9 @@ import { models, sequelize as database } from '../../../src/database';
 import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
-import { User } from '../../../src/interfaces/app/user';
+import { AppUser } from '../../../src/interfaces/app/appUser';
 import { UbiBeneficiaryRegistryType } from '../../../src/interfaces/ubi/ubiBeneficiaryRegistry';
+import UserService from '../../../src/services/app/user';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
 import ClaimsService from '../../../src/services/ubi/claim';
 import { IListBeneficiary } from '../../../src/types/endpoints';
@@ -26,7 +27,7 @@ use(chaiSubset);
 // in this test there are users being assined with suspicious activity and others being removed
 describe('beneficiary service', () => {
     let sequelize: Sequelize;
-    let users: User[];
+    let users: AppUser[];
     let communities: CommunityAttributes[];
     let managers: ManagerAttributes[];
     let beneficiaries: BeneficiaryAttributes[];
@@ -39,7 +40,7 @@ describe('beneficiary service', () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        users = await UserFactory({ n: 17 });
+        users = await UserFactory({ n: 18 });
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -85,11 +86,11 @@ describe('beneficiary service', () => {
 
     it('order by suspicious activity', async () => {
         // set some as suspect
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: true },
             { where: { address: users[2].address } }
         );
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: true },
             { where: { address: users[4].address } }
         );
@@ -124,11 +125,11 @@ describe('beneficiary service', () => {
             },
         ]);
         // change suspects
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: false },
             { where: { address: users[4].address } }
         );
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: true },
             { where: { address: users[5].address } }
         );
@@ -455,6 +456,46 @@ describe('beneficiary service', () => {
                 type: 'transaction',
                 amount: '25',
                 isFromBeneficiary: true,
+            });
+        });
+    });
+
+    describe('beneficiary rules', () => {
+        before(async () => {
+            const tx = randomTx();
+
+            await BeneficiaryService.add(
+                users[17].address,
+                users[0].address,
+                communities[0].publicId,
+                tx,
+                new Date()
+            );
+        });
+
+        it('readRules should be false after a beneficiary has been added', async () => {
+            const user = await UserService.welcome(users[17].address);
+
+            expect(user.beneficiary).to.be.not.null;
+            expect(user.beneficiary).to.include({
+                readRules: false,
+                blocked: false,
+                communityId: communities[0].publicId,
+            });
+        });
+
+        it('should read the beneficiary rules successfully', async () => {
+            const readRules = await BeneficiaryService.readRules(
+                users[17].address
+            );
+            const user = await UserService.welcome(users[17].address);
+
+            expect(readRules).to.be.true;
+            expect(user.beneficiary).to.be.not.null;
+            expect(user.beneficiary).to.include({
+                readRules: true,
+                blocked: false,
+                communityId: communities[0].publicId,
             });
         });
     });

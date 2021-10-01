@@ -1,4 +1,4 @@
-import { User } from '@interfaces/app/user';
+import { AppUser } from '@interfaces/app/appUser';
 import { QueryTypes, Op } from 'sequelize';
 
 import { models, sequelize } from '../../../database';
@@ -10,7 +10,7 @@ export async function verifyUserSuspectActivity(): Promise<void> {
             "user".address, 
             "trust".phone 
             FROM 
-            "user" 
+            "app_user" as "user"
             LEFT OUTER JOIN app_user_through_trust AS "through_trust" ON "user".address = "through_trust"."userAddress" 
             LEFT OUTER JOIN app_user_trust AS "trust" ON "through_trust"."appUserTrustId" = "trust".id 
             WHERE 
@@ -26,7 +26,7 @@ export async function verifyUserSuspectActivity(): Promise<void> {
             phone
         ) 
         UPDATE 
-            "user" 
+            "app_user" as "user"
         SET 
             suspect = CASE WHEN suspect_phone.n > 1 THEN true ELSE false END 
         FROM 
@@ -48,7 +48,7 @@ export async function verifyDeletedAccounts(): Promise<void> {
         const date = new Date();
         date.setDate(date.getDate() - 15);
 
-        const users = await models.user.findAll({
+        const users = await models.appUser.findAll({
             attributes: ['address'],
             where: {
                 deletedAt: { [Op.lt]: date },
@@ -63,7 +63,7 @@ export async function verifyDeletedAccounts(): Promise<void> {
 
         const addresses = users.map((el) => el.address);
 
-        users.forEach((user: User) => {
+        users.forEach((user: AppUser) => {
             user.trust?.forEach(async (el) => {
                 await models.appUserTrust.destroy({
                     where: {
@@ -74,7 +74,7 @@ export async function verifyDeletedAccounts(): Promise<void> {
             });
         });
 
-        await models.user.destroy({
+        await models.appUser.destroy({
             where: {
                 address: { [Op.in]: addresses },
             },
