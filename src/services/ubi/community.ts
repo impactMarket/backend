@@ -660,8 +660,8 @@ export default class CommunityService {
         const address = result.map((el) => `'${el.address}'`);
         const beneficiariesAdded:
             | { count: number; from: string }[]
-            | undefined = await sequelize.query(
-            `SELECT count("from"), "from" FROM ubi_beneficiary_registry WHERE "from" IN (${address.toString()}) GROUP BY "from"`,
+            | undefined = await this.sequelize.query(
+            `SELECT count("address"), "from" FROM ubi_beneficiary_registry WHERE "from" IN (${address.toString()}) GROUP BY "from"`,
             {
                 raw: true,
                 type: QueryTypes.SELECT,

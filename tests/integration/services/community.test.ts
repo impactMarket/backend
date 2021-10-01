@@ -1358,7 +1358,7 @@ describe('community service', () => {
 
             let sixteenDaysAgo = new Date();
             sixteenDaysAgo.setDate(sixteenDaysAgo.getDate() - 16);
-            await models.user.update(
+            await models.appUser.update(
                 {
                     deletedAt: sixteenDaysAgo,
                 },
