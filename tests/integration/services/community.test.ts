@@ -502,6 +502,57 @@ describe('community service', () => {
             }
         }).timeout(120000); // exceptionally 120s timeout
 
+        it('with suspect activity', async () => {
+            const totalCommunities = 3;
+            const communityManagers = await UserFactory({
+                n: totalCommunities,
+            });
+            const suspect = { percentage: 50, suspect: 5 };
+            const createObject: any[] = [];
+            for (let index = 0; index < totalCommunities; index++) {
+                createObject.push({
+                    requestByAddress: communityManagers[index].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                    suspect: index === 1 ? suspect : undefined,
+                });
+            }
+            const communities = await CommunityFactory(createObject);
+            const communitySuspect = communities[1];
+
+            for (const community of communities) {
+                await BeneficiaryFactory(
+                    await UserFactory({
+                        n: Math.floor(Math.random() * 20),
+                    }),
+                    community.publicId
+                );
+            }
+
+            //
+            const r = await CommunityService.list({
+                offset: '0',
+                limit: '5',
+            });
+            expect(
+                r.rows.filter((c) => c.id === communitySuspect.id)[0].suspect
+                    ?.length
+            ).to.be.equal(1);
+            expect(
+                r.rows.filter((c) => c.id !== communitySuspect.id)[0].suspect
+                    ?.length
+            ).to.be.equal(0);
+        });
+
         describe('sort', () => {
             afterEach(async () => {
                 await truncate(sequelize, 'Beneficiary');

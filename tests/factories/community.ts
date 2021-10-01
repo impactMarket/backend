@@ -7,6 +7,7 @@ import {
 } from '../../src/database/models/ubi/community';
 import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
 import { UbiCommunityStateModel } from '../../src/database/models/ubi/communityState';
+import { UbiCommunitySuspectModel } from '../../src/database/models/ubi/ubiCommunitySuspect';
 import {
     UbiCommunityContract,
     UbiCommunityContractCreation,
@@ -24,6 +25,10 @@ interface ICreateProps {
     gps?: {
         latitude: number;
         longitude: number;
+    };
+    suspect?: {
+        percentage: number;
+        suspect: number;
     };
 }
 /**
@@ -81,6 +86,12 @@ const CommunityFactory = async (props: ICreateProps[]) => {
             contract: newContract.toJSON() as UbiCommunityContract,
         });
         await UbiCommunityStateModel.create({ communityId: newCommunity.id });
+        if (props[index].suspect !== undefined) {
+            await UbiCommunitySuspectModel.create({
+                communityId: newCommunity.id,
+                ...props[index].suspect!,
+            });
+        }
     }
     return result;
 };

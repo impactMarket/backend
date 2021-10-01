@@ -451,7 +451,22 @@ export default class CommunityService {
             },
             include: [
                 {
+                    model: this.ubiCommunitySuspect,
+                    attributes: ['suspect'],
+                    as: 'suspect',
+                    required: false,
+                    duplicating: false,
+                    where: {
+                        createdAt: {
+                            [Op.eq]: literal(
+                                '(select max("createdAt") from ubi_community_suspect ucs where ucs."communityId"="Community".id and date("createdAt") > (current_date - INTERVAL \'1 day\'))'
+                            ),
+                        },
+                    },
+                },
+                {
                     model: this.ubiCommunityState,
+                    attributes: { exclude: ['id', 'communityId'] },
                     as: 'state',
                 },
                 {
