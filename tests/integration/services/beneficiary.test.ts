@@ -8,7 +8,7 @@ import { models, sequelize as database } from '../../../src/database';
 import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
-import { User } from '../../../src/interfaces/app/user';
+import { AppUser } from '../../../src/interfaces/app/appUser';
 import { UbiBeneficiaryRegistryType } from '../../../src/interfaces/ubi/ubiBeneficiaryRegistry';
 import UserService from '../../../src/services/app/user';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
@@ -27,7 +27,7 @@ use(chaiSubset);
 // in this test there are users being assined with suspicious activity and others being removed
 describe('beneficiary service', () => {
     let sequelize: Sequelize;
-    let users: User[];
+    let users: AppUser[];
     let communities: CommunityAttributes[];
     let managers: ManagerAttributes[];
     let beneficiaries: BeneficiaryAttributes[];
@@ -86,11 +86,11 @@ describe('beneficiary service', () => {
 
     it('order by suspicious activity', async () => {
         // set some as suspect
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: true },
             { where: { address: users[2].address } }
         );
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: true },
             { where: { address: users[4].address } }
         );
@@ -125,11 +125,11 @@ describe('beneficiary service', () => {
             },
         ]);
         // change suspects
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: false },
             { where: { address: users[4].address } }
         );
-        await sequelize.models.UserModel.update(
+        await sequelize.models.AppUserModel.update(
             { suspect: true },
             { where: { address: users[5].address } }
         );

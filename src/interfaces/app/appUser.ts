@@ -66,7 +66,8 @@ import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
  *          avatar:
  *            $ref: '#/components/schemas/AppMediaContent'
  */
-export interface User {
+export interface AppUser {
+    id: number;
     address: string;
     avatarMediaId: number | null;
     username: string | null;
@@ -92,7 +93,7 @@ export interface User {
     manager?: ManagerAttributes[];
 }
 
-export interface UserCreationAttributes {
+export interface AppUserCreationAttributes {
     address: string;
     language?: string;
     currency?: string;

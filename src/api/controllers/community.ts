@@ -370,42 +370,6 @@ const listManagers = (req: RequestWithUser, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
-const create = (req: Request, res: Response) => {
-    const {
-        requestByAddress, // the address making the request (will be community manager)
-        name,
-        contractAddress,
-        description,
-        language,
-        currency,
-        city,
-        country,
-        coverMediaId,
-        gps,
-        email,
-        txReceipt,
-        contractParams,
-    } = req.body;
-
-    CommunityService.create(
-        requestByAddress,
-        name,
-        contractAddress,
-        description,
-        language,
-        currency,
-        city,
-        country,
-        gps,
-        email,
-        txReceipt,
-        contractParams,
-        coverMediaId
-    )
-        .then((community) => standardResponse(res, 201, true, community))
-        .catch((e) => standardResponse(res, 403, false, e));
-};
-
 const accept = (req: Request, res: Response) => {
     const { acceptanceTransaction, publicId } = req.body;
     CommunityService.accept(acceptanceTransaction, publicId)
@@ -432,7 +396,6 @@ export default {
     listFull,
     searchManager,
     listManagers,
-    create,
     accept,
     remove,
     pending,

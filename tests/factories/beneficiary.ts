@@ -3,7 +3,7 @@ import {
     BeneficiaryAttributes,
     BeneficiaryCreationAttributes,
 } from '../../src/database/models/ubi/beneficiary';
-import { User } from '../../src/interfaces/app/user';
+import { AppUser } from '../../src/interfaces/app/appUser';
 import { randomTx } from '../utils/utils';
 
 /**
@@ -14,7 +14,7 @@ import { randomTx } from '../utils/utils';
  *
  * @return {Object}       An object to build the user from.
  */
-const data = async (user: User, communityId: string) => {
+const data = async (user: AppUser, communityId: string) => {
     const defaultProps: BeneficiaryCreationAttributes = {
         address: user.address,
         communityId,
@@ -31,7 +31,7 @@ const data = async (user: User, communityId: string) => {
  * @return {Object}       A user instance
  */
 const BeneficiaryFactory = async (
-    user: User[],
+    user: AppUser[],
     communityId: string,
     isRemoving: boolean = false
 ) => {

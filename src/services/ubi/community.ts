@@ -46,7 +46,7 @@ import ManagerService from './managers';
 export default class CommunityService {
     public static community = models.community;
     public static manager = models.manager;
-    public static user = models.user;
+    public static appUser = models.appUser;
     public static ubiCommunityContract = models.ubiCommunityContract;
     public static ubiCommunityState = models.ubiCommunityState;
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
@@ -168,7 +168,13 @@ export default class CommunityService {
             await t.rollback();
             // Since this is the service, we throw the error back to the controller,
             // so the route returns an error.
-            throw error;
+            if ((error as any).name === 'SequelizeUniqueConstraintError') {
+                throw new BaseError(
+                    'ALREADY_HAS_COMMUNITY',
+                    'A user cannot create two communities'
+                );
+            }
+            throw new BaseError('ERROR', (error as any).message);
         }
     }
 
@@ -617,7 +623,7 @@ export default class CommunityService {
         const result = await this.manager.findAll({
             include: [
                 {
-                    model: this.user,
+                    model: this.appUser,
                     as: 'user',
                     include: [
                         {

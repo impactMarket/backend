@@ -1,4 +1,4 @@
-import { User } from '@interfaces/app/user';
+import { AppUser } from '@interfaces/app/appUser';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { CommunityAttributes } from './community';
@@ -21,7 +21,7 @@ export interface BeneficiaryAttributes {
     createdAt: Date;
     updatedAt: Date;
 
-    user?: User;
+    user?: AppUser;
     community?: CommunityAttributes;
 }
 export interface BeneficiaryCreationAttributes {

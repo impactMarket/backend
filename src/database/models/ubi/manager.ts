@@ -1,4 +1,4 @@
-import { User } from '@interfaces/app/user';
+import { AppUser } from '@interfaces/app/appUser';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { CommunityAttributes } from './community';
@@ -14,7 +14,7 @@ export interface ManagerAttributes {
     createdAt: Date;
     updatedAt: Date;
 
-    user?: User;
+    user?: AppUser;
     community?: CommunityAttributes;
 }
 export interface ManagerCreationAttributes {
@@ -47,7 +47,7 @@ export function initializeManager(sequelize: Sequelize): void {
             address: {
                 type: DataTypes.STRING(44),
                 references: {
-                    model: sequelize.models.UserModel,
+                    model: sequelize.models.AppUserModel,
                     key: 'address',
                 },
                 onDelete: 'RESTRICT',

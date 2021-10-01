@@ -3,7 +3,7 @@ import { Sequelize } from 'sequelize';
 import { replace, restore } from 'sinon';
 
 import { models, sequelize as database } from '../../../../src/database';
-import { User } from '../../../../src/interfaces/app/user';
+import { AppUser } from '../../../../src/interfaces/app/appUser';
 import { verifyUserSuspectActivity } from '../../../../src/worker/jobs/cron/user';
 import UserFactory from '../../../factories/user';
 import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
@@ -19,7 +19,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
     });
 
     afterEach(async () => {
-        await truncate(sequelize, 'UserModel');
+        await truncate(sequelize, 'AppUserModel');
         await truncate(sequelize);
     });
 
@@ -43,7 +43,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
             ],
         });
         await verifyUserSuspectActivity();
-        const users: User[] = await models.user.findAll({
+        const users: AppUser[] = await models.appUser.findAll({
             include: [
                 {
                     model: models.appUserTrust,
@@ -78,7 +78,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
             ],
         });
         await verifyUserSuspectActivity();
-        const users: User[] = await models.user.findAll({
+        const users: AppUser[] = await models.appUser.findAll({
             include: [
                 {
                     model: models.appUserTrust,
@@ -111,7 +111,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
             ],
         });
         await verifyUserSuspectActivity();
-        const users: User[] = await models.user.findAll({
+        const users: AppUser[] = await models.appUser.findAll({
             include: [
                 {
                     model: models.appUserTrust,
