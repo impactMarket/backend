@@ -657,16 +657,16 @@ export default class CommunityService {
             },
         });
 
-        const address = result.map((el) => `'${el.address}'`);
-        const beneficiariesAdded:
-            | { count: number; from: string }[]
-            | undefined = await this.sequelize.query(
-            `SELECT count("address"), "from" FROM ubi_beneficiary_registry WHERE "from" IN (${address.toString()}) GROUP BY "from"`,
-            {
-                raw: true,
-                type: QueryTypes.SELECT,
-            }
-        );
+        const beneficiariesAdded = await this.ubiBeneficiaryRegistry.findAll({
+            attributes: [[fn('COUNT', col('address')), 'count'], 'from'],
+            where: {
+                from: {
+                    [Op.in]: result.map((el) => el.address),
+                },
+            },
+            group: ['from'],
+            raw: true,
+        });
 
         return result.map((r) => {
             const manager = r.toJSON() as ManagerAttributes;
@@ -676,7 +676,8 @@ export default class CommunityService {
             return {
                 ...manager,
                 isDeleted: !manager.user,
-                addedBeneficiaries: addedBeneficiaries ? Number(addedBeneficiaries?.count) : 0,
+                addedBeneficiaries:
+                    Number((addedBeneficiaries as any)?.count) || 0,
             };
         });
     }
