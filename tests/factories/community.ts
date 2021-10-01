@@ -14,10 +14,10 @@ import {
 
 interface ICreateProps {
     requestByAddress: string;
-    started: Date;
-    status: 'pending' | 'valid' | 'removed';
-    visibility: 'public' | 'private';
-    contract: UbiCommunityContractCreation;
+    started?: Date;
+    status?: 'pending' | 'valid' | 'removed';
+    visibility?: 'public' | 'private';
+    contract?: UbiCommunityContractCreation;
     hasAddress?: boolean;
     name?: string;
     country?: string;
@@ -50,6 +50,18 @@ const data = async (props: ICreateProps) => {
         language: 'pt',
         name: props.name ? props.name : faker.company.companyName(),
         coverMediaId: 0,
+        started: props.started ? props.started : new Date(),
+        status: props.status ? props.status : 'valid',
+        visibility: props.visibility ? props.visibility : 'public',
+        contract: props.contract
+            ? props.contract
+            : {
+                  baseInterval: 60 * 60 * 24,
+                  claimAmount: '1000000000000000000',
+                  communityId: 0,
+                  incrementInterval: 5 * 60,
+                  maxClaim: '450000000000000000000',
+              },
         ...props,
     };
     if (props.hasAddress) {
@@ -71,9 +83,12 @@ const data = async (props: ICreateProps) => {
 const CommunityFactory = async (props: ICreateProps[]) => {
     const result: CommunityAttributes[] = [];
     for (let index = 0; index < props.length; index++) {
-        const newCommunity = await Community.create(await data(props[index]));
+        const communityData = await data(props[index]);
+        const newCommunity = await Community.create(communityData);
         const newContract = await UbiCommunityContractModel.create({
-            ...props[index].contract,
+            ...(props[index].contract
+                ? props[index].contract
+                : communityData.contract),
             communityId: newCommunity.id,
         });
         result.push({
