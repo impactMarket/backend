@@ -616,13 +616,13 @@ export default class CommunityService {
         const community = (await this.community.findOne({
             where: { id: communityId },
         }))!;
-        
+
         let activeCondition = {};
-        if(active !== undefined) {
+        if (active !== undefined) {
             activeCondition = {
                 active,
-            }
-        };
+            };
+        }
 
         const result = await this.manager.findAll({
             include: [
@@ -644,27 +644,33 @@ export default class CommunityService {
                         },
                     ],
                 },
-                {
-                    model: this.ubiBeneficiaryRegistry,
-                    as: 'addedBeneficiaries',
-                    attributes: ['address'],
-                    required: false,
-                    where: {
-                        activity: UbiBeneficiaryRegistryType.add,
-                    },
-                },
             ],
             where: {
                 communityId: community.publicId,
                 ...activeCondition,
             },
         });
+
+        const address = result.map((el) => `'${el.address}'`);
+        const beneficiariesAdded:
+            | { count: number; from: string }[]
+            | undefined = await sequelize.query(
+            `SELECT count("from"), "from" FROM ubi_beneficiary_registry WHERE "from" IN (${address.toString()}) GROUP BY "from"`,
+            {
+                raw: true,
+                type: QueryTypes.SELECT,
+            }
+        );
+
         return result.map((r) => {
             const manager = r.toJSON() as ManagerAttributes;
+            const addedBeneficiaries = beneficiariesAdded.find(
+                (el) => el.from === manager.address
+            );
             return {
                 ...manager,
                 isDeleted: !manager.user,
-                addedBeneficiaries: manager.addedBeneficiaries?.length,
+                addedBeneficiaries: Number(addedBeneficiaries?.count),
             };
         });
     }

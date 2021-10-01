@@ -149,7 +149,7 @@ class CommunityController {
         if (filterByActive === 'true') {
             active = true;
         } else if (filterByActive === 'false') {
-            active = false
+            active = false;
         }
 
         CommunityService.getManagers(parseInt(req.params.id, 10), active)
