@@ -59,8 +59,10 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
                     : (suspectBeneficiaries.length /
                           community.beneficiaries.length) *
                       100;
-            const y = 60 * Math.log(ps + 1);
-            const suspectLevel = Math.round(Math.min(y, 100) / 10);
+            // The Math.log() function returns the natural logarithm (base e) of a number.
+            // The Math.log10() function returns the base 10 logarithm of a number.
+            const y = 60 * Math.log10(ps + 1);
+            const suspectLevel = Math.max(1, Math.round(Math.min(y, 100) / 10));
             // save suspect level
             await models.ubiCommunitySuspect.create(
                 {
