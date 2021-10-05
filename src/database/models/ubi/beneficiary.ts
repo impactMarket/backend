@@ -3,6 +3,14 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { CommunityAttributes } from './community';
 
+export type BeneficiaryFilterType = {
+    active?: boolean;
+    suspect?: boolean;
+    inactivity?: boolean;
+    unidentified?: boolean;
+    blocked?: boolean;
+};
+
 export interface BeneficiaryAttributes {
     id: number;
     address: string;

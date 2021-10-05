@@ -3,7 +3,10 @@ import {
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
 } from '@interfaces/ubi/ubiBeneficiaryRegistry';
-import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
+import {
+    BeneficiaryAttributes,
+    BeneficiaryFilterType,
+} from '@models/ubi/beneficiary';
 import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
@@ -13,6 +16,7 @@ import { ethers } from 'ethers';
 import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 
+import config from '../../config';
 import { models, sequelize } from '../../database';
 import {
     IBeneficiaryActivities,
@@ -101,7 +105,7 @@ export default class BeneficiaryService {
     public static async search(
         managerAddress: string,
         searchInput: string,
-        active?: boolean
+        filter?: BeneficiaryFilterType
     ): Promise<IListBeneficiary[]> {
         let whereSearchCondition: Where | WhereAttributeHash<AppUser> = {};
         let whereBeneficiary:
@@ -137,13 +141,6 @@ export default class BeneficiaryService {
             throw new BaseError('INVALID_SEARCH', 'Not valid search!');
         }
 
-        if (active !== undefined) {
-            whereBeneficiary = {
-                active,
-                ...whereBeneficiary,
-            };
-        }
-
         // const order: OrderItem[] = [
         //     [
         //         [{ model: models.user, as: 'user' }, 'suspect', 'DESC'],
@@ -161,8 +158,23 @@ export default class BeneficiaryService {
             return [];
         }
         const communityId = (manager.toJSON() as ManagerAttributes).communityId;
+
+        if (filter) {
+            const beneficiaryFilter = await this.getBeneficiaryFilter(
+                filter,
+                communityId
+            );
+            whereBeneficiary = {
+                ...beneficiaryFilter,
+                ...whereBeneficiary,
+            };
+        }
+
         const x = await models.beneficiary.findAll({
-            where: { ...whereBeneficiary, communityId },
+            where: {
+                ...whereBeneficiary,
+                communityId,
+            },
             include: [
                 {
                     model: models.appUser,
@@ -194,9 +206,9 @@ export default class BeneficiaryService {
 
     public static async list(
         managerAddress: string,
-        active: boolean,
         offset: number,
-        limit: number
+        limit: number,
+        filter: BeneficiaryFilterType
     ): Promise<IListBeneficiary[]> {
         if (!isAddress(managerAddress)) {
             throw new BaseError(
@@ -222,8 +234,14 @@ export default class BeneficiaryService {
             return [];
         }
         const communityId = (manager.toJSON() as ManagerAttributes).communityId;
+
+        const where = await this.getBeneficiaryFilter(filter, communityId);
+
         const x = await models.beneficiary.findAll({
-            where: { active, communityId },
+            where: {
+                communityId,
+                ...where,
+            },
             include: [
                 {
                     model: models.appUser,
@@ -251,6 +269,71 @@ export default class BeneficiaryService {
             };
         });
         return result;
+    }
+
+    public static async getBeneficiaryFilter(
+        filter: BeneficiaryFilterType,
+        communityId: string
+    ) {
+        let where = {};
+
+        if (filter.active !== undefined) {
+            where = {
+                ...where,
+                active: filter.active,
+            };
+        }
+
+        if (filter.suspect) {
+            where = {
+                ...where,
+                '$"user"."suspect"$': filter.suspect,
+            };
+        }
+
+        if (filter.unidentified) {
+            where = {
+                ...where,
+                '$"user"."username"$': null,
+            };
+        }
+
+        if (filter.blocked) {
+            where = {
+                ...where,
+                blocked: filter.blocked,
+            };
+        }
+
+        if (filter.inactivity) {
+            const communityContract = await models.community.findOne({
+                attributes: [],
+                include: [
+                    {
+                        attributes: ['baseInterval'],
+                        model: models.ubiCommunityContract,
+                        as: 'contract',
+                    },
+                ],
+                where: {
+                    publicId: communityId,
+                },
+            });
+
+            const seconds =
+                (communityContract as any).contract.baseInterval *
+                config.claimInactivityThreshold;
+            const lastClaimAt = new Date();
+            lastClaimAt.setSeconds(lastClaimAt.getSeconds() - seconds);
+            where = {
+                ...where,
+                lastClaimAt: {
+                    [Op.lte]: lastClaimAt,
+                },
+            };
+        }
+
+        return where;
     }
 
     public static async addTransaction(

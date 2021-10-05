@@ -99,7 +99,9 @@ describe('beneficiary service', () => {
         }
         // test results
         let result: IListBeneficiary[];
-        result = await BeneficiaryService.list(managers[0].address, true, 0, 5);
+        result = await BeneficiaryService.list(managers[0].address, 0, 5, {
+            active: true,
+        });
         (expect(result.slice(0, 2)).to as any).containSubset([
             {
                 address: users[4].address,
@@ -140,7 +142,9 @@ describe('beneficiary service', () => {
             )
         );
         // test results
-        result = await BeneficiaryService.list(managers[0].address, true, 0, 5);
+        result = await BeneficiaryService.list(managers[0].address, 0, 5, {
+            active: true,
+        });
         (expect(result.slice(0, 2)).to as any).containSubset([
             {
                 address: users[5].address,
@@ -245,6 +249,81 @@ describe('beneficiary service', () => {
             activity: UbiBeneficiaryRegistryType.remove,
             tx,
             txAt,
+        });
+    });
+
+    describe('filter on listing beneficiaries', () => {
+        it('should list suspected beneficiaries', async () => {
+            await sequelize.models.AppUserModel.update(
+                { suspect: true },
+                { where: { address: users[1].address } }
+            );
+            const result = await BeneficiaryService.list(
+                managers[0].address,
+                0,
+                5,
+                { suspect: true }
+            );
+
+            expect(result.length).to.be.equal(1);
+            expect(result[0].address).to.be.equal(users[1].address);
+            expect(result[0].suspect).to.be.true;
+        });
+
+        it('should list undefined beneficiaries', async () => {
+            await sequelize.models.AppUserModel.update(
+                { username: null },
+                { where: { address: users[2].address } }
+            );
+
+            const result = await BeneficiaryService.list(
+                managers[0].address,
+                0,
+                5,
+                { unidentified: true }
+            );
+
+            expect(result.length).to.be.equal(1);
+            expect(result[0].address).to.be.equal(users[2].address);
+            expect(result[0].username).to.be.null;
+        });
+
+        it('should list blocked beneficiaries', async () => {
+            await sequelize.models.Beneficiary.update(
+                { blocked: true },
+                { where: { address: users[3].address } }
+            );
+
+            const result = await BeneficiaryService.list(
+                managers[0].address,
+                0,
+                5,
+                { blocked: true }
+            );
+
+            expect(result.length).to.be.equal(1);
+            expect(result[0].address).to.be.equal(users[3].address);
+            expect(result[0].blocked).to.be.true;
+        });
+
+        it('should list inactivity beneficiaries', async () => {
+            const lastClaimAt = new Date();
+            const interval = communities[0].contract!.baseInterval * 4;
+            lastClaimAt.setSeconds(lastClaimAt.getSeconds() - interval);
+            await sequelize.models.Beneficiary.update(
+                { lastClaimAt },
+                { where: { address: users[4].address } }
+            );
+
+            const result = await BeneficiaryService.list(
+                managers[0].address,
+                0,
+                5,
+                { inactivity: true }
+            );
+
+            expect(result.length).to.be.equal(1);
+            expect(result[0].address).to.be.equal(users[4].address);
         });
     });
 
