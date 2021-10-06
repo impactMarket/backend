@@ -1,17 +1,11 @@
 'use strict';
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('app_user', {
-            id: {
-                type: Sequelize.INTEGER,
-                autoIncrement: true,
-                primaryKey: true,
-            },
-            address: {
-                type: Sequelize.STRING(44),
-                allowNull: false,
-                unique: true,
-            },
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
+        
+        const commonColumns = {
             avatarMediaId: {
                 type: Sequelize.INTEGER,
                 allowNull: true,
@@ -70,12 +64,68 @@ module.exports = {
             deletedAt: {
                 allowNull: true,
                 type: Sequelize.DATE,
-            },
-        });
+            }
+        };
 
-        await queryInterface.sequelize.query('insert into app_user (address, "avatarMediaId", username, language, currency, "pushNotificationToken", gender, year, children, "lastLogin", suspect, active, email, "createdAt", "updatedAt", "deletedAt") select * from "user"', {
-            type: Sequelize.QueryTypes.SELECT,
-        });
+        const AppUser = await queryInterface.sequelize.define(
+            'app_user',
+            {
+                id: {
+                    type: Sequelize.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
+                address: {
+                    type: Sequelize.STRING(44),
+                    allowNull: false,
+                    unique: true,
+                },
+                ...commonColumns,
+            },
+            {
+                tableName: 'app_user',
+                sequelize: queryInterface.sequelize, 
+            }
+        );
+
+        const User = await queryInterface.sequelize.define(
+            'user',
+            {
+                address: {
+                    type: Sequelize.STRING(44),
+                    primaryKey: true,
+                    allowNull: false,
+                },
+                ...commonColumns,
+            },
+            {
+                tableName: 'user',
+                sequelize: queryInterface.sequelize, 
+            }
+        );
+
+        const userRegistries = await User.findAll();
+
+        for await(let registry of userRegistries) {
+            await AppUser.create({
+                address: registry.address,
+                avatarMediaId: registry.avatarMediaId,
+                username: registry.username,
+                language: registry.language,
+                currency: registry.currency,
+                pushNotificationToken: registry.push,
+                gender: registry.gender,
+                year: registry.year,
+                children: registry.children,
+                lastLogin: registry.last,
+                suspect: registry.suspect,
+                active:registry.active,
+                email: registry.email,
+                createdAt: registry.created,
+                updatedAt: registry.updated,
+                deletedAt: registry.deletedAt
+            });
+        }
 
         await Promise.all([
             queryInterface.removeConstraint('app_user_through_trust', 'app_user_through_trust_userAddress_fkey'),
@@ -125,8 +175,7 @@ module.exports = {
                 },
                 onDelete: 'cascade'
             }),
-        ])
-
+        ]);
     },
     down: (queryInterface, Sequelize) => {
         return queryInterface.dropTable('app_user');
