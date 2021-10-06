@@ -253,56 +253,85 @@ describe('beneficiary service', () => {
     });
 
     describe('filter on listing beneficiaries', () => {
+        let listUsers: AppUser[];
+        let listCommunity: CommunityAttributes[];
+        let listManagers: ManagerAttributes[];
+
+        before(async () => {
+            listUsers = await UserFactory({ n: 5 });
+            listCommunity = await CommunityFactory([
+                {
+                    requestByAddress: listUsers[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+            listManagers = await ManagerFactory([listUsers[0]], listCommunity[0].publicId);
+            beneficiaries = await BeneficiaryFactory(
+                listUsers,
+                listCommunity[0].publicId
+            );
+        });
+
         it('should list suspected beneficiaries', async () => {
             await sequelize.models.AppUserModel.update(
                 { suspect: true },
-                { where: { address: users[1].address } }
+                { where: { address: listUsers[1].address } }
             );
             const result = await BeneficiaryService.list(
-                managers[0].address,
+                listManagers[0].address,
                 0,
                 5,
                 { suspect: true }
             );
 
             expect(result.length).to.be.equal(1);
-            expect(result[0].address).to.be.equal(users[1].address);
+            expect(result[0].address).to.be.equal(listUsers[1].address);
             expect(result[0].suspect).to.be.true;
         });
 
         it('should list undefined beneficiaries', async () => {
             await sequelize.models.AppUserModel.update(
                 { username: null },
-                { where: { address: users[2].address } }
+                { where: { address: listUsers[2].address } }
             );
 
             const result = await BeneficiaryService.list(
-                managers[0].address,
+                listManagers[0].address,
                 0,
                 5,
                 { unidentified: true }
             );
 
             expect(result.length).to.be.equal(1);
-            expect(result[0].address).to.be.equal(users[2].address);
+            expect(result[0].address).to.be.equal(listUsers[2].address);
             expect(result[0].username).to.be.null;
         });
 
         it('should list blocked beneficiaries', async () => {
             await sequelize.models.Beneficiary.update(
                 { blocked: true },
-                { where: { address: users[3].address } }
+                { where: { address: listUsers[3].address } }
             );
 
             const result = await BeneficiaryService.list(
-                managers[0].address,
+                listManagers[0].address,
                 0,
                 5,
                 { blocked: true }
             );
 
             expect(result.length).to.be.equal(1);
-            expect(result[0].address).to.be.equal(users[3].address);
+            expect(result[0].address).to.be.equal(listUsers[3].address);
             expect(result[0].blocked).to.be.true;
         });
 
@@ -312,18 +341,18 @@ describe('beneficiary service', () => {
             lastClaimAt.setSeconds(lastClaimAt.getSeconds() - interval);
             await sequelize.models.Beneficiary.update(
                 { lastClaimAt },
-                { where: { address: users[4].address } }
+                { where: { address: listUsers[4].address } }
             );
 
             const result = await BeneficiaryService.list(
-                managers[0].address,
+                listManagers[0].address,
                 0,
                 5,
                 { inactivity: true }
             );
 
             expect(result.length).to.be.equal(1);
-            expect(result[0].address).to.be.equal(users[4].address);
+            expect(result[0].address).to.be.equal(listUsers[4].address);
         });
     });
 
