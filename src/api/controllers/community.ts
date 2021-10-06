@@ -144,7 +144,15 @@ class CommunityController {
     };
 
     getManagers = (req: Request, res: Response) => {
-        CommunityService.getManagers(parseInt(req.params.id, 10))
+        const { filterByActive } = req.query;
+        let active: boolean | undefined;
+        if (filterByActive === 'true') {
+            active = true;
+        } else if (filterByActive === 'false') {
+            active = false;
+        }
+
+        CommunityService.getManagers(parseInt(req.params.id, 10), active)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

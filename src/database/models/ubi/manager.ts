@@ -1,3 +1,4 @@
+import { UbiBeneficiaryRegistry } from '@interfaces/ubi/ubiBeneficiaryRegistry';
 import { AppUser } from '@interfaces/app/appUser';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
@@ -16,6 +17,7 @@ export interface ManagerAttributes {
 
     user?: AppUser;
     community?: CommunityAttributes;
+    addedBeneficiaries?: UbiBeneficiaryRegistry[];
 }
 export interface ManagerCreationAttributes {
     address: string;

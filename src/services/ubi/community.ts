@@ -1,4 +1,5 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
+import { UbiBeneficiaryRegistryType } from '@interfaces/ubi/ubiBeneficiaryRegistry';
 import { UbiCommunityCampaign } from '@interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
@@ -61,6 +62,7 @@ export default class CommunityService {
     public static ubiCommunityCampaign = models.ubiCommunityCampaign;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
+    public static ubiBeneficiaryRegistry = models.ubiBeneficiaryRegistry;
     public static sequelize = sequelize;
 
     private static communityContentStorage = new CommunityContentStorage();
@@ -616,10 +618,18 @@ export default class CommunityService {
         });
     }
 
-    public static async getManagers(communityId: number) {
+    public static async getManagers(communityId: number, active?: boolean) {
         const community = (await this.community.findOne({
             where: { id: communityId },
         }))!;
+
+        let activeCondition = {};
+        if (active !== undefined) {
+            activeCondition = {
+                active,
+            };
+        }
+
         const result = await this.manager.findAll({
             include: [
                 {
@@ -643,14 +653,31 @@ export default class CommunityService {
             ],
             where: {
                 communityId: community.publicId,
-                active: true,
+                ...activeCondition,
             },
         });
+
+        const beneficiariesAdded = await this.ubiBeneficiaryRegistry.findAll({
+            attributes: [[fn('COUNT', col('address')), 'count'], 'from'],
+            where: {
+                from: {
+                    [Op.in]: result.map((el) => el.address),
+                },
+            },
+            group: ['from'],
+            raw: true,
+        });
+
         return result.map((r) => {
             const manager = r.toJSON() as ManagerAttributes;
+            const addedBeneficiaries = beneficiariesAdded.find(
+                (el) => el.from === manager.address
+            );
             return {
                 ...manager,
                 isDeleted: !manager.user,
+                addedBeneficiaries:
+                    Number((addedBeneficiaries as any)?.count) || 0,
             };
         });
     }
