@@ -1347,14 +1347,14 @@ describe('community service', () => {
 
             const tx = randomTx();
 
-            await ManagerFactory(users.slice(0, 3), community[0].publicId),
-                await BeneficiaryService.add(
-                    users[3].address,
-                    users[0].address,
-                    community[0].publicId,
-                    tx,
-                    new Date()
-                );
+            await ManagerFactory(users.slice(0, 3), community[0].publicId);
+            await BeneficiaryService.add(
+                users[3].address,
+                users[0].address,
+                community[0].publicId,
+                tx,
+                new Date()
+            );
 
             const sixteenDaysAgo = new Date();
             sixteenDaysAgo.setDate(sixteenDaysAgo.getDate() - 16);
