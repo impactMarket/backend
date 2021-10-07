@@ -2,8 +2,8 @@ import { expect } from 'chai';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
 import Sinon, { assert, replace, spy } from 'sinon';
-import { models } from '../../../src/database';
 
+import { models } from '../../../src/database';
 import { AppMediaContent } from '../../../src/interfaces/app/appMediaContent';
 import { AppUser } from '../../../src/interfaces/app/appUser';
 import { UbiPromoter } from '../../../src/interfaces/ubi/ubiPromoter';
@@ -11,13 +11,13 @@ import { CommunityContentStorage } from '../../../src/services/storage';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
 import CommunityService from '../../../src/services/ubi/community';
 import ManagerService from '../../../src/services/ubi/managers';
+import { verifyDeletedAccounts } from '../../../src/worker/jobs/cron/user';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 import { randomTx } from '../../utils/utils';
-import { verifyDeletedAccounts } from '../../../src/worker/jobs/cron/user';
 
 // in this test there are users being assined with suspicious activity and others being removed
 describe('community service', () => {
@@ -1348,15 +1348,15 @@ describe('community service', () => {
             const tx = randomTx();
 
             await ManagerFactory(users.slice(0, 3), community[0].publicId),
-            await BeneficiaryService.add(
-                users[3].address,
-                users[0].address,
-                community[0].publicId,
-                tx,
-                new Date()
-            );
+                await BeneficiaryService.add(
+                    users[3].address,
+                    users[0].address,
+                    community[0].publicId,
+                    tx,
+                    new Date()
+                );
 
-            let sixteenDaysAgo = new Date();
+            const sixteenDaysAgo = new Date();
             sixteenDaysAgo.setDate(sixteenDaysAgo.getDate() - 16);
             await models.appUser.update(
                 {
@@ -1408,15 +1408,18 @@ describe('community service', () => {
             const tx = randomTx();
 
             await ManagerFactory(users.slice(0, 2), community[0].publicId),
-            await BeneficiaryService.add(
-                users[2].address,
-                users[0].address,
-                community[0].publicId,
-                tx,
-                new Date()
-            );
+                await BeneficiaryService.add(
+                    users[2].address,
+                    users[0].address,
+                    community[0].publicId,
+                    tx,
+                    new Date()
+                );
 
-            await ManagerService.remove(users[0].address, community[0].publicId);
+            await ManagerService.remove(
+                users[0].address,
+                community[0].publicId
+            );
 
             const managers = await CommunityService.getManagers(
                 community[0].id,
@@ -1426,6 +1429,99 @@ describe('community service', () => {
             expect(managers[0].addedBeneficiaries).to.be.equal(1);
             expect(managers[0].active).to.be.false;
             expect(managers[0].isDeleted).to.be.false;
+        });
+    });
+
+    describe('delete submission pending', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'Manager');
+            await truncate(sequelize, 'Beneficiary');
+            await truncate(sequelize, 'Community');
+            await truncate(sequelize);
+        });
+
+        it('should delete a community submission if pending', async () => {
+            const users = await UserFactory({ n: 1 });
+            const mediaContent = await models.appMediaContent.create({
+                url: 'test.com',
+                width: 3024,
+                height: 3024,
+            });
+            const community = await CommunityService.create(
+                users[0].address,
+                'Community test',
+                undefined,
+                'community test',
+                'pt',
+                'BRL',
+                'Rio de Janeiro',
+                'Brazil',
+                {
+                    latitude: 0,
+                    longitude: 0,
+                },
+                'example@me.io',
+                undefined,
+                {
+                    claimAmount: '1500000000000000000',
+                    maxClaim: '400000000000000000000',
+                    baseInterval: 86400,
+                    incrementInterval: 600,
+                },
+                mediaContent.id
+            );
+
+            const result = await CommunityService.deleteSubmission(
+                users[0].address
+            );
+            CommunityService.findById(community.id)
+                .catch((e) => {
+                    expect(result).to.be.true;
+                    expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND');
+                })
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
+        });
+
+        it('should return an error when the user does not have a pending submission', async () => {
+            const users = await UserFactory({ n: 2 });
+            const mediaContent = await models.appMediaContent.create({
+                url: 'test.com',
+                width: 3024,
+                height: 3024,
+            });
+            await CommunityService.create(
+                users[0].address,
+                'Community test',
+                undefined,
+                'community test',
+                'pt',
+                'BRL',
+                'Rio de Janeiro',
+                'Brazil',
+                {
+                    latitude: 0,
+                    longitude: 0,
+                },
+                'example@me.io',
+                undefined,
+                {
+                    claimAmount: '1500000000000000000',
+                    maxClaim: '400000000000000000000',
+                    baseInterval: 86400,
+                    incrementInterval: 600,
+                },
+                mediaContent.id
+            );
+
+            CommunityService.deleteSubmission(users[1].address)
+                .catch((e) => {
+                    expect(e.name).to.be.equal('SUBMISSION_NOT_FOUND');
+                })
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
         });
     });
 });

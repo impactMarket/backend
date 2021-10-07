@@ -878,4 +878,6 @@ export default (app: Router): void => {
         communityValidators.edit,
         controller.edit
     );
+
+    route.delete('/', authenticateToken, controller.deleteSubmission);
 };
