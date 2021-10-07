@@ -121,6 +121,8 @@ export default class UserService {
             }
 
             const userHello = await this.loadUser(userFromRegistry);
+            this.updateLastLogin(userFromRegistry.id);
+
             return {
                 ...userHello,
                 token,
@@ -427,6 +429,21 @@ export default class UserService {
         });
 
         return exists.length > 0;
+    }
+
+    public static updateLastLogin(id: number): void {
+        try {
+            this.appUser.update(
+                {
+                    lastLogin: new Date(),
+                },
+                {
+                    where: { id },
+                }
+            );
+        } catch (error) {
+            Logger.warn(`Error to update last login: ${error}`);
+        }
     }
 
     public static async getAllAddresses(): Promise<string[]> {
