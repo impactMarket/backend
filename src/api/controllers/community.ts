@@ -70,21 +70,39 @@ class CommunityController {
             return;
         }
         if (req.query.action === 'search') {
-            const { active, search } = req.query;
+            const {
+                active,
+                search,
+                suspect,
+                inactivity,
+                unidentified,
+                blocked,
+            } = req.query;
             if (search === undefined || typeof search !== 'string') {
                 throw new Error('invalid search!');
             }
-            BeneficiaryService.search(
-                req.user.address,
-                search,
-                active !== undefined ? active === 'true' : undefined
-            )
+
+            BeneficiaryService.search(req.user.address, search, {
+                active: active !== undefined ? active === 'true' : undefined,
+                suspect: suspect === 'true',
+                inactivity: inactivity === 'true',
+                unidentified: unidentified === 'true',
+                blocked: blocked === 'true',
+            })
                 .then((r) => standardResponse(res, 200, true, r))
                 .catch((e) =>
                     standardResponse(res, 400, false, '', { error: e })
                 );
         } else {
-            let { active, offset, limit } = req.query;
+            let {
+                active,
+                offset,
+                limit,
+                suspect,
+                inactivity,
+                unidentified,
+                blocked,
+            } = req.query;
             if (active === undefined || typeof active !== 'string') {
                 active = 'true';
             }
@@ -96,9 +114,15 @@ class CommunityController {
             }
             BeneficiaryService.list(
                 req.user.address,
-                active === 'true',
                 parseInt(offset, 10),
-                parseInt(limit, 10)
+                parseInt(limit, 10),
+                {
+                    active: active === 'true',
+                    suspect: suspect === 'true',
+                    inactivity: inactivity === 'true',
+                    unidentified: unidentified === 'true',
+                    blocked: blocked === 'true',
+                }
             )
                 .then((r) => standardResponse(res, 200, true, r))
                 .catch((e) =>

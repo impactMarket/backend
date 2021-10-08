@@ -335,9 +335,11 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     it('list beneficiaries after delete user', async () => {
         const beneficiary = await BeneficiaryService.list(
             users[0].address,
-            true,
             0,
-            10
+            10,
+            {
+                active: true
+            }
         );
 
         beneficiary.forEach((el) => {

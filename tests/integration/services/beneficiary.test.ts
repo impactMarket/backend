@@ -99,7 +99,9 @@ describe('beneficiary service', () => {
         }
         // test results
         let result: IListBeneficiary[];
-        result = await BeneficiaryService.list(managers[0].address, true, 0, 5);
+        result = await BeneficiaryService.list(managers[0].address, 0, 5, {
+            active: true,
+        });
         (expect(result.slice(0, 2)).to as any).containSubset([
             {
                 address: users[4].address,
@@ -140,7 +142,9 @@ describe('beneficiary service', () => {
             )
         );
         // test results
-        result = await BeneficiaryService.list(managers[0].address, true, 0, 5);
+        result = await BeneficiaryService.list(managers[0].address, 0, 5, {
+            active: true,
+        });
         (expect(result.slice(0, 2)).to as any).containSubset([
             {
                 address: users[5].address,
@@ -245,6 +249,110 @@ describe('beneficiary service', () => {
             activity: UbiBeneficiaryRegistryType.remove,
             tx,
             txAt,
+        });
+    });
+
+    describe('filter on listing beneficiaries', () => {
+        let listUsers: AppUser[];
+        let listCommunity: CommunityAttributes[];
+        let listManagers: ManagerAttributes[];
+
+        before(async () => {
+            listUsers = await UserFactory({ n: 5 });
+            listCommunity = await CommunityFactory([
+                {
+                    requestByAddress: listUsers[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+            listManagers = await ManagerFactory([listUsers[0]], listCommunity[0].publicId);
+            beneficiaries = await BeneficiaryFactory(
+                listUsers,
+                listCommunity[0].publicId
+            );
+        });
+
+        it('should list suspected beneficiaries', async () => {
+            await sequelize.models.AppUserModel.update(
+                { suspect: true },
+                { where: { address: listUsers[1].address } }
+            );
+            const result = await BeneficiaryService.list(
+                listManagers[0].address,
+                0,
+                5,
+                { suspect: true }
+            );
+
+            expect(result.length).to.be.equal(1);
+            expect(result[0].address).to.be.equal(listUsers[1].address);
+            expect(result[0].suspect).to.be.true;
+        });
+
+        it('should list undefined beneficiaries', async () => {
+            await sequelize.models.AppUserModel.update(
+                { username: null },
+                { where: { address: listUsers[2].address } }
+            );
+
+            const result = await BeneficiaryService.list(
+                listManagers[0].address,
+                0,
+                5,
+                { unidentified: true }
+            );
+
+            expect(result.length).to.be.equal(1);
+            expect(result[0].address).to.be.equal(listUsers[2].address);
+            expect(result[0].username).to.be.null;
+        });
+
+        it('should list blocked beneficiaries', async () => {
+            await sequelize.models.Beneficiary.update(
+                { blocked: true },
+                { where: { address: listUsers[3].address } }
+            );
+
+            const result = await BeneficiaryService.list(
+                listManagers[0].address,
+                0,
+                5,
+                { blocked: true }
+            );
+
+            expect(result.length).to.be.equal(1);
+            expect(result[0].address).to.be.equal(listUsers[3].address);
+            expect(result[0].blocked).to.be.true;
+        });
+
+        it('should list inactivity beneficiaries', async () => {
+            const lastClaimAt = new Date();
+            const interval = communities[0].contract!.baseInterval * 4;
+            lastClaimAt.setSeconds(lastClaimAt.getSeconds() - interval);
+            await sequelize.models.Beneficiary.update(
+                { lastClaimAt },
+                { where: { address: listUsers[4].address } }
+            );
+
+            const result = await BeneficiaryService.list(
+                listManagers[0].address,
+                0,
+                5,
+                { inactivity: true }
+            );
+
+            expect(result.length).to.be.equal(1);
+            expect(result[0].address).to.be.equal(listUsers[4].address);
         });
     });
 
