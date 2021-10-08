@@ -296,6 +296,29 @@ describe('user service', () => {
 
             expect(error.message).to.equal('user is inactive');
         });
+
+        it('validate last login', async () => {
+            const randomWallet = ethers.Wallet.createRandom();
+            const address = await randomWallet.getAddress();
+            const phone = faker.phone.phoneNumber();
+            const login = await UserService.authenticate({
+                address,
+                trust: {
+                    phone,
+                },
+            });
+
+            const oldLastLogin = login.user.lastLogin;
+
+            const newLogin = await UserService.authenticate({
+                address,
+                trust: {
+                    phone,
+                },
+            });
+
+            expect(newLogin.user.lastLogin).to.be.gt(oldLastLogin);
+        });
     });
 
     describe('welcome', () => {

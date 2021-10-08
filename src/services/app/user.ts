@@ -121,6 +121,8 @@ export default class UserService {
             }
 
             const userHello = await this.loadUser(userFromRegistry);
+            this.updateLastLogin(userFromRegistry.id);
+
             return {
                 ...userHello,
                 token,
@@ -427,6 +429,26 @@ export default class UserService {
         });
 
         return exists.length > 0;
+    }
+
+    public static async updateLastLogin(id: number): Promise<void> {
+        const t = await this.sequelize.transaction();
+        try {
+            await this.appUser.update(
+                {
+                    lastLogin: new Date(),
+                },
+                {
+                    where: { id },
+                    transaction: t
+                }
+            );
+
+            await t.commit();
+        } catch (error) {
+            await t.rollback();
+            Logger.warn(`Error to update last login: ${error}`);
+        }
     }
 
     public static async getAllAddresses(): Promise<string[]> {
