@@ -142,9 +142,11 @@ module.exports = {
         while (dateToCount <= today) {
             const totals = (
                 await queryInterface.sequelize.query(
-                    `select COALESCE(sum(amount), 0) volume, count(tx) txs from beneficiarytransaction where date <= '` +
-                        dateToCount.toISOString().split('T')[0] +
-                        "'",
+                    `select COALESCE(sum(amount), 0) volume, count(beneficiarytransaction.tx) txs
+                     from beneficiarytransaction 
+                        inner join beneficiary on beneficiary.address = beneficiarytransaction.beneficiary
+                            inner join community on community."publicId" = beneficiary."communityId"
+                     where community.visibility = 'public' and date <= '${dateToCount.toISOString().split('T')[0]}'`,
                     {
                         type: Sequelize.QueryTypes.SELECT,
                     }
@@ -153,7 +155,11 @@ module.exports = {
 
             const individual = (
                 await queryInterface.sequelize.query(
-                    `select COALESCE(sum(amount), 0) volume, count(tx) txs from beneficiarytransaction where date = '${dateToCount.toISOString().split('T')[0]}'`,
+                    `select COALESCE(sum(amount), 0) volume, count(beneficiarytransaction.tx) txs
+                     from beneficiarytransaction
+                        inner join beneficiary on beneficiary.address = beneficiarytransaction.beneficiary
+                            inner join community on community."publicId" = beneficiary."communityId"
+                     where community.visibility = 'public' and date = '${dateToCount.toISOString().split('T')[0]}'`,
                     {
                         type: Sequelize.QueryTypes.SELECT,
                     }

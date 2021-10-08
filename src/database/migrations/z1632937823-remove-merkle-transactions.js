@@ -40,7 +40,9 @@ module.exports = {
             }
         }
 
-        await queryInterface.sequelize.query(`DELETE FROM beneficiarytransaction WHERE "withAddress" IN (${trees})`);
+        if(trees.length > 0) {
+            await queryInterface.sequelize.query(`DELETE FROM beneficiarytransaction WHERE "withAddress" IN (${trees})`);
+        }
     },
 
     down(queryInterface, Sequelize) {},

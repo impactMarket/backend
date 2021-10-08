@@ -11,8 +11,8 @@ module.exports = {
         const today = (new Date()).toISOString().split('T')[0];
         await queryInterface.sequelize.query(
             `update ubi_community_daily_state
-            set volume = TOTAL.volume,
-                transactions = TOTAL.txs
+            set volume = CASE WHEN ubi_community_daily_state.date = TOTAL.date THEN TOTAL.volume ELSE 0 END,
+                transactions = CASE WHEN ubi_community_daily_state.date = TOTAL.date THEN TOTAL.txs ELSE 0 END
             from (
                 SELECT COALESCE(sum(beneficiarytransaction.amount), 0) volume, count(beneficiarytransaction.tx) txs, community.id, date
                 from beneficiarytransaction
@@ -21,7 +21,7 @@ module.exports = {
                 where date BETWEEN '${startDate}' and '${today}'
                 group by community.id, date
             ) as TOTAL
-            WHERE "communityId" = TOTAL.id and ubi_community_daily_state.date = TOTAL.date`
+            WHERE "communityId" = TOTAL.id and ubi_community_daily_state.date BETWEEN '${startDate}' and '${today}'`
         );
     },
 
