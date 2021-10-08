@@ -264,3 +264,11 @@ export type IBeneficiaryActivities = {
     amount?: string;
     username?: string;
 };
+
+export type BeneficiaryFilterType = {
+    active?: boolean;
+    suspect?: boolean;
+    inactivity?: boolean;
+    unidentified?: boolean;
+    blocked?: boolean;
+};

@@ -3,10 +3,7 @@ import {
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
 } from '@interfaces/ubi/ubiBeneficiaryRegistry';
-import {
-    BeneficiaryAttributes,
-    BeneficiaryFilterType,
-} from '@models/ubi/beneficiary';
+import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
@@ -21,6 +18,7 @@ import { models, sequelize } from '../../database';
 import {
     IBeneficiaryActivities,
     IListBeneficiary,
+    BeneficiaryFilterType,
 } from '../../types/endpoints';
 import CommunityService from './community';
 
