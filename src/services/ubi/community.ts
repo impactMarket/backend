@@ -1402,6 +1402,110 @@ export default class CommunityService {
         } as any;
     }
 
+    public static async updateSubmission(
+        userAddress: string,
+        params: {
+            name: string;
+            description: string;
+            language: string;
+            currency: string;
+            city: string;
+            country: string;
+            gps: {
+                latitude: number;
+                longitude: number;
+            };
+            email: string;
+            contractParams?: ICommunityContractParams;
+            coverMediaId?: number;
+        }
+    ): Promise<CommunityAttributes> {
+        const t = await this.sequelize.transaction();
+        try {
+            const community = await this.community.findOne({
+                attributes: ['id', 'coverMediaId'],
+                where: {
+                    requestByAddress: userAddress,
+                    status: 'pending',
+                },
+            });
+
+            if (community === null) {
+                throw new BaseError(
+                    'COMMUNITY_NOT_FOUND',
+                    'community not found!'
+                );
+            }
+
+            const {
+                name,
+                description,
+                language,
+                currency,
+                city,
+                country,
+                gps,
+                email,
+                contractParams,
+                coverMediaId,
+            } = params;
+
+            await this.community.update(
+                {
+                    name,
+                    description,
+                    language,
+                    currency,
+                    city,
+                    country,
+                    gps,
+                    email,
+                },
+                {
+                    where: {
+                        id: community.id,
+                    },
+                    transaction: t,
+                }
+            );
+
+            if (
+                !!coverMediaId &&
+                coverMediaId !== -1 &&
+                community.coverMediaId !== coverMediaId
+            ) {
+                await this.communityContentStorage.deleteContent(
+                    community.coverMediaId!
+                );
+                await this.community.update(
+                    {
+                        coverMediaId,
+                    },
+                    {
+                        where: {
+                            id: community.id,
+                        },
+                        transaction: t,
+                    }
+                );
+            }
+
+            if (contractParams) {
+                await CommunityContractService.update(
+                    community.id,
+                    contractParams
+                );
+            }
+
+            await t.commit();
+
+            return this._findCommunityBy({ id: community.id }, userAddress);
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
+    }
+
     // PRIVATE METHODS
 
     private static async _findCommunityBy(
@@ -1445,6 +1549,10 @@ export default class CommunityService {
             });
             if (manager !== null) {
                 showEmail = manager.communityId === community.publicId;
+            } else {
+                showEmail =
+                    community.status === 'pending' &&
+                    community.requestByAddress === userAddress;
             }
         }
 

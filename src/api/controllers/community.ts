@@ -356,6 +356,46 @@ class CommunityController {
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    editSubmission = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        const {
+            name,
+            description,
+            language,
+            currency,
+            city,
+            country,
+            coverMediaId,
+            gps,
+            email,
+            contractParams,
+        } = req.body;
+
+        CommunityService.updateSubmission(req.user.address, {
+            name,
+            description,
+            language,
+            currency,
+            city,
+            country,
+            gps,
+            email,
+            contractParams,
+            coverMediaId,
+        })
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 const getHistoricalSSI = (req: Request, res: Response) => {
