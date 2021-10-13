@@ -1442,39 +1442,27 @@ describe('community service', () => {
 
         it('should delete a community submission if pending', async () => {
             const users = await UserFactory({ n: 1 });
-            const mediaContent = await models.appMediaContent.create({
-                url: 'test.com',
-                width: 3024,
-                height: 3024,
-            });
-            const community = await CommunityService.create(
-                users[0].address,
-                'Community test',
-                undefined,
-                'community test',
-                'pt',
-                'BRL',
-                'Rio de Janeiro',
-                'Brazil',
+            const community = await CommunityFactory([
                 {
-                    latitude: 0,
-                    longitude: 0,
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'pending',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
                 },
-                'example@me.io',
-                undefined,
-                {
-                    claimAmount: '1500000000000000000',
-                    maxClaim: '400000000000000000000',
-                    baseInterval: 86400,
-                    incrementInterval: 600,
-                },
-                mediaContent.id
-            );
+            ]);
 
             const result = await CommunityService.deleteSubmission(
                 users[0].address
             );
-            CommunityService.findById(community.id)
+            CommunityService.findById(community[0].id)
                 .catch((e) => {
                     expect(result).to.be.true;
                     expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND');
@@ -1486,36 +1474,24 @@ describe('community service', () => {
 
         it('should return an error when the user does not have a pending submission', async () => {
             const users = await UserFactory({ n: 2 });
-            const mediaContent = await models.appMediaContent.create({
-                url: 'test.com',
-                width: 3024,
-                height: 3024,
-            });
-            await CommunityService.create(
-                users[0].address,
-                'Community test',
-                undefined,
-                'community test',
-                'pt',
-                'BRL',
-                'Rio de Janeiro',
-                'Brazil',
+            await CommunityFactory([
                 {
-                    latitude: 0,
-                    longitude: 0,
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
                 },
-                'example@me.io',
-                undefined,
-                {
-                    claimAmount: '1500000000000000000',
-                    maxClaim: '400000000000000000000',
-                    baseInterval: 86400,
-                    incrementInterval: 600,
-                },
-                mediaContent.id
-            );
+            ]);
 
-            CommunityService.deleteSubmission(users[1].address)
+            CommunityService.deleteSubmission(users[0].address)
                 .catch((e) => {
                     expect(e.name).to.be.equal('SUBMISSION_NOT_FOUND');
                 })
