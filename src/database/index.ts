@@ -2,6 +2,7 @@ import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { AppMediaContentModel } from '@models/app/appMediaContent';
 import { AppMediaThumbnailModel } from '@models/app/appMediaThumbnail';
 import { AppNotificationModel } from '@models/app/appNotification';
+import { AppSurveyModel } from '@models/app/appSurvey';
 import { AppUserModel } from '@models/app/appUser';
 import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
 import { AppUserTrustModel } from '@models/app/appUserTrust';
@@ -136,6 +137,7 @@ const models: DbModels = {
         .AppMediaThumbnailModel as ModelCtor<AppMediaThumbnailModel>,
     appNotification: sequelize.models
         .AppNotificationModel as ModelCtor<AppNotificationModel>,
+    appSurvey: sequelize.models.AppSurveyModel as ModelCtor<AppSurveyModel>,
     // stories
     storyContent: sequelize.models
         .StoryContentModel as ModelCtor<StoryContentModel>,

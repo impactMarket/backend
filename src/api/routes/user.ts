@@ -466,4 +466,51 @@ export default (app: Router): void => {
         authenticateToken,
         userController.readRules
     );
+
+    /**
+     * @swagger
+     *
+     * /user/survey:
+     *   post:
+     *     tags:
+     *       - "user"
+     *     summary: Save the answers of the survey
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               question:
+     *                 type: number
+     *                 required: true
+     *                 description: The question identifier
+     *               answer:
+     *                 type: string
+     *                 required: true
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    type: array
+     *                    items:
+     *                      $ref: '#/components/schemas/AppSurvey'
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/survey',
+        authenticateToken,
+        userValidators.saveSurvey,
+        userController.saveSurvey
+    );
 };

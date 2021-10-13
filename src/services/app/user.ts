@@ -4,6 +4,7 @@ import {
     AppAnonymousReportCreation,
 } from '@interfaces/app/appAnonymousReport';
 import { AppNotification } from '@interfaces/app/appNotification';
+import { AppSurvey, AppSurveyCreation } from '@interfaces/app/appSurvey';
 import { AppUser, AppUserCreationAttributes } from '@interfaces/app/appUser';
 import { CommunityAttributes } from '@models/ubi/community';
 import { ProfileContentStorage } from '@services/storage';
@@ -32,6 +33,7 @@ export default class UserService {
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static appNotification = models.appNotification;
+    public static appSurvey = models.appSurvey;
 
     private static profileContentStorage = new ProfileContentStorage();
 
@@ -737,6 +739,27 @@ export default class UserService {
                 throw new BaseError('UPDATE_FAILED', 'User was not updated');
             }
             return true;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    public static async saveSurvery(address: string, survey: AppSurveyCreation[]): Promise<AppSurvey[]> {
+        try {
+            const user = await this.appUser.findOne({
+                attributes: ['id'],
+                where: { address }
+            });
+
+            if(!user) {
+                throw new BaseError('USER_NOT_FOUND', 'User not found');
+            }
+
+            survey.forEach(element => {
+                element.user = user.id;
+            });
+
+            return this.appSurvey.bulkCreate(survey);
         } catch (error) {
             throw error;
         }

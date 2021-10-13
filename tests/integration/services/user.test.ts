@@ -463,10 +463,13 @@ describe('user service', () => {
                 avatarMediaId: 1,
                 pushNotificationToken: 'notification-token',
             };
-            const userUpdated = await UserService.edit({ address, ...data } as AppUser);
+            const userUpdated = await UserService.edit({
+                address,
+                ...data,
+            } as AppUser);
 
             expect(userUpdated).to.include(data);
-        })
+        });
     });
 
     describe('notifications', () => {
@@ -482,33 +485,39 @@ describe('user service', () => {
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
-                }, {
+                },
+                {
                     address: users[0].address,
                     type: 2,
                     params: 'param_test',
                     createdAt: new Date(),
-                }, {
+                },
+                {
                     address: users[1].address,
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
-                }, {
+                },
+                {
                     address: users[2].address,
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
-                }
+                },
             ]);
         });
 
         it('get all notifications from a user', async () => {
-            const notifications = await UserService.getNotifications(users[0].address, {
-                limit: '10',
-                offset: '0',
-            });
+            const notifications = await UserService.getNotifications(
+                users[0].address,
+                {
+                    limit: '10',
+                    offset: '0',
+                }
+            );
 
             expect(notifications.length).to.be.equal(2);
-            notifications.forEach(notification => {
+            notifications.forEach((notification) => {
                 expect(notification.read).to.be.false;
             });
         });
@@ -516,14 +525,17 @@ describe('user service', () => {
         it('mark all notifications as read', async () => {
             await UserService.readNotifications(users[1].address);
 
-            const readNotifications = await UserService.getUnreadNotifications(users[1].address);
-            const unreadNotifications = await UserService.getUnreadNotifications(users[2].address);
+            const readNotifications = await UserService.getUnreadNotifications(
+                users[1].address
+            );
+            const unreadNotifications =
+                await UserService.getUnreadNotifications(users[2].address);
 
             expect(readNotifications).to.be.equal(0);
             expect(unreadNotifications).to.be.equal(1);
         });
     });
-    
+
     describe('newsletter', () => {
         let users: AppUser[];
         let searchContactStub: SinonStub;
@@ -566,7 +578,10 @@ describe('user service', () => {
 
         it('update email', async () => {
             const email = faker.internet.email();
-            const user: AppUser = await UserService.edit({ address: users[0].address, email } as AppUser);
+            const user: AppUser = await UserService.edit({
+                address: users[0].address,
+                email,
+            } as AppUser);
             expect(user.email).to.be.equal(email);
         });
 
@@ -748,6 +763,41 @@ describe('user service', () => {
             );
 
             expect(resp.user.deletedAt).to.be.null;
+        });
+    });
+
+    describe('survey', () => {
+        after(async () => {
+            await truncate(sequelize);
+        });
+
+        it('should save a survey', async () => {
+            const users = await UserFactory({ n: 1 });
+
+            const result = await UserService.saveSurvery(users[0].address, [
+                {
+                    question: 1,
+                    answer: 'answer',
+                },
+            ]);
+
+            expect(result[0]).to.include({
+                question: 1,
+                answer: 'answer',
+            });
+        });
+
+        it('should return an error with an invalid user', async () => {
+            UserService.saveSurvery('invalidAddress', [
+                {
+                    question: 1,
+                    answer: 'answer',
+                },
+            ])
+                .catch((e) => expect(e.name).to.be.equal('USER_NOT_FOUND'))
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
         });
     });
 });
