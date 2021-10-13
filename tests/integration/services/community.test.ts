@@ -1407,7 +1407,7 @@ describe('community service', () => {
 
             const tx = randomTx();
 
-            await ManagerFactory(users.slice(0, 2), community[0].publicId),
+            await ManagerFactory(users.slice(0, 2), community[0].publicId);
                 await BeneficiaryService.add(
                     users[2].address,
                     users[0].address,
