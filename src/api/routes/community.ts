@@ -878,4 +878,22 @@ export default (app: Router): void => {
         communityValidators.edit,
         controller.edit
     );
+
+
+    /**
+     * @swagger
+     *
+     * /community:
+     *   delete:
+     *     tags:
+     *       - "community"
+     *     summary: Delete a pending community
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.delete('/', authenticateToken, controller.deleteSubmission);
 };
