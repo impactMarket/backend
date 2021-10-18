@@ -2,7 +2,7 @@
  * @swagger
  *  components:
  *    schemas:
- *      AppSurvey:
+ *      UbiBeneficiarySurvey:
  *        type: object
  *        required:
  *          - id
@@ -28,7 +28,7 @@
  *            description: Date of creation
  */
 
-export interface AppSurvey {
+export interface UbiBeneficiarySurvey {
     id: number;
     user: number;
     question: number;
@@ -38,7 +38,7 @@ export interface AppSurvey {
     createdAt: Date;
 }
 
-export interface AppSurveyCreation {
+export interface UbiBeneficiarySurveyCreation {
     user?: number;
     question: number;
     answer: string;

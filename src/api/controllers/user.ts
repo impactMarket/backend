@@ -470,7 +470,7 @@ class UserController {
             return;
         }
 
-        UserService.saveSurvery(req.user.address, req.body)
+        BeneficiaryService.saveSurvery(req.user.address, req.body)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

@@ -502,7 +502,7 @@ export default (app: Router): void => {
      *                  data:
      *                    type: array
      *                    items:
-     *                      $ref: '#/components/schemas/AppSurvey'
+     *                      $ref: '#/components/schemas/UbiBeneficiarySurvey'
      *     security:
      *     - api_auth:
      *       - "write:modify":

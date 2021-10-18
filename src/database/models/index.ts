@@ -5,7 +5,7 @@ import { initializeAppAnonymousReport } from './app/anonymousReport';
 import { initializeAppMediaContent } from './app/appMediaContent';
 import { initializeAppMediaThumbnail } from './app/appMediaThumbnail';
 import { initializeAppNotification } from './app/appNotification';
-import { initializeAppSurvey } from './app/appSurvey';
+import { initializeUbiBeneficiarySurvey } from './ubi/ubiBeneficiarySurvey';
 import { initializeAppUser } from './app/appUser';
 import { initializeAppUserThroughTrust } from './app/appUserThroughTrust';
 import { initializeAppUserTrust } from './app/appUserTrust';
@@ -60,7 +60,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAppMediaContent(sequelize);
     initializeAppMediaThumbnail(sequelize);
     initializeAppNotification(sequelize);
-    initializeAppSurvey(sequelize);
+    initializeUbiBeneficiarySurvey(sequelize);
 
     // ubi
     initializeCommunity(sequelize);

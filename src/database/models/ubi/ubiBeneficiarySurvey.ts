@@ -1,7 +1,7 @@
-import { AppSurvey, AppSurveyCreation } from '@interfaces/app/appSurvey';
+import { UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation } from '@interfaces/ubi/ubiBeneficiarySurvey';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class AppSurveyModel extends Model<AppSurvey, AppSurveyCreation> {
+export class UbiBeneficiarySurveyModel extends Model<UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation> {
     public id!: number;
     public user!: number;
     public question!: number;
@@ -11,8 +11,8 @@ export class AppSurveyModel extends Model<AppSurvey, AppSurveyCreation> {
     public readonly createdAt!: Date;
 }
 
-export function initializeAppSurvey(sequelize: Sequelize): void {
-    AppSurveyModel.init(
+export function initializeUbiBeneficiarySurvey(sequelize: Sequelize): void {
+    UbiBeneficiarySurveyModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -38,9 +38,9 @@ export function initializeAppSurvey(sequelize: Sequelize): void {
             },
         },
         {
-            tableName: 'app_survey',
+            tableName: 'ubi_beneficiary_survey',
             sequelize,
-            timestamps: false,
+            updatedAt: false,
         }
     );
 }
