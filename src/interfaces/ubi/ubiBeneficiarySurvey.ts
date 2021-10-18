@@ -6,7 +6,7 @@
  *        type: object
  *        required:
  *          - id
- *          - user
+ *          - userId
  *          - question
  *          - answer
  *          - createdAt
@@ -14,7 +14,7 @@
  *          id:
  *            type: integer
  *            description: Notification id
- *          user:
+ *          userId:
  *            type: integer
  *            description: User ID
  *          question:
@@ -30,7 +30,7 @@
 
 export interface UbiBeneficiarySurvey {
     id: number;
-    user: number;
+    userId: number;
     question: number;
     answer: string;
 
@@ -39,7 +39,7 @@ export interface UbiBeneficiarySurvey {
 }
 
 export interface UbiBeneficiarySurveyCreation {
-    user?: number;
+    userId?: number;
     question: number;
     answer: string;
 }

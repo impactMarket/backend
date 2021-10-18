@@ -605,7 +605,7 @@ export default class BeneficiaryService {
             }
 
             survey.forEach(element => {
-                element.user = user.id;
+                element.userId = user.id;
             });
 
             return models.ubiBeneficiarySurvey.bulkCreate(survey);

@@ -3,7 +3,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiBeneficiarySurveyModel extends Model<UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation> {
     public id!: number;
-    public user!: number;
+    public userId!: number;
     public question!: number;
     public answer!: string;
 
@@ -19,7 +19,7 @@ export function initializeUbiBeneficiarySurvey(sequelize: Sequelize): void {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            user: {
+            userId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
