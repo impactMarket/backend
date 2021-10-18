@@ -765,39 +765,4 @@ describe('user service', () => {
             expect(resp.user.deletedAt).to.be.null;
         });
     });
-
-    describe('survey', () => {
-        after(async () => {
-            await truncate(sequelize);
-        });
-
-        it('should save a survey', async () => {
-            const users = await UserFactory({ n: 1 });
-
-            const result = await UserService.saveSurvery(users[0].address, [
-                {
-                    question: 1,
-                    answer: 'answer',
-                },
-            ]);
-
-            expect(result[0]).to.include({
-                question: 1,
-                answer: 'answer',
-            });
-        });
-
-        it('should return an error with an invalid user', async () => {
-            UserService.saveSurvery('invalidAddress', [
-                {
-                    question: 1,
-                    answer: 'answer',
-                },
-            ])
-                .catch((e) => expect(e.name).to.be.equal('USER_NOT_FOUND'))
-                .then(() => {
-                    throw new Error('expected to fail');
-                });
-        });
-    });
 });
