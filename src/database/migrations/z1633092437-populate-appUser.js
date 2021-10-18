@@ -113,16 +113,16 @@ module.exports = {
                 username: registry.username,
                 language: registry.language,
                 currency: registry.currency,
-                pushNotificationToken: registry.push,
+                pushNotificationToken: registry.pushNotificationToken,
                 gender: registry.gender,
                 year: registry.year,
                 children: registry.children,
-                lastLogin: registry.last,
+                lastLogin: registry.lastLogin,
                 suspect: registry.suspect,
                 active:registry.active,
                 email: registry.email,
-                createdAt: registry.created,
-                updatedAt: registry.updated,
+                createdAt: registry.createdAt,
+                updatedAt: registry.updatedAt,
                 deletedAt: registry.deletedAt
             });
         }

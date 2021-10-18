@@ -1607,14 +1607,14 @@ describe('community service', () => {
 
             const tx = randomTx();
 
-            await ManagerFactory(users.slice(0, 3), community[0].publicId),
-                await BeneficiaryService.add(
-                    users[3].address,
-                    users[0].address,
-                    community[0].publicId,
-                    tx,
-                    new Date()
-                );
+            await ManagerFactory(users.slice(0, 3), community[0].publicId);
+            await BeneficiaryService.add(
+                users[3].address,
+                users[0].address,
+                community[0].publicId,
+                tx,
+                new Date()
+            );
 
             const sixteenDaysAgo = new Date();
             sixteenDaysAgo.setDate(sixteenDaysAgo.getDate() - 16);
@@ -1675,6 +1675,7 @@ describe('community service', () => {
                 tx,
                 new Date()
             );
+
             await ManagerService.remove(
                 users[0].address,
                 community[0].publicId
@@ -1688,6 +1689,75 @@ describe('community service', () => {
             expect(managers[0].addedBeneficiaries).to.be.equal(1);
             expect(managers[0].active).to.be.false;
             expect(managers[0].isDeleted).to.be.false;
+        });
+    });
+
+    describe('delete submission pending', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'Manager');
+            await truncate(sequelize, 'Beneficiary');
+            await truncate(sequelize, 'Community');
+            await truncate(sequelize);
+        });
+
+        it('should delete a community submission if pending', async () => {
+            const users = await UserFactory({ n: 1 });
+            const community = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'pending',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const result = await CommunityService.deleteSubmission(
+                users[0].address
+            );
+            CommunityService.findById(community[0].id)
+                .catch((e) => {
+                    expect(result).to.be.true;
+                    expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND');
+                })
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
+        });
+
+        it('should return an error when the user does not have a pending submission', async () => {
+            const users = await UserFactory({ n: 2 });
+            await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            CommunityService.deleteSubmission(users[0].address)
+                .catch((e) => {
+                    expect(e.name).to.be.equal('SUBMISSION_NOT_FOUND');
+                })
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
         });
     });
 });

@@ -1506,6 +1506,30 @@ export default class CommunityService {
         }
     }
 
+    public static async deleteSubmission(
+        managerAddress: string
+    ): Promise<boolean> {
+        try {
+            const deleted = await this.community.destroy({
+                where: {
+                    requestByAddress: managerAddress,
+                    status: 'pending',
+                },
+            });
+
+            if (!deleted) {
+                throw new BaseError(
+                    'SUBMISSION_NOT_FOUND',
+                    'Not found community submission'
+                );
+            }
+
+            return true;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     // PRIVATE METHODS
 
     private static async _findCommunityBy(
