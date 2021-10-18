@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
 import { assert, match, spy } from 'sinon';
 import tk from 'timekeeper';
@@ -1423,6 +1424,112 @@ describe('#calcuateGlobalMetrics()', () => {
             totalTransactions: BigInt(50),
             totalReach: BigInt(13),
             totalReachOut: BigInt(10),
+        });
+    });
+
+    it('calculate global/community metrics after remove a community', async () => {
+        const users = await UserFactory({ n: 1 });
+        const communities = await CommunityFactory([
+            {
+                requestByAddress: users[0].address,
+                started: new Date(),
+                status: 'valid',
+                visibility: 'public',
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '1000000000000000000',
+                    communityId: 0,
+                    incrementInterval: 5 * 60,
+                    maxClaim: '450000000000000000000',
+                },
+                hasAddress: true,
+            },
+        ]);
+        const community: any = {
+            ...communities[0],
+            contract: {
+                baseInterval: 60 * 60 * 24,
+                claimAmount: '1000000000000000000',
+                communityId: 0,
+                incrementInterval: 5 * 60,
+                maxClaim: '450000000000000000000',
+            },
+        };
+
+        // next day
+        tk.travel(jumpToTomorrowMidnight());
+        const beneficiaries = await BeneficiaryFactory(
+            users,
+            community.publicId
+        );
+        await InflowFactory(community);
+        await ClaimFactory(beneficiaries[0], community);
+        await ClaimFactory(beneficiaries[0], community);
+
+        // next day
+        tk.travel(jumpToTomorrowMidnight());
+        console.log('date => ', new Date)
+        await calcuateCommunitiesMetrics();
+        await calcuateGlobalMetrics();
+
+        const date = new Date();
+        date.setDate(date.getDate() - 1);
+        const communityBeforeUpdate = await models.ubiCommunityDailyState.findOne({
+            where: {
+                date,
+                communityId: community.id
+            }
+        });
+        const globalBeforeUpdate = await models.globalDailyState.findOne({
+            where: {
+                date,
+            }
+        });
+
+        // remove community and beneficiaries
+        await models.community.update({
+            status: 'removed',
+            deletedAt: new Date()
+        }, {
+            where: {
+                publicId: community.publicId
+            }
+        })
+        await models.beneficiary.update({
+            active: false
+        }, {
+            where: {
+                communityId: community.publicId
+            }
+        });
+
+        // next day
+        tk.travel(jumpToTomorrowMidnight());
+        await calcuateCommunitiesMetrics();
+        await calcuateGlobalMetrics();
+        const newDate = new Date();
+        newDate.setDate(newDate.getDate() - 1);
+        const communityAfterUpdate = await models.ubiCommunityDailyState.findOne({
+            where: {
+                date: newDate,
+                communityId: community.id
+            }
+        });
+        const globalAfterUpdate = await models.globalDailyState.findOne({
+            where: {
+                date: newDate,
+            }
+        });
+        
+        expect(communityBeforeUpdate!.beneficiaries).to.be.equal(1);
+        expect(communityAfterUpdate!.beneficiaries).to.be.equal(-1);
+        expect(globalBeforeUpdate!).to.include({
+            beneficiaries: 1,
+            totalBeneficiaries: 1
+        });
+        expect(globalAfterUpdate!).to.include({
+            beneficiaries: -1,
+            totalBeneficiaries: 0
         });
     });
 });

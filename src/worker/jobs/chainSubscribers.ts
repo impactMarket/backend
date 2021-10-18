@@ -51,8 +51,9 @@ class ChainSubscribers {
         this.isCommunityPublic = isCommunityPublic;
         this.filterTopics = [
             [
-                // ethers.utils.id('CommunityAdded(address,address,uint256,uint256,uint256,uint256)'),
-                // ethers.utils.id('CommunityRemoved(address)'),
+                ethers.utils.id('CommunityAdded(address,address,uint256,uint256,uint256,uint256)'),
+                ethers.utils.id('CommunityRemoved(address)'),
+                ethers.utils.id('CommunityMigrated(address, address, address)'),
                 ethers.utils.id('ManagerAdded(address)'),
                 ethers.utils.id('ManagerRemoved(address)'),
                 ethers.utils.id('BeneficiaryAdded(address)'),
@@ -135,7 +136,9 @@ class ChainSubscribers {
             parsedLog = await this._processCUSDEvents(log);
         } else if (this.allCommunitiesAddresses.includes(log.address)) {
             parsedLog = await this._processCommunityEvents(log);
-        } else {
+        }  else if (log.address === config.communityAdminAddress) {
+            await this._processCommunityAdminEvents(log);
+        }  else {
             await this._processOtherEvents(log);
         }
         return parsedLog;
@@ -310,6 +313,85 @@ class ChainSubscribers {
             );
             result = parsedLog;
         }
+        return result;
+    }
+
+    async _processCommunityAdminEvents(log: ethers.providers.Log): Promise<ethers.utils.LogDescription | undefined> {
+        const parsedLog = this.ifaceCommunity.parseLog(log);
+        let result: ethers.utils.LogDescription | undefined = undefined;
+
+        if (parsedLog.name === 'CommunityRemoved') {
+            const communityAddress = parsedLog.args[0];
+            const community = await models.community.findOne({
+                attributes: ['publicId'],
+                where: { contractAddress: communityAddress }
+            });
+
+            if(!community || !community.publicId) {
+                Logger.error(
+                    `Community with address ${communityAddress} wasn't found at "CommunityRemoved"`
+                );
+            } else {
+                await models.community.update({
+                    status: 'removed',
+                    deletedAt: new Date()
+                }, {
+                    where: { contractAddress: communityAddress }
+                });
+                await models.beneficiary.update({
+                    active: false
+                }, {
+                    where: {
+                        communityId: community.publicId
+                    }
+                });
+                result = parsedLog;
+            }
+        } else if (parsedLog.name === 'CommunityAdded') {
+            const communityAddress = parsedLog.args[0];
+            const managerAddress = parsedLog.args[1];
+
+            const community = await models.community.update(
+                {
+                    contractAddress: communityAddress,
+                    status: 'valid',
+                },
+                { 
+                    where: {
+                        requestByAddress: managerAddress
+                    }
+                }
+            );
+            if (community[0] === 0) {
+                Logger.error(
+                    `Community with address ${communityAddress} wasn't updated at "CommunityAdded"`
+                );
+            }
+
+            result = parsedLog;
+        } else if (parsedLog.name === 'CommunityMigrated') {
+            const communityAddress = parsedLog.args[1];
+            const previousCommunityAddress = parsedLog.args[2];
+
+            const community = await models.community.update(
+                {
+                    contractAddress: communityAddress,
+                },
+                { 
+                    where: {
+                        contractAddress: previousCommunityAddress
+                    }
+                }
+            );
+            if (community[0] === 0) {
+                Logger.error(
+                    `Community with address ${communityAddress} wasn't updated at "CommunityMigrated"`
+                );
+            }
+
+            result = parsedLog;
+        }
+
         return result;
     }
 

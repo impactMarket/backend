@@ -225,6 +225,7 @@ export default {
     hubspotKey: validatedEnv.HUBSPOT_KEY,
 
     DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
+    communityAdminAddress: validatedEnv.COMMUNITY_ADMIN_ADDRESS,
     claimLocationTimeframe: validatedEnv.CLAIM_LOCATION_TIMEFRAME,
     claimInactivityThreshold: validatedEnv.CLAIM_INACTIVITY_THRESHOLD,
 };
