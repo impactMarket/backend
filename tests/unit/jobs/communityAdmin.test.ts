@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
-import { assert, SinonStub, stub } from 'sinon';
+import { assert, SinonStub, stub, match } from 'sinon';
 
 import config from '../../../src/config';
 import { models } from '../../../src/database';
@@ -17,6 +17,8 @@ describe('communityAdmin', () => {
     let cUSD: ethers.Contract;
     let CommunityAdminContract: ethers.Contract;
     let communityUpdated: SinonStub<any, any>;
+    let findCommunity: SinonStub<any, any>;
+    let beneficiaryUpdated: SinonStub<any, any>;
     let CommunityAdminFactory: ethers.ContractFactory;
     const communities = new Map<string, string>();
     const communitiesId = new Map<string, number>();
@@ -33,6 +35,9 @@ describe('communityAdmin', () => {
         accounts = await provider.listAccounts();
         communityUpdated = stub(models.community, 'update');
         communityUpdated.returns(Promise.resolve([1, {} as any]));
+        findCommunity = stub(models.community, 'findOne');
+        findCommunity.returns(Promise.resolve({ publicId: 'public-id' }));
+        beneficiaryUpdated = stub(models.beneficiary, 'update');
         let lastBlock = 0;
 
         stub(ImMetadataService, 'setLastBlock').callsFake(async (v) => {
@@ -83,6 +88,11 @@ describe('communityAdmin', () => {
         provider.removeAllListeners();
     });
 
+    afterEach(() => {
+        communityUpdated.reset();
+        beneficiaryUpdated.reset();
+    });
+
     it('add community', async () => {
         const newCommunityAddress = await CommunityAdminContract.connect(
             provider.getSigner(0)
@@ -105,6 +115,97 @@ describe('communityAdmin', () => {
             {
                 where: {
                     requestByAddress: accounts[1],
+                },
+            }
+        );
+    });
+
+    it('remove community', async () => {
+        const newCommunityAddress = await CommunityAdminContract.connect(
+            provider.getSigner(0)
+        ).addCommunity(
+            accounts[1],
+            '2000000000000000000',
+            '1500000000000000000000',
+            86400,
+            300
+        );
+        const txResult = await newCommunityAddress.wait();
+        await waitForStubCall(communityUpdated, 1);
+        communityUpdated.reset();
+        
+        const contractAddress = txResult.events[0].args[0];
+        const removedCommunity = await CommunityAdminContract.connect(
+            provider.getSigner(0)
+        ).removeCommunity(
+            contractAddress
+        );
+        await removedCommunity.wait();
+
+        await waitForStubCall(communityUpdated, 1);
+        assert.callCount(communityUpdated, 1);
+        assert.calledWith(
+            communityUpdated.getCall(0),
+            {
+                status: 'removed',
+                deletedAt: match.any
+            },
+            {
+                where: {
+                    contractAddress,
+                },
+            }
+        );
+        await waitForStubCall(beneficiaryUpdated, 1);
+        assert.callCount(beneficiaryUpdated, 1);
+        assert.calledWith(
+            beneficiaryUpdated.getCall(0),
+            {
+                active: false,
+            },
+            {
+                where: {
+                    communityId: 'public-id',
+                },
+            }
+        );
+    });
+
+    it('migrate community', async () => {
+        const newCommunityAddress = await CommunityAdminContract.connect(
+            provider.getSigner(0)
+        ).addCommunity(
+            accounts[1],
+            '2000000000000000000',
+            '1500000000000000000000',
+            86400,
+            300
+        );
+        const txResult = await newCommunityAddress.wait();
+        await waitForStubCall(communityUpdated, 1);
+        assert.callCount(communityUpdated, 1);
+        communityUpdated.reset();
+
+        const previousCommunityAddress = txResult.events[0].args[0];
+        const migratedCommunity = await CommunityAdminContract.connect(
+            provider.getSigner(0)
+        ).migrateCommunity(
+            accounts[1],
+            previousCommunityAddress,
+        );
+        const migratedCommunityTxResult = await migratedCommunity.wait();
+        const contractAddress = migratedCommunityTxResult.events[0].args[1];
+
+        await waitForStubCall(communityUpdated, 1);
+        assert.callCount(communityUpdated, 1);
+        assert.calledWith(
+            communityUpdated.getCall(0),
+            {
+                contractAddress,
+            },
+            {
+                where: {
+                    contractAddress: previousCommunityAddress,
                 },
             }
         );
