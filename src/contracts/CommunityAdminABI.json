@@ -1,0 +1,171 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_cUSD",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "_communityAddress",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "_firstManager",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "_claimAmount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "_maxClaim",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "_baseInterval",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "_incrementInterval",
+                "type": "uint256"
+            }
+        ],
+        "name": "CommunityAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "_firstManager",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "_communityAddress",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "_previousCommunityAddress",
+                "type": "address"
+            }
+        ],
+        "name": "CommunityMigrated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "_communityAddress",
+                "type": "address"
+            }
+        ],
+        "name": "CommunityRemoved",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "firstManager_",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "claimAmount_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "maxClaim_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "baseInterval_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "incrementInterval_",
+                "type": "uint256"
+            }
+        ],
+        "name": "addCommunity",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "cUSD_",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "firstManager_",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "previousCommunity_",
+                "type": "address"
+            }
+        ],
+        "name": "migrateCommunity",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "community_",
+                "type": "address"
+            }
+        ],
+        "name": "removeCommunity",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]

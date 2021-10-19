@@ -11,6 +11,7 @@ import { ethers } from 'ethers';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
+import CommunityAdminContractABI from '../../contracts/CommunityAdminABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
 import { models } from '../../database';
 
@@ -25,6 +26,7 @@ class ChainSubscribers {
     provider: ethers.providers.JsonRpcProvider;
     ifaceERC20: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
+    ifaceCommunityAdmin: ethers.utils.Interface;
     allCommunitiesAddresses: string[];
     communities: Map<string, string>; // TODO: to be removed
     communitiesId: Map<string, number>;
@@ -41,6 +43,9 @@ class ChainSubscribers {
     ) {
         this.provider = provider;
         this.ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
+        this.ifaceCommunityAdmin = new ethers.utils.Interface(
+            CommunityAdminContractABI
+        );
         this.ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
 
         this.beneficiariesInPublicCommunities =
@@ -51,7 +56,9 @@ class ChainSubscribers {
         this.isCommunityPublic = isCommunityPublic;
         this.filterTopics = [
             [
-                ethers.utils.id('CommunityAdded(address,address,uint256,uint256,uint256,uint256)'),
+                ethers.utils.id(
+                    'CommunityAdded(address,address,uint256,uint256,uint256,uint256)'
+                ),
                 ethers.utils.id('CommunityRemoved(address)'),
                 ethers.utils.id('CommunityMigrated(address, address, address)'),
                 ethers.utils.id('ManagerAdded(address)'),
@@ -136,9 +143,9 @@ class ChainSubscribers {
             parsedLog = await this._processCUSDEvents(log);
         } else if (this.allCommunitiesAddresses.includes(log.address)) {
             parsedLog = await this._processCommunityEvents(log);
-        }  else if (log.address === config.communityAdminAddress) {
+        } else if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log);
-        }  else {
+        } else {
             await this._processOtherEvents(log);
         }
         return parsedLog;
@@ -150,7 +157,10 @@ class ChainSubscribers {
         const parsedLog = this.ifaceERC20.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
         // only transactions to community contracts (donations) or DAO
-        if (this.allCommunitiesAddresses.includes(parsedLog.args[1]) || parsedLog.args[1] === config.DAOContractAddress) {
+        if (
+            this.allCommunitiesAddresses.includes(parsedLog.args[1]) ||
+            parsedLog.args[1] === config.DAOContractAddress
+        ) {
             const from = parsedLog.args[0];
             const toCommunityAddress = parsedLog.args[1];
             const amount = parsedLog.args[2].toString();
@@ -316,35 +326,43 @@ class ChainSubscribers {
         return result;
     }
 
-    async _processCommunityAdminEvents(log: ethers.providers.Log): Promise<ethers.utils.LogDescription | undefined> {
-        const parsedLog = this.ifaceCommunity.parseLog(log);
+    async _processCommunityAdminEvents(
+        log: ethers.providers.Log
+    ): Promise<ethers.utils.LogDescription | undefined> {
+        const parsedLog = this.ifaceCommunityAdmin.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
 
         if (parsedLog.name === 'CommunityRemoved') {
             const communityAddress = parsedLog.args[0];
             const community = await models.community.findOne({
                 attributes: ['publicId'],
-                where: { contractAddress: communityAddress }
+                where: { contractAddress: communityAddress },
             });
 
-            if(!community || !community.publicId) {
+            if (!community || !community.publicId) {
                 Logger.error(
                     `Community with address ${communityAddress} wasn't found at "CommunityRemoved"`
                 );
             } else {
-                await models.community.update({
-                    status: 'removed',
-                    deletedAt: new Date()
-                }, {
-                    where: { contractAddress: communityAddress }
-                });
-                await models.beneficiary.update({
-                    active: false
-                }, {
-                    where: {
-                        communityId: community.publicId
+                await models.community.update(
+                    {
+                        status: 'removed',
+                        deletedAt: new Date(),
+                    },
+                    {
+                        where: { contractAddress: communityAddress },
                     }
-                });
+                );
+                await models.beneficiary.update(
+                    {
+                        active: false,
+                    },
+                    {
+                        where: {
+                            communityId: community.publicId,
+                        },
+                    }
+                );
                 result = parsedLog;
             }
         } else if (parsedLog.name === 'CommunityAdded') {
@@ -356,10 +374,10 @@ class ChainSubscribers {
                     contractAddress: communityAddress,
                     status: 'valid',
                 },
-                { 
+                {
                     where: {
-                        requestByAddress: managerAddress
-                    }
+                        requestByAddress: managerAddress,
+                    },
                 }
             );
             if (community[0] === 0) {
@@ -377,10 +395,10 @@ class ChainSubscribers {
                 {
                     contractAddress: communityAddress,
                 },
-                { 
+                {
                     where: {
-                        contractAddress: previousCommunityAddress
-                    }
+                        contractAddress: previousCommunityAddress,
+                    },
                 }
             );
             if (community[0] === 0) {
