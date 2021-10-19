@@ -3,8 +3,8 @@ import {
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
 } from '@interfaces/ubi/ubiBeneficiaryRegistry';
-import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { UbiBeneficiaryTransactionCreation } from '@interfaces/ubi/ubiBeneficiaryTransaction';
+import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';

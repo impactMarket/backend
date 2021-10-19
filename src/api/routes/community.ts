@@ -879,7 +879,6 @@ export default (app: Router): void => {
         controller.edit
     );
 
-
     /**
      * @swagger
      *

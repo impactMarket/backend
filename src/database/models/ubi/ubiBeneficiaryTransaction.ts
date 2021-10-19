@@ -1,8 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
 import {
     UbiBeneficiaryTransaction,
     UbiBeneficiaryTransactionCreation,
 } from '@interfaces/ubi/ubiBeneficiaryTransaction';
+import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiBeneficiaryTransactionModel extends Model<
     UbiBeneficiaryTransaction,
@@ -18,7 +18,9 @@ export class UbiBeneficiaryTransactionModel extends Model<
     public txAt!: Date;
 }
 
-export function initializeUbiBeneficiaryTransaction(sequelize: Sequelize): void {
+export function initializeUbiBeneficiaryTransaction(
+    sequelize: Sequelize
+): void {
     UbiBeneficiaryTransactionModel.init(
         {
             id: {
