@@ -395,7 +395,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 required: false,
                 include: [
                     {
-                        model: models.beneficiaryTransaction,
+                        model: models.ubiBeneficiaryTransaction,
                         as: 'transactions',
                         attributes: [],
                         required: false,

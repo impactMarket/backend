@@ -19,7 +19,7 @@ import { StoryEngagementModel } from '@models/story/storyEngagement';
 import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 import { StoryUserReportModel } from '@models/story/storyUserReport';
 import { Beneficiary } from '@models/ubi/beneficiary';
-import { BeneficiaryTransaction } from '@models/ubi/beneficiaryTransaction';
+import { UbiBeneficiaryTransactionModel } from '@models/ubi/ubiBeneficiaryTransaction';
 import { Community } from '@models/ubi/community';
 import { UbiCommunityContractModel } from '@models/ubi/communityContract';
 import { UbiCommunityDailyMetricsModel } from '@models/ubi/communityDailyMetrics';
@@ -69,7 +69,7 @@ export interface DbModels {
     ubiClaimLocation: ModelCtor<ClaimLocationModel>;
     beneficiary: ModelCtor<Beneficiary>;
     ubiBeneficiaryRegistry: ModelCtor<UbiBeneficiaryRegistryModel>;
-    beneficiaryTransaction: ModelCtor<BeneficiaryTransaction>;
+    ubiBeneficiaryTransaction: ModelCtor<UbiBeneficiaryTransactionModel>;
     inflow: ModelCtor<Inflow>;
     manager: ModelCtor<Manager>;
     //

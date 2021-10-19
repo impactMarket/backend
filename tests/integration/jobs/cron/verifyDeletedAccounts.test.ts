@@ -219,7 +219,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         }))!.toJSON();
 
-        const transactions = (await models.beneficiaryTransaction.findOne({
+        const transactions = (await models.ubiBeneficiaryTransaction.findOne({
             where: {
                 beneficiary: users[1].address,
             },

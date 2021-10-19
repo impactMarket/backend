@@ -19,7 +19,7 @@ import { StoryEngagementModel } from '@models/story/storyEngagement';
 import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 import { StoryUserReportModel } from '@models/story/storyUserReport';
 import { Beneficiary } from '@models/ubi/beneficiary';
-import { BeneficiaryTransaction } from '@models/ubi/beneficiaryTransaction';
+import { UbiBeneficiaryTransactionModel } from '@models/ubi/ubiBeneficiaryTransaction';
 import { Community } from '@models/ubi/community';
 import { UbiCommunityContractModel } from '@models/ubi/communityContract';
 import { UbiCommunityDailyMetricsModel } from '@models/ubi/communityDailyMetrics';
@@ -110,8 +110,8 @@ const models: DbModels = {
         .UbiBeneficiaryRegistryModel as ModelCtor<UbiBeneficiaryRegistryModel>,
     anonymousReport: sequelize.models
         .AppAnonymousReportModel as ModelCtor<AppAnonymousReportModel>,
-    beneficiaryTransaction: sequelize.models
-        .BeneficiaryTransaction as ModelCtor<BeneficiaryTransaction>,
+    ubiBeneficiaryTransaction: sequelize.models
+        .UbiBeneficiaryTransactionModel as ModelCtor<UbiBeneficiaryTransactionModel>,
     cronJobExecuted: sequelize.models
         .CronJobExecuted as ModelCtor<CronJobExecuted>,
     exchangeRates: sequelize.models.ExchangeRates as ModelCtor<ExchangeRates>,

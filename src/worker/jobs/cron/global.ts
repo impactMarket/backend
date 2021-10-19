@@ -287,13 +287,13 @@ async function calculateEconomicActivity(
         transactions: number;
     }> => {
         const uniqueAddressesReached =
-            await models.beneficiaryTransaction.findAll({
+            await models.ubiBeneficiaryTransaction.findAll({
                 attributes: [[fn('distinct', col('withAddress')), 'addresses']],
                 where: { date },
                 raw: true,
             }); // this is an array, wich can be empty (return no rows)
         const uniqueAddressesReachedOut =
-            await models.beneficiaryTransaction.findAll({
+            await models.ubiBeneficiaryTransaction.findAll({
                 attributes: [[fn('distinct', col('withAddress')), 'addresses']],
                 where: {
                     date,
@@ -306,7 +306,7 @@ async function calculateEconomicActivity(
                 raw: true,
             }); // this is an array, wich can be empty (return no rows)
         const volumeAndTransactions = (
-            await models.beneficiaryTransaction.findAll({
+            await models.ubiBeneficiaryTransaction.findAll({
                 attributes: [
                     [fn('coalesce', fn('sum', col('amount')), 0), 'volume'],
                     [fn('count', col('tx')), 'transactions'],
@@ -510,7 +510,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         ).claimed;
 
         const volumeAndTransactions = (
-            await models.beneficiaryTransaction.findAll({
+            await models.ubiBeneficiaryTransaction.findAll({
                 attributes: [
                     [fn('coalesce', fn('sum', col('amount')), 0), 'volume'],
                     [fn('count', col('tx')), 'transactions'],

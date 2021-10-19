@@ -1,10 +1,8 @@
 import { ethers } from 'ethers';
 
 import { BeneficiaryAttributes } from '../../src/database/models/ubi/beneficiary';
-import {
-    BeneficiaryTransaction,
-    BeneficiaryTransactionCreationAttributes,
-} from '../../src/database/models/ubi/beneficiaryTransaction';
+import { UbiBeneficiaryTransactionCreation } from '../../src/interfaces/ubi/ubiBeneficiaryTransaction';
+import { UbiBeneficiaryTransactionModel } from '../../src/database/models/ubi/ubiBeneficiaryTransaction';
 import { randomTx } from '../utils/utils';
 
 /**
@@ -24,7 +22,7 @@ const data = async (
     }
 ) => {
     const randomWallet = ethers.Wallet.createRandom();
-    const defaultProps: BeneficiaryTransactionCreationAttributes = {
+    const defaultProps: UbiBeneficiaryTransactionCreation = {
         amount:
             options && options.amount ? options.amount : '1000000000000000000',
         beneficiary: beneficiary.address,
@@ -53,7 +51,7 @@ const BeneficiaryTransactionFactory = async (
         amount?: string;
     }
 ) => {
-    const result = await BeneficiaryTransaction.create(
+    const result = await UbiBeneficiaryTransactionModel.create(
         await data(beneficiary, isFromBeneficiary, options)
     );
     return result;

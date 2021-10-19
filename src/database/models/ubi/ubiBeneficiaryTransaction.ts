@@ -1,29 +1,12 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
+import {
+    UbiBeneficiaryTransaction,
+    UbiBeneficiaryTransactionCreation,
+} from '@interfaces/ubi/ubiBeneficiaryTransaction';
 
-interface BeneficiaryTransactionAttributes {
-    id: number;
-    beneficiary: string;
-    withAddress: string;
-    amount: string;
-    isFromBeneficiary: boolean;
-    tx: string;
-    date: Date;
-
-    // timestamps
-    createdAt: Date;
-    updatedAt: Date;
-}
-export interface BeneficiaryTransactionCreationAttributes {
-    beneficiary: string;
-    withAddress: string;
-    amount: string;
-    isFromBeneficiary: boolean;
-    tx: string;
-    date: Date;
-}
-export class BeneficiaryTransaction extends Model<
-    BeneficiaryTransactionAttributes,
-    BeneficiaryTransactionCreationAttributes
+export class UbiBeneficiaryTransactionModel extends Model<
+    UbiBeneficiaryTransaction,
+    UbiBeneficiaryTransactionCreation
 > {
     public id!: number;
     public beneficiary!: string;
@@ -32,14 +15,11 @@ export class BeneficiaryTransaction extends Model<
     public isFromBeneficiary!: boolean;
     public tx!: string;
     public date!: Date;
-
-    // timestamps!
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
+    public txAt!: Date;
 }
 
-export function initializeBeneficiaryTransaction(sequelize: Sequelize): void {
-    BeneficiaryTransaction.init(
+export function initializeUbiBeneficiaryTransaction(sequelize: Sequelize): void {
+    UbiBeneficiaryTransactionModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -72,17 +52,15 @@ export function initializeBeneficiaryTransaction(sequelize: Sequelize): void {
                 type: DataTypes.DATEONLY,
                 allowNull: false,
             },
-            createdAt: {
+            txAt: {
                 type: DataTypes.DATE,
                 allowNull: false,
-            },
-            updatedAt: {
-                type: DataTypes.DATE,
-                allowNull: false,
+                defaultValue: new Date(),
             },
         },
         {
-            tableName: 'beneficiarytransaction',
+            tableName: 'ubi_beneficiary_transaction',
+            timestamps: false,
             sequelize,
         }
     );

@@ -51,6 +51,7 @@ module.exports = {
             {
                 tableName: 'ubi_beneficiary_transaction',
                 sequelize: queryInterface.sequelize, 
+                timestamps: false,
             }
         );
 
