@@ -6,7 +6,7 @@
  *        type: object
  *        required:
  *          - id
- *          - address
+ *          - userId
  *          - type
  *          - params
  *          - read
@@ -15,9 +15,9 @@
  *          id:
  *            type: integer
  *            description: Notification id
- *          address:
+ *          userId:
  *            type: string
- *            description: User address
+ *            description: User ID
  *          type:
  *            type: integer
  *            description: Notification type
