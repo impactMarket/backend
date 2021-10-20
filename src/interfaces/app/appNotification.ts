@@ -34,7 +34,7 @@
 
 export interface AppNotification {
     id: number;
-    address: string;
+    userId: number;
     type: number;
     params: string;
     read: boolean;
@@ -44,7 +44,7 @@ export interface AppNotification {
 }
 
 export interface AppNotificationCreation {
-    address: string;
+    userId: number;
     type: number;
     params?: string;
     read?: boolean;

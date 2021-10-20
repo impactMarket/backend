@@ -478,22 +478,22 @@ describe('user service', () => {
             yesterday.setDate(yesterday.getDate() - 1);
             await models.appNotification.bulkCreate([
                 {
-                    address: users[0].address,
+                    userId: users[0].id,
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
                 }, {
-                    address: users[0].address,
+                    userId: users[0].id,
                     type: 2,
                     params: 'param_test',
                     createdAt: new Date(),
                 }, {
-                    address: users[1].address,
+                    userId: users[1].id,
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
                 }, {
-                    address: users[2].address,
+                    userId: users[2].id,
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),

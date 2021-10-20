@@ -566,8 +566,19 @@ export default class UserService {
             limit?: string;
         }
     ): Promise<AppNotification[]> {
+        const user = await this.appUser.findOne({
+            attributes: ['id'],
+            where: { address }
+        });
+
+        if (!user) {
+            throw new BaseError('USER_NOT_FOUND', 'user not found');
+        }
+        
         const notifications = await this.appNotification.findAll({
-            where: { address },
+            where: {
+                userId: user.id,
+            },
             offset: query.offset ? parseInt(query.offset, 10) : undefined,
             limit: query.limit ? parseInt(query.limit, 10) : undefined,
             order: [['createdAt', 'DESC']],
@@ -576,13 +587,24 @@ export default class UserService {
     }
 
     public static async readNotifications(address: string): Promise<boolean> {
+        const user = await this.appUser.findOne({
+            attributes: ['id'],
+            where: { address }
+        });
+
+        if (!user) {
+            throw new BaseError('USER_NOT_FOUND', 'user not found');
+        }
+
         const updated = await this.appNotification.update(
             {
                 read: true,
             },
             {
                 returning: true,
-                where: { address },
+                where: {
+                    userId: user.id,
+                },
             }
         );
         if (updated[0] === 0) {
@@ -594,9 +616,18 @@ export default class UserService {
     public static async getUnreadNotifications(
         address: string
     ): Promise<number> {
+        const user = await this.appUser.findOne({
+            attributes: ['id'],
+            where: { address }
+        });
+
+        if (!user) {
+            throw new BaseError('USER_NOT_FOUND', 'user not found');
+        }
+        
         return this.appNotification.count({
             where: {
-                address,
+                userId: user.id,
                 read: false,
             },
         });
