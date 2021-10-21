@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
-import { assert, SinonStub, stub, match } from 'sinon';
+import { assert, SinonStub, stub, match, restore } from 'sinon';
 
 import config from '../../../src/config';
 import { models } from '../../../src/database';
@@ -86,6 +86,7 @@ describe('communityAdmin', () => {
             subscribers.stop();
         }
         provider.removeAllListeners();
+        restore()
     });
 
     afterEach(() => {
