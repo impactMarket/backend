@@ -60,7 +60,7 @@ class ChainSubscribers {
                     'CommunityAdded(address,address,uint256,uint256,uint256,uint256)'
                 ),
                 ethers.utils.id('CommunityRemoved(address)'),
-                ethers.utils.id('CommunityMigrated(address, address, address)'),
+                ethers.utils.id('CommunityMigrated(address,address,address)'),
                 ethers.utils.id('ManagerAdded(address)'),
                 ethers.utils.id('ManagerRemoved(address)'),
                 ethers.utils.id('BeneficiaryAdded(address)'),
