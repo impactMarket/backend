@@ -7,6 +7,7 @@ import global from './global';
 import media from './media';
 import mobile from './mobile';
 import story from './story';
+import time from './time';
 import user from './user';
 
 export default (): Router => {
@@ -19,7 +20,11 @@ export default (): Router => {
     mobile(app);
     story(app);
     media(app);
+    time(app);
 
+    /**
+     * @deprecated use /time
+     */
     app.get('/clock', (req, res) => res.json(new Date().getTime()));
 
     return app;
