@@ -3,6 +3,7 @@ import { Router } from 'express';
 import claimLocation from './claimLocation';
 import community from './community';
 import exchange from './exchangeRates';
+import generic from './generic';
 import global from './global';
 import media from './media';
 import mobile from './mobile';
@@ -19,7 +20,11 @@ export default (): Router => {
     mobile(app);
     story(app);
     media(app);
+    generic(app);
 
+    /**
+     * @deprecated use /time
+     */
     app.get('/clock', (req, res) => res.json(new Date().getTime()));
 
     return app;

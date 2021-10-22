@@ -7,6 +7,9 @@ const route = Router();
 export default (app: Router): void => {
     app.use('/mobile', route);
 
+    /**
+     * @deprecated use /app-version
+     */
     route.get('/version', (req, res) => {
         res.send({
             latest: config.mobileVersion.latest,

@@ -5,6 +5,9 @@ export default (app: Router): void => {
     const route = Router();
     app.use('/exchange-rates', route);
 
+    /**
+     * @deprecated use /exchange-rate
+     */
     route.get('/', (req: Request, res: Response) => {
         ExchangeRatesService.get()
             .then((rates) => res.send(rates))
