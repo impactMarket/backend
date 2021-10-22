@@ -458,6 +458,22 @@ class UserController {
             }})
         }
     };
+
+    public saveSurvey = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        BeneficiaryService.saveSurvery(req.user.address, req.body)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export default UserController;

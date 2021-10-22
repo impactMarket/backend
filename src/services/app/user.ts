@@ -585,8 +585,8 @@ export default class UserService {
             where: {
                 userId: user.id,
             },
-            offset: query.offset ? parseInt(query.offset, 10) : undefined,
-            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
             order: [['createdAt', 'DESC']],
         });
         return notifications as AppNotification[];
