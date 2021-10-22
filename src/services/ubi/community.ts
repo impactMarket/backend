@@ -148,7 +148,7 @@ export default class CommunityService {
             const community = await this.community.create(createObject, {
                 transaction: t,
             });
-            await CommunityContractService.add(community.id, contractParams, t);
+            await CommunityContractService.add(community.id, contractParams!, t);
             if (createObject.visibility === 'private') {
                 // in case it's public, will be added when accepted
                 await CommunityStateService.add(community.id, t);

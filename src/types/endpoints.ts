@@ -21,7 +21,7 @@ export interface ICommunityAttributes {
     };
     email: string;
     txReceipt?: any | undefined;
-    contractParams: ICommunityContractParams;
+    contractParams?: ICommunityContractParams;
     coverMediaId?: number
 };
 

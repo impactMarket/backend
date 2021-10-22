@@ -1159,9 +1159,9 @@ describe('community service', () => {
                 },
             ]);
 
-            const result = await CommunityService.updateSubmission(
-                manager[0].address,
+            const result = await CommunityService.editSubmission(
                 {
+                    requestByAddress: manager[0].address,
                     name: 'new name',
                     description: 'new description',
                     language: 'pt',
@@ -1206,7 +1206,8 @@ describe('community service', () => {
                 },
             ]);
 
-            CommunityService.updateSubmission(manager[0].address, {
+            CommunityService.editSubmission({
+                requestByAddress: manager[0].address,
                 name: 'new name',
                 description: 'new description',
                 language: 'pt',
@@ -1247,9 +1248,9 @@ describe('community service', () => {
                 },
             ]);
 
-            const result = await CommunityService.updateSubmission(
-                manager[0].address,
+            const result = await CommunityService.editSubmission(
                 {
+                    requestByAddress: manager[0].address,
                     name: 'new name',
                     description: 'new description',
                     language: 'pt',
@@ -1312,9 +1313,9 @@ describe('community service', () => {
                 height: 0,
             });
 
-            const result = await CommunityService.updateSubmission(
-                manager[0].address,
+            const result = await CommunityService.editSubmission(
                 {
+                    requestByAddress: manager[0].address,
                     name: 'new name',
                     description: 'new description',
                     language: 'pt',
