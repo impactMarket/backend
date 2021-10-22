@@ -39,7 +39,7 @@ export interface CommunityAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
-    deletedAt?: Date;
+    deletedAt: Date | null;
 
     metrics?: UbiCommunityDailyMetrics[]; // TODO: to be removed
     cover?: AppMediaContent;
