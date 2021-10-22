@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
 import { SinonStub, stub } from 'sinon';
+import tk from 'timekeeper';
 
 import { models } from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
@@ -13,6 +14,7 @@ import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
+import { jumpToTomorrowMidnight } from '../../utils/utils';
 
 describe('user service', () => {
     let sequelize: Sequelize;
@@ -310,14 +312,21 @@ describe('user service', () => {
 
             const oldLastLogin = login.user.lastLogin;
 
-            const newLogin = await UserService.authenticate({
+            tk.travel(jumpToTomorrowMidnight());
+
+            await UserService.authenticate({
                 address,
                 trust: {
                     phone,
                 },
             });
 
-            expect(newLogin.user.lastLogin).to.be.gt(oldLastLogin);
+            const user = await models.appUser.findOne({
+                where: { address },
+                attributes: ['lastLogin'],
+            });
+
+            expect(user!.lastLogin).to.be.gt(oldLastLogin);
         });
     });
 
