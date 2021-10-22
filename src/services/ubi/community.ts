@@ -486,8 +486,8 @@ export default class CommunityService {
                 ...extendedInclude,
             ],
             order: orderOption,
-            offset: query.offset ? parseInt(query.offset, 10) : undefined,
-            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
         });
 
         const communities = communitiesResult.rows.map((c) =>
@@ -1053,6 +1053,9 @@ export default class CommunityService {
             if (typeof offset !== 'number' || typeof limit !== 'number') {
                 throw new BaseError('NaN', 'not a number');
             }
+        } else {
+            offset = config.defaultOffset;
+            limit = config.defaultLimit;
         }
 
         if (order === undefined && query.order !== undefined) {
@@ -1400,6 +1403,30 @@ export default class CommunityService {
             contract: communityContract!,
             metrics: communityDailyMetrics[0]!,
         } as any;
+    }
+
+    public static async deleteSubmission(
+        managerAddress: string
+    ): Promise<boolean> {
+        try {
+            const deleted = await this.community.destroy({
+                where: {
+                    requestByAddress: managerAddress,
+                    status: 'pending',
+                },
+            });
+
+            if (!deleted) {
+                throw new BaseError(
+                    'SUBMISSION_NOT_FOUND',
+                    'Not found community submission'
+                );
+            }
+
+            return true;
+        } catch (error) {
+            throw error;
+        }
     }
 
     // PRIVATE METHODS

@@ -2,6 +2,7 @@ import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { AppMediaContentModel } from '@models/app/appMediaContent';
 import { AppMediaThumbnailModel } from '@models/app/appMediaThumbnail';
 import { AppNotificationModel } from '@models/app/appNotification';
+import { UbiBeneficiarySurveyModel } from '@models/ubi/ubiBeneficiarySurvey';
 import { AppUserModel } from '@models/app/appUser';
 import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
 import { AppUserTrustModel } from '@models/app/appUserTrust';
@@ -108,6 +109,7 @@ const models: DbModels = {
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
     ubiBeneficiaryRegistry: sequelize.models
         .UbiBeneficiaryRegistryModel as ModelCtor<UbiBeneficiaryRegistryModel>,
+    ubiBeneficiarySurvey: sequelize.models.UbiBeneficiarySurveyModel as ModelCtor<UbiBeneficiarySurveyModel>,
     anonymousReport: sequelize.models
         .AppAnonymousReportModel as ModelCtor<AppAnonymousReportModel>,
     beneficiaryTransaction: sequelize.models

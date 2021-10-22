@@ -318,6 +318,22 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    deleteSubmission = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        CommunityService.deleteSubmission(req.user.address)
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     pending = (req: Request, res: Response) => {
         CommunityService.pending()
             .then((r) => standardResponse(res, 201, true, r))
