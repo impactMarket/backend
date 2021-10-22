@@ -44,7 +44,6 @@ export default class UserService {
     ): Promise<IUserAuth> {
         try {
             // generate access token for future interactions that require authentication
-            const token = generateAccessToken(user.address);
             const exists = await this.exists(user.address);
 
             if (overwrite) {
@@ -122,6 +121,7 @@ export default class UserService {
 
             const userHello = await this.loadUser(userFromRegistry);
             this.updateLastLogin(userFromRegistry.id);
+            const token = generateAccessToken(user.address, userFromRegistry.id);
 
             return {
                 ...userHello,
@@ -564,12 +564,18 @@ export default class UserService {
         query: {
             offset?: string;
             limit?: string;
-        }
+        },
+        userId?: number,
     ): Promise<AppNotification[]> {
-        const user = await this.appUser.findOne({
-            attributes: ['id'],
-            where: { address }
-        });
+        let user: { id: number } | null;
+        if (userId) {
+            user = { id: userId };
+        } else {
+            user = await this.appUser.findOne({
+                attributes: ['id'],
+                where: { address }
+            });
+        }
 
         if (!user) {
             throw new BaseError('USER_NOT_FOUND', 'user not found');
@@ -586,11 +592,16 @@ export default class UserService {
         return notifications as AppNotification[];
     }
 
-    public static async readNotifications(address: string): Promise<boolean> {
-        const user = await this.appUser.findOne({
-            attributes: ['id'],
-            where: { address }
-        });
+    public static async readNotifications(address: string, userId?: number): Promise<boolean> {
+        let user: { id: number } | null;
+        if (userId) {
+            user = { id: userId };
+        } else {
+            user = await this.appUser.findOne({
+                attributes: ['id'],
+                where: { address }
+            });
+        }
 
         if (!user) {
             throw new BaseError('USER_NOT_FOUND', 'user not found');
@@ -614,12 +625,18 @@ export default class UserService {
     }
 
     public static async getUnreadNotifications(
-        address: string
+        address: string,
+        userId?: number,
     ): Promise<number> {
-        const user = await this.appUser.findOne({
-            attributes: ['id'],
-            where: { address }
-        });
+        let user: { id: number } | null;
+        if (userId) {
+            user = { id: userId };
+        } else {
+            user = await this.appUser.findOne({
+                attributes: ['id'],
+                where: { address }
+            });
+        }
 
         if (!user) {
             throw new BaseError('USER_NOT_FOUND', 'user not found');
