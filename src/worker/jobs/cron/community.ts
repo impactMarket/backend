@@ -148,7 +148,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 where: {
                     claims: { [Op.gt]: 1 },
                     lastClaimAt: { [Op.gte]: aMonthAgo },
-                    // active: true,
+                    active: true,
                 },
             },
         ],

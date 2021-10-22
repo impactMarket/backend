@@ -1435,13 +1435,6 @@ describe('#calcuateGlobalMetrics()', () => {
                 started: new Date(),
                 status: 'valid',
                 visibility: 'public',
-                contract: {
-                    baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
-                    communityId: 0,
-                    incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
-                },
                 hasAddress: true,
             },
         ]);
@@ -1464,11 +1457,9 @@ describe('#calcuateGlobalMetrics()', () => {
         );
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
-        await ClaimFactory(beneficiaries[0], community);
 
         // next day
         tk.travel(jumpToTomorrowMidnight());
-        console.log('date => ', new Date)
         await calcuateCommunitiesMetrics();
         await calcuateGlobalMetrics();
 
