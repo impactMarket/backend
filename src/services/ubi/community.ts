@@ -35,6 +35,7 @@ import { models, sequelize } from '../../database';
 import { ICommunityContractParams } from '../../types';
 import {
     ICommunity,
+    ICommunityAttributes,
     ICommunityLightDetails,
     ICommunityPendingDetails,
     IManagerDetailsManager,
@@ -68,24 +69,21 @@ export default class CommunityService {
     private static communityContentStorage = new CommunityContentStorage();
     private static promoterContentStorage = new PromoterContentStorage();
 
-    public static async create(
-        requestByAddress: string,
-        name: string,
-        contractAddress: string | undefined,
-        description: string,
-        language: string,
-        currency: string,
-        city: string,
-        country: string,
-        gps: {
-            latitude: number;
-            longitude: number;
-        },
-        email: string,
-        txReceipt: any | undefined,
-        contractParams: ICommunityContractParams,
-        coverMediaId?: number
-    ): Promise<Community> {
+    public static async create({
+            requestByAddress,
+            name,
+            contractAddress,
+            description,
+            language,
+            currency,
+            city,
+            country,
+            gps,
+            email,
+            txReceipt,
+            contractParams,
+            coverMediaId
+    }: ICommunityAttributes): Promise<Community> {
         let managerAddress: string = '';
         let createObject: CommunityCreationAttributes = {
             requestByAddress,
@@ -1402,30 +1400,13 @@ export default class CommunityService {
         } as any;
     }
 
-    public static async updateSubmission(
-        userAddress: string,
-        params: {
-            name: string;
-            description: string;
-            language: string;
-            currency: string;
-            city: string;
-            country: string;
-            gps: {
-                latitude: number;
-                longitude: number;
-            };
-            email: string;
-            contractParams?: ICommunityContractParams;
-            coverMediaId?: number;
-        }
-    ): Promise<CommunityAttributes> {
+    public static async editSubmission(params: ICommunityAttributes): Promise<CommunityAttributes> {
         const t = await this.sequelize.transaction();
         try {
             const community = await this.community.findOne({
                 attributes: ['id', 'coverMediaId'],
                 where: {
-                    requestByAddress: userAddress,
+                    requestByAddress: params.requestByAddress,
                     status: 'pending',
                 },
             });
@@ -1499,7 +1480,7 @@ export default class CommunityService {
 
             await t.commit();
 
-            return this._findCommunityBy({ id: community.id }, userAddress);
+            return this._findCommunityBy({ id: community.id }, params.requestByAddress);
         } catch (error) {
             await t.rollback();
             throw error;

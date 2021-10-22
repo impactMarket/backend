@@ -882,8 +882,8 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/pending:
-     *   put:
+     * /community:
+     *   patch:
      *     tags:
      *       - "community"
      *     summary: Edit pending community
@@ -949,8 +949,8 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.put(
-        '/pending',
+    route.patch(
+        '/',
         authenticateToken,
         communityValidators.editSubmission,
         controller.editSubmission

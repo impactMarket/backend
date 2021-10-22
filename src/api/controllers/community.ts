@@ -234,7 +234,7 @@ class CommunityController {
             contractParams,
         } = req.body;
 
-        CommunityService.create(
+        CommunityService.create({
             requestByAddress,
             name,
             contractAddress,
@@ -248,7 +248,7 @@ class CommunityController {
             txReceipt,
             contractParams,
             coverMediaId
-        )
+        })
             .then((community) => standardResponse(res, 201, true, community))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -397,7 +397,8 @@ class CommunityController {
             contractParams,
         } = req.body;
 
-        CommunityService.updateSubmission(req.user.address, {
+        CommunityService.editSubmission({
+            requestByAddress: req.user.address,
             name,
             description,
             language,
@@ -407,7 +408,7 @@ class CommunityController {
             gps,
             email,
             contractParams,
-            coverMediaId,
+            coverMediaId: parseInt(coverMediaId),
         })
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));

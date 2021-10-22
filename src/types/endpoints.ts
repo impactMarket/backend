@@ -4,6 +4,26 @@ import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
 import { CommunityAttributes } from '@models/ubi/community';
+import { ICommunityContractParams } from '../types';
+
+export interface ICommunityAttributes {
+    requestByAddress: string;
+    name: string;
+    contractAddress?: string | undefined;
+    description: string;
+    language: string;
+    currency: string;
+    city: string;
+    country: string;
+    gps: {
+        latitude: number;
+        longitude: number;
+    };
+    email: string;
+    txReceipt?: any | undefined;
+    contractParams: ICommunityContractParams;
+    coverMediaId?: number
+};
 
 export interface ICommunityLightDetails {
     id: number;
