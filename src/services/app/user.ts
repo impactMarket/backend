@@ -568,8 +568,8 @@ export default class UserService {
     ): Promise<AppNotification[]> {
         const notifications = await this.appNotification.findAll({
             where: { address },
-            offset: query.offset ? parseInt(query.offset, 10) : undefined,
-            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
             order: [['createdAt', 'DESC']],
         });
         return notifications as AppNotification[];

@@ -227,4 +227,7 @@ export default {
     DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
     claimLocationTimeframe: validatedEnv.CLAIM_LOCATION_TIMEFRAME,
     claimInactivityThreshold: validatedEnv.CLAIM_INACTIVITY_THRESHOLD,
+
+    defaultLimit: validatedEnv.DEFAULT_LIMIT,
+    defaultOffset: validatedEnv.DEFAULT_OFFSET,
 };
