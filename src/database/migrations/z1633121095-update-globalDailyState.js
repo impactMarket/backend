@@ -142,11 +142,13 @@ module.exports = {
         while (dateToCount <= today) {
             const totals = (
                 await queryInterface.sequelize.query(
-                    `select COALESCE(sum(amount), 0) volume, count(beneficiarytransaction.tx) txs
-                     from beneficiarytransaction 
+                    `select COALESCE(sum(transactions.amount), 0) volume, count(transactions.tx) txs from (
+                        select distinct beneficiarytransaction.amount, beneficiarytransaction.tx
+                        from beneficiarytransaction
                         inner join beneficiary on beneficiary.address = beneficiarytransaction.beneficiary
-                            inner join community on community."publicId" = beneficiary."communityId"
-                     where community.visibility = 'public' and date <= '${dateToCount.toISOString().split('T')[0]}'`,
+                                inner join community on community."publicId" = beneficiary."communityId"
+                         where community.visibility = 'public' and date <= '${dateToCount.toISOString().split('T')[0]}'
+                    ) as transactions`,
                     {
                         type: Sequelize.QueryTypes.SELECT,
                     }
@@ -155,11 +157,13 @@ module.exports = {
 
             const individual = (
                 await queryInterface.sequelize.query(
-                    `select COALESCE(sum(amount), 0) volume, count(beneficiarytransaction.tx) txs
-                     from beneficiarytransaction
+                    `select COALESCE(sum(transactions.amount), 0) volume, count(transactions.tx) txs from (
+                        select distinct beneficiarytransaction.amount, beneficiarytransaction.tx
+                        from beneficiarytransaction
                         inner join beneficiary on beneficiary.address = beneficiarytransaction.beneficiary
-                            inner join community on community."publicId" = beneficiary."communityId"
-                     where community.visibility = 'public' and date = '${dateToCount.toISOString().split('T')[0]}'`,
+                                inner join community on community."publicId" = beneficiary."communityId"
+                         where community.visibility = 'public' and date = '${dateToCount.toISOString().split('T')[0]}'
+                         ) as transactions`,
                     {
                         type: Sequelize.QueryTypes.SELECT,
                     }
