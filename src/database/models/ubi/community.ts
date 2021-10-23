@@ -39,6 +39,7 @@ export interface CommunityAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
+    deletedAt: Date | null;
 
     metrics?: UbiCommunityDailyMetrics[]; // TODO: to be removed
     cover?: AppMediaContent;
@@ -104,6 +105,7 @@ export class Community extends Model<
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date;
 }
 
 export function initializeCommunity(sequelize: Sequelize): void {
@@ -208,6 +210,10 @@ export function initializeCommunity(sequelize: Sequelize): void {
             updatedAt: {
                 type: DataTypes.DATE,
                 allowNull: false,
+            },
+            deletedAt: {
+                type: DataTypes.DATE,
+                allowNull: true,
             },
         },
         {
