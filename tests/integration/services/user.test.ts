@@ -506,11 +506,11 @@ describe('user service', () => {
 
         it('get all notifications from a user', async () => {
             const notifications = await UserService.getNotifications(
-                users[0].address,
                 {
                     limit: '10',
                     offset: '0',
-                }
+                },
+                users[0].id,
             );
 
             expect(notifications.length).to.be.equal(2);
@@ -520,13 +520,13 @@ describe('user service', () => {
         });
 
         it('mark all notifications as read', async () => {
-            await UserService.readNotifications(users[1].address);
+            await UserService.readNotifications(users[1].id);
 
             const readNotifications = await UserService.getUnreadNotifications(
-                users[1].address
+                users[1].id
             );
             const unreadNotifications =
-                await UserService.getUnreadNotifications(users[2].address);
+                await UserService.getUnreadNotifications(users[2].id);
 
             expect(readNotifications).to.be.equal(0);
             expect(unreadNotifications).to.be.equal(1);
