@@ -35,7 +35,7 @@ import { models, sequelize } from '../../database';
 import { ICommunityContractParams } from '../../types';
 import {
     ICommunity,
-    ICommunityEditingAttributes,
+    ICommunityEditionAttributes,
     ICommunityLightDetails,
     ICommunityPendingDetails,
     IManagerDetailsManager,
@@ -83,7 +83,7 @@ export default class CommunityService {
         txReceipt,
         contractParams,
         coverMediaId,
-    }: ICommunityEditingAttributes): Promise<Community> {
+    }: ICommunityEditionAttributes): Promise<Community> {
         let managerAddress: string = '';
         let createObject: ICommunityCreationAttributes = {
             requestByAddress,
@@ -1405,7 +1405,7 @@ export default class CommunityService {
     }
 
     public static async editSubmission(
-        params: ICommunityEditingAttributes
+        params: ICommunityEditionAttributes
     ): Promise<CommunityAttributes> {
         const t = await this.sequelize.transaction();
         try {

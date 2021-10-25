@@ -24,7 +24,7 @@ export interface ICommonCommunityAttributes {
     coverMediaId?: number;
 }
 
-export interface ICommunityEditingAttributes
+export interface ICommunityEditionAttributes
     extends ICommonCommunityAttributes {
     txReceipt?: any | undefined;
     contractParams?: ICommunityContractParams;
