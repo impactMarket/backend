@@ -12,7 +12,7 @@ export default (app: Router): void => {
      *   get:
      *     tags:
      *       - "generic"
-     *     summary: Get the app version.
+     *     summary: Get the app recommended versions.
      *     responses:
      *       "200":
      *         description: OK
@@ -32,9 +32,6 @@ export default (app: Router): void => {
      *                       type: string
      *                     timestamp:
      *                       type: number
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
      */
     app.get('/app-version', (req, res) =>
         standardResponse(res, 200, true, {
@@ -71,9 +68,6 @@ export default (app: Router): void => {
      *                         type: string
      *                       rate:
      *                         type: number
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
      */
     app.get('/exchange-rate', (req: Request, res: Response) => {
         ExchangeRatesService.get()
@@ -101,9 +95,6 @@ export default (app: Router): void => {
      *                   type: boolean
      *                 data:
      *                   type: number
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
      */
     app.get('/time', (req: Request, res: Response) =>
         standardResponse(res, 200, true, new Date().getTime())
