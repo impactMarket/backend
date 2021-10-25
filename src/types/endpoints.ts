@@ -4,9 +4,10 @@ import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
 import { CommunityAttributes } from '@models/ubi/community';
+
 import { ICommunityContractParams } from '../types';
 
-export interface ICommunityAttributes {
+export interface ICommonCommunityAttributes {
     requestByAddress: string;
     name: string;
     contractAddress?: string | undefined;
@@ -20,10 +21,14 @@ export interface ICommunityAttributes {
         longitude: number;
     };
     email: string;
+    coverMediaId?: number;
+}
+
+export interface ICommunityEditingAttributes
+    extends ICommonCommunityAttributes {
     txReceipt?: any | undefined;
     contractParams?: ICommunityContractParams;
-    coverMediaId?: number
-};
+}
 
 export interface ICommunityLightDetails {
     id: number;

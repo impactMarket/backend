@@ -10,7 +10,7 @@ import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
 import {
     Community,
     CommunityAttributes,
-    CommunityCreationAttributes,
+    ICommunityCreationAttributes,
 } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
@@ -35,7 +35,7 @@ import { models, sequelize } from '../../database';
 import { ICommunityContractParams } from '../../types';
 import {
     ICommunity,
-    ICommunityAttributes,
+    ICommunityEditingAttributes,
     ICommunityLightDetails,
     ICommunityPendingDetails,
     IManagerDetailsManager,
@@ -70,22 +70,22 @@ export default class CommunityService {
     private static promoterContentStorage = new PromoterContentStorage();
 
     public static async create({
-            requestByAddress,
-            name,
-            contractAddress,
-            description,
-            language,
-            currency,
-            city,
-            country,
-            gps,
-            email,
-            txReceipt,
-            contractParams,
-            coverMediaId
-    }: ICommunityAttributes): Promise<Community> {
+        requestByAddress,
+        name,
+        contractAddress,
+        description,
+        language,
+        currency,
+        city,
+        country,
+        gps,
+        email,
+        txReceipt,
+        contractParams,
+        coverMediaId,
+    }: ICommunityEditingAttributes): Promise<Community> {
         let managerAddress: string = '';
-        let createObject: CommunityCreationAttributes = {
+        let createObject: ICommunityCreationAttributes = {
             requestByAddress,
             name,
             description,
@@ -148,7 +148,11 @@ export default class CommunityService {
             const community = await this.community.create(createObject, {
                 transaction: t,
             });
-            await CommunityContractService.add(community.id, contractParams!, t);
+            await CommunityContractService.add(
+                community.id,
+                contractParams!,
+                t
+            );
             if (createObject.visibility === 'private') {
                 // in case it's public, will be added when accepted
                 await CommunityStateService.add(community.id, t);
@@ -1400,7 +1404,9 @@ export default class CommunityService {
         } as any;
     }
 
-    public static async editSubmission(params: ICommunityAttributes): Promise<CommunityAttributes> {
+    public static async editSubmission(
+        params: ICommunityEditingAttributes
+    ): Promise<CommunityAttributes> {
         const t = await this.sequelize.transaction();
         try {
             const community = await this.community.findOne({
@@ -1480,7 +1486,10 @@ export default class CommunityService {
 
             await t.commit();
 
-            return this._findCommunityBy({ id: community.id }, params.requestByAddress);
+            return this._findCommunityBy(
+                { id: community.id },
+                params.requestByAddress
+            );
         } catch (error) {
             await t.rollback();
             throw error;

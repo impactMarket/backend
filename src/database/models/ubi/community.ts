@@ -9,6 +9,7 @@ import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 // import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
 import { Sequelize, DataTypes, Model } from 'sequelize';
+import { ICommonCommunityAttributes } from 'types/endpoints';
 
 import { BeneficiaryAttributes } from './beneficiary';
 
@@ -52,31 +53,18 @@ export interface CommunityAttributes {
     demographics?: UbiCommunityDemographics[]; // TODO: to be removed
     dailyState?: UbiCommunityDailyState[]; // TODO: to be removed
 }
-export interface CommunityCreationAttributes {
-    requestByAddress: string;
-    contractAddress?: string;
-    name: string;
-    description: string;
+export interface ICommunityCreationAttributes
+    extends ICommonCommunityAttributes {
     descriptionEn?: string;
-    language: string;
-    currency: string;
-    city: string;
-    country: string;
-    gps: {
-        latitude: number;
-        longitude: number;
-    };
-    email: string;
     visibility: 'public' | 'private';
     coverImage?: string; // TODO: will be required once next version is released
-    coverMediaId?: number; // TODO: will be required once next version is released
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     started: Date;
 }
 
 export class Community extends Model<
     CommunityAttributes,
-    CommunityCreationAttributes
+    ICommunityCreationAttributes
 > {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public publicId!: string;
