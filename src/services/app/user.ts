@@ -560,30 +560,15 @@ export default class UserService {
     }
 
     public static async getNotifications(
-        address: string,
         query: {
             offset?: string;
             limit?: string;
         },
-        userId?: number,
-    ): Promise<AppNotification[]> {
-        let user: { id: number } | null;
-        if (userId) {
-            user = { id: userId };
-        } else {
-            user = await this.appUser.findOne({
-                attributes: ['id'],
-                where: { address }
-            });
-        }
-
-        if (!user) {
-            throw new BaseError('USER_NOT_FOUND', 'user not found');
-        }
-        
+        userId: number,
+    ): Promise<AppNotification[]> {       
         const notifications = await this.appNotification.findAll({
             where: {
-                userId: user.id,
+                userId,
             },
             offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
             limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
@@ -592,21 +577,7 @@ export default class UserService {
         return notifications as AppNotification[];
     }
 
-    public static async readNotifications(address: string, userId?: number): Promise<boolean> {
-        let user: { id: number } | null;
-        if (userId) {
-            user = { id: userId };
-        } else {
-            user = await this.appUser.findOne({
-                attributes: ['id'],
-                where: { address }
-            });
-        }
-
-        if (!user) {
-            throw new BaseError('USER_NOT_FOUND', 'user not found');
-        }
-
+    public static async readNotifications(userId: number): Promise<boolean> {
         const updated = await this.appNotification.update(
             {
                 read: true,
@@ -614,7 +585,7 @@ export default class UserService {
             {
                 returning: true,
                 where: {
-                    userId: user.id,
+                    userId,
                 },
             }
         );
@@ -624,27 +595,10 @@ export default class UserService {
         return true;
     }
 
-    public static async getUnreadNotifications(
-        address: string,
-        userId?: number,
-    ): Promise<number> {
-        let user: { id: number } | null;
-        if (userId) {
-            user = { id: userId };
-        } else {
-            user = await this.appUser.findOne({
-                attributes: ['id'],
-                where: { address }
-            });
-        }
-
-        if (!user) {
-            throw new BaseError('USER_NOT_FOUND', 'user not found');
-        }
-        
+    public static async getUnreadNotifications(userId: number): Promise<number> {        
         return this.appNotification.count({
             where: {
-                userId: user.id,
+                userId,
                 read: false,
             },
         });

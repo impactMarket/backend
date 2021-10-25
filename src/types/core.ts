@@ -3,7 +3,7 @@ import * as core from 'express-serve-static-core';
 
 export interface UserInRequest {
     address: string;
-    userId?: number;
+    userId: number;
 }
 export interface RequestWithUser<
     P = core.ParamsDictionary,
