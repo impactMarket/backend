@@ -10,6 +10,7 @@ import { waitForStubCall } from '../../utils';
 import CommunityContractJSON from './CommunityContract.json';
 import cUSDContractJSON from './cUSD.json';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
+// import ManagerService from '../../../src/services/ubi/managers';
 
 describe('communityContract', () => {
     // let provider: ethers.providers.Web3Provider;
@@ -71,16 +72,11 @@ describe('communityContract', () => {
             provider.getSigner(0)
         );
 
-        try {
         CommunityContract = await CommunityContractFactory.deploy();
-            
-        } catch (error) {
-            console.log(error)
-        }
 
-        // stub(config, 'communityAdminAddress').value(
-        //     CommunityContract.address
-        // );
+        stub(config, 'newCommunityContractAddress').value(
+            CommunityContract.address
+        );
 
         subscribers = new ChainSubscribers(
             provider,

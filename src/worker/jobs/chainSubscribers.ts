@@ -13,6 +13,7 @@ import { ethers } from 'ethers';
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import CommunityAdminContractABI from '../../contracts/CommunityAdminABI.json';
+import NewCommunityContractABI from '../../contracts/NewCommunityABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
 import { models } from '../../database';
 
@@ -28,6 +29,7 @@ class ChainSubscribers {
     ifaceERC20: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
     ifaceCommunityAdmin: ethers.utils.Interface;
+    ifaceNewCommunity: ethers.utils.Interface;
     allCommunitiesAddresses: string[];
     communities: Map<string, string>; // TODO: to be removed
     communitiesId: Map<string, number>;
@@ -46,6 +48,9 @@ class ChainSubscribers {
         this.ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
         this.ifaceCommunityAdmin = new ethers.utils.Interface(
             CommunityAdminContractABI
+        );
+        this.ifaceNewCommunity = new ethers.utils.Interface(
+            NewCommunityContractABI
         );
         this.ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
 
@@ -228,7 +233,13 @@ class ChainSubscribers {
     async _processCommunityEvents(
         log: ethers.providers.Log
     ): Promise<ethers.utils.LogDescription | undefined> {
-        const parsedLog = this.ifaceCommunity.parseLog(log);
+        let parsedLog: ethers.utils.LogDescription;
+            if (log.address === config.newCommunityContractAddress) {
+                parsedLog = this.ifaceNewCommunity.parseLog(log);
+            } else {
+                parsedLog = this.ifaceCommunity.parseLog(log);
+            }
+        // const parsedLog = this.ifaceCommunity.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
         if (parsedLog.name === 'BeneficiaryAdded') {
             let beneficiaryAddress = '',
@@ -545,7 +556,12 @@ class ChainSubscribers {
 
     async _processOtherEvents(log: ethers.providers.Log): Promise<void> {
         try {
-            const parsedLog = this.ifaceCommunity.parseLog(log);
+            let parsedLog: ethers.utils.LogDescription;
+            if (log.address === config.newCommunityContractAddress) {
+                parsedLog = this.ifaceNewCommunity.parseLog(log);
+            } else {
+                parsedLog = this.ifaceCommunity.parseLog(log);
+            }
             if (parsedLog.name === 'ManagerAdded') {
                 const managerAddress = parsedLog.args.length > 1 ? parsedLog.args[1] : parsedLog.args[0];
                 const communityAddress = log.address;

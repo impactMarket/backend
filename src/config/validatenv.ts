@@ -78,6 +78,7 @@ function validateEnv() {
         HUBSPOT_KEY: str({ devDefault: 'xyz' }),
         DAO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         COMMUNITY_ADMIN_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
+        NEW_COMMUNITY_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         CLAIM_LOCATION_TIMEFRAME: num({ default: 150 }),
         CLAIM_INACTIVITY_THRESHOLD: num({ default: 4 }),
         DEFAULT_LIMIT: num({ default: 10 }),
