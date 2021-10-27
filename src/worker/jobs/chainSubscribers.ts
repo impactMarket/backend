@@ -1,3 +1,4 @@
+import { ManagerAttributes } from '@models/ubi/manager';
 import ImMetadataService from '@services/app/imMetadata';
 import BeneficiaryService from '@services/ubi/beneficiary';
 import ClaimsService from '@services/ubi/claim';
@@ -62,14 +63,23 @@ class ChainSubscribers {
                 ethers.utils.id('CommunityRemoved(address)'),
                 ethers.utils.id('CommunityMigrated(address,address,address)'),
                 ethers.utils.id('ManagerAdded(address)'),
+                ethers.utils.id('ManagerAdded(address,address)'),
                 ethers.utils.id('ManagerRemoved(address)'),
+                ethers.utils.id('ManagerRemoved(address,address)'),
+                ethers.utils.id('ManagerAddedToBlockList(address)'),
+                ethers.utils.id('ManagerRemovedFromBlockList(address)'),
                 ethers.utils.id('BeneficiaryAdded(address)'),
+                ethers.utils.id('BeneficiaryAdded(address,address)'),
                 // ethers.utils.id('BeneficiaryLocked(address)'),
                 ethers.utils.id('BeneficiaryRemoved(address)'),
+                ethers.utils.id('BeneficiaryRemoved(address,address)'),
                 ethers.utils.id('BeneficiaryClaim(address,uint256)'),
                 ethers.utils.id(
                     'CommunityEdited(uint256,uint256,uint256,uint256)'
                 ),
+                ethers.utils.id('CommunityLocked(address)'),
+                ethers.utils.id('CommunityUnlocked(address)'),
+                ethers.utils.id('BeneficiaryParamsUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)'),
                 ethers.utils.id('Transfer(address,address,uint256)'),
             ],
         ];
@@ -221,7 +231,20 @@ class ChainSubscribers {
         const parsedLog = this.ifaceCommunity.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
         if (parsedLog.name === 'BeneficiaryAdded') {
-            const beneficiaryAddress = parsedLog.args[0];
+            let beneficiaryAddress = '',
+                managerAddress = '';
+
+            if (parsedLog.args.length > 1) {
+                beneficiaryAddress = parsedLog.args[1];
+                managerAddress = parsedLog.args[0];
+            } else {
+                beneficiaryAddress = parsedLog.args[0]
+                const txResponse = await this.provider.getTransaction(
+                    log.transactionHash
+                );
+                managerAddress = txResponse.from;
+            }
+
             const communityAddress = log.address;
             let communityPublicId = this.communities.get(communityAddress);
             if (communityPublicId === undefined) {
@@ -253,33 +276,43 @@ class ChainSubscribers {
             notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
             try {
                 const txAt = await getBlockTime(log.blockHash);
-                const txResponse = await this.provider.getTransaction(
-                    log.transactionHash
-                );
                 await BeneficiaryService.add(
                     beneficiaryAddress,
-                    txResponse.from,
+                    managerAddress,
                     communityPublicId!,
                     log.transactionHash,
                     txAt
                 );
+                await CommunityContractService.updateMaxClaim(communityPublicId!);
             } catch (e) {}
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryRemoved') {
-            const beneficiaryAddress = parsedLog.args[0];
+            // const beneficiaryAddress = parsedLog.args[0];
             const communityAddress = log.address;
-            try {
-                const txAt = await getBlockTime(log.blockHash);
+            let beneficiaryAddress = '',
+                managerAddress = '';
+
+            if (parsedLog.args.length > 1) {
+                beneficiaryAddress = parsedLog.args[1];
+                managerAddress = parsedLog.args[0];
+            } else {
+                beneficiaryAddress = parsedLog.args[0]
                 const txResponse = await this.provider.getTransaction(
                     log.transactionHash
                 );
+                managerAddress = txResponse.from;
+            }
+            try {
+                const communityPublicId = this.communities.get(communityAddress)!
+                const txAt = await getBlockTime(log.blockHash);
                 await BeneficiaryService.remove(
                     beneficiaryAddress,
-                    txResponse.from,
-                    this.communities.get(communityAddress)!,
+                    managerAddress,
+                    communityPublicId,
                     log.transactionHash,
                     txAt
                 );
+                await CommunityContractService.updateMaxClaim(communityPublicId!);
             } catch (e) {}
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryClaim') {
@@ -293,7 +326,7 @@ class ChainSubscribers {
             result = parsedLog;
         } else if (parsedLog.name === 'ManagerAdded') {
             // new managers in existing community
-            const managerAddress = parsedLog.args[0];
+            const managerAddress = parsedLog.args.length > 1 ? parsedLog.args[1] : parsedLog.args[0];
             const communityAddress = log.address;
             await ManagerService.add(
                 managerAddress,
@@ -301,11 +334,37 @@ class ChainSubscribers {
             );
             result = parsedLog;
         } else if (parsedLog.name === 'ManagerRemoved') {
-            const managerAddress = parsedLog.args[0];
+            const managerAddress = parsedLog.args.length > 1 ? parsedLog.args[1] : parsedLog.args[0];
             const communityAddress = log.address;
             await ManagerService.remove(
                 managerAddress,
                 this.communities.get(communityAddress)!
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'ManagerAddedToBlockList') {
+            const address = parsedLog.args[0];
+            const communityAddress = log.address;
+            await models.manager.update(
+                { blocked: true },
+                {
+                    where: {
+                        address,
+                        communityId: this.communities.get(communityAddress)!
+                    },
+                }
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'ManagerRemovedFromBlockList') {
+            const address = parsedLog.args[0];
+            const communityAddress = log.address;
+            await models.manager.update(
+                { blocked: false },
+                {
+                    where: {
+                        address,
+                        communityId: this.communities.get(communityAddress)!
+                    },
+                }
             );
             result = parsedLog;
         } else if (parsedLog.name === 'CommunityEdited') {
@@ -319,6 +378,77 @@ class ChainSubscribers {
                     maxClaim: parsedLog.args[1].toString(),
                     baseInterval: parsedLog.args[2].toNumber(),
                     incrementInterval: parsedLog.args[3].toNumber(),
+                }
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'CommunityLocked') {
+            const managerAddress = parsedLog.args[0];
+            const managerResult = await models.manager.findOne({
+                attributes: [],
+                include: [
+                    {
+                        model: models.community,
+                        as: 'community',
+                        attributes: ['id'],
+                    },
+                ],
+                where: { address: managerAddress },
+            });
+
+            if (!managerResult) {
+                Logger.error(
+                    `Community with address ${managerAddress} wasn't found at "CommunityLocked"`
+                );
+            }
+            const manager = managerResult!.toJSON() as ManagerAttributes;
+            await models.ubiCommunityContract.update({
+                blocked: true
+            }, {
+                where: {
+                    communityId: manager.community!.id
+                }
+            });
+            result = parsedLog;
+        } else if (parsedLog.name === 'CommunityUnlocked') {
+            const managerAddress = parsedLog.args[0];
+            const managerResult = await models.manager.findOne({
+                attributes: [],
+                include: [
+                    {
+                        model: models.community,
+                        as: 'community',
+                        attributes: ['id'],
+                    },
+                ],
+                where: { address: managerAddress },
+            });
+
+            if (!managerResult) {
+                Logger.error(
+                    `Community with address ${managerAddress} wasn't found at "CommunityLocked"`
+                );
+            }
+            const manager = managerResult!.toJSON() as ManagerAttributes;
+            await models.ubiCommunityContract.update({
+                blocked: false
+            }, {
+                where: {
+                    communityId: manager.community!.id
+                }
+            });
+            result = parsedLog;
+        } else if (parsedLog.name === 'BeneficiaryParamsUpdated') {
+            const communityAddress = log.address;
+            await CommunityContractService.update(
+                (await CommunityService.getCommunityOnlyByPublicId(
+                    this.communities.get(communityAddress)!
+                ))!.id,
+                {
+                    claimAmount: parsedLog.args[5].toString(),
+                    maxClaim: parsedLog.args[6].toString(),
+                    decreaseStep: parsedLog.args[7].toNumber(),
+                    baseInterval: parsedLog.args[8].toNumber(),
+                    incrementInterval: parsedLog.args[9].toNumber(),
                 }
             );
             result = parsedLog;
@@ -417,7 +547,7 @@ class ChainSubscribers {
         try {
             const parsedLog = this.ifaceCommunity.parseLog(log);
             if (parsedLog.name === 'ManagerAdded') {
-                const managerAddress = parsedLog.args[0];
+                const managerAddress = parsedLog.args.length > 1 ? parsedLog.args[1] : parsedLog.args[0];
                 const communityAddress = log.address;
                 if (this.allCommunitiesAddresses.includes(communityAddress)) {
                     await ManagerService.add(

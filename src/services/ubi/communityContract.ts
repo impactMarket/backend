@@ -1,5 +1,5 @@
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
-import { Transaction } from 'sequelize';
+import { Transaction, literal } from 'sequelize';
 
 import { models, sequelize } from '../../database';
 import { ICommunityContractParams } from '../../types';
@@ -7,6 +7,7 @@ import { ICommunityContractParams } from '../../types';
 export default class CommunityContractService {
     public static ubiCommunityContract = models.ubiCommunityContract;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
+    public static beneficiary = models.beneficiary;
     public static community = models.community;
     public static sequelize = sequelize;
 
@@ -90,5 +91,31 @@ export default class CommunityContractService {
                 (c) => [c.communityId, c]
             )
         );
+    }
+
+    public static async updateMaxClaim(communityId: string) {
+        const total = await this.beneficiary.count({
+            where: { communityId },
+        });
+
+        const community = await this.community.findOne({
+            attributes: ['id'],
+            where: {
+                publicId: communityId,
+            }
+        });
+
+        await this.sequelize.query(`
+            update ubi_community_contract
+            set maxClaim = maxClaim - (decreaseStep * ${total})
+            where communityId = ${community!.id}
+        `);
+        // await this.ubiCommunityContract.update({
+        //     maxClaim: literal(`maxClaim - (decreaseStep * ${total})`)
+        // }, {
+        //     where: {
+        //         communityId: community!.id
+        //     }
+        // })
     }
 }

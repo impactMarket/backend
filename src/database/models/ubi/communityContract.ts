@@ -42,6 +42,8 @@ export class UbiCommunityContractModel extends Model<
     public maxClaim!: string;
     public baseInterval!: number;
     public incrementInterval!: number;
+    public blocked!: boolean;
+    public decreaseStep!: number;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -79,6 +81,16 @@ export function initializeUbiCommunityContract(sequelize: Sequelize): void {
             incrementInterval: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
+            },
+            blocked: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
+            decreaseStep: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
             },
             createdAt: {
                 allowNull: false,

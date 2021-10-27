@@ -10,6 +10,7 @@ export interface ManagerAttributes {
     communityId: string;
     active: boolean;
     readRules: boolean;
+    blocked: boolean;
 
     // timestamps
     createdAt: Date;
@@ -32,6 +33,7 @@ export class Manager extends Model<
     public communityId!: string;
     public active!: boolean;
     public readRules!: boolean;
+    public blocked!: boolean;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -69,6 +71,11 @@ export function initializeManager(sequelize: Sequelize): void {
                 defaultValue: true,
             },
             readRules: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
+            blocked: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,

@@ -915,6 +915,8 @@ export default class CommunityService {
                 communityId: c.id,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
+                decreaseStep: c.decreaseStep,
+                blocked: c.blocked,
             },
             state: {
                 backers: c.backers,

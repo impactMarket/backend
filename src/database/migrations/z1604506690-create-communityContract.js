@@ -31,6 +31,16 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
+            decreaseStep: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                defaultValue: 0,
+            },
+            blocked: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
