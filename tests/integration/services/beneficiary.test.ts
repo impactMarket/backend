@@ -56,7 +56,6 @@ describe('beneficiary service', () => {
                     communityId: 0,
                     incrementInterval: 5 * 60,
                     maxClaim,
-                    decreaseStep,
                 },
                 hasAddress: true,
             },
@@ -71,6 +70,7 @@ describe('beneficiary service', () => {
                     communityId: 0,
                     incrementInterval: 5 * 60,
                     maxClaim,
+                    decreaseStep,
                 },
                 hasAddress: true,
             },
@@ -667,23 +667,23 @@ describe('beneficiary service', () => {
         it('update max claim when add a beneficiary', async () => {
             await BeneficiaryService.add(
                 users[18].address,
-                users[0].address,
-                communities[0].publicId,
+                users[1].address,
+                communities[1].publicId,
                 randomTx(),
                 new Date()
             );
 
             await BeneficiaryService.add(
                 users[19].address,
-                users[0].address,
-                communities[0].publicId,
+                users[1].address,
+                communities[1].publicId,
                 randomTx(),
                 new Date()
             );
 
             const contractUpdated = await models.ubiCommunityContract.findOne({
                 attributes: ['maxClaim'],
-                where: { communityId: communities[0].id },
+                where: { communityId: communities[1].id },
             });
 
             const newMaxClaim = parseInt(maxClaim) - parseInt(decreaseStep) * 2;
@@ -693,33 +693,40 @@ describe('beneficiary service', () => {
         });
 
         it('update max claim when remove a beneficiary', async () => {
+            // reset maxClaim
+            await models.ubiCommunityContract.update({
+                maxClaim,
+            }, {
+                where: { communityId: communities[1].id },
+            });
+
             await BeneficiaryService.add(
                 users[20].address,
-                users[0].address,
-                communities[0].publicId,
+                users[1].address,
+                communities[1].publicId,
                 randomTx(),
                 new Date()
             );
 
             await BeneficiaryService.add(
                 users[21].address,
-                users[0].address,
-                communities[0].publicId,
+                users[1].address,
+                communities[1].publicId,
                 randomTx(),
                 new Date()
             );
 
             await BeneficiaryService.remove(
                 users[20].address,
-                users[0].address,
-                communities[0].publicId,
+                users[1].address,
+                communities[1].publicId,
                 randomTx(),
                 new Date()
             );
 
             const contractUpdated = await models.ubiCommunityContract.findOne({
                 attributes: ['maxClaim'],
-                where: { communityId: communities[0].id },
+                where: { communityId: communities[1].id },
             });
 
             const newMaxClaim = parseInt(maxClaim) - parseInt(decreaseStep) * 1;
@@ -731,23 +738,23 @@ describe('beneficiary service', () => {
         it('update max claim when a community does not have a decrease step', async () => {
             await BeneficiaryService.add(
                 users[22].address,
-                users[1].address,
-                communities[1].publicId,
+                users[0].address,
+                communities[0].publicId,
                 randomTx(),
                 new Date()
             );
 
             await BeneficiaryService.add(
                 users[23].address,
-                users[1].address,
-                communities[1].publicId,
+                users[0].address,
+                communities[0].publicId,
                 randomTx(),
                 new Date()
             );
 
             const contractUpdated = await models.ubiCommunityContract.findOne({
                 attributes: ['maxClaim'],
-                where: { communityId: communities[1].id },
+                where: { communityId: communities[0].id },
             });
 
             expect(contractUpdated!.maxClaim).to.be.equal(maxClaim);

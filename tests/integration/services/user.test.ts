@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { ethers } from 'ethers';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
-import { SinonStub, stub } from 'sinon';
+import { SinonStub, stub, restore } from 'sinon';
 import tk from 'timekeeper';
 
 import { models } from '../../../src/database';
@@ -28,6 +28,7 @@ describe('user service', () => {
         await truncate(sequelize, 'Manager');
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize);
+        restore();
     });
 
     describe('authenticate', () => {

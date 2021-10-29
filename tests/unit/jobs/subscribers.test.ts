@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 // import { Transaction } from 'sequelize';
-import { stub, assert, match, SinonStub, spy, SinonSpy } from 'sinon';
+import { stub, assert, match, SinonStub, spy, SinonSpy, restore } from 'sinon';
 import { models } from '../../../src/database';
 
 // import { Beneficiary } from '../../../src/database/models/ubi/beneficiary';
@@ -215,6 +215,7 @@ describe('[jobs] subscribers', () => {
     after(() => {
         beneficiaryAdd.restore();
         provider.removeAllListeners();
+        restore();
     });
 
     beforeEach(() => {
