@@ -630,12 +630,6 @@ describe('beneficiary service', () => {
     });
 
     describe('survey', () => {
-        after(async () => {
-            await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize, 'Manager');
-            await truncate(sequelize);
-        });
-
         it('should save a survey', async () => {
             const users = await UserFactory({ n: 1 });
 

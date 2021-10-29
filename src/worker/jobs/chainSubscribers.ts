@@ -241,7 +241,6 @@ class ChainSubscribers {
         } else {
             parsedLog = this.ifaceCommunity.parseLog(log);
         }
-        // const parsedLog = this.ifaceCommunity.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
         if (parsedLog.name === 'BeneficiaryAdded') {
             let beneficiaryAddress = '',
@@ -299,7 +298,6 @@ class ChainSubscribers {
             } catch (e) {}
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryRemoved') {
-            // const beneficiaryAddress = parsedLog.args[0];
             const communityAddress = log.address;
             let beneficiaryAddress = '',
                 managerAddress = '';
