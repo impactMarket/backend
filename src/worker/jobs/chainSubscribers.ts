@@ -13,8 +13,8 @@ import { ethers } from 'ethers';
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import CommunityAdminContractABI from '../../contracts/CommunityAdminABI.json';
-import NewCommunityContractABI from '../../contracts/NewCommunityABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
+import NewCommunityContractABI from '../../contracts/NewCommunityABI.json';
 import { models } from '../../database';
 
 /* istanbul ignore next */
@@ -84,7 +84,9 @@ class ChainSubscribers {
                 ),
                 ethers.utils.id('CommunityLocked(address)'),
                 ethers.utils.id('CommunityUnlocked(address)'),
-                ethers.utils.id('BeneficiaryParamsUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)'),
+                ethers.utils.id(
+                    'BeneficiaryParamsUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)'
+                ),
                 ethers.utils.id('Transfer(address,address,uint256)'),
             ],
         ];
@@ -234,11 +236,11 @@ class ChainSubscribers {
         log: ethers.providers.Log
     ): Promise<ethers.utils.LogDescription | undefined> {
         let parsedLog: ethers.utils.LogDescription;
-            if (log.address === config.newCommunityContractAddress) {
-                parsedLog = this.ifaceNewCommunity.parseLog(log);
-            } else {
-                parsedLog = this.ifaceCommunity.parseLog(log);
-            }
+        if (log.address === config.communityContractAddress) {
+            parsedLog = this.ifaceNewCommunity.parseLog(log);
+        } else {
+            parsedLog = this.ifaceCommunity.parseLog(log);
+        }
         // const parsedLog = this.ifaceCommunity.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
         if (parsedLog.name === 'BeneficiaryAdded') {
@@ -249,7 +251,7 @@ class ChainSubscribers {
                 beneficiaryAddress = parsedLog.args[1];
                 managerAddress = parsedLog.args[0];
             } else {
-                beneficiaryAddress = parsedLog.args[0]
+                beneficiaryAddress = parsedLog.args[0];
                 const txResponse = await this.provider.getTransaction(
                     log.transactionHash
                 );
@@ -294,7 +296,6 @@ class ChainSubscribers {
                     log.transactionHash,
                     txAt
                 );
-                await CommunityContractService.updateMaxClaim(communityPublicId!);
             } catch (e) {}
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryRemoved') {
@@ -307,14 +308,15 @@ class ChainSubscribers {
                 beneficiaryAddress = parsedLog.args[1];
                 managerAddress = parsedLog.args[0];
             } else {
-                beneficiaryAddress = parsedLog.args[0]
+                beneficiaryAddress = parsedLog.args[0];
                 const txResponse = await this.provider.getTransaction(
                     log.transactionHash
                 );
                 managerAddress = txResponse.from;
             }
             try {
-                const communityPublicId = this.communities.get(communityAddress)!
+                const communityPublicId =
+                    this.communities.get(communityAddress)!;
                 const txAt = await getBlockTime(log.blockHash);
                 await BeneficiaryService.remove(
                     beneficiaryAddress,
@@ -323,7 +325,6 @@ class ChainSubscribers {
                     log.transactionHash,
                     txAt
                 );
-                await CommunityContractService.updateMaxClaim(communityPublicId!);
             } catch (e) {}
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryClaim') {
@@ -337,7 +338,10 @@ class ChainSubscribers {
             result = parsedLog;
         } else if (parsedLog.name === 'ManagerAdded') {
             // new managers in existing community
-            const managerAddress = parsedLog.args.length > 1 ? parsedLog.args[1] : parsedLog.args[0];
+            const managerAddress =
+                parsedLog.args.length > 1
+                    ? parsedLog.args[1]
+                    : parsedLog.args[0];
             const communityAddress = log.address;
             await ManagerService.add(
                 managerAddress,
@@ -345,7 +349,10 @@ class ChainSubscribers {
             );
             result = parsedLog;
         } else if (parsedLog.name === 'ManagerRemoved') {
-            const managerAddress = parsedLog.args.length > 1 ? parsedLog.args[1] : parsedLog.args[0];
+            const managerAddress =
+                parsedLog.args.length > 1
+                    ? parsedLog.args[1]
+                    : parsedLog.args[0];
             const communityAddress = log.address;
             await ManagerService.remove(
                 managerAddress,
@@ -360,7 +367,7 @@ class ChainSubscribers {
                 {
                     where: {
                         address,
-                        communityId: this.communities.get(communityAddress)!
+                        communityId: this.communities.get(communityAddress)!,
                     },
                 }
             );
@@ -373,7 +380,7 @@ class ChainSubscribers {
                 {
                     where: {
                         address,
-                        communityId: this.communities.get(communityAddress)!
+                        communityId: this.communities.get(communityAddress)!,
                     },
                 }
             );
@@ -393,60 +400,28 @@ class ChainSubscribers {
             );
             result = parsedLog;
         } else if (parsedLog.name === 'CommunityLocked') {
-            const managerAddress = parsedLog.args[0];
-            const managerResult = await models.manager.findOne({
-                attributes: [],
-                include: [
-                    {
-                        model: models.community,
-                        as: 'community',
-                        attributes: ['id'],
+            await models.ubiCommunityContract.update(
+                {
+                    blocked: true,
+                },
+                {
+                    where: {
+                        communityId: this.communitiesId.get(log.address)!,
                     },
-                ],
-                where: { address: managerAddress },
-            });
-
-            if (!managerResult) {
-                Logger.error(
-                    `Community with address ${managerAddress} wasn't found at "CommunityLocked"`
-                );
-            }
-            const manager = managerResult!.toJSON() as ManagerAttributes;
-            await models.ubiCommunityContract.update({
-                blocked: true
-            }, {
-                where: {
-                    communityId: manager.community!.id
                 }
-            });
+            );
             result = parsedLog;
         } else if (parsedLog.name === 'CommunityUnlocked') {
-            const managerAddress = parsedLog.args[0];
-            const managerResult = await models.manager.findOne({
-                attributes: [],
-                include: [
-                    {
-                        model: models.community,
-                        as: 'community',
-                        attributes: ['id'],
+            await models.ubiCommunityContract.update(
+                {
+                    blocked: false,
+                },
+                {
+                    where: {
+                        communityId: this.communitiesId.get(log.address)!,
                     },
-                ],
-                where: { address: managerAddress },
-            });
-
-            if (!managerResult) {
-                Logger.error(
-                    `Community with address ${managerAddress} wasn't found at "CommunityLocked"`
-                );
-            }
-            const manager = managerResult!.toJSON() as ManagerAttributes;
-            await models.ubiCommunityContract.update({
-                blocked: false
-            }, {
-                where: {
-                    communityId: manager.community!.id
                 }
-            });
+            );
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryParamsUpdated') {
             const communityAddress = log.address;
@@ -457,7 +432,7 @@ class ChainSubscribers {
                 {
                     claimAmount: parsedLog.args[5].toString(),
                     maxClaim: parsedLog.args[6].toString(),
-                    decreaseStep: parsedLog.args[7].toNumber(),
+                    decreaseStep: parsedLog.args[7].toString(),
                     baseInterval: parsedLog.args[8].toNumber(),
                     incrementInterval: parsedLog.args[9].toNumber(),
                 }
@@ -557,13 +532,16 @@ class ChainSubscribers {
     async _processOtherEvents(log: ethers.providers.Log): Promise<void> {
         try {
             let parsedLog: ethers.utils.LogDescription;
-            if (log.address === config.newCommunityContractAddress) {
+            if (log.address === config.communityContractAddress) {
                 parsedLog = this.ifaceNewCommunity.parseLog(log);
             } else {
                 parsedLog = this.ifaceCommunity.parseLog(log);
             }
             if (parsedLog.name === 'ManagerAdded') {
-                const managerAddress = parsedLog.args.length > 1 ? parsedLog.args[1] : parsedLog.args[0];
+                const managerAddress =
+                    parsedLog.args.length > 1
+                        ? parsedLog.args[1]
+                        : parsedLog.args[0];
                 const communityAddress = log.address;
                 if (this.allCommunitiesAddresses.includes(communityAddress)) {
                     await ManagerService.add(

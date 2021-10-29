@@ -34,7 +34,7 @@ export interface UbiCommunityContract {
     baseInterval: number;
     incrementInterval: number;
     blocked?: boolean;
-    decreaseStep?: number;
+    decreaseStep?: string;
 
     // timestamps
     createdAt: Date;
@@ -48,5 +48,5 @@ export interface UbiCommunityContractCreation {
     baseInterval: number;
     incrementInterval: number;
     blocked?: boolean;
-    decreaseStep?: number;
+    decreaseStep?: string;
 }

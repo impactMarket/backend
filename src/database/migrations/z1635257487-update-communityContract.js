@@ -12,7 +12,7 @@ module.exports = {
             defaultValue: false,
         });
         await queryInterface.addColumn('ubi_community_contract', 'decreaseStep', {
-            type: Sequelize.INTEGER,
+            type: Sequelize.DECIMAL(22), // max 9,999 - plus 18 decimals
             allowNull: false,
             defaultValue: 0,
         });

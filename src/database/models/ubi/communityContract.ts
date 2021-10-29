@@ -43,7 +43,7 @@ export class UbiCommunityContractModel extends Model<
     public baseInterval!: number;
     public incrementInterval!: number;
     public blocked!: boolean;
-    public decreaseStep!: number;
+    public decreaseStep!: string;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -88,7 +88,7 @@ export function initializeUbiCommunityContract(sequelize: Sequelize): void {
                 defaultValue: false,
             },
             decreaseStep: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.DECIMAL(22), // max 9,999 - plus 18 decimals
                 allowNull: false,
                 defaultValue: 0,
             },
