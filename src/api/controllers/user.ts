@@ -334,7 +334,7 @@ class UserController {
             return;
         }
 
-        UserService.getNotifications(req.user.address, req.query)
+        UserService.getNotifications(req.query, req.user.userId)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })
@@ -352,7 +352,7 @@ class UserController {
             return;
         }
 
-        UserService.readNotifications(req.user.address)
+        UserService.readNotifications(req.user.userId)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })
@@ -370,7 +370,7 @@ class UserController {
             return;
         }
 
-        UserService.getUnreadNotifications(req.user.address)
+        UserService.getUnreadNotifications(req.user.userId)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })

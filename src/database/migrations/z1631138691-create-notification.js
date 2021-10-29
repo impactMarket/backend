@@ -9,11 +9,11 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            address: {
-                type: Sequelize.STRING(44),
+            userId: {
+                type: Sequelize.INTEGER,
                 references: {
                     model: 'app_user',
-                    key: 'address',
+                    key: 'id',
                 },
                 onDelete: 'CASCADE',
                 allowNull: false,
