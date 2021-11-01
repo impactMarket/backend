@@ -83,7 +83,7 @@ export default class CommunityService {
         txReceipt,
         contractParams,
         coverMediaId,
-    }: ICommunityEditionAttributes): Promise<Community> {
+    }: ICommunityCreationAttributes): Promise<Community> {
         let managerAddress: string = '';
         let createObject: ICommunityCreationAttributes = {
             requestByAddress,

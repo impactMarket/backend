@@ -7,11 +7,29 @@ import { UbiCommunityDailyState } from '@interfaces/ubi/ubiCommunityDailyState';
 import { UbiCommunityDemographics } from '@interfaces/ubi/ubiCommunityDemographics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
+import { ICommunityContractParams } from '../../../types';
 // import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
 import { Sequelize, DataTypes, Model } from 'sequelize';
-import { ICommonCommunityAttributes } from 'types/endpoints';
 
 import { BeneficiaryAttributes } from './beneficiary';
+
+export interface IBaseCommunityAttributes {
+    requestByAddress: string;
+    name: string;
+    contractAddress?: string | undefined;
+    description: string;
+    language: string;
+    currency: string;
+    city: string;
+    country: string;
+    gps: {
+        latitude: number;
+        longitude: number;
+    };
+    email: string;
+    coverMediaId?: number;
+    contractParams?: ICommunityContractParams;
+}
 
 export interface CommunityAttributes {
     id: number; // Note that the `null assertion` `!` is required in strict mode.
@@ -54,12 +72,14 @@ export interface CommunityAttributes {
     dailyState?: UbiCommunityDailyState[]; // TODO: to be removed
 }
 export interface ICommunityCreationAttributes
-    extends ICommonCommunityAttributes {
+    extends IBaseCommunityAttributes {
     descriptionEn?: string;
-    visibility: 'public' | 'private';
+    visibility?: 'public' | 'private';
     coverImage?: string; // TODO: will be required once next version is released
-    status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    started: Date;
+    status?: 'pending' | 'valid' | 'removed'; // pending / valid / removed
+    started?: Date;
+    txReceipt?: any | undefined;
+    contractParams?: ICommunityContractParams;
 }
 
 export class Community extends Model<
