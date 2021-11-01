@@ -1133,6 +1133,216 @@ describe('community service', () => {
         });
     });
 
+    describe('edit pending community', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'Manager');
+            await truncate(sequelize);
+        });
+
+        it('edit community without media and contract', async () => {
+            const manager = await UserFactory({ n: 1 });
+
+            await CommunityFactory([
+                {
+                    requestByAddress: manager[0].address,
+                    started: new Date(),
+                    status: 'pending',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const result = await CommunityService.editSubmission(
+                {
+                    requestByAddress: manager[0].address,
+                    name: 'new name',
+                    description: 'new description',
+                    language: 'pt',
+                    currency: 'USD',
+                    city: 'São Paulo',
+                    country: 'Brasil',
+                    gps: {
+                        latitude: 10,
+                        longitude: 10,
+                    },
+                    email: 'test@email.com',
+                }
+            );
+
+            expect(result).to.include({
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'USD',
+                city: 'São Paulo',
+                country: 'Brasil',
+            });
+        });
+
+        it('should return error when a community is not pending', async () => {
+            const manager = await UserFactory({ n: 1 });
+
+            await CommunityFactory([
+                {
+                    requestByAddress: manager[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            CommunityService.editSubmission({
+                requestByAddress: manager[0].address,
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'USD',
+                city: 'São Paulo',
+                country: 'Brasil',
+                gps: {
+                    latitude: 10,
+                    longitude: 10,
+                },
+                email: 'test@email.com',
+            })
+                .catch((e) => expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND'))
+                .then(() => {
+                    throw new Error(
+                        "'fails to welcome not existing account' expected to fail"
+                    );
+                });
+        });
+
+        it('edit community and contract', async () => {
+            const manager = await UserFactory({ n: 1 });
+
+            await CommunityFactory([
+                {
+                    requestByAddress: manager[0].address,
+                    started: new Date(),
+                    status: 'pending',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const result = await CommunityService.editSubmission(
+                {
+                    requestByAddress: manager[0].address,
+                    name: 'new name',
+                    description: 'new description',
+                    language: 'pt',
+                    currency: 'USD',
+                    city: 'São Paulo',
+                    country: 'Brasil',
+                    gps: {
+                        latitude: 10,
+                        longitude: 10,
+                    },
+                    email: 'test@email.com',
+                    contractParams: {
+                        baseInterval: 60 * 60 * 24 * 7,
+                        claimAmount: '5000000000000000000',
+                        incrementInterval: 5 * 60 * 60,
+                        maxClaim: '500000000000000000000',
+                    },
+                }
+            );
+
+            expect(result).to.include({
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'USD',
+                city: 'São Paulo',
+                country: 'Brasil',
+            });
+            expect(result.contract).to.include({
+                baseInterval: 60 * 60 * 24 * 7,
+                claimAmount: '5000000000000000000',
+                incrementInterval: 5 * 60 * 60,
+                maxClaim: '500000000000000000000',
+            });
+        });
+
+        it('edit community and cover media', async () => {
+            const manager = await UserFactory({ n: 1 });
+
+            await CommunityFactory([
+                {
+                    requestByAddress: manager[0].address,
+                    started: new Date(),
+                    status: 'pending',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const media = await models.appMediaContent.create({
+                url: 'test.com',
+                width: 0,
+                height: 0,
+            });
+
+            const result = await CommunityService.editSubmission(
+                {
+                    requestByAddress: manager[0].address,
+                    name: 'new name',
+                    description: 'new description',
+                    language: 'pt',
+                    currency: 'USD',
+                    city: 'São Paulo',
+                    country: 'Brasil',
+                    gps: {
+                        latitude: 10,
+                        longitude: 10,
+                    },
+                    email: 'test@email.com',
+                    coverMediaId: media.id,
+                }
+            );
+
+            expect(result).to.include({
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'USD',
+                city: 'São Paulo',
+                country: 'Brasil',
+                coverMediaId: media.id,
+            });
+        });
+    });
+
     describe('promoter', () => {
         afterEach(async () => {
             await truncate(sequelize, 'UbiPromoterModel');
@@ -1459,13 +1669,13 @@ describe('community service', () => {
             const tx = randomTx();
 
             await ManagerFactory(users.slice(0, 2), community[0].publicId);
-                await BeneficiaryService.add(
-                    users[2].address,
-                    users[0].address,
-                    community[0].publicId,
-                    tx,
-                    new Date()
-                );
+            await BeneficiaryService.add(
+                users[2].address,
+                users[0].address,
+                community[0].publicId,
+                tx,
+                new Date()
+            );
 
             await ManagerService.remove(
                 users[0].address,
