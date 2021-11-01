@@ -10,6 +10,7 @@ import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
 import {
     Community,
     CommunityAttributes,
+    IBaseCommunityAttributes,
     ICommunityCreationAttributes,
 } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
@@ -35,7 +36,6 @@ import { models, sequelize } from '../../database';
 import { ICommunityContractParams } from '../../types';
 import {
     ICommunity,
-    ICommunityEditionAttributes,
     ICommunityLightDetails,
     ICommunityPendingDetails,
     IManagerDetailsManager,
@@ -1405,7 +1405,7 @@ export default class CommunityService {
     }
 
     public static async editSubmission(
-        params: ICommunityEditionAttributes
+        params: IBaseCommunityAttributes
     ): Promise<CommunityAttributes> {
         const t = await this.sequelize.transaction();
         try {
