@@ -488,8 +488,8 @@ export default class CommunityService {
                 ...extendedInclude,
             ],
             order: orderOption,
-            offset: query.offset ? parseInt(query.offset, 10) : undefined,
-            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
         });
 
         const communities = communitiesResult.rows.map((c) =>
@@ -1055,6 +1055,9 @@ export default class CommunityService {
             if (typeof offset !== 'number' || typeof limit !== 'number') {
                 throw new BaseError('NaN', 'not a number');
             }
+        } else {
+            offset = config.defaultOffset;
+            limit = config.defaultLimit;
         }
 
         if (order === undefined && query.order !== undefined) {

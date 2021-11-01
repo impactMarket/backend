@@ -44,7 +44,6 @@ export default class UserService {
     ): Promise<IUserAuth> {
         try {
             // generate access token for future interactions that require authentication
-            const token = generateAccessToken(user.address);
             const exists = await this.exists(user.address);
 
             if (overwrite) {
@@ -122,6 +121,7 @@ export default class UserService {
 
             const userHello = await this.loadUser(userFromRegistry);
             this.updateLastLogin(userFromRegistry.id);
+            const token = generateAccessToken(user.address, userFromRegistry.id);
 
             return {
                 ...userHello,
@@ -560,29 +560,33 @@ export default class UserService {
     }
 
     public static async getNotifications(
-        address: string,
         query: {
             offset?: string;
             limit?: string;
-        }
-    ): Promise<AppNotification[]> {
+        },
+        userId: number,
+    ): Promise<AppNotification[]> {       
         const notifications = await this.appNotification.findAll({
-            where: { address },
-            offset: query.offset ? parseInt(query.offset, 10) : undefined,
-            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+            where: {
+                userId,
+            },
+            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
             order: [['createdAt', 'DESC']],
         });
         return notifications as AppNotification[];
     }
 
-    public static async readNotifications(address: string): Promise<boolean> {
+    public static async readNotifications(userId: number): Promise<boolean> {
         const updated = await this.appNotification.update(
             {
                 read: true,
             },
             {
                 returning: true,
-                where: { address },
+                where: {
+                    userId,
+                },
             }
         );
         if (updated[0] === 0) {
@@ -591,12 +595,10 @@ export default class UserService {
         return true;
     }
 
-    public static async getUnreadNotifications(
-        address: string
-    ): Promise<number> {
+    public static async getUnreadNotifications(userId: number): Promise<number> {        
         return this.appNotification.count({
             where: {
-                address,
+                userId,
                 read: false,
             },
         });

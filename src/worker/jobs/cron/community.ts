@@ -105,6 +105,20 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
     // query communities data
 
+    const whereCommunity = {
+        [Op.or]: [
+            {
+                status: 'valid',
+            },
+            {
+                [Op.and]: [
+                    { status: 'removed' },
+                    { deletedAt: { [Op.between]: [yesterday, today] }}
+                ]
+            }
+        ]
+    };
+
     const communitiesStatePre = await models.community.findAll({
         attributes: ['id', 'started'],
         include: [
@@ -139,7 +153,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             },
         ],
         where: {
-            status: 'valid',
+            ...whereCommunity,
             visibility: 'public',
         },
         order: [['id', 'DESC']],
@@ -251,7 +265,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             },
         ],
         where: {
-            status: 'valid',
+            ...whereCommunity,
             visibility: 'public',
         } as any,
         group: ['Community.id'],
@@ -280,7 +294,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             },
         ],
         where: {
-            status: 'valid',
+            ...whereCommunity,
             visibility: 'public',
         },
         group: ['Community.id'],

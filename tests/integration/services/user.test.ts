@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
 import { SinonStub, stub } from 'sinon';
+import tk from 'timekeeper';
 
 import { models } from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
@@ -13,6 +14,7 @@ import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
+import { jumpToTomorrowMidnight } from '../../utils/utils';
 
 describe('user service', () => {
     let sequelize: Sequelize;
@@ -310,14 +312,21 @@ describe('user service', () => {
 
             const oldLastLogin = login.user.lastLogin;
 
-            const newLogin = await UserService.authenticate({
+            tk.travel(jumpToTomorrowMidnight());
+
+            await UserService.authenticate({
                 address,
                 trust: {
                     phone,
                 },
             });
 
-            expect(newLogin.user.lastLogin).to.be.gt(oldLastLogin);
+            const user = await models.appUser.findOne({
+                where: { address },
+                attributes: ['lastLogin'],
+            });
+
+            expect(user!.lastLogin).to.be.gt(oldLastLogin);
         });
     });
 
@@ -463,10 +472,13 @@ describe('user service', () => {
                 avatarMediaId: 1,
                 pushNotificationToken: 'notification-token',
             };
-            const userUpdated = await UserService.edit({ address, ...data } as AppUser);
+            const userUpdated = await UserService.edit({
+                address,
+                ...data,
+            } as AppUser);
 
             expect(userUpdated).to.include(data);
-        })
+        });
     });
 
     describe('notifications', () => {
@@ -478,52 +490,58 @@ describe('user service', () => {
             yesterday.setDate(yesterday.getDate() - 1);
             await models.appNotification.bulkCreate([
                 {
-                    address: users[0].address,
+                    userId: users[0].id,
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
                 }, {
-                    address: users[0].address,
+                    userId: users[0].id,
                     type: 2,
                     params: 'param_test',
                     createdAt: new Date(),
                 }, {
-                    address: users[1].address,
+                    userId: users[1].id,
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
                 }, {
-                    address: users[2].address,
+                    userId: users[2].id,
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
-                }
+                },
             ]);
         });
 
         it('get all notifications from a user', async () => {
-            const notifications = await UserService.getNotifications(users[0].address, {
-                limit: '10',
-                offset: '0',
-            });
+            const notifications = await UserService.getNotifications(
+                {
+                    limit: '10',
+                    offset: '0',
+                },
+                users[0].id,
+            );
 
             expect(notifications.length).to.be.equal(2);
-            notifications.forEach(notification => {
+            notifications.forEach((notification) => {
                 expect(notification.read).to.be.false;
             });
         });
 
         it('mark all notifications as read', async () => {
-            await UserService.readNotifications(users[1].address);
+            await UserService.readNotifications(users[1].id);
 
-            const readNotifications = await UserService.getUnreadNotifications(users[1].address);
-            const unreadNotifications = await UserService.getUnreadNotifications(users[2].address);
+            const readNotifications = await UserService.getUnreadNotifications(
+                users[1].id
+            );
+            const unreadNotifications =
+                await UserService.getUnreadNotifications(users[2].id);
 
             expect(readNotifications).to.be.equal(0);
             expect(unreadNotifications).to.be.equal(1);
         });
     });
-    
+
     describe('newsletter', () => {
         let users: AppUser[];
         let searchContactStub: SinonStub;
@@ -566,7 +584,10 @@ describe('user service', () => {
 
         it('update email', async () => {
             const email = faker.internet.email();
-            const user: AppUser = await UserService.edit({ address: users[0].address, email } as AppUser);
+            const user: AppUser = await UserService.edit({
+                address: users[0].address,
+                email,
+            } as AppUser);
             expect(user.email).to.be.equal(email);
         });
 
