@@ -14,11 +14,11 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
             'id',
             [
                 literal(
-                    'count("beneficiaries->user"."suspect") filter ( where suspect is true )'
+                    'count(*) filter (where "suspect" is true)'
                 ),
                 'suspect',
             ],
-            [literal('count(1)'), 'total'],
+            [literal('count(*)'), 'total'],
         ],
         include: [
             {
@@ -44,7 +44,7 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
         group: ['Community.id'],
         raw: true,
     });
-    const communitySuspect: any[] = [];
+    const suspectActivity: any[] = [];
     for (let c = 0; c < communities.length; c++) {
         const suspect = parseInt((communities[c] as any).suspect);
         const total = parseInt((communities[c] as any).total);
@@ -57,7 +57,7 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
         // The Math.log10() function returns the base 10 logarithm of a number.
         const y = 60 * Math.log10(ps + 1);
         const suspectLevel = Math.max(1, Math.round(Math.min(y, 100) / 10));
-        communitySuspect.push({
+        suspectActivity.push({
             communityId: communities[c].id,
             percentage: Math.round(ps * 100) / 100,
             suspect: suspectLevel,
@@ -65,7 +65,9 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
     }
 
     // save suspect level
-    await models.ubiCommunitySuspect.bulkCreate(communitySuspect);
+    if(suspectActivity.length > 0) {
+        await models.ubiCommunitySuspect.bulkCreate(suspectActivity);
+    }
 }
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
