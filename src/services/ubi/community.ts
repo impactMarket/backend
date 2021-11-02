@@ -15,6 +15,7 @@ import {
 } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
+import { getFields } from '@utils/dataFetching';
 import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
 import {
@@ -311,10 +312,10 @@ export default class CommunityService {
         limit?: string;
         lat?: string;
         lng?: string;
+        fields?: string;
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
-        const extendedInclude: Includeable[] = [];
 
         if (query.orderBy) {
             const orders = query.orderBy.split(';');
@@ -403,29 +404,6 @@ export default class CommunityService {
             };
         }
 
-        // TODO: deprecated in mobile@1.1.6
-        if (query.extended) {
-            extendedInclude.push(
-                {
-                    model: this.ubiCommunityContract,
-                    as: 'contract',
-                },
-                {
-                    model: this.ubiCommunityDailyMetrics,
-                    required: false,
-                    duplicating: false,
-                    as: 'metrics',
-                    where: {
-                        date: {
-                            [Op.eq]: literal(
-                                '(select date from ubi_community_daily_metrics order by date desc limit 1)'
-                            ),
-                        },
-                    },
-                }
-            );
-        }
-
         if (query.name) {
             extendedWhere = {
                 ...extendedWhere,
@@ -444,49 +422,33 @@ export default class CommunityService {
             };
         }
 
+        let include: Includeable[];
+        let attributes: any;
+        const exclude = ['email'];
+        if(query.fields) {
+            const fields = getFields(query.fields);
+            include = this._generateInclude(fields);
+            attributes = fields.root && fields.root.length > 0
+            ?  fields.root.filter((el: string) => !exclude.includes(el))  
+            : {
+                exclude,
+            };
+        } else {
+            include = this._oldInclude(query.extended);
+            attributes = {
+                exclude,
+            }
+        }
+
+        
         const communitiesResult = await this.community.findAndCountAll({
-            attributes: {
-                exclude: ['email'],
-            },
+            attributes,
             where: {
                 status: 'valid',
                 visibility: 'public',
                 ...extendedWhere,
             },
-            include: [
-                {
-                    model: this.ubiCommunitySuspect,
-                    attributes: ['suspect'],
-                    as: 'suspect',
-                    required: false,
-                    duplicating: false,
-                    where: {
-                        createdAt: {
-                            [Op.eq]: literal(
-                                '(select max("createdAt") from ubi_community_suspect ucs where ucs."communityId"="Community".id and date("createdAt") > (current_date - INTERVAL \'1 day\'))'
-                            ),
-                        },
-                    },
-                },
-                {
-                    model: this.ubiCommunityState,
-                    attributes: { exclude: ['id', 'communityId'] },
-                    as: 'state',
-                },
-                {
-                    model: this.appMediaContent,
-                    as: 'cover',
-                    duplicating: false,
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
-                },
-                ...extendedInclude,
-            ],
+            include,
             order: orderOption,
             offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
             limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
@@ -1581,5 +1543,145 @@ export default class CommunityService {
             state,
             metrics: metrics !== null ? [metrics] : undefined,
         };
+    }
+
+    private static _generateInclude(fields: any): Includeable[] {
+        const extendedInclude: Includeable[] = [];
+        if(fields.suspect) {
+            extendedInclude.push({
+                model: this.ubiCommunitySuspect,
+                attributes: fields.suspect.length > 0 ? fields.suspect : undefined,
+                as: 'suspect',
+                required: false,
+                duplicating: false,
+                where: {
+                    createdAt: {
+                        [Op.eq]: literal(
+                            '(select max("createdAt") from ubi_community_suspect ucs where ucs."communityId"="Community".id and date("createdAt") > (current_date - INTERVAL \'1 day\'))'
+                        ),
+                    },
+                },
+            })
+        }
+
+        if(fields.state) {
+            const stateExclude = ['id', 'communityId'];
+            let stateAttributes = fields.state.length > 0
+            ?  fields.state.filter((el: string) => !stateExclude.includes(el))  
+            : {
+                exclude: stateExclude
+            }
+            extendedInclude.push({
+                model: this.ubiCommunityState,
+                attributes: stateAttributes,
+                as: 'state',
+            })
+        }
+
+        if(fields.cover) {
+            extendedInclude.push({
+                attributes: fields.cover.length > 0 ? fields.cover : undefined,
+                model: this.appMediaContent,
+                as: 'cover',
+                duplicating: false,
+                include: fields.thumbnails ? [
+                    {
+                        attributes: fields.thumbnails.length > 0 ? fields.thumbnails : undefined,
+                        model: this.appMediaThumbnail,
+                        as: 'thumbnails',
+                        separate: true,
+                    },
+                ] : [],
+            })
+        }
+
+        if(fields.contract) {
+            extendedInclude.push({
+                attributes: fields.contract.length > 0 ? fields.contract : undefined,
+                model: this.ubiCommunityContract,
+                as: 'contract',
+            })
+        }
+
+        if(fields.metrics) {
+            extendedInclude.push({
+                attributes: fields.metrics.length > 0 ? fields.metrics : undefined,
+                model: this.ubiCommunityDailyMetrics,
+                required: false,
+                duplicating: false,
+                as: 'metrics',
+                where: {
+                    date: {
+                        [Op.eq]: literal(
+                            '(select date from ubi_community_daily_metrics order by date desc limit 1)'
+                        ),
+                    },
+                },
+            })
+        }
+
+        return extendedInclude;
+    };
+
+    private static _oldInclude(extended?: string): Includeable[] {
+        const extendedInclude: Includeable[] = [];
+
+        // TODO: deprecated in mobile@1.1.6
+        if (extended) {
+            extendedInclude.push(
+                {
+                    model: this.ubiCommunityContract,
+                    as: 'contract',
+                },
+                {
+                    model: this.ubiCommunityDailyMetrics,
+                    required: false,
+                    duplicating: false,
+                    as: 'metrics',
+                    where: {
+                        date: {
+                            [Op.eq]: literal(
+                                '(select date from ubi_community_daily_metrics order by date desc limit 1)'
+                            ),
+                        },
+                    },
+                }
+            );
+        }
+
+        return [
+            {
+                model: this.ubiCommunitySuspect,
+                attributes: ['suspect'],
+                as: 'suspect',
+                required: false,
+                duplicating: false,
+                where: {
+                    createdAt: {
+                        [Op.eq]: literal(
+                            '(select max("createdAt") from ubi_community_suspect ucs where ucs."communityId"="Community".id and date("createdAt") > (current_date - INTERVAL \'1 day\'))'
+                        ),
+                    },
+                },
+            },
+            {
+                model: this.ubiCommunityState,
+                attributes: { exclude: ['id', 'communityId'] },
+                as: 'state',
+            },
+            {
+                model: this.appMediaContent,
+                as: 'cover',
+                duplicating: false,
+                include: [
+                    {
+                        model: this.appMediaThumbnail,
+                        as: 'thumbnails',
+                        separate: true,
+                    },
+                ],
+            },
+            ...extendedInclude,
+        ] as Includeable[];
     }
 }
