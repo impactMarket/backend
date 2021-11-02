@@ -7,7 +7,6 @@ import { ICommunityContractParams } from '../../types';
 export default class CommunityContractService {
     public static ubiCommunityContract = models.ubiCommunityContract;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
-    public static beneficiary = models.beneficiary;
     public static community = models.community;
     public static sequelize = sequelize;
 
