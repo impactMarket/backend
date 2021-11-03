@@ -25,7 +25,6 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
 
         ubiCommunitySuspectAddStub = stub(models.ubiCommunitySuspect, 'bulkCreate');
         ubiCommunitySuspectAddStub.returns(Promise.resolve());
-        tk.reset();
     });
 
     after(async () => {
@@ -55,7 +54,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await verifyCommunitySuspectActivity();
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
             where: {
-                createdAt: new Date(),
+                communityId: communities[0].id,
             }
         });
 
@@ -82,7 +81,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await verifyCommunitySuspectActivity();
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
             where: {
-                createdAt: new Date(),
+                communityId: communities[0].id,
             }
         });
 
@@ -109,7 +108,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await verifyCommunitySuspectActivity();
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
             where: {
-                createdAt: new Date(),
+                communityId: communities[0].id,
             }
         });
 
@@ -136,7 +135,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await verifyCommunitySuspectActivity();
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
             where: {
-                createdAt: new Date(),
+                communityId: communities[0].id,
             }
         });
 
@@ -160,7 +159,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await verifyCommunitySuspectActivity();
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
             where: {
-                createdAt: new Date(),
+                communityId: communities[0].id,
             }
         });
 
