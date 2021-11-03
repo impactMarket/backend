@@ -234,7 +234,7 @@ class CommunityController {
             contractParams,
         } = req.body;
 
-        CommunityService.create(
+        CommunityService.create({
             requestByAddress,
             name,
             contractAddress,
@@ -248,7 +248,7 @@ class CommunityController {
             txReceipt,
             contractParams,
             coverMediaId
-        )
+        })
             .then((community) => standardResponse(res, 201, true, community))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -370,6 +370,47 @@ class CommunityController {
             parseInt(limit, 10)
         )
             .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    editSubmission = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        const {
+            name,
+            description,
+            language,
+            currency,
+            city,
+            country,
+            coverMediaId,
+            gps,
+            email,
+            contractParams,
+        } = req.body;
+
+        CommunityService.editSubmission({
+            requestByAddress: req.user.address,
+            name,
+            description,
+            language,
+            currency,
+            city,
+            country,
+            gps,
+            email,
+            contractParams,
+            coverMediaId: parseInt(coverMediaId),
+        })
+            .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
