@@ -3,71 +3,38 @@ import CommunityService from '@services/ubi/community';
 import { WebClient } from '@slack/web-api';
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
-import { col, fn, literal, Op } from 'sequelize';
+import { col, fn, literal, Op, QueryTypes } from 'sequelize';
 
 import config from '../../../config';
-import { models } from '../../../database';
+import { models, sequelize } from '../../../database';
 
 export async function verifyCommunitySuspectActivity(): Promise<void> {
-    const communities = await models.community.findAll({
-        attributes: [
-            'id',
-            [
-                literal(
-                    'count(*) filter (where "suspect" is true)'
-                ),
-                'suspect',
-            ],
-            [literal('count(*)'), 'total'],
-        ],
-        include: [
-            {
-                attributes: [],
-                model: models.beneficiary,
-                as: 'beneficiaries',
-                where: {
-                    active: true,
-                },
-                include: [
-                    {
-                        attributes: [],
-                        model: models.appUser,
-                        as: 'user',
-                    },
-                ],
-            },
-        ],
-        where: {
-            status: 'valid',
-            visibility: 'public',
-        },
-        group: ['Community.id'],
-        raw: true,
-    });
-    const suspectActivity: any[] = [];
-    for (let c = 0; c < communities.length; c++) {
-        const suspect = parseInt((communities[c] as any).suspect);
-        const total = parseInt((communities[c] as any).total);
-        if (suspect === 0) {
-            continue;
-        }
-        // in case it's 100%
-        const ps = suspect === total ? 100 : (suspect / total) * 100;
-        // The Math.log() function returns the natural logarithm (base e) of a number.
-        // The Math.log10() function returns the base 10 logarithm of a number.
-        const y = 60 * Math.log10(ps + 1);
-        const suspectLevel = Math.max(1, Math.round(Math.min(y, 100) / 10));
-        suspectActivity.push({
-            communityId: communities[c].id,
-            percentage: Math.round(ps * 100) / 100,
-            suspect: suspectLevel,
-        });
-    }
+    const query = `
+    WITH
+        communities AS (
+        SELECT "Community"."id",
+            count(*) filter ( where suspect is true ) AS "suspect",
+            count(*) as "total"
+        FROM "community" AS "Community"
+            INNER JOIN "beneficiary" AS "beneficiaries" ON "Community"."publicId" = "beneficiaries"."communityId" AND "beneficiaries"."active" = true
+            LEFT OUTER JOIN "app_user" AS "app_user" ON "beneficiaries"."address" = "app_user"."address"
+        WHERE "Community"."status" = 'valid' AND "Community"."visibility" = 'public'
+        GROUP BY "Community"."id"
+        having count(*) filter ( where suspect is true ) > 0
+    ),
+    suspect_level AS (
+        select ((communities.suspect::float / communities.total::float) * 100) as ps,
+                (60 * log10(((communities.suspect::float / communities.total::float) * 100) + 1)) as y,
+                id
+        from communities
+    )
+    INSERT INTO ubi_community_suspect ("communityId", percentage, suspect)
+    (select id as "communityId", (ROUND(ps * 100) / 100) as percentage, GREATEST(1, ROUND(LEAST(suspect_level.y, 100) / 10)) as suspect
+    from suspect_level)`;
 
-    // save suspect level
-    if(suspectActivity.length > 0) {
-        await models.ubiCommunitySuspect.bulkCreate(suspectActivity);
-    }
+    await sequelize.query(query, {
+        type: QueryTypes.INSERT,
+    });
 }
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {

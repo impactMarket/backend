@@ -1,5 +1,6 @@
+import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
-import Sinon, { stub, assert } from 'sinon';
+import Sinon, { stub } from 'sinon';
 
 import { models } from '../../../../src/database';
 import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
@@ -50,15 +51,17 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await BeneficiaryFactory(users, communities[0].publicId);
 
         await verifyCommunitySuspectActivity();
-        assert.callCount(ubiCommunitySuspectAddStub, 1);
-        assert.calledWith(
-            ubiCommunitySuspectAddStub.getCall(0),
-            [{
-                communityId: communities[0].id,
-                percentage: 100,
-                suspect: 10,
-            }],
-        );
+        const suspectActivity = await models.ubiCommunitySuspect.findAll({
+            where: {
+                createdAt: new Date(),
+            }
+        });
+
+        expect((suspectActivity[0])).to.include({
+            communityId: communities[0].id,
+            percentage: 100,
+            suspect: 10
+        });
     });
 
     it('with 1% (level 2) suspicious activity', async () => {
@@ -75,15 +78,17 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await BeneficiaryFactory(users, communities[0].publicId);
 
         await verifyCommunitySuspectActivity();
-        assert.callCount(ubiCommunitySuspectAddStub, 1);
-        assert.calledWith(
-            ubiCommunitySuspectAddStub.getCall(0),
-            [{
-                communityId: communities[0].id,
-                percentage: 1,
-                suspect: 2,
-            }],
-        );
+        const suspectActivity = await models.ubiCommunitySuspect.findAll({
+            where: {
+                createdAt: new Date(),
+            }
+        });
+
+        expect((suspectActivity[0])).to.include({
+            communityId: communities[0].id,
+            percentage: 1,
+            suspect: 2
+        });
     });
 
     it('with 14.29% (level 7) suspicious activity', async () => {
@@ -100,15 +105,17 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await BeneficiaryFactory(users, communities[0].publicId);
 
         await verifyCommunitySuspectActivity();
-        assert.callCount(ubiCommunitySuspectAddStub, 1);
-        assert.calledWith(
-            ubiCommunitySuspectAddStub.getCall(0),
-            [{
-                communityId: communities[0].id,
-                percentage: 14.29,
-                suspect: 7,
-            }],
-        );
+        const suspectActivity = await models.ubiCommunitySuspect.findAll({
+            where: {
+                createdAt: new Date(),
+            }
+        });
+
+        expect((suspectActivity[0])).to.include({
+            communityId: communities[0].id,
+            percentage: 14.29,
+            suspect: 7
+        });
     });
 
     it('with 50% (level 10) suspicious activity', async () => {
@@ -125,15 +132,17 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await BeneficiaryFactory(users, communities[0].publicId);
 
         await verifyCommunitySuspectActivity();
-        assert.callCount(ubiCommunitySuspectAddStub, 1);
-        assert.calledWith(
-            ubiCommunitySuspectAddStub.getCall(0),
-            [{
-                communityId: communities[0].id,
-                percentage: 50,
-                suspect: 10,
-            }],
-        );
+        const suspectActivity = await models.ubiCommunitySuspect.findAll({
+            where: {
+                createdAt: new Date(),
+            }
+        });
+
+        expect((suspectActivity[0])).to.include({
+            communityId: communities[0].id,
+            percentage: 50,
+            suspect: 10
+        });
     });
 
     it('without suspicious activity', async () => {
@@ -147,6 +156,12 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await BeneficiaryFactory(users, communities[0].publicId);
 
         await verifyCommunitySuspectActivity();
-        assert.callCount(ubiCommunitySuspectAddStub, 0);
+        const suspectActivity = await models.ubiCommunitySuspect.findAll({
+            where: {
+                createdAt: new Date(),
+            }
+        });
+
+        expect(suspectActivity.length).to.be.equal(0);
     });
 });
