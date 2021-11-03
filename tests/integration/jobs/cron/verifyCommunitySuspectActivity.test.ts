@@ -10,6 +10,7 @@ import BeneficiaryFactory from '../../../factories/beneficiary';
 import CommunityFactory from '../../../factories/community';
 import UserFactory from '../../../factories/user';
 import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
+import tk from 'timekeeper';
 
 describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
     let sequelize: Sequelize;
@@ -24,6 +25,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
 
         ubiCommunitySuspectAddStub = stub(models.ubiCommunitySuspect, 'bulkCreate');
         ubiCommunitySuspectAddStub.returns(Promise.resolve());
+        tk.reset();
     });
 
     after(async () => {
