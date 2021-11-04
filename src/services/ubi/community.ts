@@ -315,10 +315,6 @@ export default class CommunityService {
         fields?: string;
         status?: 'valid' | 'pending';
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
-        if(!query.status) {
-            query.status = 'valid';
-        }
-
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
 
@@ -447,7 +443,7 @@ export default class CommunityService {
         const communitiesResult = await this.community.findAndCountAll({
             attributes,
             where: {
-                status: query.status,
+                status: query.status ? query.status : 'valid',
                 visibility: 'public',
                 ...extendedWhere,
             },
