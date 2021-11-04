@@ -1563,9 +1563,13 @@ export default class CommunityService {
             })
         }
 
-        if(fields.cover) {
+        if(fields.cover || fields.thumbnails) {
             extendedInclude.push({
-                attributes: fields.cover.length > 0 ? fields.cover : undefined,
+                attributes: fields.cover
+                    ? fields.cover.length > 0
+                        ? fields.cover
+                        : undefined
+                    : ['id'],
                 model: this.appMediaContent,
                 as: 'cover',
                 duplicating: false,
@@ -1606,8 +1610,10 @@ export default class CommunityService {
         }
 
         const stateExclude = ['id', 'communityId'];
-        let stateAttributes = fields.state && fields.state.length > 0
-        ?  fields.state.filter((el: string) => !stateExclude.includes(el))  
+        let stateAttributes = fields.state
+        ?  fields.state.length > 0 
+            ? fields.state.filter((el: string) => !stateExclude.includes(el))  
+            : { exclude: stateExclude }
         : []
         extendedInclude.push({
             model: this.ubiCommunityState,
