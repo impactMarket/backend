@@ -15,7 +15,7 @@ import {
 } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
-import { getFields } from '@utils/dataFetching';
+import { fetchData } from '@utils/dataFetching';
 import { notifyManagerAdded } from '@utils/util';
 import { ethers } from 'ethers';
 import {
@@ -313,7 +313,12 @@ export default class CommunityService {
         lat?: string;
         lng?: string;
         fields?: string;
+        status?: 'valid' | 'pending';
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
+        if(!query.status) {
+            query.status = 'valid';
+        }
+
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
 
@@ -426,13 +431,11 @@ export default class CommunityService {
         let attributes: any;
         const exclude = ['email'];
         if(query.fields) {
-            const fields = getFields(query.fields);
+            const fields = fetchData(query.fields);
             include = this._generateInclude(fields);
             attributes = fields.root && fields.root.length > 0
             ?  fields.root.filter((el: string) => !exclude.includes(el))  
-            : {
-                exclude,
-            };
+            : [];
         } else {
             include = this._oldInclude(query.extended);
             attributes = {
@@ -444,7 +447,7 @@ export default class CommunityService {
         const communitiesResult = await this.community.findAndCountAll({
             attributes,
             where: {
-                status: 'valid',
+                status: query.status,
                 visibility: 'public',
                 ...extendedWhere,
             },
@@ -1564,20 +1567,6 @@ export default class CommunityService {
             })
         }
 
-        if(fields.state) {
-            const stateExclude = ['id', 'communityId'];
-            let stateAttributes = fields.state.length > 0
-            ?  fields.state.filter((el: string) => !stateExclude.includes(el))  
-            : {
-                exclude: stateExclude
-            }
-            extendedInclude.push({
-                model: this.ubiCommunityState,
-                attributes: stateAttributes,
-                as: 'state',
-            })
-        }
-
         if(fields.cover) {
             extendedInclude.push({
                 attributes: fields.cover.length > 0 ? fields.cover : undefined,
@@ -1619,6 +1608,16 @@ export default class CommunityService {
                 },
             })
         }
+
+        const stateExclude = ['id', 'communityId'];
+        let stateAttributes = fields.state && fields.state.length > 0
+        ?  fields.state.filter((el: string) => !stateExclude.includes(el))  
+        : []
+        extendedInclude.push({
+            model: this.ubiCommunityState,
+            attributes: stateAttributes,
+            as: 'state',
+        })
 
         return extendedInclude;
     };
