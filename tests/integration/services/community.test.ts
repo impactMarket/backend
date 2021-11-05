@@ -878,6 +878,103 @@ describe('community service', () => {
                 });
             });
         });
+
+        describe('query string filter', () => {
+            afterEach(async () => {
+                await truncate(sequelize, 'Beneficiary');
+                await truncate(sequelize, 'Community');
+            });
+
+            it('filter fields on community list', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                const result = await CommunityService.list({
+                    fields: 'id;publicId;contract.maxClaim',
+                });
+
+                expect(result.rows[0]).to.have.deep.keys([
+                    'id',
+                    'publicId',
+                    'contract',
+                ]);
+                expect(result.rows[0]).to.include({
+                    id: communities[0].id,
+                    publicId: communities[0].publicId,
+                });
+                expect(result.rows[0].contract).to.include({
+                    maxClaim: communities[0]!.contract!.maxClaim,
+                });
+            });
+
+            it('filter pending community', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                const result = await CommunityService.list({
+                    status: 'pending',
+                });
+
+                expect(result.rows[0]).to.include({
+                    id: communities[1].id,
+                    status: 'pending',
+                });
+            });
+        });
     });
 
     describe('campaign', () => {
@@ -1159,22 +1256,20 @@ describe('community service', () => {
                 },
             ]);
 
-            const result = await CommunityService.editSubmission(
-                {
-                    requestByAddress: manager[0].address,
-                    name: 'new name',
-                    description: 'new description',
-                    language: 'pt',
-                    currency: 'USD',
-                    city: 'São Paulo',
-                    country: 'Brasil',
-                    gps: {
-                        latitude: 10,
-                        longitude: 10,
-                    },
-                    email: 'test@email.com',
-                }
-            );
+            const result = await CommunityService.editSubmission({
+                requestByAddress: manager[0].address,
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'USD',
+                city: 'São Paulo',
+                country: 'Brasil',
+                gps: {
+                    latitude: 10,
+                    longitude: 10,
+                },
+                email: 'test@email.com',
+            });
 
             expect(result).to.include({
                 name: 'new name',
@@ -1248,28 +1343,26 @@ describe('community service', () => {
                 },
             ]);
 
-            const result = await CommunityService.editSubmission(
-                {
-                    requestByAddress: manager[0].address,
-                    name: 'new name',
-                    description: 'new description',
-                    language: 'pt',
-                    currency: 'USD',
-                    city: 'São Paulo',
-                    country: 'Brasil',
-                    gps: {
-                        latitude: 10,
-                        longitude: 10,
-                    },
-                    email: 'test@email.com',
-                    contractParams: {
-                        baseInterval: 60 * 60 * 24 * 7,
-                        claimAmount: '5000000000000000000',
-                        incrementInterval: 5 * 60 * 60,
-                        maxClaim: '500000000000000000000',
-                    },
-                }
-            );
+            const result = await CommunityService.editSubmission({
+                requestByAddress: manager[0].address,
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'USD',
+                city: 'São Paulo',
+                country: 'Brasil',
+                gps: {
+                    latitude: 10,
+                    longitude: 10,
+                },
+                email: 'test@email.com',
+                contractParams: {
+                    baseInterval: 60 * 60 * 24 * 7,
+                    claimAmount: '5000000000000000000',
+                    incrementInterval: 5 * 60 * 60,
+                    maxClaim: '500000000000000000000',
+                },
+            });
 
             expect(result).to.include({
                 name: 'new name',
@@ -1313,23 +1406,21 @@ describe('community service', () => {
                 height: 0,
             });
 
-            const result = await CommunityService.editSubmission(
-                {
-                    requestByAddress: manager[0].address,
-                    name: 'new name',
-                    description: 'new description',
-                    language: 'pt',
-                    currency: 'USD',
-                    city: 'São Paulo',
-                    country: 'Brasil',
-                    gps: {
-                        latitude: 10,
-                        longitude: 10,
-                    },
-                    email: 'test@email.com',
-                    coverMediaId: media.id,
-                }
-            );
+            const result = await CommunityService.editSubmission({
+                requestByAddress: manager[0].address,
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'USD',
+                city: 'São Paulo',
+                country: 'Brasil',
+                gps: {
+                    latitude: 10,
+                    longitude: 10,
+                },
+                email: 'test@email.com',
+                coverMediaId: media.id,
+            });
 
             expect(result).to.include({
                 name: 'new name',

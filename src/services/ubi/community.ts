@@ -426,20 +426,20 @@ export default class CommunityService {
         let include: Includeable[];
         let attributes: any;
         const exclude = ['email'];
-        if(query.fields) {
+        if (query.fields) {
             const fields = fetchData(query.fields);
             include = this._generateInclude(fields);
-            attributes = fields.root && fields.root.length > 0
-            ?  fields.root.filter((el: string) => !exclude.includes(el))  
-            : [];
+            attributes =
+                fields.root && fields.root.length > 0
+                    ? fields.root.filter((el: string) => !exclude.includes(el))
+                    : [];
         } else {
             include = this._oldInclude(query.extended);
             attributes = {
                 exclude,
-            }
+            };
         }
 
-        
         const communitiesResult = await this.community.findAndCountAll({
             attributes,
             where: {
@@ -449,8 +449,12 @@ export default class CommunityService {
             },
             include,
             order: orderOption,
-            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
-            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
+            offset: query.offset
+                ? parseInt(query.offset, 10)
+                : config.defaultOffset,
+            limit: query.limit
+                ? parseInt(query.limit, 10)
+                : config.defaultLimit,
         });
 
         const communities = communitiesResult.rows.map((c) =>
@@ -1546,10 +1550,11 @@ export default class CommunityService {
 
     private static _generateInclude(fields: any): Includeable[] {
         const extendedInclude: Includeable[] = [];
-        if(fields.suspect) {
+        if (fields.suspect) {
             extendedInclude.push({
                 model: this.ubiCommunitySuspect,
-                attributes: fields.suspect.length > 0 ? fields.suspect : undefined,
+                attributes:
+                    fields.suspect.length > 0 ? fields.suspect : undefined,
                 as: 'suspect',
                 required: false,
                 duplicating: false,
@@ -1560,10 +1565,10 @@ export default class CommunityService {
                         ),
                     },
                 },
-            })
+            });
         }
 
-        if(fields.cover || fields.thumbnails) {
+        if (fields.cover || fields.thumbnails) {
             extendedInclude.push({
                 attributes: fields.cover
                     ? fields.cover.length > 0
@@ -1573,28 +1578,35 @@ export default class CommunityService {
                 model: this.appMediaContent,
                 as: 'cover',
                 duplicating: false,
-                include: fields.thumbnails ? [
-                    {
-                        attributes: fields.thumbnails.length > 0 ? fields.thumbnails : undefined,
-                        model: this.appMediaThumbnail,
-                        as: 'thumbnails',
-                        separate: true,
-                    },
-                ] : [],
-            })
+                include: fields.thumbnails
+                    ? [
+                          {
+                              attributes:
+                                  fields.thumbnails.length > 0
+                                      ? fields.thumbnails
+                                      : undefined,
+                              model: this.appMediaThumbnail,
+                              as: 'thumbnails',
+                              separate: true,
+                          },
+                      ]
+                    : [],
+            });
         }
 
-        if(fields.contract) {
+        if (fields.contract) {
             extendedInclude.push({
-                attributes: fields.contract.length > 0 ? fields.contract : undefined,
+                attributes:
+                    fields.contract.length > 0 ? fields.contract : undefined,
                 model: this.ubiCommunityContract,
                 as: 'contract',
-            })
+            });
         }
 
-        if(fields.metrics) {
+        if (fields.metrics) {
             extendedInclude.push({
-                attributes: fields.metrics.length > 0 ? fields.metrics : undefined,
+                attributes:
+                    fields.metrics.length > 0 ? fields.metrics : undefined,
                 model: this.ubiCommunityDailyMetrics,
                 required: false,
                 duplicating: false,
@@ -1606,23 +1618,25 @@ export default class CommunityService {
                         ),
                     },
                 },
-            })
+            });
         }
 
         const stateExclude = ['id', 'communityId'];
-        let stateAttributes = fields.state
-        ?  fields.state.length > 0 
-            ? fields.state.filter((el: string) => !stateExclude.includes(el))  
-            : { exclude: stateExclude }
-        : []
+        const stateAttributes = fields.state
+            ? fields.state.length > 0
+                ? fields.state.filter(
+                      (el: string) => !stateExclude.includes(el)
+                  )
+                : { exclude: stateExclude }
+            : [];
         extendedInclude.push({
             model: this.ubiCommunityState,
             attributes: stateAttributes,
             as: 'state',
-        })
+        });
 
         return extendedInclude;
-    };
+    }
 
     private static _oldInclude(extended?: string): Includeable[] {
         const extendedInclude: Includeable[] = [];

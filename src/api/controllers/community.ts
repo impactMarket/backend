@@ -247,7 +247,7 @@ class CommunityController {
             email,
             txReceipt,
             contractParams,
-            coverMediaId
+            coverMediaId,
         })
             .then((community) => standardResponse(res, 201, true, community))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
