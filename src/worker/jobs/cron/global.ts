@@ -60,7 +60,6 @@ async function calculateInflowOutflow(
     let totalRaised = '0';
     let totalDistributed = '0';
     let totalBeneficiaries = 0;
-
     const communitiesYesterday: {
         totalClaimed: string;
         totalClaims: string;
@@ -82,7 +81,9 @@ async function calculateInflowOutflow(
                             attributes: ['id'],
                             where: {
                                 visibility: 'public',
-                                status: 'valid',
+                                status: {
+                                    [Op.or]: ['valid', 'removed']
+                                }
                             },
                             raw: true,
                         })
@@ -230,7 +231,9 @@ async function calculateUbiPulse(
                                 attributes: ['id'],
                                 where: {
                                     visibility: 'public',
-                                    status: 'valid',
+                                    status: {
+                                        [Op.or]: ['valid', 'removed']
+                                    }
                                 },
                                 raw: true,
                             })

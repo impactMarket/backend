@@ -10,7 +10,8 @@ import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
 import {
     Community,
     CommunityAttributes,
-    CommunityCreationAttributes,
+    IBaseCommunityAttributes,
+    ICommunityCreationAttributes,
 } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
@@ -68,26 +69,23 @@ export default class CommunityService {
     private static communityContentStorage = new CommunityContentStorage();
     private static promoterContentStorage = new PromoterContentStorage();
 
-    public static async create(
-        requestByAddress: string,
-        name: string,
-        contractAddress: string | undefined,
-        description: string,
-        language: string,
-        currency: string,
-        city: string,
-        country: string,
-        gps: {
-            latitude: number;
-            longitude: number;
-        },
-        email: string,
-        txReceipt: any | undefined,
-        contractParams: ICommunityContractParams,
-        coverMediaId?: number
-    ): Promise<Community> {
+    public static async create({
+        requestByAddress,
+        name,
+        contractAddress,
+        description,
+        language,
+        currency,
+        city,
+        country,
+        gps,
+        email,
+        txReceipt,
+        contractParams,
+        coverMediaId,
+    }: ICommunityCreationAttributes): Promise<Community> {
         let managerAddress: string = '';
-        let createObject: CommunityCreationAttributes = {
+        let createObject: ICommunityCreationAttributes = {
             requestByAddress,
             name,
             description,
@@ -150,7 +148,11 @@ export default class CommunityService {
             const community = await this.community.create(createObject, {
                 transaction: t,
             });
-            await CommunityContractService.add(community.id, contractParams, t);
+            await CommunityContractService.add(
+                community.id,
+                contractParams!,
+                t
+            );
             if (createObject.visibility === 'private') {
                 // in case it's public, will be added when accepted
                 await CommunityStateService.add(community.id, t);
@@ -486,8 +488,8 @@ export default class CommunityService {
                 ...extendedInclude,
             ],
             order: orderOption,
-            offset: query.offset ? parseInt(query.offset, 10) : undefined,
-            limit: query.limit ? parseInt(query.limit, 10) : undefined,
+            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
         });
 
         const communities = communitiesResult.rows.map((c) =>
@@ -1053,6 +1055,9 @@ export default class CommunityService {
             if (typeof offset !== 'number' || typeof limit !== 'number') {
                 throw new BaseError('NaN', 'not a number');
             }
+        } else {
+            offset = config.defaultOffset;
+            limit = config.defaultLimit;
         }
 
         if (order === undefined && query.order !== undefined) {
@@ -1402,6 +1407,98 @@ export default class CommunityService {
         } as any;
     }
 
+    public static async editSubmission(
+        params: IBaseCommunityAttributes
+    ): Promise<CommunityAttributes> {
+        const t = await this.sequelize.transaction();
+        try {
+            const community = await this.community.findOne({
+                attributes: ['id', 'coverMediaId'],
+                where: {
+                    requestByAddress: params.requestByAddress,
+                    status: 'pending',
+                },
+            });
+
+            if (community === null) {
+                throw new BaseError(
+                    'COMMUNITY_NOT_FOUND',
+                    'community not found!'
+                );
+            }
+
+            const {
+                name,
+                description,
+                language,
+                currency,
+                city,
+                country,
+                gps,
+                email,
+                contractParams,
+                coverMediaId,
+            } = params;
+
+            await this.community.update(
+                {
+                    name,
+                    description,
+                    language,
+                    currency,
+                    city,
+                    country,
+                    gps,
+                    email,
+                },
+                {
+                    where: {
+                        id: community.id,
+                    },
+                    transaction: t,
+                }
+            );
+
+            if (
+                !!coverMediaId &&
+                coverMediaId !== -1 &&
+                community.coverMediaId !== coverMediaId
+            ) {
+                await this.communityContentStorage.deleteContent(
+                    community.coverMediaId!
+                );
+                await this.community.update(
+                    {
+                        coverMediaId,
+                    },
+                    {
+                        where: {
+                            id: community.id,
+                        },
+                        transaction: t,
+                    }
+                );
+            }
+
+            if (contractParams) {
+                await CommunityContractService.update(
+                    community.id,
+                    contractParams
+                );
+            }
+
+            await t.commit();
+
+            return this._findCommunityBy(
+                { id: community.id },
+                params.requestByAddress
+            );
+        } catch (error) {
+            await t.rollback();
+            throw error;
+        }
+    }
+
     public static async deleteSubmission(
         managerAddress: string
     ): Promise<boolean> {
@@ -1469,6 +1566,10 @@ export default class CommunityService {
             });
             if (manager !== null) {
                 showEmail = manager.communityId === community.publicId;
+            } else {
+                showEmail =
+                    community.status === 'pending' &&
+                    community.requestByAddress === userAddress;
             }
         }
 

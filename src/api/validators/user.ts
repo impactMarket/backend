@@ -113,6 +113,15 @@ const subscribeNewsletter = celebrate({
     }),
 });
 
+const saveSurvey = celebrate({
+    body: Joi.array().items(
+        Joi.object({
+            answer: Joi.string().required(),
+            question: Joi.number().required(),
+        })
+    ),
+});
+
 export default {
     report,
     auth,
@@ -127,4 +136,5 @@ export default {
     device,
     edit,
     subscribeNewsletter,
+    saveSurvey,
 };

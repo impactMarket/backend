@@ -7,10 +7,29 @@ import { UbiCommunityDailyState } from '@interfaces/ubi/ubiCommunityDailyState';
 import { UbiCommunityDemographics } from '@interfaces/ubi/ubiCommunityDemographics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
+import { ICommunityContractParams } from '../../../types';
 // import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { BeneficiaryAttributes } from './beneficiary';
+
+export interface IBaseCommunityAttributes {
+    requestByAddress: string;
+    name: string;
+    contractAddress?: string | undefined;
+    description: string;
+    language: string;
+    currency: string;
+    city: string;
+    country: string;
+    gps: {
+        latitude: number;
+        longitude: number;
+    };
+    email: string;
+    coverMediaId?: number;
+    contractParams?: ICommunityContractParams;
+}
 
 export interface CommunityAttributes {
     id: number; // Note that the `null assertion` `!` is required in strict mode.
@@ -39,6 +58,7 @@ export interface CommunityAttributes {
     // timestamps
     createdAt: Date;
     updatedAt: Date;
+    deletedAt: Date | null;
 
     metrics?: UbiCommunityDailyMetrics[]; // TODO: to be removed
     cover?: AppMediaContent;
@@ -52,31 +72,20 @@ export interface CommunityAttributes {
     demographics?: UbiCommunityDemographics[]; // TODO: to be removed
     dailyState?: UbiCommunityDailyState[]; // TODO: to be removed
 }
-export interface CommunityCreationAttributes {
-    requestByAddress: string;
-    contractAddress?: string;
-    name: string;
-    description: string;
+export interface ICommunityCreationAttributes
+    extends IBaseCommunityAttributes {
     descriptionEn?: string;
-    language: string;
-    currency: string;
-    city: string;
-    country: string;
-    gps: {
-        latitude: number;
-        longitude: number;
-    };
-    email: string;
-    visibility: 'public' | 'private';
+    visibility?: 'public' | 'private';
     coverImage?: string; // TODO: will be required once next version is released
-    coverMediaId?: number; // TODO: will be required once next version is released
-    status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    started: Date;
+    status?: 'pending' | 'valid' | 'removed'; // pending / valid / removed
+    started?: Date;
+    txReceipt?: any | undefined;
+    contractParams?: ICommunityContractParams;
 }
 
 export class Community extends Model<
     CommunityAttributes,
-    CommunityCreationAttributes
+    ICommunityCreationAttributes
 > {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
     public publicId!: string;
@@ -104,6 +113,7 @@ export class Community extends Model<
     // timestamps!
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
+    public readonly deletedAt!: Date;
 }
 
 export function initializeCommunity(sequelize: Sequelize): void {
@@ -208,6 +218,10 @@ export function initializeCommunity(sequelize: Sequelize): void {
             updatedAt: {
                 type: DataTypes.DATE,
                 allowNull: false,
+            },
+            deletedAt: {
+                type: DataTypes.DATE,
+                allowNull: true,
             },
         },
         {

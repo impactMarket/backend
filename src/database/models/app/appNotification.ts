@@ -9,7 +9,7 @@ export class AppNotificationModel extends Model<
     AppNotificationCreation
 > {
     public id!: number;
-    public address!: string;
+    public userId!: number;
     public type!: number;
     public params!: string;
     public read!: boolean;
@@ -26,11 +26,11 @@ export function initializeAppNotification(sequelize: Sequelize): void {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            address: {
-                type: DataTypes.STRING(44),
+            userId: {
+                type: DataTypes.INTEGER,
                 references: {
                     model: sequelize.models.AppUserModel,
-                    key: 'address',
+                    key: 'id',
                 },
                 onDelete: 'CASCADE',
                 allowNull: false,

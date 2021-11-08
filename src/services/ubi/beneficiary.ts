@@ -12,6 +12,7 @@ import { isAddress } from '@utils/util';
 import { ethers } from 'ethers';
 import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
+import { UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation } from '@interfaces/ubi/ubiBeneficiarySurvey';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
@@ -589,6 +590,27 @@ export default class BeneficiaryService {
             return true;
         } catch (error) {
             throw new BaseError('UPDATE_FAILED', 'Beneficiary was not updated');
+        }
+    }
+
+    public static async saveSurvery(address: string, survey: UbiBeneficiarySurveyCreation[]): Promise<UbiBeneficiarySurvey[]> {
+        try {
+            const user = await models.appUser.findOne({
+                attributes: ['id'],
+                where: { address }
+            });
+
+            if(!user) {
+                throw new BaseError('USER_NOT_FOUND', 'User not found');
+            }
+
+            survey.forEach(element => {
+                element.userId = user.id;
+            });
+
+            return models.ubiBeneficiarySurvey.bulkCreate(survey);
+        } catch (error) {
+            throw error;
         }
     }
 }

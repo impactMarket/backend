@@ -6,7 +6,7 @@
  *        type: object
  *        required:
  *          - id
- *          - address
+ *          - userId
  *          - type
  *          - params
  *          - read
@@ -15,9 +15,9 @@
  *          id:
  *            type: integer
  *            description: Notification id
- *          address:
+ *          userId:
  *            type: string
- *            description: User address
+ *            description: User ID
  *          type:
  *            type: integer
  *            description: Notification type
@@ -34,7 +34,7 @@
 
 export interface AppNotification {
     id: number;
-    address: string;
+    userId: number;
     type: number;
     params: string;
     read: boolean;
@@ -44,7 +44,7 @@ export interface AppNotification {
 }
 
 export interface AppNotificationCreation {
-    address: string;
+    userId: number;
     type: number;
     params?: string;
     read?: boolean;
