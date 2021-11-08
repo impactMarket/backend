@@ -1,5 +1,6 @@
+import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
-import Sinon, { stub, assert } from 'sinon';
+import Sinon, { stub } from 'sinon';
 
 import { models } from '../../../../src/database';
 import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
@@ -9,19 +10,20 @@ import BeneficiaryFactory from '../../../factories/beneficiary';
 import CommunityFactory from '../../../factories/community';
 import UserFactory from '../../../factories/user';
 import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
+import tk from 'timekeeper';
 
 describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let communities: CommunityAttributes[];
 
-    let ubiCommunitySuspectAddStub: Sinon.SinonStub<any, Promise<void>>;
+    let ubiCommunitySuspectAddStub: Sinon.SinonStub;
 
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        ubiCommunitySuspectAddStub = stub(models.ubiCommunitySuspect, 'create');
+        ubiCommunitySuspectAddStub = stub(models.ubiCommunitySuspect, 'bulkCreate');
         ubiCommunitySuspectAddStub.returns(Promise.resolve());
     });
 
@@ -50,16 +52,17 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await BeneficiaryFactory(users, communities[0].publicId);
 
         await verifyCommunitySuspectActivity();
-        assert.callCount(ubiCommunitySuspectAddStub, 1);
-        assert.calledWith(
-            ubiCommunitySuspectAddStub.getCall(0),
-            {
+        const suspectActivity = await models.ubiCommunitySuspect.findAll({
+            where: {
                 communityId: communities[0].id,
-                percentage: 100,
-                suspect: 10,
-            },
-            { returning: false }
-        );
+            }
+        });
+
+        expect((suspectActivity[0])).to.include({
+            communityId: communities[0].id,
+            percentage: 100,
+            suspect: 10
+        });
     });
 
     it('with 1% (level 2) suspicious activity', async () => {
@@ -76,16 +79,17 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await BeneficiaryFactory(users, communities[0].publicId);
 
         await verifyCommunitySuspectActivity();
-        assert.callCount(ubiCommunitySuspectAddStub, 1);
-        assert.calledWith(
-            ubiCommunitySuspectAddStub.getCall(0),
-            {
+        const suspectActivity = await models.ubiCommunitySuspect.findAll({
+            where: {
                 communityId: communities[0].id,
-                percentage: 1,
-                suspect: 2,
-            },
-            { returning: false }
-        );
+            }
+        });
+
+        expect((suspectActivity[0])).to.include({
+            communityId: communities[0].id,
+            percentage: 1,
+            suspect: 2
+        });
     });
 
     it('with 14.29% (level 7) suspicious activity', async () => {
@@ -102,16 +106,17 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await BeneficiaryFactory(users, communities[0].publicId);
 
         await verifyCommunitySuspectActivity();
-        assert.callCount(ubiCommunitySuspectAddStub, 1);
-        assert.calledWith(
-            ubiCommunitySuspectAddStub.getCall(0),
-            {
+        const suspectActivity = await models.ubiCommunitySuspect.findAll({
+            where: {
                 communityId: communities[0].id,
-                percentage: 14.29,
-                suspect: 7,
-            },
-            { returning: false }
-        );
+            }
+        });
+
+        expect((suspectActivity[0])).to.include({
+            communityId: communities[0].id,
+            percentage: 14.29,
+            suspect: 7
+        });
     });
 
     it('with 50% (level 10) suspicious activity', async () => {
@@ -128,16 +133,17 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await BeneficiaryFactory(users, communities[0].publicId);
 
         await verifyCommunitySuspectActivity();
-        assert.callCount(ubiCommunitySuspectAddStub, 1);
-        assert.calledWith(
-            ubiCommunitySuspectAddStub.getCall(0),
-            {
+        const suspectActivity = await models.ubiCommunitySuspect.findAll({
+            where: {
                 communityId: communities[0].id,
-                percentage: 50,
-                suspect: 10,
-            },
-            { returning: false }
-        );
+            }
+        });
+
+        expect((suspectActivity[0])).to.include({
+            communityId: communities[0].id,
+            percentage: 50,
+            suspect: 10
+        });
     });
 
     it('without suspicious activity', async () => {
@@ -151,6 +157,12 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await BeneficiaryFactory(users, communities[0].publicId);
 
         await verifyCommunitySuspectActivity();
-        assert.callCount(ubiCommunitySuspectAddStub, 0);
+        const suspectActivity = await models.ubiCommunitySuspect.findAll({
+            where: {
+                communityId: communities[0].id,
+            }
+        });
+
+        expect(suspectActivity.length).to.be.equal(0);
     });
 });
