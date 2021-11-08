@@ -235,8 +235,111 @@ class ChainSubscribers {
     async _processCommunityEvents(
         log: ethers.providers.Log
     ): Promise<ethers.utils.LogDescription | undefined> {
-        let parsedLog = this.ifaceNewCommunity.parseLog(log);
+        let parsedLog: ethers.utils.LogDescription;
         let result: ethers.utils.LogDescription | undefined = undefined;
+        try {
+            parsedLog = this.ifaceNewCommunity.parseLog(log);
+        } catch (_) {
+            // compatible with older versions
+            parsedLog = this.ifaceCommunity.parseLog(log);
+            if (parsedLog.name === 'BeneficiaryAdded') {
+                let beneficiaryAddress = '',
+                    managerAddress = '';
+
+                beneficiaryAddress = parsedLog.args[0];
+                const txResponse = await this.provider.getTransaction(
+                    log.transactionHash
+                );
+                managerAddress = txResponse.from;
+
+                const communityAddress = log.address;
+                let communityPublicId = this.communities.get(communityAddress);
+                if (communityPublicId === undefined) {
+                    // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
+                    const community =
+                        await CommunityService.getOnlyCommunityByContractAddress(
+                            communityAddress
+                        );
+                    if (community === null) {
+                        Logger.error(
+                            `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
+                        );
+                    } else {
+                        this.isCommunityPublic.set(
+                            communityAddress,
+                            community.visibility === 'public'
+                        );
+                        this.communities.set(
+                            communityAddress,
+                            community.publicId
+                        );
+                        this.allCommunitiesAddresses.push(communityAddress);
+                        communityPublicId = community.publicId;
+                    }
+                }
+                const isThisCommunityPublic =
+                    this.isCommunityPublic.get(communityAddress);
+                if (isThisCommunityPublic) {
+                    this.beneficiariesInPublicCommunities.push(
+                        beneficiaryAddress
+                    );
+                }
+                // allBeneficiaryAddressses.push(beneficiaryAddress);
+                notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
+                try {
+                    const txAt = await getBlockTime(log.blockHash);
+                    await BeneficiaryService.add(
+                        beneficiaryAddress,
+                        managerAddress,
+                        communityPublicId!,
+                        log.transactionHash,
+                        txAt
+                    );
+                } catch (e) {}
+                result = parsedLog;
+            } else if (parsedLog.name === 'BeneficiaryRemoved') {
+                const communityAddress = log.address;
+                let beneficiaryAddress = '',
+                    managerAddress = '';
+
+                beneficiaryAddress = parsedLog.args[0];
+                const txResponse = await this.provider.getTransaction(
+                    log.transactionHash
+                );
+                managerAddress = txResponse.from;
+                try {
+                    const communityPublicId =
+                        this.communities.get(communityAddress)!;
+                    const txAt = await getBlockTime(log.blockHash);
+                    await BeneficiaryService.remove(
+                        beneficiaryAddress,
+                        managerAddress,
+                        communityPublicId,
+                        log.transactionHash,
+                        txAt
+                    );
+                } catch (e) {}
+                result = parsedLog;
+            } else if (parsedLog.name === 'ManagerAdded') {
+                // new managers in existing community
+                const managerAddress = parsedLog.args[0];
+                const communityAddress = log.address;
+                await ManagerService.add(
+                    managerAddress,
+                    this.communities.get(communityAddress)!
+                );
+                result = parsedLog;
+            } else if (parsedLog.name === 'ManagerRemoved') {
+                const managerAddress = parsedLog.args[0];
+                const communityAddress = log.address;
+                await ManagerService.remove(
+                    managerAddress,
+                    this.communities.get(communityAddress)!
+                );
+                result = parsedLog;
+            }
+            return result;
+        }
         if (parsedLog.name === 'BeneficiaryAdded') {
             let beneficiaryAddress = '',
                 managerAddress = '';
@@ -409,105 +512,6 @@ class ChainSubscribers {
                 }
             );
             result = parsedLog;
-        } else {
-            // compatible with older versions
-            parsedLog = this.ifaceCommunity.parseLog(log);
-            if (parsedLog.name === 'BeneficiaryAdded') {
-                let beneficiaryAddress = '',
-                    managerAddress = '';
-
-                beneficiaryAddress = parsedLog.args[0];
-                const txResponse = await this.provider.getTransaction(
-                    log.transactionHash
-                );
-                managerAddress = txResponse.from;
-
-                const communityAddress = log.address;
-                let communityPublicId = this.communities.get(communityAddress);
-                if (communityPublicId === undefined) {
-                    // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
-                    const community =
-                        await CommunityService.getOnlyCommunityByContractAddress(
-                            communityAddress
-                        );
-                    if (community === null) {
-                        Logger.error(
-                            `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
-                        );
-                    } else {
-                        this.isCommunityPublic.set(
-                            communityAddress,
-                            community.visibility === 'public'
-                        );
-                        this.communities.set(
-                            communityAddress,
-                            community.publicId
-                        );
-                        this.allCommunitiesAddresses.push(communityAddress);
-                        communityPublicId = community.publicId;
-                    }
-                }
-                const isThisCommunityPublic =
-                    this.isCommunityPublic.get(communityAddress);
-                if (isThisCommunityPublic) {
-                    this.beneficiariesInPublicCommunities.push(
-                        beneficiaryAddress
-                    );
-                }
-                // allBeneficiaryAddressses.push(beneficiaryAddress);
-                notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
-                try {
-                    const txAt = await getBlockTime(log.blockHash);
-                    await BeneficiaryService.add(
-                        beneficiaryAddress,
-                        managerAddress,
-                        communityPublicId!,
-                        log.transactionHash,
-                        txAt
-                    );
-                } catch (e) {}
-                result = parsedLog;
-            } else if (parsedLog.name === 'BeneficiaryRemoved') {
-                const communityAddress = log.address;
-                let beneficiaryAddress = '',
-                    managerAddress = '';
-
-                beneficiaryAddress = parsedLog.args[0];
-                const txResponse = await this.provider.getTransaction(
-                    log.transactionHash
-                );
-                managerAddress = txResponse.from;
-                try {
-                    const communityPublicId =
-                        this.communities.get(communityAddress)!;
-                    const txAt = await getBlockTime(log.blockHash);
-                    await BeneficiaryService.remove(
-                        beneficiaryAddress,
-                        managerAddress,
-                        communityPublicId,
-                        log.transactionHash,
-                        txAt
-                    );
-                } catch (e) {}
-                result = parsedLog;
-            } else if (parsedLog.name === 'ManagerAdded') {
-                // new managers in existing community
-                const managerAddress = parsedLog.args[0];
-                const communityAddress = log.address;
-                await ManagerService.add(
-                    managerAddress,
-                    this.communities.get(communityAddress)!
-                );
-                result = parsedLog;
-            } else if (parsedLog.name === 'ManagerRemoved') {
-                const managerAddress = parsedLog.args[0];
-                const communityAddress = log.address;
-                await ManagerService.remove(
-                    managerAddress,
-                    this.communities.get(communityAddress)!
-                );
-                result = parsedLog;
-            }
         }
         return result;
     }
@@ -555,6 +559,11 @@ class ChainSubscribers {
             const communityAddress = parsedLog.args[0];
             const managerAddress = parsedLog.args[1];
 
+            await ManagerService.add(
+                managerAddress,
+                this.communities.get(communityAddress)!
+            );
+
             const community = await models.community.update(
                 {
                     contractAddress: communityAddress,
@@ -601,17 +610,9 @@ class ChainSubscribers {
 
     async _processOtherEvents(log: ethers.providers.Log): Promise<void> {
         try {
-            let parsedLog: ethers.utils.LogDescription;
-            if (log.address === config.communityContractAddress) {
-                parsedLog = this.ifaceNewCommunity.parseLog(log);
-            } else {
-                parsedLog = this.ifaceCommunity.parseLog(log);
-            }
+            const parsedLog = this.ifaceCommunity.parseLog(log);
             if (parsedLog.name === 'ManagerAdded') {
-                const managerAddress =
-                    parsedLog.args.length > 1
-                        ? parsedLog.args[1]
-                        : parsedLog.args[0];
+                const managerAddress = parsedLog.args[0];
                 const communityAddress = log.address;
                 if (this.allCommunitiesAddresses.includes(communityAddress)) {
                     await ManagerService.add(

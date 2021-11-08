@@ -11,6 +11,7 @@ import ManagerService from '../../../src/services/ubi/managers';
 import { ChainSubscribers } from '../../../src/worker/jobs/chainSubscribers';
 import { communityAddressesAndIds } from '../../fake/community';
 import { waitForStubCall } from '../../utils';
+import CommunityOldContractJSON from './Community.json';
 import CommunityContractJSON from './CommunityContract.json';
 import cUSDContractJSON from './cUSD.json';
 
@@ -19,6 +20,7 @@ describe('communityContract', () => {
     let subscribers: ChainSubscribers;
     let accounts: string[] = [];
     let CommunityContract: ethers.Contract;
+    let CommunityOldContract: ethers.Contract;
     let communityUpdated: SinonStub<any, any>;
     let findCommunity: SinonStub<any, any>;
     let beneficiaryUpdated: SinonStub<any, any>;
@@ -44,6 +46,8 @@ describe('communityContract', () => {
 
     const thisCommunityPublicId = 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd';
     const thisCommunityId = 1;
+    const thisCommunityPublicId2 = 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bc';
+    const thisCommunityId2 = 2;
 
     before(async () => {
         provider = new ethers.providers.Web3Provider(ganacheProvider);
@@ -97,6 +101,12 @@ describe('communityContract', () => {
             provider.getSigner(0)
         );
 
+        const CommunityOldContractFactory = new ethers.ContractFactory(
+            CommunityOldContractJSON.abi,
+            CommunityOldContractJSON.bytecode,
+            provider.getSigner(0)
+        );
+
         CommunityContract = (
             await CommunityContractFactory.deploy(
                 accounts[1],
@@ -112,12 +122,33 @@ describe('communityContract', () => {
             )
         ).connect(provider.getSigner(1));
 
+        CommunityOldContract = (
+            await CommunityOldContractFactory.deploy(
+                accounts[1],
+                '2000000000000000000',
+                '1500000000000000000000',
+                86400,
+                300,
+                '0x0000000000000000000000000000000000000000',
+                cUSD.address,
+                '0x0000000000000000000000000000000000000000'
+            )
+        ).connect(provider.getSigner(1));
+
+        await cUSD
+            .connect(provider.getSigner(0))
+            .testFakeFundAddress(CommunityOldContract.address);
+
         communities.set(CommunityContract.address, thisCommunityPublicId);
         communitiesId.set(CommunityContract.address, thisCommunityId);
+        communities.set(CommunityOldContract.address, thisCommunityPublicId2);
+        communitiesId.set(CommunityOldContract.address, thisCommunityId2);
         communitiesVisibility.set(CommunityContract.address, true);
+        communitiesVisibility.set(CommunityOldContract.address, true);
         const newCommunityAddressesAndIds = new Map([
             ...communityAddressesAndIds,
             [CommunityContract.address, thisCommunityPublicId],
+            [CommunityOldContract.address, thisCommunityPublicId2],
         ]);
         getAllAddressesAndIds = stub(CommunityService, 'getAllAddressesAndIds');
         getAllAddressesAndIds.returns(
@@ -163,6 +194,20 @@ describe('communityContract', () => {
         );
     });
 
+    it('add (old) beneficiary', async () => {
+        await CommunityOldContract.addBeneficiary(accounts[2]);
+        await waitForStubCall(beneficiaryAdd, 1);
+        assert.callCount(beneficiaryAdd, 1);
+        assert.calledWith(
+            beneficiaryAdd.getCall(0),
+            accounts[2],
+            accounts[1],
+            thisCommunityPublicId2,
+            match.any,
+            match.any
+        );
+    });
+
     it('remove beneficiary', async () => {
         await CommunityContract.addBeneficiary(accounts[2]);
         await waitForStubCall(beneficiaryAdd, 1);
@@ -188,6 +233,17 @@ describe('communityContract', () => {
             managerAdd.getCall(0),
             accounts[3],
             thisCommunityPublicId
+        );
+    });
+
+    it('add (old) manager', async () => {
+        await CommunityOldContract.addManager(accounts[3]);
+        await waitForStubCall(managerAdd, 1);
+        assert.callCount(managerAdd, 1);
+        assert.calledWith(
+            managerAdd.getCall(0),
+            accounts[3],
+            thisCommunityPublicId2
         );
     });
 
