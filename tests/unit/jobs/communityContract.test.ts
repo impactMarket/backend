@@ -2,7 +2,6 @@ import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
 
-import config from '../../../src/config';
 import { models } from '../../../src/database';
 import ImMetadataService from '../../../src/services/app/imMetadata';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
@@ -123,10 +122,6 @@ describe('communityContract', () => {
         getAllAddressesAndIds = stub(CommunityService, 'getAllAddressesAndIds');
         getAllAddressesAndIds.returns(
             Promise.resolve(newCommunityAddressesAndIds)
-        );
-
-        stub(config, 'communityContractAddress').value(
-            CommunityContract.address
         );
 
         subscribers = new ChainSubscribers(

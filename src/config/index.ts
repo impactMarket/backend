@@ -226,7 +226,6 @@ export default {
 
     DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
     communityAdminAddress: validatedEnv.COMMUNITY_ADMIN_ADDRESS,
-    communityContractAddress: validatedEnv.COMMUNITY_CONTRACT_ADDRESS,
     claimLocationTimeframe: validatedEnv.CLAIM_LOCATION_TIMEFRAME,
     claimInactivityThreshold: validatedEnv.CLAIM_INACTIVITY_THRESHOLD,
 
