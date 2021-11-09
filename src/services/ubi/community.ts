@@ -429,10 +429,11 @@ export default class CommunityService {
         if (query.fields) {
             const fields = fetchData(query.fields);
             include = this._generateInclude(fields);
-            attributes =
-                fields.root && fields.root.length > 0
+            attributes = fields.root 
+                ? fields.root.length > 0
                     ? fields.root.filter((el: string) => !exclude.includes(el))
-                    : [];
+                    : { exclude }
+                : []
         } else {
             include = this._oldInclude(query.extended);
             attributes = {
