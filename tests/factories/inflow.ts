@@ -2,10 +2,8 @@ import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 
 import { CommunityAttributes } from '../../src/database/models/ubi/community';
-import {
-    Inflow,
-    InflowCreationAttributes,
-} from '../../src/database/models/ubi/inflow';
+import { InflowCreationAttributes } from '../../src/database/models/ubi/inflow';
+import InflowService from '../../src/services/ubi/inflow';
 import { randomTx } from '../utils/utils';
 /**
  * Generate an object which container attributes needed
@@ -18,8 +16,8 @@ import { randomTx } from '../utils/utils';
 const data = async (community: CommunityAttributes) => {
     const randomWallet = ethers.Wallet.createRandom();
     const amount = new BigNumber(community.contract!.claimAmount)
-    .multipliedBy(5)
-    .toString();
+        .multipliedBy(5)
+        .toString();
     const defaultProps: InflowCreationAttributes = {
         from: await randomWallet.getAddress(),
         amount,
@@ -38,6 +36,13 @@ const data = async (community: CommunityAttributes) => {
  * @return {Object}       A user instance
  */
 const InflowFactory = async (community: CommunityAttributes) => {
-    return Inflow.create(await data(community));
+    const dataResult = await data(community);
+    return InflowService.add(
+        dataResult.from,
+        dataResult.contractAddress,
+        dataResult.amount,
+        dataResult.tx,
+        dataResult.txAt
+    );
 };
 export default InflowFactory;
