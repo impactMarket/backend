@@ -1,6 +1,6 @@
 import { UbiClaimCreation } from '@interfaces/ubi/ubiClaim';
 import { Logger } from '@utils/logger';
-import { col, fn, Op } from 'sequelize';
+import { col, fn, literal, Op } from 'sequelize';
 
 import { models } from '../../database';
 
@@ -8,6 +8,17 @@ export default class ClaimService {
     public static async add(claimData: UbiClaimCreation): Promise<void> {
         try {
             await models.ubiClaim.create(claimData);
+            const claimed: any = literal(`"claimed" + ${claimData.amount}`);
+            await models.ubiCommunityState.update(
+                {
+                    claimed,
+                },
+                {
+                    where: {
+                        communityId: claimData.communityId,
+                    },
+                }
+            );
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(

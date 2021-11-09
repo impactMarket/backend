@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import { CreateOptions, Sequelize } from 'sequelize';
 import Sinon, { assert, match, spy } from 'sinon';
 import tk from 'timekeeper';
@@ -6,6 +7,8 @@ import { models } from '../../../../src/database';
 import { BeneficiaryAttributes } from '../../../../src/database/models/ubi/beneficiary';
 import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { AppUser } from '../../../../src/interfaces/app/appUser';
+import ClaimsService from '../../../../src/services/ubi/claim';
+import InflowService from '../../../../src/services/ubi/inflow';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import BeneficiaryFactory from '../../../factories/beneficiary';
 import BeneficiaryTransactionFactory from '../../../factories/beneficiaryTransaction';
@@ -14,7 +17,7 @@ import CommunityFactory from '../../../factories/community';
 import InflowFactory from '../../../factories/inflow';
 import UserFactory from '../../../factories/user';
 import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
-import { jumpToTomorrowMidnight } from '../../../utils/utils';
+import { jumpToTomorrowMidnight, randomTx } from '../../../utils/utils';
 
 /**
  * IMPORTANT NOTE: this tests use time travel to test different scenarios
@@ -629,6 +632,111 @@ describe('calcuateCommunitiesMetrics', () => {
                 communityId: communities[0].id,
                 date: match.any,
             });
+        });
+    });
+
+    describe('Community state', () => {
+        let beneficiaries: any[] = [];
+        before(async () => {
+            const users = await UserFactory({ n: 6 });
+            communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+            const community = {
+                ...communities[0],
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '1000000000000000000',
+                    communityId: 0,
+                    incrementInterval: 5 * 60,
+                    maxClaim: '450000000000000000000',
+                },
+            };
+            beneficiaries = await BeneficiaryFactory(
+                users.slice(0, 4),
+                community.publicId
+            );
+        });
+
+        after(async () => {
+            await truncate(sequelize, 'Inflow');
+            await truncate(sequelize, 'UbiClaimModel');
+            await truncate(sequelize, 'Beneficiary');
+            await truncate(sequelize, 'AppUserModel');
+            await truncate(sequelize, 'Community');
+        });
+
+        it('update claimed', async () => {
+            const amount = '1500000000000000000';
+            await ClaimsService.add({
+                address: beneficiaries[1].address,
+                communityId: communities[0].id,
+                amount,
+                tx: randomTx(),
+                txAt: new Date(),
+            });
+
+            await ClaimsService.add({
+                address: beneficiaries[2].address,
+                communityId: communities[0].id,
+                amount,
+                tx: randomTx(),
+                txAt: new Date(),
+            });
+
+            const communityState = await models.ubiCommunityState.findOne({
+                attributes: ['claimed'],
+                where: {
+                    communityId: communities[0].id,
+                },
+            });
+
+            expect(communityState!.claimed).to.be.equal(
+                (parseInt(amount) * 2).toString()
+            );
+        });
+
+        it('update raised', async () => {
+            const raised = '2500000000000000000';
+            await InflowService.add(
+                beneficiaries[1].address,
+                communities[0].contractAddress,
+                raised,
+                randomTx(),
+                new Date()
+            );
+
+            await InflowService.add(
+                beneficiaries[2].address,
+                communities[0].contractAddress,
+                raised,
+                randomTx(),
+                new Date()
+            );
+
+            const communityState = await models.ubiCommunityState.findOne({
+                attributes: ['raised'],
+                where: {
+                    communityId: communities[0].id,
+                },
+            });
+
+            expect(communityState!.raised).to.be.equal(
+                (parseInt(raised) * 2).toString()
+            );
         });
     });
 });

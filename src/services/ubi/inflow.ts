@@ -1,8 +1,8 @@
+import { AssetType } from '@models/ubi/inflow';
 import { Logger } from '@utils/logger';
-import { col, fn } from 'sequelize';
+import { col, fn, literal } from 'sequelize';
 
 import { models } from '../../database';
-import { AssetType } from '@models/ubi/inflow';
 export default class InflowService {
     public static inflow = models.inflow;
 
@@ -24,6 +24,23 @@ export default class InflowService {
         };
         try {
             await this.inflow.create(inflowData);
+            const raised: any = literal(`"raised" + ${inflowData.amount}`);
+            const community = await models.community.findOne({
+                attributes: ['id'],
+                where: {
+                    contractAddress: inflowData.contractAddress,
+                },
+            });
+            await models.ubiCommunityState.update(
+                {
+                    raised,
+                },
+                {
+                    where: {
+                        communityId: community!.id,
+                    },
+                }
+            );
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
@@ -35,7 +52,9 @@ export default class InflowService {
         }
     }
 
-    public static async getAllBackers(contractAddress: string): Promise<string[]> {
+    public static async getAllBackers(
+        contractAddress: string
+    ): Promise<string[]> {
         const backers = (
             await this.inflow.findAll({
                 attributes: [[fn('distinct', col('from')), 'backerAddress']],
