@@ -1,13 +1,18 @@
+import { Transaction } from 'sequelize/types';
+
 import config from '../../config';
 import { models } from '../../database';
 
 export default class ImMetadataService {
     public static imMetadata = models.imMetadata;
 
-    public static async setLastBlock(value: number): Promise<void> {
+    public static async setLastBlock(
+        value: number,
+        transaction?: Transaction
+    ): Promise<void> {
         await this.imMetadata.update(
             { value: value.toString() },
-            { where: { key: 'lastBlock' } }
+            { where: { key: 'lastBlock' }, transaction }
         );
     }
 

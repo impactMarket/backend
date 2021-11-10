@@ -1,3 +1,4 @@
+import { AssetType } from '@models/ubi/inflow';
 import ImMetadataService from '@services/app/imMetadata';
 import BeneficiaryService from '@services/ubi/beneficiary';
 import ClaimsService from '@services/ubi/claim';
@@ -8,12 +9,13 @@ import ManagerService from '@services/ubi/managers';
 import { Logger } from '@utils/logger';
 import { getBlockTime, notifyBeneficiaryAdded } from '@utils/util';
 import { ethers } from 'ethers';
+import { Transaction } from 'sequelize/types';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import CommunityAdminContractABI from '../../contracts/CommunityAdminABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
-import { models } from '../../database';
+import { models, sequelize } from '../../database';
 
 /* istanbul ignore next */
 function asyncTxsFailure(error: any) {
@@ -33,6 +35,8 @@ class ChainSubscribers {
     beneficiariesInPublicCommunities: string[];
     isCommunityPublic: Map<string, boolean>;
     filterTopics: string[][];
+    dbTransation!: Transaction; // it's defined before it's used, in async method
+    lastRegisteredBlock: number;
 
     constructor(
         provider: ethers.providers.JsonRpcProvider,
@@ -73,7 +77,11 @@ class ChainSubscribers {
                 ethers.utils.id('Transfer(address,address,uint256)'),
             ],
         ];
-        this.recover();
+        this.lastRegisteredBlock = 0;
+        sequelize.transaction().then((t) => {
+            this.dbTransation = t;
+            this.recover();
+        });
     }
 
     stop() {
@@ -82,7 +90,10 @@ class ChainSubscribers {
     }
 
     recover() {
-        this._setupListener(this.provider);
+        ImMetadataService.getLastBlock().then((block) => {
+            this.lastRegisteredBlock = block;
+            this._setupListener(this.provider);
+        });
         // we start the listener alongside with the recover system
         // so we know we don't lose events.
         ImMetadataService.getRecoverBlock().then((block) =>
@@ -114,11 +125,13 @@ class ChainSubscribers {
             return 0;
         });
 
+        const transaction = await sequelize.transaction();
         // iterate
         for (let x = 0; x < logs.length; x += 1) {
             // verify if cusd or community and do things
-            await this._filterAndProcessEvent(provider, logs[x]);
+            await this._filterAndProcessEvent(logs[x], transaction);
         }
+        await transaction.commit();
         Logger.info('Past events recovered successfully!');
     }
 
@@ -129,31 +142,39 @@ class ChainSubscribers {
         };
 
         provider.on(filter, async (log: ethers.providers.Log) => {
-            await this._filterAndProcessEvent(provider, log);
-            ImMetadataService.setLastBlock(log.blockNumber);
+            if (log.blockNumber !== this.lastRegisteredBlock) {
+                await ImMetadataService.setLastBlock(
+                    log.blockNumber,
+                    this.dbTransation
+                );
+                // TODO: try catch. If catch, send email to devs
+                await this.dbTransation.commit();
+                this.dbTransation = await sequelize.transaction();
+                this.lastRegisteredBlock = log.blockNumber;
+            }
+            await this._filterAndProcessEvent(log, this.dbTransation);
         });
     }
 
     async _filterAndProcessEvent(
-        provider: ethers.providers.JsonRpcProvider,
-        log: ethers.providers.Log
+        log: ethers.providers.Log,
+        transaction: Transaction = this.dbTransation
     ) {
-        let parsedLog: ethers.utils.LogDescription | undefined;
         if (log.address === config.cUSDContractAddress) {
-            parsedLog = await this._processCUSDEvents(log);
+            this._processCUSDEvents(log, transaction);
         } else if (this.allCommunitiesAddresses.includes(log.address)) {
-            parsedLog = await this._processCommunityEvents(log);
+            await this._processCommunityEvents(log);
         } else if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log);
         } else {
             await this._processOtherEvents(log);
         }
-        return parsedLog;
     }
 
-    async _processCUSDEvents(
-        log: ethers.providers.Log
-    ): Promise<ethers.utils.LogDescription | undefined> {
+    _processCUSDEvents(
+        log: ethers.providers.Log,
+        transaction: Transaction
+    ): ethers.utils.LogDescription | undefined {
         const parsedLog = this.ifaceERC20.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
         // only transactions to community contracts (donations) or DAO
@@ -166,11 +187,16 @@ class ChainSubscribers {
             const amount = parsedLog.args[2].toString();
             getBlockTime(log.blockHash).then((txAt) =>
                 InflowService.add(
-                    from,
-                    toCommunityAddress,
-                    amount,
-                    log.transactionHash,
-                    txAt
+                    {
+                        from,
+                        contractAddress: toCommunityAddress,
+                        amount,
+                        tx: log.transactionHash,
+                        txAt,
+                        value: amount,
+                        asset: AssetType.cUSD,
+                    },
+                    { transaction }
                 ).catch(asyncTxsFailure)
             );
             result = parsedLog;
@@ -202,14 +228,17 @@ class ChainSubscribers {
                 ? parsedLog.args[1]
                 : parsedLog.args[0];
             // save to table to calculate txs and volume
-            await BeneficiaryService.addTransaction({
-                beneficiary: beneficiaryAddress,
-                withAddress,
-                amount: parsedLog.args[2].toString(),
-                isFromBeneficiary,
-                tx: log.transactionHash,
-                date: new Date(), // date only
-            }).catch(asyncTxsFailure);
+            BeneficiaryService.addTransaction(
+                {
+                    beneficiary: beneficiaryAddress,
+                    withAddress,
+                    amount: parsedLog.args[2].toString(),
+                    isFromBeneficiary,
+                    tx: log.transactionHash,
+                    date: new Date(), // date only
+                },
+                { transaction }
+            ).catch(asyncTxsFailure);
             result = parsedLog;
         }
         return result;

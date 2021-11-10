@@ -1,6 +1,6 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-interface BeneficiaryTransactionAttributes {
+export interface BeneficiaryTransactionAttributes {
     id: number;
     beneficiary: string;
     withAddress: string;

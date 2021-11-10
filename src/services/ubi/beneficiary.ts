@@ -3,16 +3,28 @@ import {
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
 } from '@interfaces/ubi/ubiBeneficiaryRegistry';
+import {
+    UbiBeneficiarySurvey,
+    UbiBeneficiarySurveyCreation,
+} from '@interfaces/ubi/ubiBeneficiarySurvey';
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
-import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
+import {
+    BeneficiaryTransactionAttributes,
+    BeneficiaryTransactionCreationAttributes,
+} from '@models/ubi/beneficiaryTransaction';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';
 import { isAddress } from '@utils/util';
 import { ethers } from 'ethers';
-import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
+import {
+    Op,
+    WhereAttributeHash,
+    literal,
+    QueryTypes,
+    CreateOptions,
+} from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
-import { UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation } from '@interfaces/ubi/ubiBeneficiarySurvey';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
@@ -336,15 +348,16 @@ export default class BeneficiaryService {
     }
 
     public static async addTransaction(
-        beneficiaryTx: BeneficiaryTransactionCreationAttributes
+        values: BeneficiaryTransactionCreationAttributes,
+        options?: CreateOptions<BeneficiaryTransactionAttributes>
     ): Promise<void> {
         try {
-            await models.beneficiaryTransaction.create(beneficiaryTx);
+            await models.beneficiaryTransaction.create(values, options);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
                     'Error inserting new BeneficiaryTransaction. Data = ' +
-                        JSON.stringify(beneficiaryTx)
+                        JSON.stringify(values)
                 );
                 Logger.error(e);
             }
@@ -593,18 +606,21 @@ export default class BeneficiaryService {
         }
     }
 
-    public static async saveSurvery(address: string, survey: UbiBeneficiarySurveyCreation[]): Promise<UbiBeneficiarySurvey[]> {
+    public static async saveSurvery(
+        address: string,
+        survey: UbiBeneficiarySurveyCreation[]
+    ): Promise<UbiBeneficiarySurvey[]> {
         try {
             const user = await models.appUser.findOne({
                 attributes: ['id'],
-                where: { address }
+                where: { address },
             });
 
-            if(!user) {
+            if (!user) {
                 throw new BaseError('USER_NOT_FOUND', 'User not found');
             }
 
-            survey.forEach(element => {
+            survey.forEach((element) => {
                 element.userId = user.id;
             });
 
