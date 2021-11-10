@@ -15,6 +15,7 @@ import {
     verifyCommunitySuspectActivity,
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
+import { cleanupNetworkRewards } from './jobs/cron/network';
 import { verifyStoriesLifecycle } from './jobs/cron/stories';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
 import {
@@ -267,26 +268,41 @@ function cron() {
         '0 0 * * *',
         () => {
             Logger.info('Calculating community metrics...');
-            calcuateCommunitiesMetrics()
+            cleanupNetworkRewards()
                 .then(() => {
-                    CronJobExecutedService.add('calcuateCommunitiesMetrics');
-                    Logger.info('Calculating global metrics...');
-                    calcuateGlobalMetrics()
+                    CronJobExecutedService.add('cleanupNetworkRewards');
+                    calcuateCommunitiesMetrics()
                         .then(() => {
-                            CronJobExecutedService.add('calcuateGlobalMetrics');
+                            CronJobExecutedService.add(
+                                'calcuateCommunitiesMetrics'
+                            );
+                            Logger.info('Calculating global metrics...');
+                            calcuateGlobalMetrics()
+                                .then(() => {
+                                    CronJobExecutedService.add(
+                                        'calcuateGlobalMetrics'
+                                    );
+                                    Logger.info(
+                                        'calcuateGlobalMetrics successfully executed!'
+                                    );
+                                })
+                                .catch((e) => {
+                                    Logger.error(
+                                        'calcuateGlobalMetrics FAILED! ' + e
+                                    );
+                                });
                             Logger.info(
-                                'calcuateGlobalMetrics successfully executed!'
+                                'calcuateCommunitiesMetrics successfully executed!'
                             );
                         })
                         .catch((e) => {
-                            Logger.error('calcuateGlobalMetrics FAILED! ' + e);
+                            Logger.error(
+                                'calcuateCommunitiesMetrics FAILED! ' + e
+                            );
                         });
-                    Logger.info(
-                        'calcuateCommunitiesMetrics successfully executed!'
-                    );
                 })
                 .catch((e) => {
-                    Logger.error('calcuateCommunitiesMetrics FAILED! ' + e);
+                    Logger.error('cleanupNetworkRewards FAILED! ' + e);
                 });
         },
         null,
