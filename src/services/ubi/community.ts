@@ -1569,25 +1569,20 @@ export default class CommunityService {
             });
         }
 
-        if (fields.cover || fields.thumbnails) {
+        if (fields.cover) {
             extendedInclude.push({
-                attributes: fields.cover
-                    ? fields.cover.length > 0
-                        ? fields.cover
-                        : undefined
-                    : ['id'],
+                attributes: ['url'],
                 model: this.appMediaContent,
                 as: 'cover',
                 duplicating: false,
-                include: fields.thumbnails
-                    ? [
-                          {
-                              model: this.appMediaThumbnail,
-                              as: 'thumbnails',
-                              separate: true,
-                          },
-                      ]
-                    : [],
+                include: [
+                      {
+                          attributes: ['url', 'width', 'height', 'pixelRatio'],
+                          model: this.appMediaThumbnail,
+                          as: 'thumbnails',
+                          separate: true,
+                      },
+                  ],
             });
         }
 
