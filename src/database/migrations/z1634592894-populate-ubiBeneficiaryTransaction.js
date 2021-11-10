@@ -74,8 +74,8 @@ module.exports = {
             }
         );
 
-        const beneficiaryTransaction = await BeneficiaryTransaction.findAll();
-        const transactionsMapped = beneficiaryTransaction.map(registry => ({
+        const result = await result.findAll();
+        const transactionsMapped = result.map(registry => ({
             beneficiary: registry.beneficiary,
             withAddress: registry.withAddress,
             amount: registry.amount,
@@ -88,8 +88,8 @@ module.exports = {
         const batches = Math.ceil(transactionsMapped.length / batchSize);
 
         for (let i = 0; i < batches; i++) {
-            let toSave = transactionsMapped.slice(i * batchSize, (i * batchSize) + batchSize);
-            await UbiBeneficiaryTransaction.bulkCreate(toSave);
+            let transactions = transactionsMapped.slice(i * batchSize, (i * batchSize) + batchSize);
+            await UbiBeneficiaryTransaction.bulkCreate(transactions);
         }
     },
     down: (queryInterface, Sequelize) => {},
