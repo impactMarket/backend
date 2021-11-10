@@ -4,7 +4,6 @@ import tk from 'timekeeper';
 
 import { models } from '../../../../src/database';
 import { BeneficiaryAttributes } from '../../../../src/database/models/ubi/beneficiary';
-import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { AppUser } from '../../../../src/interfaces/app/appUser';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import BeneficiaryFactory from '../../../factories/beneficiary';
