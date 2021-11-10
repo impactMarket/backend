@@ -192,14 +192,12 @@ describe('[jobs] subscribers', () => {
             DAOContractJSON.bytecode,
             provider.getSigner(0)
         );
-        
+
         cUSD = await cUSDFactory.deploy();
 
-        DAOContract = (await DAOFactory.deploy(
-            cUSD.address,
-            accounts[1],
-            accounts[1],
-        )).connect(provider.getSigner(0));
+        DAOContract = (
+            await DAOFactory.deploy(cUSD.address, accounts[1], accounts[1])
+        ).connect(provider.getSigner(0));
 
         stub(config, 'DAOContractAddress').value(DAOContract.address);
 
@@ -550,7 +548,7 @@ describe('[jobs] subscribers', () => {
         await cUSD
             .connect(provider.getSigner(0))
             .testFakeFundAddress(accounts[2]);
-        
+
         await cUSD
             .connect(provider.getSigner(2))
             .transfer(communityContract.address, '2000000000000000000');
@@ -562,7 +560,7 @@ describe('[jobs] subscribers', () => {
             communityContract.address,
             '2000000000000000000',
             match.any,
-            match.any,
+            match.any
         );
     });
 
@@ -584,7 +582,7 @@ describe('[jobs] subscribers', () => {
             DAOContract.address,
             '2000000000000000000',
             match.any,
-            match.any,
+            match.any
         );
     });
 

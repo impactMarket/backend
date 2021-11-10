@@ -337,6 +337,20 @@ class ChainSubscribers {
                     this.communities.get(communityAddress)!
                 );
                 result = parsedLog;
+            } else if (parsedLog.name === 'CommunityEdited') {
+                const communityAddress = log.address;
+                await CommunityContractService.update(
+                    (await CommunityService.getCommunityOnlyByPublicId(
+                        this.communities.get(communityAddress)!
+                    ))!.id,
+                    {
+                        claimAmount: parsedLog.args[0].toString(),
+                        maxClaim: parsedLog.args[1].toString(),
+                        baseInterval: parsedLog.args[2].toNumber(),
+                        incrementInterval: parsedLog.args[3].toNumber(),
+                    }
+                );
+                result = parsedLog;
             }
             return result;
         }
