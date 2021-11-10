@@ -561,7 +561,12 @@ class ChainSubscribers {
 
             await ManagerService.add(
                 managerAddress,
-                this.communities.get(communityAddress)!
+                (await models.community.findOne({
+                    attributes: ['publicId'],
+                    where: {
+                        requestByAddress: managerAddress,
+                    },
+                }))!.publicId
             );
 
             const community = await models.community.update(
