@@ -1062,7 +1062,7 @@ describe('community service', () => {
                 });
 
                 const result = await CommunityService.list({
-                    fields: 'id;publicId;contractAddress;contract.*;state.claimed;cover.id;thumbnails.*',
+                    fields: 'id;publicId;contractAddress;contract.*;state.claimed;cover.*',
                 });
 
                 expect(result.rows[0]).to.have.deep.keys([
@@ -1087,11 +1087,10 @@ describe('community service', () => {
                 ]);
                 expect(result.rows[0].cover).to.have.deep.keys([
                     'id',
+                    'url',
                     'thumbnails'
                 ]);
                 expect(result.rows[0].cover!.thumbnails![0]).to.have.deep.keys([
-                    'id',
-                    'mediaContentId',
                     'url',
                     'width',
                     'height',

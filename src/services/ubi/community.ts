@@ -1571,7 +1571,7 @@ export default class CommunityService {
 
         if (fields.cover) {
             extendedInclude.push({
-                attributes: ['url'],
+                attributes: ['id', 'url'],
                 model: this.appMediaContent,
                 as: 'cover',
                 duplicating: false,
