@@ -528,7 +528,7 @@ export default class BeneficiaryService {
             id: transaction.id,
             type: 'transaction',
             tx: transaction.tx,
-            date: transaction.txAt,
+            txAt: transaction.txAt,
             withAddress: transaction.withAddress,
             username: transaction['user']
                 ? transaction['user']['username']
