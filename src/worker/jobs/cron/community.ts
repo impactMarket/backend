@@ -414,7 +414,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                         attributes: [],
                         required: false,
                         where: {
-                            date: { [Op.between]: [yesterday, today] },
+                            txAt: { [Op.between]: [yesterday, today] },
                         },
                     },
                 ],

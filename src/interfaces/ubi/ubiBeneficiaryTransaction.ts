@@ -5,7 +5,6 @@ export interface UbiBeneficiaryTransaction {
     amount: string;
     isFromBeneficiary: boolean;
     tx: string;
-    date: Date;
     txAt: Date;
 }
 
@@ -15,6 +14,5 @@ export interface UbiBeneficiaryTransactionCreation {
     amount: string;
     isFromBeneficiary: boolean;
     tx: string;
-    date: Date;
-    txAt?: Date;
+    txAt: Date;
 }

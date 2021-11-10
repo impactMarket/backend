@@ -202,14 +202,16 @@ class ChainSubscribers {
                 ? parsedLog.args[1]
                 : parsedLog.args[0];
             // save to table to calculate txs and volume
-            await BeneficiaryService.addTransaction({
-                beneficiary: beneficiaryAddress,
-                withAddress,
-                amount: parsedLog.args[2].toString(),
-                isFromBeneficiary,
-                tx: log.transactionHash,
-                date: new Date(), // date only
-            }).catch(asyncTxsFailure);
+            getBlockTime(log.blockHash).then((txAt) =>
+                BeneficiaryService.addTransaction({
+                    beneficiary: beneficiaryAddress,
+                    withAddress,
+                    amount: parsedLog.args[2].toString(),
+                    isFromBeneficiary,
+                    tx: log.transactionHash,
+                    txAt,
+                }).catch(asyncTxsFailure)
+            );
             result = parsedLog;
         }
         return result;

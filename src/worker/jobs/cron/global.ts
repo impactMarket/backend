@@ -5,7 +5,7 @@ import ReachedAddressService from '@services/reachedAddress';
 import { calculateGrowth } from '@utils/util';
 import { BigNumber } from 'bignumber.js';
 import { mean, median } from 'mathjs';
-import { col, fn, Op, Sequelize } from 'sequelize';
+import { col, fn, Op, Sequelize, where } from 'sequelize';
 
 import config from '../../../config';
 import { models } from '../../../database';
@@ -292,14 +292,14 @@ async function calculateEconomicActivity(
         const uniqueAddressesReached =
             await models.ubiBeneficiaryTransaction.findAll({
                 attributes: [[fn('distinct', col('withAddress')), 'addresses']],
-                where: { date },
+                where: where(fn('date', col('txAt')), '=', date.toISOString()),
                 raw: true,
             }); // this is an array, wich can be empty (return no rows)
         const uniqueAddressesReachedOut =
             await models.ubiBeneficiaryTransaction.findAll({
                 attributes: [[fn('distinct', col('withAddress')), 'addresses']],
                 where: {
-                    date,
+                    txAt: where(fn('date', col('txAt')), '=', date.toISOString()),
                     withAddress: {
                         [Op.notIn]: Sequelize.literal(
                             '(select distinct address from beneficiary)'
@@ -314,7 +314,7 @@ async function calculateEconomicActivity(
                     [fn('coalesce', fn('sum', col('amount')), 0), 'volume'],
                     [fn('count', col('tx')), 'transactions'],
                 ],
-                where: { date },
+                where: { txAt: where(fn('date', col('txAt')), '=', date.toISOString()) },
                 raw: true,
             })
         )[0] as any; // this is a single result, that, if there's nothing, the result is zero
@@ -519,7 +519,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
                     [fn('count', col('tx')), 'transactions'],
                 ],
                 where: {
-                    date: { [Op.lt]: yesterdayDateOnly },
+                    txAt: { [Op.lt]: yesterdayDateOnly },
                 },
                 raw: true,
             })

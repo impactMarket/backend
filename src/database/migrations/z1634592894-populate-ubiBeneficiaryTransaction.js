@@ -33,10 +33,6 @@ module.exports = {
                 unique: true,
                 allowNull: false,
             },
-            date: {
-                type: Sequelize.DATEONLY,
-                allowNull: false,
-            },
         }
 
         const UbiBeneficiaryTransaction = await queryInterface.sequelize.define(
@@ -59,6 +55,10 @@ module.exports = {
             'beneficiarytransaction',
             {
                 ...commonColumns,
+                date: {
+                    type: Sequelize.DATEONLY,
+                    allowNull: false,
+                },
                 createdAt: {
                     type: Sequelize.DATE,
                     allowNull: false,
@@ -75,18 +75,21 @@ module.exports = {
         );
 
         const beneficiaryTransaction = await BeneficiaryTransaction.findAll();
+        const transactionsMapped = beneficiaryTransaction.map(registry => ({
+            beneficiary: registry.beneficiary,
+            withAddress: registry.withAddress,
+            amount: registry.amount,
+            isFromBeneficiary: registry.isFromBeneficiary,
+            tx: registry.tx,
+            txAt: registry.date,
+        }));
 
-        for await(let registry of beneficiaryTransaction) {
-            await UbiBeneficiaryTransaction.create({
-                id: registry.id,
-                beneficiary: registry.beneficiary,
-                withAddress: registry.withAddress,
-                amount: registry.amount,
-                isFromBeneficiary: registry.isFromBeneficiary,
-                tx: registry.tx,
-                date: registry.date,
-                txAt: registry.createdAt,
-            });
+        const batchSize = 1000;
+        const batches = Math.ceil(transactionsMapped.length / batchSize);
+
+        for (let i = 0; i < batches; i++) {
+            let toSave = transactionsMapped.slice(i * batchSize, (i * batchSize) + batchSize);
+            await UbiBeneficiaryTransaction.bulkCreate(toSave);
         }
     },
     down: (queryInterface, Sequelize) => {},

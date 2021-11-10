@@ -478,7 +478,6 @@ describe('beneficiary service', () => {
                 amount: '25',
                 isFromBeneficiary: true,
                 tx,
-                date: new Date(), // date only
                 txAt: new Date(),
             });
 
@@ -490,7 +489,6 @@ describe('beneficiary service', () => {
                 amount: '50',
                 isFromBeneficiary: false,
                 tx: tx2,
-                date: new Date(), // date only
                 txAt: new Date(),
             });
         });

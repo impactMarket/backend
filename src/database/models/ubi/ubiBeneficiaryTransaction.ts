@@ -14,7 +14,6 @@ export class UbiBeneficiaryTransactionModel extends Model<
     public amount!: string;
     public isFromBeneficiary!: boolean;
     public tx!: string;
-    public date!: Date;
     public txAt!: Date;
 }
 
@@ -50,14 +49,9 @@ export function initializeUbiBeneficiaryTransaction(
                 unique: true,
                 allowNull: false,
             },
-            date: {
-                type: DataTypes.DATEONLY,
-                allowNull: false,
-            },
             txAt: {
                 type: DataTypes.DATE,
                 allowNull: false,
-                defaultValue: new Date(),
             },
         },
         {

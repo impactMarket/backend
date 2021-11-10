@@ -465,7 +465,7 @@ export default class BeneficiaryService {
             id: claim.id,
             type: 'claim',
             tx: claim.tx,
-            date: claim.txAt,
+            txAt: claim.txAt,
             amount: claim.amount,
         }));
     }
@@ -496,7 +496,7 @@ export default class BeneficiaryService {
             id: el.id,
             type: 'registry',
             tx: el.tx,
-            date: el.txAt,
+            txAt: el.txAt,
             withAddress: el.from,
             username: el['user'] ? el['user']['username'] : null,
             activity: el.activity,

@@ -32,7 +32,7 @@ const data = async (
                 ? options.toBeneficiary.address
                 : await randomWallet.getAddress(),
         tx: randomTx(),
-        date: new Date(),
+        txAt: new Date(),
     };
     return defaultProps;
 };

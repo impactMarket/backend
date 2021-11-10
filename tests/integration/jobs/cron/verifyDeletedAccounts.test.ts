@@ -112,7 +112,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             amount: '25',
             isFromBeneficiary: true,
             tx,
-            date: new Date(), // date only
+            txAt: new Date(),
         });
 
         await ClaimsService.add({

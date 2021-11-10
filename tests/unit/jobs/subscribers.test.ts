@@ -633,7 +633,7 @@ describe('[jobs] subscribers', () => {
             amount: '2200000000000000000',
             isFromBeneficiary: true,
             tx: match.any,
-            date: match.any,
+            txAt: match.any,
         });
     });
 
@@ -687,7 +687,7 @@ describe('[jobs] subscribers', () => {
             amount: '2000000000000000000',
             isFromBeneficiary: true,
             tx: match.any,
-            date: match.any,
+            txAt: match.any,
         });
     });
 });

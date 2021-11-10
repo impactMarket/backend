@@ -31,10 +31,6 @@ module.exports = {
                 unique: true,
                 allowNull: false,
             },
-            date: {
-                type: Sequelize.DATEONLY,
-                allowNull: false,
-            },
             txAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
