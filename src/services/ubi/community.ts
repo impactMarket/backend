@@ -1582,10 +1582,6 @@ export default class CommunityService {
                 include: fields.thumbnails
                     ? [
                           {
-                              attributes:
-                                  fields.thumbnails.length > 0
-                                      ? fields.thumbnails
-                                      : undefined,
                               model: this.appMediaThumbnail,
                               as: 'thumbnails',
                               separate: true,
