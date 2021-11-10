@@ -7,9 +7,10 @@ import { UbiCommunityDailyState } from '@interfaces/ubi/ubiCommunityDailyState';
 import { UbiCommunityDemographics } from '@interfaces/ubi/ubiCommunityDemographics';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import { ICommunityContractParams } from '../../../types';
 // import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { BeneficiaryAttributes } from './beneficiary';
 
@@ -72,8 +73,7 @@ export interface CommunityAttributes {
     demographics?: UbiCommunityDemographics[]; // TODO: to be removed
     dailyState?: UbiCommunityDailyState[]; // TODO: to be removed
 }
-export interface ICommunityCreationAttributes
-    extends IBaseCommunityAttributes {
+export interface ICommunityCreationAttributes extends IBaseCommunityAttributes {
     descriptionEn?: string;
     visibility?: 'public' | 'private';
     coverImage?: string; // TODO: will be required once next version is released

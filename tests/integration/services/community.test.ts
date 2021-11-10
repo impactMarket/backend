@@ -878,6 +878,288 @@ describe('community service', () => {
                 });
             });
         });
+
+        describe('query string filter', () => {
+            afterEach(async () => {
+                await truncate(sequelize, 'Beneficiary');
+                await truncate(sequelize, 'Community');
+            });
+
+            it('filter with specific fields', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                const result = await CommunityService.list({
+                    fields: 'id;publicId;contract.maxClaim;contract.claimAmount',
+                });
+
+                expect(result.rows[0]).to.have.deep.keys([
+                    'id',
+                    'publicId',
+                    'contract',
+                ]);
+                expect(result.rows[0].contract).to.have.deep.keys([
+                    'claimAmount',
+                    'maxClaim',
+                ]);
+                expect(result.rows[0]).to.include({
+                    id: communities[0].id,
+                    publicId: communities[0].publicId,
+                });
+                expect(result.rows[0].contract).to.include({
+                    maxClaim: communities[0]!.contract!.maxClaim,
+                    claimAmount: communities[0]!.contract!.claimAmount
+                });
+            });
+
+            it('filter with grouped fields', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                const result = await CommunityService.list({
+                    fields: '*;contract.*',
+                });
+
+                expect(result.rows[0]).to.have.deep.keys([
+                    'city',
+                    'contract',
+                    'contractAddress',
+                    'country',
+                    'coverImage',
+                    'coverMediaId',
+                    'createdAt',
+                    'currency',
+                    'deletedAt',
+                    'description',
+                    'descriptionEn',
+                    'gps',
+                    'id',
+                    'language',
+                    'name',
+                    'publicId',
+                    'requestByAddress',
+                    'review',
+                    'started',
+                    'status',
+                    'updatedAt',
+                    'visibility'
+                ]);
+                expect(result.rows[0].contract).to.have.deep.keys([
+                    'claimAmount',
+                    'maxClaim',
+                    'baseInterval',
+                    'incrementInterval',
+                    'communityId',
+                    'createdAt',
+                    'updatedAt',
+                ]);
+                expect(result.rows[0]).to.include({
+                    id: communities[0].id,
+                    publicId: communities[0].publicId,
+                    city: communities[0].city,
+                    contractAddress: communities[0].contractAddress,
+                    country: communities[0].country,
+                    coverImage: communities[0].coverImage,
+                    coverMediaId: communities[0].coverMediaId,
+                    currency: communities[0].currency,
+                    description: communities[0].description,
+                    descriptionEn: communities[0].descriptionEn,
+                    language: communities[0].language,
+                    name: communities[0].name,
+                    requestByAddress: communities[0].requestByAddress,
+                    review: communities[0].review,
+                    started: communities[0].started,
+                    status: communities[0].status,
+                    visibility: communities[0].visibility
+                });
+                expect(result.rows[0].contract).to.include({
+                    maxClaim: communities[0]!.contract!.maxClaim,
+                    claimAmount: communities[0]!.contract!.claimAmount,
+                    baseInterval: communities[0]!.contract!.baseInterval,
+                    incrementInterval: communities[0]!.contract!.incrementInterval,
+                    communityId: communities[0]!.contract!.communityId,
+                });
+            });
+
+            it('filter with mixed fields', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                const media = await models.appMediaContent.create({
+                    url: 'test.com',
+                    width: 0,
+                    height: 0,
+                });
+
+                await models.appMediaThumbnail.create({
+                    mediaContentId: media.id,
+                    url: 'test.com',
+                    width: 0,
+                    height: 0,
+                    pixelRatio: 0,
+                })
+
+                await models.community.update({
+                    coverMediaId: media.id
+                }, {
+                    where: {
+                        id: communities[0].id
+                    }
+                });
+
+                const result = await CommunityService.list({
+                    fields: 'id;publicId;contractAddress;contract.*;state.claimed;cover.*',
+                });
+
+                expect(result.rows[0]).to.have.deep.keys([
+                    'id',
+                    'publicId',
+                    'contractAddress',
+                    'contract',
+                    'state',
+                    'cover',
+                ]);
+                expect(result.rows[0].contract).to.have.deep.keys([
+                    'claimAmount',
+                    'maxClaim',
+                    'baseInterval',
+                    'incrementInterval',
+                    'communityId',
+                    'createdAt',
+                    'updatedAt',
+                ]);
+                expect(result.rows[0].state).to.have.deep.keys([
+                    'claimed',
+                ]);
+                expect(result.rows[0].cover).to.have.deep.keys([
+                    'id',
+                    'url',
+                    'thumbnails'
+                ]);
+                expect(result.rows[0].cover!.thumbnails![0]).to.have.deep.keys([
+                    'url',
+                    'width',
+                    'height',
+                    'pixelRatio'
+                ]);
+                expect(result.rows[0]).to.include({
+                    id: communities[0].id,
+                    publicId: communities[0].publicId,
+                    contractAddress: communities[0].contractAddress,
+                });
+                expect(result.rows[0].contract).to.include({
+                    maxClaim: communities[0]!.contract!.maxClaim,
+                    claimAmount: communities[0]!.contract!.claimAmount,
+                    baseInterval: communities[0]!.contract!.baseInterval,
+                    incrementInterval: communities[0]!.contract!.incrementInterval,
+                    communityId: communities[0]!.contract!.communityId,
+                });
+            });
+
+            it('filter pending community', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                const result = await CommunityService.list({
+                    status: 'pending',
+                });
+
+                expect(result.rows[0]).to.include({
+                    id: communities[1].id,
+                    status: 'pending',
+                });
+            });
+        });
     });
 
     describe('campaign', () => {
@@ -1159,22 +1441,20 @@ describe('community service', () => {
                 },
             ]);
 
-            const result = await CommunityService.editSubmission(
-                {
-                    requestByAddress: manager[0].address,
-                    name: 'new name',
-                    description: 'new description',
-                    language: 'pt',
-                    currency: 'USD',
-                    city: 'São Paulo',
-                    country: 'Brasil',
-                    gps: {
-                        latitude: 10,
-                        longitude: 10,
-                    },
-                    email: 'test@email.com',
-                }
-            );
+            const result = await CommunityService.editSubmission({
+                requestByAddress: manager[0].address,
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'USD',
+                city: 'São Paulo',
+                country: 'Brasil',
+                gps: {
+                    latitude: 10,
+                    longitude: 10,
+                },
+                email: 'test@email.com',
+            });
 
             expect(result).to.include({
                 name: 'new name',
@@ -1248,28 +1528,26 @@ describe('community service', () => {
                 },
             ]);
 
-            const result = await CommunityService.editSubmission(
-                {
-                    requestByAddress: manager[0].address,
-                    name: 'new name',
-                    description: 'new description',
-                    language: 'pt',
-                    currency: 'USD',
-                    city: 'São Paulo',
-                    country: 'Brasil',
-                    gps: {
-                        latitude: 10,
-                        longitude: 10,
-                    },
-                    email: 'test@email.com',
-                    contractParams: {
-                        baseInterval: 60 * 60 * 24 * 7,
-                        claimAmount: '5000000000000000000',
-                        incrementInterval: 5 * 60 * 60,
-                        maxClaim: '500000000000000000000',
-                    },
-                }
-            );
+            const result = await CommunityService.editSubmission({
+                requestByAddress: manager[0].address,
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'USD',
+                city: 'São Paulo',
+                country: 'Brasil',
+                gps: {
+                    latitude: 10,
+                    longitude: 10,
+                },
+                email: 'test@email.com',
+                contractParams: {
+                    baseInterval: 60 * 60 * 24 * 7,
+                    claimAmount: '5000000000000000000',
+                    incrementInterval: 5 * 60 * 60,
+                    maxClaim: '500000000000000000000',
+                },
+            });
 
             expect(result).to.include({
                 name: 'new name',
@@ -1313,23 +1591,21 @@ describe('community service', () => {
                 height: 0,
             });
 
-            const result = await CommunityService.editSubmission(
-                {
-                    requestByAddress: manager[0].address,
-                    name: 'new name',
-                    description: 'new description',
-                    language: 'pt',
-                    currency: 'USD',
-                    city: 'São Paulo',
-                    country: 'Brasil',
-                    gps: {
-                        latitude: 10,
-                        longitude: 10,
-                    },
-                    email: 'test@email.com',
-                    coverMediaId: media.id,
-                }
-            );
+            const result = await CommunityService.editSubmission({
+                requestByAddress: manager[0].address,
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'USD',
+                city: 'São Paulo',
+                country: 'Brasil',
+                gps: {
+                    latitude: 10,
+                    longitude: 10,
+                },
+                email: 'test@email.com',
+                coverMediaId: media.id,
+            });
 
             expect(result).to.include({
                 name: 'new name',
