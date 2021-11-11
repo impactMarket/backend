@@ -16,7 +16,7 @@ export function userAssociation(sequelize: Sequelize) {
 
     // used to query from the beneficiarytransaction with incude
     sequelize.models.Beneficiary.hasMany(
-        sequelize.models.BeneficiaryTransaction,
+        sequelize.models.UbiBeneficiaryTransactionModel,
         {
             foreignKey: 'beneficiary',
             sourceKey: 'address',
@@ -25,7 +25,7 @@ export function userAssociation(sequelize: Sequelize) {
     );
 
     // used to query from the beneficiarytransaction with incude
-    sequelize.models.BeneficiaryTransaction.belongsTo(
+    sequelize.models.UbiBeneficiaryTransactionModel.belongsTo(
         sequelize.models.AppUserModel,
         {
             foreignKey: 'withAddress',

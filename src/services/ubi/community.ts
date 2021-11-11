@@ -564,7 +564,7 @@ export default class CommunityService {
                     required: false,
                     include: [
                         {
-                            model: models.beneficiaryTransaction,
+                            model: models.ubiBeneficiaryTransaction,
                             as: 'transactions',
                             where: literal(
                                 `date("beneficiaries->transactions"."date") = '${

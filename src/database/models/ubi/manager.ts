@@ -1,5 +1,5 @@
-import { UbiBeneficiaryRegistry } from '@interfaces/ubi/ubiBeneficiaryRegistry';
 import { AppUser } from '@interfaces/app/appUser';
+import { UbiBeneficiaryRegistry } from '@interfaces/ubi/ubiBeneficiaryRegistry';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { CommunityAttributes } from './community';

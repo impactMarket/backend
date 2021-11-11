@@ -88,7 +88,7 @@ describe('calcuateCommunitiesMetrics', () => {
             // this two has to come first!
             await truncate(sequelize, 'Inflow');
             await truncate(sequelize, 'UbiClaimModel');
-            await truncate(sequelize, 'BeneficiaryTransaction');
+            await truncate(sequelize, 'UbiBeneficiaryTransactionModel');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'AppUserModel');
             await truncate(sequelize);
@@ -604,7 +604,7 @@ describe('calcuateCommunitiesMetrics', () => {
         after(async () => {
             await truncate(sequelize, 'Inflow');
             await truncate(sequelize, 'UbiClaimModel');
-            await truncate(sequelize, 'BeneficiaryTransaction');
+            await truncate(sequelize, 'UbiBeneficiaryTransactionModel');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'AppUserModel');
             await truncate(sequelize, 'Community');

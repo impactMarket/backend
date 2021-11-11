@@ -370,12 +370,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 required: false,
                 include: [
                     {
-                        model: models.beneficiaryTransaction,
+                        model: models.ubiBeneficiaryTransaction,
                         as: 'transactions',
                         attributes: [],
                         required: false,
                         where: {
-                            date: { [Op.between]: [yesterday, today] },
+                            txAt: { [Op.between]: [yesterday, today] },
                         },
                     },
                 ],
