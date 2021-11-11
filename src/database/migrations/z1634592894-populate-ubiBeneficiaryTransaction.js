@@ -74,22 +74,26 @@ module.exports = {
             }
         );
 
-        const result = await result.findAll();
-        const transactionsMapped = result.map(registry => ({
-            beneficiary: registry.beneficiary,
-            withAddress: registry.withAddress,
-            amount: registry.amount,
-            isFromBeneficiary: registry.isFromBeneficiary,
-            tx: registry.tx,
-            txAt: registry.date,
-        }));
-
         const batchSize = 1000;
-        const batches = Math.ceil(transactionsMapped.length / batchSize);
+        for (let i = 0;; i++) {
+            const result = await BeneficiaryTransaction.findAll({
+                limit: batchSize,
+                offset: batchSize * i,
+                order: ['id']
+            });
 
-        for (let i = 0; i < batches; i++) {
-            let transactions = transactionsMapped.slice(i * batchSize, (i * batchSize) + batchSize);
-            await UbiBeneficiaryTransaction.bulkCreate(transactions);
+            if(!result || !result.length) break;
+
+            const transactionsMapped = result.map(registry => ({
+                beneficiary: registry.beneficiary,
+                withAddress: registry.withAddress,
+                amount: registry.amount,
+                isFromBeneficiary: registry.isFromBeneficiary,
+                tx: registry.tx,
+                txAt: registry.date,
+            }));
+            
+            await UbiBeneficiaryTransaction.bulkCreate(transactionsMapped);
         }
     },
     down: (queryInterface, Sequelize) => {},
