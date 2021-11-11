@@ -37,11 +37,14 @@ describe('beneficiary service', () => {
     let spyBeneficiaryAdd: SinonSpy;
     let spyBeneficiaryUpdate: SinonSpy;
 
+    const decreaseStep = '1000000000000000000';
+    const maxClaim = '450000000000000000000';
+
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        users = await UserFactory({ n: 18 });
+        users = await UserFactory({ n: 24 });
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -53,7 +56,22 @@ describe('beneficiary service', () => {
                     claimAmount: '1000000000000000000',
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim,
+                },
+                hasAddress: true,
+            },
+            {
+                requestByAddress: users[1].address,
+                started: new Date(),
+                status: 'valid',
+                visibility: 'public',
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '1000000000000000000',
+                    communityId: 0,
+                    incrementInterval: 5 * 60,
+                    maxClaim,
+                    decreaseStep,
                 },
                 hasAddress: true,
             },
@@ -619,21 +637,18 @@ describe('beneficiary service', () => {
     });
 
     describe('survey', () => {
-        after(async () => {
-            await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize, 'Manager');
-            await truncate(sequelize);
-        });
-
         it('should save a survey', async () => {
             const users = await UserFactory({ n: 1 });
 
-            const result = await BeneficiaryService.saveSurvery(users[0].address, [
-                {
-                    question: 1,
-                    answer: 'answer',
-                },
-            ]);
+            const result = await BeneficiaryService.saveSurvery(
+                users[0].address,
+                [
+                    {
+                        question: 1,
+                        answer: 'answer',
+                    },
+                ]
+            );
 
             expect(result[0]).to.include({
                 question: 1,
@@ -652,6 +667,104 @@ describe('beneficiary service', () => {
                 .then(() => {
                     throw new Error('expected to fail');
                 });
+        });
+    });
+
+    describe('maxClaim', () => {
+        it('update max claim when add a beneficiary', async () => {
+            await BeneficiaryService.add(
+                users[18].address,
+                users[1].address,
+                communities[1].publicId,
+                randomTx(),
+                new Date()
+            );
+
+            await BeneficiaryService.add(
+                users[19].address,
+                users[1].address,
+                communities[1].publicId,
+                randomTx(),
+                new Date()
+            );
+
+            const contractUpdated = await models.ubiCommunityContract.findOne({
+                attributes: ['maxClaim'],
+                where: { communityId: communities[1].id },
+            });
+
+            const newMaxClaim = parseInt(maxClaim) - parseInt(decreaseStep) * 2;
+            expect(contractUpdated!.maxClaim).to.be.equal(
+                newMaxClaim.toString()
+            );
+        });
+
+        it('update max claim when remove a beneficiary', async () => {
+            // reset maxClaim
+            await models.ubiCommunityContract.update({
+                maxClaim,
+            }, {
+                where: { communityId: communities[1].id },
+            });
+
+            await BeneficiaryService.add(
+                users[20].address,
+                users[1].address,
+                communities[1].publicId,
+                randomTx(),
+                new Date()
+            );
+
+            await BeneficiaryService.add(
+                users[21].address,
+                users[1].address,
+                communities[1].publicId,
+                randomTx(),
+                new Date()
+            );
+
+            await BeneficiaryService.remove(
+                users[20].address,
+                users[1].address,
+                communities[1].publicId,
+                randomTx(),
+                new Date()
+            );
+
+            const contractUpdated = await models.ubiCommunityContract.findOne({
+                attributes: ['maxClaim'],
+                where: { communityId: communities[1].id },
+            });
+
+            const newMaxClaim = parseInt(maxClaim) - parseInt(decreaseStep) * 1;
+            expect(contractUpdated!.maxClaim).to.be.equal(
+                newMaxClaim.toString()
+            );
+        });
+
+        it('update max claim when a community does not have a decrease step', async () => {
+            await BeneficiaryService.add(
+                users[22].address,
+                users[0].address,
+                communities[0].publicId,
+                randomTx(),
+                new Date()
+            );
+
+            await BeneficiaryService.add(
+                users[23].address,
+                users[0].address,
+                communities[0].publicId,
+                randomTx(),
+                new Date()
+            );
+
+            const contractUpdated = await models.ubiCommunityContract.findOne({
+                attributes: ['maxClaim'],
+                where: { communityId: communities[0].id },
+            });
+
+            expect(contractUpdated!.maxClaim).to.be.equal(maxClaim);
         });
     });
 });

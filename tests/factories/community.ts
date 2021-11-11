@@ -66,6 +66,7 @@ const data = async (props: ICreateProps) => {
                   communityId: 0,
                   incrementInterval: 5 * 60,
                   maxClaim: '450000000000000000000',
+                  decreaseStep: '1000000000000000000',
               },
         ...props,
     };
