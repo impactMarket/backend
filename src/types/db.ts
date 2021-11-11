@@ -20,7 +20,6 @@ import { StoryEngagementModel } from '@models/story/storyEngagement';
 import { StoryUserEngagementModel } from '@models/story/storyUserEngagement';
 import { StoryUserReportModel } from '@models/story/storyUserReport';
 import { Beneficiary } from '@models/ubi/beneficiary';
-import { BeneficiaryTransaction } from '@models/ubi/beneficiaryTransaction';
 import { Community } from '@models/ubi/community';
 import { UbiCommunityContractModel } from '@models/ubi/communityContract';
 import { UbiCommunityDailyMetricsModel } from '@models/ubi/communityDailyMetrics';
@@ -31,6 +30,7 @@ import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
 import { UbiBeneficiaryRegistryModel } from '@models/ubi/ubiBeneficiaryRegistry';
+import { UbiBeneficiaryTransactionModel } from '@models/ubi/ubiBeneficiaryTransaction';
 import { UbiClaimModel } from '@models/ubi/ubiClaim';
 import { ClaimLocationModel } from '@models/ubi/ubiClaimLocation';
 import { UbiCommunityCampaignModel } from '@models/ubi/ubiCommunityCampaign';
@@ -71,7 +71,7 @@ export interface DbModels {
     ubiClaimLocation: ModelCtor<ClaimLocationModel>;
     beneficiary: ModelCtor<Beneficiary>;
     ubiBeneficiaryRegistry: ModelCtor<UbiBeneficiaryRegistryModel>;
-    beneficiaryTransaction: ModelCtor<BeneficiaryTransaction>;
+    ubiBeneficiaryTransaction: ModelCtor<UbiBeneficiaryTransactionModel>;
     inflow: ModelCtor<Inflow>;
     manager: ModelCtor<Manager>;
     //

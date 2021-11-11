@@ -1,79 +1,40 @@
 import { CommunityAttributes } from '@models/ubi/community';
-import UserService from '@services/app/user';
-import NotifiedBackerService from '@services/notifiedBacker';
 import CommunityService from '@services/ubi/community';
-import CommunityStateService from '@services/ubi/communityState';
-import InflowService from '@services/ubi/inflow';
 import { WebClient } from '@slack/web-api';
-import { Logger } from '@utils/logger';
-import { notifyBackersCommunityLowFunds } from '@utils/util';
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
-import { col, fn, literal, Op } from 'sequelize';
+import { col, fn, literal, Op, QueryTypes } from 'sequelize';
 
 import config from '../../../config';
-import { models } from '../../../database';
+import { models, sequelize } from '../../../database';
 
 export async function verifyCommunitySuspectActivity(): Promise<void> {
-    //
-    const communities = await models.community.findAll({
-        include: [
-            {
-                model: models.beneficiary,
-                as: 'beneficiaries',
-                where: {
-                    active: true,
-                },
-                include: [
-                    {
-                        model: models.appUser,
-                        as: 'user',
-                        include: [
-                            {
-                                model: models.appUserTrust,
-                                as: 'trust',
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
-        where: {
-            status: 'valid',
-            visibility: 'public',
-        },
+    const query = `
+    WITH
+        communities AS (
+        SELECT "Community"."id",
+            count(*) filter ( where suspect is true ) AS "suspect",
+            count(*) as "total"
+        FROM "community" AS "Community"
+            INNER JOIN "beneficiary" AS "beneficiaries" ON "Community"."publicId" = "beneficiaries"."communityId" AND "beneficiaries"."active" = true
+            LEFT OUTER JOIN "app_user" AS "app_user" ON "beneficiaries"."address" = "app_user"."address"
+        WHERE "Community"."status" = 'valid' AND "Community"."visibility" = 'public'
+        GROUP BY "Community"."id"
+        having count(*) filter ( where suspect is true ) > 0
+    ),
+    suspect_level AS (
+        select ((communities.suspect::float / communities.total::float) * 100) as ps,
+                (60 * log10(((communities.suspect::float / communities.total::float) * 100) + 1)) as y,
+                id
+        from communities
+    )
+    INSERT INTO ubi_community_suspect ("communityId", percentage, suspect)
+    (select id as "communityId", (ROUND(ps * 100) / 100) as percentage, GREATEST(1, ROUND(LEAST(suspect_level.y, 100) / 10)) as suspect
+    from suspect_level)`;
+
+    await sequelize.query(query, {
+        type: QueryTypes.INSERT,
     });
-    for (let c = 0; c < communities.length; c++) {
-        const community = communities[c].toJSON() as CommunityAttributes;
-        if (community.beneficiaries && community.beneficiaries.length > 0) {
-            const suspectBeneficiaries = community.beneficiaries.filter(
-                (b) => b.user && b.user.suspect
-            );
-            if (suspectBeneficiaries.length === 0) {
-                continue;
-            }
-            // in case it's 100%
-            const ps =
-                suspectBeneficiaries.length === community.beneficiaries.length
-                    ? 100
-                    : (suspectBeneficiaries.length /
-                          community.beneficiaries.length) *
-                      100;
-            // The Math.log() function returns the natural logarithm (base e) of a number.
-            // The Math.log10() function returns the base 10 logarithm of a number.
-            const y = 60 * Math.log10(ps + 1);
-            const suspectLevel = Math.max(1, Math.round(Math.min(y, 100) / 10));
-            // save suspect level
-            await models.ubiCommunitySuspect.create(
-                {
-                    communityId: community.id,
-                    percentage: Math.round(ps * 100) / 100,
-                    suspect: suspectLevel,
-                },
-                { returning: false }
-            );
-        }
-    }
 }
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
@@ -113,10 +74,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             {
                 [Op.and]: [
                     { status: 'removed' },
-                    { deletedAt: { [Op.between]: [yesterday, today] }}
-                ]
-            }
-        ]
+                    { deletedAt: { [Op.between]: [yesterday, today] } },
+                ],
+            },
+        ],
     };
 
     const communitiesStatePre = await models.community.findAll({
@@ -409,12 +370,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 required: false,
                 include: [
                     {
-                        model: models.beneficiaryTransaction,
+                        model: models.ubiBeneficiaryTransaction,
                         as: 'transactions',
                         attributes: [],
                         required: false,
                         where: {
-                            date: { [Op.between]: [yesterday, today] },
+                            txAt: { [Op.between]: [yesterday, today] },
                         },
                     },
                 ],

@@ -4,7 +4,6 @@ import tk from 'timekeeper';
 
 import { models } from '../../../../src/database';
 import { BeneficiaryAttributes } from '../../../../src/database/models/ubi/beneficiary';
-import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { AppUser } from '../../../../src/interfaces/app/appUser';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import BeneficiaryFactory from '../../../factories/beneficiary';
@@ -89,7 +88,7 @@ describe('calcuateCommunitiesMetrics', () => {
             // this two has to come first!
             await truncate(sequelize, 'Inflow');
             await truncate(sequelize, 'UbiClaimModel');
-            await truncate(sequelize, 'BeneficiaryTransaction');
+            await truncate(sequelize, 'UbiBeneficiaryTransactionModel');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'AppUserModel');
             await truncate(sequelize);
@@ -605,7 +604,7 @@ describe('calcuateCommunitiesMetrics', () => {
         after(async () => {
             await truncate(sequelize, 'Inflow');
             await truncate(sequelize, 'UbiClaimModel');
-            await truncate(sequelize, 'BeneficiaryTransaction');
+            await truncate(sequelize, 'UbiBeneficiaryTransactionModel');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'AppUserModel');
             await truncate(sequelize, 'Community');

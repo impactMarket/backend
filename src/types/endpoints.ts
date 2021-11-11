@@ -4,7 +4,6 @@ import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
 import { CommunityAttributes } from '@models/ubi/community';
-
 export interface ICommunityLightDetails {
     id: number;
     /**
@@ -258,7 +257,7 @@ export type IBeneficiaryActivities = {
     id: number;
     type: string;
     tx: string;
-    date: Date;
+    txAt: Date;
     withAddress?: string;
     isFromBeneficiary?: boolean;
     amount?: string;

@@ -53,7 +53,7 @@ const UserFactory = async (
 ) => {
     const result: AppUser[] = [];
     for (let index = 0; index < options.n; index++) {
-        const newUser: AppUserModel = await AppUserModel.create(
+        const newUser = await AppUserModel.create(
             await data(options.props ? options.props[index] : undefined),
             {
                 include: [

@@ -3,6 +3,7 @@ import chaiSubset from 'chai-subset';
 import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { assert, spy, replace, restore, SinonSpy } from 'sinon';
+import tk from 'timekeeper';
 
 import { models, sequelize as database } from '../../../src/database';
 import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
@@ -20,7 +21,7 @@ import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
-import { randomTx } from '../../utils/utils';
+import { jumpToTomorrowMidnight, randomTx } from '../../utils/utils';
 
 use(chaiSubset);
 
@@ -474,8 +475,20 @@ describe('beneficiary service', () => {
                 users[0].address,
                 communities[0].publicId,
                 tx,
-                new Date('2021-01-01')
+                new Date()
             );
+
+            tk.travel(jumpToTomorrowMidnight());
+
+            await ClaimsService.add({
+                address: users[16].address,
+                communityId: communities[0].id,
+                amount: '15',
+                tx,
+                txAt: new Date(),
+            });
+
+            tk.travel(jumpToTomorrowMidnight());
 
             await BeneficiaryService.addTransaction({
                 beneficiary: users[16].address,
@@ -483,8 +496,10 @@ describe('beneficiary service', () => {
                 amount: '25',
                 isFromBeneficiary: true,
                 tx,
-                date: new Date(), // date only
+                txAt: new Date(),
             });
+
+            tk.travel(jumpToTomorrowMidnight());
 
             await BeneficiaryService.addTransaction({
                 beneficiary: users[16].address,
@@ -492,15 +507,7 @@ describe('beneficiary service', () => {
                 amount: '50',
                 isFromBeneficiary: false,
                 tx: tx2,
-                date: new Date(), // date only
-            });
-
-            await ClaimsService.add({
-                address: users[16].address,
-                communityId: communities[0].id,
-                amount: '15',
-                tx,
-                txAt: new Date('2021-01-02'),
+                txAt: new Date(),
             });
         });
 
