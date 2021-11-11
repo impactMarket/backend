@@ -18,28 +18,27 @@ export async function cleanupNetworkRewards() {
     let offset = 0;
     // batch in groups of 500 addresses at a time
     do {
-        interactedAddress = await models.beneficiaryTransaction.findAndCountAll(
-            {
+        interactedAddress =
+            await models.ubiBeneficiaryTransaction.findAndCountAll({
                 attributes: [[fn('distinct', col('withAddress')), 'addresses']],
                 where: {
-                    createdAt: {
+                    txAt: {
                         [Op.between]: [yesterday, today],
                     },
                 },
                 raw: true,
                 offset,
                 limit: 500,
-            }
-        );
+            });
         // filter to find which ones are mekrle tree
         const merkleTrees = await filterMerkleTree(
             provider,
             interactedAddress.rows.map((t: any) => t.addresses)
         );
         // remove merkle trees
-        await models.beneficiaryTransaction.destroy({
+        await models.ubiBeneficiaryTransaction.destroy({
             where: {
-                createdAt: {
+                txAt: {
                     [Op.between]: [yesterday, today],
                 },
                 withAddress: {

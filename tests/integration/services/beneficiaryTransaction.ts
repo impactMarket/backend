@@ -71,7 +71,7 @@ describe('beneficiary transactions', () => {
             Promise.resolve([tree1.withAddress, tree2.withAddress])
         );
         const beneficiaryTransactionDestroy = spy(
-            models.beneficiaryTransaction,
+            models.ubiBeneficiaryTransaction,
             'destroy'
         );
         tk.travel(jumpToTomorrowMidnight());
