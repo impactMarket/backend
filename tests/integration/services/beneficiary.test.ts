@@ -628,12 +628,15 @@ describe('beneficiary service', () => {
         it('should save a survey', async () => {
             const users = await UserFactory({ n: 1 });
 
-            const result = await BeneficiaryService.saveSurvery(users[0].address, [
-                {
-                    question: 1,
-                    answer: 'answer',
-                },
-            ]);
+            const result = await BeneficiaryService.saveSurvery(
+                users[0].address,
+                [
+                    {
+                        question: 1,
+                        answer: 'answer',
+                    },
+                ]
+            );
 
             expect(result[0]).to.include({
                 question: 1,

@@ -92,7 +92,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
 
@@ -107,7 +107,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
 
@@ -122,7 +122,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
 
@@ -137,7 +137,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
 
@@ -152,7 +152,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
 
@@ -167,7 +167,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
 
@@ -297,7 +297,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -311,7 +311,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '70000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[3], true, {
-            toBeneficiary: beneficiaries[4],
+            withAddress: beneficiaries[4].address,
             amount: '500000000000000000',
         });
 
@@ -327,7 +327,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -341,7 +341,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '40000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '200000000000000000',
         });
 
@@ -357,7 +357,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -371,7 +371,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[3],
+            withAddress: beneficiaries[3].address,
             amount: '1000000000000000000',
         });
 
@@ -387,7 +387,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -402,7 +402,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '50000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[3], true, {
-            toBeneficiary: beneficiaries[4],
+            withAddress: beneficiaries[4].address,
             amount: '100000000000000000',
         });
 
@@ -418,7 +418,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -433,7 +433,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[2],
+            withAddress: beneficiaries[2].address,
             amount: '1000000000000000000',
         });
 
@@ -449,7 +449,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -464,7 +464,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[2],
+            withAddress: beneficiaries[2].address,
             amount: '1000000000000000000',
         });
 
@@ -512,7 +512,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -526,7 +526,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[2],
+            withAddress: beneficiaries[2].address,
             amount: '1000000000000000000',
         });
 
@@ -581,7 +581,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -595,7 +595,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[2],
+            withAddress: beneficiaries[2].address,
             amount: '1000000000000000000',
         });
 
@@ -644,7 +644,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -663,7 +663,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[2],
+            withAddress: beneficiaries[2].address,
             amount: '1000000000000000000',
         });
 
@@ -867,7 +867,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -881,7 +881,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '70000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[3], true, {
-            toBeneficiary: beneficiaries[4],
+            withAddress: beneficiaries[4].address,
             amount: '500000000000000000',
         });
         // community 3
@@ -897,7 +897,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '70000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            toBeneficiary: beneficiaries[7],
+            withAddress: beneficiaries[7].address,
             amount: '500000000000000000',
         });
 
@@ -913,7 +913,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -927,7 +927,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '40000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '200000000000000000',
         });
         // community 3
@@ -943,7 +943,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '70000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            toBeneficiary: beneficiaries[5],
+            withAddress: beneficiaries[5].address,
             amount: '500000000000000000',
         });
 
@@ -959,7 +959,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -973,7 +973,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[3],
+            withAddress: beneficiaries[3].address,
             amount: '1000000000000000000',
         });
         // community 3
@@ -989,7 +989,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '70000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            toBeneficiary: beneficiaries[7],
+            withAddress: beneficiaries[7].address,
             amount: '500000000000000000',
         });
 
@@ -1005,7 +1005,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -1020,7 +1020,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '50000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[3], true, {
-            toBeneficiary: beneficiaries[4],
+            withAddress: beneficiaries[4].address,
             amount: '100000000000000000',
         });
         // community 3
@@ -1036,7 +1036,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '70000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            toBeneficiary: beneficiaries[7],
+            withAddress: beneficiaries[7].address,
             amount: '500000000000000000',
         });
 
@@ -1052,7 +1052,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -1067,7 +1067,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[2],
+            withAddress: beneficiaries[2].address,
             amount: '1000000000000000000',
         });
         // community 3
@@ -1083,7 +1083,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '70000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            toBeneficiary: beneficiaries[7],
+            withAddress: beneficiaries[7].address,
             amount: '500000000000000000',
         });
 
@@ -1099,7 +1099,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -1114,7 +1114,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[2],
+            withAddress: beneficiaries[2].address,
             amount: '1000000000000000000',
         });
         // community 3
@@ -1137,7 +1137,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '70000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            toBeneficiary: beneficiaries[7],
+            withAddress: beneficiaries[7].address,
             amount: '500000000000000000',
         });
 
@@ -1185,7 +1185,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -1199,7 +1199,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[2],
+            withAddress: beneficiaries[2].address,
             amount: '1000000000000000000',
         });
         // community 3
@@ -1215,7 +1215,7 @@ describe('#calcuateGlobalMetrics()', () => {
         //     amount: '70000000000000000',
         // });
         // await BeneficiaryTransactionFactory(beneficiaries[6], true, {
-        //     toBeneficiary: beneficiaries[7],
+        //     withAddress: beneficiaries[7],
         //     amount: '500000000000000000',
         // });
 
@@ -1270,7 +1270,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -1284,7 +1284,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[2],
+            withAddress: beneficiaries[2].address,
             amount: '1000000000000000000',
         });
         // community 3
@@ -1300,7 +1300,7 @@ describe('#calcuateGlobalMetrics()', () => {
         //     amount: '70000000000000000',
         // });
         // await BeneficiaryTransactionFactory(beneficiaries[6], true, {
-        //     toBeneficiary: beneficiaries[7],
+        //     withAddress: beneficiaries[7],
         //     amount: '500000000000000000',
         // });
 
@@ -1349,7 +1349,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            toBeneficiary: beneficiaries[1],
+            withAddress: beneficiaries[1].address,
             amount: '1000000000000000000',
         });
         // community 2
@@ -1368,7 +1368,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '500000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            toBeneficiary: beneficiaries[2],
+            withAddress: beneficiaries[2].address,
             amount: '1000000000000000000',
         });
         // community 3
@@ -1388,7 +1388,7 @@ describe('#calcuateGlobalMetrics()', () => {
             amount: '70000000000000000',
         });
         await BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            toBeneficiary: beneficiaries[7],
+            withAddress: beneficiaries[7].address,
             amount: '500000000000000000',
         });
 
@@ -1465,34 +1465,41 @@ describe('#calcuateGlobalMetrics()', () => {
 
         const date = new Date();
         date.setDate(date.getDate() - 1);
-        const communityBeforeUpdate = await models.ubiCommunityDailyState.findOne({
-            where: {
-                date,
-                communityId: community.id
-            }
-        });
+        const communityBeforeUpdate =
+            await models.ubiCommunityDailyState.findOne({
+                where: {
+                    date,
+                    communityId: community.id,
+                },
+            });
         const globalBeforeUpdate = await models.globalDailyState.findOne({
             where: {
                 date,
-            }
+            },
         });
 
         // remove community and beneficiaries
-        await models.community.update({
-            status: 'removed',
-            deletedAt: new Date()
-        }, {
-            where: {
-                publicId: community.publicId
+        await models.community.update(
+            {
+                status: 'removed',
+                deletedAt: new Date(),
+            },
+            {
+                where: {
+                    publicId: community.publicId,
+                },
             }
-        })
-        await models.beneficiary.update({
-            active: false
-        }, {
-            where: {
-                communityId: community.publicId
+        );
+        await models.beneficiary.update(
+            {
+                active: false,
+            },
+            {
+                where: {
+                    communityId: community.publicId,
+                },
             }
-        });
+        );
 
         // next day
         tk.travel(jumpToTomorrowMidnight());
@@ -1500,27 +1507,28 @@ describe('#calcuateGlobalMetrics()', () => {
         await calcuateGlobalMetrics();
         const newDate = new Date();
         newDate.setDate(newDate.getDate() - 1);
-        const communityAfterUpdate = await models.ubiCommunityDailyState.findOne({
-            where: {
-                date: newDate,
-                communityId: community.id
-            }
-        });
+        const communityAfterUpdate =
+            await models.ubiCommunityDailyState.findOne({
+                where: {
+                    date: newDate,
+                    communityId: community.id,
+                },
+            });
         const globalAfterUpdate = await models.globalDailyState.findOne({
             where: {
                 date: newDate,
-            }
+            },
         });
-        
+
         expect(communityBeforeUpdate!.beneficiaries).to.be.equal(1);
         expect(communityAfterUpdate!.beneficiaries).to.be.equal(-1);
         expect(globalBeforeUpdate!).to.include({
             beneficiaries: 1,
-            totalBeneficiaries: 1
+            totalBeneficiaries: 1,
         });
         expect(globalAfterUpdate!).to.include({
             beneficiaries: -1,
-            totalBeneficiaries: 0
+            totalBeneficiaries: 0,
         });
     });
 });
