@@ -89,6 +89,10 @@ module.exports = {
                 type: Sequelize.DATEONLY,
                 allowNull: false,
             },
+            proposal: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,

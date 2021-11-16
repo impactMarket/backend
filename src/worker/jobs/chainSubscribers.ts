@@ -1,4 +1,3 @@
-import { ManagerAttributes } from '@models/ubi/manager';
 import ImMetadataService from '@services/app/imMetadata';
 import BeneficiaryService from '@services/ubi/beneficiary';
 import ClaimsService from '@services/ubi/claim';
@@ -14,6 +13,7 @@ import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import CommunityAdminContractABI from '../../contracts/CommunityAdminABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
+import IPCTDelegateContractABI from '../../contracts/IPCTDelegate.json';
 import NewCommunityContractABI from '../../contracts/NewCommunityABI.json';
 import { models } from '../../database';
 
@@ -30,6 +30,7 @@ class ChainSubscribers {
     ifaceCommunity: ethers.utils.Interface;
     ifaceCommunityAdmin: ethers.utils.Interface;
     ifaceNewCommunity: ethers.utils.Interface;
+    ifaceIPCTDelegate: ethers.utils.Interface;
     allCommunitiesAddresses: string[];
     communities: Map<string, string>; // TODO: to be removed
     communitiesId: Map<string, number>;
@@ -53,6 +54,9 @@ class ChainSubscribers {
             NewCommunityContractABI
         );
         this.ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
+        this.ifaceIPCTDelegate = new ethers.utils.Interface(
+            IPCTDelegateContractABI
+        );
 
         this.beneficiariesInPublicCommunities =
             beneficiariesInPublicCommunities;
@@ -88,6 +92,9 @@ class ChainSubscribers {
                     'BeneficiaryParamsUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)'
                 ),
                 ethers.utils.id('Transfer(address,address,uint256)'),
+                ethers.utils.id(
+                    'ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)'
+                ),
             ],
         ];
         this.recover();
@@ -162,6 +169,8 @@ class ChainSubscribers {
             parsedLog = await this._processCommunityEvents(log);
         } else if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log);
+        } else if (log.address === config.DAOContractAddress) {
+            await this._processDAOEvents(log);
         } else {
             await this._processOtherEvents(log);
         }
@@ -542,6 +551,70 @@ class ChainSubscribers {
         return result;
     }
 
+    async _processDAOEvents(
+        log: ethers.providers.Log
+    ): Promise<ethers.utils.LogDescription | undefined> {
+        const parsedLog = this.ifaceIPCTDelegate.parseLog(log);
+        const result: ethers.utils.LogDescription | undefined = undefined;
+        if (parsedLog.name === 'ProposalCreated') {
+            const signatures: string[] = parsedLog.args[4];
+            const isProposalToCommunity = signatures
+                .map((e, i) => (e.indexOf('addCommunity') === 0 ? i : ''))
+                .filter(String);
+            if (isProposalToCommunity.length > 0) {
+                for (
+                    let index = 0;
+                    index < isProposalToCommunity.length;
+                    index++
+                ) {
+                    const calldatas = [
+                        ethers.utils.defaultAbiCoder.decode(
+                            [
+                                'address',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'address[]',
+                            ],
+                            parsedLog.args[5][isProposalToCommunity[index]]
+                        ),
+                    ];
+                    //
+                    const community = await models.community.findOne({
+                        attributes: ['id'],
+                        where: {
+                            requestByAddress: calldatas[0],
+                        },
+                        include: [
+                            {
+                                model: models.ubiCommunityContract,
+                                as: 'contract',
+                                where: {
+                                    claimAmount: calldatas[1],
+                                    maxClaim: calldatas[2],
+                                    baseInterval: calldatas[4],
+                                    incrementInterval: calldatas[5],
+                                },
+                            },
+                        ],
+                    });
+                    if (community) {
+                        await models.community.update(
+                            { proposal: parsedLog.args[0] },
+                            { where: { id: community.id } }
+                        );
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
     async _processOtherEvents(log: ethers.providers.Log): Promise<void> {
         try {
             const parsedLog = this.ifaceCommunity.parseLog(log);
@@ -658,7 +731,7 @@ class ChainSubscribers {
             }
         } catch (e) {
             // as this else catch events from anywhere, it might catch unwanted events
-            if (e.reason !== 'no matching event') {
+            if ((e as any).reason !== 'no matching event') {
                 Logger.error('no matching event ' + e);
             }
         }

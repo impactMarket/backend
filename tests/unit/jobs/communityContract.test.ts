@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
+import config from '../../../src/config';
 
 import { models } from '../../../src/database';
 import ImMetadataService from '../../../src/services/app/imMetadata';
@@ -94,6 +95,7 @@ describe('communityContract', () => {
             provider.getSigner(0)
         );
         cUSD = await cUSDFactory.deploy();
+        stub(config, 'cUSDContractAddress').value(cUSD.address);
 
         CommunityContractFactory = new ethers.ContractFactory(
             CommunityContractJSON.abi,

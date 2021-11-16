@@ -55,6 +55,7 @@ export interface CommunityAttributes {
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     review: 'pending' | 'in-progress' | 'halted' | 'closed';
     started: Date; // TODO: to be removed
+    proposal: number | null;
 
     // timestamps
     createdAt: Date;
@@ -109,6 +110,7 @@ export class Community extends Model<
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     public review!: 'pending' | 'in-progress' | 'halted' | 'closed';
     public started!: Date;
+    public proposal!: number | null;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -209,6 +211,10 @@ export function initializeCommunity(sequelize: Sequelize): void {
             },
             started: {
                 type: DataTypes.DATEONLY,
+                allowNull: false,
+            },
+            proposal: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
             createdAt: {

@@ -19,7 +19,7 @@ import { communityAddressesAndIds } from '../../fake/community';
 import { waitForStubCall } from '../../utils';
 import CommunityContractJSON from './Community.json';
 import cUSDContractJSON from './cUSD.json';
-import DAOContractJSON from './DAO.json';
+import DAOContractJSON from './IPCTDelegate.json';
 import config from '../../../src/config';
 
 describe('[jobs] subscribers', () => {
@@ -195,11 +195,12 @@ describe('[jobs] subscribers', () => {
 
         cUSD = await cUSDFactory.deploy();
 
-        DAOContract = (
-            await DAOFactory.deploy(cUSD.address, accounts[1], accounts[1])
-        ).connect(provider.getSigner(0));
+        DAOContract = (await DAOFactory.deploy()).connect(
+            provider.getSigner(0)
+        );
 
         stub(config, 'DAOContractAddress').value(DAOContract.address);
+        stub(config, 'cUSDContractAddress').value(cUSD.address);
 
         // // init event subscribers
         // subscribers = new ChainSubscribers(
