@@ -4,19 +4,23 @@ import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, restore } from 'sinon';
 
 import config from '../../../src/config';
-import { models } from '../../../src/database';
+import { models, Sequelize } from '../../../src/database';
+import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import ImMetadataService from '../../../src/services/app/imMetadata';
 import { ChainSubscribers } from '../../../src/worker/jobs/chainSubscribers';
+import CommunityFactory from '../../factories/community';
 import { waitForStubCall } from '../../utils';
+import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 import IPCTDelegateContractJSON from './IPCTDelegate.json';
 
 describe('DAO', () => {
+    let sequelize: Sequelize;
+    let communitiesRegistry: CommunityAttributes[];
     let provider: ethers.providers.Web3Provider;
     let subscribers: ChainSubscribers;
     let accounts: string[] = [];
     let IPCTDelegateContract: ethers.Contract;
     let communityUpdated: SinonStub<any, any>;
-    let findCommunity: SinonStub<any, any>;
     let IPCTDelegateFactory: ethers.ContractFactory;
     const communities = new Map<string, string>();
     const communitiesId = new Map<string, number>();
@@ -29,12 +33,11 @@ describe('DAO', () => {
     let getRecoverBlockStub: SinonStub<any, any>;
 
     before(async () => {
+        sequelize = sequelizeSetup();
         provider = new ethers.providers.Web3Provider(ganacheProvider);
         accounts = await provider.listAccounts();
         communityUpdated = stub(models.community, 'update');
         communityUpdated.returns(Promise.resolve([1, {} as any]));
-        findCommunity = stub(models.community, 'findOne');
-        findCommunity.returns(Promise.resolve({ id: 1 }));
         let lastBlock = 0;
         stub(ImMetadataService, 'setLastBlock').callsFake(async (v) => {
             lastBlock = v;
@@ -64,14 +67,44 @@ describe('DAO', () => {
             communitiesId,
             communitiesVisibility
         );
+
+        // two communities with same parameters on purpose
+        // only the second one should be used to add proposal
+        // as the only difference is the user address requesting
+        communitiesRegistry = await CommunityFactory([
+            {
+                requestByAddress: accounts[0],
+                contract: {
+                    baseInterval: 5 * 60,
+                    incrementInterval: 60,
+                    claimAmount: parseEther('1').toString(),
+                    maxClaim: parseEther('100').toString(),
+                    communityId: 0,
+                },
+            },
+            {
+                requestByAddress: accounts[1],
+                contract: {
+                    baseInterval: 5 * 60,
+                    incrementInterval: 60,
+                    claimAmount: parseEther('1').toString(),
+                    maxClaim: parseEther('100').toString(),
+                    communityId: 1,
+                },
+            },
+            {
+                requestByAddress: accounts[2],
+            },
+        ]);
     });
 
-    after(() => {
+    after(async () => {
         if (subscribers !== undefined) {
             subscribers.stop();
         }
         provider.removeAllListeners();
         restore();
+        await truncate(sequelize);
     });
 
     it('add proposal', async () => {
@@ -95,7 +128,7 @@ describe('DAO', () => {
                     'address[]',
                 ],
                 [
-                    accounts[0],
+                    accounts[1],
                     parseEther('1'),
                     parseEther('100'),
                     parseEther('0.01'),
@@ -124,7 +157,7 @@ describe('DAO', () => {
             },
             {
                 where: {
-                    id: 1,
+                    id: communitiesRegistry[1].id,
                 },
             }
         );

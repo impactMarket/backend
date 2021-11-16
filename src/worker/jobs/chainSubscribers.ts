@@ -587,18 +587,23 @@ class ChainSubscribers {
                     const community = await models.community.findOne({
                         attributes: ['id'],
                         where: {
-                            requestByAddress: calldatas[0],
-                        },
+                            requestByAddress: calldatas[0][0],
+                            '$contract.claimAmount$':
+                                calldatas[0][1].toString(),
+                            '$contract.maxClaim$': calldatas[0][2].toString(),
+                            '$contract.baseInterval$': parseInt(
+                                calldatas[0][4].toString(),
+                                10
+                            ),
+                            '$contract.incrementInterval$': parseInt(
+                                calldatas[0][5].toString(),
+                                10
+                            ),
+                        } as any,
                         include: [
                             {
                                 model: models.ubiCommunityContract,
                                 as: 'contract',
-                                where: {
-                                    claimAmount: calldatas[1],
-                                    maxClaim: calldatas[2],
-                                    baseInterval: calldatas[4],
-                                    incrementInterval: calldatas[5],
-                                },
                             },
                         ],
                     });

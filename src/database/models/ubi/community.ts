@@ -215,7 +215,7 @@ export function initializeCommunity(sequelize: Sequelize): void {
             },
             proposal: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: true,
             },
             createdAt: {
                 type: DataTypes.DATE,
