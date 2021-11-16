@@ -926,7 +926,7 @@ describe('community service', () => {
                 });
                 expect(result.rows[0].contract).to.include({
                     maxClaim: communities[0]!.contract!.maxClaim,
-                    claimAmount: communities[0]!.contract!.claimAmount
+                    claimAmount: communities[0]!.contract!.claimAmount,
                 });
             });
 
@@ -972,17 +972,20 @@ describe('community service', () => {
                     'id',
                     'language',
                     'name',
+                    'proposal',
                     'publicId',
                     'requestByAddress',
                     'review',
                     'started',
                     'status',
                     'updatedAt',
-                    'visibility'
+                    'visibility',
                 ]);
                 expect(result.rows[0].contract).to.have.deep.keys([
                     'claimAmount',
                     'maxClaim',
+                    'blocked',
+                    'decreaseStep',
                     'baseInterval',
                     'incrementInterval',
                     'communityId',
@@ -1006,13 +1009,14 @@ describe('community service', () => {
                     review: communities[0].review,
                     started: communities[0].started,
                     status: communities[0].status,
-                    visibility: communities[0].visibility
+                    visibility: communities[0].visibility,
                 });
                 expect(result.rows[0].contract).to.include({
                     maxClaim: communities[0]!.contract!.maxClaim,
                     claimAmount: communities[0]!.contract!.claimAmount,
                     baseInterval: communities[0]!.contract!.baseInterval,
-                    incrementInterval: communities[0]!.contract!.incrementInterval,
+                    incrementInterval:
+                        communities[0]!.contract!.incrementInterval,
                     communityId: communities[0]!.contract!.communityId,
                 });
             });
@@ -1051,15 +1055,18 @@ describe('community service', () => {
                     width: 0,
                     height: 0,
                     pixelRatio: 0,
-                })
-
-                await models.community.update({
-                    coverMediaId: media.id
-                }, {
-                    where: {
-                        id: communities[0].id
-                    }
                 });
+
+                await models.community.update(
+                    {
+                        coverMediaId: media.id,
+                    },
+                    {
+                        where: {
+                            id: communities[0].id,
+                        },
+                    }
+                );
 
                 const result = await CommunityService.list({
                     fields: 'id;publicId;contractAddress;contract.*;state.claimed;cover.*',
@@ -1082,19 +1089,17 @@ describe('community service', () => {
                     'createdAt',
                     'updatedAt',
                 ]);
-                expect(result.rows[0].state).to.have.deep.keys([
-                    'claimed',
-                ]);
+                expect(result.rows[0].state).to.have.deep.keys(['claimed']);
                 expect(result.rows[0].cover).to.have.deep.keys([
                     'id',
                     'url',
-                    'thumbnails'
+                    'thumbnails',
                 ]);
                 expect(result.rows[0].cover!.thumbnails![0]).to.have.deep.keys([
                     'url',
                     'width',
                     'height',
-                    'pixelRatio'
+                    'pixelRatio',
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,
@@ -1105,7 +1110,8 @@ describe('community service', () => {
                     maxClaim: communities[0]!.contract!.maxClaim,
                     claimAmount: communities[0]!.contract!.claimAmount,
                     baseInterval: communities[0]!.contract!.baseInterval,
-                    incrementInterval: communities[0]!.contract!.incrementInterval,
+                    incrementInterval:
+                        communities[0]!.contract!.incrementInterval,
                     communityId: communities[0]!.contract!.communityId,
                 });
             });
