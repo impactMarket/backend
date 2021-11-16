@@ -146,6 +146,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 communityId: communities[0].id,
                 date: match.any,
                 beneficiaries: 0,
+                totalClaimed: '4000000000000000000',
+                totalRaised: '15000000000000000000',
+                totalBeneficiaries: 0,
+                totalManagers: 0,
             });
         });
 
@@ -215,6 +219,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 claims: 0,
                 fundingRate: 80,
                 beneficiaries: 0,
+                totalClaimed: '4000000000000000000',
+                totalRaised: '15000000000000000000',
+                totalBeneficiaries: 0,
+                totalManagers: 0,
             });
         });
 
@@ -298,6 +306,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 claims: 2,
                 fundingRate: 80,
                 beneficiaries: 0,
+                totalClaimed: '6000000000000000000',
+                totalRaised: '20000000000000000000',
+                totalBeneficiaries: 0,
+                totalManagers: 0,
             });
         });
 
@@ -348,6 +360,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 communityId: communities[0].id,
                 date: match.any,
                 beneficiaries: 0,
+                totalClaimed: '6000000000000000000',
+                totalRaised: '15000000000000000000',
+                totalBeneficiaries: 0,
+                totalManagers: 0,
             });
         });
 
@@ -379,6 +395,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 communityId: communities[0].id,
                 date: match.any,
                 beneficiaries: 2,
+                totalClaimed: '0',
+                totalRaised: '10000000000000000000',
+                totalBeneficiaries: 0,
+                totalManagers: 0,
             });
         });
 
@@ -409,6 +429,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 communityId: communities[0].id,
                 date: match.any,
                 beneficiaries: 2,
+                totalClaimed: '0',
+                totalRaised: '5000000000000000000',
+                totalBeneficiaries: 0,
+                totalManagers: 0,
             });
         });
 
@@ -446,6 +470,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 communityId: communities[0].id,
                 date: match.any,
                 beneficiaries: 2,
+                totalClaimed: '2000000000000000000',
+                totalRaised: '10000000000000000000',
+                totalBeneficiaries: 0,
+                totalManagers: 0,
             });
         });
 
@@ -481,6 +509,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 communityId: communities[0].id,
                 date: match.any,
                 beneficiaries: 2,
+                totalClaimed: '1000000000000000000',
+                totalRaised: '10000000000000000000',
+                totalBeneficiaries: 0,
+                totalManagers: 0,
             });
         });
 
@@ -510,6 +542,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 communityId: communities[0].id,
                 date: match.any,
                 beneficiaries: 0,
+                totalClaimed: '0',
+                totalRaised: '5000000000000000000',
+                totalBeneficiaries: 0,
+                totalManagers: 0,
             });
         });
     });
@@ -627,6 +663,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 beneficiaries: -2,
                 communityId: communities[0].id,
                 date: match.any,
+                totalClaimed: '6000000000000000000',
+                totalRaised: '15000000000000000000',
+                totalBeneficiaries: 0,
+                totalManagers: 0,
             });
         });
     });

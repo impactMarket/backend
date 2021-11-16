@@ -17,6 +17,7 @@ import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { fetchData } from '@utils/dataFetching';
 import { notifyManagerAdded } from '@utils/util';
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import {
     Op,
@@ -27,6 +28,7 @@ import {
     OrderItem,
     WhereOptions,
     Includeable,
+    where,
 } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
@@ -41,6 +43,7 @@ import {
     ICommunityPendingDetails,
     IManagerDetailsManager,
 } from '../../types/endpoints';
+import { calcuateCommunitiesMetrics } from '../../worker/jobs/cron/community';
 import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
 import CommunityStateService from './communityState';
@@ -65,6 +68,8 @@ export default class CommunityService {
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static ubiBeneficiaryRegistry = models.ubiBeneficiaryRegistry;
+    public static beneficiary = models.beneficiary;
+    public static ubiClaim = models.ubiClaim;
     public static sequelize = sequelize;
 
     private static communityContentStorage = new CommunityContentStorage();
@@ -429,11 +434,11 @@ export default class CommunityService {
         if (query.fields) {
             const fields = fetchData(query.fields);
             include = this._generateInclude(fields);
-            attributes = fields.root 
+            attributes = fields.root
                 ? fields.root.length > 0
                     ? fields.root.filter((el: string) => !exclude.includes(el))
                     : { exclude }
-                : []
+                : [];
         } else {
             include = this._oldInclude(query.extended);
             attributes = {
@@ -727,12 +732,257 @@ export default class CommunityService {
     }
 
     public static async getState(communityId: number) {
+        const yesterdayDateOnly = new Date();
+        yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
+        yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
+        const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
+        // calcuateCommunitiesMetrics()
+        const todayDateOnly = new Date();
+        todayDateOnly.setUTCHours(0, 0, 0, 0);
+        const todayDate = todayDateOnly.toISOString().split('T')[0];
+
         const result = await this.ubiCommunityState.findOne({
             where: {
                 communityId,
             },
         });
-        return result !== null ? (result.toJSON() as UbiCommunityState) : null;
+
+        const previousDate = await this.ubiCommunityDailyState.findOne({
+            attributes: [
+                'totalClaimed',
+                'totalRaised',
+                'totalBeneficiaries',
+                'totalManagers',
+            ],
+            where: {
+                communityId,
+                date: yesterdayDate,
+            },
+        });
+
+        const communityClaimActivity: {
+            totalClaimed: string;
+        } = (await this.community.findOne({
+            attributes: [
+                [
+                    fn(
+                        'coalesce',
+                        fn('sum', col('beneficiaries->claim.amount')),
+                        '0'
+                    ),
+                    'totalClaimed',
+                ],
+            ],
+            include: [
+                {
+                    model: this.beneficiary,
+                    as: 'beneficiaries',
+                    attributes: [],
+                    required: false,
+                    include: [
+                        {
+                            model: this.ubiClaim,
+                            as: 'claim',
+                            attributes: [],
+                            required: false,
+                            where: {
+                                txAt: where(
+                                    fn(
+                                        'date',
+                                        col('beneficiaries->claim.txAt')
+                                    ),
+                                    '=',
+                                    todayDate
+                                ),
+                            },
+                        },
+                    ],
+                },
+            ],
+            where: {
+                id: communityId,
+            },
+            group: ['Community.id'],
+            raw: true,
+        })) as any;
+
+        const communityInflowActivity: {
+            totalRaised: string;
+        } = (await models.community.findOne({
+            attributes: [
+                [
+                    fn('sum', fn('coalesce', col('inflow.amount'), 0)),
+                    'totalRaised',
+                ],
+            ],
+            include: [
+                {
+                    model: models.inflow,
+                    as: 'inflow',
+                    attributes: [],
+                    required: false,
+                    where: {
+                        txAt: where(
+                            fn('date', col('inflow."txAt"')),
+                            '=',
+                            todayDate
+                        ),
+                    },
+                },
+            ],
+            where: {
+                id: communityId,
+            },
+            group: ['Community.id'],
+            raw: true,
+        })) as any;
+
+        const communityNewBeneficiaryActivity: {
+            beneficiaries: string;
+        } = (await models.community.findOne({
+            attributes: [
+                [fn('count', col('beneficiaries.address')), 'beneficiaries'],
+            ],
+            include: [
+                {
+                    model: models.beneficiary,
+                    as: 'beneficiaries',
+                    attributes: [],
+                    required: false,
+                    where: {
+                        txAt: where(
+                            fn('date', col('beneficiaries."txAt"')),
+                            '=',
+                            todayDate
+                        ),
+                    },
+                },
+            ],
+            where: {
+                id: communityId,
+            },
+            group: ['Community.id'],
+            raw: true,
+        })) as any;
+
+        const communityRemovedBeneficiaryActivity: {
+            beneficiaries: string;
+        } = (await models.community.findOne({
+            attributes: [
+                [fn('count', col('beneficiaries.address')), 'beneficiaries'],
+            ],
+            include: [
+                {
+                    model: models.beneficiary,
+                    as: 'beneficiaries',
+                    attributes: [],
+                    required: false,
+                    where: {
+                        updatedAt: where(
+                            fn('date', col('beneficiaries."updatedAt"')),
+                            '=',
+                            todayDate
+                        ),
+                        active: false,
+                    },
+                },
+            ],
+            where: {
+                id: communityId,
+            },
+            group: ['Community.id'],
+            raw: true,
+        })) as any;
+
+        const communityNewManagerActivity: {
+            managers: string;
+        } = (await models.community.findOne({
+            attributes: [[fn('count', col('managers.address')), 'managers']],
+            include: [
+                {
+                    model: models.manager,
+                    as: 'managers',
+                    attributes: [],
+                    required: false,
+                    where: {
+                        createdAt: where(
+                            fn('date', col('managers."createdAt"')),
+                            '=',
+                            todayDate
+                        ),
+                    },
+                },
+            ],
+            where: {
+                id: communityId,
+            },
+            group: ['Community.id'],
+            raw: true,
+        })) as any;
+
+        const communityRemovedManagerActivity: {
+            managers: string;
+        } = (await models.community.findOne({
+            attributes: [[fn('count', col('managers.address')), 'managers']],
+            include: [
+                {
+                    model: models.manager,
+                    as: 'managers',
+                    attributes: [],
+                    required: false,
+                    where: {
+                        updatedAt: where(
+                            fn('date', col('managers."updatedAt"')),
+                            '=',
+                            todayDate
+                        ),
+                        active: false,
+                    },
+                },
+            ],
+            where: {
+                id: communityId,
+            },
+            group: ['Community.id'],
+            raw: true,
+        })) as any;
+
+        if (result === null) return null;
+
+        const previousClaims = previousDate?.totalClaimed
+            ? new BigNumber(previousDate.totalClaimed)
+            : new BigNumber(0);
+        const todayClaims = communityClaimActivity?.totalClaimed
+            ? new BigNumber(communityClaimActivity.totalClaimed)
+            : new BigNumber(0);
+        const previousRaise = previousDate?.totalRaised
+            ? new BigNumber(previousDate.totalRaised)
+            : new BigNumber(0);
+        const todayRaise = communityInflowActivity?.totalRaised
+            ? new BigNumber(communityInflowActivity.totalRaised)
+            : new BigNumber(0);
+
+        const previousBeneficiaries = previousDate?.totalBeneficiaries
+            ? previousDate.totalBeneficiaries
+            : 0;
+        const todayBeneficiaries =
+            parseInt(communityNewBeneficiaryActivity.beneficiaries) -
+            parseInt(communityRemovedBeneficiaryActivity.beneficiaries);
+
+        const previousManagers = previousDate?.totalManagers
+            ? previousDate.totalManagers
+            : 0;
+        const todayManagers =
+            parseInt(communityNewManagerActivity.managers) -
+            parseInt(communityRemovedManagerActivity.managers);
+
+        return {
+            ...(result.toJSON() as UbiCommunityState),
+            claimed: previousClaims.plus(todayClaims).toString(),
+            raised: previousRaise.plus(todayRaise).toString(),
+            beneficiaries: previousBeneficiaries + todayBeneficiaries,
+            manager: previousManagers + todayManagers,
+        };
     }
 
     public static async getCampaign(communityId: number) {
@@ -1576,13 +1826,13 @@ export default class CommunityService {
                 as: 'cover',
                 duplicating: false,
                 include: [
-                      {
-                          attributes: ['url', 'width', 'height', 'pixelRatio'],
-                          model: this.appMediaThumbnail,
-                          as: 'thumbnails',
-                          separate: true,
-                      },
-                  ],
+                    {
+                        attributes: ['url', 'width', 'height', 'pixelRatio'],
+                        model: this.appMediaThumbnail,
+                        as: 'thumbnails',
+                        separate: true,
+                    },
+                ],
             });
         }
 

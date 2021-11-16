@@ -62,6 +62,13 @@ export function communityAssociation(sequelize: Sequelize) {
         as: 'beneficiaries',
     });
 
+    // used to query from the community with incude
+    sequelize.models.Community.hasMany(sequelize.models.Manager, {
+        foreignKey: 'communityId',
+        sourceKey: 'publicId',
+        as: 'managers',
+    });
+
     // used to query from the promoter with incude
     sequelize.models.UbiPromoterModel.belongsToMany(
         sequelize.models.Community,
