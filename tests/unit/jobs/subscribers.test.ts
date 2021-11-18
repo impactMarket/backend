@@ -550,7 +550,7 @@ describe('[jobs] subscribers', () => {
             .connect(provider.getSigner(0))
             .testFakeFundAddress(accounts[2]);
         await cUSD
-            .connect(provider.getSigner(0))
+            .connect(provider.getSigner(2))
             .transfer(communityContract.address, '2000000000000000000');
         await waitForStubCall(inflowAdd, 1);
         assert.callCount(inflowAdd, 1);
