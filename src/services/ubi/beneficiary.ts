@@ -3,6 +3,10 @@ import {
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
 } from '@interfaces/ubi/ubiBeneficiaryRegistry';
+import {
+    UbiBeneficiarySurvey,
+    UbiBeneficiarySurveyCreation,
+} from '@interfaces/ubi/ubiBeneficiarySurvey';
 import { UbiBeneficiaryTransactionCreation } from '@interfaces/ubi/ubiBeneficiaryTransaction';
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
@@ -12,7 +16,6 @@ import { isAddress } from '@utils/util';
 import { ethers } from 'ethers';
 import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
-import { UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation } from '@interfaces/ubi/ubiBeneficiarySurvey';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
@@ -51,6 +54,17 @@ export default class BeneficiaryService {
                 tx,
                 txAt,
             });
+            const maxClaim: any = literal(`"maxClaim" - "decreaseStep"`);
+            await models.ubiCommunityContract.update(
+                {
+                    maxClaim,
+                },
+                {
+                    where: {
+                        communityId: community!.id,
+                    },
+                }
+            );
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
@@ -86,6 +100,17 @@ export default class BeneficiaryService {
             tx,
             txAt,
         });
+        const maxClaim: any = literal(`"maxClaim" + "decreaseStep"`);
+        await models.ubiCommunityContract.update(
+            {
+                maxClaim,
+            },
+            {
+                where: {
+                    communityId: community!.id,
+                },
+            }
+        );
     }
 
     public static async findByAddress(
@@ -593,18 +618,21 @@ export default class BeneficiaryService {
         }
     }
 
-    public static async saveSurvery(address: string, survey: UbiBeneficiarySurveyCreation[]): Promise<UbiBeneficiarySurvey[]> {
+    public static async saveSurvery(
+        address: string,
+        survey: UbiBeneficiarySurveyCreation[]
+    ): Promise<UbiBeneficiarySurvey[]> {
         try {
             const user = await models.appUser.findOne({
                 attributes: ['id'],
-                where: { address }
+                where: { address },
             });
 
-            if(!user) {
+            if (!user) {
                 throw new BaseError('USER_NOT_FOUND', 'User not found');
             }
 
-            survey.forEach(element => {
+            survey.forEach((element) => {
                 element.userId = user.id;
             });
 

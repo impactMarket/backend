@@ -5,6 +5,7 @@ import { assert, SinonStub, stub, match, restore } from 'sinon';
 import config from '../../../src/config';
 import { models } from '../../../src/database';
 import ImMetadataService from '../../../src/services/app/imMetadata';
+import ManagerService from '../../../src/services/ubi/managers';
 import { ChainSubscribers } from '../../../src/worker/jobs/chainSubscribers';
 import { waitForStubCall } from '../../utils';
 import CommunityAdminContractJSON from './CommunityAdmin.json';
@@ -40,6 +41,7 @@ describe('communityAdmin', () => {
         beneficiaryUpdated = stub(models.beneficiary, 'update');
         let lastBlock = 0;
 
+        stub(ManagerService, 'add').returns(Promise.resolve(true));
         stub(ImMetadataService, 'setLastBlock').callsFake(async (v) => {
             lastBlock = v;
         });
@@ -86,7 +88,7 @@ describe('communityAdmin', () => {
             subscribers.stop();
         }
         provider.removeAllListeners();
-        restore()
+        restore();
     });
 
     afterEach(() => {
@@ -134,13 +136,11 @@ describe('communityAdmin', () => {
         const txResult = await newCommunityAddress.wait();
         await waitForStubCall(communityUpdated, 1);
         communityUpdated.reset();
-        
+
         const contractAddress = txResult.events[0].args[0];
         const removedCommunity = await CommunityAdminContract.connect(
             provider.getSigner(0)
-        ).removeCommunity(
-            contractAddress
-        );
+        ).removeCommunity(contractAddress);
         await removedCommunity.wait();
 
         await waitForStubCall(communityUpdated, 1);
@@ -149,7 +149,7 @@ describe('communityAdmin', () => {
             communityUpdated.getCall(0),
             {
                 status: 'removed',
-                deletedAt: match.any
+                deletedAt: match.any,
             },
             {
                 where: {
@@ -190,10 +190,7 @@ describe('communityAdmin', () => {
         const previousCommunityAddress = txResult.events[0].args[0];
         const migratedCommunity = await CommunityAdminContract.connect(
             provider.getSigner(0)
-        ).migrateCommunity(
-            accounts[1],
-            previousCommunityAddress,
-        );
+        ).migrateCommunity(accounts[1], previousCommunityAddress);
         const migratedCommunityTxResult = await migratedCommunity.wait();
         const contractAddress = migratedCommunityTxResult.events[0].args[1];
 
