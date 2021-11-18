@@ -77,7 +77,8 @@ describe('beneficiary transactions', () => {
         tk.travel(jumpToTomorrowMidnight());
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const yesterday = new Date(today.getDate() - 1);
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
         // test
 
         await cleanupNetworkRewards();
@@ -85,9 +86,6 @@ describe('beneficiary transactions', () => {
         assert.callCount(beneficiaryTransactionDestroy, 1);
         assert.calledWith(beneficiaryTransactionDestroy.getCall(0), {
             where: {
-                createdAt: {
-                    [Op.between]: [yesterday, today],
-                },
                 withAddress: {
                     [Op.in]: [tree1.withAddress, tree2.withAddress],
                 },

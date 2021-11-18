@@ -9,7 +9,8 @@ export async function cleanupNetworkRewards() {
     // get all "withAddress" for a given day
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const yesterday = new Date(today.getDate() - 1);
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
     const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     let interactedAddress: { rows: any[]; count: number } = {
         rows: [],
@@ -38,9 +39,6 @@ export async function cleanupNetworkRewards() {
         // remove merkle trees
         await models.ubiBeneficiaryTransaction.destroy({
             where: {
-                txAt: {
-                    [Op.between]: [yesterday, today],
-                },
                 withAddress: {
                     [Op.in]: merkleTrees,
                 },
