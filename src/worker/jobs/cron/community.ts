@@ -95,9 +95,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             {
                 model: models.ubiCommunityState,
                 as: 'state',
-                // where: {
-                //     raised: { [Op.ne]: 0 },
-                // },
+            },
+            {
+                attributes: [],
+                model: models.inflow,
+                as: 'inflow',
+                required: true,
             },
             {
                 model: models.ubiCommunityDailyMetrics,
@@ -635,14 +638,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 date: yesterday,
                 totalClaimed: totalClaimed.toString(),
                 totalRaised: totalRaised.toString(),
-                totalBeneficiaries: community.activity.totalBeneficiaries
-                    ? community.activity.totalBeneficiaries +
-                      community.activity.beneficiaries
-                    : 0,
-                totalManagers: community.activity.totalManagers
-                    ? community.activity.totalManagers +
-                      community.activity.managers
-                    : 0,
+                totalBeneficiaries: community.activity.totalBeneficiaries + community.activity.beneficiaries,
+                totalManagers: community.activity.totalManagers + community.activity.managers,
             });
         }
         // if no activity, do not calculate

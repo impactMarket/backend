@@ -322,7 +322,7 @@ export default class CommunityService {
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
-
+        
         if (query.orderBy) {
             const orders = query.orderBy.split(';');
 
@@ -367,13 +367,13 @@ export default class CommunityService {
                         // this requires extended
                         query.extended = 'true';
                         extendedWhere = {
-                            '$state.beneficiaries$': {
+                            '$"dailyState"."totalBeneficiaries"$': {
                                 [Op.not]: 0,
                             },
                         } as any;
                         orderOption.push([
                             literal(
-                                '(state.raised - state.claimed) / metrics."ubiRate" / state.beneficiaries'
+                                '("dailyState"."totalRaised" - "dailyState"."totalClaimed") / metrics."ubiRate" / "dailyState"."totalBeneficiaries"'
                             ),
                             orderType ? orderType : 'ASC',
                         ]);
@@ -387,14 +387,14 @@ export default class CommunityService {
                         break;
                     default:
                         orderOption.push([
-                            literal('state.beneficiaries'),
+                            literal('"dailyState"."totalBeneficiaries"'),
                             orderType ? orderType : 'DESC',
                         ]);
                         break;
                 }
             });
         } else {
-            orderOption.push([literal('state.beneficiaries'), 'DESC']);
+            orderOption.push([literal('"dailyState"."totalBeneficiaries"'), 'DESC']);
         }
 
         if (query.filter === 'featured') {
@@ -433,7 +433,7 @@ export default class CommunityService {
         const exclude = ['email'];
         if (query.fields) {
             const fields = fetchData(query.fields);
-            include = this._generateInclude(fields);
+            include = this._generateInclude(fields, query.extended);
             attributes = fields.root
                 ? fields.root.length > 0
                     ? fields.root.filter((el: string) => !exclude.includes(el))
@@ -736,7 +736,6 @@ export default class CommunityService {
         yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
         yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
         const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
-        // calcuateCommunitiesMetrics()
         const todayDateOnly = new Date();
         todayDateOnly.setUTCHours(0, 0, 0, 0);
         const todayDate = todayDateOnly.toISOString().split('T')[0];
@@ -1799,7 +1798,7 @@ export default class CommunityService {
         };
     }
 
-    private static _generateInclude(fields: any): Includeable[] {
+    private static _generateInclude(fields: any, extended?: string): Includeable[] {
         const extendedInclude: Includeable[] = [];
         if (fields.suspect) {
             extendedInclude.push({
@@ -1845,10 +1844,51 @@ export default class CommunityService {
             });
         }
 
-        if (fields.metrics) {
+        const stateExclude = ['id', 'communityId'];
+
+        const yesterdayDateOnly = new Date();
+        yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
+        yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
+        const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
+
+        const dailyState = fields.dailyState
+        ? fields.dailyState.length > 0
+            ? fields.dailyState
+            : { exclude: stateExclude }
+        : [];
+        extendedInclude.push({
+            attributes: dailyState,
+            model: this.ubiCommunityDailyState,
+            as: 'dailyState',
+            duplicating: false,
+            where: {
+                date: yesterdayDate
+            },
+            required: false,
+        });
+
+        const stateAttributes = fields.state
+            ? fields.state.length > 0
+                ? fields.state.filter(
+                      (el: string) => !stateExclude.includes(el)
+                  )
+                : { exclude: stateExclude }
+            : [];
+        extendedInclude.push({
+            model: this.ubiCommunityState,
+            attributes: stateAttributes,
+            as: 'state',
+        });
+
+        if (extended || fields.metrics) {
+            const metricsAttributes = fields.metrics
+            ? fields.metrics.length > 0
+                ? fields.metrics
+                : undefined
+            : [];
+
             extendedInclude.push({
-                attributes:
-                    fields.metrics.length > 0 ? fields.metrics : undefined,
+                attributes: metricsAttributes,
                 model: this.ubiCommunityDailyMetrics,
                 required: false,
                 duplicating: false,
@@ -1863,25 +1903,15 @@ export default class CommunityService {
             });
         }
 
-        const stateExclude = ['id', 'communityId'];
-        const stateAttributes = fields.state
-            ? fields.state.length > 0
-                ? fields.state.filter(
-                      (el: string) => !stateExclude.includes(el)
-                  )
-                : { exclude: stateExclude }
-            : [];
-        extendedInclude.push({
-            model: this.ubiCommunityState,
-            attributes: stateAttributes,
-            as: 'state',
-        });
-
         return extendedInclude;
     }
 
     private static _oldInclude(extended?: string): Includeable[] {
         const extendedInclude: Includeable[] = [];
+        const yesterdayDateOnly = new Date();
+        yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
+        yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
+        const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
 
         // TODO: deprecated in mobile@1.1.6
         if (extended) {
@@ -1922,11 +1952,6 @@ export default class CommunityService {
                 },
             },
             {
-                model: this.ubiCommunityState,
-                attributes: { exclude: ['id', 'communityId'] },
-                as: 'state',
-            },
-            {
                 model: this.appMediaContent,
                 as: 'cover',
                 duplicating: false,
@@ -1937,6 +1962,22 @@ export default class CommunityService {
                         separate: true,
                     },
                 ],
+            },
+            {
+                attributes: { exclude: ['id', 'communityId'] },
+                model: this.ubiCommunityDailyState,
+                as: 'dailyState',
+                duplicating: false,
+                where: {
+                    date: yesterdayDate
+                },
+                required: false,
+            },
+            // TODO: deprecated, use dailyState
+            {
+                model: this.ubiCommunityState,
+                attributes: { exclude: ['id', 'communityId'] },
+                as: 'state',
             },
             ...extendedInclude,
         ] as Includeable[];

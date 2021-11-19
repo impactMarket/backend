@@ -148,7 +148,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 beneficiaries: 0,
                 totalClaimed: '4000000000000000000',
                 totalRaised: '15000000000000000000',
-                totalBeneficiaries: 0,
+                totalBeneficiaries: 2,
                 totalManagers: 0,
             });
         });
@@ -221,7 +221,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 beneficiaries: 0,
                 totalClaimed: '4000000000000000000',
                 totalRaised: '15000000000000000000',
-                totalBeneficiaries: 0,
+                totalBeneficiaries: 2,
                 totalManagers: 0,
             });
         });
@@ -308,7 +308,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 beneficiaries: 0,
                 totalClaimed: '6000000000000000000',
                 totalRaised: '20000000000000000000',
-                totalBeneficiaries: 0,
+                totalBeneficiaries: 2,
                 totalManagers: 0,
             });
         });
@@ -362,7 +362,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 beneficiaries: 0,
                 totalClaimed: '6000000000000000000',
                 totalRaised: '15000000000000000000',
-                totalBeneficiaries: 0,
+                totalBeneficiaries: 2,
                 totalManagers: 0,
             });
         });
@@ -397,7 +397,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 beneficiaries: 2,
                 totalClaimed: '0',
                 totalRaised: '10000000000000000000',
-                totalBeneficiaries: 0,
+                totalBeneficiaries: 2,
                 totalManagers: 0,
             });
         });
@@ -431,7 +431,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 beneficiaries: 2,
                 totalClaimed: '0',
                 totalRaised: '5000000000000000000',
-                totalBeneficiaries: 0,
+                totalBeneficiaries: 2,
                 totalManagers: 0,
             });
         });
@@ -472,7 +472,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 beneficiaries: 2,
                 totalClaimed: '2000000000000000000',
                 totalRaised: '10000000000000000000',
-                totalBeneficiaries: 0,
+                totalBeneficiaries: 2,
                 totalManagers: 0,
             });
         });
@@ -511,7 +511,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 beneficiaries: 2,
                 totalClaimed: '1000000000000000000',
                 totalRaised: '10000000000000000000',
-                totalBeneficiaries: 0,
+                totalBeneficiaries: 2,
                 totalManagers: 0,
             });
         });
@@ -665,7 +665,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 date: match.any,
                 totalClaimed: '6000000000000000000',
                 totalRaised: '15000000000000000000',
-                totalBeneficiaries: 0,
+                totalBeneficiaries: 2,
                 totalManagers: 0,
             });
         });
