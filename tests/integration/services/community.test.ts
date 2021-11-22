@@ -987,7 +987,7 @@ describe('community service', () => {
                     'incrementInterval',
                     'communityId',
                     'blocked',
-                    'decresaseStep',
+                    'decreaseStep',
                     'createdAt',
                     'updatedAt',
                 ]);
@@ -1086,7 +1086,7 @@ describe('community service', () => {
                     'incrementInterval',
                     'communityId',
                     'blocked',
-                    'decresaseStep',
+                    'decreaseStep',
                     'createdAt',
                     'updatedAt',
                 ]);
