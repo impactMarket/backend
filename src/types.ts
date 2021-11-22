@@ -95,6 +95,8 @@ export interface ICommunityContractParams {
     maxClaim: string;
     baseInterval: number;
     incrementInterval: number;
+    blocked?: boolean;
+    decreaseStep?: string;
 }
 
 export interface ICommunityInfoBeneficiary {

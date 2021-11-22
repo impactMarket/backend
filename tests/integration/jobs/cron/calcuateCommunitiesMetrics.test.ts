@@ -88,7 +88,7 @@ describe('calcuateCommunitiesMetrics', () => {
             // this two has to come first!
             await truncate(sequelize, 'Inflow');
             await truncate(sequelize, 'UbiClaimModel');
-            await truncate(sequelize, 'BeneficiaryTransaction');
+            await truncate(sequelize, 'UbiBeneficiaryTransactionModel');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'AppUserModel');
             await truncate(sequelize);
@@ -117,7 +117,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 amount: '500000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                toBeneficiary: beneficiaries[1],
+                withAddress: beneficiaries[1].address,
                 amount: '1000000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[1], false, {
@@ -176,7 +176,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 amount: '500000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                toBeneficiary: beneficiaries[1],
+                withAddress: beneficiaries[1].address,
                 amount: '1000000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[1], false, {
@@ -249,7 +249,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 amount: '500000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                toBeneficiary: beneficiaries[1],
+                withAddress: beneficiaries[1].address,
                 amount: '1000000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[1], false, {
@@ -279,7 +279,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 amount: '500000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                toBeneficiary: beneficiaries[1],
+                withAddress: beneficiaries[1].address,
                 amount: '1000000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[1], false, {
@@ -624,7 +624,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 amount: '500000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                toBeneficiary: beneficiaries[1],
+                withAddress: beneficiaries[1].address,
                 amount: '1000000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[1], false, {
@@ -640,7 +640,7 @@ describe('calcuateCommunitiesMetrics', () => {
         after(async () => {
             await truncate(sequelize, 'Inflow');
             await truncate(sequelize, 'UbiClaimModel');
-            await truncate(sequelize, 'BeneficiaryTransaction');
+            await truncate(sequelize, 'UbiBeneficiaryTransactionModel');
             await truncate(sequelize, 'Beneficiary');
             await truncate(sequelize, 'AppUserModel');
             await truncate(sequelize, 'Community');

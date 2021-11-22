@@ -33,6 +33,8 @@ export interface UbiCommunityContract {
     maxClaim: string;
     baseInterval: number;
     incrementInterval: number;
+    blocked?: boolean;
+    decreaseStep?: string;
 
     // timestamps
     createdAt: Date;
@@ -45,4 +47,6 @@ export interface UbiCommunityContractCreation {
     maxClaim: string;
     baseInterval: number;
     incrementInterval: number;
+    blocked?: boolean;
+    decreaseStep?: string;
 }

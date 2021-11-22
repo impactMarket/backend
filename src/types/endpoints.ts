@@ -257,7 +257,7 @@ export type IBeneficiaryActivities = {
     id: number;
     type: string;
     tx: string;
-    date: Date;
+    txAt: Date;
     withAddress?: string;
     isFromBeneficiary?: boolean;
     amount?: string;

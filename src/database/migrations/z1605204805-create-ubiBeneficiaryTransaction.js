@@ -3,7 +3,7 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     up(queryInterface, Sequelize) {
-        return queryInterface.createTable('beneficiarytransaction', {
+        return queryInterface.createTable('ubi_beneficiary_transaction', {
             id: {
                 type: Sequelize.INTEGER,
                 autoIncrement: true,
@@ -31,21 +31,13 @@ module.exports = {
                 unique: true,
                 allowNull: false,
             },
-            date: {
-                type: Sequelize.DATEONLY,
+            txAt: {
                 allowNull: false,
+                type: Sequelize.DATE,
             },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE
-            },
-            updatedAt: {
-                allowNull: false,
-                type: Sequelize.DATE
-            }
         });
     },
     down: (queryInterface) => {
-        return queryInterface.dropTable('beneficiarytransaction');
+        return queryInterface.dropTable('ubi_beneficiary_transaction');
     }
 };

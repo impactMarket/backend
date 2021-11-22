@@ -31,6 +31,16 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
+            decreaseStep: {
+                type: Sequelize.DECIMAL(22), // max 9,999 - plus 18 decimals
+                allowNull: false,
+                defaultValue: 0,
+            },
+            blocked: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,

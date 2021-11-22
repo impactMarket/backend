@@ -112,7 +112,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             amount: '25',
             isFromBeneficiary: true,
             tx,
-            date: new Date(), // date only
+            txAt: new Date(),
         });
 
         await ClaimsService.add({
@@ -219,7 +219,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         }))!.toJSON();
 
-        const transactions = (await models.beneficiaryTransaction.findOne({
+        const transactions = (await models.ubiBeneficiaryTransaction.findOne({
             where: {
                 beneficiary: users[1].address,
             },

@@ -3,8 +3,12 @@ import {
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
 } from '@interfaces/ubi/ubiBeneficiaryRegistry';
+import {
+    UbiBeneficiarySurvey,
+    UbiBeneficiarySurveyCreation,
+} from '@interfaces/ubi/ubiBeneficiarySurvey';
+import { UbiBeneficiaryTransactionCreation } from '@interfaces/ubi/ubiBeneficiaryTransaction';
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
-import { BeneficiaryTransactionCreationAttributes } from '@models/ubi/beneficiaryTransaction';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';
@@ -12,7 +16,6 @@ import { isAddress } from '@utils/util';
 import { ethers } from 'ethers';
 import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
-import { UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation } from '@interfaces/ubi/ubiBeneficiarySurvey';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
@@ -51,6 +54,17 @@ export default class BeneficiaryService {
                 tx,
                 txAt,
             });
+            const maxClaim: any = literal(`"maxClaim" - "decreaseStep"`);
+            await models.ubiCommunityContract.update(
+                {
+                    maxClaim,
+                },
+                {
+                    where: {
+                        communityId: community!.id,
+                    },
+                }
+            );
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
@@ -86,6 +100,17 @@ export default class BeneficiaryService {
             tx,
             txAt,
         });
+        const maxClaim: any = literal(`"maxClaim" + "decreaseStep"`);
+        await models.ubiCommunityContract.update(
+            {
+                maxClaim,
+            },
+            {
+                where: {
+                    communityId: community!.id,
+                },
+            }
+        );
     }
 
     public static async findByAddress(
@@ -336,14 +361,14 @@ export default class BeneficiaryService {
     }
 
     public static async addTransaction(
-        beneficiaryTx: BeneficiaryTransactionCreationAttributes
+        beneficiaryTx: UbiBeneficiaryTransactionCreation
     ): Promise<void> {
         try {
-            await models.beneficiaryTransaction.create(beneficiaryTx);
+            await models.ubiBeneficiaryTransaction.create(beneficiaryTx);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
-                    'Error inserting new BeneficiaryTransaction. Data = ' +
+                    'Error inserting new UbiBeneficiaryTransaction. Data = ' +
                         JSON.stringify(beneficiaryTx)
                 );
                 Logger.error(e);
@@ -359,7 +384,7 @@ export default class BeneficiaryService {
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
-                    'Error inserting new BeneficiaryTransaction. Data = ' +
+                    'Error inserting new UbiBeneficiaryTransaction. Data = ' +
                         JSON.stringify(registry)
                 );
                 Logger.error(e);
@@ -465,7 +490,7 @@ export default class BeneficiaryService {
             id: claim.id,
             type: 'claim',
             tx: claim.tx,
-            date: claim.txAt,
+            txAt: claim.txAt,
             amount: claim.amount,
         }));
     }
@@ -496,7 +521,7 @@ export default class BeneficiaryService {
             id: el.id,
             type: 'registry',
             tx: el.tx,
-            date: el.txAt,
+            txAt: el.txAt,
             withAddress: el.from,
             username: el['user'] ? el['user']['username'] : null,
             activity: el.activity,
@@ -509,7 +534,7 @@ export default class BeneficiaryService {
         offset: number,
         limit: number
     ): Promise<IBeneficiaryActivities[]> {
-        const transactions = await models.beneficiaryTransaction.findAll({
+        const transactions = await models.ubiBeneficiaryTransaction.findAll({
             where: {
                 beneficiary: beneficiaryAddress,
             },
@@ -520,7 +545,7 @@ export default class BeneficiaryService {
                     as: 'user',
                 },
             ],
-            order: [['createdAt', 'DESC']],
+            order: [['txAt', 'DESC']],
             limit,
             offset,
         });
@@ -528,7 +553,7 @@ export default class BeneficiaryService {
             id: transaction.id,
             type: 'transaction',
             tx: transaction.tx,
-            date: transaction.createdAt,
+            txAt: transaction.txAt,
             withAddress: transaction.withAddress,
             username: transaction['user']
                 ? transaction['user']['username']
@@ -548,8 +573,8 @@ export default class BeneficiaryService {
             FROM ubi_beneficiary_registry AS "registry" LEFT JOIN "app_user" AS "user" ON "registry"."from" = "user"."address"
             WHERE "registry"."address" = :beneficiaryAddress AND "registry"."communityId" = :communityId
             UNION ALL
-            SELECT "transaction".id, 'transaction' AS type, tx, "transaction"."createdAt" AS date, "withAddress", null as activity, "isFromBeneficiary", amount, "user"."username"
-            FROM beneficiarytransaction AS "transaction" LEFT JOIN "app_user" AS "user" ON "transaction"."withAddress" = "user"."address"
+            SELECT "transaction".id, 'transaction' AS type, tx, "transaction"."txAt" AS date, "withAddress", null as activity, "isFromBeneficiary", amount, "user"."username"
+            FROM ubi_beneficiary_transaction AS "transaction" LEFT JOIN "app_user" AS "user" ON "transaction"."withAddress" = "user"."address"
             WHERE "transaction"."beneficiary" = :beneficiaryAddress 
             UNION ALL
             SELECT id, 'claim' AS type, tx, "txAt" AS date, null AS "withAddress", null as activity, null AS "isFromBeneficiary", amount, null AS "username"
@@ -593,18 +618,21 @@ export default class BeneficiaryService {
         }
     }
 
-    public static async saveSurvery(address: string, survey: UbiBeneficiarySurveyCreation[]): Promise<UbiBeneficiarySurvey[]> {
+    public static async saveSurvery(
+        address: string,
+        survey: UbiBeneficiarySurveyCreation[]
+    ): Promise<UbiBeneficiarySurvey[]> {
         try {
             const user = await models.appUser.findOne({
                 attributes: ['id'],
-                where: { address }
+                where: { address },
             });
 
-            if(!user) {
+            if (!user) {
                 throw new BaseError('USER_NOT_FOUND', 'User not found');
             }
 
-            survey.forEach(element => {
+            survey.forEach((element) => {
                 element.userId = user.id;
             });
 

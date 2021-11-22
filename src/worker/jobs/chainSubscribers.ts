@@ -1,3 +1,4 @@
+import { ManagerAttributes } from '@models/ubi/manager';
 import ImMetadataService from '@services/app/imMetadata';
 import BeneficiaryService from '@services/ubi/beneficiary';
 import ClaimsService from '@services/ubi/claim';
@@ -13,6 +14,7 @@ import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import CommunityAdminContractABI from '../../contracts/CommunityAdminABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
+import NewCommunityContractABI from '../../contracts/NewCommunityABI.json';
 import { models } from '../../database';
 
 /* istanbul ignore next */
@@ -27,6 +29,7 @@ class ChainSubscribers {
     ifaceERC20: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
     ifaceCommunityAdmin: ethers.utils.Interface;
+    ifaceNewCommunity: ethers.utils.Interface;
     allCommunitiesAddresses: string[];
     communities: Map<string, string>; // TODO: to be removed
     communitiesId: Map<string, number>;
@@ -46,6 +49,9 @@ class ChainSubscribers {
         this.ifaceCommunityAdmin = new ethers.utils.Interface(
             CommunityAdminContractABI
         );
+        this.ifaceNewCommunity = new ethers.utils.Interface(
+            NewCommunityContractABI
+        );
         this.ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
 
         this.beneficiariesInPublicCommunities =
@@ -62,13 +68,24 @@ class ChainSubscribers {
                 ethers.utils.id('CommunityRemoved(address)'),
                 ethers.utils.id('CommunityMigrated(address,address,address)'),
                 ethers.utils.id('ManagerAdded(address)'),
+                ethers.utils.id('ManagerAdded(address,address)'),
                 ethers.utils.id('ManagerRemoved(address)'),
+                ethers.utils.id('ManagerRemoved(address,address)'),
+                ethers.utils.id('ManagerAddedToBlockList(address)'),
+                ethers.utils.id('ManagerRemovedFromBlockList(address)'),
                 ethers.utils.id('BeneficiaryAdded(address)'),
+                ethers.utils.id('BeneficiaryAdded(address,address)'),
                 // ethers.utils.id('BeneficiaryLocked(address)'),
                 ethers.utils.id('BeneficiaryRemoved(address)'),
+                ethers.utils.id('BeneficiaryRemoved(address,address)'),
                 ethers.utils.id('BeneficiaryClaim(address,uint256)'),
                 ethers.utils.id(
                     'CommunityEdited(uint256,uint256,uint256,uint256)'
+                ),
+                ethers.utils.id('CommunityLocked(address)'),
+                ethers.utils.id('CommunityUnlocked(address)'),
+                ethers.utils.id(
+                    'BeneficiaryParamsUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)'
                 ),
                 ethers.utils.id('Transfer(address,address,uint256)'),
             ],
@@ -202,14 +219,16 @@ class ChainSubscribers {
                 ? parsedLog.args[1]
                 : parsedLog.args[0];
             // save to table to calculate txs and volume
-            await BeneficiaryService.addTransaction({
-                beneficiary: beneficiaryAddress,
-                withAddress,
-                amount: parsedLog.args[2].toString(),
-                isFromBeneficiary,
-                tx: log.transactionHash,
-                date: new Date(), // date only
-            }).catch(asyncTxsFailure);
+            getBlockTime(log.blockHash).then((txAt) =>
+                BeneficiaryService.addTransaction({
+                    beneficiary: beneficiaryAddress,
+                    withAddress,
+                    amount: parsedLog.args[2].toString(),
+                    isFromBeneficiary,
+                    tx: log.transactionHash,
+                    txAt,
+                }).catch(asyncTxsFailure)
+            );
             result = parsedLog;
         }
         return result;
@@ -218,10 +237,30 @@ class ChainSubscribers {
     async _processCommunityEvents(
         log: ethers.providers.Log
     ): Promise<ethers.utils.LogDescription | undefined> {
-        const parsedLog = this.ifaceCommunity.parseLog(log);
+        let parsedLog: ethers.utils.LogDescription;
         let result: ethers.utils.LogDescription | undefined = undefined;
+        try {
+            parsedLog = this.ifaceNewCommunity.parseLog(log);
+        } catch (_) {
+            // compatible with older versions
+            parsedLog = this.ifaceCommunity.parseLog(log);
+        }
+
         if (parsedLog.name === 'BeneficiaryAdded') {
-            const beneficiaryAddress = parsedLog.args[0];
+            let beneficiaryAddress = '',
+                managerAddress = '';
+
+            if (parsedLog.args.length > 1) {
+                beneficiaryAddress = parsedLog.args[1];
+                managerAddress = parsedLog.args[0];
+            } else {
+                beneficiaryAddress = parsedLog.args[0];
+                const txResponse = await this.provider.getTransaction(
+                    log.transactionHash
+                );
+                managerAddress = txResponse.from;
+            }
+
             const communityAddress = log.address;
             let communityPublicId = this.communities.get(communityAddress);
             if (communityPublicId === undefined) {
@@ -253,12 +292,9 @@ class ChainSubscribers {
             notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
             try {
                 const txAt = await getBlockTime(log.blockHash);
-                const txResponse = await this.provider.getTransaction(
-                    log.transactionHash
-                );
                 await BeneficiaryService.add(
                     beneficiaryAddress,
-                    txResponse.from,
+                    managerAddress,
                     communityPublicId!,
                     log.transactionHash,
                     txAt
@@ -266,17 +302,29 @@ class ChainSubscribers {
             } catch (e) {}
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryRemoved') {
-            const beneficiaryAddress = parsedLog.args[0];
             const communityAddress = log.address;
-            try {
-                const txAt = await getBlockTime(log.blockHash);
+            let beneficiaryAddress = '',
+                managerAddress = '';
+
+            if (parsedLog.args.length > 1) {
+                beneficiaryAddress = parsedLog.args[1];
+                managerAddress = parsedLog.args[0];
+            } else {
+                beneficiaryAddress = parsedLog.args[0];
                 const txResponse = await this.provider.getTransaction(
                     log.transactionHash
                 );
+                managerAddress = txResponse.from;
+            }
+
+            try {
+                const communityPublicId =
+                    this.communities.get(communityAddress)!;
+                const txAt = await getBlockTime(log.blockHash);
                 await BeneficiaryService.remove(
                     beneficiaryAddress,
-                    txResponse.from,
-                    this.communities.get(communityAddress)!,
+                    managerAddress,
+                    communityPublicId,
                     log.transactionHash,
                     txAt
                 );
@@ -293,7 +341,10 @@ class ChainSubscribers {
             result = parsedLog;
         } else if (parsedLog.name === 'ManagerAdded') {
             // new managers in existing community
-            const managerAddress = parsedLog.args[0];
+            const managerAddress =
+                parsedLog.args.length > 1
+                    ? parsedLog.args[1]
+                    : parsedLog.args[0];
             const communityAddress = log.address;
             await ManagerService.add(
                 managerAddress,
@@ -301,11 +352,40 @@ class ChainSubscribers {
             );
             result = parsedLog;
         } else if (parsedLog.name === 'ManagerRemoved') {
-            const managerAddress = parsedLog.args[0];
+            const managerAddress =
+                parsedLog.args.length > 1
+                    ? parsedLog.args[1]
+                    : parsedLog.args[0];
             const communityAddress = log.address;
             await ManagerService.remove(
                 managerAddress,
                 this.communities.get(communityAddress)!
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'ManagerAddedToBlockList') {
+            const address = parsedLog.args[0];
+            const communityAddress = log.address;
+            await models.manager.update(
+                { blocked: true },
+                {
+                    where: {
+                        address,
+                        communityId: this.communities.get(communityAddress)!,
+                    },
+                }
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'ManagerRemovedFromBlockList') {
+            const address = parsedLog.args[0];
+            const communityAddress = log.address;
+            await models.manager.update(
+                { blocked: false },
+                {
+                    where: {
+                        address,
+                        communityId: this.communities.get(communityAddress)!,
+                    },
+                }
             );
             result = parsedLog;
         } else if (parsedLog.name === 'CommunityEdited') {
@@ -319,6 +399,45 @@ class ChainSubscribers {
                     maxClaim: parsedLog.args[1].toString(),
                     baseInterval: parsedLog.args[2].toNumber(),
                     incrementInterval: parsedLog.args[3].toNumber(),
+                }
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'CommunityLocked') {
+            await models.ubiCommunityContract.update(
+                {
+                    blocked: true,
+                },
+                {
+                    where: {
+                        communityId: this.communitiesId.get(log.address)!,
+                    },
+                }
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'CommunityUnlocked') {
+            await models.ubiCommunityContract.update(
+                {
+                    blocked: false,
+                },
+                {
+                    where: {
+                        communityId: this.communitiesId.get(log.address)!,
+                    },
+                }
+            );
+            result = parsedLog;
+        } else if (parsedLog.name === 'BeneficiaryParamsUpdated') {
+            const communityAddress = log.address;
+            await CommunityContractService.update(
+                (await CommunityService.getCommunityOnlyByPublicId(
+                    this.communities.get(communityAddress)!
+                ))!.id,
+                {
+                    claimAmount: parsedLog.args[5].toString(),
+                    maxClaim: parsedLog.args[6].toString(),
+                    decreaseStep: parsedLog.args[7].toString(),
+                    baseInterval: parsedLog.args[8].toNumber(),
+                    incrementInterval: parsedLog.args[9].toNumber(),
                 }
             );
             result = parsedLog;
@@ -368,6 +487,16 @@ class ChainSubscribers {
         } else if (parsedLog.name === 'CommunityAdded') {
             const communityAddress = parsedLog.args[0];
             const managerAddress = parsedLog.args[1];
+
+            await ManagerService.add(
+                managerAddress,
+                (await models.community.findOne({
+                    attributes: ['publicId'],
+                    where: {
+                        requestByAddress: managerAddress,
+                    },
+                }))!.publicId
+            );
 
             const community = await models.community.update(
                 {

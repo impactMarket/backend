@@ -569,7 +569,7 @@ export default class CommunityService {
                     required: false,
                     include: [
                         {
-                            model: models.beneficiaryTransaction,
+                            model: models.ubiBeneficiaryTransaction,
                             as: 'transactions',
                             where: literal(
                                 `date("beneficiaries->transactions"."date") = '${
@@ -1132,6 +1132,8 @@ export default class CommunityService {
                 communityId: c.id,
                 createdAt: c.createdAt,
                 updatedAt: c.updatedAt,
+                decreaseStep: c.decreaseStep,
+                blocked: c.blocked,
             },
             state: {
                 backers: c.backers,
