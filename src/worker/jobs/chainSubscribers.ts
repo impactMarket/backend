@@ -15,7 +15,7 @@ import CommunityAdminContractABI from '../../contracts/CommunityAdminABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
 import IPCTDelegateContractABI from '../../contracts/IPCTDelegate.json';
 import NewCommunityContractABI from '../../contracts/NewCommunityABI.json';
-import { models } from '../../database';
+import { models, sequelize } from '../../database';
 
 /* istanbul ignore next */
 function asyncTxsFailure(error: any) {
@@ -95,6 +95,9 @@ class ChainSubscribers {
                 ethers.utils.id(
                     'ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)'
                 ),
+                ethers.utils.id('ProposalCanceled(uint256)'),
+                ethers.utils.id('ProposalQueued(uint256,uint256)'),
+                ethers.utils.id('ProposalExecuted(uint256)'),
             ],
         ];
         this.recover();
@@ -608,12 +611,104 @@ class ChainSubscribers {
                         ],
                     });
                     if (community) {
-                        await models.community.update(
-                            { proposal: parsedLog.args[0] },
-                            { where: { id: community.id } }
-                        );
+                        // await models.community.update(
+                        //     {
+                        //         proposal: parseInt(
+                        //             parsedLog.args[0].toString(),
+                        //             10
+                        //         ),
+                        //     },
+                        //     {
+                        //         where: { id: community.id },
+                        //         // transaction: t,
+                        //     }
+                        // );
+                        sequelize
+                            .transaction(async (t) => {
+                                // chain all your queries here. make sure you return them.
+                                return models.community
+                                    .update(
+                                        {
+                                            proposal: parseInt(
+                                                parsedLog.args[0].toString(),
+                                                10
+                                            ),
+                                        },
+                                        {
+                                            where: { id: community.id },
+                                            transaction: t,
+                                        }
+                                    )
+                                    .then(() => {
+                                        return models.appProposal.create(
+                                            {
+                                                id: parseInt(
+                                                    parsedLog.args[0].toString(),
+                                                    10
+                                                ),
+                                                status: 0,
+                                                endBlock: parseInt(
+                                                    parsedLog.args[7].toString(),
+                                                    10
+                                                ),
+                                            },
+                                            { transaction: t }
+                                        );
+                                    });
+                            })
+                            .catch((err) => {
+                                Logger.error(
+                                    'error registering proposal ' +
+                                        err.toString()
+                                );
+                            });
                     }
                 }
+            }
+        } else if (parsedLog.name === 'ProposalExecuted') {
+            const proposalExists = await models.appProposal.findOne({
+                where: { id: parseInt(parsedLog.args[0].toString(), 10) },
+            });
+            if (proposalExists) {
+                await models.appProposal.update(
+                    { status: 1 },
+                    {
+                        where: {
+                            id: parseInt(parsedLog.args[0].toString(), 10),
+                        },
+                    }
+                );
+            }
+        } else if (parsedLog.name === 'ProposalCanceled') {
+            const proposalExists = await models.appProposal.findOne({
+                where: { id: parseInt(parsedLog.args[0].toString(), 10) },
+            });
+            if (proposalExists) {
+                await models.appProposal.update(
+                    { status: 2 },
+                    {
+                        where: {
+                            id: parseInt(parsedLog.args[0].toString(), 10),
+                        },
+                    }
+                );
+            }
+        } else if (parsedLog.name === 'ProposalQueued') {
+            const proposalExists = await models.appProposal.findOne({
+                where: { id: parseInt(parsedLog.args[0].toString(), 10) },
+            });
+            if (proposalExists) {
+                await models.appProposal.update(
+                    {
+                        status: 3,
+                        endBlock: parseInt(parsedLog.args[1].toString(), 10),
+                    },
+                    {
+                        where: {
+                            id: parseInt(parsedLog.args[0].toString(), 10),
+                        },
+                    }
+                );
             }
         }
 

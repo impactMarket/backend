@@ -1,10 +1,14 @@
 import { parseEther } from '@ethersproject/units';
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
-import { assert, SinonStub, stub, restore } from 'sinon';
+import { assert, SinonStub, stub, restore, replace, match } from 'sinon';
 
 import config from '../../../src/config';
-import { models, Sequelize } from '../../../src/database';
+import {
+    models,
+    Sequelize,
+    sequelize as sequelizeOrigin,
+} from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import ImMetadataService from '../../../src/services/app/imMetadata';
 import { ChainSubscribers } from '../../../src/worker/jobs/chainSubscribers';
@@ -21,6 +25,7 @@ describe('DAO', () => {
     let accounts: string[] = [];
     let IPCTDelegateContract: ethers.Contract;
     let communityUpdated: SinonStub<any, any>;
+    let proposalUpdated: SinonStub<any, any>;
     let IPCTDelegateFactory: ethers.ContractFactory;
     const communities = new Map<string, string>();
     const communitiesId = new Map<string, number>();
@@ -31,13 +36,17 @@ describe('DAO', () => {
     });
     let getLastBlockStub: SinonStub<any, any>;
     let getRecoverBlockStub: SinonStub<any, any>;
+    let txResult: any;
 
     before(async () => {
         sequelize = sequelizeSetup();
         provider = new ethers.providers.Web3Provider(ganacheProvider);
         accounts = await provider.listAccounts();
         communityUpdated = stub(models.community, 'update');
+        proposalUpdated = stub(models.appProposal, 'update');
         communityUpdated.returns(Promise.resolve([1, {} as any]));
+        proposalUpdated.returns(Promise.resolve([1, {} as any]));
+        replace(sequelizeOrigin, 'transaction', sequelize.transaction);
         let lastBlock = 0;
         stub(ImMetadataService, 'setLastBlock').callsFake(async (v) => {
             lastBlock = v;
@@ -107,7 +116,9 @@ describe('DAO', () => {
         await truncate(sequelize);
     });
 
-    it('add proposal', async () => {
+    beforeEach(async () => {
+        communityUpdated.resetHistory();
+        proposalUpdated.resetHistory();
         const targets = [ethers.Wallet.createRandom().address];
         const values = [0];
         const signatures = [
@@ -147,17 +158,85 @@ describe('DAO', () => {
             provider.getSigner(0)
         ).propose(targets, values, signatures, calldatas, descriptions);
 
-        const txResult = await newProposal.wait();
+        txResult = await newProposal.wait();
+    });
+
+    it('add proposal', async () => {
         await waitForStubCall(communityUpdated, 1);
         assert.callCount(communityUpdated, 1);
         assert.calledWith(
             communityUpdated.getCall(0),
             {
-                proposal: txResult.events[0].args[0],
+                proposal: parseInt(txResult.events[0].args[0].toString(), 10),
             },
             {
                 where: {
                     id: communitiesRegistry[1].id,
+                },
+                transaction: match.any,
+            }
+        );
+    });
+
+    it('queue proposal', async () => {
+        await waitForStubCall(communityUpdated, 1);
+        await IPCTDelegateContract.connect(provider.getSigner(0)).queue(
+            parseInt(txResult.events[0].args[0].toString(), 10)
+        );
+
+        await waitForStubCall(proposalUpdated, 1);
+        assert.callCount(proposalUpdated, 1);
+        assert.calledWith(
+            proposalUpdated.getCall(0),
+            {
+                status: 3,
+                endBlock: match.number,
+            },
+            {
+                where: {
+                    id: parseInt(txResult.events[0].args[0].toString(), 10),
+                },
+            }
+        );
+    });
+
+    it('cancel proposal', async () => {
+        await waitForStubCall(communityUpdated, 1);
+        await IPCTDelegateContract.connect(provider.getSigner(0)).cancel(
+            parseInt(txResult.events[0].args[0].toString(), 10)
+        );
+
+        await waitForStubCall(proposalUpdated, 1);
+        assert.callCount(proposalUpdated, 1);
+        assert.calledWith(
+            proposalUpdated.getCall(0),
+            {
+                status: 2,
+            },
+            {
+                where: {
+                    id: parseInt(txResult.events[0].args[0].toString(), 10),
+                },
+            }
+        );
+    });
+
+    it('execute proposal', async () => {
+        await waitForStubCall(communityUpdated, 1);
+        await IPCTDelegateContract.connect(provider.getSigner(0)).execute(
+            parseInt(txResult.events[0].args[0].toString(), 10)
+        );
+
+        await waitForStubCall(proposalUpdated, 1);
+        assert.callCount(proposalUpdated, 1);
+        assert.calledWith(
+            proposalUpdated.getCall(0),
+            {
+                status: 1,
+            },
+            {
+                where: {
+                    id: parseInt(txResult.events[0].args[0].toString(), 10),
                 },
             }
         );
