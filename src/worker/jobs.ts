@@ -69,10 +69,10 @@ export default async (): Promise<void> => {
         Logger.error(strError);
         if (
             strError.indexOf('eth_') !== -1 && // any eth_ surely is related to the RPC
-                (strError.indexOf('figment') !== -1 ||
-                    strError.indexOf('celo') !== -1) &&
-                !waitingForResponseAfterCrash &&
-                !waitingForResponseAfterTxRegWarn
+            (strError.indexOf('figment') !== -1 ||
+                strError.indexOf('celo') !== -1) &&
+            !waitingForResponseAfterCrash &&
+            !waitingForResponseAfterTxRegWarn
         ) {
             reconnectChainSubscriber();
         }
@@ -140,7 +140,9 @@ function reconnectChainSubscriber() {
                                 '/5 sucessfull responses form json rpc provider (fallback)...'
                         );
                     } else {
-                        Logger.error('Reconnecting json rpc provider (fallback)...');
+                        Logger.error(
+                            'Reconnecting json rpc provider (fallback)...'
+                        );
                         subscribers.recover();
                         clearInterval(intervalWhenCrash!);
                         intervalWhenCrash = undefined;
