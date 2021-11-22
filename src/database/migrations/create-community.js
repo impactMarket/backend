@@ -89,7 +89,7 @@ module.exports = {
                 type: Sequelize.DATEONLY,
                 allowNull: false,
             },
-            proposal: {
+            proposalId: {
                 type: Sequelize.INTEGER,
                 allowNull: true,
             },

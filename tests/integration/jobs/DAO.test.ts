@@ -167,7 +167,7 @@ describe('DAO', () => {
         assert.calledWith(
             communityUpdated.getCall(0),
             {
-                proposal: parseInt(txResult.events[0].args[0].toString(), 10),
+                proposalId: parseInt(txResult.events[0].args[0].toString(), 10),
             },
             {
                 where: {

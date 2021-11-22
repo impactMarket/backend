@@ -429,11 +429,11 @@ export default class CommunityService {
         if (query.fields) {
             const fields = fetchData(query.fields);
             include = this._generateInclude(fields);
-            attributes = fields.root 
+            attributes = fields.root
                 ? fields.root.length > 0
                     ? fields.root.filter((el: string) => !exclude.includes(el))
                     : { exclude }
-                : []
+                : [];
         } else {
             include = this._oldInclude(query.extended);
             attributes = {
@@ -1578,13 +1578,21 @@ export default class CommunityService {
                 as: 'cover',
                 duplicating: false,
                 include: [
-                      {
-                          attributes: ['url', 'width', 'height', 'pixelRatio'],
-                          model: this.appMediaThumbnail,
-                          as: 'thumbnails',
-                          separate: true,
-                      },
-                  ],
+                    {
+                        attributes: ['url', 'width', 'height', 'pixelRatio'],
+                        model: this.appMediaThumbnail,
+                        as: 'thumbnails',
+                        separate: true,
+                    },
+                ],
+            });
+        }
+
+        if (fields.proposal) {
+            extendedInclude.push({
+                // all attributes
+                model: models.appProposal,
+                as: 'proposal',
             });
         }
 

@@ -1,4 +1,5 @@
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
+import { AppProposal } from '@interfaces/app/appProposal';
 import { StoryCommunity } from '@interfaces/story/storyCommunity';
 import { UbiClaimLocation } from '@interfaces/ubi/ubiClaimLocation';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
@@ -55,7 +56,7 @@ export interface CommunityAttributes {
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     review: 'pending' | 'in-progress' | 'halted' | 'closed';
     started: Date; // TODO: to be removed
-    proposal: number | null;
+    proposalId: number | null;
 
     // timestamps
     createdAt: Date;
@@ -64,6 +65,7 @@ export interface CommunityAttributes {
 
     metrics?: UbiCommunityDailyMetrics[]; // TODO: to be removed
     cover?: AppMediaContent;
+    proposal?: AppProposal;
     contract?: UbiCommunityContract; // TODO: to be removed
     state?: UbiCommunityState; // TODO: to be removed
     storyCommunity?: StoryCommunity[]; // TODO: to be removed
@@ -110,7 +112,7 @@ export class Community extends Model<
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     public review!: 'pending' | 'in-progress' | 'halted' | 'closed';
     public started!: Date;
-    public proposal!: number | null;
+    public proposalId!: number | null;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -213,7 +215,7 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 type: DataTypes.DATEONLY,
                 allowNull: false,
             },
-            proposal: {
+            proposalId: {
                 type: DataTypes.INTEGER,
                 allowNull: true,
             },

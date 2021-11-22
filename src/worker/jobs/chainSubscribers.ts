@@ -611,25 +611,13 @@ class ChainSubscribers {
                         ],
                     });
                     if (community) {
-                        // await models.community.update(
-                        //     {
-                        //         proposal: parseInt(
-                        //             parsedLog.args[0].toString(),
-                        //             10
-                        //         ),
-                        //     },
-                        //     {
-                        //         where: { id: community.id },
-                        //         // transaction: t,
-                        //     }
-                        // );
                         sequelize
                             .transaction(async (t) => {
                                 // chain all your queries here. make sure you return them.
                                 return models.community
                                     .update(
                                         {
-                                            proposal: parseInt(
+                                            proposalId: parseInt(
                                                 parsedLog.args[0].toString(),
                                                 10
                                             ),
