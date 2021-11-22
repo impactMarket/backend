@@ -200,6 +200,7 @@ describe('[jobs] subscribers', () => {
         ).connect(provider.getSigner(0));
 
         stub(config, 'DAOContractAddress').value(DAOContract.address);
+        stub(config, 'cUSDContractAddress').value(cUSD.address);
 
         // // init event subscribers
         // subscribers = new ChainSubscribers(
@@ -548,7 +549,6 @@ describe('[jobs] subscribers', () => {
         await cUSD
             .connect(provider.getSigner(0))
             .testFakeFundAddress(accounts[2]);
-
         await cUSD
             .connect(provider.getSigner(2))
             .transfer(communityContract.address, '2000000000000000000');

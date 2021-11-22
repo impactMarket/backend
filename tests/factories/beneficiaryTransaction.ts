@@ -17,7 +17,7 @@ const data = async (
     beneficiary: BeneficiaryAttributes,
     isFromBeneficiary: boolean,
     options?: {
-        toBeneficiary?: BeneficiaryAttributes;
+        withAddress?: string;
         amount?: string;
     }
 ) => {
@@ -28,8 +28,8 @@ const data = async (
         beneficiary: beneficiary.address,
         isFromBeneficiary,
         withAddress:
-            options && options.toBeneficiary
-                ? options.toBeneficiary.address
+            options && options.withAddress
+                ? options.withAddress
                 : await randomWallet.getAddress(),
         tx: randomTx(),
         txAt: new Date(),
@@ -47,7 +47,7 @@ const BeneficiaryTransactionFactory = async (
     beneficiary: BeneficiaryAttributes,
     isFromBeneficiary: boolean,
     options?: {
-        toBeneficiary?: BeneficiaryAttributes;
+        withAddress?: string;
         amount?: string;
     }
 ) => {
