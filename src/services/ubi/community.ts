@@ -1,5 +1,4 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
-import { UbiBeneficiaryRegistryType } from '@interfaces/ubi/ubiBeneficiaryRegistry';
 import { UbiCommunityCampaign } from '@interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
@@ -36,14 +35,12 @@ import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import { models, sequelize } from '../../database';
-import { ICommunityContractParams } from '../../types';
 import {
     ICommunity,
     ICommunityLightDetails,
     ICommunityPendingDetails,
     IManagerDetailsManager,
 } from '../../types/endpoints';
-import { calcuateCommunitiesMetrics } from '../../worker/jobs/cron/community';
 import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
 import CommunityStateService from './communityState';

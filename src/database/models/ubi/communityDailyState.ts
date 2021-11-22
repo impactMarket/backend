@@ -98,12 +98,10 @@ export function initializeUbiCommunityDailyState(sequelize: Sequelize): void {
                 allowNull: false,
             },
             totalClaimed: {
-                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
                 defaultValue: 0,
             },
             totalRaised: {
-                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
                 defaultValue: 0,
             },
