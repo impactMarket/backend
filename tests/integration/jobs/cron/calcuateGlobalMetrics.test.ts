@@ -1465,34 +1465,41 @@ describe('#calcuateGlobalMetrics()', () => {
 
         const date = new Date();
         date.setDate(date.getDate() - 1);
-        const communityBeforeUpdate = await models.ubiCommunityDailyState.findOne({
-            where: {
-                date,
-                communityId: community.id
-            }
-        });
+        const communityBeforeUpdate =
+            await models.ubiCommunityDailyState.findOne({
+                where: {
+                    date,
+                    communityId: community.id,
+                },
+            });
         const globalBeforeUpdate = await models.globalDailyState.findOne({
             where: {
                 date,
-            }
+            },
         });
 
         // remove community and beneficiaries
-        await models.community.update({
-            status: 'removed',
-            deletedAt: new Date()
-        }, {
-            where: {
-                publicId: community.publicId
+        await models.community.update(
+            {
+                status: 'removed',
+                deletedAt: new Date(),
+            },
+            {
+                where: {
+                    publicId: community.publicId,
+                },
             }
-        })
-        await models.beneficiary.update({
-            active: false
-        }, {
-            where: {
-                communityId: community.publicId
+        );
+        await models.beneficiary.update(
+            {
+                active: false,
+            },
+            {
+                where: {
+                    communityId: community.publicId,
+                },
             }
-        });
+        );
 
         // next day
         tk.travel(jumpToTomorrowMidnight());
@@ -1500,27 +1507,28 @@ describe('#calcuateGlobalMetrics()', () => {
         await calcuateGlobalMetrics();
         const newDate = new Date();
         newDate.setDate(newDate.getDate() - 1);
-        const communityAfterUpdate = await models.ubiCommunityDailyState.findOne({
-            where: {
-                date: newDate,
-                communityId: community.id
-            }
-        });
+        const communityAfterUpdate =
+            await models.ubiCommunityDailyState.findOne({
+                where: {
+                    date: newDate,
+                    communityId: community.id,
+                },
+            });
         const globalAfterUpdate = await models.globalDailyState.findOne({
             where: {
                 date: newDate,
-            }
+            },
         });
-        
+
         expect(communityBeforeUpdate!.beneficiaries).to.be.equal(1);
         expect(communityAfterUpdate!.beneficiaries).to.be.equal(-1);
         expect(globalBeforeUpdate!).to.include({
             beneficiaries: 1,
-            totalBeneficiaries: 1
+            totalBeneficiaries: 1,
         });
         expect(globalAfterUpdate!).to.include({
             beneficiaries: -1,
-            totalBeneficiaries: 0
+            totalBeneficiaries: 0,
         });
     });
 });

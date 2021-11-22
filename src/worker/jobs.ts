@@ -1,9 +1,11 @@
+import { Community } from '@models/ubi/community';
 import CronJobExecutedService from '@services/app/cronJobExecuted';
 import GlobalDemographicsService from '@services/global/globalDemographics';
 import CommunityService from '@services/ubi/community';
 import { Logger } from '@utils/logger';
 import { CronJob } from 'cron';
 import { ethers } from 'ethers';
+import schedule from 'node-schedule';
 
 import config from '../config';
 import { models } from '../database';
@@ -22,19 +24,27 @@ import {
     verifyDeletedAccounts,
 } from './jobs/cron/user';
 
+const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
+const providerFallback = new ethers.providers.JsonRpcProvider(
+    config.jsonRpcUrlFallback
+);
+let availableCommunities: Community[];
+let beneficiaries: string[];
+let subscribers: ChainSubscribers;
+let usingFallbackUrl = false;
+let waitingForResponseAfterCrash = false;
+let successfullAnswersAfterCrash = 0;
+let successfullAnswersAfterTxRegWarn = 0;
+let failedAnswers = 0;
+let intervalWhenCrash: NodeJS.Timeout | undefined = undefined;
+let intervalWhenTxRegWarn: NodeJS.Timeout | undefined = undefined;
+let waitingForResponseAfterTxRegWarn = false;
+
 export default async (): Promise<void> => {
     cron();
-    const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
-    let waitingForResponseAfterCrash = false;
-    let successfullAnswersAfterCrash = 0;
-    let successfullAnswersAfterTxRegWarn = 0;
-    let intervalWhenCrash: NodeJS.Timeout | undefined = undefined;
-    let intervalWhenTxRegWarn: NodeJS.Timeout | undefined = undefined;
-    let waitingForResponseAfterTxRegWarn = false;
 
-    const availableCommunities =
-        await CommunityService.listCommunitiesStructOnly();
-    const beneficiaries = (
+    availableCommunities = await CommunityService.listCommunitiesStructOnly();
+    beneficiaries = (
         await models.beneficiary.findAll({
             attributes: ['address'],
             include: [
@@ -51,20 +61,7 @@ export default async (): Promise<void> => {
             raw: true,
         })
     ).map((b) => b.address);
-    const subscribers = new ChainSubscribers(
-        provider,
-        beneficiaries,
-        new Map(
-            availableCommunities.map((c) => [c.contractAddress!, c.publicId])
-        ),
-        new Map(availableCommunities.map((c) => [c.contractAddress!, c.id])),
-        new Map(
-            availableCommunities.map((c) => [
-                c.contractAddress!,
-                c.visibility === 'public',
-            ])
-        )
-    );
+    subscribers = startChainSubscriber();
 
     process.on('unhandledRejection', (error: any) => {
         // close all RPC connections and restart when available again
@@ -72,44 +69,12 @@ export default async (): Promise<void> => {
         Logger.error(strError);
         if (
             strError.indexOf('eth_') !== -1 && // any eth_ surely is related to the RPC
-            (strError.indexOf('figment') !== -1 ||
-                strError.indexOf('celo') !== -1) &&
-            !waitingForResponseAfterCrash &&
-            !waitingForResponseAfterTxRegWarn
+                (strError.indexOf('figment') !== -1 ||
+                    strError.indexOf('celo') !== -1) &&
+                !waitingForResponseAfterCrash &&
+                !waitingForResponseAfterTxRegWarn
         ) {
-            waitingForResponseAfterCrash = true;
-            subscribers.stop();
-            // if a second crash happen before recovering from the first
-            // it will get here again. Clear past time interval
-            // and start again.
-            if (intervalWhenCrash !== undefined) {
-                clearInterval(intervalWhenCrash);
-            }
-            intervalWhenCrash = setInterval(() => {
-                provider
-                    .getBlockNumber()
-                    .then(() => {
-                        successfullAnswersAfterCrash += 1;
-                        // require 5 successfull answers, to prevent two or more crashes in row
-                        if (successfullAnswersAfterCrash < 5) {
-                            Logger.error(
-                                'Got ' +
-                                    successfullAnswersAfterCrash +
-                                    '/5 sucessfull responses form json rpc provider...'
-                            );
-                        } else {
-                            Logger.error('Reconnecting json rpc provider...');
-                            subscribers.recover();
-                            clearInterval(intervalWhenCrash!);
-                            intervalWhenCrash = undefined;
-                            waitingForResponseAfterCrash = false;
-                        }
-                    })
-                    .catch(() => {
-                        Logger.error('Checking again if RPC is available...');
-                        successfullAnswersAfterCrash = 0;
-                    });
-            }, 2000);
+            reconnectChainSubscriber();
         }
     });
     process.on('warning', (warning) => {
@@ -151,6 +116,116 @@ export default async (): Promise<void> => {
         }
     });
 };
+
+function reconnectChainSubscriber() {
+    waitingForResponseAfterCrash = true;
+    subscribers.stop();
+    // if a second crash happen before recovering from the first
+    // it will get here again. Clear past time interval
+    // and start again.
+    if (intervalWhenCrash !== undefined) {
+        clearInterval(intervalWhenCrash);
+    }
+    intervalWhenCrash = setInterval(() => {
+        if (usingFallbackUrl) {
+            providerFallback
+                .getBlockNumber()
+                .then(() => {
+                    successfullAnswersAfterCrash += 1;
+                    // require 5 successfull answers, to prevent two or more crashes in row
+                    if (successfullAnswersAfterCrash < 5) {
+                        Logger.error(
+                            'Got ' +
+                                successfullAnswersAfterCrash +
+                                '/5 sucessfull responses form json rpc provider (fallback)...'
+                        );
+                    } else {
+                        Logger.error('Reconnecting json rpc provider (fallback)...');
+                        subscribers.recover();
+                        clearInterval(intervalWhenCrash!);
+                        intervalWhenCrash = undefined;
+                        waitingForResponseAfterCrash = false;
+
+                        // After 30 min, try to connect with the principal provider again
+                        schedule.scheduleJob(Date.now() + 60000, () => {
+                            Logger.info(
+                                'Conecting with the principal provider'
+                            );
+                            subscribers.stop();
+                            subscribers = startChainSubscriber();
+                            usingFallbackUrl = false;
+                            failedAnswers = 0;
+                            successfullAnswersAfterCrash = 0;
+                            reconnectChainSubscriber();
+                        });
+                    }
+                })
+                .catch(() => {
+                    if (failedAnswers > 5) {
+                        Logger.error('Try the principal provider');
+                        subscribers = startChainSubscriber();
+                        usingFallbackUrl = false;
+                        failedAnswers = 0;
+                    } else {
+                        Logger.error(
+                            'Checking again if RPC (fallback) is available...'
+                        );
+                        successfullAnswersAfterCrash = 0;
+                        failedAnswers += 1;
+                    }
+                });
+        } else {
+            provider
+                .getBlockNumber()
+                .then(() => {
+                    successfullAnswersAfterCrash += 1;
+                    // require 5 successfull answers, to prevent two or more crashes in row
+                    if (successfullAnswersAfterCrash < 5) {
+                        Logger.error(
+                            'Got ' +
+                                successfullAnswersAfterCrash +
+                                '/5 sucessfull responses form json rpc provider...'
+                        );
+                    } else {
+                        Logger.error('Reconnecting json rpc provider...');
+                        subscribers.recover();
+                        clearInterval(intervalWhenCrash!);
+                        intervalWhenCrash = undefined;
+                        waitingForResponseAfterCrash = false;
+                    }
+                })
+                .catch(() => {
+                    if (failedAnswers > 5) {
+                        Logger.error('Use fallback provider');
+                        subscribers = startChainSubscriber(true);
+                        usingFallbackUrl = true;
+                        failedAnswers = 0;
+                    } else {
+                        Logger.error('Checking again if RPC is available...');
+                        successfullAnswersAfterCrash = 0;
+                        failedAnswers += 1;
+                    }
+                });
+        }
+    }, 2000);
+}
+
+function startChainSubscriber(fallback?: boolean): ChainSubscribers {
+    return new ChainSubscribers(
+        fallback ? providerFallback : provider,
+        beneficiaries,
+        new Map(
+            availableCommunities.map((c) => [c.contractAddress!, c.publicId])
+        ),
+        new Map(availableCommunities.map((c) => [c.contractAddress!, c.id])),
+        new Map(
+            availableCommunities.map((c) => [
+                c.contractAddress!,
+                c.visibility === 'public',
+            ])
+        )
+    );
+}
 
 /**
  * This method starts all cron jobs. Cron jobs jave specific times to happen.
