@@ -117,7 +117,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 amount: '500000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                toBeneficiary: beneficiaries[1],
+                withAddress: beneficiaries[1].address,
                 amount: '1000000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[1], false, {
@@ -172,7 +172,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 amount: '500000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                toBeneficiary: beneficiaries[1],
+                withAddress: beneficiaries[1].address,
                 amount: '1000000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[1], false, {
@@ -241,7 +241,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 amount: '500000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                toBeneficiary: beneficiaries[1],
+                withAddress: beneficiaries[1].address,
                 amount: '1000000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[1], false, {
@@ -271,7 +271,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 amount: '500000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                toBeneficiary: beneficiaries[1],
+                withAddress: beneficiaries[1].address,
                 amount: '1000000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[1], false, {
@@ -588,7 +588,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 amount: '500000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                toBeneficiary: beneficiaries[1],
+                withAddress: beneficiaries[1].address,
                 amount: '1000000000000000000',
             });
             await BeneficiaryTransactionFactory(beneficiaries[1], false, {
