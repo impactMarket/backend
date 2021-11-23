@@ -8,7 +8,7 @@
             "@services/*": ["services/*"],
             "@ipcttypes/*": ["types/*"],
             "@utils/*": ["utils/*"],
-            "@interfaces/*": ["interfaces/*"],
+            "@interfaces/*": ["interfaces/*"]
         },
         "sourceMap": true,
         "target": "es2017",
@@ -24,11 +24,8 @@
         "esModuleInterop": true,
         "outDir": "./dist",
         "noImplicitAny": false,
+        "useUnknownInCatchVariables": false
     },
-    "include": [
-        "src"
-    ],
-    "exclude": [
-        "node_modules"
-    ]
+    "include": ["src"],
+    "exclude": ["node_modules"]
 }

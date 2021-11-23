@@ -15,6 +15,7 @@ import { CommunityAttributes } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { Includeable, literal, Op } from 'sequelize';
+import { Literal } from 'sequelize/types/lib/utils';
 
 import config from '../config';
 import { models, sequelize } from '../database';
@@ -367,7 +368,7 @@ export default class StoryService {
                     [Op.eq]: literal(
                         `(select max("postedAt") from story_content sc, story_community sm where sc.id=sm."contentId" and sm."communityId"="storyCommunity"."communityId" and sc."isPublic"=true)`
                     ),
-                },
+                } as { [Op.eq]: Literal },
             },
             order: [['postedAt', 'DESC']],
             offset: query.offset
@@ -572,7 +573,7 @@ export default class StoryService {
                     [Op.eq]: literal(
                         `(select max("postedAt") from story_content sc, story_community sm where sc.id=sm."contentId" and sm."communityId"="storyCommunity"."communityId" and sc."isPublic"=true)`
                     ),
-                },
+                } as { [Op.eq]: Literal },
             },
             order: [['postedAt', 'DESC']],
         });
