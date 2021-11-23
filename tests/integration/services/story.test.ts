@@ -240,6 +240,7 @@ describe('story service', () => {
         });
 
         it('add story', async () => {
+            storyContentAdd.resetHistory();
             const storyService = new StoryService();
             await storyService.add(users[0].address, {
                 byAddress: users[0].address,
