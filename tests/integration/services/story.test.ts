@@ -1,5 +1,6 @@
+import { expect } from 'chai';
 import { Op, Sequelize } from 'sequelize';
-import Sinon, { assert, replace, spy } from 'sinon';
+import Sinon, { assert, replace, spy, match } from 'sinon';
 
 import { models } from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
@@ -21,6 +22,7 @@ describe('story service', () => {
         Promise<void>
     >;
     let storyContentDestroy: Sinon.SinonSpy<any, Promise<number>>;
+    let storyContentAdd: Sinon.SinonSpy;
     let community1: any;
     let community2: any;
     before(async () => {
@@ -41,6 +43,7 @@ describe('story service', () => {
             'deleteBulkContent'
         );
         storyContentDestroy = spy(models.storyContent, 'destroy');
+        storyContentAdd = spy(models.storyContent, 'create');
 
         users = await UserFactory({ n: 6 });
         communities = await CommunityFactory([
@@ -62,7 +65,7 @@ describe('story service', () => {
                 requestByAddress: users[3].address,
                 started: new Date(),
                 status: 'valid',
-                visibility: 'public',
+                visibility: 'private',
                 contract: {
                     baseInterval: 60 * 60 * 24,
                     claimAmount: '1000000000000000000',
@@ -227,6 +230,42 @@ describe('story service', () => {
             assert.calledWith(storyContentStorageDeleteBulk, [
                 stories[0].mediaMediaId!, // not null
             ]);
+        });
+    });
+
+    describe('add', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'StoryContentModel');
+            storyContentAdd.resetHistory();
+        });
+
+        it('add story', async () => {
+            const storyService = new StoryService();
+            await storyService.add(users[0].address, {
+                byAddress: users[0].address,
+                communityId: community1.id,
+            });
+            assert.callCount(storyContentAdd, 1);
+            assert.calledWith(storyContentAdd.getCall(0), {
+                storyCommunity: [{ communityId: community1.id }],
+                byAddress: users[0].address,
+                isPublic: true,
+                postedAt: match.any,
+                storyEngagement: [],
+            });
+        });
+
+        it('should return error when a community is private', async () => {
+            const storyService = new StoryService();
+            storyService
+                .add(users[0].address, {
+                    byAddress: users[0].address,
+                    communityId: communities[1].id,
+                })
+                .catch((e) => expect(e.name).to.be.equal('PRIVATE_COMMUNITY'))
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
         });
     });
 });
