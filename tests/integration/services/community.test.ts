@@ -926,7 +926,7 @@ describe('community service', () => {
                 });
                 expect(result.rows[0].contract).to.include({
                     maxClaim: communities[0]!.contract!.maxClaim,
-                    claimAmount: communities[0]!.contract!.claimAmount
+                    claimAmount: communities[0]!.contract!.claimAmount,
                 });
             });
 
@@ -1023,7 +1023,7 @@ describe('community service', () => {
                     'id',
                     'language',
                     'name',
-                    'proposal',
+                    'proposalId',
                     'publicId',
                     'requestByAddress',
                     'review',
