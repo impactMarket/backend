@@ -97,4 +97,9 @@ export function communityAssociation(sequelize: Sequelize) {
             constraints: false,
         }
     );
+    sequelize.models.Community.hasOne(sequelize.models.AppProposalModel, {
+        foreignKey: 'id',
+        sourceKey: 'proposalId',
+        as: 'proposal',
+    });
 }

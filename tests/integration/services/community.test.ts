@@ -955,13 +955,14 @@ describe('community service', () => {
                 ]);
 
                 const result = await CommunityService.list({
-                    fields: 'id;publicId;contract.maxClaim;proposal',
+                    fields: 'id;publicId;contract.maxClaim;proposal.*',
                 });
 
                 expect(result.rows[0]).to.have.deep.keys([
                     'id',
                     'publicId',
                     'contract',
+                    'proposal',
                 ]);
                 expect(result.rows[0].contract).to.have.deep.keys(['maxClaim']);
                 expect(result.rows[0].proposal).to.have.deep.keys([
@@ -1040,8 +1041,6 @@ describe('community service', () => {
                     'baseInterval',
                     'incrementInterval',
                     'communityId',
-                    'blocked',
-                    'decreaseStep',
                     'createdAt',
                     'updatedAt',
                 ]);
