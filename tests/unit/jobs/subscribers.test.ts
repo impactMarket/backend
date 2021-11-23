@@ -549,7 +549,6 @@ describe('[jobs] subscribers', () => {
         await cUSD
             .connect(provider.getSigner(0))
             .testFakeFundAddress(accounts[2]);
-
         await cUSD
             .connect(provider.getSigner(2))
             .transfer(communityContract.address, '2000000000000000000');

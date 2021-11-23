@@ -926,11 +926,11 @@ describe('community service', () => {
                 });
                 expect(result.rows[0].contract).to.include({
                     maxClaim: communities[0]!.contract!.maxClaim,
-                    claimAmount: communities[0]!.contract!.claimAmount,
+                    claimAmount: communities[0]!.contract!.claimAmount
                 });
             });
 
-            it('filter with specific fields', async () => {
+            it('filter with specific fields (proposal)', async () => {
                 const proposal = await models.appProposal.create({
                     id: 5,
                     status: 0,
@@ -1040,6 +1040,8 @@ describe('community service', () => {
                     'baseInterval',
                     'incrementInterval',
                     'communityId',
+                    'blocked',
+                    'decreaseStep',
                     'createdAt',
                     'updatedAt',
                 ]);
@@ -1137,6 +1139,8 @@ describe('community service', () => {
                     'baseInterval',
                     'incrementInterval',
                     'communityId',
+                    'blocked',
+                    'decreaseStep',
                     'createdAt',
                     'updatedAt',
                 ]);
