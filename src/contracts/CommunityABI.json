@@ -2,43 +2,48 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_firstManager",
-        "type": "address"
+        "internalType": "address[]",
+        "name": "managers_",
+        "type": "address[]"
       },
       {
         "internalType": "uint256",
-        "name": "_claimAmount",
+        "name": "claimAmount_",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_maxClaim",
+        "name": "maxClaim_",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_baseInterval",
+        "name": "decreaseStep_",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_incrementInterval",
+        "name": "baseInterval_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "incrementInterval_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minTranche_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "maxTranche_",
         "type": "uint256"
       },
       {
         "internalType": "address",
-        "name": "_previousCommunityContract",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_cUSDAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_impactMarketAddress",
+        "name": "previousCommunity_",
         "type": "address"
       }
     ],
@@ -51,7 +56,13 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_account",
+        "name": "manager",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
         "type": "address"
       }
     ],
@@ -64,13 +75,13 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_account",
+        "name": "beneficiary",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "_amount",
+        "name": "amount",
         "type": "uint256"
       }
     ],
@@ -81,13 +92,67 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldClaimAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldMaxClaim",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldDecreaseStep",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldBaseInterval",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldIncrementInterval",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newClaimAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newMaxClaim",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newDecreaseStep",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newBaseInterval",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newIncrementInterval",
+        "type": "uint256"
       }
     ],
-    "name": "BeneficiaryLocked",
+    "name": "BeneficiaryParamsUpdated",
     "type": "event"
   },
   {
@@ -96,7 +161,13 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_account",
+        "name": "manager",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beneficiary",
         "type": "address"
       }
     ],
@@ -109,51 +180,7 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      }
-    ],
-    "name": "BeneficiaryUnlocked",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_claimAmount",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_maxClaim",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_baseInterval",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_incrementInterval",
-        "type": "uint256"
-      }
-    ],
-    "name": "CommunityEdited",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_by",
+        "name": "manager",
         "type": "address"
       }
     ],
@@ -166,7 +193,7 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_by",
+        "name": "manager",
         "type": "address"
       }
     ],
@@ -179,7 +206,13 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_account",
+        "name": "manager",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
         "type": "address"
       }
     ],
@@ -192,7 +225,13 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "_account",
+        "name": "manager",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
         "type": "address"
       }
     ],
@@ -200,451 +239,10 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "_to",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "MigratedFunds",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
-    ],
-    "name": "RoleGranted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
-    ],
-    "name": "RoleRevoked",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "DEFAULT_ADMIN_ROLE",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "MANAGER_ROLE",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "baseInterval",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "beneficiaries",
-    "outputs": [
-      {
-        "internalType": "enum Community.BeneficiaryState",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "cUSDAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "claimAmount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "claimed",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "cooldown",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getRoleAdmin",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
-      }
-    ],
-    "name": "getRoleMember",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      }
-    ],
-    "name": "getRoleMemberCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "grantRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "hasRole",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "impactMarketAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "incrementInterval",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "lastInterval",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "locked",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "maxClaim",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "previousCommunityContract",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "renounceRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "revokeRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      }
-    ],
-    "name": "addManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      }
-    ],
-    "name": "removeManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
+        "name": "beneficiaryAddress_",
         "type": "address"
       }
     ],
@@ -657,37 +255,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_account",
+        "name": "account_",
         "type": "address"
       }
     ],
-    "name": "lockBeneficiary",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      }
-    ],
-    "name": "unlockBeneficiary",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_account",
-        "type": "address"
-      }
-    ],
-    "name": "removeBeneficiary",
+    "name": "addManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -700,36 +272,34 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_claimAmount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_maxClaim",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_baseInterval",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_incrementInterval",
-        "type": "uint256"
-      }
-    ],
-    "name": "edit",
+    "inputs": [],
+    "name": "lock",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "lock",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "beneficiaryAddress_",
+        "type": "address"
+      }
+    ],
+    "name": "removeBeneficiary",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account_",
+        "type": "address"
+      }
+    ],
+    "name": "removeManager",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -744,17 +314,32 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_newCommunity",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "claimAmount_",
+        "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "_newCommunityManager",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "maxClaim_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "decreaseStep_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "baseInterval_",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "incrementInterval_",
+        "type": "uint256"
       }
     ],
-    "name": "migrateFunds",
+    "name": "updateBeneficiaryParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
