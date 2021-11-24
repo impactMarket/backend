@@ -2,6 +2,7 @@ import { parseEther } from '@ethersproject/units';
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
+import config from '../../../src/config';
 
 import CommunityABI from '../../../src/contracts/CommunityABI.json';
 import OldCommunityABI from '../../../src/contracts/OldCommunityABI.json';
@@ -95,6 +96,7 @@ describe('communityContract', () => {
             provider.getSigner(0)
         );
         cUSD = await cUSDFactory.deploy();
+        stub(config, 'cUSDContractAddress').value(cUSD.address);
 
         CommunityContractFactory = new ethers.ContractFactory(
             CommunityABI,

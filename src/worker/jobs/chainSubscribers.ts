@@ -1,4 +1,3 @@
-import { ManagerAttributes } from '@models/ubi/manager';
 import ImMetadataService from '@services/app/imMetadata';
 import BeneficiaryService from '@services/ubi/beneficiary';
 import ClaimsService from '@services/ubi/claim';
@@ -14,8 +13,9 @@ import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import CommunityAdminContractABI from '../../contracts/CommunityAdminABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
+import IPCTDelegateContractABI from '../../contracts/IPCTDelegate.json';
+import { models, sequelize } from '../../database';
 import OldCommunityContractABI from '../../contracts/OldCommunityABI.json';
-import { models } from '../../database';
 
 /* istanbul ignore next */
 function asyncTxsFailure(error: any) {
@@ -28,6 +28,7 @@ class ChainSubscribers {
     provider: ethers.providers.JsonRpcProvider;
     ifaceERC20: ethers.utils.Interface;
     ifaceCommunityAdmin: ethers.utils.Interface;
+    ifaceIPCTDelegate: ethers.utils.Interface;
     ifaceOldCommunity: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
     allCommunitiesAddresses: string[];
@@ -53,6 +54,9 @@ class ChainSubscribers {
         );
         this.ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
         this.ifaceERC20 = new ethers.utils.Interface(ERC20ABI);
+        this.ifaceIPCTDelegate = new ethers.utils.Interface(
+            IPCTDelegateContractABI
+        );
 
         this.beneficiariesInPublicCommunities =
             beneficiariesInPublicCommunities;
@@ -88,6 +92,12 @@ class ChainSubscribers {
                     'BeneficiaryParamsUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)'
                 ),
                 ethers.utils.id('Transfer(address,address,uint256)'),
+                ethers.utils.id(
+                    'ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)'
+                ),
+                ethers.utils.id('ProposalCanceled(uint256)'),
+                ethers.utils.id('ProposalQueued(uint256,uint256)'),
+                ethers.utils.id('ProposalExecuted(uint256)'),
             ],
         ];
         this.recover();
@@ -162,6 +172,8 @@ class ChainSubscribers {
             parsedLog = await this._processCommunityEvents(log);
         } else if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log);
+        } else if (log.address === config.DAOContractAddress) {
+            await this._processDAOEvents(log);
         } else {
             await this._processOtherEvents(log);
         }
@@ -545,6 +557,155 @@ class ChainSubscribers {
         return result;
     }
 
+    async _processDAOEvents(
+        log: ethers.providers.Log
+    ): Promise<ethers.utils.LogDescription | undefined> {
+        const parsedLog = this.ifaceIPCTDelegate.parseLog(log);
+        const result: ethers.utils.LogDescription | undefined = undefined;
+        if (parsedLog.name === 'ProposalCreated') {
+            const signatures: string[] = parsedLog.args[4];
+            const isProposalToCommunity = signatures
+                .map((e, i) => (e.indexOf('addCommunity') === 0 ? i : ''))
+                .filter(String);
+            if (isProposalToCommunity.length > 0) {
+                for (
+                    let index = 0;
+                    index < isProposalToCommunity.length;
+                    index++
+                ) {
+                    const calldatas = [
+                        ethers.utils.defaultAbiCoder.decode(
+                            [
+                                'address',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'address[]',
+                            ],
+                            parsedLog.args[5][isProposalToCommunity[index]]
+                        ),
+                    ];
+                    //
+                    const community = await models.community.findOne({
+                        attributes: ['id'],
+                        where: {
+                            requestByAddress: calldatas[0][0],
+                            '$contract.claimAmount$':
+                                calldatas[0][1].toString(),
+                            '$contract.maxClaim$': calldatas[0][2].toString(),
+                            '$contract.baseInterval$': parseInt(
+                                calldatas[0][4].toString(),
+                                10
+                            ),
+                            '$contract.incrementInterval$': parseInt(
+                                calldatas[0][5].toString(),
+                                10
+                            ),
+                        } as any,
+                        include: [
+                            {
+                                model: models.ubiCommunityContract,
+                                as: 'contract',
+                            },
+                        ],
+                    });
+                    if (community) {
+                        sequelize
+                            .transaction(async (t) => {
+                                // chain all your queries here. make sure you return them.
+                                return models.community
+                                    .update(
+                                        {
+                                            proposalId: parseInt(
+                                                parsedLog.args[0].toString(),
+                                                10
+                                            ),
+                                        },
+                                        {
+                                            where: { id: community.id },
+                                            transaction: t,
+                                        }
+                                    )
+                                    .then(() => {
+                                        return models.appProposal.create(
+                                            {
+                                                id: parseInt(
+                                                    parsedLog.args[0].toString(),
+                                                    10
+                                                ),
+                                                status: 0,
+                                                endBlock: parseInt(
+                                                    parsedLog.args[7].toString(),
+                                                    10
+                                                ),
+                                            },
+                                            { transaction: t }
+                                        );
+                                    });
+                            })
+                            .catch((err) => {
+                                Logger.error(
+                                    'error registering proposal ' +
+                                        err.toString()
+                                );
+                            });
+                    }
+                }
+            }
+        } else if (parsedLog.name === 'ProposalExecuted') {
+            const proposalExists = await models.appProposal.findOne({
+                where: { id: parseInt(parsedLog.args[0].toString(), 10) },
+            });
+            if (proposalExists) {
+                await models.appProposal.update(
+                    { status: 1 },
+                    {
+                        where: {
+                            id: parseInt(parsedLog.args[0].toString(), 10),
+                        },
+                    }
+                );
+            }
+        } else if (parsedLog.name === 'ProposalCanceled') {
+            const proposalExists = await models.appProposal.findOne({
+                where: { id: parseInt(parsedLog.args[0].toString(), 10) },
+            });
+            if (proposalExists) {
+                await models.appProposal.update(
+                    { status: 2 },
+                    {
+                        where: {
+                            id: parseInt(parsedLog.args[0].toString(), 10),
+                        },
+                    }
+                );
+            }
+        } else if (parsedLog.name === 'ProposalQueued') {
+            const proposalExists = await models.appProposal.findOne({
+                where: { id: parseInt(parsedLog.args[0].toString(), 10) },
+            });
+            if (proposalExists) {
+                await models.appProposal.update(
+                    {
+                        status: 3,
+                        endBlock: parseInt(parsedLog.args[1].toString(), 10),
+                    },
+                    {
+                        where: {
+                            id: parseInt(parsedLog.args[0].toString(), 10),
+                        },
+                    }
+                );
+            }
+        }
+
+        return result;
+    }
+
     async _processOtherEvents(log: ethers.providers.Log): Promise<void> {
         try {
             const parsedLog = this.ifaceOldCommunity.parseLog(log);
@@ -661,7 +822,7 @@ class ChainSubscribers {
             }
         } catch (e) {
             // as this else catch events from anywhere, it might catch unwanted events
-            if (e.reason !== 'no matching event') {
+            if ((e as any).reason !== 'no matching event') {
                 Logger.error('no matching event ' + e);
             }
         }

@@ -39,10 +39,12 @@ import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
 import { UbiPromoterModel } from '@models/ubi/ubiPromoter';
 import { UbiPromoterSocialMediaModel } from '@models/ubi/ubiPromoterSocialMedia';
 import { ModelCtor, Sequelize } from 'sequelize/types';
+import { AppProposalModel } from '@models/app/appProposal';
 
 export interface DbModels {
     appUser: ModelCtor<AppUserModel>;
     appUserTrust: ModelCtor<AppUserTrustModel>;
+    appProposal: ModelCtor<AppProposalModel>;
     appUserThroughTrust: ModelCtor<AppUserThroughTrustModel>;
     anonymousReport: ModelCtor<AppAnonymousReportModel>;
     cronJobExecuted: ModelCtor<CronJobExecuted>;

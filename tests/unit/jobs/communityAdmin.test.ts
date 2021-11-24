@@ -60,6 +60,7 @@ describe('communityAdmin', () => {
             provider.getSigner(0)
         );
         cUSD = await cUSDFactory.deploy();
+        stub(config, 'cUSDContractAddress').value(cUSD.address);
 
         CommunityAdminFactory = new ethers.ContractFactory(
             CommunityAdminABI,

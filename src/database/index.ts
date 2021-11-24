@@ -46,6 +46,7 @@ import { Sequelize, Options, ModelCtor } from 'sequelize';
 import config from '../config';
 import { DbModels } from '../types/db';
 import initModels from './models';
+import { AppProposalModel } from '@models/app/appProposal';
 
 let logging:
     | boolean
@@ -78,6 +79,8 @@ const models: DbModels = {
     appUser: sequelize.models.AppUserModel as ModelCtor<AppUserModel>,
     appUserTrust: sequelize.models
         .AppUserTrustModel as ModelCtor<AppUserTrustModel>,
+    appProposal: sequelize.models
+        .AppProposalModel as ModelCtor<AppProposalModel>,
     appUserThroughTrust: sequelize.models
         .AppUserThroughTrustModel as ModelCtor<AppUserThroughTrustModel>,
     community: sequelize.models.Community as ModelCtor<Community>,
@@ -109,7 +112,8 @@ const models: DbModels = {
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
     ubiBeneficiaryRegistry: sequelize.models
         .UbiBeneficiaryRegistryModel as ModelCtor<UbiBeneficiaryRegistryModel>,
-    ubiBeneficiarySurvey: sequelize.models.UbiBeneficiarySurveyModel as ModelCtor<UbiBeneficiarySurveyModel>,
+    ubiBeneficiarySurvey: sequelize.models
+        .UbiBeneficiarySurveyModel as ModelCtor<UbiBeneficiarySurveyModel>,
     anonymousReport: sequelize.models
         .AppAnonymousReportModel as ModelCtor<AppAnonymousReportModel>,
     ubiBeneficiaryTransaction: sequelize.models
