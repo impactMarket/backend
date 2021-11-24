@@ -1,4 +1,10 @@
-import { Options, Sequelize } from 'sequelize';
+import {
+    ConnectionError,
+    ConnectionTimedOutError,
+    Options,
+    Sequelize,
+    TimeoutError,
+} from 'sequelize';
 
 import config from '../../src/config';
 import initModels from '../../src/database/models';
@@ -6,19 +12,29 @@ import initModels from '../../src/database/models';
 export function sequelizeSetup() {
     const dbConfig: Options = {
         dialect: 'postgres',
-        // dialectOptions: {
-        //     connectTimeout: 60000,
-        // },
-        // pool: {
-        //     max: 30,
-        //     min: 0,
-        //     acquire: 60000,
-        //     idle: 5000,
-        // },
+        dialectOptions: {
+            connectTimeout: 60000,
+        },
+        pool: {
+            max: 30,
+            min: 0,
+            acquire: 60000,
+            idle: 5000,
+        },
         protocol: 'postgres',
         native: true,
         logging: false,
-        // query: { raw: true }, // I wish, eager loading gets fixed
+        // is this a temporary solution to fix deadlocks during tests?
+        retry: {
+            match: [
+                ConnectionError,
+                ConnectionTimedOutError,
+                TimeoutError,
+                /Deadlock/i,
+                'SQLITE_BUSY',
+            ],
+            max: 3,
+        },
     };
     const sequelize = new Sequelize(config.dbUrl, dbConfig);
     initModels(sequelize);
