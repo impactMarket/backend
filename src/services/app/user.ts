@@ -121,7 +121,10 @@ export default class UserService {
 
             const userHello = await this.loadUser(userFromRegistry);
             this.updateLastLogin(userFromRegistry.id);
-            const token = generateAccessToken(user.address, userFromRegistry.id);
+            const token = generateAccessToken(
+                user.address,
+                userFromRegistry.id
+            );
 
             return {
                 ...userHello,
@@ -440,7 +443,7 @@ export default class UserService {
                 },
                 {
                     where: { id },
-                    transaction: t
+                    transaction: t,
                 }
             );
 
@@ -493,7 +496,7 @@ export default class UserService {
                 where: { active: true, address: user.address },
             }
         );
-        const manager: IManager | null = await this.manager.findOne({
+        let manager: IManager | null = await this.manager.findOne({
             attributes: ['readRules', 'communityId'],
             where: { active: true, address: user.address },
         });
@@ -524,6 +527,10 @@ export default class UserService {
             if (communityId) {
                 community = await getCommunity(communityId);
                 managerInPendingCommunity = true;
+                manager = {
+                    communityId,
+                    readRules: false,
+                };
             }
         }
         // until here
@@ -564,14 +571,18 @@ export default class UserService {
             offset?: string;
             limit?: string;
         },
-        userId: number,
-    ): Promise<AppNotification[]> {       
+        userId: number
+    ): Promise<AppNotification[]> {
         const notifications = await this.appNotification.findAll({
             where: {
                 userId,
             },
-            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
-            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
+            offset: query.offset
+                ? parseInt(query.offset, 10)
+                : config.defaultOffset,
+            limit: query.limit
+                ? parseInt(query.limit, 10)
+                : config.defaultLimit,
             order: [['createdAt', 'DESC']],
         });
         return notifications as AppNotification[];
@@ -595,7 +606,9 @@ export default class UserService {
         return true;
     }
 
-    public static async getUnreadNotifications(userId: number): Promise<number> {        
+    public static async getUnreadNotifications(
+        userId: number
+    ): Promise<number> {
         return this.appNotification.count({
             where: {
                 userId,
