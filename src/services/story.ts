@@ -63,6 +63,7 @@ export default class StoryService {
         }
         if (story.communityId !== undefined) {
             const community = await this.community.findOne({
+                attributes: ['id'],
                 where: {
                     id: story.communityId,
                     visibility: 'public',
