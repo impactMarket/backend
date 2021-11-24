@@ -319,7 +319,7 @@ export default class CommunityService {
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
-        
+
         if (query.orderBy) {
             const orders = query.orderBy.split(';');
 
@@ -391,7 +391,10 @@ export default class CommunityService {
                 }
             });
         } else {
-            orderOption.push([literal('"dailyState"."totalBeneficiaries"'), 'DESC']);
+            orderOption.push([
+                literal('"dailyState"."totalBeneficiaries"'),
+                'DESC',
+            ]);
         }
 
         if (query.filter === 'featured') {
@@ -729,255 +732,73 @@ export default class CommunityService {
     }
 
     public static async getState(communityId: number) {
-        const yesterdayDateOnly = new Date();
-        yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
-        yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
-        const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
-        const todayDateOnly = new Date();
-        todayDateOnly.setUTCHours(0, 0, 0, 0);
-        const todayDate = todayDateOnly.toISOString().split('T')[0];
-
         const result = await this.ubiCommunityState.findOne({
             where: {
                 communityId,
             },
         });
 
-        const previousDate = await this.ubiCommunityDailyState.findOne({
-            attributes: [
-                'totalClaimed',
-                'totalRaised',
-                'totalBeneficiaries',
-                'totalManagers',
-            ],
+        const community = await this.community.findOne({
+            attributes: ['contractAddress', 'publicId'],
             where: {
-                communityId,
-                date: yesterdayDate,
+                id: communityId,
             },
         });
 
-        const communityClaimActivity: {
-            totalClaimed: string;
-        } = (await this.community.findOne({
-            attributes: [
-                [
-                    fn(
-                        'coalesce',
-                        fn('sum', col('beneficiaries->claim.amount')),
-                        '0'
-                    ),
-                    'totalClaimed',
+        const communityClaimActivity = (
+            await this.ubiClaim.findAll({
+                attributes: [
+                    [fn('coalesce', fn('sum', col('amount')), '0'), 'amount'],
                 ],
-            ],
-            include: [
-                {
-                    model: this.beneficiary,
-                    as: 'beneficiaries',
-                    attributes: [],
-                    required: false,
-                    include: [
-                        {
-                            model: this.ubiClaim,
-                            as: 'claim',
-                            attributes: [],
-                            required: false,
-                            where: {
-                                txAt: where(
-                                    fn(
-                                        'date',
-                                        col('beneficiaries->claim.txAt')
-                                    ),
-                                    '=',
-                                    todayDate
-                                ),
-                            },
-                        },
-                    ],
+                where: {
+                    communityId,
                 },
-            ],
-            where: {
-                id: communityId,
-            },
-            group: ['Community.id'],
-            raw: true,
-        })) as any;
+            })
+        )[0];
 
-        const communityInflowActivity: {
-            totalRaised: string;
-        } = (await models.community.findOne({
-            attributes: [
-                [
-                    fn('sum', fn('coalesce', col('inflow.amount'), 0)),
-                    'totalRaised',
+        const communityInflowActivity = (
+            await models.inflow.findAll({
+                attributes: [
+                    [fn('sum', fn('coalesce', col('amount'), 0)), 'amount'],
                 ],
-            ],
-            include: [
-                {
-                    model: models.inflow,
-                    as: 'inflow',
-                    attributes: [],
-                    required: false,
-                    where: {
-                        txAt: where(
-                            fn('date', col('inflow."txAt"')),
-                            '=',
-                            todayDate
-                        ),
-                    },
+                where: {
+                    contractAddress: community?.contractAddress,
                 },
-            ],
+            })
+        )[0];
+
+        const communityBeneficiaryActivity = (await this.beneficiary.findAll({
+            attributes: [[fn('COUNT', col('address')), 'count'], 'active'],
             where: {
-                id: communityId,
+                communityId: community?.publicId,
             },
-            group: ['Community.id'],
+            group: ['active'],
             raw: true,
         })) as any;
 
-        const communityNewBeneficiaryActivity: {
-            beneficiaries: string;
-        } = (await models.community.findOne({
-            attributes: [
-                [fn('count', col('beneficiaries.address')), 'beneficiaries'],
-            ],
-            include: [
-                {
-                    model: models.beneficiary,
-                    as: 'beneficiaries',
-                    attributes: [],
-                    required: false,
-                    where: {
-                        txAt: where(
-                            fn('date', col('beneficiaries."txAt"')),
-                            '=',
-                            todayDate
-                        ),
-                    },
-                },
-            ],
+        const communityManagerActivity = await this.manager.count({
             where: {
-                id: communityId,
+                communityId: community?.publicId,
+                active: true,
             },
-            group: ['Community.id'],
-            raw: true,
-        })) as any;
-
-        const communityRemovedBeneficiaryActivity: {
-            beneficiaries: string;
-        } = (await models.community.findOne({
-            attributes: [
-                [fn('count', col('beneficiaries.address')), 'beneficiaries'],
-            ],
-            include: [
-                {
-                    model: models.beneficiary,
-                    as: 'beneficiaries',
-                    attributes: [],
-                    required: false,
-                    where: {
-                        updatedAt: where(
-                            fn('date', col('beneficiaries."updatedAt"')),
-                            '=',
-                            todayDate
-                        ),
-                        active: false,
-                    },
-                },
-            ],
-            where: {
-                id: communityId,
-            },
-            group: ['Community.id'],
-            raw: true,
-        })) as any;
-
-        const communityNewManagerActivity: {
-            managers: string;
-        } = (await models.community.findOne({
-            attributes: [[fn('count', col('managers.address')), 'managers']],
-            include: [
-                {
-                    model: models.manager,
-                    as: 'managers',
-                    attributes: [],
-                    required: false,
-                    where: {
-                        createdAt: where(
-                            fn('date', col('managers."createdAt"')),
-                            '=',
-                            todayDate
-                        ),
-                    },
-                },
-            ],
-            where: {
-                id: communityId,
-            },
-            group: ['Community.id'],
-            raw: true,
-        })) as any;
-
-        const communityRemovedManagerActivity: {
-            managers: string;
-        } = (await models.community.findOne({
-            attributes: [[fn('count', col('managers.address')), 'managers']],
-            include: [
-                {
-                    model: models.manager,
-                    as: 'managers',
-                    attributes: [],
-                    required: false,
-                    where: {
-                        updatedAt: where(
-                            fn('date', col('managers."updatedAt"')),
-                            '=',
-                            todayDate
-                        ),
-                        active: false,
-                    },
-                },
-            ],
-            where: {
-                id: communityId,
-            },
-            group: ['Community.id'],
-            raw: true,
-        })) as any;
+        });
 
         if (result === null) return null;
 
-        const previousClaims = previousDate?.totalClaimed
-            ? new BigNumber(previousDate.totalClaimed)
-            : new BigNumber(0);
-        const todayClaims = communityClaimActivity?.totalClaimed
-            ? new BigNumber(communityClaimActivity.totalClaimed)
-            : new BigNumber(0);
-        const previousRaise = previousDate?.totalRaised
-            ? new BigNumber(previousDate.totalRaised)
-            : new BigNumber(0);
-        const todayRaise = communityInflowActivity?.totalRaised
-            ? new BigNumber(communityInflowActivity.totalRaised)
-            : new BigNumber(0);
-
-        const previousBeneficiaries = previousDate?.totalBeneficiaries
-            ? previousDate.totalBeneficiaries
-            : 0;
-        const todayBeneficiaries =
-            parseInt(communityNewBeneficiaryActivity.beneficiaries) -
-            parseInt(communityRemovedBeneficiaryActivity.beneficiaries);
-
-        const previousManagers = previousDate?.totalManagers
-            ? previousDate.totalManagers
-            : 0;
-        const todayManagers =
-            parseInt(communityNewManagerActivity.managers) -
-            parseInt(communityRemovedManagerActivity.managers);
+        const beneficiaries: { count: string; active: boolean } =
+            communityBeneficiaryActivity.find((el: any) => el.active);
+        const removedBeneficiaries: { count: string; active: boolean } =
+            communityBeneficiaryActivity.find((el: any) => !el.active);
 
         return {
             ...(result.toJSON() as UbiCommunityState),
-            claimed: previousClaims.plus(todayClaims).toString(),
-            raised: previousRaise.plus(todayRaise).toString(),
-            beneficiaries: previousBeneficiaries + todayBeneficiaries,
-            manager: previousManagers + todayManagers,
+            claimed: communityClaimActivity.amount,
+            raised: communityInflowActivity.amount,
+            beneficiaries: beneficiaries ? Number(beneficiaries.count) : 0,
+            removedBeneficiaries: removedBeneficiaries
+                ? Number(removedBeneficiaries.count)
+                : 0,
+            managers: communityManagerActivity,
         };
     }
 
@@ -1797,7 +1618,10 @@ export default class CommunityService {
         };
     }
 
-    private static _generateInclude(fields: any, extended?: string): Includeable[] {
+    private static _generateInclude(
+        fields: any,
+        extended?: string
+    ): Includeable[] {
         const extendedInclude: Includeable[] = [];
         if (fields.suspect) {
             extendedInclude.push({
@@ -1851,40 +1675,27 @@ export default class CommunityService {
         const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
 
         const dailyState = fields.dailyState
-        ? fields.dailyState.length > 0
-            ? fields.dailyState
-            : { exclude: stateExclude }
-        : [];
+            ? fields.dailyState.length > 0
+                ? fields.dailyState
+                : { exclude: stateExclude }
+            : [];
         extendedInclude.push({
             attributes: dailyState,
             model: this.ubiCommunityDailyState,
             as: 'dailyState',
             duplicating: false,
             where: {
-                date: yesterdayDate
+                date: yesterdayDate,
             },
             required: false,
         });
 
-        const stateAttributes = fields.state
-            ? fields.state.length > 0
-                ? fields.state.filter(
-                      (el: string) => !stateExclude.includes(el)
-                  )
-                : { exclude: stateExclude }
-            : [];
-        extendedInclude.push({
-            model: this.ubiCommunityState,
-            attributes: stateAttributes,
-            as: 'state',
-        });
-
         if (extended || fields.metrics) {
             const metricsAttributes = fields.metrics
-            ? fields.metrics.length > 0
-                ? fields.metrics
-                : undefined
-            : [];
+                ? fields.metrics.length > 0
+                    ? fields.metrics
+                    : undefined
+                : [];
 
             extendedInclude.push({
                 attributes: metricsAttributes,
@@ -1968,7 +1779,7 @@ export default class CommunityService {
                 as: 'dailyState',
                 duplicating: false,
                 where: {
-                    date: yesterdayDate
+                    date: yesterdayDate,
                 },
                 required: false,
             },

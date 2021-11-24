@@ -15,13 +15,13 @@ import ManagerService from '../../../src/services/ubi/managers';
 import { calcuateCommunitiesMetrics } from '../../../src/worker/jobs/cron/community';
 import { verifyDeletedAccounts } from '../../../src/worker/jobs/cron/user';
 import BeneficiaryFactory from '../../factories/beneficiary';
+import ClaimFactory from '../../factories/claim';
 import CommunityFactory from '../../factories/community';
+import InflowFactory from '../../factories/inflow';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 import { randomTx, jumpToTomorrowMidnight } from '../../utils/utils';
-import InflowFactory from '../../factories/inflow';
-import ClaimFactory from '../../factories/claim';
 
 // in this test there are users being assined with suspicious activity and others being removed
 describe('community service', () => {
@@ -620,8 +620,8 @@ describe('community service', () => {
                         community.publicId
                     );
                     for (const beneficiary of beneficiaries) {
-                        await ClaimFactory(beneficiary, community)
-                        await ClaimFactory(beneficiary, community)
+                        await ClaimFactory(beneficiary, community);
+                        await ClaimFactory(beneficiary, community);
                     }
                 }
 
@@ -769,8 +769,8 @@ describe('community service', () => {
                         community.publicId
                     );
                     for (const beneficiary of beneficiaries) {
-                        await ClaimFactory(beneficiary, community)
-                        await ClaimFactory(beneficiary, community)
+                        await ClaimFactory(beneficiary, community);
+                        await ClaimFactory(beneficiary, community);
                     }
                 }
 
@@ -874,8 +874,8 @@ describe('community service', () => {
                         community.publicId
                     );
                     for (const beneficiary of beneficiaries) {
-                        await ClaimFactory(beneficiary, community)
-                        await ClaimFactory(beneficiary, community)
+                        await ClaimFactory(beneficiary, community);
+                        await ClaimFactory(beneficiary, community);
                     }
                 }
 
@@ -1099,7 +1099,7 @@ describe('community service', () => {
                 );
 
                 const result = await CommunityService.list({
-                    fields: 'id;publicId;contractAddress;contract.*;state.claimed;cover.*',
+                    fields: 'id;publicId;contractAddress;contract.*;cover.*',
                 });
 
                 expect(result.rows[0]).to.have.deep.keys([
@@ -1107,7 +1107,6 @@ describe('community service', () => {
                     'publicId',
                     'contractAddress',
                     'contract',
-                    'state',
                     'cover',
                 ]);
                 expect(result.rows[0].contract).to.have.deep.keys([
@@ -1121,7 +1120,6 @@ describe('community service', () => {
                     'createdAt',
                     'updatedAt',
                 ]);
-                expect(result.rows[0].state).to.have.deep.keys(['claimed']);
                 expect(result.rows[0].cover).to.have.deep.keys([
                     'id',
                     'url',
