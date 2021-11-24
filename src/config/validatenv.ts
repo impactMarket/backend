@@ -26,7 +26,8 @@ function validateEnv() {
         NODE_ENV: str(),
         PORT: port({ devDefault: onlyOnTestEnv(5000) }),
         DATABASE_URL: str(),
-        CHAIN_JSON_RPC_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
+        CHAIN_JSON_RPC_URL: str({ devDefault: onlyOnTestEnv('http://localhost:8545') }),
+        CHAIN_JSON_RPC_URL_FALLBACK: str({ devDefault: onlyOnTestEnv('http://localhost:8545') }),
         JWT_SECRET: str({ devDefault: onlyOnTestEnv('xyz') }),
         CUSD_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         IMPACT_MARKET_CONTRACT_ADDRESS: str({
