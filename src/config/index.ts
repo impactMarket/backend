@@ -19,6 +19,11 @@ export default {
     jsonRpcUrl: validatedEnv.CHAIN_JSON_RPC_URL,
 
     /**
+     * json rpc url fallback
+     */
+    jsonRpcUrlFallback: validatedEnv.CHAIN_JSON_RPC_URL_FALLBACK,
+
+    /**
      * Your secret sauce
      */
     jwtSecret: validatedEnv.JWT_SECRET,

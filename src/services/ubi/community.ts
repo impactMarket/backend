@@ -1658,6 +1658,14 @@ export default class CommunityService {
             });
         }
 
+        if (fields.proposal) {
+            extendedInclude.push({
+                // all attributes
+                model: models.appProposal,
+                as: 'proposal',
+            });
+        }
+
         if (fields.contract) {
             extendedInclude.push({
                 attributes:

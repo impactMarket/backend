@@ -961,6 +961,58 @@ describe('community service', () => {
                 });
             });
 
+            it('filter with specific fields (proposal)', async () => {
+                const proposal = await models.appProposal.create({
+                    id: 5,
+                    status: 0,
+                    endBlock: 1150,
+                });
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        proposalId: proposal.id,
+                    },
+                ]);
+
+                const result = await CommunityService.list({
+                    fields: 'id;publicId;contract.maxClaim;proposal.*',
+                });
+
+                expect(result.rows[0]).to.have.deep.keys([
+                    'id',
+                    'publicId',
+                    'contract',
+                    'proposal',
+                ]);
+                expect(result.rows[0].contract).to.have.deep.keys(['maxClaim']);
+                expect(result.rows[0].proposal).to.have.deep.keys([
+                    'id',
+                    'status',
+                    'endBlock',
+                ]);
+                expect(result.rows[0]).to.include({
+                    id: communities[0].id,
+                    publicId: communities[0].publicId,
+                });
+                expect(result.rows[0].contract).to.include({
+                    maxClaim: communities[0]!.contract!.maxClaim,
+                });
+                expect(result.rows[0].proposal).to.include({
+                    id: proposal.id,
+                });
+            });
+
             it('filter with grouped fields', async () => {
                 const communities = await CommunityFactory([
                     {
@@ -1003,6 +1055,7 @@ describe('community service', () => {
                     'id',
                     'language',
                     'name',
+                    'proposalId',
                     'publicId',
                     'requestByAddress',
                     'review',
@@ -1014,11 +1067,11 @@ describe('community service', () => {
                 expect(result.rows[0].contract).to.have.deep.keys([
                     'claimAmount',
                     'maxClaim',
+                    'blocked',
+                    'decreaseStep',
                     'baseInterval',
                     'incrementInterval',
                     'communityId',
-                    'blocked',
-                    'decreaseStep',
                     'createdAt',
                     'updatedAt',
                 ]);

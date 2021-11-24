@@ -1,7 +1,11 @@
+import { parseEther } from '@ethersproject/units';
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
+import config from '../../../src/config';
 
+import CommunityABI from '../../../src/contracts/CommunityABI.json';
+import OldCommunityABI from '../../../src/contracts/OldCommunityABI.json';
 import { models } from '../../../src/database';
 import ImMetadataService from '../../../src/services/app/imMetadata';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
@@ -11,8 +15,8 @@ import ManagerService from '../../../src/services/ubi/managers';
 import { ChainSubscribers } from '../../../src/worker/jobs/chainSubscribers';
 import { communityAddressesAndIds } from '../../fake/community';
 import { waitForStubCall } from '../../utils';
-import CommunityOldContractJSON from './Community.json';
 import CommunityContractJSON from './CommunityContract.json';
+import OldCommunityContractJSON from './OldCommunity.json';
 import cUSDContractJSON from './cUSD.json';
 
 describe('communityContract', () => {
@@ -23,7 +27,6 @@ describe('communityContract', () => {
     let CommunityOldContract: ethers.Contract;
     let communityUpdated: SinonStub<any, any>;
     let findCommunity: SinonStub<any, any>;
-    let beneficiaryUpdated: SinonStub<any, any>;
     let CommunityContractFactory: ethers.ContractFactory;
     const communities = new Map<string, string>();
     const communitiesId = new Map<string, number>();
@@ -56,7 +59,6 @@ describe('communityContract', () => {
         communityUpdated.returns(Promise.resolve([1, {} as any]));
         findCommunity = stub(models.community, 'findOne');
         findCommunity.returns(Promise.resolve({ publicId: 'public-id' }));
-        beneficiaryUpdated = stub(models.beneficiary, 'update');
         beneficiaryAdd = stub(BeneficiaryService, 'add');
         beneficiaryAdd.returns(Promise.resolve(true));
         beneficiaryRemoved = stub(BeneficiaryService, 'remove');
@@ -94,39 +96,39 @@ describe('communityContract', () => {
             provider.getSigner(0)
         );
         cUSD = await cUSDFactory.deploy();
+        stub(config, 'cUSDContractAddress').value(cUSD.address);
 
         CommunityContractFactory = new ethers.ContractFactory(
-            CommunityContractJSON.abi,
+            CommunityABI,
             CommunityContractJSON.bytecode,
             provider.getSigner(0)
         );
 
         const CommunityOldContractFactory = new ethers.ContractFactory(
-            CommunityOldContractJSON.abi,
-            CommunityOldContractJSON.bytecode,
+            OldCommunityABI,
+            OldCommunityContractJSON.bytecode,
             provider.getSigner(0)
         );
 
         CommunityContract = (
             await CommunityContractFactory.deploy(
-                accounts[1],
-                '2000000000000000000',
-                '1500000000000000000000',
-                '1000000000000000000',
+                [accounts[1]],
+                parseEther('1').toString(),
+                parseEther('150').toString(),
+                parseEther('0.01').toString(),
                 86400,
                 300,
-                '2000000000000000000',
-                '1500000000000000000000',
-                '0x0000000000000000000000000000000000000000',
-                []
+                parseEther('0.02').toString(),
+                parseEther('15').toString(),
+                '0x0000000000000000000000000000000000000000'
             )
         ).connect(provider.getSigner(1));
 
         CommunityOldContract = (
             await CommunityOldContractFactory.deploy(
                 accounts[1],
-                '2000000000000000000',
-                '1500000000000000000000',
+                parseEther('1').toString(),
+                parseEther('150').toString(),
                 86400,
                 300,
                 '0x0000000000000000000000000000000000000000',
@@ -261,49 +263,6 @@ describe('communityContract', () => {
         );
     });
 
-    it('add manager to block list', async () => {
-        await CommunityContract.addManager(accounts[3]);
-        await waitForStubCall(managerAdd, 1);
-
-        await CommunityContract.addManagersToBlockList([accounts[3]]);
-        await waitForStubCall(managerUpdate, 1);
-        assert.callCount(managerUpdate, 1);
-        assert.calledWith(
-            managerUpdate.getCall(0),
-            { blocked: true },
-            {
-                where: {
-                    address: accounts[3],
-                    communityId: thisCommunityPublicId,
-                },
-            }
-        );
-    });
-
-    it('remove manager to block list', async () => {
-        await CommunityContract.addManager(accounts[3]);
-        await waitForStubCall(managerAdd, 1);
-
-        await CommunityContract.addManagersToBlockList([accounts[3]]);
-        await waitForStubCall(managerUpdate, 1);
-
-        managerUpdate.reset();
-
-        await CommunityContract.removeManagersFromBlockList([accounts[3]]);
-        await waitForStubCall(managerUpdate, 1);
-        assert.callCount(managerUpdate, 1);
-        assert.calledWith(
-            managerUpdate.getCall(0),
-            { blocked: false },
-            {
-                where: {
-                    address: accounts[3],
-                    communityId: thisCommunityPublicId,
-                },
-            }
-        );
-    });
-
     it('lock community', async () => {
         await CommunityContract.lock();
         await waitForStubCall(communityLock, 1);
@@ -341,18 +300,18 @@ describe('communityContract', () => {
 
     it('update beneficiary params', async () => {
         await CommunityContract.updateBeneficiaryParams(
-            '2000000000000000000',
-            '1500000000000000000000',
-            '1000000000000000000',
+            parseEther('2').toString(),
+            parseEther('160').toString(),
+            parseEther('0.02').toString(),
             86400,
             300
         );
         await waitForStubCall(beneficiaryParamsUpdate, 1);
         assert.callCount(beneficiaryParamsUpdate, 1);
         assert.calledWith(beneficiaryParamsUpdate.getCall(0), thisCommunityId, {
-            claimAmount: '2000000000000000000',
-            maxClaim: '1500000000000000000000',
-            decreaseStep: '1000000000000000000',
+            claimAmount: parseEther('2').toString(),
+            maxClaim: parseEther('160').toString(),
+            decreaseStep: parseEther('0.02').toString(),
             baseInterval: 86400,
             incrementInterval: 300,
         });

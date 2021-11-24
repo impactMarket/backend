@@ -30,6 +30,7 @@ interface ICreateProps {
         percentage: number;
         suspect: number;
     };
+    proposalId?: number;
 }
 /**
  * Generate an object which container attributes needed

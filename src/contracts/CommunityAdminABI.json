@@ -16,37 +16,55 @@
             {
                 "indexed": true,
                 "internalType": "address",
-                "name": "_communityAddress",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "_firstManager",
+                "name": "communityAddress",
                 "type": "address"
             },
             {
                 "indexed": false,
+                "internalType": "address[]",
+                "name": "managers",
+                "type": "address[]"
+            },
+            {
+                "indexed": false,
                 "internalType": "uint256",
-                "name": "_claimAmount",
+                "name": "claimAmount",
                 "type": "uint256"
             },
             {
                 "indexed": false,
                 "internalType": "uint256",
-                "name": "_maxClaim",
+                "name": "maxClaim",
                 "type": "uint256"
             },
             {
                 "indexed": false,
                 "internalType": "uint256",
-                "name": "_baseInterval",
+                "name": "decreaseStep",
                 "type": "uint256"
             },
             {
                 "indexed": false,
                 "internalType": "uint256",
-                "name": "_incrementInterval",
+                "name": "baseInterval",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "incrementInterval",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "minTranche",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "maxTranche",
                 "type": "uint256"
             }
         ],
@@ -57,21 +75,21 @@
         "anonymous": false,
         "inputs": [
             {
+                "indexed": false,
+                "internalType": "address[]",
+                "name": "managers",
+                "type": "address[]"
+            },
+            {
                 "indexed": true,
                 "internalType": "address",
-                "name": "_firstManager",
+                "name": "communityAddress",
                 "type": "address"
             },
             {
                 "indexed": true,
                 "internalType": "address",
-                "name": "_communityAddress",
-                "type": "address"
-            },
-            {
-                "indexed": true,
-                "internalType": "address",
-                "name": "_previousCommunityAddress",
+                "name": "previousCommunityAddress",
                 "type": "address"
             }
         ],
@@ -84,7 +102,7 @@
             {
                 "indexed": true,
                 "internalType": "address",
-                "name": "_communityAddress",
+                "name": "communityAddress",
                 "type": "address"
             }
         ],
@@ -94,9 +112,9 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "firstManager_",
-                "type": "address"
+                "internalType": "address[]",
+                "name": "managers_",
+                "type": "address[]"
             },
             {
                 "internalType": "uint256",
@@ -110,12 +128,27 @@
             },
             {
                 "internalType": "uint256",
+                "name": "decreaseStep_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
                 "name": "baseInterval_",
                 "type": "uint256"
             },
             {
                 "internalType": "uint256",
                 "name": "incrementInterval_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "minTranche_",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "maxTranche_",
                 "type": "uint256"
             }
         ],
@@ -140,9 +173,9 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "firstManager_",
-                "type": "address"
+                "internalType": "address[]",
+                "name": "managers_",
+                "type": "address[]"
             },
             {
                 "internalType": "address",

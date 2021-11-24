@@ -46,6 +46,7 @@ import { initializeUbiCommunityPromoter } from './ubi/ubiCommunityPromoter';
 import { initializeUbiCommunitySuspect } from './ubi/ubiCommunitySuspect';
 import { initializeUbiPromoter } from './ubi/ubiPromoter';
 import { initializeUbiPromoterSocialMedia } from './ubi/ubiPromoterSocialMedia';
+import { initializeAppProposal } from './app/appProposal';
 
 export default function initModels(sequelize: Sequelize): void {
     // app
@@ -61,6 +62,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAppMediaThumbnail(sequelize);
     initializeAppNotification(sequelize);
     initializeUbiBeneficiarySurvey(sequelize);
+    initializeAppProposal(sequelize);
 
     // ubi
     initializeCommunity(sequelize);
