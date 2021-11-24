@@ -62,6 +62,21 @@ export default class StoryService {
             };
         }
         if (story.communityId !== undefined) {
+            const community = await this.community.findOne({
+                attributes: ['id'],
+                where: {
+                    id: story.communityId,
+                    visibility: 'public',
+                },
+            });
+
+            if (!community) {
+                throw new BaseError(
+                    'PRIVATE_COMMUNITY',
+                    'story cannot be added in private communities'
+                );
+            }
+
             storyCommunityToAdd = {
                 storyCommunity: [
                     {
@@ -172,8 +187,12 @@ export default class StoryService {
             ],
             where: { byAddress: onlyFromAddress, isPublic: true },
             order: [['postedAt', 'DESC']],
-            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
-            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
+            offset: query.offset
+                ? parseInt(query.offset, 10)
+                : config.defaultOffset,
+            limit: query.limit
+                ? parseInt(query.limit, 10)
+                : config.defaultLimit,
         });
 
         let result: BeneficiaryAttributes | ManagerAttributes;
@@ -351,8 +370,12 @@ export default class StoryService {
                 },
             },
             order: [['postedAt', 'DESC']],
-            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
-            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
+            offset: query.offset
+                ? parseInt(query.offset, 10)
+                : config.defaultOffset,
+            limit: query.limit
+                ? parseInt(query.limit, 10)
+                : config.defaultLimit,
         });
         const communitiesStories = r.rows.map((c) => {
             const content = c.toJSON() as StoryContent;
@@ -419,8 +442,12 @@ export default class StoryService {
                     [Op.eq]: true,
                 },
             } as any,
-            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
-            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
+            offset: query.offset
+                ? parseInt(query.offset, 10)
+                : config.defaultOffset,
+            limit: query.limit
+                ? parseInt(query.limit, 10)
+                : config.defaultLimit,
             order: [['storyContent', 'postedAt', 'DESC']],
         });
 
