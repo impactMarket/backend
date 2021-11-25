@@ -576,15 +576,14 @@ class ChainSubscribers {
                     const calldatas = [
                         ethers.utils.defaultAbiCoder.decode(
                             [
-                                'address',
-                                'uint256',
-                                'uint256',
-                                'uint256',
-                                'uint256',
-                                'uint256',
-                                'uint256',
-                                'uint256',
                                 'address[]',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
+                                'uint256',
                             ],
                             parsedLog.args[5][isProposalToCommunity[index]]
                         ),
@@ -593,7 +592,7 @@ class ChainSubscribers {
                     const community = await models.community.findOne({
                         attributes: ['id'],
                         where: {
-                            requestByAddress: calldatas[0][0],
+                            requestByAddress: calldatas[0][0][0],
                             '$contract.claimAmount$':
                                 calldatas[0][1].toString(),
                             '$contract.maxClaim$': calldatas[0][2].toString(),
