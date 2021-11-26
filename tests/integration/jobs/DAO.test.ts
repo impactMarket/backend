@@ -122,24 +122,23 @@ describe('DAO', () => {
         const targets = [ethers.Wallet.createRandom().address];
         const values = [0];
         const signatures = [
-            'addCommunity(address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,address[])',
+            'addCommunity(address[],uint256,uint256,uint256,uint256,uint256,uint256,uint256)',
         ];
 
         const calldatas = [
             ethers.utils.defaultAbiCoder.encode(
                 [
-                    'address',
-                    'uint256',
-                    'uint256',
-                    'uint256',
-                    'uint256',
-                    'uint256',
-                    'uint256',
-                    'uint256',
                     'address[]',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
                 ],
                 [
-                    accounts[1],
+                    [accounts[1]],
                     parseEther('1'),
                     parseEther('100'),
                     parseEther('0.01'),
@@ -147,7 +146,6 @@ describe('DAO', () => {
                     60,
                     '20000000000000000',
                     '5000000000000000000',
-                    [],
                 ]
             ),
         ];
