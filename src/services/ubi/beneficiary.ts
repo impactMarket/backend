@@ -7,14 +7,23 @@ import {
     UbiBeneficiarySurvey,
     UbiBeneficiarySurveyCreation,
 } from '@interfaces/ubi/ubiBeneficiarySurvey';
-import { UbiBeneficiaryTransactionCreation } from '@interfaces/ubi/ubiBeneficiaryTransaction';
+import {
+    UbiBeneficiaryTransaction,
+    UbiBeneficiaryTransactionCreation,
+} from '@interfaces/ubi/ubiBeneficiaryTransaction';
 import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';
 import { isAddress } from '@utils/util';
 import { ethers } from 'ethers';
-import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
+import {
+    Op,
+    WhereAttributeHash,
+    literal,
+    QueryTypes,
+    CreateOptions,
+} from 'sequelize';
 import { Literal, Where } from 'sequelize/types/lib/utils';
 
 import config from '../../config';
@@ -361,15 +370,16 @@ export default class BeneficiaryService {
     }
 
     public static async addTransaction(
-        beneficiaryTx: UbiBeneficiaryTransactionCreation
+        values: UbiBeneficiaryTransactionCreation,
+        options?: CreateOptions<UbiBeneficiaryTransaction>
     ): Promise<void> {
         try {
-            await models.ubiBeneficiaryTransaction.create(beneficiaryTx);
+            await models.ubiBeneficiaryTransaction.create(values, options);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
-                    'Error inserting new UbiBeneficiaryTransaction. Data = ' +
-                        JSON.stringify(beneficiaryTx)
+                    'Error inserting new BeneficiaryTransaction. Data = ' +
+                        JSON.stringify(values)
                 );
                 Logger.error(e);
             }

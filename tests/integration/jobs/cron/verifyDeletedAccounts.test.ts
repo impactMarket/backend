@@ -123,13 +123,15 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             txAt: new Date('2021-01-02'),
         });
 
-        await InflowService.add(
-            users[1].address,
-            communities[0].publicId,
-            '30',
+        await InflowService.add({
+            from: users[1].address,
+            contractAddress: communities[0].contractAddress!,
+            amount: '30',
+            value: '30',
+            asset: 0,
             tx,
-            new Date()
-        );
+            txAt: new Date(),
+        });
 
         const storyService = new StoryService();
         const story = await storyService.add(users[0].address, {
@@ -338,7 +340,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             0,
             10,
             {
-                active: true
+                active: true,
             }
         );
 

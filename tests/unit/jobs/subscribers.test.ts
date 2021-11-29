@@ -33,7 +33,7 @@ describe('[jobs] subscribers', () => {
     const communitiesVisibility = new Map<string, boolean>();
     let accounts: string[] = [];
     let beneficiaryAdd: SinonStub<any, any>;
-    let beneficiaryTransactionAdd: SinonStub<[any], Promise<void>>;
+    let beneficiaryTransactionAdd: SinonStub<any, any>;
     let beneficiaryRemove: SinonStub<any, any>;
     let claimAdd: SinonStub<any, any>;
     let managerAdd: SinonStub<any, any>;
@@ -75,6 +75,7 @@ describe('[jobs] subscribers', () => {
     const ganacheProvider = ganache.provider({
         mnemonic:
             'alter toy tortoise hard lava aunt second lamp sister galaxy parent bargain',
+        // blockTime: 2, // two seconds block time
     });
     //
     const thisCommunityPublicId = 'dc5b4ac6-2fc1-4f14-951a-fae2dcd904bd';
@@ -555,14 +556,15 @@ describe('[jobs] subscribers', () => {
             .transfer(communityContract.address, '2000000000000000000');
         await waitForStubCall(inflowAdd, 1);
         assert.callCount(inflowAdd, 1);
-        assert.calledWith(
-            inflowAdd.getCall(0),
-            accounts[2],
-            communityContract.address,
-            '2000000000000000000',
-            match.any,
-            match.any
-        );
+        assert.calledWith(inflowAdd.getCall(0), {
+            from: accounts[2],
+            contractAddress: communityContract.address,
+            amount: '2000000000000000000',
+            value: match.any,
+            asset: match.any,
+            tx: match.any,
+            txAt: match.any,
+        });
     });
 
     it('donation: to DAO', async () => {
@@ -577,14 +579,15 @@ describe('[jobs] subscribers', () => {
             .transfer(DAOContract.address, '2000000000000000000');
         await waitForStubCall(inflowAdd, 1);
         assert.callCount(inflowAdd, 1);
-        assert.calledWith(
-            inflowAdd.getCall(0),
-            accounts[3],
-            DAOContract.address,
-            '2000000000000000000',
-            match.any,
-            match.any
-        );
+        assert.calledWith(inflowAdd.getCall(0), {
+            from: accounts[3],
+            contractAddress: DAOContract.address,
+            amount: '2000000000000000000',
+            value: match.any,
+            asset: match.any,
+            tx: match.any,
+            txAt: match.any,
+        });
     });
 
     it('beneficiary transaction: to a non beneficiary user', async () => {

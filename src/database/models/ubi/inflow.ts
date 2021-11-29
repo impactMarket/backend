@@ -6,7 +6,7 @@ export enum AssetType {
     CELO,
 }
 
-interface InflowAttributes {
+export interface InflowAttributes {
     id: number;
     from: string;
     contractAddress: string;
