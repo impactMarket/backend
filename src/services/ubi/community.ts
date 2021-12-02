@@ -16,7 +16,6 @@ import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { fetchData } from '@utils/dataFetching';
 import { notifyManagerAdded } from '@utils/util';
-import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import {
     Op,
