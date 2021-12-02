@@ -318,7 +318,10 @@ export default class CommunityService {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
         const orderBeneficiary: OrderItem[] = [];
-        let orderOutOfFunds: string | undefined;
+        let orderOutOfFunds = {
+            active: false,
+            orderType: '' 
+        };
 
         let beneficiariesState:
             | [
@@ -443,7 +446,8 @@ export default class CommunityService {
                             communitiesId = result.map((el) => el.id);
                         } else {
                             // list communities out of funds after
-                            orderOutOfFunds = orderType;
+                            orderOutOfFunds.active = true;
+                            orderOutOfFunds.orderType = orderType;
                         }
                         break;
                     }
@@ -455,7 +459,7 @@ export default class CommunityService {
                         break;
                     default: {
                         // check if there was another order previously
-                        if (orderOption.length === 0 && !orderOutOfFunds) {
+                        if (orderOption.length === 0 && !orderOutOfFunds.active) {
                             beneficiariesState =
                                 await this._getBeneficiaryState(
                                     {
@@ -488,6 +492,9 @@ export default class CommunityService {
                     offset: query.offset,
                 },
                 extendedWhere
+            );
+            communitiesId = beneficiariesState!.map(
+                (el) => el.id
             );
         }
 
@@ -532,6 +539,10 @@ export default class CommunityService {
                 },
                 include,
             });
+            // re-order
+            if (orderOption.length > 0) {
+                communitiesId = communitiesResult!.map((el) => el.id);
+            }
         } else {
             communitiesResult = await this.community.findAll({
                 attributes,
@@ -552,13 +563,13 @@ export default class CommunityService {
             communitiesId = communitiesResult!.map((el) => el.id);
         }
 
-        if (orderOutOfFunds) {
+        if (orderOutOfFunds.active) {
             const result = await this._getOutOfFunds(
                 {
                     limit: query.limit,
                     offset: query.offset,
                 },
-                undefined,
+                orderOutOfFunds.orderType,
                 communitiesId
             );
             // re-order by out of funds

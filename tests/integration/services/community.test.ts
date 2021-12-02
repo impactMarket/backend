@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
 import Sinon, { assert, replace, spy } from 'sinon';
-import tk from 'timekeeper';
 
 import { models } from '../../../src/database';
 import { AppMediaContent } from '../../../src/interfaces/app/appMediaContent';
@@ -12,16 +11,13 @@ import { CommunityContentStorage } from '../../../src/services/storage';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
 import CommunityService from '../../../src/services/ubi/community';
 import ManagerService from '../../../src/services/ubi/managers';
-import { calcuateCommunitiesMetrics } from '../../../src/worker/jobs/cron/community';
 import { verifyDeletedAccounts } from '../../../src/worker/jobs/cron/user';
 import BeneficiaryFactory from '../../factories/beneficiary';
-import ClaimFactory from '../../factories/claim';
 import CommunityFactory from '../../factories/community';
-import InflowFactory from '../../factories/inflow';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
-import { randomTx, jumpToTomorrowMidnight } from '../../utils/utils';
+import { randomTx } from '../../utils/utils';
 
 // in this test there are users being assined with suspicious activity and others being removed
 describe('community service', () => {
@@ -609,8 +605,7 @@ describe('community service', () => {
                 ]);
 
                 for (const community of communities) {
-                    await InflowFactory(community);
-                    const beneficiaries = await BeneficiaryFactory(
+                    await BeneficiaryFactory(
                         await UserFactory({
                             n:
                                 community.requestByAddress === users[0].address
@@ -619,15 +614,7 @@ describe('community service', () => {
                         }),
                         community.publicId
                     );
-                    for (const beneficiary of beneficiaries) {
-                        await ClaimFactory(beneficiary, community);
-                        await ClaimFactory(beneficiary, community);
-                    }
                 }
-
-                tk.travel(jumpToTomorrowMidnight());
-
-                await calcuateCommunitiesMetrics();
 
                 const result = await CommunityService.list({});
 
@@ -872,10 +859,10 @@ describe('community service', () => {
                 });
 
                 expect(result.rows[0]).to.include({
-                    id: communities[2].id,
-                    name: communities[2].name,
-                    country: communities[2].country,
-                    requestByAddress: users[2].address,
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
                 });
                 expect(result.rows[1]).to.include({
                     id: communities[0].id,
@@ -884,10 +871,10 @@ describe('community service', () => {
                     requestByAddress: users[0].address,
                 });
                 expect(result.rows[2]).to.include({
-                    id: communities[1].id,
-                    name: communities[1].name,
-                    country: communities[1].country,
-                    requestByAddress: users[1].address,
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address,
                 });
             });
         });
