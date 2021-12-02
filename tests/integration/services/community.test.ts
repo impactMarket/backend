@@ -758,8 +758,7 @@ describe('community service', () => {
                 ]);
 
                 for (const community of communities) {
-                    await InflowFactory(community);
-                    const beneficiaries = await BeneficiaryFactory(
+                    await BeneficiaryFactory(
                         await UserFactory({
                             n:
                                 community.requestByAddress === users[1].address
@@ -768,15 +767,7 @@ describe('community service', () => {
                         }),
                         community.publicId
                     );
-                    for (const beneficiary of beneficiaries) {
-                        await ClaimFactory(beneficiary, community);
-                        await ClaimFactory(beneficiary, community);
-                    }
                 }
-
-                tk.travel(jumpToTomorrowMidnight());
-
-                await calcuateCommunitiesMetrics();
 
                 const result = await CommunityService.list({
                     orderBy: 'nearest:ASC;bigger:DESC',
@@ -785,22 +776,22 @@ describe('community service', () => {
                 });
 
                 expect(result.rows[0]).to.include({
-                    id: communities[2].id,
-                    name: communities[2].name,
-                    country: communities[2].country,
-                    requestByAddress: users[2].address,
-                });
-                expect(result.rows[1]).to.include({
                     id: communities[1].id,
                     name: communities[1].name,
                     country: communities[1].country,
                     requestByAddress: users[1].address,
                 });
-                expect(result.rows[2]).to.include({
+                expect(result.rows[1]).to.include({
                     id: communities[0].id,
                     name: communities[0].name,
                     country: communities[0].country,
                     requestByAddress: users[0].address,
+                });
+                expect(result.rows[2]).to.include({
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address,
                 });
             });
 
@@ -863,8 +854,7 @@ describe('community service', () => {
                 ]);
 
                 for (const community of communities) {
-                    await InflowFactory(community);
-                    const beneficiaries = await BeneficiaryFactory(
+                    await BeneficiaryFactory(
                         await UserFactory({
                             n:
                                 community.requestByAddress === users[2].address
@@ -873,15 +863,7 @@ describe('community service', () => {
                         }),
                         community.publicId
                     );
-                    for (const beneficiary of beneficiaries) {
-                        await ClaimFactory(beneficiary, community);
-                        await ClaimFactory(beneficiary, community);
-                    }
                 }
-
-                tk.travel(jumpToTomorrowMidnight());
-
-                await calcuateCommunitiesMetrics();
 
                 const result = await CommunityService.list({
                     orderBy: 'bigger:ASC;nearest:DESC',
@@ -896,16 +878,16 @@ describe('community service', () => {
                     requestByAddress: users[2].address,
                 });
                 expect(result.rows[1]).to.include({
-                    id: communities[1].id,
-                    name: communities[1].name,
-                    country: communities[1].country,
-                    requestByAddress: users[1].address,
-                });
-                expect(result.rows[2]).to.include({
                     id: communities[0].id,
                     name: communities[0].name,
                     country: communities[0].country,
                     requestByAddress: users[0].address,
+                });
+                expect(result.rows[2]).to.include({
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
                 });
             });
         });

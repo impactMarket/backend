@@ -52,11 +52,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             reachOut: string;
             fundingRate: string;
             beneficiaries: number;
-            managers: number;
-            totalClaimed: string;
-            totalRaised: string;
-            totalBeneficiaries: number;
-            totalManagers: number;
         };
     };
 
@@ -500,27 +495,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         raw: true,
     })) as any;
 
-    const previousState: {
-        communityId: number;
-        totalClaimed: string;
-        totalRaised: string;
-        totalBeneficiaries: number;
-        totalManagers: number;
-    }[] = await models.ubiCommunityDailyState.findAll({
-        attributes: [
-            [
-                literal('DISTINCT ON ("communityId") "communityId"'),
-                'communityId',
-            ],
-            'totalClaimed',
-            'totalRaised',
-            'totalBeneficiaries',
-            'totalManagers',
-        ],
-        order: ['communityId', ['date', 'DESC']],
-        raw: true,
-    });
-
     // build communities object
     const communitiesState = communitiesStatePre.map(
         (c) => c.toJSON() as CommunityAttributes
@@ -551,15 +525,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const crb = communityRemovedBeneficiaryActivity.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
-        const cnm = communityNewManagerActivity.find(
-            (c) => parseInt(c.id, 10) === communitiesState[index].id
-        );
-        const crm = communityRemovedManagerActivity.find(
-            (c) => parseInt(c.id, 10) === communitiesState[index].id
-        );
-        const pcm = previousState.find(
-            (c) => c.communityId === communitiesState[index].id
-        );
         communities.push({
             ...communitiesState[index],
             beneficiariesClaiming: cn
@@ -575,14 +540,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 ...(cea
                     ? cea
                     : { volume: '0', txs: '0', reach: '0', reachOut: '0' }),
-                ...(pcm
-                    ? pcm
-                    : {
-                          totalClaimed: '0',
-                          totalRaised: '0',
-                          totalBeneficiaries: 0,
-                          totalManagers: 0,
-                      }),
                 fundingRate: cm
                     ? new BigNumber(cm.raised)
                           .minus(cm.claimed)
@@ -597,13 +554,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                               parseInt(crb.beneficiaries, 10),
                       }
                     : { beneficiaries: 0 }),
-                ...(cnm && crm
-                    ? {
-                          managers:
-                              parseInt(cnm.managers, 10) -
-                              parseInt(crm.managers, 10),
-                      }
-                    : { managers: 0 }),
             },
         });
     }
@@ -611,17 +561,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const calculateMetrics = async (community: ICommunityToMetrics) => {
         //
         if (community.activity !== undefined) {
-            const totalClaimed = community.activity.totalClaimed
-                ? new BigNumber(community.activity.totalClaimed).plus(
-                      new BigNumber(community.activity.claimed)
-                  )
-                : '0';
-            const totalRaised = community.activity.totalRaised
-                ? new BigNumber(community.activity.totalRaised).plus(
-                      new BigNumber(community.activity.raised)
-                  )
-                : '0';
-
             await models.ubiCommunityDailyState.create({
                 transactions: parseInt(community.activity.txs, 10),
                 reach: parseInt(community.activity.reach, 10),
@@ -636,10 +575,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 beneficiaries: community.activity.beneficiaries,
                 communityId: community.id,
                 date: yesterday,
-                totalClaimed: totalClaimed.toString(),
-                totalRaised: totalRaised.toString(),
-                totalBeneficiaries: community.activity.totalBeneficiaries + community.activity.beneficiaries,
-                totalManagers: community.activity.totalManagers + community.activity.managers,
             });
         }
         // if no activity, do not calculate

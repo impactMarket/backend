@@ -13,10 +13,6 @@ export interface UbiCommunityDailyState {
     reachOut: number;
     fundingRate: number;
     date: Date;
-    totalClaimed: string;
-    totalRaised: string;
-    totalBeneficiaries: number;
-    totalManagers: number;
 }
 export interface UbiCommunityDailyStateCreation {
     communityId: number;
@@ -32,8 +28,4 @@ export interface UbiCommunityDailyStateCreation {
     reachOut: number;
     fundingRate: number;
     date: Date;
-    totalClaimed: string;
-    totalRaised: string;
-    totalBeneficiaries: number;
-    totalManagers: number;
 }

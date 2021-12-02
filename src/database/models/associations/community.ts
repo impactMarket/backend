@@ -109,4 +109,9 @@ export function communityAssociation(sequelize: Sequelize) {
         sourceKey: 'proposalId',
         as: 'proposal',
     });
+    sequelize.models.Community.hasMany(sequelize.models.UbiClaimModel, {
+        foreignKey: 'communityId',
+        sourceKey: 'id',
+        as: 'claims',
+    });
 }

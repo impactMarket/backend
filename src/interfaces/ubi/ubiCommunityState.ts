@@ -40,18 +40,18 @@
  *            description: Number of unique backers since contract inception
  */
 export interface UbiCommunityState {
-    communityId: number;
+    communityId?: number;
     claimed: string;
-    claims: number;
+    claims?: number;
     beneficiaries: number; // only in community
-    removedBeneficiaries: number;
-    managers: number;
+    removedBeneficiaries?: number;
+    managers?: number;
     raised: string;
     backers: number;
 
     // timestamps
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export interface UbiCommunityStateCreation {
