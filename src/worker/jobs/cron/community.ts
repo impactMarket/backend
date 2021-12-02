@@ -88,10 +88,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 as: 'contract',
             },
             {
-                model: models.ubiCommunityState,
-                as: 'state',
-            },
-            {
                 attributes: [],
                 model: models.inflow,
                 as: 'inflow',
@@ -249,57 +245,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             {
                 model: models.beneficiary,
                 as: 'beneficiaries',
-                attributes: [],
-                required: false,
-                where: {
-                    updatedAt: { [Op.between]: [yesterday, today] },
-                    active: false,
-                },
-            },
-        ],
-        where: {
-            ...whereCommunity,
-            visibility: 'public',
-        },
-        group: ['Community.id'],
-        order: [['id', 'DESC']],
-        raw: true,
-    })) as any;
-
-    const communityNewManagerActivity: {
-        id: string;
-        managers: string;
-    }[] = (await models.community.findAll({
-        attributes: ['id', [fn('count', col('managers.address')), 'managers']],
-        include: [
-            {
-                model: models.manager,
-                as: 'managers',
-                attributes: [],
-                required: false,
-                where: {
-                    createdAt: { [Op.between]: [yesterday, today] },
-                },
-            },
-        ],
-        where: {
-            ...whereCommunity,
-            visibility: 'public',
-        } as any,
-        group: ['Community.id'],
-        order: [['id', 'DESC']],
-        raw: true,
-    })) as any;
-
-    const communityRemovedManagerActivity: {
-        id: string;
-        managers: string;
-    }[] = (await models.community.findAll({
-        attributes: ['id', [fn('count', col('managers.address')), 'managers']],
-        include: [
-            {
-                model: models.manager,
-                as: 'managers',
                 attributes: [],
                 required: false,
                 where: {
@@ -579,7 +524,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         }
         // if no activity, do not calculate
         if (
-            community.state === undefined ||
             community.contract === undefined ||
             community.beneficiaries === undefined ||
             community.beneficiaries.length === 0 ||
