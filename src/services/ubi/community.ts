@@ -1022,7 +1022,7 @@ export default class CommunityService {
         const communityBeneficiaryActivity = (await this.beneficiary.findAll({
             attributes: [[fn('COUNT', col('address')), 'count'], 'active'],
             where: {
-                communityId: community?.publicId,
+                communityId,
             },
             group: ['active'],
             raw: true,
@@ -1030,7 +1030,7 @@ export default class CommunityService {
 
         const communityManagerActivity = await this.manager.count({
             where: {
-                communityId: community?.publicId,
+                communityId,
                 active: true,
             },
         });

@@ -260,8 +260,8 @@ describe('beneficiary service', () => {
             }
         );
         //
-        assert.callCount(spyBeneficiaryRegistryAdd, 1);
-        assert.calledWith(spyBeneficiaryRegistryAdd.getCall(0), {
+        assert.callCount(spyBeneficiaryRegistryAdd, 2);
+        assert.calledWith(spyBeneficiaryRegistryAdd.getCall(1), {
             address: users[15].address,
             from: users[0].address,
             communityId: communities[0].id,

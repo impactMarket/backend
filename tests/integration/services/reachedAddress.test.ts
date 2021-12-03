@@ -48,7 +48,7 @@ describe('reachedAddress', () => {
             },
         ]);
 
-        await sequelize.models.Community.bulkCreate([
+        const community = await sequelize.models.Community.bulkCreate([
             {
                 publicId: '073ddf28-4a3d-4e05-8570-ff38b656b46f',
                 requestByAddress: '0x002D33893983E187814Be1bdBe9852299829C554',
@@ -96,7 +96,7 @@ describe('reachedAddress', () => {
         await sequelize.models.Beneficiary.bulkCreate([
             {
                 address: '0xd55Fae4769e3240FfFf4c17cd2CC03143e55E420',
-                communityId: '073ddf28-4a3d-4e05-8570-ff38b656b46f',
+                communityId: (community as any)[0].id,
                 txAt: new Date(),
                 claims: 0,
                 lastClaimAt: null,
@@ -109,7 +109,7 @@ describe('reachedAddress', () => {
             },
             {
                 address: '0x002D33893983E187814Be1bdBe9852299829C554',
-                communityId: '073ddf28-4a3d-4e05-8570-ff38b656b46f',
+                communityId: (community as any)[0].id,
                 txAt: new Date(),
                 claims: 0,
                 lastClaimAt: null,
