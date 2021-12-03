@@ -274,8 +274,8 @@ class ChainSubscribers {
             }
 
             const communityAddress = log.address;
-            let communityPublicId = this.communities.get(communityAddress);
-            if (communityPublicId === undefined) {
+            let communityId = this.communitiesId.get(communityAddress)!;
+            if (communityId === undefined) {
                 // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
                 const community =
                     await CommunityService.getOnlyCommunityByContractAddress(
@@ -292,7 +292,11 @@ class ChainSubscribers {
                     );
                     this.communities.set(communityAddress, community.publicId);
                     this.allCommunitiesAddresses.push(communityAddress);
-                    communityPublicId = community.publicId;
+                    this.communitiesId.set(
+                        communityAddress,
+                        community.id
+                    );
+                    communityId = community.id;
                 }
             }
             const isThisCommunityPublic =
@@ -307,7 +311,7 @@ class ChainSubscribers {
                 await BeneficiaryService.add(
                     beneficiaryAddress,
                     managerAddress,
-                    communityPublicId!,
+                    communityId,
                     log.transactionHash,
                     txAt
                 );
@@ -330,13 +334,13 @@ class ChainSubscribers {
             }
 
             try {
-                const communityPublicId =
-                    this.communities.get(communityAddress)!;
+                const communityId =
+                    this.communitiesId.get(communityAddress)!;
                 const txAt = await getBlockTime(log.blockHash);
                 await BeneficiaryService.remove(
                     beneficiaryAddress,
                     managerAddress,
-                    communityPublicId,
+                    communityId,
                     log.transactionHash,
                     txAt
                 );
@@ -360,7 +364,7 @@ class ChainSubscribers {
             const communityAddress = log.address;
             await ManagerService.add(
                 managerAddress,
-                this.communities.get(communityAddress)!
+                this.communitiesId.get(communityAddress)!
             );
             result = parsedLog;
         } else if (parsedLog.name === 'ManagerRemoved') {
@@ -371,7 +375,7 @@ class ChainSubscribers {
             const communityAddress = log.address;
             await ManagerService.remove(
                 managerAddress,
-                this.communities.get(communityAddress)!
+                this.communitiesId.get(communityAddress)!
             );
             result = parsedLog;
         } else if (parsedLog.name === 'ManagerAddedToBlockList') {
@@ -500,16 +504,16 @@ class ChainSubscribers {
             const communityAddress = parsedLog.args[0];
             const managerAddress = parsedLog.args[1];
 
-            const communityPublicId = (await models.community.findOne({
-                attributes: ['publicId'],
+            const communityId = (await models.community.findOne({
+                attributes: ['id'],
                 where: {
                     requestByAddress: managerAddress[0],
                 },
-            }))!.publicId;
+            }))!.id;
             for (let index = 0; index < managerAddress.length; index++) {
                 await ManagerService.add(
                     managerAddress[index],
-                    communityPublicId
+                    communityId
                 );
             }
 
@@ -714,7 +718,7 @@ class ChainSubscribers {
                 if (this.allCommunitiesAddresses.includes(communityAddress)) {
                     await ManagerService.add(
                         managerAddress,
-                        this.communities.get(communityAddress)!
+                        this.communitiesId.get(communityAddress)!
                     );
                 } else {
                     const communityAddressesAndIds =
@@ -727,7 +731,12 @@ class ChainSubscribers {
                         // in case new manager means new community
                         const communityId =
                             communityAddressesAndIds.get(communityAddress)!;
-                        await ManagerService.add(managerAddress, communityId);
+                        const findCommunity =
+                            await models.community.findOne({
+                                attributes: ['id'],
+                                where: { publicId: communityId },
+                            });
+                        await ManagerService.add(managerAddress, findCommunity!.id);
                         const community =
                             await CommunityService.getOnlyCommunityByContractAddress(
                                 communityAddress
@@ -741,11 +750,6 @@ class ChainSubscribers {
                                 communityAddress,
                                 community.visibility === 'public'
                             );
-                            const findCommunity =
-                                await models.community.findOne({
-                                    attributes: ['id'],
-                                    where: { publicId: communityId },
-                                });
                             this.communities.set(communityAddress, communityId);
                             this.communitiesId.set(
                                 communityAddress,
@@ -780,9 +784,14 @@ class ChainSubscribers {
                                         communityAddressesAndIds.get(
                                             communityAddress
                                         )!;
+                                    const findCommunity =
+                                        await models.community.findOne({
+                                            attributes: ['id'],
+                                            where: { publicId: communityId },
+                                        });
                                     ManagerService.add(
                                         _managerAddress,
-                                        communityId
+                                        findCommunity!.id
                                     );
                                     const community =
                                         await CommunityService.getOnlyCommunityByContractAddress(

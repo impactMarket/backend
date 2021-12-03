@@ -42,7 +42,7 @@ describe('manager service', () => {
 
         // const t = await sequelize.transaction();
         // await ManagerService.add(users[0].address, communities[0].publicId, t);
-        await ManagerFactory([users[0]], communities[0].publicId);
+        await ManagerFactory([users[0]], communities[0].id);
 
     });
 
@@ -58,7 +58,7 @@ describe('manager service', () => {
             expect(user.manager).to.be.not.null;
             expect(user.manager).to.include({
                 readRules: false,
-                communityId: communities[0].publicId,
+                communityId: communities[0].id,
             });
         });
 
@@ -72,7 +72,7 @@ describe('manager service', () => {
             expect(user.manager).to.be.not.null;
             expect(user.manager).to.include({
                 readRules: true,
-                communityId: communities[0].publicId,
+                communityId: communities[0].id,
             });
         });
     });

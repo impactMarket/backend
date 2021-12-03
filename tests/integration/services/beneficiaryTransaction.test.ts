@@ -38,7 +38,7 @@ describe('beneficiary transactions', () => {
         ]);
         const beneficiaries = await BeneficiaryFactory(
             users.slice(0, 5),
-            communities[0].publicId
+            communities[0].id
         );
         // add fake transactions
         await BeneficiaryTransactionFactory(beneficiaries[0], true, {

@@ -14,7 +14,7 @@ import { randomTx } from '../utils/utils';
  *
  * @return {Object}       An object to build the user from.
  */
-const data = async (user: AppUser, communityId: string) => {
+const data = async (user: AppUser, communityId: number) => {
     const defaultProps: BeneficiaryCreationAttributes = {
         address: user.address,
         communityId,
@@ -32,7 +32,7 @@ const data = async (user: AppUser, communityId: string) => {
  */
 const BeneficiaryFactory = async (
     user: AppUser[],
-    communityId: string,
+    communityId: number,
     isRemoving: boolean = false
 ) => {
     const result: BeneficiaryAttributes[] = [];

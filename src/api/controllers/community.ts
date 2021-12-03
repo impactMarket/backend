@@ -268,11 +268,8 @@ class CommunityController {
         ManagerService.get(req.user.address)
             .then(async (manager) => {
                 if (manager !== null) {
-                    const community = await CommunityService.getByPublicId(
-                        manager.communityId
-                    );
                     CommunityService.edit(
-                        community!.id,
+                        manager.id,
                         {
                             name,
                             description,

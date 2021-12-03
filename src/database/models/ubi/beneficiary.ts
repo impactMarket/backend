@@ -6,7 +6,7 @@ import { CommunityAttributes } from './community';
 export interface BeneficiaryAttributes {
     id: number;
     address: string;
-    communityId: string;
+    communityId: number;
     active: boolean;
     blocked: boolean;
     tx: string;
@@ -26,7 +26,7 @@ export interface BeneficiaryAttributes {
 }
 export interface BeneficiaryCreationAttributes {
     address: string;
-    communityId: string;
+    communityId: number;
     tx: string;
     txAt: Date;
 }
@@ -37,7 +37,7 @@ export class Beneficiary extends Model<
 > {
     public id!: number;
     public address!: string;
-    public communityId!: string;
+    public communityId!: number;
     public active!: boolean;
     public blocked!: boolean;
     public tx!: string;
@@ -67,12 +67,7 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
                 allowNull: false,
             },
             communityId: {
-                type: DataTypes.UUID,
-                references: {
-                    model: 'community',
-                    key: 'publicId',
-                },
-                onDelete: 'RESTRICT',
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
             active: {

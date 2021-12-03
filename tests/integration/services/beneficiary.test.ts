@@ -76,10 +76,10 @@ describe('beneficiary service', () => {
                 hasAddress: true,
             },
         ]);
-        managers = await ManagerFactory([users[0]], communities[0].publicId);
+        managers = await ManagerFactory([users[0]], communities[0].id);
         beneficiaries = await BeneficiaryFactory(
             users.slice(0, 8),
-            communities[0].publicId
+            communities[0].id
         );
 
         spyBeneficiaryRegistryAdd = spy(
@@ -157,7 +157,7 @@ describe('beneficiary service', () => {
         beneficiaries = beneficiaries.concat(
             await BeneficiaryFactory(
                 users.slice(10, 15),
-                communities[0].publicId
+                communities[0].id
             )
         );
         // test results
@@ -199,7 +199,7 @@ describe('beneficiary service', () => {
         await BeneficiaryService.add(
             users[15].address,
             users[0].address,
-            communities[0].publicId,
+            communities[0].id,
             tx,
             txAt
         );
@@ -208,7 +208,7 @@ describe('beneficiary service', () => {
         assert.callCount(spyBeneficiaryAdd, 1);
         assert.calledWith(spyBeneficiaryAdd.getCall(0), {
             address: users[15].address,
-            communityId: communities[0].publicId,
+            communityId: communities[0].id,
             tx,
             txAt,
         });
@@ -231,7 +231,7 @@ describe('beneficiary service', () => {
         await BeneficiaryService.add(
             users[15].address,
             users[0].address,
-            communities[0].publicId,
+            communities[0].id,
             randomTx(),
             new Date()
         );
@@ -240,7 +240,7 @@ describe('beneficiary service', () => {
         await BeneficiaryService.remove(
             users[15].address,
             users[0].address,
-            communities[0].publicId,
+            communities[0].id,
             tx,
             txAt
         );
@@ -255,7 +255,7 @@ describe('beneficiary service', () => {
             {
                 where: {
                     address: users[15].address,
-                    communityId: communities[0].publicId,
+                    communityId: communities[0].id,
                 },
             }
         );
@@ -296,11 +296,11 @@ describe('beneficiary service', () => {
             ]);
             listManagers = await ManagerFactory(
                 [listUsers[0]],
-                listCommunity[0].publicId
+                listCommunity[0].id
             );
             beneficiaries = await BeneficiaryFactory(
                 listUsers,
-                listCommunity[0].publicId
+                listCommunity[0].id
             );
         });
 
@@ -473,7 +473,7 @@ describe('beneficiary service', () => {
             await BeneficiaryService.add(
                 users[16].address,
                 users[0].address,
-                communities[0].publicId,
+                communities[0].id,
                 tx,
                 new Date()
             );
@@ -603,7 +603,7 @@ describe('beneficiary service', () => {
             await BeneficiaryService.add(
                 users[17].address,
                 users[0].address,
-                communities[0].publicId,
+                communities[0].id,
                 tx,
                 new Date()
             );
@@ -616,7 +616,7 @@ describe('beneficiary service', () => {
             expect(user.beneficiary).to.include({
                 readRules: false,
                 blocked: false,
-                communityId: communities[0].publicId,
+                communityId: communities[0].id,
             });
         });
 
@@ -631,7 +631,7 @@ describe('beneficiary service', () => {
             expect(user.beneficiary).to.include({
                 readRules: true,
                 blocked: false,
-                communityId: communities[0].publicId,
+                communityId: communities[0].id,
             });
         });
     });
@@ -675,7 +675,7 @@ describe('beneficiary service', () => {
             await BeneficiaryService.add(
                 users[18].address,
                 users[1].address,
-                communities[1].publicId,
+                communities[1].id,
                 randomTx(),
                 new Date()
             );
@@ -683,7 +683,7 @@ describe('beneficiary service', () => {
             await BeneficiaryService.add(
                 users[19].address,
                 users[1].address,
-                communities[1].publicId,
+                communities[1].id,
                 randomTx(),
                 new Date()
             );
@@ -710,7 +710,7 @@ describe('beneficiary service', () => {
             await BeneficiaryService.add(
                 users[20].address,
                 users[1].address,
-                communities[1].publicId,
+                communities[1].id,
                 randomTx(),
                 new Date()
             );
@@ -718,7 +718,7 @@ describe('beneficiary service', () => {
             await BeneficiaryService.add(
                 users[21].address,
                 users[1].address,
-                communities[1].publicId,
+                communities[1].id,
                 randomTx(),
                 new Date()
             );
@@ -726,7 +726,7 @@ describe('beneficiary service', () => {
             await BeneficiaryService.remove(
                 users[20].address,
                 users[1].address,
-                communities[1].publicId,
+                communities[1].id,
                 randomTx(),
                 new Date()
             );
@@ -746,7 +746,7 @@ describe('beneficiary service', () => {
             await BeneficiaryService.add(
                 users[22].address,
                 users[0].address,
-                communities[0].publicId,
+                communities[0].id,
                 randomTx(),
                 new Date()
             );
@@ -754,7 +754,7 @@ describe('beneficiary service', () => {
             await BeneficiaryService.add(
                 users[23].address,
                 users[0].address,
-                communities[0].publicId,
+                communities[0].id,
                 randomTx(),
                 new Date()
             );

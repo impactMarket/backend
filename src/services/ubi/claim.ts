@@ -1,8 +1,8 @@
 import { UbiClaimCreation } from '@interfaces/ubi/ubiClaim';
 import { Logger } from '@utils/logger';
-import { col, fn, Op } from 'sequelize';
+import { col, fn, Op, QueryTypes } from 'sequelize';
 
-import { models } from '../../database';
+import { models, sequelize } from '../../database';
 
 export default class ClaimService {
     public static async add(claimData: UbiClaimCreation): Promise<void> {

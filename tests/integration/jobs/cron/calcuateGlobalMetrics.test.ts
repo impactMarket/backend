@@ -76,7 +76,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await InflowFactory(community);
         const beneficiaries = await BeneficiaryFactory(
             users,
-            community.publicId
+            community.id
         );
         await ClaimFactory(beneficiaries[0], community);
         await ClaimFactory(beneficiaries[1], community);
@@ -270,7 +270,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await InflowFactory(community1);
         await InflowFactory(community1);
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(users.slice(0, 2), community1.publicId)
+            await BeneficiaryFactory(users.slice(0, 2), community1.id)
         );
         await ClaimFactory(beneficiaries[0], community1);
         await ClaimFactory(beneficiaries[1], community1);
@@ -279,7 +279,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await InflowFactory(community2);
         await InflowFactory(community2);
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(users.slice(2, 5), community2.publicId)
+            await BeneficiaryFactory(users.slice(2, 5), community2.id)
         );
         await ClaimFactory(beneficiaries[2], community2);
         await ClaimFactory(beneficiaries[3], community2);
@@ -567,7 +567,7 @@ describe('#calcuateGlobalMetrics()', () => {
 
         // community 1
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(users.slice(5, 7), community1.publicId)
+            await BeneficiaryFactory(users.slice(5, 7), community1.id)
         );
         await InflowFactory(community1);
         await ClaimFactory(beneficiaries[0], community1);
@@ -635,7 +635,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await globalDailyStateCreate.resetHistory();
 
         // community 1
-        await BeneficiaryFactory(users.slice(5, 7), community1.publicId, true);
+        await BeneficiaryFactory(users.slice(5, 7), community1.id, true);
         await InflowFactory(community1);
         await ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
@@ -649,7 +649,7 @@ describe('#calcuateGlobalMetrics()', () => {
         });
         // community 2
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory([users[7]], community2.publicId)
+            await BeneficiaryFactory([users[7]], community2.id)
         );
         await InflowFactory(community2);
         await ClaimFactory(beneficiaries[2], community2);
@@ -818,7 +818,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await InflowFactory(community1);
         await InflowFactory(community1);
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(users.slice(0, 2), community1.publicId)
+            await BeneficiaryFactory(users.slice(0, 2), community1.id)
         );
         await ClaimFactory(beneficiaries[0], community1);
         await ClaimFactory(beneficiaries[1], community1);
@@ -827,7 +827,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await InflowFactory(community2);
         await InflowFactory(community2);
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(users.slice(10, 13), community2.publicId)
+            await BeneficiaryFactory(users.slice(10, 13), community2.id)
         );
         await ClaimFactory(beneficiaries[2], community2);
         await ClaimFactory(beneficiaries[3], community2);
@@ -837,7 +837,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await InflowFactory(community3);
         await InflowFactory(community3);
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(users.slice(20, 24), community3.publicId)
+            await BeneficiaryFactory(users.slice(20, 24), community3.id)
         );
         await ClaimFactory(beneficiaries[5], community3);
         await ClaimFactory(beneficiaries[6], community3);
@@ -848,7 +848,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await InflowFactory(community4);
         await InflowFactory(community4);
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(users.slice(30, 34), community4.publicId)
+            await BeneficiaryFactory(users.slice(30, 34), community4.id)
         );
         await ClaimFactory(beneficiaries[9], community4);
         await ClaimFactory(beneficiaries[10], community4);
@@ -1119,7 +1119,7 @@ describe('#calcuateGlobalMetrics()', () => {
         });
         // community 3
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(users.slice(24, 26), community3.publicId)
+            await BeneficiaryFactory(users.slice(24, 26), community3.id)
         );
         await InflowFactory(community3);
         await ClaimFactory(beneficiaries[5], community3);
@@ -1256,7 +1256,7 @@ describe('#calcuateGlobalMetrics()', () => {
 
         // community 1
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(users.slice(5, 7), community1.publicId)
+            await BeneficiaryFactory(users.slice(5, 7), community1.id)
         );
         await InflowFactory(community1);
         await ClaimFactory(beneficiaries[0], community1);
@@ -1340,7 +1340,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await globalDailyStateCreate.resetHistory();
 
         // community 1
-        await BeneficiaryFactory(users.slice(5, 7), community1.publicId, true);
+        await BeneficiaryFactory(users.slice(5, 7), community1.id, true);
         await InflowFactory(community1);
         await ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
@@ -1354,7 +1354,7 @@ describe('#calcuateGlobalMetrics()', () => {
         });
         // community 2
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory([users[14]], community2.publicId)
+            await BeneficiaryFactory([users[14]], community2.id)
         );
         await InflowFactory(community2);
         await ClaimFactory(beneficiaries[2], community2);
@@ -1453,7 +1453,7 @@ describe('#calcuateGlobalMetrics()', () => {
         tk.travel(jumpToTomorrowMidnight());
         const beneficiaries = await BeneficiaryFactory(
             users,
-            community.publicId
+            community.id
         );
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
@@ -1496,7 +1496,7 @@ describe('#calcuateGlobalMetrics()', () => {
             },
             {
                 where: {
-                    communityId: community.publicId,
+                    communityId: community.id,
                 },
             }
         );

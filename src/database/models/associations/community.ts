@@ -53,14 +53,14 @@ export function communityAssociation(sequelize: Sequelize) {
     // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.Beneficiary, {
         foreignKey: 'communityId',
-        sourceKey: 'publicId',
+        sourceKey: 'id',
         as: 'beneficiaries',
     });
 
     // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.Manager, {
         foreignKey: 'communityId',
-        sourceKey: 'publicId',
+        sourceKey: 'id',
         as: 'managers',
     });
 

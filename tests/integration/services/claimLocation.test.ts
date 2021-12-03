@@ -1,18 +1,13 @@
 import { expect } from 'chai';
-import { ethers } from 'ethers';
-import faker from 'faker';
 import { Sequelize } from 'sequelize';
-import { assert, spy, replace, restore, SinonSpy } from 'sinon';
+import { assert, spy, SinonSpy } from 'sinon';
 
 import { models } from '../../../src/database';
 import { CommunityAttributes } from '../../../src/database/models/ubi/community';
-import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { AppUser } from '../../../src/interfaces/app/appUser';
-import UserService from '../../../src/services/app/user';
 import ClaimLocationService from '../../../src/services/ubi/claimLocation';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
-import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
 
@@ -57,8 +52,8 @@ describe('claim location service', () => {
                 hasAddress: true,
             },
         ]);
-        await BeneficiaryFactory(users.slice(0, 1), communities[0].publicId);
-        await BeneficiaryFactory(users.slice(1, 2), communities[1].publicId);
+        await BeneficiaryFactory(users.slice(0, 1), communities[0].id);
+        await BeneficiaryFactory(users.slice(1, 2), communities[1].id);
 
         spyClaimLocationAdd = spy(models.ubiClaimLocation, 'create');
     });

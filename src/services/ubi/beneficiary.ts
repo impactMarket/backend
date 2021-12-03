@@ -30,7 +30,7 @@ export default class BeneficiaryService {
     public static async add(
         address: string,
         from: string,
-        communityId: string,
+        communityId: number,
         tx: string,
         txAt: Date
     ): Promise<boolean> {
@@ -41,15 +41,11 @@ export default class BeneficiaryService {
             txAt,
         };
         try {
-            const community = await models.community.findOne({
-                attributes: ['id'],
-                where: { publicId: communityId },
-            });
             await models.beneficiary.create(beneficiaryData);
             await this._addRegistry({
                 address,
                 from,
-                communityId: community!.id,
+                communityId,
                 activity: UbiBeneficiaryRegistryType.add,
                 tx,
                 txAt,
@@ -61,7 +57,7 @@ export default class BeneficiaryService {
                 },
                 {
                     where: {
-                        communityId: community!.id,
+                        communityId,
                     },
                 }
             );
@@ -80,14 +76,10 @@ export default class BeneficiaryService {
     public static async remove(
         address: string,
         from: string,
-        communityId: string,
+        communityId: number,
         tx: string,
         txAt: Date
     ): Promise<void> {
-        const community = await models.community.findOne({
-            attributes: ['id'],
-            where: { publicId: communityId },
-        });
         await models.beneficiary.update(
             { active: false },
             { where: { address, communityId } }
@@ -95,7 +87,7 @@ export default class BeneficiaryService {
         await this._addRegistry({
             address,
             from,
-            communityId: community!.id,
+            communityId,
             activity: UbiBeneficiaryRegistryType.remove,
             tx,
             txAt,
@@ -107,7 +99,7 @@ export default class BeneficiaryService {
             },
             {
                 where: {
-                    communityId: community!.id,
+                    communityId,
                 },
             }
         );
@@ -297,7 +289,7 @@ export default class BeneficiaryService {
 
     public static async getBeneficiaryFilter(
         filter: BeneficiaryFilterType,
-        communityId: string
+        communityId: number
     ) {
         let where = {};
 
@@ -340,7 +332,7 @@ export default class BeneficiaryService {
                     },
                 ],
                 where: {
-                    publicId: communityId,
+                    id: communityId,
                 },
             });
 

@@ -7,7 +7,7 @@ import { CommunityAttributes } from './community';
 export interface ManagerAttributes {
     id: number;
     address: string;
-    communityId: string;
+    communityId: number;
     active: boolean;
     readRules: boolean;
     blocked: boolean;
@@ -22,7 +22,7 @@ export interface ManagerAttributes {
 }
 export interface ManagerCreationAttributes {
     address: string;
-    communityId: string;
+    communityId: number;
 }
 export class Manager extends Model<
     ManagerAttributes,
@@ -30,7 +30,7 @@ export class Manager extends Model<
 > {
     public id!: number;
     public address!: string;
-    public communityId!: string;
+    public communityId!: number;
     public active!: boolean;
     public readRules!: boolean;
     public blocked!: boolean;
@@ -58,12 +58,7 @@ export function initializeManager(sequelize: Sequelize): void {
                 allowNull: false,
             },
             communityId: {
-                type: DataTypes.UUID,
-                references: {
-                    model: 'community',
-                    key: 'publicId',
-                },
-                onDelete: 'RESTRICT',
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
             active: {
