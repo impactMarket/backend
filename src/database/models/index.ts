@@ -5,7 +5,7 @@ import { initializeAppAnonymousReport } from './app/anonymousReport';
 import { initializeAppMediaContent } from './app/appMediaContent';
 import { initializeAppMediaThumbnail } from './app/appMediaThumbnail';
 import { initializeAppNotification } from './app/appNotification';
-import { initializeUbiBeneficiarySurvey } from './ubi/ubiBeneficiarySurvey';
+import { initializeAppProposal } from './app/appProposal';
 import { initializeAppUser } from './app/appUser';
 import { initializeAppUserThroughTrust } from './app/appUserThroughTrust';
 import { initializeAppUserTrust } from './app/appUserTrust';
@@ -32,11 +32,11 @@ import { initializeUbiCommunityContract } from './ubi/communityContract';
 import { initializeUbiCommunityDailyMetrics } from './ubi/communityDailyMetrics';
 import { initializeUbiCommunityDailyState } from './ubi/communityDailyState';
 import { initializeUbiCommunityDemographics } from './ubi/communityDemographics';
-import { initializeUbiCommunityState } from './ubi/communityState';
 import { initializeInflow } from './ubi/inflow';
 import { initializeManager } from './ubi/manager';
 import { initializeUbiRequestChangeParams } from './ubi/requestChangeParams';
 import { initializeUbiBeneficiaryRegistry } from './ubi/ubiBeneficiaryRegistry';
+import { initializeUbiBeneficiarySurvey } from './ubi/ubiBeneficiarySurvey';
 import { initializeUbiBeneficiaryTransaction } from './ubi/ubiBeneficiaryTransaction';
 import { initializeUbiClaim } from './ubi/ubiClaim';
 import { initializeUbiClaimLocation } from './ubi/ubiClaimLocation';
@@ -46,7 +46,6 @@ import { initializeUbiCommunityPromoter } from './ubi/ubiCommunityPromoter';
 import { initializeUbiCommunitySuspect } from './ubi/ubiCommunitySuspect';
 import { initializeUbiPromoter } from './ubi/ubiPromoter';
 import { initializeUbiPromoterSocialMedia } from './ubi/ubiPromoterSocialMedia';
-import { initializeAppProposal } from './app/appProposal';
 
 export default function initModels(sequelize: Sequelize): void {
     // app
@@ -66,7 +65,6 @@ export default function initModels(sequelize: Sequelize): void {
 
     // ubi
     initializeCommunity(sequelize);
-    initializeUbiCommunityState(sequelize);
     initializeUbiCommunityContract(sequelize);
     initializeUbiCommunityDailyState(sequelize);
     initializeUbiCommunityDailyMetrics(sequelize);

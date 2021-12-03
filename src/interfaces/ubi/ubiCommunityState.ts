@@ -48,12 +48,4 @@ export interface UbiCommunityState {
     managers?: number;
     raised: string;
     backers: number;
-
-    // timestamps
-    createdAt?: Date;
-    updatedAt?: Date;
-}
-
-export interface UbiCommunityStateCreation {
-    communityId: number;
 }

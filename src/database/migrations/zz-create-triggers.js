@@ -14,8 +14,6 @@ module.exports = {
         community_public_id uuid;
     BEGIN
         SELECT "publicId" INTO community_public_id FROM community where id=NEW."communityId";
-        -- update claims
-        UPDATE ubi_community_state SET claims = claims + 1 WHERE "communityId"=NEW."communityId";
         -- update beneficiary table as well
         SELECT "lastClaimAt" INTO beneficiary_last_claim_at FROM beneficiary WHERE "communityId"=community_public_id AND address=NEW.address;
         UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt" WHERE "communityId"=community_public_id AND address=NEW.address;

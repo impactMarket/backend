@@ -41,7 +41,6 @@ import {
 } from '../../types/endpoints';
 import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
-import CommunityStateService from './communityState';
 import ManagerService from './managers';
 
 export default class CommunityService {
@@ -49,7 +48,6 @@ export default class CommunityService {
     public static manager = models.manager;
     public static appUser = models.appUser;
     public static ubiCommunityContract = models.ubiCommunityContract;
-    public static ubiCommunityState = models.ubiCommunityState;
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
     public static ubiCommunityDailyState = models.ubiCommunityDailyState;
     public static ubiCommunityDemographics = models.ubiCommunityDemographics;
@@ -154,11 +152,6 @@ export default class CommunityService {
                 contractParams!,
                 t
             );
-            if (createObject.visibility === 'private') {
-                // in case it's public, will be added when accepted
-                await CommunityStateService.add(community.id, t);
-                // private communities don't need daily state
-            }
             // await CommunityStateService.add
             if (txReceipt !== undefined) {
                 await ManagerService.add(managerAddress, community.publicId, t);
@@ -318,9 +311,9 @@ export default class CommunityService {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
         const orderBeneficiary: OrderItem[] = [];
-        let orderOutOfFunds = {
+        const orderOutOfFunds = {
             active: false,
-            orderType: '' 
+            orderType: '',
         };
 
         let beneficiariesState:
@@ -459,7 +452,10 @@ export default class CommunityService {
                         break;
                     default: {
                         // check if there was another order previously
-                        if (orderOption.length === 0 && !orderOutOfFunds.active) {
+                        if (
+                            orderOption.length === 0 &&
+                            !orderOutOfFunds.active
+                        ) {
                             beneficiariesState =
                                 await this._getBeneficiaryState(
                                     {
@@ -493,9 +489,7 @@ export default class CommunityService {
                 },
                 extendedWhere
             );
-            communitiesId = beneficiariesState!.map(
-                (el) => el.id
-            );
+            communitiesId = beneficiariesState!.map((el) => el.id);
         }
 
         let include: Includeable[];
@@ -763,10 +757,6 @@ export default class CommunityService {
             },
             include: [
                 {
-                    model: this.ubiCommunityState,
-                    as: 'state',
-                },
-                {
                     model: this.ubiCommunityContract,
                     as: 'contract',
                 },
@@ -791,6 +781,7 @@ export default class CommunityService {
                 id,
             },
         });
+        const state = await this.getState(Number(id));
         // add reachedLastMonth
         const aMonthAgo = new Date();
         aMonthAgo.setDate(aMonthAgo.getDate() - 30);
@@ -828,7 +819,7 @@ export default class CommunityService {
                             model: models.ubiBeneficiaryTransaction,
                             as: 'transactions',
                             where: literal(
-                                `date("beneficiaries->transactions"."date") = '${
+                                `date("beneficiaries->transactions"."txAt") = '${
                                     aMonthAgo.toISOString().split('T')[0]
                                 }'`
                             ),
@@ -845,6 +836,7 @@ export default class CommunityService {
         })) as any;
         return {
             ...result!.toJSON(),
+            state,
             reachedLastMonth,
         } as CommunityAttributes & {
             reachedLastMonth: {
@@ -1293,7 +1285,6 @@ export default class CommunityService {
                             ' after acceptance!'
                     );
                 }
-                await CommunityStateService.add(dbUpdate[1][0].id, t);
                 // If the execution reaches this line, no errors were thrown.
                 // We commit the transaction.
                 await t.commit();
@@ -1399,10 +1390,6 @@ export default class CommunityService {
                     as: 'contract',
                 },
                 {
-                    model: this.ubiCommunityState,
-                    as: 'state',
-                },
-                {
                     model: this.appMediaContent,
                     as: 'cover',
                     include: [
@@ -1483,10 +1470,6 @@ export default class CommunityService {
                 {
                     model: this.ubiCommunityContract,
                     as: 'contract',
-                },
-                {
-                    model: this.ubiCommunityState,
-                    as: 'state',
                 },
                 {
                     model: this.ubiCommunityDailyMetrics,
@@ -1677,12 +1660,7 @@ export default class CommunityService {
                 'Not found community ' + contractAddress
             );
         }
-        const communityState = await this.ubiCommunityState.findOne({
-            where: {
-                communityId: community.id,
-            },
-            raw: true,
-        });
+        const communityState = await this.getState(community.id);
         const communityContract = await this.ubiCommunityContract.findOne({
             where: {
                 communityId: community.id,
