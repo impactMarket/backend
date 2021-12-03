@@ -25,7 +25,6 @@ import { UbiCommunityContractModel } from '@models/ubi/communityContract';
 import { UbiCommunityDailyMetricsModel } from '@models/ubi/communityDailyMetrics';
 import { UbiCommunityDailyStateModel } from '@models/ubi/communityDailyState';
 import { UbiCommunityDemographicsModel } from '@models/ubi/communityDemographics';
-import { UbiCommunityStateModel } from '@models/ubi/communityState';
 import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
@@ -88,8 +87,6 @@ const models: DbModels = {
         .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspectModel>,
     ubiCommunityContract: sequelize.models
         .UbiCommunityContractModel as ModelCtor<UbiCommunityContractModel>,
-    ubiCommunityState: sequelize.models
-        .UbiCommunityStateModel as ModelCtor<UbiCommunityStateModel>,
     ubiCommunityDailyState: sequelize.models
         .UbiCommunityDailyStateModel as ModelCtor<UbiCommunityDailyStateModel>,
     ubiCommunityDailyMetrics: sequelize.models
