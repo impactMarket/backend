@@ -1,5 +1,4 @@
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
-import { UbiBeneficiaryRegistryType } from '@interfaces/ubi/ubiBeneficiaryRegistry';
 import { UbiCommunityCampaign } from '@interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '@interfaces/ubi/ubiCommunityDailyMetrics';
@@ -34,7 +33,6 @@ import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import { models, sequelize } from '../../database';
-import { ICommunityContractParams } from '../../types';
 import {
     ICommunity,
     ICommunityLightDetails,
@@ -1166,7 +1164,7 @@ export default class CommunityService {
                             [Op.eq]: literal(
                                 '(select date from ubi_community_daily_metrics order by date desc limit 1)'
                             ),
-                        },
+                        } as { [Op.eq]: Literal },
                     },
                 },
                 {
@@ -1566,7 +1564,7 @@ export default class CommunityService {
                         [Op.eq]: literal(
                             '(select max("createdAt") from ubi_community_suspect ucs where ucs."communityId"="Community".id and date("createdAt") > (current_date - INTERVAL \'1 day\'))'
                         ),
-                    },
+                    } as { [Op.eq]: Literal },
                 },
             });
         }
@@ -1618,7 +1616,7 @@ export default class CommunityService {
                         [Op.eq]: literal(
                             '(select date from ubi_community_daily_metrics order by date desc limit 1)'
                         ),
-                    },
+                    } as { [Op.eq]: Literal },
                 },
             });
         }
@@ -1660,7 +1658,7 @@ export default class CommunityService {
                             [Op.eq]: literal(
                                 '(select date from ubi_community_daily_metrics order by date desc limit 1)'
                             ),
-                        },
+                        } as { [Op.eq]: Literal },
                     },
                 }
             );
