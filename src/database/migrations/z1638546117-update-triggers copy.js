@@ -11,8 +11,6 @@ module.exports = {
         CREATE OR REPLACE FUNCTION update_claim_states()
     RETURNS TRIGGER AS $$
     declare
-        -- state_claimed numeric(29);
-        -- state_daily_claimed numeric(29);
         beneficiary_claimed numeric(22);
         beneficiary_last_claim_at timestamp with time zone;
     BEGIN

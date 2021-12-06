@@ -12,12 +12,7 @@ module.exports = {
                 allowNull: false,
             },
             communityId: {
-                type: Sequelize.UUID,
-                references: {
-                    model: 'community',
-                    key: 'publicId',
-                },
-                onDelete: 'RESTRICT',
+                type: Sequelize.INTEGER,
                 allowNull: false,
             },
             active: {

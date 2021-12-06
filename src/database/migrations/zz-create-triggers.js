@@ -11,14 +11,12 @@ module.exports = {
     declare
         beneficiary_claimed numeric(22);
         beneficiary_last_claim_at timestamp with time zone;
-        community_public_id uuid;
     BEGIN
-        SELECT "publicId" INTO community_public_id FROM community where id=NEW."communityId";
-        -- update beneficiary table as well
-        SELECT "lastClaimAt" INTO beneficiary_last_claim_at FROM beneficiary WHERE "communityId"=community_public_id AND address=NEW.address;
-        UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt" WHERE "communityId"=community_public_id AND address=NEW.address;
-        SELECT SUM(claimed + NEW.amount) INTO beneficiary_claimed FROM beneficiary WHERE "communityId"=community_public_id AND address=NEW.address;
-        UPDATE beneficiary SET claimed = beneficiary_claimed WHERE "communityId"=community_public_id AND address=NEW.address;
+        -- update beneficiary table
+        SELECT "lastClaimAt" INTO beneficiary_last_claim_at FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address;
+        UPDATE beneficiary SET claims = claims + 1, "penultimateClaimAt"=beneficiary_last_claim_at, "lastClaimAt"=NEW."txAt" WHERE "communityId"=NEW."communityId" AND address=NEW.address;
+        SELECT SUM(claimed + NEW.amount) INTO beneficiary_claimed FROM beneficiary WHERE "communityId"=NEW."communityId" AND address=NEW.address;
+        UPDATE beneficiary SET claimed = beneficiary_claimed WHERE "communityId"=NEW."communityId" AND address=NEW.address;
         return NEW;
     END;
 $$ LANGUAGE plpgsql;
