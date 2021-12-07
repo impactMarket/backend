@@ -763,22 +763,22 @@ describe('community service', () => {
                 });
 
                 expect(result.rows[0]).to.include({
-                    id: communities[2].id,
-                    name: communities[2].name,
-                    country: communities[2].country,
-                    requestByAddress: users[2].address,
-                });
-                expect(result.rows[1]).to.include({
                     id: communities[1].id,
                     name: communities[1].name,
                     country: communities[1].country,
                     requestByAddress: users[1].address,
                 });
-                expect(result.rows[2]).to.include({
+                expect(result.rows[1]).to.include({
                     id: communities[0].id,
                     name: communities[0].name,
                     country: communities[0].country,
                     requestByAddress: users[0].address,
+                });
+                expect(result.rows[2]).to.include({
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address,
                 });
             });
 
@@ -859,22 +859,22 @@ describe('community service', () => {
                 });
 
                 expect(result.rows[0]).to.include({
-                    id: communities[2].id,
-                    name: communities[2].name,
-                    country: communities[2].country,
-                    requestByAddress: users[2].address,
-                });
-                expect(result.rows[1]).to.include({
                     id: communities[1].id,
                     name: communities[1].name,
                     country: communities[1].country,
                     requestByAddress: users[1].address,
                 });
-                expect(result.rows[2]).to.include({
+                expect(result.rows[1]).to.include({
                     id: communities[0].id,
                     name: communities[0].name,
                     country: communities[0].country,
                     requestByAddress: users[0].address,
+                });
+                expect(result.rows[2]).to.include({
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address,
                 });
             });
         });
@@ -1121,7 +1121,7 @@ describe('community service', () => {
                 );
 
                 const result = await CommunityService.list({
-                    fields: 'id;publicId;contractAddress;contract.*;state.claimed;cover.*',
+                    fields: 'id;publicId;contractAddress;contract.*;cover.*',
                 });
 
                 expect(result.rows[0]).to.have.deep.keys([
@@ -1129,7 +1129,6 @@ describe('community service', () => {
                     'publicId',
                     'contractAddress',
                     'contract',
-                    'state',
                     'cover',
                 ]);
                 expect(result.rows[0].contract).to.have.deep.keys([
@@ -1143,7 +1142,6 @@ describe('community service', () => {
                     'createdAt',
                     'updatedAt',
                 ]);
-                expect(result.rows[0].state).to.have.deep.keys(['claimed']);
                 expect(result.rows[0].cover).to.have.deep.keys([
                     'id',
                     'url',

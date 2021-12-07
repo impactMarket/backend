@@ -2,7 +2,7 @@ import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { AppMediaContentModel } from '@models/app/appMediaContent';
 import { AppMediaThumbnailModel } from '@models/app/appMediaThumbnail';
 import { AppNotificationModel } from '@models/app/appNotification';
-import { UbiBeneficiarySurveyModel } from '@models/ubi/ubiBeneficiarySurvey';
+import { AppProposalModel } from '@models/app/appProposal';
 import { AppUserModel } from '@models/app/appUser';
 import { AppUserThroughTrustModel } from '@models/app/appUserThroughTrust';
 import { AppUserTrustModel } from '@models/app/appUserTrust';
@@ -25,11 +25,11 @@ import { UbiCommunityContractModel } from '@models/ubi/communityContract';
 import { UbiCommunityDailyMetricsModel } from '@models/ubi/communityDailyMetrics';
 import { UbiCommunityDailyStateModel } from '@models/ubi/communityDailyState';
 import { UbiCommunityDemographicsModel } from '@models/ubi/communityDemographics';
-import { UbiCommunityStateModel } from '@models/ubi/communityState';
 import { Inflow } from '@models/ubi/inflow';
 import { Manager } from '@models/ubi/manager';
 import { UbiRequestChangeParamsModel } from '@models/ubi/requestChangeParams';
 import { UbiBeneficiaryRegistryModel } from '@models/ubi/ubiBeneficiaryRegistry';
+import { UbiBeneficiarySurveyModel } from '@models/ubi/ubiBeneficiarySurvey';
 import { UbiBeneficiaryTransactionModel } from '@models/ubi/ubiBeneficiaryTransaction';
 import { UbiClaimModel } from '@models/ubi/ubiClaim';
 import { ClaimLocationModel } from '@models/ubi/ubiClaimLocation';
@@ -39,7 +39,6 @@ import { UbiCommunitySuspectModel } from '@models/ubi/ubiCommunitySuspect';
 import { UbiPromoterModel } from '@models/ubi/ubiPromoter';
 import { UbiPromoterSocialMediaModel } from '@models/ubi/ubiPromoterSocialMedia';
 import { ModelCtor, Sequelize } from 'sequelize/types';
-import { AppProposalModel } from '@models/app/appProposal';
 
 export interface DbModels {
     appUser: ModelCtor<AppUserModel>;
@@ -60,7 +59,6 @@ export interface DbModels {
     community: ModelCtor<Community>;
     ubiCommunitySuspect: ModelCtor<UbiCommunitySuspectModel>;
     ubiCommunityContract: ModelCtor<UbiCommunityContractModel>;
-    ubiCommunityState: ModelCtor<UbiCommunityStateModel>;
     ubiCommunityDailyState: ModelCtor<UbiCommunityDailyStateModel>;
     ubiCommunityDailyMetrics: ModelCtor<UbiCommunityDailyMetricsModel>;
     ubiCommunityDemographics: ModelCtor<UbiCommunityDemographicsModel>;

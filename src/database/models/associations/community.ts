@@ -26,11 +26,6 @@ export function communityAssociation(sequelize: Sequelize) {
         constraints: false,
     });
     // used to query from the community with incude
-    sequelize.models.Community.hasOne(sequelize.models.UbiCommunityStateModel, {
-        foreignKey: 'communityId',
-        as: 'state',
-    });
-    // used to query from the community with incude
     // TODO: used only once, should be removed
     sequelize.models.Community.hasMany(
         sequelize.models.UbiCommunityDailyStateModel,
@@ -60,6 +55,13 @@ export function communityAssociation(sequelize: Sequelize) {
         foreignKey: 'communityId',
         sourceKey: 'publicId',
         as: 'beneficiaries',
+    });
+
+    // used to query from the community with incude
+    sequelize.models.Community.hasMany(sequelize.models.Manager, {
+        foreignKey: 'communityId',
+        sourceKey: 'publicId',
+        as: 'managers',
     });
 
     // used to query from the promoter with incude
@@ -101,5 +103,10 @@ export function communityAssociation(sequelize: Sequelize) {
         foreignKey: 'id',
         sourceKey: 'proposalId',
         as: 'proposal',
+    });
+    sequelize.models.Community.hasMany(sequelize.models.UbiClaimModel, {
+        foreignKey: 'communityId',
+        sourceKey: 'id',
+        as: 'claims',
     });
 }

@@ -88,11 +88,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 as: 'contract',
             },
             {
-                model: models.ubiCommunityState,
-                as: 'state',
-                where: {
-                    raised: { [Op.ne]: 0 },
-                },
+                attributes: [],
+                model: models.inflow,
+                as: 'inflow',
+                required: true,
             },
             {
                 model: models.ubiCommunityDailyMetrics,
@@ -525,7 +524,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         }
         // if no activity, do not calculate
         if (
-            community.state === undefined ||
             community.contract === undefined ||
             community.beneficiaries === undefined ||
             community.beneficiaries.length === 0 ||
