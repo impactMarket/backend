@@ -14,6 +14,7 @@ import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { CommunityAttributes } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
+import { Logger } from '@utils/logger';
 import { Includeable, literal, Op } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
@@ -409,104 +410,111 @@ export default class StoryService {
         query: { offset?: string; limit?: string },
         userAddress?: string
     ): Promise<{ count: number; content: ICommunityStories }> {
-        if (communityId === -1) {
-            return this._listImpactMarketOnly(userAddress);
-        }
+        try {
+            if (communityId === -1) {
+                return this._listImpactMarketOnly(userAddress);
+            }
 
-        const subInclude = this._filterSubInclude(userAddress);
-        const r = await this.storyCommunity.findAndCountAll({
-            include: [
-                {
-                    model: this.storyContent,
-                    as: 'storyContent',
-                    required: true,
-                    include: [
-                        {
-                            model: this.appMediaContent,
-                            as: 'media',
-                            required: false,
-                            include: [
-                                {
-                                    model: this.appMediaThumbnail,
-                                    as: 'thumbnails',
-                                    separate: true,
-                                },
-                            ],
-                        },
-                        ...subInclude,
-                    ],
-                },
-            ],
-            where: {
-                communityId,
-                '$"storyContent"."isPublic"$': {
-                    [Op.eq]: true,
-                },
-            } as any,
-            offset: query.offset
-                ? parseInt(query.offset, 10)
-                : config.defaultOffset,
-            limit: query.limit
-                ? parseInt(query.limit, 10)
-                : config.defaultLimit,
-            order: [['storyContent', 'postedAt', 'DESC']],
-        });
+            const subInclude = this._filterSubInclude(userAddress);
+            const r = await this.storyCommunity.findAndCountAll({
+                include: [
+                    {
+                        model: this.storyContent,
+                        as: 'storyContent',
+                        required: true,
+                        include: [
+                            {
+                                model: this.appMediaContent,
+                                as: 'media',
+                                required: false,
+                                include: [
+                                    {
+                                        model: this.appMediaThumbnail,
+                                        as: 'thumbnails',
+                                        separate: true,
+                                    },
+                                ],
+                            },
+                            ...subInclude,
+                        ],
+                    },
+                ],
+                where: {
+                    communityId,
+                    '$"storyContent"."isPublic"$': {
+                        [Op.eq]: true,
+                    },
+                } as any,
+                offset: query.offset
+                    ? parseInt(query.offset, 10)
+                    : config.defaultOffset,
+                limit: query.limit
+                    ? parseInt(query.limit, 10)
+                    : config.defaultLimit,
+                order: [['storyContent', 'postedAt', 'DESC']],
+            });
 
-        if (r.rows.length === 0) {
-            throw new BaseError(
-                'STORIES_NOT_FOUND',
-                `No stories for community ${communityId}`
+            if (r.rows.length === 0) {
+                throw new BaseError(
+                    'STORIES_NOT_FOUND',
+                    `No stories for community ${communityId}`
+                );
+            }
+
+            // at this point, this is not null
+            const community = (await this.community.findOne({
+                attributes: ['id', 'name', 'city', 'country'],
+                include: [
+                    {
+                        model: this.appMediaContent,
+                        as: 'cover',
+                        include: [
+                            {
+                                model: this.appMediaThumbnail,
+                                as: 'thumbnails',
+                                separate: true,
+                            },
+                        ],
+                    },
+                ],
+                where: { id: communityId },
+            }))!.toJSON() as CommunityAttributes;
+            return {
+                count: r.count,
+                content: {
+                    id: community.id,
+                    name: community.name,
+                    city: community.city,
+                    country: community.country,
+                    cover: community.cover!,
+                    // we can use ! because it's filtered on the query
+                    stories: r.rows.map((s) => {
+                        const content = (s.toJSON() as StoryCommunity)
+                            .storyContent!;
+                        return {
+                            id: content.id,
+                            media: content.media,
+                            message: content.message,
+                            byAddress: content.byAddress,
+                            loves: content.storyEngagement
+                                ? content.storyEngagement.loves
+                                : 0,
+                            userLoved: userAddress
+                                ? content.storyUserEngagement!.length !== 0
+                                : false,
+                            userReported: userAddress
+                                ? content.storyUserReport!.length !== 0
+                                : false,
+                        };
+                    }),
+                },
+            };
+        } catch (error) {
+            Logger.warn(
+                `Error to get story for community ${communityId} ${error}`
             );
+            throw error;
         }
-
-        // at this point, this is not null
-        const community = (await this.community.findOne({
-            attributes: ['id', 'name', 'city', 'country'],
-            include: [
-                {
-                    model: this.appMediaContent,
-                    as: 'cover',
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
-                },
-            ],
-            where: { id: communityId },
-        }))!.toJSON() as CommunityAttributes;
-        return {
-            count: r.count,
-            content: {
-                id: community.id,
-                name: community.name,
-                city: community.city,
-                country: community.country,
-                cover: community.cover!,
-                // we can use ! because it's filtered on the query
-                stories: r.rows.map((s) => {
-                    const content = (s.toJSON() as StoryCommunity)
-                        .storyContent!;
-                    return {
-                        id: content.id,
-                        media: content.media,
-                        message: content.message,
-                        byAddress: content.byAddress,
-                        loves: content.storyEngagement
-                            ? content.storyEngagement.loves
-                            : 0,
-                        userLoved: userAddress
-                            ? content.storyUserEngagement!.length !== 0
-                            : false,
-                        userReported: userAddress
-                            ? content.storyUserReport!.length !== 0
-                            : false,
-                    };
-                }),
-            },
-        };
     }
 
     public async love(userAddress: string, contentId: number) {
@@ -689,6 +697,7 @@ export default class StoryService {
                     model: this.storyUserEngagement,
                     as: 'storyUserEngagement',
                     required: false,
+                    duplicating: false,
                     where: {
                         address: userAddress,
                     },
@@ -697,6 +706,7 @@ export default class StoryService {
                     model: this.storyUserReport,
                     as: 'storyUserReport',
                     required: false,
+                    duplicating: false,
                     where: {
                         address: userAddress,
                     },
