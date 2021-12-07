@@ -116,6 +116,7 @@ const subscribeNewsletter = celebrate({
 const saveSurvey = celebrate({
     body: Joi.array().items(
         Joi.object({
+            surveyId: Joi.number().required(),
             answer: Joi.string().required(),
             question: Joi.number().required(),
         })

@@ -13,6 +13,10 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
+            surveyId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+            },
             question: {
                 type: Sequelize.INTEGER,
                 allowNull: false,

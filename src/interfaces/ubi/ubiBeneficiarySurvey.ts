@@ -31,6 +31,7 @@
 export interface UbiBeneficiarySurvey {
     id: number;
     userId: number;
+    surveyId: number;
     question: number;
     answer: string;
 
@@ -40,6 +41,7 @@ export interface UbiBeneficiarySurvey {
 
 export interface UbiBeneficiarySurveyCreation {
     userId?: number;
+    surveyId: number;
     question: number;
     answer: string;
 }
