@@ -22,6 +22,8 @@ module.exports = {
         return NEW;
     END;
 $$ LANGUAGE plpgsql;`);
+    
+        await queryInterface.sequelize.query(`DROP TRIGGER IF EXISTS update_inflow_community_states ON inflow`);
     },
 
     down(queryInterface, Sequelize) {},
