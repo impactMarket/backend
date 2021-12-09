@@ -646,6 +646,7 @@ describe('beneficiary service', () => {
                     {
                         question: 1,
                         answer: 'answer',
+                        surveyId: 1,
                     },
                 ]
             );
@@ -653,6 +654,7 @@ describe('beneficiary service', () => {
             expect(result[0]).to.include({
                 question: 1,
                 answer: 'answer',
+                surveyId: 1,
             });
         });
 
@@ -661,6 +663,7 @@ describe('beneficiary service', () => {
                 {
                     question: 1,
                     answer: 'answer',
+                    surveyId: 1,
                 },
             ])
                 .catch((e) => expect(e.name).to.be.equal('USER_NOT_FOUND'))

@@ -4,6 +4,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export class UbiBeneficiarySurveyModel extends Model<UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation> {
     public id!: number;
     public userId!: number;
+    public surveyId!: number;
     public question!: number;
     public answer!: string;
 
@@ -20,6 +21,10 @@ export function initializeUbiBeneficiarySurvey(sequelize: Sequelize): void {
                 primaryKey: true,
             },
             userId: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            surveyId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
