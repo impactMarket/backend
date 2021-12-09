@@ -2,8 +2,10 @@
 
 // eslint-disable-next-line no-undef
 module.exports = {
-    up: async (queryInterface, Sequelize) => {
-        // use datagrip for better understanding + highlight
+    async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
 
         await queryInterface.sequelize.query(`
         CREATE OR REPLACE FUNCTION update_claim_states()
@@ -19,31 +21,9 @@ module.exports = {
         UPDATE beneficiary SET claimed = beneficiary_claimed WHERE "communityId"=NEW."communityId" AND address=NEW.address;
         return NEW;
     END;
-$$ LANGUAGE plpgsql;
-CREATE TRIGGER update_claim_states
-BEFORE INSERT
-ON ubi_claim
-FOR EACH ROW
-EXECUTE PROCEDURE update_claim_states();`);
-
-        return queryInterface.sequelize.query(`
-        CREATE OR REPLACE FUNCTION update_loves_stories()
-    RETURNS TRIGGER AS $$
-    BEGIN
-        IF (TG_OP = 'INSERT') THEN -- INSERT operations
-            UPDATE story_engagement SET loves = loves + 1 WHERE "contentId"=NEW."contentId";
-            RETURN NEW;
-        ELSEIF (TG_OP = 'DELETE') THEN -- DELETE operations
-            UPDATE story_engagement SET loves = loves - 1 WHERE "contentId"=OLD."contentId";
-            RETURN OLD;
-        END IF;
-    END;
-$$ LANGUAGE plpgsql;
-CREATE TRIGGER update_loves_stories
-BEFORE INSERT OR DELETE
-ON story_user_engagement
-FOR EACH ROW
-EXECUTE PROCEDURE update_loves_stories();`);
+$$ LANGUAGE plpgsql;`);
+    
+        await queryInterface.sequelize.query(`DROP TRIGGER IF EXISTS update_inflow_community_states ON inflow`);
     },
 
     down(queryInterface, Sequelize) {},

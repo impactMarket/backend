@@ -506,15 +506,7 @@ export default class UserService {
         let community: CommunityAttributes | null = null;
         let managerInPendingCommunity = false;
         // reusable method
-        const getCommunity = async (publicId: string) => {
-            const community = await CommunityService.getCommunityOnlyByPublicId(
-                publicId
-            );
-            if (community !== null) {
-                return CommunityService.findById(community.id);
-            }
-            return null;
-        };
+        const getCommunity = async (communityId: number) => CommunityService.findById(communityId);
 
         if (beneficiary) {
             community = await getCommunity(beneficiary.communityId);

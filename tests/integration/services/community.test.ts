@@ -489,7 +489,7 @@ describe('community service', () => {
                     await UserFactory({
                         n: Math.floor(Math.random() * 20),
                     }),
-                    community.publicId
+                    community.id
                 );
             }
 
@@ -539,7 +539,7 @@ describe('community service', () => {
                     await UserFactory({
                         n: Math.floor(Math.random() * 20),
                     }),
-                    community.publicId
+                    community.id
                 );
             }
 
@@ -612,7 +612,7 @@ describe('community service', () => {
                                     ? 3
                                     : 4,
                         }),
-                        community.publicId
+                        community.id
                     );
                 }
 
@@ -752,7 +752,7 @@ describe('community service', () => {
                                     ? 5
                                     : 4,
                         }),
-                        community.publicId
+                        community.id
                     );
                 }
 
@@ -848,7 +848,7 @@ describe('community service', () => {
                                     ? 3
                                     : 4,
                         }),
-                        community.publicId
+                        community.id
                     );
                 }
 
@@ -1449,7 +1449,7 @@ describe('community service', () => {
                 },
             ]);
 
-            await ManagerFactory([manager[0]], communities[0].publicId);
+            await ManagerFactory([manager[0]], communities[0].id);
 
             const communityNewDescription =
                 'bla bla bla, this community to the moon!';
@@ -1759,7 +1759,7 @@ describe('community service', () => {
                 },
             ]);
 
-            await ManagerFactory([manager[0]], communities[0].publicId);
+            await ManagerFactory([manager[0]], communities[0].id);
 
             const result = await CommunityService.findById(
                 communities[0].id,
@@ -1790,7 +1790,7 @@ describe('community service', () => {
                 },
             ]);
 
-            await ManagerFactory([manager[0]], communities[0].publicId);
+            await ManagerFactory([manager[0]], communities[0].id);
 
             const result = await CommunityService.findById(communities[0].id);
 
@@ -1818,7 +1818,7 @@ describe('community service', () => {
                 },
             ]);
 
-            await ManagerFactory([manager[0]], communities[0].publicId);
+            await ManagerFactory([manager[0]], communities[0].id);
 
             const result = await CommunityService.findByContractAddress(
                 communities[0].contractAddress!,
@@ -1849,7 +1849,7 @@ describe('community service', () => {
                 },
             ]);
 
-            await ManagerFactory([manager[0]], communities[0].publicId);
+            await ManagerFactory([manager[0]], communities[0].id);
 
             const result = await CommunityService.findByContractAddress(
                 communities[0].contractAddress!
@@ -1890,19 +1890,19 @@ describe('community service', () => {
             const tx = randomTx();
             const tx2 = randomTx();
 
-            await ManagerFactory(users.slice(0, 2), community[0].publicId),
+            await ManagerFactory(users.slice(0, 2), community[0].id),
                 await Promise.all([
                     BeneficiaryService.add(
                         users[2].address,
                         users[0].address,
-                        community[0].publicId,
+                        community[0].id,
                         tx,
                         new Date()
                     ),
                     BeneficiaryService.add(
                         users[3].address,
                         users[0].address,
-                        community[0].publicId,
+                        community[0].id,
                         tx2,
                         new Date()
                     ),
@@ -1942,11 +1942,11 @@ describe('community service', () => {
 
             const tx = randomTx();
 
-            await ManagerFactory(users.slice(0, 3), community[0].publicId);
+            await ManagerFactory(users.slice(0, 3), community[0].id);
             await BeneficiaryService.add(
                 users[3].address,
                 users[0].address,
-                community[0].publicId,
+                community[0].id,
                 tx,
                 new Date()
             );
@@ -2002,18 +2002,18 @@ describe('community service', () => {
 
             const tx = randomTx();
 
-            await ManagerFactory(users.slice(0, 2), community[0].publicId);
+            await ManagerFactory(users.slice(0, 2), community[0].id);
             await BeneficiaryService.add(
                 users[2].address,
                 users[0].address,
-                community[0].publicId,
+                community[0].id,
                 tx,
                 new Date()
             );
 
             await ManagerService.remove(
                 users[0].address,
-                community[0].publicId
+                community[0].id
             );
 
             const managers = await CommunityService.getManagers(

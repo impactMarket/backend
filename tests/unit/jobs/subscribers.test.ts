@@ -269,7 +269,7 @@ describe('[jobs] subscribers', () => {
         assert.calledWith(
             managerAdd.getCall(0),
             accounts[1],
-            thisCommunityPublicId
+            thisCommunityId
         );
     });
 
@@ -351,7 +351,7 @@ describe('[jobs] subscribers', () => {
             beneficiaryAdd.getCall(0),
             accounts[5],
             accounts[1],
-            thisCommunityPublicId,
+            thisCommunityId,
             match.any,
             match.any
         );
@@ -393,7 +393,7 @@ describe('[jobs] subscribers', () => {
             beneficiaryRemove.getCall(0),
             accounts[5],
             accounts[1],
-            thisCommunityPublicId,
+            thisCommunityId,
             match.any,
             match.any
         );
@@ -473,12 +473,12 @@ describe('[jobs] subscribers', () => {
         assert.calledWith(
             managerAdd.getCall(0),
             accounts[1],
-            thisCommunityPublicId
+            thisCommunityId
         );
         assert.calledWith(
             managerAdd.getCall(1),
             accounts[2],
-            thisCommunityPublicId
+            thisCommunityId
         );
     });
 
@@ -519,7 +519,7 @@ describe('[jobs] subscribers', () => {
         assert.calledWith(
             managerRemove.getCall(0),
             accounts[2],
-            thisCommunityPublicId
+            thisCommunityId
         );
     });
 

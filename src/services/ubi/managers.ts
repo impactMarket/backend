@@ -13,7 +13,7 @@ export default class ManagerService {
 
     public static async add(
         address: string,
-        communityId: string,
+        communityId: number,
         t: Transaction | undefined = undefined
     ): Promise<boolean> {
         // if user does not exist, add to pending list
@@ -126,7 +126,7 @@ export default class ManagerService {
 
     public static async remove(
         address: string,
-        communityId: string
+        communityId: number
     ): Promise<void> {
         await this.manager.update(
             { active: false },

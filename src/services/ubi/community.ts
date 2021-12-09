@@ -154,7 +154,7 @@ export default class CommunityService {
             );
             // await CommunityStateService.add
             if (txReceipt !== undefined) {
-                await ManagerService.add(managerAddress, community.publicId, t);
+                await ManagerService.add(managerAddress, community.id, t);
             }
             // If the execution reaches this line, no errors were thrown.
             // We commit the transaction.
@@ -888,7 +888,7 @@ export default class CommunityService {
                 },
             ],
             where: {
-                communityId: community.publicId,
+                communityId: community.id,
                 ...activeCondition,
             },
         });
@@ -1022,7 +1022,7 @@ export default class CommunityService {
         const communityBeneficiaryActivity = (await this.beneficiary.findAll({
             attributes: [[fn('COUNT', col('address')), 'count'], 'active'],
             where: {
-                communityId: community?.publicId,
+                communityId,
             },
             group: ['active'],
             raw: true,
@@ -1030,7 +1030,7 @@ export default class CommunityService {
 
         const communityManagerActivity = await this.manager.count({
             where: {
-                communityId: community?.publicId,
+                communityId,
                 active: true,
             },
         });
@@ -1130,9 +1130,9 @@ export default class CommunityService {
 
     public static async findByFirstManager(
         requestByAddress: string
-    ): Promise<string | null> {
+    ): Promise<number | null> {
         const community = await this.community.findOne({
-            attributes: ['publicId'],
+            attributes: ['id'],
             where: {
                 requestByAddress,
                 status: {
@@ -1142,7 +1142,7 @@ export default class CommunityService {
             raw: true,
         });
         if (community) {
-            return community.publicId;
+            return community.id;
         }
         return null;
     }
@@ -1842,7 +1842,7 @@ export default class CommunityService {
                 where: { address: userAddress, active: true },
             });
             if (manager !== null) {
-                showEmail = manager.communityId === community.publicId;
+                showEmail = manager.communityId === community.id;
             } else {
                 showEmail =
                     community.status === 'pending' &&

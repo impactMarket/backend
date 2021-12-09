@@ -695,7 +695,7 @@ describe('user service', () => {
             ]);
             managers = await ManagerFactory(
                 [users[0]],
-                communities[0].publicId
+                communities[0].id
             );
         });
 
@@ -708,7 +708,7 @@ describe('user service', () => {
         });
 
         it('manager should be able to be delete account', async () => {
-            await ManagerFactory([users[2], users[3]], communities[0].publicId);
+            await ManagerFactory([users[2], users[3]], communities[0].id);
 
             await UserService.delete(users[0].address);
 

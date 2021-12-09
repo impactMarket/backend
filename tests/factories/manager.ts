@@ -13,7 +13,7 @@ import { AppUser } from '../../src/interfaces/app/appUser';
  *
  * @return {Object}       An object to build the user from.
  */
-const data = async (user: AppUser, communityId: string) => {
+const data = async (user: AppUser, communityId: number) => {
     const defaultProps: ManagerCreationAttributes = {
         address: user.address,
         communityId,
@@ -27,7 +27,7 @@ const data = async (user: AppUser, communityId: string) => {
  *
  * @return {Object}       A user instance
  */
-const ManagerFactory = async (user: AppUser[], communityId: string) => {
+const ManagerFactory = async (user: AppUser[], communityId: number) => {
     const result: ManagerAttributes[] = [];
     for (let index = 0; index < user.length; index++) {
         const newBneficiary: any = await Manager.create(

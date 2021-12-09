@@ -10,7 +10,6 @@ import BeneficiaryFactory from '../../../factories/beneficiary';
 import CommunityFactory from '../../../factories/community';
 import UserFactory from '../../../factories/user';
 import truncate, { sequelizeSetup } from '../../../utils/sequelizeSetup';
-import tk from 'timekeeper';
 
 describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
     let sequelize: Sequelize;
@@ -49,7 +48,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 hasAddress: true,
             },
         ]);
-        await BeneficiaryFactory(users, communities[0].publicId);
+        await BeneficiaryFactory(users, communities[0].id);
 
         await verifyCommunitySuspectActivity();
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
@@ -76,7 +75,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 hasAddress: true,
             },
         ]);
-        await BeneficiaryFactory(users, communities[0].publicId);
+        await BeneficiaryFactory(users, communities[0].id);
 
         await verifyCommunitySuspectActivity();
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
@@ -103,7 +102,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 hasAddress: true,
             },
         ]);
-        await BeneficiaryFactory(users, communities[0].publicId);
+        await BeneficiaryFactory(users, communities[0].id);
 
         await verifyCommunitySuspectActivity();
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
@@ -130,7 +129,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 hasAddress: true,
             },
         ]);
-        await BeneficiaryFactory(users, communities[0].publicId);
+        await BeneficiaryFactory(users, communities[0].id);
 
         await verifyCommunitySuspectActivity();
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
@@ -154,7 +153,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
                 hasAddress: true,
             },
         ]);
-        await BeneficiaryFactory(users, communities[0].publicId);
+        await BeneficiaryFactory(users, communities[0].id);
 
         await verifyCommunitySuspectActivity();
         const suspectActivity = await models.ubiCommunitySuspect.findAll({

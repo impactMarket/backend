@@ -86,7 +86,7 @@ describe('story service', () => {
                 maxClaim: '450000000000000000000',
             },
         };
-        await BeneficiaryFactory(users.slice(0, 3), community1.publicId);
+        await BeneficiaryFactory(users.slice(0, 3), community1.id);
         community2 = {
             ...communities[0],
             contract: {
@@ -97,7 +97,7 @@ describe('story service', () => {
                 maxClaim: '450000000000000000000',
             },
         };
-        await BeneficiaryFactory(users.slice(3, 6), community2.publicId);
+        await BeneficiaryFactory(users.slice(3, 6), community2.id);
     });
 
     after(async () => {

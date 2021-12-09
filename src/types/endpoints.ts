@@ -82,12 +82,12 @@ export interface IManagersDetails {
 }
 
 export interface IManager {
-    communityId: string;
+    communityId: number;
     readRules: boolean;
 }
 
 export interface IBeneficiary {
-    communityId: string;
+    communityId: number;
     blocked: boolean;
     readRules: boolean;
 }

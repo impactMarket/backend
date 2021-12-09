@@ -16,7 +16,7 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
             count(*) filter ( where suspect is true ) AS "suspect",
             count(*) as "total"
         FROM "community" AS "Community"
-            INNER JOIN "beneficiary" AS "beneficiaries" ON "Community"."publicId" = "beneficiaries"."communityId" AND "beneficiaries"."active" = true
+            INNER JOIN "beneficiary" AS "beneficiaries" ON "Community"."id" = "beneficiaries"."communityId" AND "beneficiaries"."active" = true
             LEFT OUTER JOIN "app_user" AS "app_user" ON "beneficiaries"."address" = "app_user"."address"
         WHERE "Community"."status" = 'valid' AND "Community"."visibility" = 'public'
         GROUP BY "Community"."id"

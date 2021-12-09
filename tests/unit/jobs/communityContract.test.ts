@@ -190,7 +190,7 @@ describe('communityContract', () => {
             beneficiaryAdd.getCall(0),
             accounts[2],
             accounts[1],
-            thisCommunityPublicId,
+            thisCommunityId,
             match.any,
             match.any
         );
@@ -204,7 +204,7 @@ describe('communityContract', () => {
             beneficiaryAdd.getCall(0),
             accounts[2],
             accounts[1],
-            thisCommunityPublicId2,
+            thisCommunityId2,
             match.any,
             match.any
         );
@@ -221,7 +221,7 @@ describe('communityContract', () => {
             beneficiaryRemoved.getCall(0),
             accounts[2],
             accounts[1],
-            thisCommunityPublicId,
+            thisCommunityId,
             match.any,
             match.any
         );
@@ -234,7 +234,7 @@ describe('communityContract', () => {
         assert.calledWith(
             managerAdd.getCall(0),
             accounts[3],
-            thisCommunityPublicId
+            thisCommunityId
         );
     });
 
@@ -245,7 +245,7 @@ describe('communityContract', () => {
         assert.calledWith(
             managerAdd.getCall(0),
             accounts[3],
-            thisCommunityPublicId2
+            thisCommunityId2
         );
     });
 
@@ -259,7 +259,7 @@ describe('communityContract', () => {
         assert.calledWith(
             managerRemove.getCall(0),
             accounts[3],
-            thisCommunityPublicId
+            thisCommunityId
         );
     });
 

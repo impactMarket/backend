@@ -9,20 +9,10 @@ module.exports = {
             },
             address: {
                 type: Sequelize.STRING(44),
-                // references: {
-                //     model: 'user',
-                //     key: 'address',
-                // },
-                // onDelete: 'RESTRICT',
                 allowNull: false,
             },
             communityId: {
-                type: Sequelize.UUID,
-                references: {
-                    model: 'community',
-                    key: 'publicId',
-                },
-                onDelete: 'RESTRICT',
+                type: Sequelize.INTEGER,
                 allowNull: false,
             },
             active: {

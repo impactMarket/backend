@@ -75,7 +75,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 hasAddress: true,
             },
         ]);
-        managers = await ManagerFactory([users[0]], communities[0].publicId);
+        managers = await ManagerFactory([users[0]], communities[0].id);
 
         const randomWallet = ethers.Wallet.createRandom();
         const tx = randomTx();
@@ -85,7 +85,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         await BeneficiaryService.add(
             users[1].address,
             users[0].address,
-            communities[0].publicId,
+            communities[0].id,
             tx,
             new Date()
         );
@@ -93,7 +93,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         await BeneficiaryService.add(
             users[2].address,
             users[0].address,
-            communities[0].publicId,
+            communities[0].id,
             tx2,
             new Date()
         );
@@ -101,7 +101,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         await BeneficiaryService.add(
             users[3].address,
             users[0].address,
-            communities[0].publicId,
+            communities[0].id,
             tx3,
             new Date()
         );

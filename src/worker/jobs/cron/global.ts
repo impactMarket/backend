@@ -478,12 +478,6 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         raw: true,
     });
     if (last.length === 0) {
-        const communitiesPublicId = (
-            await models.community.findAll({
-                attributes: ['publicId'],
-                where: { status: 'valid', visibility: 'public' },
-            })
-        ).map((c) => c.publicId);
         const communitiesId = (
             await models.community.findAll({
                 attributes: ['id'],
@@ -494,7 +488,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         const totalBeneficiaries = await models.beneficiary.count({
             where: {
                 txAt: { [Op.lt]: yesterdayDateOnly },
-                communityId: { [Op.in]: communitiesPublicId },
+                communityId: { [Op.in]: communitiesId },
                 active: true,
             },
         });
