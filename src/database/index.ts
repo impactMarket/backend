@@ -152,10 +152,8 @@ const models: DbModels = {
         .StoryUserReportModel as ModelCtor<StoryUserReportModel>,
 };
 
-let redisClient: redis.RedisClient;
-if (process.env.NODE_ENV === 'test') {
-    redisClient = undefined as any;
-} else {
+let redisClient: redis.RedisClient | undefined;
+if (process.env.NODE_ENV !== 'test') {
     redisClient = redis.createClient(config.redis, {
         ...(config.hasRedisTls
             ? {
@@ -166,12 +164,11 @@ if (process.env.NODE_ENV === 'test') {
             : {}),
     });
 }
-const cacheWithRedis = apicache.options(
-    process.env.NODE_ENV === 'test'
-        ? {}
-        : {
-              redisClient,
-          }
-).middleware;
+const apiCacheOptions = {
+    debug: !config.enabledCacheWithRedis,
+    enabled: config.enabledCacheWithRedis,
+    redisClient,
+};
+const cacheWithRedis = apicache.options(apiCacheOptions).middleware;
 
 export { sequelize, Sequelize, models, redisClient, cacheWithRedis };
