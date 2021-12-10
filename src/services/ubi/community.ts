@@ -2100,6 +2100,7 @@ export default class CommunityService {
                         active: true,
                     },
                     duplicating: false,
+                    required: false,
                 },
             ],
             group: ['Community.id'],
