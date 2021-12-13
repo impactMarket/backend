@@ -4,14 +4,14 @@ import {
     StoryCommunityCreationEager,
 } from '@interfaces/story/storyCommunity';
 import { StoryContent } from '@interfaces/story/storyContent';
+import { BeneficiaryAttributes } from '@interfaces/ubi/beneficiary';
+import { CommunityAttributes } from '@interfaces/ubi/community';
 import {
     IAddStory,
     ICommunitiesListStories,
     ICommunityStories,
     ICommunityStory,
 } from '@ipcttypes/endpoints';
-import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
-import { CommunityAttributes } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';

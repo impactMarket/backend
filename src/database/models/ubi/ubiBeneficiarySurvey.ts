@@ -1,7 +1,13 @@
-import { UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation } from '@interfaces/ubi/ubiBeneficiarySurvey';
+import {
+    UbiBeneficiarySurvey,
+    UbiBeneficiarySurveyCreation,
+} from '@interfaces/ubi/ubiBeneficiarySurvey';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-export class UbiBeneficiarySurveyModel extends Model<UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation> {
+export class UbiBeneficiarySurveyModel extends Model<
+    UbiBeneficiarySurvey,
+    UbiBeneficiarySurveyCreation
+> {
     public id!: number;
     public userId!: number;
     public surveyId!: number;

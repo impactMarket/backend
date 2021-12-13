@@ -4,8 +4,8 @@ import { assert, match, spy } from 'sinon';
 import tk from 'timekeeper';
 
 import { models } from '../../../../src/database';
-import { BeneficiaryAttributes } from '../../../../src/database/models/ubi/beneficiary';
-import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
+import { BeneficiaryAttributes } from '../../../../src/interfaces/ubi/beneficiary';
+import { CommunityAttributes } from '../../../../src/interfaces/ubi/community';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import { calcuateGlobalMetrics } from '../../../../src/worker/jobs/cron/global';
 import BeneficiaryFactory from '../../../factories/beneficiary';
@@ -74,10 +74,7 @@ describe('#calcuateGlobalMetrics()', () => {
         await InflowFactory(community);
         await InflowFactory(community);
         await InflowFactory(community);
-        const beneficiaries = await BeneficiaryFactory(
-            users,
-            community.id
-        );
+        const beneficiaries = await BeneficiaryFactory(users, community.id);
         await ClaimFactory(beneficiaries[0], community);
         await ClaimFactory(beneficiaries[1], community);
 
@@ -1451,10 +1448,7 @@ describe('#calcuateGlobalMetrics()', () => {
 
         // next day
         tk.travel(jumpToTomorrowMidnight());
-        const beneficiaries = await BeneficiaryFactory(
-            users,
-            community.id
-        );
+        const beneficiaries = await BeneficiaryFactory(users, community.id);
         await InflowFactory(community);
         await ClaimFactory(beneficiaries[0], community);
 

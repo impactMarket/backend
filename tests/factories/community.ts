@@ -1,12 +1,10 @@
 import { ethers } from 'ethers';
 import faker from 'faker';
 
-import {
-    Community,
-    CommunityAttributes,
-} from '../../src/database/models/ubi/community';
+import { Community } from '../../src/database/models/ubi/community';
 import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
 import { UbiCommunitySuspectModel } from '../../src/database/models/ubi/ubiCommunitySuspect';
+import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import {
     UbiCommunityContract,
     UbiCommunityContractCreation,

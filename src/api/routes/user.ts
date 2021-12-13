@@ -384,6 +384,9 @@ export default (app: Router): void => {
      *                  data:
      *                    type: boolean
      *                    description: If success
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
      */
     route.post(
         '/newsletter',
@@ -413,6 +416,9 @@ export default (app: Router): void => {
      *                  data:
      *                    type: boolean
      *                    description: Is the user subscribed to the newsletter?
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
      */
     route.get(
         '/newsletter',
@@ -440,11 +446,19 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user/read-rules/(|beneficiary|manager):
+     * /user/read-rules/{endpoint}:
      *   put:
      *     tags:
      *       - "user"
      *     summary: Read beneficiary/manager rules
+     *     parameters:
+     *       - in: path
+     *         name: endpoint
+     *         schema:
+     *           type: string
+     *           enum: [beneficiary, manager]
+     *         required: false
+     *         description: read rules of a beneficiary or manager
      *     responses:
      *       "200":
      *         description: OK
@@ -480,15 +494,20 @@ export default (app: Router): void => {
      *       content:
      *         application/json:
      *           schema:
-     *             type: object
-     *             properties:
-     *               question:
-     *                 type: number
-     *                 required: true
-     *                 description: The question identifier
-     *               answer:
-     *                 type: string
-     *                 required: true
+     *             type: array
+     *             items:
+     *               type: object
+     *               properties:
+     *                 surveyId:
+     *                   type: number
+     *                   required: true
+     *                 question:
+     *                   type: number
+     *                   required: true
+     *                   description: The question identifier
+     *                 answer:
+     *                   type: string
+     *                   required: true
      *     responses:
      *       "200":
      *          description: OK

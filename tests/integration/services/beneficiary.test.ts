@@ -6,10 +6,10 @@ import { assert, spy, replace, restore, SinonSpy } from 'sinon';
 import tk from 'timekeeper';
 
 import { models, sequelize as database } from '../../../src/database';
-import { BeneficiaryAttributes } from '../../../src/database/models/ubi/beneficiary';
-import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { AppUser } from '../../../src/interfaces/app/appUser';
+import { BeneficiaryAttributes } from '../../../src/interfaces/ubi/beneficiary';
+import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
 import { UbiBeneficiaryRegistryType } from '../../../src/interfaces/ubi/ubiBeneficiaryRegistry';
 import UserService from '../../../src/services/app/user';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';
@@ -155,10 +155,7 @@ describe('beneficiary service', () => {
             { where: { address: users[5].address } }
         );
         beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(
-                users.slice(10, 15),
-                communities[0].id
-            )
+            await BeneficiaryFactory(users.slice(10, 15), communities[0].id)
         );
         // test results
         result = await BeneficiaryService.list(managers[0].address, 0, 5, {
@@ -704,11 +701,14 @@ describe('beneficiary service', () => {
 
         it('update max claim when remove a beneficiary', async () => {
             // reset maxClaim
-            await models.ubiCommunityContract.update({
-                maxClaim,
-            }, {
-                where: { communityId: communities[1].id },
-            });
+            await models.ubiCommunityContract.update(
+                {
+                    maxClaim,
+                },
+                {
+                    where: { communityId: communities[1].id },
+                }
+            );
 
             await BeneficiaryService.add(
                 users[20].address,

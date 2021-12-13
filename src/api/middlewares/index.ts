@@ -59,7 +59,10 @@ export function optionalAuthentication(
     authenticateToken(req, res, next);
 }
 
-export function generateAccessToken(userAddress: string, userId: number): string {
+export function generateAccessToken(
+    userAddress: string,
+    userId: number
+): string {
     return jwt.sign(
         {
             userId,

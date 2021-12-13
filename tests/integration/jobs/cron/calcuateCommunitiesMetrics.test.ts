@@ -3,8 +3,8 @@ import Sinon, { assert, match, spy } from 'sinon';
 import tk from 'timekeeper';
 
 import { models } from '../../../../src/database';
-import { BeneficiaryAttributes } from '../../../../src/database/models/ubi/beneficiary';
 import { AppUser } from '../../../../src/interfaces/app/appUser';
+import { BeneficiaryAttributes } from '../../../../src/interfaces/ubi/beneficiary';
 import { calcuateCommunitiesMetrics } from '../../../../src/worker/jobs/cron/community';
 import BeneficiaryFactory from '../../../factories/beneficiary';
 import BeneficiaryTransactionFactory from '../../../factories/beneficiaryTransaction';
@@ -305,10 +305,7 @@ describe('calcuateCommunitiesMetrics', () => {
             // THIS IS HAPPENING TODAY
             await InflowFactory(community);
             await InflowFactory(community);
-            const beneficiaries = await BeneficiaryFactory(
-                users,
-                community.id
-            );
+            const beneficiaries = await BeneficiaryFactory(users, community.id);
             await ClaimFactory(beneficiaries[0], community);
             await ClaimFactory(beneficiaries[1], community);
 
@@ -415,10 +412,7 @@ describe('calcuateCommunitiesMetrics', () => {
         it('first metrics, few claims', async () => {
             await InflowFactory(community);
             await InflowFactory(community);
-            const beneficiaries = await BeneficiaryFactory(
-                users,
-                community.id
-            );
+            const beneficiaries = await BeneficiaryFactory(users, community.id);
             await ClaimFactory(beneficiaries[0], community);
             await ClaimFactory(beneficiaries[1], community);
 
@@ -452,10 +446,7 @@ describe('calcuateCommunitiesMetrics', () => {
         it('first metrics, not enough claims', async () => {
             await InflowFactory(community);
             await InflowFactory(community);
-            const beneficiaries = await BeneficiaryFactory(
-                users,
-                community.id
-            );
+            const beneficiaries = await BeneficiaryFactory(users, community.id);
             await ClaimFactory(beneficiaries[0], community);
 
             // THIS IS HAPPENING TOMORROW
@@ -571,11 +562,7 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING TWO DAYS FROM NOW
             tk.travel(jumpToTomorrowMidnight());
-            await BeneficiaryFactory(
-                users.slice(1, 4),
-                community.id,
-                true
-            );
+            await BeneficiaryFactory(users.slice(1, 4), community.id, true);
             beneficiaries = beneficiaries.concat(
                 await BeneficiaryFactory([users[5]], community.id)
             );

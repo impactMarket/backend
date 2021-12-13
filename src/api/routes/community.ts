@@ -244,9 +244,66 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Create community
+     *     requestBody:
+     *      required: true
+     *      content:
+     *        application/json:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              requestByAddress:
+     *                type: string
+     *                required: false
+     *              name:
+     *                type: string
+     *                required: true
+     *              contractAddress:
+     *                type: string
+     *                required: false
+     *              description:
+     *                type: string
+     *                required: true
+     *              language:
+     *                type: string
+     *                required: true
+     *              currency:
+     *                type: string
+     *                required: true
+     *              city:
+     *                type: string
+     *                required: true
+     *              country:
+     *                type: string
+     *                required: true
+     *              gps:
+     *                type: object
+     *                required: true
+     *                properties:
+     *                  latitude:
+     *                    type: number
+     *                    required: true
+     *                  longitude:
+     *                    type: number
+     *                    required: true
+     *              email:
+     *                type: string
+     *                required: true
+     *              coverMediaId:
+     *                type: number
+     *                required: true
+     *              txReceipt:
+     *                type: object
+     *                required: false
+     *              contractParams:
+     *                type: object
+     *                required: true
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Community'
      *     security:
      *     - api_auth:
      *       - "write:modify":
@@ -295,7 +352,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/beneficiaries/{query}:
+     * /community/beneficiaries:
      *   get:
      *     tags:
      *       - "community"
@@ -346,7 +403,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/beneficiaries/activity/{address}/{query}:
+     * /community/beneficiaries/activity/{address}:
      *   get:
      *     tags:
      *       - "community"
@@ -492,7 +549,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/list/:query?', cacheWithRedis('5 minutes'), controller.list);
+    route.get('/list/:query?', controller.list);
 
     /**
      * @swagger
@@ -650,7 +707,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /community/{id}/managers/{query}:
+     * /community/{id}/managers:
      *   get:
      *     tags:
      *       - "community"
@@ -865,9 +922,44 @@ export default (app: Router): void => {
      *     tags:
      *       - "community"
      *     summary: Edit existing community
+     *     requestBody:
+     *      required: true
+     *      content:
+     *        application/json:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              name:
+     *                type: string
+     *                required: true
+     *              description:
+     *                type: string
+     *                required: true
+     *              language:
+     *                type: string
+     *                required: false
+     *              currency:
+     *                type: string
+     *                required: true
+     *              city:
+     *                type: string
+     *                required: false
+     *              country:
+     *                type: string
+     *                required: false
+     *              email:
+     *                type: string
+     *                required: false
+     *              coverMediaId:
+     *                type: number
+     *                required: true
      *     responses:
      *       "200":
      *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/Community'
      *     security:
      *     - api_auth:
      *       - "write:modify":

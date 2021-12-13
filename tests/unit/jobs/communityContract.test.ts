@@ -2,8 +2,8 @@ import { parseEther } from '@ethersproject/units';
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
-import config from '../../../src/config';
 
+import config from '../../../src/config';
 import CommunityABI from '../../../src/contracts/CommunityABI.json';
 import OldCommunityABI from '../../../src/contracts/OldCommunityABI.json';
 import { models } from '../../../src/database';
@@ -231,22 +231,14 @@ describe('communityContract', () => {
         await CommunityContract.addManager(accounts[3]);
         await waitForStubCall(managerAdd, 1);
         assert.callCount(managerAdd, 1);
-        assert.calledWith(
-            managerAdd.getCall(0),
-            accounts[3],
-            thisCommunityId
-        );
+        assert.calledWith(managerAdd.getCall(0), accounts[3], thisCommunityId);
     });
 
     it('add (old) manager', async () => {
         await CommunityOldContract.addManager(accounts[3]);
         await waitForStubCall(managerAdd, 1);
         assert.callCount(managerAdd, 1);
-        assert.calledWith(
-            managerAdd.getCall(0),
-            accounts[3],
-            thisCommunityId2
-        );
+        assert.calledWith(managerAdd.getCall(0), accounts[3], thisCommunityId2);
     });
 
     it('remove menager', async () => {

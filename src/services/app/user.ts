@@ -5,7 +5,7 @@ import {
 } from '@interfaces/app/appAnonymousReport';
 import { AppNotification } from '@interfaces/app/appNotification';
 import { AppUser, AppUserCreationAttributes } from '@interfaces/app/appUser';
-import { CommunityAttributes } from '@models/ubi/community';
+import { CommunityAttributes } from '@interfaces/ubi/community';
 import { ProfileContentStorage } from '@services/storage';
 import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';
@@ -506,7 +506,8 @@ export default class UserService {
         let community: CommunityAttributes | null = null;
         let managerInPendingCommunity = false;
         // reusable method
-        const getCommunity = async (communityId: number) => CommunityService.findById(communityId);
+        const getCommunity = async (communityId: number) =>
+            CommunityService.findById(communityId);
 
         if (beneficiary) {
             community = await getCommunity(beneficiary.communityId);

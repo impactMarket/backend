@@ -3,8 +3,8 @@ import { Sequelize } from 'sequelize';
 import { assert, spy, SinonSpy } from 'sinon';
 
 import { models } from '../../../src/database';
-import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { AppUser } from '../../../src/interfaces/app/appUser';
+import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
 import ClaimLocationService from '../../../src/services/ubi/claimLocation';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';

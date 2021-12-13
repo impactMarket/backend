@@ -3,8 +3,8 @@ import { Sequelize } from 'sequelize';
 import Sinon, { stub } from 'sinon';
 
 import { models } from '../../../../src/database';
-import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { AppUser } from '../../../../src/interfaces/app/appUser';
+import { CommunityAttributes } from '../../../../src/interfaces/ubi/community';
 import { verifyCommunitySuspectActivity } from '../../../../src/worker/jobs/cron/community';
 import BeneficiaryFactory from '../../../factories/beneficiary';
 import CommunityFactory from '../../../factories/community';
@@ -22,7 +22,10 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        ubiCommunitySuspectAddStub = stub(models.ubiCommunitySuspect, 'bulkCreate');
+        ubiCommunitySuspectAddStub = stub(
+            models.ubiCommunitySuspect,
+            'bulkCreate'
+        );
         ubiCommunitySuspectAddStub.returns(Promise.resolve());
     });
 
@@ -54,13 +57,13 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
             where: {
                 communityId: communities[0].id,
-            }
+            },
         });
 
-        expect((suspectActivity[0])).to.include({
+        expect(suspectActivity[0]).to.include({
             communityId: communities[0].id,
             percentage: 100,
-            suspect: 10
+            suspect: 10,
         });
     });
 
@@ -81,13 +84,13 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
             where: {
                 communityId: communities[0].id,
-            }
+            },
         });
 
-        expect((suspectActivity[0])).to.include({
+        expect(suspectActivity[0]).to.include({
             communityId: communities[0].id,
             percentage: 1,
-            suspect: 2
+            suspect: 2,
         });
     });
 
@@ -108,13 +111,13 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
             where: {
                 communityId: communities[0].id,
-            }
+            },
         });
 
-        expect((suspectActivity[0])).to.include({
+        expect(suspectActivity[0]).to.include({
             communityId: communities[0].id,
             percentage: 14.29,
-            suspect: 7
+            suspect: 7,
         });
     });
 
@@ -135,13 +138,13 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
             where: {
                 communityId: communities[0].id,
-            }
+            },
         });
 
-        expect((suspectActivity[0])).to.include({
+        expect(suspectActivity[0]).to.include({
             communityId: communities[0].id,
             percentage: 50,
-            suspect: 10
+            suspect: 10,
         });
     });
 
@@ -159,7 +162,7 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         const suspectActivity = await models.ubiCommunitySuspect.findAll({
             where: {
                 communityId: communities[0].id,
-            }
+            },
         });
 
         expect(suspectActivity.length).to.be.equal(0);

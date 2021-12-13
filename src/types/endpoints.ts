@@ -1,9 +1,9 @@
 import { AppMediaContent } from '@interfaces/app/appMediaContent';
 import { AppUser } from '@interfaces/app/appUser';
+import { CommunityAttributes } from '@interfaces/ubi/community';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { ExchangeRatesAttributes } from '@models/app/exchangeRates';
-import { CommunityAttributes } from '@models/ubi/community';
 export interface ICommunityLightDetails {
     id: number;
     /**

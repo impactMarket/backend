@@ -82,8 +82,8 @@ async function calculateInflowOutflow(
                             where: {
                                 visibility: 'public',
                                 status: {
-                                    [Op.or]: ['valid', 'removed']
-                                }
+                                    [Op.or]: ['valid', 'removed'],
+                                },
                             },
                             raw: true,
                         })
@@ -232,8 +232,8 @@ async function calculateUbiPulse(
                                 where: {
                                     visibility: 'public',
                                     status: {
-                                        [Op.or]: ['valid', 'removed']
-                                    }
+                                        [Op.or]: ['valid', 'removed'],
+                                    },
                                 },
                                 raw: true,
                             })
@@ -299,7 +299,11 @@ async function calculateEconomicActivity(
             await models.ubiBeneficiaryTransaction.findAll({
                 attributes: [[fn('distinct', col('withAddress')), 'addresses']],
                 where: {
-                    txAt: where(fn('date', col('txAt')), '=', date.toISOString()),
+                    txAt: where(
+                        fn('date', col('txAt')),
+                        '=',
+                        date.toISOString()
+                    ),
                     withAddress: {
                         [Op.notIn]: Sequelize.literal(
                             '(select distinct address from beneficiary)'
@@ -314,7 +318,13 @@ async function calculateEconomicActivity(
                     [fn('coalesce', fn('sum', col('amount')), 0), 'volume'],
                     [fn('count', col('tx')), 'transactions'],
                 ],
-                where: { txAt: where(fn('date', col('txAt')), '=', date.toISOString()) },
+                where: {
+                    txAt: where(
+                        fn('date', col('txAt')),
+                        '=',
+                        date.toISOString()
+                    ),
+                },
                 raw: true,
             })
         )[0] as any; // this is a single result, that, if there's nothing, the result is zero

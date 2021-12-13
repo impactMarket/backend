@@ -1,14 +1,15 @@
 import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
 import { Sequelize } from 'sequelize';
-import { CommunityAttributes } from '../../../src/database/models/ubi/community';
+
 import { AppUser } from '../../../src/interfaces/app/appUser';
+import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
 import UserService from '../../../src/services/app/user';
 import ManagerService from '../../../src/services/ubi/managers';
 import CommunityFactory from '../../factories/community';
+import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 import truncate, { sequelizeSetup } from '../../utils/sequelizeSetup';
-import ManagerFactory from '../../factories/manager';
 
 use(chaiSubset);
 
@@ -43,7 +44,6 @@ describe('manager service', () => {
         // const t = await sequelize.transaction();
         // await ManagerService.add(users[0].address, communities[0].publicId, t);
         await ManagerFactory([users[0]], communities[0].id);
-
     });
 
     after(async () => {
@@ -63,9 +63,7 @@ describe('manager service', () => {
         });
 
         it('should read the manager rules successfully', async () => {
-            const readRules = await ManagerService.readRules(
-                users[0].address
-            );
+            const readRules = await ManagerService.readRules(users[0].address);
             const user = await UserService.welcome(users[0].address);
 
             expect(readRules).to.be.true;

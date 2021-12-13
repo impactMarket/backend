@@ -9,7 +9,7 @@ import {
     Sequelize,
     sequelize as sequelizeOrigin,
 } from '../../../src/database';
-import { CommunityAttributes } from '../../../src/database/models/ubi/community';
+import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
 import ImMetadataService from '../../../src/services/app/imMetadata';
 import { ChainSubscribers } from '../../../src/worker/jobs/chainSubscribers';
 import CommunityFactory from '../../factories/community';

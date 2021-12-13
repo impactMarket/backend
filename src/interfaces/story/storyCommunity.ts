@@ -1,7 +1,25 @@
-import { CommunityAttributes } from '@models/ubi/community';
+import { CommunityAttributes } from '@interfaces/ubi/community';
 
 import { StoryContent } from './storyContent';
 
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      StoryCommunity:
+ *        type: object
+ *        required:
+ *          - id
+ *          - contentId
+ *          - communityId
+ *        properties:
+ *          id:
+ *            type: integer
+ *          contentId:
+ *            type: integer
+ *          communityId:
+ *            type: integer
+ */
 export interface StoryCommunity {
     id: number;
     contentId: number;

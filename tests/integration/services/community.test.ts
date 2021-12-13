@@ -2011,10 +2011,7 @@ describe('community service', () => {
                 new Date()
             );
 
-            await ManagerService.remove(
-                users[0].address,
-                community[0].id
-            );
+            await ManagerService.remove(users[0].address, community[0].id);
 
             const managers = await CommunityService.getManagers(
                 community[0].id,

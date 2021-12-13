@@ -6,9 +6,9 @@ import { SinonStub, stub, restore } from 'sinon';
 import tk from 'timekeeper';
 
 import { models } from '../../../src/database';
-import { CommunityAttributes } from '../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { AppUser } from '../../../src/interfaces/app/appUser';
+import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
 import UserService from '../../../src/services/app/user';
 import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
@@ -495,17 +495,20 @@ describe('user service', () => {
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
-                }, {
+                },
+                {
                     userId: users[0].id,
                     type: 2,
                     params: 'param_test',
                     createdAt: new Date(),
-                }, {
+                },
+                {
                     userId: users[1].id,
                     type: 1,
                     params: 'param_test',
                     createdAt: new Date(),
-                }, {
+                },
+                {
                     userId: users[2].id,
                     type: 1,
                     params: 'param_test',
@@ -520,7 +523,7 @@ describe('user service', () => {
                     limit: '10',
                     offset: '0',
                 },
-                users[0].id,
+                users[0].id
             );
 
             expect(notifications.length).to.be.equal(2);
@@ -693,10 +696,7 @@ describe('user service', () => {
                     hasAddress: true,
                 },
             ]);
-            managers = await ManagerFactory(
-                [users[0]],
-                communities[0].id
-            );
+            managers = await ManagerFactory([users[0]], communities[0].id);
         });
 
         it('should not delete a user when he is one of the only two managers in the community', async () => {
