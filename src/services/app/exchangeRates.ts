@@ -7,7 +7,7 @@ import { models, redisClient } from '../../database';
 // and then, apicache will be used
 let getRedis;
 if (process.env.NODE_ENV !== 'test') {
-    getRedis = promisify(redisClient.get).bind(redisClient);
+    getRedis = promisify(redisClient!.get).bind(redisClient);
 }
 // const setRedis = promisify(redisClient.set);
 
@@ -23,7 +23,7 @@ export default class ExchangeRatesService {
                     attributes: ['currency', 'rate'],
                     raw: true,
                 });
-                redisClient.set(
+                redisClient!.set(
                     this.redisKey,
                     JSON.stringify(currentRates),
                     'EX',
