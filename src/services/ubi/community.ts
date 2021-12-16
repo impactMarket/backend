@@ -1047,7 +1047,7 @@ export default class CommunityService {
             claimed: communityClaimActivity
                 ? (communityClaimActivity as any).claimed
                 : '0',
-            raised: communityInflowActivity.amount,
+            raised: communityInflowActivity.amount ? communityInflowActivity.amount : '0',
             beneficiaries: beneficiaries ? Number(beneficiaries.count) : 0,
             removedBeneficiaries: removedBeneficiaries
                 ? Number(removedBeneficiaries.count)
