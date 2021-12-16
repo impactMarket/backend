@@ -63,7 +63,7 @@ export async function verifyDeletedAccounts(): Promise<void> {
 
         const addresses = users.map((el) => el.address);
 
-        users.forEach((user: AppUser) => {
+        users.forEach((user: AppUser) =>
             user.trust?.forEach(async (el) => {
                 await models.appUserTrust.destroy({
                     where: {
@@ -71,8 +71,8 @@ export async function verifyDeletedAccounts(): Promise<void> {
                     },
                     transaction: t,
                 });
-            });
-        });
+            })
+        );
 
         await models.appUser.destroy({
             where: {

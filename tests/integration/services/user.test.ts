@@ -6,10 +6,10 @@ import { SinonStub, stub, restore } from 'sinon';
 import tk from 'timekeeper';
 
 import { models } from '../../../src/database';
-import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { AppUser } from '../../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
 import UserService from '../../../src/services/app/user';
+import { BaseError } from '../../../src/utils/baseError';
 import CommunityFactory from '../../factories/community';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
@@ -256,6 +256,7 @@ describe('user service', () => {
                 active: true,
             });
 
+            // eslint-disable-next-line no-unused-expressions
             expect(user.active).to.be.false;
         });
 
@@ -528,6 +529,7 @@ describe('user service', () => {
 
             expect(notifications.length).to.be.equal(2);
             notifications.forEach((notification) => {
+                // eslint-disable-next-line no-unused-expressions
                 expect(notification.read).to.be.false;
             });
         });
@@ -621,9 +623,12 @@ describe('user service', () => {
 
         it('should fail when trying to subscribe an existing email', async () => {
             createContactStub.returns(
-                Promise.reject({
-                    message: 'Contact already exists. Existing ID: 123',
-                })
+                Promise.reject(
+                    new BaseError(
+                        '',
+                        'Contact already exists. Existing ID: 123'
+                    )
+                )
             );
 
             UserService.subscribeNewsletter(users[0].address, {
@@ -675,7 +680,6 @@ describe('user service', () => {
 
     describe('delete', () => {
         let users: AppUser[];
-        let managers: ManagerAttributes[];
         let communities: CommunityAttributes[];
 
         before(async () => {
@@ -696,7 +700,7 @@ describe('user service', () => {
                     hasAddress: true,
                 },
             ]);
-            managers = await ManagerFactory([users[0]], communities[0].id);
+            await ManagerFactory([users[0]], communities[0].id);
         });
 
         it('should not delete a user when he is one of the only two managers in the community', async () => {
@@ -718,6 +722,7 @@ describe('user service', () => {
                 },
             });
 
+            // eslint-disable-next-line no-unused-expressions
             expect(user?.deletedAt).to.be.not.null;
         });
 
@@ -739,8 +744,10 @@ describe('user service', () => {
                     user.address === users[1].address ||
                     user.address === users[0].address
                 ) {
+                    // eslint-disable-next-line no-unused-expressions
                     expect(user.deletedAt).to.be.not.null;
                 } else {
+                    // eslint-disable-next-line no-unused-expressions
                     expect(user.deletedAt).to.be.null;
                 }
             });
@@ -769,6 +776,7 @@ describe('user service', () => {
                 true
             );
 
+            // eslint-disable-next-line no-unused-expressions
             expect(resp.user.deletedAt).to.be.null;
         });
     });

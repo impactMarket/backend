@@ -251,7 +251,7 @@ describe('community service', () => {
             });
 
             it('list all communities', async () => {
-                const communities = await CommunityFactory([
+                await CommunityFactory([
                     {
                         requestByAddress: users[0].address,
                         name: 'oreoland', // no space on purpose
@@ -287,6 +287,7 @@ describe('community service', () => {
                 const result = await CommunityService.list({});
 
                 result.rows.forEach((el) => {
+                    // eslint-disable-next-line no-unused-expressions
                     expect(el.email).to.be.undefined;
                 });
             });
@@ -1890,23 +1891,23 @@ describe('community service', () => {
             const tx = randomTx();
             const tx2 = randomTx();
 
-            await ManagerFactory(users.slice(0, 2), community[0].id),
-                await Promise.all([
-                    BeneficiaryService.add(
-                        users[2].address,
-                        users[0].address,
-                        community[0].id,
-                        tx,
-                        new Date()
-                    ),
-                    BeneficiaryService.add(
-                        users[3].address,
-                        users[0].address,
-                        community[0].id,
-                        tx2,
-                        new Date()
-                    ),
-                ]);
+            await ManagerFactory(users.slice(0, 2), community[0].id);
+            await Promise.all([
+                BeneficiaryService.add(
+                    users[2].address,
+                    users[0].address,
+                    community[0].id,
+                    tx,
+                    new Date()
+                ),
+                BeneficiaryService.add(
+                    users[3].address,
+                    users[0].address,
+                    community[0].id,
+                    tx2,
+                    new Date()
+                ),
+            ]);
 
             const managers = await CommunityService.getManagers(
                 community[0].id
@@ -1973,7 +1974,9 @@ describe('community service', () => {
             managers.forEach((manager) => {
                 if (manager.address === users[0].address) {
                     expect(manager.addedBeneficiaries).to.be.equal(1);
+                    // eslint-disable-next-line no-unused-expressions
                     expect(manager.user).to.be.null;
+                    // eslint-disable-next-line no-unused-expressions
                     expect(manager.isDeleted).to.be.true;
                 } else {
                     expect(manager.addedBeneficiaries).to.be.equal(0);
@@ -2019,7 +2022,9 @@ describe('community service', () => {
             );
 
             expect(managers[0].addedBeneficiaries).to.be.equal(1);
+            // eslint-disable-next-line no-unused-expressions
             expect(managers[0].active).to.be.false;
+            // eslint-disable-next-line no-unused-expressions
             expect(managers[0].isDeleted).to.be.false;
         });
     });
@@ -2056,6 +2061,7 @@ describe('community service', () => {
             );
             CommunityService.findById(community[0].id)
                 .catch((e) => {
+                    // eslint-disable-next-line no-unused-expressions
                     expect(result).to.be.true;
                     expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND');
                 })

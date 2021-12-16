@@ -1,8 +1,8 @@
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';
-import { isAddress, isUUID } from '@utils/util';
-import { col, fn, QueryTypes, Transaction } from 'sequelize';
+import { isAddress } from '@utils/util';
+import { QueryTypes, Transaction } from 'sequelize';
 
 import { models, sequelize } from '../../database';
 import { IManagerDetailsManager } from '../../types/endpoints';
@@ -73,10 +73,10 @@ export default class ManagerService {
         // order by mq."createdAt" desc
 
         if (!isAddress(managerAddress)) {
-            throw {
-                code: 'NOT_MANAGER',
-                message: 'Not a manager ' + managerAddress,
-            };
+            throw new BaseError(
+                'NOT_MANAGER',
+                'Not a manager ' + managerAddress
+            );
         }
 
         return await this.sequelize.query(
@@ -107,10 +107,10 @@ export default class ManagerService {
         // limit 10
 
         if (!isAddress(managerAddress)) {
-            throw {
-                code: 'NOT_MANAGER',
-                message: 'Not a manager ' + managerAddress,
-            };
+            throw new BaseError(
+                'NOT_MANAGER',
+                'Not a manager ' + managerAddress
+            );
         }
 
         return await this.sequelize.query(

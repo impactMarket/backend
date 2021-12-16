@@ -525,6 +525,17 @@ class ChainSubscribers {
                 Logger.error(
                     `Community with address ${communityAddress} wasn't updated at "CommunityAdded"`
                 );
+            } else {
+                this.isCommunityPublic.set(
+                    communityAddress,
+                    community[1][0].visibility === 'public'
+                );
+                this.communities.set(
+                    communityAddress,
+                    community[1][0].publicId
+                );
+                this.communitiesId.set(communityAddress, community[1][0].id);
+                this.allCommunitiesAddresses.push(communityAddress);
             }
 
             result = parsedLog;
@@ -546,6 +557,17 @@ class ChainSubscribers {
                 Logger.error(
                     `Community with address ${communityAddress} wasn't updated at "CommunityMigrated"`
                 );
+            } else {
+                this.isCommunityPublic.set(
+                    communityAddress,
+                    community[1][0].visibility === 'public'
+                );
+                this.communities.set(
+                    communityAddress,
+                    community[1][0].publicId
+                );
+                this.communitiesId.set(communityAddress, community[1][0].id);
+                this.allCommunitiesAddresses.push(communityAddress);
             }
 
             result = parsedLog;
@@ -777,7 +799,7 @@ class ChainSubscribers {
                                     // new community
                                     const communityId =
                                         communityAddressesAndIds.get(
-                                            communityAddress
+                                            _communityAddress
                                         )!;
                                     const findCommunity =
                                         await models.community.findOne({
@@ -790,15 +812,15 @@ class ChainSubscribers {
                                     );
                                     const community =
                                         await CommunityService.getOnlyCommunityByContractAddress(
-                                            communityAddress
+                                            _communityAddress
                                         );
                                     if (community === null) {
                                         Logger.error(
-                                            `Community with address ${communityAddress} wasn't found at "ManagerAdded"`
+                                            `Community with address ${_communityAddress} wasn't found at "ManagerAdded"`
                                         );
                                     } else {
                                         this.isCommunityPublic.set(
-                                            communityAddress,
+                                            _communityAddress,
                                             community.visibility === 'public'
                                         );
                                         this.communities.set(

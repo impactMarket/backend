@@ -1,13 +1,11 @@
 import { expect } from 'chai';
 import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
-import { stub, assert, SinonStub, spy, SinonSpy } from 'sinon';
+import { stub, assert, SinonStub } from 'sinon';
 
 import { models } from '../../../../src/database';
-import { ManagerAttributes } from '../../../../src/database/models/ubi/manager';
 import { AppUser } from '../../../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../../../src/interfaces/ubi/community';
-import UserService from '../../../../src/services/app/user';
 import GlobalDemographicsService from '../../../../src/services/global/globalDemographics';
 import StoryService from '../../../../src/services/story';
 import BeneficiaryService from '../../../../src/services/ubi/beneficiary';
@@ -25,7 +23,6 @@ import { randomTx } from '../../../utils/utils';
 describe('[jobs - cron] verifyDeletedAccounts', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
-    let managers: ManagerAttributes[];
     let communities: CommunityAttributes[];
     let dbGlobalDemographicsStub: SinonStub;
 
@@ -75,7 +72,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 hasAddress: true,
             },
         ]);
-        managers = await ManagerFactory([users[0]], communities[0].id);
+        await ManagerFactory([users[0]], communities[0].id);
 
         const randomWallet = ethers.Wallet.createRandom();
         const tx = randomTx();
@@ -170,6 +167,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         });
 
+        // eslint-disable-next-line no-unused-expressions
         expect(user).to.exist;
         expect(user).to.include({
             address: users[2].address,
@@ -237,7 +235,9 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         }))!.toJSON();
 
+        // eslint-disable-next-line no-unused-expressions
         expect(user).to.be.null;
+        // eslint-disable-next-line no-unused-expressions
         expect(findPhone).to.be.null;
         expect(beneficiary).to.include({
             active: true,
@@ -304,12 +304,16 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 },
             });
 
+        // eslint-disable-next-line no-unused-expressions
         expect(user).to.be.null;
+        // eslint-disable-next-line no-unused-expressions
         expect(findPhone).to.be.null;
         expect(manager).to.include({
             active: true,
         });
+        // eslint-disable-next-line no-unused-expressions
         expect(findStoryContent).to.be.null;
+        // eslint-disable-next-line no-unused-expressions
         expect(findStoryUserEngagement).to.be.null;
     });
 

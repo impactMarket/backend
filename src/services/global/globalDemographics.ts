@@ -3,7 +3,7 @@ import {
     GlobalDemographics,
     GlobalDemographicsCreationAttributes,
 } from '@models/global/globalDemographics';
-import { col, fn, literal, QueryTypes } from 'sequelize';
+import { literal, QueryTypes } from 'sequelize';
 
 import { models, sequelize } from '../../database';
 
