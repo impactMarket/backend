@@ -1,4 +1,4 @@
-import { CommunityAttributes } from '@models/ubi/community';
+import { CommunityAttributes } from '@interfaces/ubi/community';
 import CommunityService from '@services/ubi/community';
 import { WebClient } from '@slack/web-api';
 import BigNumber from 'bignumber.js';

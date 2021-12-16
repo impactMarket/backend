@@ -1,35 +1,8 @@
-import { AppUser } from '@interfaces/app/appUser';
+import {
+    BeneficiaryAttributes,
+    BeneficiaryCreationAttributes,
+} from '@interfaces/ubi/beneficiary';
 import { Sequelize, DataTypes, Model } from 'sequelize';
-
-import { CommunityAttributes } from './community';
-
-export interface BeneficiaryAttributes {
-    id: number;
-    address: string;
-    communityId: number;
-    active: boolean;
-    blocked: boolean;
-    tx: string;
-    txAt: Date;
-    claims: number;
-    claimed: string;
-    lastClaimAt: Date | null;
-    penultimateClaimAt: Date | null;
-    readRules: boolean;
-
-    // timestamps
-    createdAt: Date;
-    updatedAt: Date;
-
-    user?: AppUser;
-    community?: CommunityAttributes;
-}
-export interface BeneficiaryCreationAttributes {
-    address: string;
-    communityId: number;
-    tx: string;
-    txAt: Date;
-}
 
 export class Beneficiary extends Model<
     BeneficiaryAttributes,

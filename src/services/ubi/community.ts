@@ -1,3 +1,8 @@
+import {
+    CommunityAttributes,
+    IBaseCommunityAttributes,
+    ICommunityCreationAttributes,
+} from '@interfaces/ubi/community';
 import { UbiRequestChangeParams } from '@interfaces/ubi/requestChangeParams';
 import { UbiCommunityCampaign } from '@interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '@interfaces/ubi/ubiCommunityContract';
@@ -6,12 +11,7 @@ import { UbiCommunityLabel } from '@interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '@interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '@interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '@interfaces/ubi/ubiPromoter';
-import {
-    Community,
-    CommunityAttributes,
-    IBaseCommunityAttributes,
-    ICommunityCreationAttributes,
-} from '@models/ubi/community';
+import { Community } from '@models/ubi/community';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { fetchData } from '@utils/dataFetching';

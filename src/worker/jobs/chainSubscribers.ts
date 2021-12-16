@@ -14,8 +14,8 @@ import CommunityContractABI from '../../contracts/CommunityABI.json';
 import CommunityAdminContractABI from '../../contracts/CommunityAdminABI.json';
 import ERC20ABI from '../../contracts/ERC20ABI.json';
 import IPCTDelegateContractABI from '../../contracts/IPCTDelegate.json';
-import { models, sequelize } from '../../database';
 import OldCommunityContractABI from '../../contracts/OldCommunityABI.json';
+import { models, sequelize } from '../../database';
 
 /* istanbul ignore next */
 function asyncTxsFailure(error: any) {
@@ -292,10 +292,7 @@ class ChainSubscribers {
                     );
                     this.communities.set(communityAddress, community.publicId);
                     this.allCommunitiesAddresses.push(communityAddress);
-                    this.communitiesId.set(
-                        communityAddress,
-                        community.id
-                    );
+                    this.communitiesId.set(communityAddress, community.id);
                     communityId = community.id;
                 }
             }
@@ -334,8 +331,7 @@ class ChainSubscribers {
             }
 
             try {
-                const communityId =
-                    this.communitiesId.get(communityAddress)!;
+                const communityId = this.communitiesId.get(communityAddress)!;
                 const txAt = await getBlockTime(log.blockHash);
                 await BeneficiaryService.remove(
                     beneficiaryAddress,
@@ -511,10 +507,7 @@ class ChainSubscribers {
                 },
             }))!.id;
             for (let index = 0; index < managerAddress.length; index++) {
-                await ManagerService.add(
-                    managerAddress[index],
-                    communityId
-                );
+                await ManagerService.add(managerAddress[index], communityId);
             }
 
             const community = await models.community.update(
@@ -731,12 +724,14 @@ class ChainSubscribers {
                         // in case new manager means new community
                         const communityId =
                             communityAddressesAndIds.get(communityAddress)!;
-                        const findCommunity =
-                            await models.community.findOne({
-                                attributes: ['id'],
-                                where: { publicId: communityId },
-                            });
-                        await ManagerService.add(managerAddress, findCommunity!.id);
+                        const findCommunity = await models.community.findOne({
+                            attributes: ['id'],
+                            where: { publicId: communityId },
+                        });
+                        await ManagerService.add(
+                            managerAddress,
+                            findCommunity!.id
+                        );
                         const community =
                             await CommunityService.getOnlyCommunityByContractAddress(
                                 communityAddress

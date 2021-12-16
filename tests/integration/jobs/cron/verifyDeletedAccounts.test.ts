@@ -4,9 +4,9 @@ import { Sequelize } from 'sequelize';
 import { stub, assert, SinonStub, spy, SinonSpy } from 'sinon';
 
 import { models } from '../../../../src/database';
-import { CommunityAttributes } from '../../../../src/database/models/ubi/community';
 import { ManagerAttributes } from '../../../../src/database/models/ubi/manager';
 import { AppUser } from '../../../../src/interfaces/app/appUser';
+import { CommunityAttributes } from '../../../../src/interfaces/ubi/community';
 import UserService from '../../../../src/services/app/user';
 import GlobalDemographicsService from '../../../../src/services/global/globalDemographics';
 import StoryService from '../../../../src/services/story';
@@ -338,7 +338,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             0,
             10,
             {
-                active: true
+                active: true,
             }
         );
 

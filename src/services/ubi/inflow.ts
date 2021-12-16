@@ -1,8 +1,8 @@
+import { AssetType } from '@models/ubi/inflow';
 import { Logger } from '@utils/logger';
 import { col, fn } from 'sequelize';
 
 import { models } from '../../database';
-import { AssetType } from '@models/ubi/inflow';
 export default class InflowService {
     public static inflow = models.inflow;
 
@@ -35,7 +35,9 @@ export default class InflowService {
         }
     }
 
-    public static async getAllBackers(contractAddress: string): Promise<string[]> {
+    public static async getAllBackers(
+        contractAddress: string
+    ): Promise<string[]> {
         const backers = (
             await this.inflow.findAll({
                 attributes: [[fn('distinct', col('from')), 'backerAddress']],

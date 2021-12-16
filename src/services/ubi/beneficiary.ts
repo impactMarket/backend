@@ -1,4 +1,5 @@
 import { AppUser } from '@interfaces/app/appUser';
+import { BeneficiaryAttributes } from '@interfaces/ubi/beneficiary';
 import {
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
@@ -8,7 +9,6 @@ import {
     UbiBeneficiarySurveyCreation,
 } from '@interfaces/ubi/ubiBeneficiarySurvey';
 import { UbiBeneficiaryTransactionCreation } from '@interfaces/ubi/ubiBeneficiaryTransaction';
-import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
 import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';

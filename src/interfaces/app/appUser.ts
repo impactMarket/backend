@@ -1,4 +1,4 @@
-import { BeneficiaryAttributes } from '@models/ubi/beneficiary';
+import { BeneficiaryAttributes } from '@interfaces/ubi/beneficiary';
 import { ManagerAttributes } from '@models/ubi/manager';
 
 import { AppMediaContent } from './appMediaContent';

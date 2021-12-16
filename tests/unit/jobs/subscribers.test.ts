@@ -2,6 +2,9 @@ import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 // import { Transaction } from 'sequelize';
 import { stub, assert, match, SinonStub, spy, SinonSpy, restore } from 'sinon';
+
+import config from '../../../src/config';
+import OldCommunityABI from '../../../src/contracts/OldCommunityABI.json';
 import { models } from '../../../src/database';
 
 // import { Beneficiary } from '../../../src/database/models/ubi/beneficiary';
@@ -17,11 +20,9 @@ import * as utils from '../../../src/utils/util';
 import { ChainSubscribers } from '../../../src/worker/jobs/chainSubscribers';
 import { communityAddressesAndIds } from '../../fake/community';
 import { waitForStubCall } from '../../utils';
+import DAOContractJSON from './IPCTDelegate.json';
 import OldCommunityContractJSON from './OldCommunity.json';
 import cUSDContractJSON from './cUSD.json';
-import DAOContractJSON from './IPCTDelegate.json';
-import config from '../../../src/config';
-import OldCommunityABI from '../../../src/contracts/OldCommunityABI.json';
 
 describe('[jobs] subscribers', () => {
     const blockTimeDate = new Date();
@@ -266,11 +267,7 @@ describe('[jobs] subscribers', () => {
         //
         await waitForStubCall(managerAdd, 1);
         assert.callCount(managerAdd, 1);
-        assert.calledWith(
-            managerAdd.getCall(0),
-            accounts[1],
-            thisCommunityId
-        );
+        assert.calledWith(managerAdd.getCall(0), accounts[1], thisCommunityId);
     });
 
     it('edit a community', async () => {
@@ -470,16 +467,8 @@ describe('[jobs] subscribers', () => {
         await communityContract.addManager(accounts[2]);
         await waitForStubCall(managerAdd, 2);
         assert.callCount(managerAdd, 2);
-        assert.calledWith(
-            managerAdd.getCall(0),
-            accounts[1],
-            thisCommunityId
-        );
-        assert.calledWith(
-            managerAdd.getCall(1),
-            accounts[2],
-            thisCommunityId
-        );
+        assert.calledWith(managerAdd.getCall(0), accounts[1], thisCommunityId);
+        assert.calledWith(managerAdd.getCall(1), accounts[2], thisCommunityId);
     });
 
     it('remove manager: from public valid community', async () => {

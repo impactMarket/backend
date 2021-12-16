@@ -443,19 +443,25 @@ class UserController {
         }
 
         const paths = req.path.split('/');
-        if(paths.includes('beneficiary')) {
+        if (paths.includes('beneficiary')) {
             BeneficiaryService.readRules(req.user.address)
                 .then((r) => standardResponse(res, 200, true, r))
-                .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-        } else if (paths.includes('manager')){
+                .catch((e) =>
+                    standardResponse(res, 400, false, '', { error: e })
+                );
+        } else if (paths.includes('manager')) {
             ManagerService.readRules(req.user.address)
                 .then((r) => standardResponse(res, 200, true, r))
-                .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+                .catch((e) =>
+                    standardResponse(res, 400, false, '', { error: e })
+                );
         } else {
-            standardResponse(res, 404, false, '', { error: {
-                name: 'NOT_FOUND',
-                message: 'invalid endpoint address'
-            }})
+            standardResponse(res, 404, false, '', {
+                error: {
+                    name: 'NOT_FOUND',
+                    message: 'invalid endpoint address',
+                },
+            });
         }
     };
 

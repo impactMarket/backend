@@ -25,9 +25,6 @@ export default (app: Router): void => {
      *           schema:
      *             type: object
      *             properties:
-     *               byAddress:
-     *                 type: string
-     *                 description: The author of the story
      *               communityId:
      *                 type: integer
      *                 description: The community id
@@ -148,7 +145,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /story/list/{query}:
+     * /story/list:
      *   get:
      *     tags:
      *       - "story"
@@ -190,7 +187,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /story/community/{id}/{query}:
+     * /story/community/{id}:
      *   get:
      *     tags:
      *       - "story"

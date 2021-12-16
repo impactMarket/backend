@@ -16,12 +16,9 @@ export const communityPublicIds = [
 ];
 export const communityIds = [
     // more than 30 days, fully running
-    0,
-    1,
-    2,
+    0, 1, 2,
     // running for less that 30 days, fully running
-    3,
-    4,
+    3, 4,
     // no beneficiaries
     5,
 ];

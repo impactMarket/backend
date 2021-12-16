@@ -1,6 +1,6 @@
-import { BeneficiaryAttributes } from '../../src/database/models/ubi/beneficiary';
-import { CommunityAttributes } from '../../src/database/models/ubi/community';
 import { UbiClaimModel } from '../../src/database/models/ubi/ubiClaim';
+import { BeneficiaryAttributes } from '../../src/interfaces/ubi/beneficiary';
+import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import { UbiClaimCreation } from '../../src/interfaces/ubi/ubiClaim';
 import { randomTx } from '../utils/utils';
 /**

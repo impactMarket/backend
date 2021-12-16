@@ -1,8 +1,8 @@
 import { ManagerAttributes } from '@models/ubi/manager';
+import { BaseError } from '@utils/baseError';
 import { Logger } from '@utils/logger';
 import { isAddress, isUUID } from '@utils/util';
 import { col, fn, QueryTypes, Transaction } from 'sequelize';
-import { BaseError } from '@utils/baseError';
 
 import { models, sequelize } from '../../database';
 import { IManagerDetailsManager } from '../../types/endpoints';
@@ -148,10 +148,7 @@ export default class ManagerService {
             );
 
             if (updated[0] === 0) {
-                throw new BaseError(
-                    'UPDATE_FAILED',
-                    'Manager was not updated'
-                );
+                throw new BaseError('UPDATE_FAILED', 'Manager was not updated');
             }
             return true;
         } catch (error) {
