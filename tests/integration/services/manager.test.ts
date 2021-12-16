@@ -55,6 +55,7 @@ describe('manager service', () => {
         it('readRules should be false after a manager has been added', async () => {
             const user = await UserService.welcome(users[0].address);
 
+            // eslint-disable-next-line no-unused-expressions
             expect(user.manager).to.be.not.null;
             expect(user.manager).to.include({
                 readRules: false,
@@ -66,7 +67,9 @@ describe('manager service', () => {
             const readRules = await ManagerService.readRules(users[0].address);
             const user = await UserService.welcome(users[0].address);
 
+            // eslint-disable-next-line no-unused-expressions
             expect(readRules).to.be.true;
+            // eslint-disable-next-line no-unused-expressions
             expect(user.manager).to.be.not.null;
             expect(user.manager).to.include({
                 readRules: true,

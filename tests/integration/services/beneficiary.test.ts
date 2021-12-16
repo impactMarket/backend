@@ -315,6 +315,7 @@ describe('beneficiary service', () => {
 
             expect(result.length).to.be.equal(1);
             expect(result[0].address).to.be.equal(listUsers[1].address);
+            // eslint-disable-next-line no-unused-expressions
             expect(result[0].suspect).to.be.true;
         });
 
@@ -333,6 +334,7 @@ describe('beneficiary service', () => {
 
             expect(result.length).to.be.equal(1);
             expect(result[0].address).to.be.equal(listUsers[2].address);
+            // eslint-disable-next-line no-unused-expressions
             expect(result[0].username).to.be.null;
         });
 
@@ -351,6 +353,7 @@ describe('beneficiary service', () => {
 
             expect(result.length).to.be.equal(1);
             expect(result[0].address).to.be.equal(listUsers[3].address);
+            // eslint-disable-next-line no-unused-expressions
             expect(result[0].blocked).to.be.true;
         });
 
@@ -609,6 +612,7 @@ describe('beneficiary service', () => {
         it('readRules should be false after a beneficiary has been added', async () => {
             const user = await UserService.welcome(users[17].address);
 
+            // eslint-disable-next-line no-unused-expressions
             expect(user.beneficiary).to.be.not.null;
             expect(user.beneficiary).to.include({
                 readRules: false,
@@ -623,7 +627,9 @@ describe('beneficiary service', () => {
             );
             const user = await UserService.welcome(users[17].address);
 
+            // eslint-disable-next-line no-unused-expressions
             expect(readRules).to.be.true;
+            // eslint-disable-next-line no-unused-expressions
             expect(user.beneficiary).to.be.not.null;
             expect(user.beneficiary).to.include({
                 readRules: true,
@@ -693,7 +699,8 @@ describe('beneficiary service', () => {
                 where: { communityId: communities[1].id },
             });
 
-            const newMaxClaim = parseInt(maxClaim) - parseInt(decreaseStep) * 2;
+            const newMaxClaim =
+                parseInt(maxClaim, 10) - parseInt(decreaseStep, 10) * 2;
             expect(contractUpdated!.maxClaim).to.be.equal(
                 newMaxClaim.toString()
             );
@@ -739,7 +746,8 @@ describe('beneficiary service', () => {
                 where: { communityId: communities[1].id },
             });
 
-            const newMaxClaim = parseInt(maxClaim) - parseInt(decreaseStep) * 1;
+            const newMaxClaim =
+                parseInt(maxClaim, 10) - parseInt(decreaseStep, 10) * 1;
             expect(contractUpdated!.maxClaim).to.be.equal(
                 newMaxClaim.toString()
             );

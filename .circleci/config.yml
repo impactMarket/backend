@@ -34,8 +34,8 @@ jobs:
     steps:
       - checkout
       - run: yarn
-      - run: yarn eslint-no-fix
-      - run: yarn prettier-no-fix
+      - run: yarn eslint
+      - run: yarn prettier
       - run: yarn tsc
 
 workflows:

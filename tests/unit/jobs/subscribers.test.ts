@@ -1,13 +1,10 @@
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
-// import { Transaction } from 'sequelize';
 import { stub, assert, match, SinonStub, spy, SinonSpy, restore } from 'sinon';
 
 import config from '../../../src/config';
 import OldCommunityABI from '../../../src/contracts/OldCommunityABI.json';
 import { models } from '../../../src/database';
-
-// import { Beneficiary } from '../../../src/database/models/ubi/beneficiary';
 import { Community } from '../../../src/database/models/ubi/community';
 import ImMetadataService from '../../../src/services/app/imMetadata';
 import BeneficiaryService from '../../../src/services/ubi/beneficiary';

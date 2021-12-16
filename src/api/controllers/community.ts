@@ -405,7 +405,7 @@ class CommunityController {
             gps,
             email,
             contractParams,
-            coverMediaId: parseInt(coverMediaId),
+            coverMediaId: parseInt(coverMediaId, 10),
         })
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
