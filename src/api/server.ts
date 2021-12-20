@@ -1,3 +1,5 @@
+import "./tracer"; // must come before importing any instrumented module.
+
 import * as Sentry from '@sentry/node';
 import { Logger } from '@utils/logger';
 // import bodyParser from 'body-parser';

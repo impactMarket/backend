@@ -58,6 +58,7 @@
         "celebrate": "15.0.0",
         "cors": "2.8.5",
         "cron": "1.8.2",
+        "dd-trace": "1.6.0",
         "dotenv": "10.0.0",
         "envalid": "7.2.2",
         "ethers": "5.5.1",
