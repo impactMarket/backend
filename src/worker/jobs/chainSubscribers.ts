@@ -500,14 +500,17 @@ class ChainSubscribers {
             const communityAddress = parsedLog.args[0];
             const managerAddress = parsedLog.args[1];
 
-            const communityId = (await models.community.findOne({
-                attributes: ['id'],
+            const _pCommunity = await models.community.findOne({
+                attributes: ['id', 'publicId'],
                 where: {
                     requestByAddress: managerAddress[0],
                 },
-            }))!.id;
+            });
             for (let index = 0; index < managerAddress.length; index++) {
-                await ManagerService.add(managerAddress[index], communityId);
+                await ManagerService.add(
+                    managerAddress[index],
+                    _pCommunity!.id
+                );
             }
 
             const community = await models.community.update(
@@ -526,15 +529,9 @@ class ChainSubscribers {
                     `Community with address ${communityAddress} wasn't updated at "CommunityAdded"`
                 );
             } else {
-                this.isCommunityPublic.set(
-                    communityAddress,
-                    community[1][0].visibility === 'public'
-                );
-                this.communities.set(
-                    communityAddress,
-                    community[1][0].publicId
-                );
-                this.communitiesId.set(communityAddress, community[1][0].id);
+                this.isCommunityPublic.set(communityAddress, true);
+                this.communities.set(communityAddress, _pCommunity!.publicId);
+                this.communitiesId.set(communityAddress, _pCommunity!.id);
                 this.allCommunitiesAddresses.push(communityAddress);
             }
 
@@ -558,16 +555,27 @@ class ChainSubscribers {
                     `Community with address ${communityAddress} wasn't updated at "CommunityMigrated"`
                 );
             } else {
-                this.isCommunityPublic.set(
-                    communityAddress,
-                    community[1][0].visibility === 'public'
-                );
-                this.communities.set(
-                    communityAddress,
-                    community[1][0].publicId
-                );
-                this.communitiesId.set(communityAddress, community[1][0].id);
+                const _pCommunity = await models.community.findOne({
+                    attributes: ['id', 'publicId'],
+                    where: {
+                        contractAddress: communityAddress,
+                    },
+                });
+                this.isCommunityPublic.set(communityAddress, true);
+                this.communities.set(communityAddress, _pCommunity!.publicId);
+                this.communitiesId.set(communityAddress, _pCommunity!.id);
                 this.allCommunitiesAddresses.push(communityAddress);
+                // update it, so the state doesn't break
+                await models.inflow.update(
+                    {
+                        contractAddress: communityAddress,
+                    },
+                    {
+                        where: {
+                            contractAddress: previousCommunityAddress,
+                        },
+                    }
+                );
             }
 
             result = parsedLog;
