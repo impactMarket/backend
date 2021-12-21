@@ -88,12 +88,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 as: 'contract',
             },
             {
-                attributes: [],
-                model: models.inflow,
-                as: 'inflow',
-                required: true,
-            },
-            {
                 model: models.ubiCommunityDailyMetrics,
                 as: 'metrics',
                 attributes: ['ssi'],
