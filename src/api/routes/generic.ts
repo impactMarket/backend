@@ -1,8 +1,11 @@
 import ExchangeRatesService from '@services/app/exchangeRates';
 import { standardResponse } from '@utils/api';
+import { Contract, ethers } from 'ethers';
 import { Router, Request, Response } from 'express';
+import ERC20ABI from '../../contracts/ERC20ABI.json';
 
 import config from '../../config';
+import { BigNumber } from 'bignumber.js';
 
 export default (app: Router): void => {
     /**
@@ -99,4 +102,18 @@ export default (app: Router): void => {
     app.get('/time', (req: Request, res: Response) =>
         standardResponse(res, 200, true, new Date().getTime())
     );
+
+    /**
+     * @swagger
+     *
+     * /circulating-spply:
+     *   get:
+     *     tags:
+     *       - "generic"
+     *     summary: Gets PACT circulating supply.
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    app.get('/circulating-supply');
 };

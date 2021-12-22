@@ -62,6 +62,17 @@ export default {
      */
     impactMarketContractBlockNumber: validatedEnv.IMPACT_MARKET_CONTRACT_BLOCK,
 
+    /** contract addresses */
+    contractAddresses: {
+        pact: validatedEnv.PACT_CONTRACT_ADDRESS,
+        airgrab: validatedEnv.AIRGRAB_CONTRACT_ADDRESS,
+        donationMiner: validatedEnv.DONATION_MINER_CONTRACT_ADDRESS,
+        impactLabs: validatedEnv.IMPACTLABS_CONTRACT_ADDRESS,
+        dao: validatedEnv.DAO_CONTRACT_ADDRESS,
+    },
+    DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
+    communityAdminAddress: validatedEnv.COMMUNITY_ADMIN_ADDRESS,
+
     /**
      * Decimals in cUSD token
      */
@@ -229,8 +240,6 @@ export default {
     maxRequestPerUser: validatedEnv.MAX_REQUEST_PER_USER,
     hubspotKey: validatedEnv.HUBSPOT_KEY,
 
-    DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
-    communityAdminAddress: validatedEnv.COMMUNITY_ADMIN_ADDRESS,
     claimLocationTimeframe: validatedEnv.CLAIM_LOCATION_TIMEFRAME,
     claimInactivityThreshold: validatedEnv.CLAIM_INACTIVITY_THRESHOLD,
 
