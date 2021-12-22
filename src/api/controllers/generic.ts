@@ -15,7 +15,7 @@ const circulatingSupply = async (req: Request, res: Response) => {
         config.contractAddresses.airgrab
     );
     const daoPACTBalance = await pact.balanceOf(config.contractAddresses.dao);
-    const donationMinerPACTBalance = pact.balanceOf(
+    const donationMinerPACTBalance = await pact.balanceOf(
         config.contractAddresses.donationMiner
     );
     const impactLabsPACTBalance = await pact.balanceOf(
@@ -23,11 +23,12 @@ const circulatingSupply = async (req: Request, res: Response) => {
     );
     const totalSupply = new BigNumber(10000000000).multipliedBy(10 ** 18);
     const circulatingSupply = new BigNumber(totalSupply)
-        .minus(airgrabPACTBalance)
-        .minus(daoPACTBalance)
-        .minus(donationMinerPACTBalance)
-        .minus(impactLabsPACTBalance);
-    res.send(circulatingSupply.dividedBy(10 ** 18).toNumber());
+        .minus(airgrabPACTBalance.toString())
+        .minus(daoPACTBalance.toString())
+        .minus(donationMinerPACTBalance.toString())
+        .minus(impactLabsPACTBalance.toString());
+    const response = circulatingSupply.dividedBy(10 ** 18).toNumber();
+    res.send(response.toString());
 };
 
 export default {
