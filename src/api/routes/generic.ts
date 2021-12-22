@@ -1,5 +1,7 @@
 import ExchangeRatesService from '@services/app/exchangeRates';
 import { standardResponse } from '@utils/api';
+import genericController from '@controllers/generic';
+import { cacheWithRedis } from '../../database';
 import { Router, Request, Response } from 'express';
 
 import config from '../../config';
@@ -98,5 +100,23 @@ export default (app: Router): void => {
      */
     app.get('/time', (req: Request, res: Response) =>
         standardResponse(res, 200, true, new Date().getTime())
+    );
+
+    /**
+     * @swagger
+     *
+     * /circulating-spply:
+     *   get:
+     *     tags:
+     *       - "generic"
+     *     summary: Gets PACT circulating supply.
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    app.get(
+        '/circulating-supply',
+        cacheWithRedis('10 minutes'),
+        genericController.circulatingSupply
     );
 };
