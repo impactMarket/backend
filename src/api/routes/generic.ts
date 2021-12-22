@@ -1,11 +1,10 @@
 import ExchangeRatesService from '@services/app/exchangeRates';
 import { standardResponse } from '@utils/api';
-import { Contract, ethers } from 'ethers';
+import genericController from '@controllers/generic';
+import { cacheWithRedis } from '../../database';
 import { Router, Request, Response } from 'express';
-import ERC20ABI from '../../contracts/ERC20ABI.json';
 
 import config from '../../config';
-import { BigNumber } from 'bignumber.js';
 
 export default (app: Router): void => {
     /**
@@ -115,5 +114,9 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    app.get('/circulating-supply');
+    app.get(
+        '/circulating-supply',
+        cacheWithRedis('10 minutes'),
+        genericController.circulatingSupply
+    );
 };
