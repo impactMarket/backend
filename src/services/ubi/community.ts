@@ -1339,9 +1339,19 @@ export default class CommunityService {
         let useOrder = '';
         let orderOption: string | Literal | OrderItem[] | undefined;
 
+        let beneficiariesState:
+            | [
+                  {
+                      id: number;
+                      beneficiaries: string;
+                  }
+              ]
+            | undefined = undefined;
+        let communitiesId: number[] = [];
+
         if (query.offset !== undefined && query.limit !== undefined) {
-            const offset = parseInt(query.offset, 10);
-            const limit = parseInt(query.limit, 10);
+            offset = parseInt(query.offset, 10);
+            limit = parseInt(query.limit, 10);
             if (typeof offset !== 'number' || typeof limit !== 'number') {
                 throw new BaseError('NaN', 'not a number');
             }
@@ -1379,39 +1389,205 @@ export default class CommunityService {
                 break;
             }
             default:
-                orderOption = [[literal('state.beneficiaries'), 'DESC']];
+                beneficiariesState = await this._getBeneficiaryState(
+                    {
+                        status: query.status,
+                        limit: limit?.toString(),
+                        offset: offset?.toString(),
+                    },
+                    {}
+                );
+                communitiesId = beneficiariesState!.map((el) => el.id);
                 break;
         }
 
-        const communitiesResult = await this.community.findAll({
+        let communitiesResult: Community[];
+
+        if (communitiesId.length > 0) {
+            communitiesResult = await this.community.findAll({
+                include: [
+                    {
+                        model: this.ubiCommunityContract,
+                        as: 'contract',
+                    },
+                    {
+                        model: this.appMediaContent,
+                        as: 'cover',
+                        include: [
+                            {
+                                model: this.appMediaThumbnail,
+                                as: 'thumbnails',
+                            },
+                        ],
+                    },
+                ],
+                where: {
+                    id: {
+                        [Op.in]: communitiesId,
+                    },
+                },
+            });
+        } else {
+            communitiesResult = await this.community.findAll({
+                include: [
+                    {
+                        model: this.ubiCommunityContract,
+                        as: 'contract',
+                    },
+                    {
+                        model: this.appMediaContent,
+                        as: 'cover',
+                        include: [
+                            {
+                                model: this.appMediaThumbnail,
+                                as: 'thumbnails',
+                            },
+                        ],
+                    },
+                ],
+                where: {
+                    status: 'valid',
+                    visibility: 'public',
+                },
+                limit,
+                offset,
+                order: orderOption,
+            });
+            communitiesId = communitiesResult!.map((el) => el.id);
+        }
+
+        if (!beneficiariesState) {
+            beneficiariesState = (await models.community.findAll({
+                attributes: [
+                    'id',
+                    [
+                        fn(
+                            'count',
+                            fn('distinct', col('beneficiaries.address'))
+                        ),
+                        'beneficiaries',
+                    ],
+                ],
+                include: [
+                    {
+                        attributes: [],
+                        model: models.beneficiary,
+                        as: 'beneficiaries',
+                        where: {
+                            active: true,
+                        },
+                        duplicating: false,
+                    },
+                ],
+                where: {
+                    id: {
+                        [Op.in]: communitiesId,
+                    },
+                },
+                group: ['Community.id'],
+                raw: true,
+            })) as any;
+        }
+
+        const claimsState = (await models.ubiClaim.findAll({
+            attributes: [
+                'communityId',
+                [
+                    fn('coalesce', fn('sum', col('amount')), '0'),
+                    'claimed',
+                ],
+            ],
+            where: {
+                communityId: {
+                    [Op.in]: communitiesId,
+                },
+            },
+            group: ['communityId'],
+            raw: true,
+        })) as any;
+
+        const inflowState = (await models.community.findAll({
+            attributes: [
+                'id',
+                [
+                    fn('coalesce', fn('sum', col('amount')), '0'),
+                    'raised',
+                ],
+            ],
             include: [
                 {
-                    model: this.ubiCommunityContract,
-                    as: 'contract',
-                },
-                {
-                    model: this.appMediaContent,
-                    as: 'cover',
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                        },
-                    ],
+                    attributes: [],
+                    model: models.inflow,
+                    as: 'inflow',
                 },
             ],
             where: {
-                status: 'valid',
-                visibility: 'public',
+                id: {
+                    [Op.in]: communitiesId,
+                },
             },
-            limit,
-            offset,
-            order: orderOption,
-        });
+            group: ['Community.id'],
+            raw: true,
+        })) as any;
 
-        const communities = communitiesResult.map((c) =>
-            c.toJSON()
-        ) as CommunityAttributes[];
+
+        const backerState = (await models.community.findAll({
+            attributes: [
+                'id',
+                [
+                    fn('count', fn('distinct', col('inflow.from'))),
+                    'backers',
+                ],
+            ],
+            include: [
+                {
+                    attributes: [],
+                    model: models.inflow,
+                    as: 'inflow',
+                },
+            ],
+            where: {
+                id: {
+                    [Op.in]: communitiesId,
+                },
+            },
+            group: ['Community.id'],
+            raw: true,
+        })) as any;
+
+
+        //formate response
+        const communities: CommunityAttributes[] = [];
+        communitiesId.forEach((id) => {
+            let community: CommunityAttributes;
+            const filteredCommunity = communitiesResult.find(
+                (el) => el.id === id
+            );
+            community = {
+                ...(filteredCommunity?.toJSON() as CommunityAttributes),
+            };
+
+            const beneficiariesModel = beneficiariesState?.find(
+                (el) => el.id === id
+            );
+            const claimModel = claimsState?.find(
+                (el) => el.communityId === id
+            );
+            const raiseModel = inflowState?.find((el) => el.id === id);
+            const backerModel = backerState?.find((el) => el.id === id);
+            community = {
+                ...community,
+                state: {
+                    beneficiaries: beneficiariesModel
+                        ? Number(beneficiariesModel.beneficiaries)
+                        : 0,
+                    claimed: claimModel ? claimModel.claimed : '0',
+                    raised: raiseModel ? raiseModel.raised : '0',
+                    backers: backerModel ? Number(backerModel.backers) : 0,
+                },
+            };
+            communities.push(community);
+        });
 
         const results: ICommunityLightDetails[] = communities.map((c) => ({
             id: c.id,
