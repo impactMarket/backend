@@ -208,7 +208,7 @@ export default class GlobalDailyStateService {
         const totalBeneficiaries = await models.beneficiary.count({
             where: {
                 txAt: { [Op.gte]: today },
-                communityId: { [Op.in]: communitiesPublicId },
+                communityId: { [Op.in]: communitiesId },
                 active: true,
             },
         });
