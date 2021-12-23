@@ -1047,7 +1047,9 @@ export default class CommunityService {
             claimed: communityClaimActivity
                 ? (communityClaimActivity as any).claimed
                 : '0',
-            raised: communityInflowActivity.amount ? communityInflowActivity.amount : '0',
+            raised: communityInflowActivity.amount
+                ? communityInflowActivity.amount
+                : '0',
             beneficiaries: beneficiaries ? Number(beneficiaries.count) : 0,
             removedBeneficiaries: removedBeneficiaries
                 ? Number(removedBeneficiaries.count)
@@ -1492,10 +1494,7 @@ export default class CommunityService {
         const claimsState = (await models.ubiClaim.findAll({
             attributes: [
                 'communityId',
-                [
-                    fn('coalesce', fn('sum', col('amount')), '0'),
-                    'claimed',
-                ],
+                [fn('coalesce', fn('sum', col('amount')), '0'), 'claimed'],
             ],
             where: {
                 communityId: {
@@ -1509,10 +1508,7 @@ export default class CommunityService {
         const inflowState = (await models.community.findAll({
             attributes: [
                 'id',
-                [
-                    fn('coalesce', fn('sum', col('amount')), '0'),
-                    'raised',
-                ],
+                [fn('coalesce', fn('sum', col('amount')), '0'), 'raised'],
             ],
             include: [
                 {
@@ -1529,15 +1525,11 @@ export default class CommunityService {
             group: ['Community.id'],
             raw: true,
         })) as any;
-
 
         const backerState = (await models.community.findAll({
             attributes: [
                 'id',
-                [
-                    fn('count', fn('distinct', col('inflow.from'))),
-                    'backers',
-                ],
+                [fn('count', fn('distinct', col('inflow.from'))), 'backers'],
             ],
             include: [
                 {
@@ -1554,7 +1546,6 @@ export default class CommunityService {
             group: ['Community.id'],
             raw: true,
         })) as any;
-
 
         //formate response
         const communities: CommunityAttributes[] = [];
@@ -1570,9 +1561,7 @@ export default class CommunityService {
             const beneficiariesModel = beneficiariesState?.find(
                 (el) => el.id === id
             );
-            const claimModel = claimsState?.find(
-                (el) => el.communityId === id
-            );
+            const claimModel = claimsState?.find((el) => el.communityId === id);
             const raiseModel = inflowState?.find((el) => el.id === id);
             const backerModel = backerState?.find((el) => el.id === id);
             community = {
