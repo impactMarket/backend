@@ -69,6 +69,7 @@ export default {
         donationMiner: validatedEnv.DONATION_MINER_CONTRACT_ADDRESS,
         impactLabs: validatedEnv.IMPACTLABS_CONTRACT_ADDRESS,
         dao: validatedEnv.DAO_CONTRACT_ADDRESS,
+        ido: validatedEnv.IDO_CONTRACT_ADDRESS,
     },
     DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
     communityAdminAddress: validatedEnv.COMMUNITY_ADMIN_ADDRESS,

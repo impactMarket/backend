@@ -21,12 +21,14 @@ const circulatingSupply = async (req: Request, res: Response) => {
     const impactLabsPACTBalance = await pact.balanceOf(
         config.contractAddresses.impactLabs
     );
+    const idoPACTBalance = await pact.balanceOf(config.contractAddresses.ido);
     const totalSupply = new BigNumber(10000000000).multipliedBy(10 ** 18);
     const circulatingSupply = new BigNumber(totalSupply)
         .minus(airgrabPACTBalance.toString())
         .minus(daoPACTBalance.toString())
         .minus(donationMinerPACTBalance.toString())
-        .minus(impactLabsPACTBalance.toString());
+        .minus(impactLabsPACTBalance.toString())
+        .minus(idoPACTBalance.toString());
     const response = circulatingSupply.dividedBy(10 ** 18).toNumber();
     res.send(response.toString());
 };
