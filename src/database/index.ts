@@ -1,3 +1,5 @@
+import { AirgrabProofModel } from '@models/airgrab/airgrabProof';
+import { AirgrabUserModel } from '@models/airgrab/airgrabUser';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { AppMediaContentModel } from '@models/app/appMediaContent';
 import { AppMediaThumbnailModel } from '@models/app/appMediaThumbnail';
@@ -150,6 +152,10 @@ const models: DbModels = {
         .StoryUserEngagementModel as ModelCtor<StoryUserEngagementModel>,
     storyUserReport: sequelize.models
         .StoryUserReportModel as ModelCtor<StoryUserReportModel>,
+    airgrabUser: sequelize.models
+        .AirgrabUserModel as ModelCtor<AirgrabUserModel>,
+    airgrabProof: sequelize.models
+        .AirgrabProofModel as ModelCtor<AirgrabProofModel>,
 };
 
 let redisClient: redis.RedisClient | undefined;

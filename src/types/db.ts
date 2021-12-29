@@ -1,3 +1,5 @@
+import { AirgrabProofModel } from '@models/airgrab/airgrabProof';
+import { AirgrabUserModel } from '@models/airgrab/airgrabUser';
 import { AppAnonymousReportModel } from '@models/app/anonymousReport';
 import { AppMediaContentModel } from '@models/app/appMediaContent';
 import { AppMediaThumbnailModel } from '@models/app/appMediaThumbnail';
@@ -84,6 +86,9 @@ export interface DbModels {
     storyEngagement: ModelCtor<StoryEngagementModel>;
     storyUserEngagement: ModelCtor<StoryUserEngagementModel>;
     storyUserReport: ModelCtor<StoryUserReportModel>;
+    //
+    airgrabUser: ModelCtor<AirgrabUserModel>;
+    airgrabProof: ModelCtor<AirgrabProofModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;
