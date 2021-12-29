@@ -94,6 +94,7 @@ function validateEnv() {
             devDefault: onlyOnTestEnv('xyz'),
         }),
         IMPACTLABS_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
+        IDO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 
