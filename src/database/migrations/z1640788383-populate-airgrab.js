@@ -18,7 +18,7 @@ module.exports = {
 
     for (let i = 0; i < addresses.length; i++) {
       const proof = claims[addresses[i]].proof.map(el => ({
-        address: el
+        hashProof: el
       }));
       users.push({
         address: addresses[i],
@@ -82,7 +82,7 @@ module.exports = {
     );
 
     User.hasMany(Proof, {
-      foreignKey: 'user',
+      foreignKey: 'userId',
       sourceKey: 'id',
       as: 'proof',
     });

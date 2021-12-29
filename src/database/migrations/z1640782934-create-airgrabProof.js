@@ -7,11 +7,11 @@ module.exports = {
         autoIncrement: true,
         primaryKey: true,
       },
-      user: {
+      userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
-      address: {
+      hashProof: {
         type: Sequelize.STRING(68),
         allowNull: false,
       }

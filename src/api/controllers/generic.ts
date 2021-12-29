@@ -51,7 +51,7 @@ const getAirgrab = async (req: Request, res: Response) => {
             ],
         }))!.toJSON();
 
-        user['proof'] = user['proof'].map((el) => el.address);
+        user['proof'] = user['proof'].map((el) => el.hashProof);
 
         res.send(user);
     } catch (_) {

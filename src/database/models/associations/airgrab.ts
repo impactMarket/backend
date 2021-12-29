@@ -4,7 +4,7 @@ export function airgrabAssociation(sequelize: Sequelize) {
     sequelize.models.AirgrabUserModel.hasMany(
         sequelize.models.AirgrabProofModel,
         {
-            foreignKey: 'user',
+            foreignKey: 'userId',
             sourceKey: 'id',
             as: 'proof',
         }

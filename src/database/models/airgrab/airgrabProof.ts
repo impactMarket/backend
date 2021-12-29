@@ -2,13 +2,13 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export interface AirgrabProof {
     id: number;
-    user: number;
-    address: string;
+    userId: number;
+    hashProof: string;
 }
 
 export interface AirgrabProofCreationAttributes {
-    user: number;
-    address: string;
+    userId: number;
+    hashProof: string;
 }
 
 export class AirgrabProofModel extends Model<
@@ -16,8 +16,8 @@ export class AirgrabProofModel extends Model<
     AirgrabProofCreationAttributes
 > {
     public id!: number;
-    public user!: number;
-    public address!: string;
+    public userId!: number;
+    public hashProof!: string;
 }
 
 export function initializeAirgrabProof(
@@ -30,11 +30,11 @@ export function initializeAirgrabProof(
                 autoIncrement: true,
                 primaryKey: true,
             },
-            user: {
+            userId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
-            address: {
+            hashProof: {
                 type: DataTypes.STRING(68),
                 allowNull: false,
             },
