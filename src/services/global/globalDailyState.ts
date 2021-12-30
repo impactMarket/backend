@@ -200,7 +200,9 @@ export default class GlobalDailyStateService {
             ],
             where: {
                 txAt: { [Op.gte]: today },
-                contractAddress: { [Op.in]: communitiesContractAddress },
+                from: {
+                    [Op.not]: config.contractAddresses.treasury,
+                },
             },
             raw: true,
         });

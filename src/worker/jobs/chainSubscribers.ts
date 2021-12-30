@@ -188,15 +188,16 @@ class ChainSubscribers {
         // only transactions to community contracts (donations) or DAO
         if (
             this.allCommunitiesAddresses.includes(parsedLog.args[1]) ||
-            parsedLog.args[1] === config.DAOContractAddress
+            parsedLog.args[1] === config.contractAddresses.treasury
+            // count inflow from DAO (ignored on global status later)
         ) {
             const from = parsedLog.args[0];
-            const toCommunityAddress = parsedLog.args[1];
+            const contractAddress = parsedLog.args[1];
             const amount = parsedLog.args[2].toString();
             getBlockTime(log.blockHash).then((txAt) =>
                 InflowService.add(
                     from,
-                    toCommunityAddress,
+                    contractAddress,
                     amount,
                     log.transactionHash,
                     txAt
