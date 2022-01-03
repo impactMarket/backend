@@ -26,6 +26,7 @@ import {
     OrderItem,
     WhereOptions,
     Includeable,
+    Order,
 } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
@@ -1339,7 +1340,7 @@ export default class CommunityService {
         let offset: number | undefined;
         let limit: number | undefined;
         let useOrder = '';
-        let orderOption: string | Literal | OrderItem[] | undefined;
+        let orderOption: Order | undefined;
 
         let beneficiariesState:
             | [

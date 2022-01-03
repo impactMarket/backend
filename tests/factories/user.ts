@@ -63,7 +63,7 @@ const UserFactory = async (
                     },
                 ],
             } as any
-        ); // use any :facepalm:
+        ) as AppUserModel; // use any :facepalm:
         result.push(newUser.toJSON() as AppUser);
     }
     return result;

@@ -1,4 +1,4 @@
-import { CreateOptions, Sequelize } from 'sequelize';
+import { CreateOptions, Model, Sequelize } from 'sequelize';
 import Sinon, { assert, match, spy } from 'sinon';
 import tk from 'timekeeper';
 
@@ -23,21 +23,17 @@ describe('calcuateCommunitiesMetrics', () => {
     let sequelize: Sequelize;
     let ubiCommunityDailyStateCreate: Sinon.SinonSpy<
         [
-            any,
-            CreateOptions<any> & {
-                returning: false;
-            }
+            values?: any,
+            options?: CreateOptions<any>
         ],
-        Promise<void>
+        Promise<Model<any, any>>
     >;
     let ubiCommunityDailyMetricsCreate: Sinon.SinonSpy<
         [
-            any,
-            CreateOptions<any> & {
-                returning: false;
-            }
+            values?: any,
+            options?: CreateOptions<any>
         ],
-        Promise<void>
+        Promise<Model<any, any>>
     >;
 
     before(async () => {
