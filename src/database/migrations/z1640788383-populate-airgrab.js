@@ -5,6 +5,9 @@ const fetch = require('node-fetch');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    if (process.env.NODE_ENV === 'test' || process.env.API_ENVIRONMENT !== 'production') {
+        return;
+    }
     const url = 'https://storageapi.fleek.co/obernardovieira-26385-team-bucket/merkleTree.json';
 
     const response = await fetch(url);
