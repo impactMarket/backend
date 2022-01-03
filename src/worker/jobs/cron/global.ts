@@ -64,14 +64,12 @@ async function calculateInflowOutflow(
         totalClaimed: string;
         totalClaims: string;
         totalBeneficiaries: string;
-        totalRaised: string;
     } = (
         await models.ubiCommunityDailyState.findAll({
             attributes: [
                 [fn('sum', col('claimed')), 'totalClaimed'],
                 [fn('sum', col('claims')), 'totalClaims'],
                 [fn('sum', col('beneficiaries')), 'totalBeneficiaries'],
-                [fn('sum', col('raised')), 'totalRaised'],
             ],
             where: {
                 date: yesterdayDateOnly.toISOString().split('T')[0],
@@ -93,9 +91,31 @@ async function calculateInflowOutflow(
             raw: true,
         })
     )[0] as any;
+    // do not count inflow from the DAO (aka request funds from community)
+    // otherwise we count the same twice
+    const today = new Date(yesterdayDateOnly);
+    today.setDate(yesterdayDateOnly.getDate() + 1);
+    const inflowYesterday: {
+        totalRaised: string;
+    } = (
+        await models.inflow.findAll({
+            attributes: [
+                [fn('coalesce', fn('sum', col('amount')), '0'), 'totalRaised'],
+            ],
+            where: {
+                txAt: {
+                    [Op.between]: [yesterdayDateOnly, today],
+                },
+                from: {
+                    [Op.not]: config.contractAddresses.treasury,
+                },
+            },
+            raw: true,
+        })
+    )[0] as any;
 
     totalRaised = new BigNumber(lastGlobalMetrics.totalRaised)
-        .plus(communitiesYesterday.totalRaised)
+        .plus(inflowYesterday.totalRaised)
         .toString();
     totalDistributed = new BigNumber(lastGlobalMetrics.totalDistributed)
         .plus(communitiesYesterday.totalClaimed)
@@ -113,7 +133,10 @@ async function calculateInflowOutflow(
         totalDistributed,
         totalBeneficiaries,
         totalBackers,
-        communitiesYesterday,
+        communitiesYesterday: {
+            ...communitiesYesterday,
+            totalRaised: inflowYesterday.totalRaised,
+        },
     };
 }
 
