@@ -138,7 +138,7 @@ export default class GlobalDemographicsService {
               , count(*) FILTER (WHERE current_year-u.year BETWEEN 65 AND 120) AS "ageRange6"
          from "app_user" u, "current_date_year", beneficiary b, community c
          where u.address = b.address
-         and b."communityId" = c."publicId"
+         and b."communityId" = c.id
          and c.visibility = 'public'
          and c.status = 'valid'
          group by c.country`;
@@ -147,7 +147,7 @@ export default class GlobalDemographicsService {
         from "app_user" u, beneficiary b, community c
         where u.address = b.address
         and b.active = true
-        and b."communityId" = c."publicId"
+        and b."communityId" = c.id
         and c.visibility = 'public'
         and c.status = 'valid'
         group by c.country, u.gender
