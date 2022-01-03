@@ -25,7 +25,6 @@ describe('[jobs] subscribers', () => {
     const blockTimeDate = new Date();
     let provider: ethers.providers.Web3Provider;
     let communityContract: ethers.Contract;
-    let DAOContract: ethers.Contract;
     const communities = new Map<string, string>();
     const communitiesId = new Map<string, number>();
     const communitiesVisibility = new Map<string, boolean>();
@@ -67,7 +66,7 @@ describe('[jobs] subscribers', () => {
     let getRecoverBlockStub: SinonStub<any, any>;
     let cUSD: ethers.Contract;
     let communityFactory: ethers.ContractFactory;
-    let DAOFactory: ethers.ContractFactory;
+    let treasuryAddress: string = '';
     let subscribers: ChainSubscribers;
 
     const ganacheProvider = ganache.provider({
@@ -186,7 +185,7 @@ describe('[jobs] subscribers', () => {
             OldCommunityContractJSON.bytecode,
             provider.getSigner(0)
         );
-        DAOFactory = new ethers.ContractFactory(
+        const DAOFactory = new ethers.ContractFactory(
             DAOContractJSON.abi,
             DAOContractJSON.bytecode,
             provider.getSigner(0)
@@ -194,11 +193,14 @@ describe('[jobs] subscribers', () => {
 
         cUSD = await cUSDFactory.deploy();
 
-        DAOContract = (await DAOFactory.deploy()).connect(
+        const DAOContract = (await DAOFactory.deploy()).connect(
             provider.getSigner(0)
         );
 
+        treasuryAddress = ethers.Wallet.createRandom().address;
+
         stub(config, 'DAOContractAddress').value(DAOContract.address);
+        stub(config.contractAddresses, 'treasury').value(treasuryAddress);
         stub(config, 'cUSDContractAddress').value(cUSD.address);
 
         // // init event subscribers
@@ -560,13 +562,13 @@ describe('[jobs] subscribers', () => {
 
         await cUSD
             .connect(provider.getSigner(3))
-            .transfer(DAOContract.address, '2000000000000000000');
+            .transfer(treasuryAddress, '2000000000000000000');
         await waitForStubCall(inflowAdd, 1);
         assert.callCount(inflowAdd, 1);
         assert.calledWith(
             inflowAdd.getCall(0),
             accounts[3],
-            DAOContract.address,
+            treasuryAddress,
             '2000000000000000000',
             match.any,
             match.any
