@@ -1,10 +1,10 @@
+import genericController from '@controllers/generic';
 import ExchangeRatesService from '@services/app/exchangeRates';
 import { standardResponse } from '@utils/api';
-import genericController from '@controllers/generic';
-import { cacheWithRedis } from '../../database';
 import { Router, Request, Response } from 'express';
 
 import config from '../../config';
+import { cacheWithRedis } from '../../database';
 
 export default (app: Router): void => {
     /**
@@ -119,4 +119,25 @@ export default (app: Router): void => {
         cacheWithRedis('10 minutes'),
         genericController.circulatingSupply
     );
+
+    /**
+     * @swagger
+     *
+     * /airgrab/{address}:
+     *   get:
+     *     tags:
+     *       - "generic"
+     *     summary: Get airgrab.
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: user address
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    app.get('/airgrab/:address', genericController.getAirgrab);
 };

@@ -1,9 +1,10 @@
+import { BigNumber } from 'bignumber.js';
 import { Contract, ethers } from 'ethers';
 import { Request, Response } from 'express';
-import ERC20ABI from '../../contracts/ERC20ABI.json';
-import { BigNumber } from 'bignumber.js';
 
 import config from '../../config';
+import ERC20ABI from '../../contracts/ERC20ABI.json';
+import { models } from '../../database';
 
 const circulatingSupply = async (req: Request, res: Response) => {
     const pact = new Contract(
@@ -33,6 +34,34 @@ const circulatingSupply = async (req: Request, res: Response) => {
     res.send(response.toString());
 };
 
+const getAirgrab = async (req: Request, res: Response) => {
+    const { address } = req.params;
+    try {
+        const user = (await models.airgrabUser.findOne({
+            attributes: {
+                exclude: ['id', 'address'],
+            },
+            where: {
+                address: ethers.utils.getAddress(address),
+            },
+            include: [
+                {
+                    model: models.airgrabProof,
+                    as: 'proof',
+                    separate: true,
+                },
+            ],
+        }))!.toJSON();
+
+        user['proof'] = user['proof'].map((el) => el.hashProof);
+
+        res.send(user);
+    } catch (_) {
+        res.send({});
+    }
+};
+
 export default {
     circulatingSupply,
+    getAirgrab,
 };

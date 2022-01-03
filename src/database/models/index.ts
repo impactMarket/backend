@@ -1,5 +1,7 @@
 import { Sequelize } from 'sequelize';
 
+import { initializeAirgrabProof } from './airgrab/airgrabProof';
+import { initializeAirgrabUser } from './airgrab/airgrabUser';
 import { initializeAgenda } from './app/agenda';
 import { initializeAppAnonymousReport } from './app/anonymousReport';
 import { initializeAppMediaContent } from './app/appMediaContent';
@@ -12,6 +14,7 @@ import { initializeAppUserTrust } from './app/appUserTrust';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
 import { initializeExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
+import { airgrabAssociation } from './associations/airgrab';
 import { appAssociation } from './associations/app';
 import { communityAssociation } from './associations/community';
 import { storyAssociation } from './associations/story';
@@ -100,9 +103,14 @@ export default function initModels(sequelize: Sequelize): void {
     initializeStoryUserEngagement(sequelize);
     initializeStoryUserReport(sequelize);
 
+    // airgrab
+    initializeAirgrabUser(sequelize);
+    initializeAirgrabProof(sequelize);
+
     // associations
     userAssociation(sequelize);
     communityAssociation(sequelize);
     storyAssociation(sequelize);
     appAssociation(sequelize);
+    airgrabAssociation(sequelize);
 }
