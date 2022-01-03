@@ -216,6 +216,7 @@ describe('communityAdmin', () => {
                 where: {
                     contractAddress: previousCommunityAddress,
                 },
+                returning: true,
             }
         );
     });

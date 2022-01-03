@@ -549,8 +549,35 @@ class ChainSubscribers {
                     where: {
                         contractAddress: previousCommunityAddress,
                     },
+                    returning: true,
                 }
             );
+            try {
+                const communityContract = new ethers.Contract(
+                    communityAddress,
+                    CommunityContractABI,
+                    this.provider
+                );
+                await models.ubiCommunityContract.update(
+                    {
+                        baseInterval: parseInt(
+                            (await communityContract.baseInterval()).toString(),
+                            10
+                        ),
+                        incrementInterval: parseInt(
+                            (
+                                await communityContract.incrementInterval()
+                            ).toString(),
+                            10
+                        ),
+                    },
+                    {
+                        where: {
+                            communityId: community[1][0].id,
+                        },
+                    }
+                );
+            } catch (_) {}
             if (community[0] === 0) {
                 Logger.error(
                     `Community with address ${communityAddress} wasn't updated at "CommunityMigrated"`
