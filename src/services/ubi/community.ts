@@ -2190,7 +2190,7 @@ export default class CommunityService {
         FROM (
             SELECT "Community"."id", count(distinct("beneficiaries"."address")) AS "beneficiaries"
             FROM "community" AS "Community"
-                INNER JOIN "beneficiary" AS "beneficiaries" ON "Community"."publicId" = "beneficiaries"."communityId" AND "beneficiaries"."active" = true
+                INNER JOIN "beneficiary" AS "beneficiaries" ON "Community"."id" = "beneficiaries"."communityId" AND "beneficiaries"."active" = true
             WHERE ${
                 !!communitiesId && communitiesId.length > 0
                     ? `"Community"."id" IN (${communitiesId.join()})`
