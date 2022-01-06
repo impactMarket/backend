@@ -16,25 +16,15 @@
     "engines": {
         "node": "14.15.1"
     },
-    "_moduleAliases": {
-        "@controllers": "dist/api/controllers",
-        "@validators": "dist/api/validators",
-        "@models": "dist/database/models",
-        "@services": "dist/services",
-        "@utils": "dist/utils",
-        "@interfaces": "dist/interfaces"
-    },
     "workspaces": [
         "packages/*"
     ],
-    "dependencies": {
-        "typescript": "^4.0.3"
-    },
     "devDependencies": {
         "lerna": "^4.0.0"
     },
     "scripts": {
         "start": "lerna exec --scope impactmarket-api yarn start",
+        "build": "lerna exec --scope impactmarket-api yarn build",
         "test": "lerna run test --parallel",
         "boot": "yarn global add lerna && lerna bootstrap",
         "release": "yarn install && lerna publish && yarn clean"
