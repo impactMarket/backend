@@ -5,9 +5,7 @@
   "engines": {
     "node": "14.15.1"
   },
-  "scripts": {
-    "start": "index.js"
-  },
+  "scripts": {},
   "devDependencies": {
     "@types/express": "4.17.13"
   },
@@ -25,6 +23,7 @@
     "express": "4.17.1",
     "impactmarket-api": "^1.0.0",
     "moment": "2.29.1",
+    "pg": "8.7.1",
     "redis": "3.1.2",
     "sequelize": "6.10.0",
     "winston": "3.3.3"
