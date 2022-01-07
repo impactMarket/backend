@@ -1,12 +1,12 @@
 import faker from 'faker';
 
-import { models } from '../../database';
-import { StoryContentModel } from '../../database/models/story/storyContent';
-import { AppMediaContent } from '../../interfaces/app/appMediaContent';
+import { models } from '../../src/database';
+import { StoryContentModel } from '../../src/database/models/story/storyContent';
+import { AppMediaContent } from '../../src/interfaces/app/appMediaContent';
 import {
     StoryContent,
     StoryContentCreation,
-} from '../../interfaces/story/storyContent';
+} from '../../src/interfaces/story/storyContent';
 
 /**
  * Generate an object which container attributes needed

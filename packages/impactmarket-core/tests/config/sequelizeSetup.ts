@@ -6,8 +6,8 @@ import {
     TimeoutError,
 } from 'sequelize';
 
-import config from '../../config';
-import initModels from '../../database/models';
+import config from '../../src/config';
+import initModels from '../../src/database/models';
 
 export function sequelizeSetup() {
     const dbConfig: Options = {

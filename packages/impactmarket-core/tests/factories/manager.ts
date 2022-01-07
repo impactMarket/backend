@@ -2,8 +2,8 @@ import {
     Manager,
     ManagerAttributes,
     ManagerCreationAttributes,
-} from '../../database/models/ubi/manager';
-import { AppUser } from '../../interfaces/app/appUser';
+} from '../../src/database/models/ubi/manager';
+import { AppUser } from '../../src/interfaces/app/appUser';
 
 /**
  * Generate an object which container attributes needed

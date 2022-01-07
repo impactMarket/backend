@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
 
-import { UbiBeneficiaryTransactionModel } from '../../database/models/ubi/ubiBeneficiaryTransaction';
-import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
-import { UbiBeneficiaryTransactionCreation } from '../../interfaces/ubi/ubiBeneficiaryTransaction';
+import { UbiBeneficiaryTransactionModel } from '../../src/database/models/ubi/ubiBeneficiaryTransaction';
+import { BeneficiaryAttributes } from '../../src/interfaces/ubi/beneficiary';
+import { UbiBeneficiaryTransactionCreation } from '../../src/interfaces/ubi/ubiBeneficiaryTransaction';
 import { randomTx } from '../config/utils';
 
 /**

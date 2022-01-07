@@ -4,8 +4,8 @@ import { ethers } from 'ethers';
 import {
     Inflow,
     InflowCreationAttributes,
-} from '../../database/models/ubi/inflow';
-import { CommunityAttributes } from '../../interfaces/ubi/community';
+} from '../../src/database/models/ubi/inflow';
+import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import { randomTx } from '../config/utils';
 /**
  * Generate an object which container attributes needed

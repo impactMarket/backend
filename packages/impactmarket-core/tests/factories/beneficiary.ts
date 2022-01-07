@@ -1,9 +1,9 @@
-import { Beneficiary } from '../../database/models/ubi/beneficiary';
-import { AppUser } from '../../interfaces/app/appUser';
+import { Beneficiary } from '../../src/database/models/ubi/beneficiary';
+import { AppUser } from '../../src/interfaces/app/appUser';
 import {
     BeneficiaryAttributes,
     BeneficiaryCreationAttributes,
-} from '../../interfaces/ubi/beneficiary';
+} from '../../src/interfaces/ubi/beneficiary';
 import { randomTx } from '../config/utils';
 
 /**

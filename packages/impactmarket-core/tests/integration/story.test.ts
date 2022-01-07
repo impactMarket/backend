@@ -2,11 +2,11 @@ import { expect } from 'chai';
 import { Op, Sequelize } from 'sequelize';
 import Sinon, { assert, replace, spy, match } from 'sinon';
 
-import { models } from '../../database';
-import { AppUser } from '../../interfaces/app/appUser';
-import { CommunityAttributes } from '../../interfaces/ubi/community';
-import { StoryContentStorage } from '../../services/storage';
-import StoryService from '../../services/story';
+import { models } from '../../src/database';
+import { AppUser } from '../../src/interfaces/app/appUser';
+import { CommunityAttributes } from '../../src/interfaces/ubi/community';
+import { StoryContentStorage } from '../../src/services/storage';
+import StoryService from '../../src/services/story';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import StoryFactory from '../factories/story';

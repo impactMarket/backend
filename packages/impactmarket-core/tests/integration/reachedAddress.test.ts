@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import { Sequelize } from 'sequelize';
 
-import ReachedAddressService from '../../services/reachedAddress';
+import ReachedAddressService from '../../src/services/reachedAddress';
 import { sequelizeSetup } from '../config/sequelizeSetup';
 
 describe('reachedAddress', () => {

@@ -2,10 +2,10 @@ import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
 import { Sequelize } from 'sequelize';
 
-import { AppUser } from '../../interfaces/app/appUser';
-import { CommunityAttributes } from '../../interfaces/ubi/community';
-import UserService from '../../services/app/user';
-import ManagerService from '../../services/ubi/managers';
+import { AppUser } from '../../src/interfaces/app/appUser';
+import { CommunityAttributes } from '../../src/interfaces/ubi/community';
+import UserService from '../../src/services/app/user';
+import ManagerService from '../../src/services/ubi/managers';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';

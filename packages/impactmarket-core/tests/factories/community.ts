@@ -1,14 +1,14 @@
 import { ethers } from 'ethers';
 import faker from 'faker';
 
-import { Community } from '../../database/models/ubi/community';
-import { UbiCommunityContractModel } from '../../database/models/ubi/communityContract';
-import { UbiCommunitySuspectModel } from '../../database/models/ubi/ubiCommunitySuspect';
-import { CommunityAttributes } from '../../interfaces/ubi/community';
+import { Community } from '../../src/database/models/ubi/community';
+import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
+import { UbiCommunitySuspectModel } from '../../src/database/models/ubi/ubiCommunitySuspect';
+import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import {
     UbiCommunityContract,
     UbiCommunityContractCreation,
-} from '../../interfaces/ubi/ubiCommunityContract';
+} from '../../src/interfaces/ubi/ubiCommunityContract';
 
 interface ICreateProps {
     requestByAddress: string;

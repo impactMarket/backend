@@ -1,7 +1,7 @@
-import { UbiClaimModel } from '../../database/models/ubi/ubiClaim';
-import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
-import { CommunityAttributes } from '../../interfaces/ubi/community';
-import { UbiClaimCreation } from '../../interfaces/ubi/ubiClaim';
+import { UbiClaimModel } from '../../src/database/models/ubi/ubiClaim';
+import { BeneficiaryAttributes } from '../../src/interfaces/ubi/beneficiary';
+import { CommunityAttributes } from '../../src/interfaces/ubi/community';
+import { UbiClaimCreation } from '../../src/interfaces/ubi/ubiClaim';
 import { randomTx } from '../config/utils';
 /**
  * Generate an object which container attributes needed

@@ -1,7 +1,7 @@
 import { BigNumber } from 'bignumber.js';
 import { expect } from 'chai';
 
-import { calculateGrowth } from '../../../utils/util';
+import { calculateGrowth } from '../../../src/utils/util';
 
 BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
 

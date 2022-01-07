@@ -1,12 +1,12 @@
 import { ethers } from 'ethers';
 import faker from 'faker';
 
-import { AppUserModel } from '../../database/models/app/appUser';
-import { AppUserTrustModel } from '../../database/models/app/appUserTrust';
+import { AppUserModel } from '../../src/database/models/app/appUser';
+import { AppUserTrustModel } from '../../src/database/models/app/appUserTrust';
 import {
     AppUser,
     AppUserCreationAttributes,
-} from '../../interfaces/app/appUser';
+} from '../../src/interfaces/app/appUser';
 
 interface ICreateProps {
     phone?: string;

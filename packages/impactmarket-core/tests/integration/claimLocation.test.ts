@@ -2,10 +2,10 @@ import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
 import { assert, spy, SinonSpy } from 'sinon';
 
-import { models } from '../../database';
-import { AppUser } from '../../interfaces/app/appUser';
-import { CommunityAttributes } from '../../interfaces/ubi/community';
-import ClaimLocationService from '../../services/ubi/claimLocation';
+import { models } from '../../src/database';
+import { AppUser } from '../../src/interfaces/app/appUser';
+import { CommunityAttributes } from '../../src/interfaces/ubi/community';
+import ClaimLocationService from '../../src/services/ubi/claimLocation';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import UserFactory from '../factories/user';

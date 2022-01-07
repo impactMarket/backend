@@ -1,6 +1,6 @@
 import { stub, assert, match, SinonStub } from 'sinon';
 
-import GlobalDemographicsService from '../../../services/global/globalDemographics';
+import GlobalDemographicsService from '../../../src/services/global/globalDemographics';
 
 const genderQueryResult = [
     {

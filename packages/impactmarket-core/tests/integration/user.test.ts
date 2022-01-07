@@ -5,11 +5,11 @@ import { Sequelize } from 'sequelize';
 import { SinonStub, stub, restore } from 'sinon';
 import tk from 'timekeeper';
 
-import { models } from '../../database';
-import { AppUser } from '../../interfaces/app/appUser';
-import { CommunityAttributes } from '../../interfaces/ubi/community';
-import UserService from '../../services/app/user';
-import { BaseError } from '../../utils/baseError';
+import { models } from '../../src/database';
+import { AppUser } from '../../src/interfaces/app/appUser';
+import { CommunityAttributes } from '../../src/interfaces/ubi/community';
+import UserService from '../../src/services/app/user';
+import { BaseError } from '../../src/utils/baseError';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';

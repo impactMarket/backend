@@ -1,10 +1,10 @@
-import config from './config';
-import * as contracts from './contracts';
-import * as database from './database';
-import * as interfaces from './interfaces';
-import * as services from './services';
-import * as utils from './utils';
-import * as types from './types';
+import config from './src/config';
+import * as contracts from './src/contracts';
+import * as database from './src/database';
+import * as interfaces from './src/interfaces';
+import * as services from './src/services';
+import * as utils from './src/utils';
+import * as types from './src/types';
 
 export {
     config,
