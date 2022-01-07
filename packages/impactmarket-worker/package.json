@@ -1,0 +1,32 @@
+{
+  "name": "impactmarket-worker",
+  "version": "1.0.0",
+  "license": "MIT",
+  "engines": {
+    "node": "14.15.1"
+  },
+  "scripts": {
+    "worker-dev": "nodemon -w src src/index.ts",
+    "worker": "node dist/index.js",
+    "build": "tsc -p .",
+    "build:watch": "tsc -p . --watch"
+  },
+  "devDependencies": {
+    "@types/node-schedule": "1.3.2",
+    "nodemon": "2.0.15"
+  },
+  "dependencies": {
+    "@slack/web-api": "6.5.0",
+    "axios": "0.24.0",
+    "bignumber.js": "9.0.0",
+    "cron": "1.8.2",
+    "ethers": "5.5.1",
+    "impactmarket-core": "^1.0.0",
+    "mathjs": "10.0.0",
+    "module-alias": "2.2.2",
+    "node-schedule": "2.0.0",
+    "sequelize": "6.10.0",
+    "ts-node": "10.4.0",
+    "typescript": "4.5.2"
+  }
+}

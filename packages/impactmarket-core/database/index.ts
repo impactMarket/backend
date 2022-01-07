@@ -1,45 +1,45 @@
-import { AirgrabProofModel } from './models/airgrab/airgrabProof';
-import { AirgrabUserModel } from './models/airgrab/airgrabUser';
-import { AppAnonymousReportModel } from './models/app/anonymousReport';
-import { AppMediaContentModel } from './models/app/appMediaContent';
-import { AppMediaThumbnailModel } from './models/app/appMediaThumbnail';
-import { AppNotificationModel } from './models/app/appNotification';
-import { AppProposalModel } from './models/app/appProposal';
-import { AppUserModel } from './models/app/appUser';
-import { AppUserThroughTrustModel } from './models/app/appUserThroughTrust';
-import { AppUserTrustModel } from './models/app/appUserTrust';
+import * as AirgrabProof from './models/airgrab/airgrabProof';
+import * as AirgrabUser from './models/airgrab/airgrabUser';
+import * as AppAnonymousReport from './models/app/anonymousReport';
+import * as AppMediaContent from './models/app/appMediaContent';
+import * as AppMediaThumbnail from './models/app/appMediaThumbnail';
+import * as AppNotification from './models/app/appNotification';
+import * as AppProposal from './models/app/appProposal';
+import * as AppUser from './models/app/appUser';
+import * as AppUserThroughTrust from './models/app/appUserThroughTrust';
+import * as AppUserTrust from './models/app/appUserTrust';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
-import { ExchangeRates } from './models/app/exchangeRates';
+import * as ExchangeRates from './models/app/exchangeRates';
 import { ImMetadata } from './models/app/imMetadata';
-import { GlobalDailyState } from './models/global/globalDailyState';
-import { GlobalDemographics } from './models/global/globalDemographics';
-import { GlobalGrowthModel } from './models/global/globalGrowth';
+import * as GlobalDailyState from './models/global/globalDailyState';
+import * as GlobalDemographics from './models/global/globalDemographics';
+import * as GlobalGrowth from './models/global/globalGrowth';
 import { NotifiedBacker } from './models/notifiedBacker';
-import { ReachedAddress } from './models/reachedAddress';
-import { StoryCommunityModel } from './models/story/storyCommunity';
-import { StoryContentModel } from './models/story/storyContent';
-import { StoryEngagementModel } from './models/story/storyEngagement';
-import { StoryUserEngagementModel } from './models/story/storyUserEngagement';
-import { StoryUserReportModel } from './models/story/storyUserReport';
+import * as ReachedAddress from './models/reachedAddress';
+import * as StoryCommunity from './models/story/storyCommunity';
+import * as StoryContent from './models/story/storyContent';
+import * as StoryEngagement from './models/story/storyEngagement';
+import * as StoryUserEngagement from './models/story/storyUserEngagement';
+import * as StoryUserReport from './models/story/storyUserReport';
 import { Beneficiary } from './models/ubi/beneficiary';
 import { Community } from './models/ubi/community';
-import { UbiCommunityContractModel } from './models/ubi/communityContract';
-import { UbiCommunityDailyMetricsModel } from './models/ubi/communityDailyMetrics';
-import { UbiCommunityDailyStateModel } from './models/ubi/communityDailyState';
-import { UbiCommunityDemographicsModel } from './models/ubi/communityDemographics';
-import { Inflow } from './models/ubi/inflow';
-import { Manager } from './models/ubi/manager';
-import { UbiRequestChangeParamsModel } from './models/ubi/requestChangeParams';
-import { UbiBeneficiaryRegistryModel } from './models/ubi/ubiBeneficiaryRegistry';
-import { UbiBeneficiarySurveyModel } from './models/ubi/ubiBeneficiarySurvey';
-import { UbiBeneficiaryTransactionModel } from './models/ubi/ubiBeneficiaryTransaction';
-import { UbiClaimModel } from './models/ubi/ubiClaim';
-import { ClaimLocationModel } from './models/ubi/ubiClaimLocation';
-import { UbiCommunityCampaignModel } from './models/ubi/ubiCommunityCampaign';
-import { UbiCommunityLabelModel } from './models/ubi/ubiCommunityLabel';
-import { UbiCommunitySuspectModel } from './models/ubi/ubiCommunitySuspect';
-import { UbiPromoterModel } from './models/ubi/ubiPromoter';
-import { UbiPromoterSocialMediaModel } from './models/ubi/ubiPromoterSocialMedia';
+import * as UbiCommunityContract from './models/ubi/communityContract';
+import * as UbiCommunityDailyMetrics from './models/ubi/communityDailyMetrics';
+import * as UbiCommunityDailyState from './models/ubi/communityDailyState';
+import * as UbiCommunityDemographics from './models/ubi/communityDemographics';
+import * as Inflow from './models/ubi/inflow';
+import * as Manager from './models/ubi/manager';
+import * as UbiRequestChangeParams from './models/ubi/requestChangeParams';
+import * as UbiBeneficiaryRegistry from './models/ubi/ubiBeneficiaryRegistry';
+import * as UbiBeneficiarySurvey from './models/ubi/ubiBeneficiarySurvey';
+import * as UbiBeneficiaryTransaction from './models/ubi/ubiBeneficiaryTransaction';
+import * as UbiClaim from './models/ubi/ubiClaim';
+import * as ClaimLocation from './models/ubi/ubiClaimLocation';
+import * as UbiCommunityCampaign from './models/ubi/ubiCommunityCampaign';
+import * as UbiCommunityLabel from './models/ubi/ubiCommunityLabel';
+import * as UbiCommunitySuspect from './models/ubi/ubiCommunitySuspect';
+import * as UbiPromoter from './models/ubi/ubiPromoter';
+import * as UbiPromoterSocialMedia from './models/ubi/ubiPromoterSocialMedia';
 import { Logger } from '../utils/logger';
 import apicache from 'apicache';
 import redis from 'redis';
@@ -77,85 +77,85 @@ const dbConfig: Options = {
 const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);
 const models: DbModels = {
-    appUser: sequelize.models.AppUserModel as ModelCtor<AppUserModel>,
+    appUser: sequelize.models.AppUserModel as ModelCtor<AppUser.AppUserModel>,
     appUserTrust: sequelize.models
-        .AppUserTrustModel as ModelCtor<AppUserTrustModel>,
+        .AppUserTrustModel as ModelCtor<AppUserTrust.AppUserTrustModel>,
     appProposal: sequelize.models
-        .AppProposalModel as ModelCtor<AppProposalModel>,
+        .AppProposalModel as ModelCtor<AppProposal.AppProposalModel>,
     appUserThroughTrust: sequelize.models
-        .AppUserThroughTrustModel as ModelCtor<AppUserThroughTrustModel>,
+        .AppUserThroughTrustModel as ModelCtor<AppUserThroughTrust.AppUserThroughTrustModel>,
     community: sequelize.models.Community as ModelCtor<Community>,
     ubiCommunitySuspect: sequelize.models
-        .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspectModel>,
+        .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspect.UbiCommunitySuspectModel>,
     ubiCommunityContract: sequelize.models
-        .UbiCommunityContractModel as ModelCtor<UbiCommunityContractModel>,
+        .UbiCommunityContractModel as ModelCtor<UbiCommunityContract.UbiCommunityContractModel>,
     ubiCommunityDailyState: sequelize.models
-        .UbiCommunityDailyStateModel as ModelCtor<UbiCommunityDailyStateModel>,
+        .UbiCommunityDailyStateModel as ModelCtor<UbiCommunityDailyState.UbiCommunityDailyStateModel>,
     ubiCommunityDailyMetrics: sequelize.models
-        .UbiCommunityDailyMetricsModel as ModelCtor<UbiCommunityDailyMetricsModel>,
+        .UbiCommunityDailyMetricsModel as ModelCtor<UbiCommunityDailyMetrics.UbiCommunityDailyMetricsModel>,
     ubiCommunityDemographics: sequelize.models
-        .UbiCommunityDemographicsModel as ModelCtor<UbiCommunityDemographicsModel>,
+        .UbiCommunityDemographicsModel as ModelCtor<UbiCommunityDemographics.UbiCommunityDemographicsModel>,
     ubiPromoter: sequelize.models
-        .UbiPromoterModel as ModelCtor<UbiPromoterModel>,
+        .UbiPromoterModel as ModelCtor<UbiPromoter.UbiPromoterModel>,
     ubiPromoterSocialMedia: sequelize.models
-        .UbiPromoterSocialMediaModel as ModelCtor<UbiPromoterSocialMediaModel>,
+        .UbiPromoterSocialMediaModel as ModelCtor<UbiPromoterSocialMedia.UbiPromoterSocialMediaModel>,
     ubiCommunityLabels: sequelize.models
-        .UbiCommunityLabelModel as ModelCtor<UbiCommunityLabelModel>,
+        .UbiCommunityLabelModel as ModelCtor<UbiCommunityLabel.UbiCommunityLabelModel>,
     ubiCommunityCampaign: sequelize.models
-        .UbiCommunityCampaignModel as ModelCtor<UbiCommunityCampaignModel>,
+        .UbiCommunityCampaignModel as ModelCtor<UbiCommunityCampaign.UbiCommunityCampaignModel>,
     ubiRequestChangeParams: sequelize.models
-        .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParamsModel>,
-    ubiClaim: sequelize.models.UbiClaimModel as ModelCtor<UbiClaimModel>,
+        .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParams.UbiRequestChangeParamsModel>,
+    ubiClaim: sequelize.models.UbiClaimModel as ModelCtor<UbiClaim.UbiClaimModel>,
     ubiClaimLocation: sequelize.models
-        .ClaimLocationModel as ModelCtor<ClaimLocationModel>,
+        .ClaimLocationModel as ModelCtor<ClaimLocation.ClaimLocationModel>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
     ubiBeneficiaryRegistry: sequelize.models
-        .UbiBeneficiaryRegistryModel as ModelCtor<UbiBeneficiaryRegistryModel>,
+        .UbiBeneficiaryRegistryModel as ModelCtor<UbiBeneficiaryRegistry.UbiBeneficiaryRegistryModel>,
     ubiBeneficiarySurvey: sequelize.models
-        .UbiBeneficiarySurveyModel as ModelCtor<UbiBeneficiarySurveyModel>,
+        .UbiBeneficiarySurveyModel as ModelCtor<UbiBeneficiarySurvey.UbiBeneficiarySurveyModel>,
     anonymousReport: sequelize.models
-        .AppAnonymousReportModel as ModelCtor<AppAnonymousReportModel>,
+        .AppAnonymousReportModel as ModelCtor<AppAnonymousReport.AppAnonymousReportModel>,
     ubiBeneficiaryTransaction: sequelize.models
-        .UbiBeneficiaryTransactionModel as ModelCtor<UbiBeneficiaryTransactionModel>,
+        .UbiBeneficiaryTransactionModel as ModelCtor<UbiBeneficiaryTransaction.UbiBeneficiaryTransactionModel>,
     cronJobExecuted: sequelize.models
         .CronJobExecuted as ModelCtor<CronJobExecuted>,
-    exchangeRates: sequelize.models.ExchangeRates as ModelCtor<ExchangeRates>,
+    exchangeRates: sequelize.models.ExchangeRates as ModelCtor<ExchangeRates.ExchangeRates>,
     globalDailyState: sequelize.models
-        .GlobalDailyState as ModelCtor<GlobalDailyState>,
+        .GlobalDailyState as ModelCtor<GlobalDailyState.GlobalDailyState>,
     globalDemographics: sequelize.models
-        .GlobalDemographics as ModelCtor<GlobalDemographics>,
+        .GlobalDemographics as ModelCtor<GlobalDemographics.GlobalDemographics>,
     globalGrowth: sequelize.models
-        .GlobalGrowthModel as ModelCtor<GlobalGrowthModel>,
+        .GlobalGrowthModel as ModelCtor<GlobalGrowth.GlobalGrowthModel>,
     // userDevice: sequelize.models
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
-    inflow: sequelize.models.Inflow as ModelCtor<Inflow>,
-    manager: sequelize.models.Manager as ModelCtor<Manager>,
+    inflow: sequelize.models.Inflow as ModelCtor<Inflow.Inflow>,
+    manager: sequelize.models.Manager as ModelCtor<Manager.Manager>,
     notifiedBacker: sequelize.models
         .NotifiedBacker as ModelCtor<NotifiedBacker>,
     reachedAddress: sequelize.models
-        .ReachedAddress as ModelCtor<ReachedAddress>,
+        .ReachedAddress as ModelCtor<ReachedAddress.ReachedAddress>,
 
     appMediaContent: sequelize.models
-        .AppMediaContentModel as ModelCtor<AppMediaContentModel>,
+        .AppMediaContentModel as ModelCtor<AppMediaContent.AppMediaContentModel>,
     appMediaThumbnail: sequelize.models
-        .AppMediaThumbnailModel as ModelCtor<AppMediaThumbnailModel>,
+        .AppMediaThumbnailModel as ModelCtor<AppMediaThumbnail.AppMediaThumbnailModel>,
     appNotification: sequelize.models
-        .AppNotificationModel as ModelCtor<AppNotificationModel>,
+        .AppNotificationModel as ModelCtor<AppNotification.AppNotificationModel>,
     // stories
     storyContent: sequelize.models
-        .StoryContentModel as ModelCtor<StoryContentModel>,
+        .StoryContentModel as ModelCtor<StoryContent.StoryContentModel>,
     storyCommunity: sequelize.models
-        .StoryCommunityModel as ModelCtor<StoryCommunityModel>,
+        .StoryCommunityModel as ModelCtor<StoryCommunity.StoryCommunityModel>,
     storyEngagement: sequelize.models
-        .StoryEngagementModel as ModelCtor<StoryEngagementModel>,
+        .StoryEngagementModel as ModelCtor<StoryEngagement.StoryEngagementModel>,
     storyUserEngagement: sequelize.models
-        .StoryUserEngagementModel as ModelCtor<StoryUserEngagementModel>,
+        .StoryUserEngagementModel as ModelCtor<StoryUserEngagement.StoryUserEngagementModel>,
     storyUserReport: sequelize.models
-        .StoryUserReportModel as ModelCtor<StoryUserReportModel>,
+        .StoryUserReportModel as ModelCtor<StoryUserReport.StoryUserReportModel>,
     airgrabUser: sequelize.models
-        .AirgrabUserModel as ModelCtor<AirgrabUserModel>,
+        .AirgrabUserModel as ModelCtor<AirgrabUser.AirgrabUserModel>,
     airgrabProof: sequelize.models
-        .AirgrabProofModel as ModelCtor<AirgrabProofModel>,
+        .AirgrabProofModel as ModelCtor<AirgrabProof.AirgrabProofModel>,
 };
 
 let redisClient: redis.RedisClient | undefined;
@@ -176,5 +176,48 @@ const apiCacheOptions = {
     redisClient,
 };
 const cacheWithRedis = apicache.options(apiCacheOptions).middleware;
-
+export {
+    AirgrabProof,
+    AirgrabUser,
+    AppAnonymousReport,
+    AppMediaContent,
+    AppMediaThumbnail,
+    AppNotification,
+    AppProposal,
+    AppUser,
+    AppUserThroughTrust,
+    AppUserTrust,
+    CronJobExecuted,
+    ExchangeRates,
+    ImMetadata,
+    GlobalDailyState,
+    GlobalDemographics,
+    GlobalGrowth,
+    NotifiedBacker,
+    ReachedAddress,
+    StoryCommunity,
+    StoryContent,
+    StoryEngagement,
+    StoryUserEngagement,
+    StoryUserReport,
+    Beneficiary,
+    Community,
+    UbiCommunityContract,
+    UbiCommunityDailyMetrics,
+    UbiCommunityDailyState,
+    UbiCommunityDemographics,
+    Inflow,
+    Manager,
+    UbiRequestChangeParams,
+    UbiBeneficiaryRegistry,
+    UbiBeneficiarySurvey,
+    UbiBeneficiaryTransaction,
+    UbiClaim,
+    ClaimLocation,
+    UbiCommunityCampaign,
+    UbiCommunityLabel,
+    UbiCommunitySuspect,
+    UbiPromoter,
+    UbiPromoterSocialMedia,
+}
 export { sequelize, Sequelize, models, redisClient, cacheWithRedis };
