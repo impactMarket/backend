@@ -6,8 +6,8 @@
     "node": "14.15.1"
   },
   "scripts": {
-    "start": "nodemon --config nodemon.json app.ts",
-    "test": "NODE_ENV=test mocha"
+    "test": "NODE_ENV=test mocha",
+    "build": "tsc -p ."
   },
   "devDependencies": {
     "@types/chai": "4.2.18",

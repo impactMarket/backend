@@ -1,7 +1,7 @@
 import { RequestWithUser } from '../middlewares/core';
 import { utils, services } from 'impactmarket-core';
 import { Request, Response } from 'express';
-import { standardResponse } from '../utils/api';
+import { standardResponse, controllerLogAndFail } from '../utils/api';
 
 class CommunityController {
     findRequestChangeUbiParams = (req: Request, res: Response) => {
@@ -413,24 +413,24 @@ const getHistoricalSSI = (req: Request, res: Response) => {
         .then((community) => {
             res.send(community);
         })
-        .catch((e) => utils.api.controllerLogAndFail(e, 400, res));
+        .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
 const listLight = (req: Request, res: Response) => {
     services.ubi.CommunityService.listLight(req.params.order, req.query)
         .then((r) => res.send(r))
-        .catch((e) => utils.api.controllerLogAndFail(e, 400, res));
+        .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
 const listFull = (req: Request, res: Response) => {
     services.ubi.CommunityService.listFull(req.params.order)
         .then((r) => res.send(r))
-        .catch((e) => utils.api.controllerLogAndFail(e, 400, res));
+        .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
 const searchManager = (req: RequestWithUser, res: Response) => {
     if (req.user === undefined) {
-        utils.api.controllerLogAndFail('User not identified!', 400, res);
+        controllerLogAndFail('User not identified!', 400, res);
         return;
     }
     services.ubi.CommunityService.searchManager(req.user.address, req.params.managerQuery)
@@ -440,7 +440,7 @@ const searchManager = (req: RequestWithUser, res: Response) => {
 
 const listManagers = (req: RequestWithUser, res: Response) => {
     if (req.user === undefined) {
-        utils.api.controllerLogAndFail('User not identified!', 400, res);
+        controllerLogAndFail('User not identified!', 400, res);
         return;
     }
     services.ubi.CommunityService.listManagers(
@@ -449,27 +449,27 @@ const listManagers = (req: RequestWithUser, res: Response) => {
         parseInt(req.params.limit, 10)
     )
         .then((r) => res.send(r))
-        .catch((e) => utils.api.controllerLogAndFail(e, 400, res));
+        .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
 const accept = (req: Request, res: Response) => {
     const { acceptanceTransaction, publicId } = req.body;
     services.ubi.CommunityService.accept(acceptanceTransaction, publicId)
         .then((r) => res.send({ contractAddress: r }).status(202))
-        .catch((e) => utils.api.controllerLogAndFail(e, 403, res));
+        .catch((e) => controllerLogAndFail(e, 403, res));
 };
 
 const remove = (req: Request, res: Response) => {
     const { publicId } = req.body;
     services.ubi.CommunityService.remove(publicId)
         .then((r) => res.send(r).status(200))
-        .catch((e) => utils.api.controllerLogAndFail(e, 403, res));
+        .catch((e) => controllerLogAndFail(e, 403, res));
 };
 
 const pending = (req: Request, res: Response) => {
     services.ubi.CommunityService.pending()
         .then((r) => res.send(r))
-        .catch((e) => utils.api.controllerLogAndFail(e, 400, res));
+        .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
 export default {
