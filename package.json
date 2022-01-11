@@ -23,10 +23,10 @@
         "lerna": "^4.0.0"
     },
     "scripts": {
-        "start": "lerna exec --scope impactmarket-api yarn start",
+        "start": "lerna exec --scope @impactmarket/api yarn start",
         "serve": "node packages/impactmarket-api/dist/app.js",
         "worker": "node packages/impactmarket-worker/dist/index.js",
-        "worker-dev": "lerna exec --scope impactmarket-worker yarn worker-dev",
+        "worker-dev": "lerna exec --scope @impactmarket/worker yarn worker-dev",
         "build": "lerna exec yarn build",
         "test": "lerna exec yarn test",
         "boot": "yarn global add lerna && lerna bootstrap",
