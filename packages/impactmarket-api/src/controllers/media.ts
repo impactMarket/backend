@@ -1,5 +1,6 @@
-import { utils, services, interfaces } from 'impactmarket-core';
+import { services, interfaces } from 'impactmarket-core';
 import { Request, Response } from 'express';
+import { standardResponse } from '../utils/api';
 
 export class MediaController {
     mediaService = new services.media.MediaService();
@@ -8,8 +9,8 @@ export class MediaController {
         const { url, width, height } = req.body;
         this.mediaService
             .updateMedia({ url, width, height })
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     postThumbnails = (req: Request, res: Response) => {
@@ -27,7 +28,7 @@ export class MediaController {
         }
         this.mediaService
             .postThumbnails(thumbnailMedias)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }

@@ -54,20 +54,6 @@ export function optionalAuthentication(
     authenticateToken(req, res, next);
 }
 
-export function generateAccessToken(
-    userAddress: string,
-    userId: number
-): string {
-    return jwt.sign(
-        {
-            userId,
-            address: userAddress,
-            masterKey: config.masterKey,
-        } as UserInRequest,
-        config.jwtSecret
-    );
-}
-
 export function adminAuthentication(
     req: Request,
     res: Response,

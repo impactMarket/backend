@@ -9,9 +9,9 @@ import { CommunityAttributes } from '../../interfaces/ubi/community';
 import { ProfileContentStorage } from '../storage';
 import { BaseError } from '../../utils/baseError';
 import { Logger } from '../../utils/logger';
+import { generateAccessToken } from '../../utils/jwt';
 import { Op, QueryTypes } from 'sequelize';
 
-// import { generateAccessToken } from '../../api/middlewares';
 import config from '../../config';
 import { models, sequelize } from '../../database';
 import {
@@ -121,14 +121,14 @@ export default class UserService {
 
             const userHello = await this.loadUser(userFromRegistry);
             this.updateLastLogin(userFromRegistry.id);
-            // const token = generateAccessToken(
-            //     user.address,
-            //     userFromRegistry.id
-            // );
+            const token = generateAccessToken(
+                user.address,
+                userFromRegistry.id
+            );
 
             return {
                 ...userHello,
-                token: 'abc123',
+                token,
                 user: userFromRegistry,
             };
         } catch (e) {

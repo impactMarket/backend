@@ -1,5 +1,6 @@
-import { utils, services } from 'impactmarket-core';
+import { services } from 'impactmarket-core';
 import { Request, Response } from 'express';
+import { standardResponse } from '../utils/api';
 
 const reachedAddressService = new services.ReachedAddressService();
 const globalGrowth = new services.global.GlobalGrowthService();
@@ -24,18 +25,18 @@ const globalStatus = (req: Request, res: Response) => {
     });
     waitForResult
         .then((r) => res.send(r))
-        .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+        .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 const globalDemographics = (req: Request, res: Response) => {
     services.global.GlobalDemographicsService.getLast()
         .then((r) => res.send(r))
-        .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+        .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 const numbers = (req: Request, res: Response) => {
     globalDailyStateService
         .numbers()
-        .then((r) => utils.api.standardResponse(res, 200, true, r))
-        .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+        .then((r) => standardResponse(res, 200, true, r))
+        .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 
 export default { globalStatus, globalDemographics, numbers };

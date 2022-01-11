@@ -1,14 +1,15 @@
 import { RequestWithUser } from '../middlewares/core';
 import { utils, services } from 'impactmarket-core';
 import { Request, Response } from 'express';
+import { standardResponse } from '../utils/api';
 
 class CommunityController {
     findRequestChangeUbiParams = (req: Request, res: Response) => {
         services.ubi.CommunityService.findResquestChangeUbiParams(
             parseInt(req.params.id, 10)
         )
-            .then((community) => utils.api.standardResponse(res, 200, true, community))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((community) => standardResponse(res, 200, true, community))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     findByContractAddress = (req: RequestWithUser, res: Response) => {
@@ -17,31 +18,31 @@ class CommunityController {
             req.user?.address
         )
             .then((community) =>
-                utils.api.standardResponse(res, 200, !!community, community)
+                standardResponse(res, 200, !!community, community)
             )
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getPastSSI = (req: Request, res: Response) => {
         services.ubi.CommunityDailyMetricsService.getHistoricalSSI(
             parseInt(req.params.id, 10)
         )
-            .then((ssi) => utils.api.standardResponse(res, 200, true, ssi))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((ssi) => standardResponse(res, 200, true, ssi))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     list = (req: Request, res: Response) => {
         services.ubi.CommunityService.list(req.query)
             .then((r) =>
-                utils.api.standardResponse(res, 200, true, r.rows, { count: r.count })
+                standardResponse(res, 200, true, r.rows, { count: r.count })
             )
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     count = (req: Request, res: Response) => {
         const { groupBy } = req.query;
         if (groupBy === undefined) {
-            utils.api.standardResponse(res, 400, false, '', {
+            standardResponse(res, 400, false, '', {
                 error: {
                     name: 'INVALID_GROUP',
                     message: 'not a valid group by',
@@ -50,13 +51,13 @@ class CommunityController {
             return;
         }
         services.ubi.CommunityService.count(groupBy as string)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     beneficiaries = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 400, false, '', {
+            standardResponse(res, 400, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -84,9 +85,9 @@ class CommunityController {
                 unidentified: unidentified === 'true',
                 blocked: blocked === 'true',
             })
-                .then((r) => utils.api.standardResponse(res, 200, true, r))
+                .then((r) => standardResponse(res, 200, true, r))
                 .catch((e) =>
-                    utils.api.standardResponse(res, 400, false, '', { error: e })
+                    standardResponse(res, 400, false, '', { error: e })
                 );
         } else {
             let {
@@ -119,9 +120,9 @@ class CommunityController {
                     blocked: blocked === 'true',
                 }
             )
-                .then((r) => utils.api.standardResponse(res, 200, true, r))
+                .then((r) => standardResponse(res, 200, true, r))
                 .catch((e) =>
-                    utils.api.standardResponse(res, 400, false, '', { error: e })
+                    standardResponse(res, 400, false, '', { error: e })
                 );
         }
     };
@@ -131,8 +132,8 @@ class CommunityController {
             req.params.mime,
             req.params.isPromoter === 'true'
         )
-            .then((url) => utils.api.standardResponse(res, 200, true, url))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((url) => standardResponse(res, 200, true, url))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     findById = (req: RequestWithUser, res: Response) => {
@@ -140,26 +141,26 @@ class CommunityController {
             parseInt(req.params.id, 10),
             req.user?.address
         )
-            .then((community) => utils.api.standardResponse(res, 200, true, community))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((community) => standardResponse(res, 200, true, community))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getDashboard = (req: Request, res: Response) => {
         services.ubi.CommunityService.getDashboard(req.params.id)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getClaimLocation = (req: Request, res: Response) => {
         services.ubi.ClaimLocationService.getByCommunity(parseInt(req.params.id, 10))
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getDemographics = (req: Request, res: Response) => {
         services.ubi.CommunityService.getDemographics(req.params.id)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getManagers = (req: Request, res: Response) => {
@@ -172,44 +173,44 @@ class CommunityController {
         }
 
         services.ubi.CommunityService.getManagers(parseInt(req.params.id, 10), active)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getPromoter = (req: Request, res: Response) => {
         services.ubi.CommunityService.getPromoter(parseInt(req.params.id, 10))
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getSuspect = (req: Request, res: Response) => {
         services.ubi.CommunityService.getSuspect(parseInt(req.params.id, 10))
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getContract = (req: Request, res: Response) => {
         services.ubi.CommunityService.getContract(parseInt(req.params.id, 10))
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getState = (req: Request, res: Response) => {
         services.ubi.CommunityService.getState(parseInt(req.params.id, 10))
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getMetrics = (req: Request, res: Response) => {
         services.ubi.CommunityService.getMetrics(parseInt(req.params.id, 10))
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getCampaign = (req: Request, res: Response) => {
         services.ubi.CommunityService.getCampaign(parseInt(req.params.id, 10))
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     create = (req: Request, res: Response) => {
@@ -244,13 +245,13 @@ class CommunityController {
             contractParams,
             coverMediaId,
         })
-            .then((community) => utils.api.standardResponse(res, 201, true, community))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((community) => standardResponse(res, 201, true, community))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     edit = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 400, false, '', {
+            standardResponse(res, 400, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -275,13 +276,13 @@ class CommunityController {
                         req.user?.address
                     )
                         .then((community) =>
-                            utils.api.standardResponse(res, 200, true, community)
+                            standardResponse(res, 200, true, community)
                         )
                         .catch((e) =>
-                            utils.api.standardResponse(res, 400, false, '', { error: e })
+                            standardResponse(res, 400, false, '', { error: e })
                         );
                 } else {
-                    utils.api.standardResponse(res, 403, false, '', {
+                    standardResponse(res, 403, false, '', {
                         error: {
                             name: 'NOT_MANAGER',
                             message: 'Not manager!',
@@ -289,7 +290,7 @@ class CommunityController {
                     });
                 }
             })
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     // admin methods
@@ -298,21 +299,21 @@ class CommunityController {
         const { acceptanceTransaction, publicId } = req.body;
         services.ubi.CommunityService.accept(acceptanceTransaction, publicId)
             .then((r) =>
-                utils.api.standardResponse(res, 201, true, { contractAddress: r })
+                standardResponse(res, 201, true, { contractAddress: r })
             )
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     delete = (req: Request, res: Response) => {
         const { id } = req.params;
         services.ubi.CommunityService.delete(parseInt(id, 10))
-            .then((r) => utils.api.standardResponse(res, 201, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     deleteSubmission = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 400, false, '', {
+            standardResponse(res, 400, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -322,19 +323,19 @@ class CommunityController {
         }
 
         services.ubi.CommunityService.deleteSubmission(req.user.address)
-            .then((r) => utils.api.standardResponse(res, 201, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     pending = (req: Request, res: Response) => {
         services.ubi.CommunityService.pending()
-            .then((r) => utils.api.standardResponse(res, 201, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getBeneficiaryActivity = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 400, false, '', {
+            standardResponse(res, 400, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -361,13 +362,13 @@ class CommunityController {
             parseInt(offset, 10),
             parseInt(limit, 10)
         )
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     editSubmission = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 400, false, '', {
+            standardResponse(res, 400, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -402,8 +403,8 @@ class CommunityController {
             contractParams,
             coverMediaId: parseInt(coverMediaId, 10),
         })
-            .then((r) => utils.api.standardResponse(res, 201, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 

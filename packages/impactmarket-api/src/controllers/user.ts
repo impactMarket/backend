@@ -1,13 +1,14 @@
 import { RequestWithUser } from '../middlewares/core';
 import { utils, services } from 'impactmarket-core';
 import { Request, Response } from 'express';
+import { standardResponse } from '../utils/api';
 
 class UserController {
     public report = (req: Request, res: Response) => {
         const { communityId, message, category } = req.body;
         services.app.UserService.report(message, communityId, category)
-            .then((r) => utils.api.standardResponse(res, 201, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public auth = (req: Request, res: Response) => {
@@ -41,13 +42,13 @@ class UserController {
             overwrite,
             recover
         )
-            .then((user) => utils.api.standardResponse(res, 201, true, user))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((user) => standardResponse(res, 201, true, user))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public welcome = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -63,28 +64,28 @@ class UserController {
                 services.app.UserService.setPushNotificationsToken(req.user.address, token);
             }
             services.app.UserService.hello(req.user.address, phone)
-                .then((user) => utils.api.standardResponse(res, 201, true, user))
+                .then((user) => standardResponse(res, 201, true, user))
                 .catch((e) =>
-                    utils.api.standardResponse(res, 400, false, '', { error: e })
+                    standardResponse(res, 400, false, '', { error: e })
                 );
         } else {
             services.app.UserService.welcome(req.user.address, pushNotificationToken)
-                .then((user) => utils.api.standardResponse(res, 201, true, user))
+                .then((user) => standardResponse(res, 201, true, user))
                 .catch((e) =>
-                    utils.api.standardResponse(res, 400, false, '', { error: e })
+                    standardResponse(res, 400, false, '', { error: e })
                 );
         }
     };
 
     public userExist = (req: Request, res: Response) => {
         services.app.UserService.exists(req.params.address)
-            .then((user) => utils.api.standardResponse(res, 201, true, user))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((user) => standardResponse(res, 201, true, user))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public getPresignedUrlMedia = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -93,13 +94,13 @@ class UserController {
             return;
         }
         services.app.UserService.getPresignedUrlMedia(req.params.mime)
-            .then((r) => utils.api.standardResponse(res, 201, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public updateAvatar = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -109,13 +110,13 @@ class UserController {
         }
         const { mediaId } = req.body;
         services.app.UserService.updateAvatar(req.user.address, mediaId)
-            .then((r) => utils.api.standardResponse(res, 201, r, ''))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, r, ''))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public updateUsername = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -125,13 +126,13 @@ class UserController {
         }
         const { username } = req.body;
         services.app.UserService.setUsername(req.user.address, username)
-            .then((r) => utils.api.standardResponse(res, 201, r, ''))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, r, ''))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public updateCurrency = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -141,8 +142,8 @@ class UserController {
         }
         const { currency } = req.body;
         services.app.UserService.setCurrency(req.user.address, currency)
-            .then((r) => utils.api.standardResponse(res, 201, r, ''))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, r, ''))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public updatePushNotificationsToken = (
@@ -150,7 +151,7 @@ class UserController {
         res: Response
     ) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -160,13 +161,13 @@ class UserController {
         }
         const { token } = req.body;
         services.app.UserService.setPushNotificationsToken(req.user.address, token)
-            .then((r) => utils.api.standardResponse(res, 201, r, ''))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, r, ''))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public updateLanguage = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -176,13 +177,13 @@ class UserController {
         }
         const { language } = req.body;
         services.app.UserService.setLanguage(req.user.address, language)
-            .then((r) => utils.api.standardResponse(res, 201, r, ''))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, r, ''))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public updateGender = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -192,13 +193,13 @@ class UserController {
         }
         const { gender } = req.body;
         services.app.UserService.setGender(req.user.address, gender)
-            .then((r) => utils.api.standardResponse(res, 201, r, ''))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, r, ''))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public updateAge = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -208,8 +209,8 @@ class UserController {
         }
         const { age } = req.body;
         services.app.UserService.setYear(req.user.address, new Date().getFullYear() - age)
-            .then((r) => utils.api.standardResponse(res, 201, r, ''))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, r, ''))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     /**
@@ -217,7 +218,7 @@ class UserController {
      */
     public updateChildren = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -227,8 +228,8 @@ class UserController {
         }
         const { children } = req.body;
         services.app.UserService.setChildren(req.user.address, children)
-            .then((r) => utils.api.standardResponse(res, 201, r, ''))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 201, r, ''))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     /**
@@ -303,7 +304,7 @@ class UserController {
 
     public edit = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -313,15 +314,15 @@ class UserController {
         }
 
         services.app.UserService.edit({ address: req.user.address, ...req.body })
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
+            .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
-                utils.api.standardResponse(res, 400, false, '', { error: e.message })
+                standardResponse(res, 400, false, '', { error: e.message })
             );
     };
 
     public getNotifications = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -331,15 +332,15 @@ class UserController {
         }
 
         services.app.UserService.getNotifications(req.query, req.user.userId)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
+            .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
-                utils.api.standardResponse(res, 400, false, '', { error: e.message })
+                standardResponse(res, 400, false, '', { error: e.message })
             );
     };
 
     public readNotifications = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -349,15 +350,15 @@ class UserController {
         }
 
         services.app.UserService.readNotifications(req.user.userId)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
+            .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
-                utils.api.standardResponse(res, 400, false, '', { error: e.message })
+                standardResponse(res, 400, false, '', { error: e.message })
             );
     };
 
     public getUnreadNotifications = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -367,9 +368,9 @@ class UserController {
         }
 
         services.app.UserService.getUnreadNotifications(req.user.userId)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
+            .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
-                utils.api.standardResponse(res, 400, false, '', { error: e.message })
+                standardResponse(res, 400, false, '', { error: e.message })
             );
     };
 
@@ -379,7 +380,7 @@ class UserController {
         res: Response
     ) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -389,15 +390,15 @@ class UserController {
         }
 
         services.app.UserService.verifyNewsletterSubscription(req.user.address)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
+            .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
-                utils.api.standardResponse(res, 400, false, '', { error: e.message })
+                standardResponse(res, 400, false, '', { error: e.message })
             );
     };
 
     public subscribeNewsletter = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -407,13 +408,13 @@ class UserController {
         }
 
         services.app.UserService.subscribeNewsletter(req.user.address, req.body)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public delete = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -423,13 +424,13 @@ class UserController {
         }
 
         services.app.UserService.delete(req.user.address)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     readRules = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -441,18 +442,18 @@ class UserController {
         const paths = req.path.split('/');
         if (paths.includes('beneficiary')) {
             services.ubi.BeneficiaryService.readRules(req.user.address)
-                .then((r) => utils.api.standardResponse(res, 200, true, r))
+                .then((r) => standardResponse(res, 200, true, r))
                 .catch((e) =>
-                    utils.api.standardResponse(res, 400, false, '', { error: e })
+                    standardResponse(res, 400, false, '', { error: e })
                 );
         } else if (paths.includes('manager')) {
             services.ubi.ManagerService.readRules(req.user.address)
-                .then((r) => utils.api.standardResponse(res, 200, true, r))
+                .then((r) => standardResponse(res, 200, true, r))
                 .catch((e) =>
-                    utils.api.standardResponse(res, 400, false, '', { error: e })
+                    standardResponse(res, 400, false, '', { error: e })
                 );
         } else {
-            utils.api.standardResponse(res, 404, false, '', {
+            standardResponse(res, 404, false, '', {
                 error: {
                     name: 'NOT_FOUND',
                     message: 'invalid endpoint address',
@@ -463,7 +464,7 @@ class UserController {
 
     public saveSurvey = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
-            utils.api.standardResponse(res, 401, false, '', {
+            standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
                     message: 'User not identified!',
@@ -473,8 +474,8 @@ class UserController {
         }
 
         services.ubi.BeneficiaryService.saveSurvery(req.user.address, req.body)
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 

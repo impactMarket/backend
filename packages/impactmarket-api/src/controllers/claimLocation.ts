@@ -1,18 +1,19 @@
 import { RequestWithUser } from '../middlewares/core';
-import { utils, services } from 'impactmarket-core';
+import { services } from 'impactmarket-core';
 import { Request, Response } from 'express';
+import { standardResponse } from '../utils/api';
 
 const getAll = (req: Request, res: Response) => {
     services.ubi.ClaimLocationService.getAll()
         .then((r) => {
             res.send(r);
         })
-        .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+        .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 
 const add = (req: RequestWithUser, res: Response) => {
     if (req.user === undefined) {
-        utils.api.standardResponse(res, 401, false, '', {
+        standardResponse(res, 401, false, '', {
             error: {
                 name: 'USER_NOT_FOUND',
                 message: 'User not identified!',
@@ -26,7 +27,7 @@ const add = (req: RequestWithUser, res: Response) => {
         .then(() => {
             res.sendStatus(200);
         })
-        .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+        .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 
 export default {

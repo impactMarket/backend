@@ -1,6 +1,7 @@
 import genericController from '../controllers/generic';
-import { utils, config, database, services } from 'impactmarket-core';
+import { config, database, services } from 'impactmarket-core';
 import { Router, Request, Response } from 'express';
+import { standardResponse } from '../utils/api';
 
 export default (app: Router): void => {
     /**
@@ -32,7 +33,7 @@ export default (app: Router): void => {
      *                       type: number
      */
     app.get('/app-version', (req, res) =>
-        utils.api.standardResponse(res, 200, true, {
+        standardResponse(res, 200, true, {
             latest: config.mobileVersion.latest,
             minimal: config.mobileVersion.minimal,
             timestamp: new Date().getTime(),
@@ -69,8 +70,8 @@ export default (app: Router): void => {
      */
     app.get('/exchange-rate', (req: Request, res: Response) => {
         services.app.ExchangeRatesService.get()
-            .then((r) => utils.api.standardResponse(res, 200, true, r))
-            .catch((e) => utils.api.standardResponse(res, 400, false, '', { error: e }));
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     });
 
     /**
@@ -95,7 +96,7 @@ export default (app: Router): void => {
      *                   type: number
      */
     app.get('/time', (req: Request, res: Response) =>
-        utils.api.standardResponse(res, 200, true, new Date().getTime())
+        standardResponse(res, 200, true, new Date().getTime())
     );
 
     /**
