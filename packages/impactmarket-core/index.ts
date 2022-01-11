@@ -5,6 +5,7 @@ import * as interfaces from './src/interfaces';
 import * as services from './src/services';
 import * as utils from './src/utils';
 import * as types from './src/types';
+import * as tests from './tests';
 
 export {
     config,
@@ -14,4 +15,5 @@ export {
     services,
     utils,
     types,
+    tests,
 };

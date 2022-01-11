@@ -22,7 +22,7 @@ export function sequelizeSetup() {
             idle: 5000,
         },
         protocol: 'postgres',
-        native: true,
+        // native: true,
         logging: false,
         // is this a temporary solution to fix deadlocks during tests?
         retry: {
@@ -47,7 +47,7 @@ const truncateTable = (sequelize: Sequelize, modelName: string) =>
         force: true,
     });
 
-export default async function truncate(sequelize: Sequelize, model?: string) {
+export async function truncate(sequelize: Sequelize, model?: string) {
     if (model) {
         return truncateTable(sequelize, model);
     }

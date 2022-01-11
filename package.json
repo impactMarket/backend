@@ -27,7 +27,7 @@
         "worker": "lerna exec --scope impactmarket-worker yarn worker",
         "worker-dev": "lerna exec --scope impactmarket-worker yarn worker-dev",
         "build": "lerna exec yarn build",
-        "test": "lerna exec --scope impactmarket-core yarn test",
+        "test": "lerna exec --scope impactmarket-worker yarn test",
         "boot": "yarn global add lerna && lerna bootstrap",
         "release": "yarn install && lerna publish && yarn clean"
     }
