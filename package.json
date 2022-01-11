@@ -25,7 +25,7 @@
     "scripts": {
         "start": "lerna exec --scope @impactmarket/api yarn start",
         "serve": "node packages/impactmarket-api/dist/app.js",
-        "worker": "node packages/impactmarket-worker/dist/index.js",
+        "worker": "node packages/impactmarket-worker/dist/src/index.js",
         "worker-dev": "lerna exec --scope @impactmarket/worker yarn worker-dev",
         "build": "lerna exec yarn build",
         "test": "lerna exec yarn test",
