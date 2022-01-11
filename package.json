@@ -24,10 +24,11 @@
     },
     "scripts": {
         "start": "lerna exec --scope impactmarket-api yarn start",
+        "serve": "lerna exec --scope impactmarket-api yarn serve",
         "worker": "lerna exec --scope impactmarket-worker yarn worker",
         "worker-dev": "lerna exec --scope impactmarket-worker yarn worker-dev",
         "build": "lerna exec yarn build",
-        "test": "lerna exec --scope impactmarket-worker yarn test",
+        "test": "lerna exec yarn test",
         "boot": "yarn global add lerna && lerna bootstrap",
         "release": "yarn install && lerna publish && yarn clean"
     }

@@ -7,6 +7,7 @@
   },
   "scripts": {
     "start": "nodemon --config nodemon.json src/app.ts",
+    "serve": "node dist/api/app.js",
     "test": "NODE_ENV=test mocha",
     "build": "tsc -p .",
     "build:watch": "tsc -p . --watch"

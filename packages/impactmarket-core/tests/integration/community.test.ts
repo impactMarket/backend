@@ -16,7 +16,7 @@ import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
-import truncate, { sequelizeSetup } from '../config/sequelizeSetup';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { randomTx } from '../config/utils';
 
 // in this test there are users being assined with suspicious activity and others being removed

@@ -13,7 +13,7 @@ import { BaseError } from '../../src/utils/baseError';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
-import truncate, { sequelizeSetup } from '../config/sequelizeSetup';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { jumpToTomorrowMidnight } from '../config/utils';
 
 describe('user service', () => {

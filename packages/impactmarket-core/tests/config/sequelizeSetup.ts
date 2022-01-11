@@ -22,7 +22,7 @@ export function sequelizeSetup() {
             idle: 5000,
         },
         protocol: 'postgres',
-        // native: true,
+        native: true,
         logging: false,
         // is this a temporary solution to fix deadlocks during tests?
         retry: {

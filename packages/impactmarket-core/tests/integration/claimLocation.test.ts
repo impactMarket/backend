@@ -9,7 +9,7 @@ import ClaimLocationService from '../../src/services/ubi/claimLocation';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import UserFactory from '../factories/user';
-import truncate, { sequelizeSetup } from '../config/sequelizeSetup';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 
 describe('claim location service', () => {
     let sequelize: Sequelize;

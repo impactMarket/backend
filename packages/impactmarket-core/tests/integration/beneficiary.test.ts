@@ -20,7 +20,7 @@ import ClaimFactory from '../factories/claim';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
-import truncate, { sequelizeSetup } from '../config/sequelizeSetup';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { jumpToTomorrowMidnight, randomTx } from '../config/utils';
 
 use(chaiSubset);

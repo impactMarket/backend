@@ -11,7 +11,7 @@ import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import StoryFactory from '../factories/story';
 import UserFactory from '../factories/user';
-import truncate, { sequelizeSetup } from '../config/sequelizeSetup';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 
 describe('story service', () => {
     let sequelize: Sequelize;
