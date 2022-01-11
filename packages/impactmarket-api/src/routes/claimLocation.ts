@@ -2,7 +2,7 @@ import claimLocationController from '../controllers/claimLocation';
 import claimLocationValidators from '../validators/claimLocation';
 import { Router } from 'express';
 
-import { database } from 'impactmarket-core';
+import { database } from '@impactmarket/core';
 import { authenticateToken } from '../middlewares';
 
 export default (app: Router): void => {

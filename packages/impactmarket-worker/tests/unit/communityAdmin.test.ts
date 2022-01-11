@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
 
-import { database, tests, config, contracts, services } from 'impactmarket-core';
+import { database, tests, config, contracts, services } from '@impactmarket/core';
 
 import { ChainSubscribers } from '../../src/jobs/chainSubscribers';
 import CommunityAdminContractJSON from './CommunityAdmin.json';

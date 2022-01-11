@@ -1,4 +1,4 @@
-import { services, config } from 'impactmarket-core';
+import { services, config } from '@impactmarket/core';
 
 export async function verifyStoriesLifecycle(): Promise<void> {
     //

@@ -1,7 +1,7 @@
 import './tracer'; // must come before importing any instrumented module.
 
 import * as Sentry from '@sentry/node';
-import { utils, config } from 'impactmarket-core';
+import { utils, config } from '@impactmarket/core';
 // import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Request, Response } from 'express';

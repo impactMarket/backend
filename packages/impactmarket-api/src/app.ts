@@ -1,7 +1,7 @@
 import 'module-alias/register';
 import * as Sentry from '@sentry/node';
 import { Integrations } from '@sentry/tracing';
-import { utils, config, database } from 'impactmarket-core';
+import { utils, config, database } from '@impactmarket/core';
 import express from 'express';
 import serverLoader from './server';
 

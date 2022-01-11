@@ -1,4 +1,4 @@
-import { interfaces, database } from 'impactmarket-core';
+import { interfaces, database } from '@impactmarket/core';
 import { QueryTypes, Op } from 'sequelize';
 
 export async function verifyUserSuspectActivity(): Promise<void> {

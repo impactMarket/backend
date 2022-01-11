@@ -1,7 +1,7 @@
 import globalController from '../controllers/global';
 import { Router } from 'express';
 
-import { database } from 'impactmarket-core';
+import { database } from '@impactmarket/core';
 
 export default (app: Router): void => {
     const route = Router();

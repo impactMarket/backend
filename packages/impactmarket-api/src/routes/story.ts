@@ -2,7 +2,7 @@ import StoryController from '../controllers/story';
 import StoryValidator from '../validators/story';
 import { Router } from 'express';
 
-import { database } from 'impactmarket-core';
+import { database } from '@impactmarket/core';
 import { authenticateToken, optionalAuthentication } from '../middlewares';
 
 export default (app: Router): void => {

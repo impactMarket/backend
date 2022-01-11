@@ -1,5 +1,5 @@
 import { RequestWithUser } from '../middlewares/core';
-import { utils, services } from 'impactmarket-core';
+import { utils, services } from '@impactmarket/core';
 import { Request, Response } from 'express';
 import { standardResponse } from '../utils/api';
 

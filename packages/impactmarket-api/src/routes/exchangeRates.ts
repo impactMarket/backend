@@ -1,4 +1,4 @@
-import { services } from 'impactmarket-core';
+import { services } from '@impactmarket/core';
 import { Router, Request, Response } from 'express';
 
 export default (app: Router): void => {

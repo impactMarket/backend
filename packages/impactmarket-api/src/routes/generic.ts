@@ -1,5 +1,5 @@
 import genericController from '../controllers/generic';
-import { config, database, services } from 'impactmarket-core';
+import { config, database, services } from '@impactmarket/core';
 import { Router, Request, Response } from 'express';
 import { standardResponse } from '../utils/api';
 

@@ -11,7 +11,7 @@ import { CommunityContentStorage } from '../../src/services/storage';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import CommunityService from '../../src/services/ubi/community';
 import ManagerService from '../../src/services/ubi/managers';
-import { cronJobs } from 'impactmarket-worker';
+import { cronJobs } from '@impactmarket/worker';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';

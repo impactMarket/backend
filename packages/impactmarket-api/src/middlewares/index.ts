@@ -4,7 +4,7 @@ import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import redisStore from 'rate-limit-redis';
 
-import { config, database } from 'impactmarket-core';
+import { config, database } from '@impactmarket/core';
 
 export function authenticateToken(
     req: RequestWithUser,

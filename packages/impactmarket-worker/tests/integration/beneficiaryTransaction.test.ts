@@ -2,7 +2,7 @@ import { Op, Sequelize } from 'sequelize';
 import { assert, spy, stub } from 'sinon';
 import tk from 'timekeeper';
 
-import { database, tests } from 'impactmarket-core';
+import { database, tests } from '@impactmarket/core';
 
 import * as merkleTree from '../../src/jobs/cron/filters/merkleTree'
 import { cleanupNetworkRewards } from '../../src/jobs/cron/network';

@@ -1,4 +1,4 @@
-import { services, utils, config, database } from 'impactmarket-core';
+import { services, utils, config, database } from '@impactmarket/core';
 import { CronJob } from 'cron';
 import { ethers } from 'ethers';
 import schedule from 'node-schedule';

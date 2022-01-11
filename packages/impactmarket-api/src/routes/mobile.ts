@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { config } from 'impactmarket-core';
+import { config } from '@impactmarket/core';
 
 const route = Router();
 

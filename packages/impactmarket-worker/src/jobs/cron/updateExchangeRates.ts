@@ -1,4 +1,4 @@
-import { utils, config, database } from 'impactmarket-core';
+import { utils, config, database } from '@impactmarket/core';
 import axios from 'axios';
 
 async function updateExchangeRates(): Promise<void> {

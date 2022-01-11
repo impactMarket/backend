@@ -1,5 +1,6 @@
 {
-  "name": "impactmarket-api",
+  "name": "@impactmarket/api",
+  "main": "dist/app.js",
   "version": "1.0.0",
   "license": "MIT",
   "engines": {
@@ -7,7 +8,6 @@
   },
   "scripts": {
     "start": "nodemon --config nodemon.json src/app.ts",
-    "serve": "node dist/api/app.js",
     "test": "NODE_ENV=test mocha",
     "build": "tsc -p .",
     "build:watch": "tsc -p . --watch"
@@ -30,8 +30,8 @@
     "express": "4.17.1",
     "express-rate-limit": "5.5.1",
     "helmet": "4.6.0",
-    "impactmarket-core": "^1.0.0",
-    "impactmarket-worker": "^1.0.0",
+    "@impactmarket/core": "1.0.0",
+    "@impactmarket/worker": "1.0.0",
     "jsonwebtoken": "8.5.1",
     "module-alias": "2.2.2",
     "morgan": "1.10.0",

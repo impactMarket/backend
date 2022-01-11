@@ -1,4 +1,4 @@
-import { services } from 'impactmarket-core';
+import { services } from '@impactmarket/core';
 import { Request, Response } from 'express';
 import { standardResponse } from '../utils/api';
 

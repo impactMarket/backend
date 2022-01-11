@@ -1,4 +1,4 @@
-import { services, types } from 'impactmarket-core';
+import { services, types } from '@impactmarket/core';
 import schedule from 'node-schedule';
 
 export async function prepareAgenda(): Promise<void> {

@@ -3,7 +3,7 @@ import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { stub, assert, SinonStub } from 'sinon';
 
-import { database, interfaces, tests, services } from 'impactmarket-core';
+import { database, interfaces, tests, services } from '@impactmarket/core';
 
 import { verifyDeletedAccounts } from '../../../src/jobs/cron/user';
 

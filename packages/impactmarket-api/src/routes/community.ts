@@ -2,7 +2,7 @@ import communityController from '../controllers/community';
 import communityValidators from '../validators/community';
 import { Router } from 'express';
 
-import { database } from 'impactmarket-core';
+import { database } from '@impactmarket/core';
 import {
     adminAuthentication,
     authenticateToken,

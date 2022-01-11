@@ -1,4 +1,4 @@
-import { services, utils, config, contracts, database } from 'impactmarket-core';
+import { services, utils, config, contracts, database } from '@impactmarket/core';
 import { ethers } from 'ethers';
 
 /* istanbul ignore next */

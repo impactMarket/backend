@@ -2,7 +2,7 @@ import { CreateOptions, Model, Sequelize } from 'sequelize';
 import Sinon, { assert, match, spy } from 'sinon';
 import tk from 'timekeeper';
 
-import { database, interfaces, tests } from 'impactmarket-core';
+import { database, interfaces, tests } from '@impactmarket/core';
 
 import { calcuateCommunitiesMetrics } from '../../../src/jobs/cron/community';
 

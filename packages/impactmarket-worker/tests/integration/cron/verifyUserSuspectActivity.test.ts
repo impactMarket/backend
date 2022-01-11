@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
 import { replace, restore } from 'sinon';
 
-import { database, interfaces, tests } from 'impactmarket-core';
+import { database, interfaces, tests } from '@impactmarket/core';
 
 import { verifyUserSuspectActivity } from '../../../src/jobs/cron/user';
 

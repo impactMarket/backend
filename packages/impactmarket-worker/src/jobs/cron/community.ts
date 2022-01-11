@@ -1,4 +1,4 @@
-import { interfaces, services, config, database } from 'impactmarket-core';
+import { interfaces, services, config, database } from '@impactmarket/core';
 import { WebClient } from '@slack/web-api';
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';

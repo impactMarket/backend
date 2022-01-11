@@ -1,4 +1,4 @@
-import { services, utils, config, database } from 'impactmarket-core';
+import { services, utils, config, database } from '@impactmarket/core';
 import { BigNumber } from 'bignumber.js';
 import { mean, median } from 'mathjs';
 import { col, fn, Op, Sequelize, where } from 'sequelize';

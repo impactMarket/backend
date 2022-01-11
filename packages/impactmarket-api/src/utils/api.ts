@@ -1,4 +1,4 @@
-import { utils } from 'impactmarket-core';
+import { utils } from '@impactmarket/core';
 import { Response } from 'express';
 
 export const controllerLogAndFail = (e: any, status: number, res: Response) => {
