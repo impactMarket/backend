@@ -11,7 +11,7 @@ import { CommunityContentStorage } from '../../src/services/storage';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import CommunityService from '../../src/services/ubi/community';
 import ManagerService from '../../src/services/ubi/managers';
-// import { cronJobs } from '@impactmarket/worker';
+import { cronJobs } from '@impactmarket/worker';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';
@@ -1965,7 +1965,7 @@ describe('community service', () => {
                 }
             );
 
-            // await cronJobs.user.verifyDeletedAccounts();
+            await cronJobs.user.verifyDeletedAccounts();
 
             const managers = await CommunityService.getManagers(
                 community[0].id
