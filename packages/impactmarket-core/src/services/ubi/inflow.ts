@@ -1,8 +1,9 @@
-import { AssetType } from '../../database/models/ubi/inflow';
-import { Logger } from '../../utils/logger';
 import { col, fn } from 'sequelize';
 
 import { models } from '../../database';
+import { AssetType } from '../../database/models/ubi/inflow';
+import { Logger } from '../../utils/logger';
+
 export default class InflowService {
     public static inflow = models.inflow;
 

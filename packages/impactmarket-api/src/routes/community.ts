@@ -1,13 +1,13 @@
-import communityController from '../controllers/community';
-import communityValidators from '../validators/community';
+import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
-import { database } from '@impactmarket/core';
+import communityController from '../controllers/community';
 import {
     adminAuthentication,
     authenticateToken,
     optionalAuthentication,
 } from '../middlewares';
+import communityValidators from '../validators/community';
 
 /**
  * @swagger

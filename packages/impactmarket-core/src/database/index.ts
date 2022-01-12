@@ -1,3 +1,11 @@
+import apicache from 'apicache';
+import redis from 'redis';
+import { Sequelize, Options, ModelCtor } from 'sequelize';
+
+import config from '../config';
+import { Logger } from '../utils/logger';
+import { DbModels } from './db';
+import initModels from './models';
 import * as AirgrabProof from './models/airgrab/airgrabProof';
 import * as AirgrabUser from './models/airgrab/airgrabUser';
 import * as AppAnonymousReport from './models/app/anonymousReport';
@@ -40,14 +48,6 @@ import * as UbiCommunityLabel from './models/ubi/ubiCommunityLabel';
 import * as UbiCommunitySuspect from './models/ubi/ubiCommunitySuspect';
 import * as UbiPromoter from './models/ubi/ubiPromoter';
 import * as UbiPromoterSocialMedia from './models/ubi/ubiPromoterSocialMedia';
-import { Logger } from '../utils/logger';
-import apicache from 'apicache';
-import redis from 'redis';
-import { Sequelize, Options, ModelCtor } from 'sequelize';
-
-import config from '../config';
-import { DbModels } from './db';
-import initModels from './models';
 
 let logging:
     | boolean

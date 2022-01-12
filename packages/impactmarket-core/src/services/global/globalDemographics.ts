@@ -1,11 +1,11 @@
-import { UbiCommunityDemographicsCreation } from '../../interfaces/ubi/ubiCommunityDemographics';
+import { literal, QueryTypes } from 'sequelize';
+
+import { models, sequelize } from '../../database';
 import {
     GlobalDemographics,
     GlobalDemographicsCreationAttributes,
 } from '../../database/models/global/globalDemographics';
-import { literal, QueryTypes } from 'sequelize';
-
-import { models, sequelize } from '../../database';
+import { UbiCommunityDemographicsCreation } from '../../interfaces/ubi/ubiCommunityDemographics';
 
 export default class GlobalDemographicsService {
     public static community = models.community;

@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     AppMediaContent,
     AppMediaContentCreation,
 } from '../../../interfaces/app/appMediaContent';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class AppMediaContentModel extends Model<
     AppMediaContent,

@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     AppUserThroughTrust,
     AppUserThroughTrustCreation,
 } from '../../../interfaces/app/appUserThroughTrust';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class AppUserThroughTrustModel extends Model<
     AppUserThroughTrust,

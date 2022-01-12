@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     UbiCommunityDemographics,
     UbiCommunityDemographicsCreation,
 } from '../../../interfaces/ubi/ubiCommunityDemographics';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiCommunityDemographicsModel extends Model<
     UbiCommunityDemographics,

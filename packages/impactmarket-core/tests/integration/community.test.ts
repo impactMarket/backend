@@ -12,12 +12,12 @@ import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import CommunityService from '../../src/services/ubi/community';
 import ManagerService from '../../src/services/ubi/managers';
 // import { cronJobs } from '@impactmarket/worker';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
+import { randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
-import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
-import { randomTx } from '../config/utils';
 
 // in this test there are users being assined with suspicious activity and others being removed
 describe('community service', () => {

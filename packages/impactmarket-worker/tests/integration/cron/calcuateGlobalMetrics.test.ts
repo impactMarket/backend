@@ -1,9 +1,8 @@
+import { database, interfaces, tests } from '@impactmarket/core';
 import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
 import { assert, match, spy } from 'sinon';
 import tk from 'timekeeper';
-
-import { database, interfaces, tests } from '@impactmarket/core';
 
 import { calcuateCommunitiesMetrics } from '../../../src/jobs/cron/community';
 import { calcuateGlobalMetrics } from '../../../src/jobs/cron/global';

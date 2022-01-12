@@ -1,7 +1,7 @@
-import { ExchangeRatesAttributes } from '../../database/models/app/exchangeRates';
 import { promisify } from 'util';
 
 import { models, redisClient } from '../../database';
+import { ExchangeRatesAttributes } from '../../database/models/app/exchangeRates';
 
 // TODO: this workaround will only exist until exchange rates are not returned on /welcome and /auth endpoints anymore
 // and then, apicache will be used

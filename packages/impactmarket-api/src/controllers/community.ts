@@ -1,6 +1,7 @@
-import { RequestWithUser } from '../middlewares/core';
-import { utils, services } from '@impactmarket/core';
+import { services } from '@impactmarket/core';
 import { Request, Response } from 'express';
+
+import { RequestWithUser } from '../middlewares/core';
 import { standardResponse, controllerLogAndFail } from '../utils/api';
 
 class CommunityController {

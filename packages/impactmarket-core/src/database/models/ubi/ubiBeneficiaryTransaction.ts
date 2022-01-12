@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     UbiBeneficiaryTransaction,
     UbiBeneficiaryTransactionCreation,
 } from '../../../interfaces/ubi/ubiBeneficiaryTransaction';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiBeneficiaryTransactionModel extends Model<
     UbiBeneficiaryTransaction,

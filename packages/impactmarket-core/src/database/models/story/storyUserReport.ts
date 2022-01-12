@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     StoryUserReport,
     StoryUserReportCreation,
 } from '../../../interfaces/story/storyUserReport';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class StoryUserReportModel extends Model<
     StoryUserReport,

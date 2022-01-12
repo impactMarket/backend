@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     AppAnonymousReport,
     AppAnonymousReportCreation,
 } from '../../../interfaces/app/appAnonymousReport';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class AppAnonymousReportModel extends Model<
     AppAnonymousReport,

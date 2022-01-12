@@ -1,7 +1,7 @@
 import './tracer'; // must come before importing any instrumented module.
 
-import * as Sentry from '@sentry/node';
 import { utils, config } from '@impactmarket/core';
+import * as Sentry from '@sentry/node';
 // import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Request, Response } from 'express';
@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+
 import { rateLimiter } from './middlewares';
 import routes from './routes';
 

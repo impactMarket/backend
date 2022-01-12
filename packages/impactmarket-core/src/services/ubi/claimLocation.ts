@@ -1,9 +1,9 @@
-import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
-import { BaseError } from '../../utils/baseError';
 import { Op } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
+import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
+import { BaseError } from '../../utils/baseError';
 
 export default class ClaimLocationService {
     public static async add(

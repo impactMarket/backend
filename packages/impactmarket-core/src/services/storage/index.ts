@@ -1,8 +1,8 @@
-import { AppMediaContent } from '../../interfaces/app/appMediaContent';
 import { Op } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
+import { AppMediaContent } from '../../interfaces/app/appMediaContent';
 import { AWS } from './aws';
 
 enum StorageCategory {

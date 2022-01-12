@@ -1,7 +1,7 @@
-import { UbiCommunityContract } from '../../interfaces/ubi/ubiCommunityContract';
 import { Transaction } from 'sequelize';
 
 import { models, sequelize } from '../../database';
+import { UbiCommunityContract } from '../../interfaces/ubi/ubiCommunityContract';
 import { ICommunityContractParams } from '../../types';
 
 export default class CommunityContractService {

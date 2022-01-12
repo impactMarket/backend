@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     AppMediaThumbnail,
     AppMediaThumbnailCreation,
 } from '../../../interfaces/app/appMediaThumbnail';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class AppMediaThumbnailModel extends Model<
     AppMediaThumbnail,

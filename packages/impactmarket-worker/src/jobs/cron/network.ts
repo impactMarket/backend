@@ -1,7 +1,6 @@
+import { config, database } from '@impactmarket/core';
 import { ethers } from 'ethers';
 import { col, fn, Op } from 'sequelize';
-
-import { config, database } from '@impactmarket/core';
 
 import { filterMerkleTree } from './filters/merkleTree';
 

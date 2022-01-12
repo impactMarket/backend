@@ -1,21 +1,3 @@
-import {
-    CommunityAttributes,
-    IBaseCommunityAttributes,
-    ICommunityCreationAttributes,
-} from '../../interfaces/ubi/community';
-import { UbiRequestChangeParams } from '../../interfaces/ubi/requestChangeParams';
-import { UbiCommunityCampaign } from '../../interfaces/ubi/ubiCommunityCampaign';
-import { UbiCommunityContract } from '../../interfaces/ubi/ubiCommunityContract';
-import { UbiCommunityDailyMetrics } from '../../interfaces/ubi/ubiCommunityDailyMetrics';
-import { UbiCommunityLabel } from '../../interfaces/ubi/ubiCommunityLabel';
-import { UbiCommunityState } from '../../interfaces/ubi/ubiCommunityState';
-import { UbiCommunitySuspect } from '../../interfaces/ubi/ubiCommunitySuspect';
-import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
-import { Community } from '../../database/models/ubi/community';
-import { ManagerAttributes } from '../../database/models/ubi/manager';
-import { BaseError } from '../../utils/baseError';
-import { fetchData } from '../../utils/dataFetching';
-import { notifyManagerAdded } from '../../utils/util';
 import { ethers } from 'ethers';
 import {
     Op,
@@ -34,6 +16,24 @@ import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import { models, sequelize } from '../../database';
+import { Community } from '../../database/models/ubi/community';
+import { ManagerAttributes } from '../../database/models/ubi/manager';
+import {
+    CommunityAttributes,
+    IBaseCommunityAttributes,
+    ICommunityCreationAttributes,
+} from '../../interfaces/ubi/community';
+import { UbiRequestChangeParams } from '../../interfaces/ubi/requestChangeParams';
+import { UbiCommunityCampaign } from '../../interfaces/ubi/ubiCommunityCampaign';
+import { UbiCommunityContract } from '../../interfaces/ubi/ubiCommunityContract';
+import { UbiCommunityDailyMetrics } from '../../interfaces/ubi/ubiCommunityDailyMetrics';
+import { UbiCommunityLabel } from '../../interfaces/ubi/ubiCommunityLabel';
+import { UbiCommunityState } from '../../interfaces/ubi/ubiCommunityState';
+import { UbiCommunitySuspect } from '../../interfaces/ubi/ubiCommunitySuspect';
+import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
+import { BaseError } from '../../utils/baseError';
+import { fetchData } from '../../utils/dataFetching';
+import { notifyManagerAdded } from '../../utils/util';
 import {
     ICommunity,
     ICommunityLightDetails,

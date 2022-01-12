@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     BeneficiaryAttributes,
     BeneficiaryCreationAttributes,
 } from '../../../interfaces/ubi/beneficiary';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class Beneficiary extends Model<
     BeneficiaryAttributes,

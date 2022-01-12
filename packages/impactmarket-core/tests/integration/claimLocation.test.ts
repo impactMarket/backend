@@ -6,10 +6,10 @@ import { models } from '../../src/database';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import ClaimLocationService from '../../src/services/ubi/claimLocation';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import UserFactory from '../factories/user';
-import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 
 describe('claim location service', () => {
     let sequelize: Sequelize;

@@ -7,11 +7,11 @@ import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import { StoryContentStorage } from '../../src/services/storage';
 import StoryService from '../../src/services/story';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import StoryFactory from '../factories/story';
 import UserFactory from '../factories/user';
-import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 
 describe('story service', () => {
     let sequelize: Sequelize;

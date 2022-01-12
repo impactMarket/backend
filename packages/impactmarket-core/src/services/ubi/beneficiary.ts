@@ -1,3 +1,10 @@
+import { ethers } from 'ethers';
+import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
+import { Literal, Where } from 'sequelize/types/lib/utils';
+
+import config from '../../config';
+import { models, sequelize } from '../../database';
+import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { AppUser } from '../../interfaces/app/appUser';
 import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
 import {
@@ -9,16 +16,9 @@ import {
     UbiBeneficiarySurveyCreation,
 } from '../../interfaces/ubi/ubiBeneficiarySurvey';
 import { UbiBeneficiaryTransactionCreation } from '../../interfaces/ubi/ubiBeneficiaryTransaction';
-import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { BaseError } from '../../utils/baseError';
 import { Logger } from '../../utils/logger';
 import { isAddress } from '../../utils/util';
-import { ethers } from 'ethers';
-import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
-import { Literal, Where } from 'sequelize/types/lib/utils';
-
-import config from '../../config';
-import { models, sequelize } from '../../database';
 import {
     IBeneficiaryActivities,
     IListBeneficiary,

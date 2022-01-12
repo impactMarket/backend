@@ -1,5 +1,6 @@
-import { UbiClaim, UbiClaimCreation } from '../../../interfaces/ubi/ubiClaim';
 import { Sequelize, DataTypes, Model } from 'sequelize';
+
+import { UbiClaim, UbiClaimCreation } from '../../../interfaces/ubi/ubiClaim';
 
 export class UbiClaimModel extends Model<UbiClaim, UbiClaimCreation> {
     public id!: number;

@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     AppNotification,
     AppNotificationCreation,
 } from '../../../interfaces/app/appNotification';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class AppNotificationModel extends Model<
     AppNotification,

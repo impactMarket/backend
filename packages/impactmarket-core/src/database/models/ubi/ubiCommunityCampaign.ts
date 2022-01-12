@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     UbiCommunityCampaign,
     UbiCommunityCampaignCreation,
 } from '../../../interfaces/ubi/ubiCommunityCampaign';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiCommunityCampaignModel extends Model<
     UbiCommunityCampaign,

@@ -10,11 +10,11 @@ import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import UserService from '../../src/services/app/user';
 import { BaseError } from '../../src/utils/baseError';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
+import { jumpToTomorrowMidnight } from '../config/utils';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
-import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
-import { jumpToTomorrowMidnight } from '../config/utils';
 
 describe('user service', () => {
     let sequelize: Sequelize;

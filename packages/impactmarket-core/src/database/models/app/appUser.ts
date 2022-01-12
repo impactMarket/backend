@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     AppUser,
     AppUserCreationAttributes,
 } from '../../../interfaces/app/appUser';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public id!: number;

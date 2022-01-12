@@ -1,9 +1,10 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     UbiBeneficiaryRegistry,
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
 } from '../../../interfaces/ubi/ubiBeneficiaryRegistry';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiBeneficiaryRegistryModel extends Model<
     UbiBeneficiaryRegistry,

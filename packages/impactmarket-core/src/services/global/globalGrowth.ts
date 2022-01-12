@@ -1,9 +1,8 @@
+import { models } from '../../database';
 import {
     GlobalGrowth,
     GlobalGrowthCreation,
 } from '../../interfaces/global/globalGrowth';
-
-import { models } from '../../database';
 
 export default class GlobalGrowthService {
     public globalGrowth = models.globalGrowth;

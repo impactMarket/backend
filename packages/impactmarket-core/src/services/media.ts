@@ -1,8 +1,7 @@
+import { models } from '../database';
 import { AppMediaContentCreation } from '../interfaces/app/appMediaContent';
 import { AppMediaThumbnailCreation } from '../interfaces/app/appMediaThumbnail';
 import { BaseError } from '../utils/baseError';
-
-import { models } from '../database';
 
 export class MediaService {
     async updateMedia(content: AppMediaContentCreation) {

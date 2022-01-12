@@ -1,8 +1,7 @@
+import { config, database, contracts } from '@impactmarket/core';
 import { BigNumber } from 'bignumber.js';
 import { Contract, ethers } from 'ethers';
 import { Request, Response } from 'express';
-
-import { config, database, contracts } from '@impactmarket/core';
 
 const circulatingSupply = async (req: Request, res: Response) => {
     const pact = new Contract(

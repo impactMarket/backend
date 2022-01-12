@@ -1,10 +1,10 @@
-import { RequestWithUser, UserInRequest } from '../middlewares/core';
+import { config, database } from '@impactmarket/core';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import redisStore from 'rate-limit-redis';
 
-import { config, database } from '@impactmarket/core';
+import { RequestWithUser, UserInRequest } from '../middlewares/core';
 
 export function authenticateToken(
     req: RequestWithUser,

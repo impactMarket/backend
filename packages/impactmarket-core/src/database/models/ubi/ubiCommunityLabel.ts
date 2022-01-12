@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     UbiCommunityLabel,
     UbiCommunityLabelCreation,
 } from '../../../interfaces/ubi/ubiCommunityLabel';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiCommunityLabelModel extends Model<
     UbiCommunityLabel,

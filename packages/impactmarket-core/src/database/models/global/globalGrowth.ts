@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     GlobalGrowth,
     GlobalGrowthCreation,
 } from '../../../interfaces/global/globalGrowth';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class GlobalGrowthModel extends Model<
     GlobalGrowth,

@@ -1,9 +1,9 @@
-import claimLocationController from '../controllers/claimLocation';
-import claimLocationValidators from '../validators/claimLocation';
+import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
-import { database } from '@impactmarket/core';
+import claimLocationController from '../controllers/claimLocation';
 import { authenticateToken } from '../middlewares';
+import claimLocationValidators from '../validators/claimLocation';
 
 export default (app: Router): void => {
     const route = Router();

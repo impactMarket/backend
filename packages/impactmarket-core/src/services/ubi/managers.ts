@@ -1,10 +1,10 @@
+import { QueryTypes, Transaction } from 'sequelize';
+
+import { models, sequelize } from '../../database';
 import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { BaseError } from '../../utils/baseError';
 import { Logger } from '../../utils/logger';
 import { isAddress } from '../../utils/util';
-import { QueryTypes, Transaction } from 'sequelize';
-
-import { models, sequelize } from '../../database';
 import { IManagerDetailsManager } from '../endpoints';
 
 export default class ManagerService {

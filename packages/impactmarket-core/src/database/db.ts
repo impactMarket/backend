@@ -1,3 +1,5 @@
+import { ModelCtor, Sequelize } from 'sequelize/types';
+
 import { AirgrabProofModel } from './models/airgrab/airgrabProof';
 import { AirgrabUserModel } from './models/airgrab/airgrabUser';
 import { AppAnonymousReportModel } from './models/app/anonymousReport';
@@ -40,7 +42,6 @@ import { UbiCommunityLabelModel } from './models/ubi/ubiCommunityLabel';
 import { UbiCommunitySuspectModel } from './models/ubi/ubiCommunitySuspect';
 import { UbiPromoterModel } from './models/ubi/ubiPromoter';
 import { UbiPromoterSocialMediaModel } from './models/ubi/ubiPromoterSocialMedia';
-import { ModelCtor, Sequelize } from 'sequelize/types';
 
 export interface DbModels {
     appUser: ModelCtor<AppUserModel>;

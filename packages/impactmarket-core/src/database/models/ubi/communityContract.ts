@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     UbiCommunityContract,
     UbiCommunityContractCreation,
 } from '../../../interfaces/ubi/ubiCommunityContract';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 /**
  * @swagger

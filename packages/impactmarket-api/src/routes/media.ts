@@ -1,5 +1,6 @@
-import { MediaController } from '../controllers/media';
 import { Router } from 'express';
+
+import { MediaController } from '../controllers/media';
 
 export default (app: Router): void => {
     const controller = new MediaController();

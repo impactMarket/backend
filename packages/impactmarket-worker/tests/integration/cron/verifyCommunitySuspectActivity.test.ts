@@ -1,8 +1,7 @@
+import { database, interfaces, tests } from '@impactmarket/core';
 import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
 import Sinon, { stub } from 'sinon';
-
-import { database, interfaces, tests } from '@impactmarket/core';
 
 import { verifyCommunitySuspectActivity } from '../../../src/jobs/cron/community';
 

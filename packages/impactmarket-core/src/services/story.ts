@@ -1,3 +1,9 @@
+import { Includeable, literal, Op } from 'sequelize';
+import { Literal } from 'sequelize/types/lib/utils';
+
+import config from '../config';
+import { models, sequelize } from '../database';
+import { ManagerAttributes } from '../database/models/ubi/manager';
 import { AppMediaContent } from '../interfaces/app/appMediaContent';
 import {
     StoryCommunity,
@@ -6,21 +12,15 @@ import {
 import { StoryContent } from '../interfaces/story/storyContent';
 import { BeneficiaryAttributes } from '../interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../interfaces/ubi/community';
+import { BaseError } from '../utils/baseError';
+import { Logger } from '../utils/logger';
+import Email from './email';
 import {
     IAddStory,
     ICommunitiesListStories,
     ICommunityStories,
     ICommunityStory,
 } from './endpoints';
-import { ManagerAttributes } from '../database/models/ubi/manager';
-import { BaseError } from '../utils/baseError';
-import { Logger } from '../utils/logger';
-import { Includeable, literal, Op } from 'sequelize';
-import { Literal } from 'sequelize/types/lib/utils';
-
-import config from '../config';
-import { models, sequelize } from '../database';
-import Email from './email';
 import { StoryContentStorage } from './storage';
 
 export default class StoryService {

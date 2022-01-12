@@ -1,12 +1,12 @@
-import {
-    GlobalDailyState,
-    GlobalDailyStateCreationAttributes,
-} from '../../database/models/global/globalDailyState';
 import { BigNumber } from 'bignumber.js';
 import { col, fn, Op } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
+import {
+    GlobalDailyState,
+    GlobalDailyStateCreationAttributes,
+} from '../../database/models/global/globalDailyState';
 
 export default class GlobalDailyStateService {
     public globalDailyState = models.globalDailyState;
@@ -165,7 +165,7 @@ export default class GlobalDailyStateService {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
 
-        const [communitiesContractAddress, communitiesId] = (
+        const [communitiesId] = (
             await models.community.findAll({
                 attributes: ['contractAddress', 'id'],
                 where: { status: 'valid', visibility: 'public' },

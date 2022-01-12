@@ -6,10 +6,10 @@ import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import UserService from '../../src/services/app/user';
 import ManagerService from '../../src/services/ubi/managers';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
-import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 
 use(chaiSubset);
 

@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     UbiCommunityDailyMetrics,
     UbiCommunityDailyMetricsCreation,
 } from '../../../interfaces/ubi/ubiCommunityDailyMetrics';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiCommunityDailyMetricsModel extends Model<
     UbiCommunityDailyMetrics,

@@ -1,7 +1,7 @@
-import { UbiCommunityDailyMetrics } from '../../interfaces/ubi/ubiCommunityDailyMetrics';
 import { Op } from 'sequelize';
 
 import { models } from '../../database';
+import { UbiCommunityDailyMetrics } from '../../interfaces/ubi/ubiCommunityDailyMetrics';
 import { ICommunityMetrics } from '../../types';
 
 export default class CommunityDailyMetricsService {

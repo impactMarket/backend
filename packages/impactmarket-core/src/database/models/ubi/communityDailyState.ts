@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     UbiCommunityDailyState,
     UbiCommunityDailyStateCreation,
 } from '../../../interfaces/ubi/ubiCommunityDailyState';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiCommunityDailyStateModel extends Model<
     UbiCommunityDailyState,

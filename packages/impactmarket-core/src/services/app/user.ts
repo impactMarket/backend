@@ -1,4 +1,8 @@
 import { Client } from '@hubspot/api-client';
+import { Op, QueryTypes } from 'sequelize';
+
+import config from '../../config';
+import { models, sequelize } from '../../database';
 import {
     AppAnonymousReport,
     AppAnonymousReportCreation,
@@ -9,15 +13,11 @@ import {
     AppUserCreationAttributes,
 } from '../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../interfaces/ubi/community';
-import { ProfileContentStorage } from '../storage';
 import { BaseError } from '../../utils/baseError';
-import { Logger } from '../../utils/logger';
 import { generateAccessToken } from '../../utils/jwt';
-import { Op, QueryTypes } from 'sequelize';
-
-import config from '../../config';
-import { models, sequelize } from '../../database';
+import { Logger } from '../../utils/logger';
 import { IUserHello, IUserAuth, IBeneficiary, IManager } from '../endpoints';
+import { ProfileContentStorage } from '../storage';
 import CommunityService from '../ubi/community';
 import ExchangeRatesService from './exchangeRates';
 export default class UserService {

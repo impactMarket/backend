@@ -1,6 +1,5 @@
-import { BeneficiaryAttributes } from '../ubi/beneficiary';
 import { ManagerAttributes } from '../../database/models/ubi/manager';
-
+import { BeneficiaryAttributes } from '../ubi/beneficiary';
 import { AppMediaContent } from './appMediaContent';
 import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
 

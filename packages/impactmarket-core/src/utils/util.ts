@@ -1,10 +1,10 @@
-import { Community } from '../database/models/ubi/community';
-import UserService from '../services/app/user';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
 import config from '../config';
+import { Community } from '../database/models/ubi/community';
+import UserService from '../services/app/user';
 import { Logger } from './logger';
 
 BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });

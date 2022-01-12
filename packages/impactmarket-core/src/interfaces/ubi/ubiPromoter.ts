@@ -1,5 +1,4 @@
 import { AppMediaContent } from '../app/appMediaContent';
-
 import { UbiPromoterSocialMedia } from './ubiPromoterSocialMedia';
 
 /**

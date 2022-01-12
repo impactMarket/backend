@@ -1,7 +1,7 @@
-import { ReachedAddressCreationAttributes } from '../database/models/reachedAddress';
 import { Op } from 'sequelize';
 
 import { models, Sequelize } from '../database';
+import { ReachedAddressCreationAttributes } from '../database/models/reachedAddress';
 
 export default class ReachedAddressService {
     public reachedAddress = models.reachedAddress;

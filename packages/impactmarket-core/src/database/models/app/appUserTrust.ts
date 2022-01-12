@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     AppUserTrust,
     AppUserTrustCreation,
 } from '../../../interfaces/app/appUserTrust';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class AppUserTrustModel extends Model<
     AppUserTrust,

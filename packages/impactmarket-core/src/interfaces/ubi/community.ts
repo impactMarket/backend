@@ -1,3 +1,4 @@
+import { ICommunityContractParams } from '../../types';
 import { AppMediaContent } from '../app/appMediaContent';
 import { AppProposal } from '../app/appProposal';
 import { StoryCommunity } from '../story/storyCommunity';
@@ -9,8 +10,6 @@ import { UbiCommunityDailyState } from '../ubi/ubiCommunityDailyState';
 import { UbiCommunityDemographics } from '../ubi/ubiCommunityDemographics';
 import { UbiCommunityState } from '../ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '../ubi/ubiCommunitySuspect';
-
-import { ICommunityContractParams } from '../../types';
 
 /**
  * @swagger

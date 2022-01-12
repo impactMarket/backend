@@ -1,7 +1,3 @@
-import { ethers } from 'ethers';
-import ganache from 'ganache-cli';
-import { stub, assert, match, SinonStub, spy, SinonSpy, restore } from 'sinon';
-
 import {
     database,
     services,
@@ -10,6 +6,9 @@ import {
     contracts,
     utils,
 } from '@impactmarket/core';
+import { ethers } from 'ethers';
+import ganache from 'ganache-cli';
+import { stub, assert, match, SinonStub, spy, SinonSpy, restore } from 'sinon';
 
 import { ChainSubscribers } from '../../src/jobs/chainSubscribers';
 import DAOContractJSON from './IPCTDelegate.json';

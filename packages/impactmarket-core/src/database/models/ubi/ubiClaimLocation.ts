@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     UbiClaimLocation,
     UbiClaimLocationCreation,
 } from '../../../interfaces/ubi/ubiClaimLocation';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class ClaimLocationModel extends Model<
     UbiClaimLocation,

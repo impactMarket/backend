@@ -12,16 +12,16 @@ import { BeneficiaryAttributes } from '../../src/interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import { UbiBeneficiaryRegistryType } from '../../src/interfaces/ubi/ubiBeneficiaryRegistry';
 import UserService from '../../src/services/app/user';
+import { IListBeneficiary } from '../../src/services/endpoints';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import ClaimsService from '../../src/services/ubi/claim';
-import { IListBeneficiary } from '../../src/services/endpoints';
+import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
+import { jumpToTomorrowMidnight, randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';
 import ClaimFactory from '../factories/claim';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
-import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
-import { jumpToTomorrowMidnight, randomTx } from '../config/utils';
 
 use(chaiSubset);
 

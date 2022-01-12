@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     AppProposal,
     AppProposalCreation,
 } from '../../../interfaces/app/appProposal';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class AppProposalModel extends Model<AppProposal, AppProposalCreation> {
     public id!: number;

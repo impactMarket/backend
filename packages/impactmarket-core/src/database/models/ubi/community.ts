@@ -1,8 +1,9 @@
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
 import {
     CommunityAttributes,
     ICommunityCreationAttributes,
 } from '../../../interfaces/ubi/community';
-import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class Community extends Model<
     CommunityAttributes,
