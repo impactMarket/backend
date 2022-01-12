@@ -16,7 +16,6 @@
         "outDir": "./dist",
         "noImplicitAny": false,
         "useUnknownInCatchVariables": false,
-        "skipLibCheck": true
     },
     "include": ["src"],
     "exclude": ["node_modules"]
