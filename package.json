@@ -29,6 +29,6 @@
         "worker-dev": "lerna exec --scope @impactmarket/worker yarn worker-dev",
         "build": "lerna exec yarn build",
         "test": "lerna exec yarn test",
-        "coverage:ci": "NODE_ENV=test nyc --reporter=lcov mocha"
+        "coverage:ci": "nyc --reporter=lcov npx lerna exec yarn test"
     }
 }
