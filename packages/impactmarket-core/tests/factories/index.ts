@@ -16,4 +16,4 @@ export {
     ManagerFactory,
     StoryFactory,
     UserFactory,
-}
+};

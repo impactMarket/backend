@@ -105,7 +105,8 @@ const models: DbModels = {
         .UbiCommunityCampaignModel as ModelCtor<UbiCommunityCampaign.UbiCommunityCampaignModel>,
     ubiRequestChangeParams: sequelize.models
         .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParams.UbiRequestChangeParamsModel>,
-    ubiClaim: sequelize.models.UbiClaimModel as ModelCtor<UbiClaim.UbiClaimModel>,
+    ubiClaim: sequelize.models
+        .UbiClaimModel as ModelCtor<UbiClaim.UbiClaimModel>,
     ubiClaimLocation: sequelize.models
         .ClaimLocationModel as ModelCtor<ClaimLocation.ClaimLocationModel>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
@@ -119,7 +120,8 @@ const models: DbModels = {
         .UbiBeneficiaryTransactionModel as ModelCtor<UbiBeneficiaryTransaction.UbiBeneficiaryTransactionModel>,
     cronJobExecuted: sequelize.models
         .CronJobExecuted as ModelCtor<CronJobExecuted>,
-    exchangeRates: sequelize.models.ExchangeRates as ModelCtor<ExchangeRates.ExchangeRates>,
+    exchangeRates: sequelize.models
+        .ExchangeRates as ModelCtor<ExchangeRates.ExchangeRates>,
     globalDailyState: sequelize.models
         .GlobalDailyState as ModelCtor<GlobalDailyState.GlobalDailyState>,
     globalDemographics: sequelize.models
@@ -219,5 +221,5 @@ export {
     UbiCommunitySuspect,
     UbiPromoter,
     UbiPromoterSocialMedia,
-}
+};
 export { sequelize, Sequelize, models, redisClient, cacheWithRedis };

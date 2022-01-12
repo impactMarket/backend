@@ -3,7 +3,13 @@ import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
 
-import { database, services, tests, config, contracts } from '@impactmarket/core';
+import {
+    database,
+    services,
+    tests,
+    config,
+    contracts,
+} from '@impactmarket/core';
 
 import { ChainSubscribers } from '../../src/jobs/chainSubscribers';
 import CommunityContractJSON from './CommunityContract.json';
@@ -62,22 +68,32 @@ describe('communityContract', () => {
         managerUpdate.returns(Promise.resolve(true));
         communityLock = stub(database.models.ubiCommunityContract, 'update');
         communityLock.returns(Promise.resolve(true));
-        beneficiaryParamsUpdate = stub(services.ubi.CommunityContractService, 'update');
+        beneficiaryParamsUpdate = stub(
+            services.ubi.CommunityContractService,
+            'update'
+        );
         beneficiaryParamsUpdate.returns(Promise.resolve(true));
 
         let lastBlock = 0;
 
-        stub(services.app.ImMetadataService, 'setLastBlock').callsFake(async (v) => {
-            lastBlock = v;
-        });
-        stub(services.app.ImMetadataService, 'setRecoverBlockUsingLastBlock').returns(
-            Promise.resolve()
+        stub(services.app.ImMetadataService, 'setLastBlock').callsFake(
+            async (v) => {
+                lastBlock = v;
+            }
         );
-        stub(services.ubi.CommunityService, 'getCommunityOnlyByPublicId').returns(
-            Promise.resolve({ id: thisCommunityId } as any)
-        );
+        stub(
+            services.app.ImMetadataService,
+            'setRecoverBlockUsingLastBlock'
+        ).returns(Promise.resolve());
+        stub(
+            services.ubi.CommunityService,
+            'getCommunityOnlyByPublicId'
+        ).returns(Promise.resolve({ id: thisCommunityId } as any));
         getLastBlockStub = stub(services.app.ImMetadataService, 'getLastBlock');
-        getRecoverBlockStub = stub(services.app.ImMetadataService, 'getRecoverBlock');
+        getRecoverBlockStub = stub(
+            services.app.ImMetadataService,
+            'getRecoverBlock'
+        );
         getLastBlockStub.returns(Promise.resolve(lastBlock));
         getRecoverBlockStub.returns(Promise.resolve(lastBlock));
 
@@ -143,7 +159,10 @@ describe('communityContract', () => {
             [CommunityContract.address, thisCommunityPublicId],
             [CommunityOldContract.address, thisCommunityPublicId2],
         ]);
-        getAllAddressesAndIds = stub(services.ubi.CommunityService, 'getAllAddressesAndIds');
+        getAllAddressesAndIds = stub(
+            services.ubi.CommunityService,
+            'getAllAddressesAndIds'
+        );
         getAllAddressesAndIds.returns(
             Promise.resolve(newCommunityAddressesAndIds)
         );

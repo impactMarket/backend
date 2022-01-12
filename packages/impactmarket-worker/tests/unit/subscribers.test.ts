@@ -2,7 +2,14 @@ import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { stub, assert, match, SinonStub, spy, SinonSpy, restore } from 'sinon';
 
-import { database, services, tests, config, contracts, utils } from '@impactmarket/core';
+import {
+    database,
+    services,
+    tests,
+    config,
+    contracts,
+    utils,
+} from '@impactmarket/core';
 
 import { ChainSubscribers } from '../../src/jobs/chainSubscribers';
 import DAOContractJSON from './IPCTDelegate.json';
@@ -72,11 +79,18 @@ describe('[jobs] subscribers', () => {
         // list accounts
         accounts = await provider.listAccounts();
         // stub results
-        stub(utils.util, 'notifyBeneficiaryAdded').returns(Promise.resolve(true));
-        stub(utils.util, 'getBlockTime').returns(Promise.resolve(blockTimeDate));
+        stub(utils.util, 'notifyBeneficiaryAdded').returns(
+            Promise.resolve(true)
+        );
+        stub(utils.util, 'getBlockTime').returns(
+            Promise.resolve(blockTimeDate)
+        );
         beneficiaryAdd = stub(services.ubi.BeneficiaryService, 'add');
         beneficiaryAdd.returns(Promise.resolve(true));
-        beneficiaryTransactionAdd = stub(services.ubi.BeneficiaryService, 'addTransaction');
+        beneficiaryTransactionAdd = stub(
+            services.ubi.BeneficiaryService,
+            'addTransaction'
+        );
         beneficiaryTransactionAdd.returns(Promise.resolve());
         beneficiaryRemove = stub(services.ubi.BeneficiaryService, 'remove');
         beneficiaryRemove.returns(Promise.resolve());
@@ -84,17 +98,24 @@ describe('[jobs] subscribers', () => {
         inflowAdd.returns(Promise.resolve());
         // stub(services.ubi.BeneficiaryService, 'getAllAddresses').returns(Promise.resolve(accounts.slice(5, 9)));
         // stub(Beneficiary, 'findAll').returns(Promise.resolve([]));
-        stub(services.app.ImMetadataService, 'setLastBlock').callsFake(async (v) => {
-            lastBlock = v;
-        });
-        stub(services.app.ImMetadataService, 'setRecoverBlockUsingLastBlock').returns(
-            Promise.resolve()
+        stub(services.app.ImMetadataService, 'setLastBlock').callsFake(
+            async (v) => {
+                lastBlock = v;
+            }
         );
-        stub(services.ubi.CommunityService, 'getCommunityOnlyByPublicId').returns(
-            Promise.resolve({ id: thisCommunityId } as any)
-        );
+        stub(
+            services.app.ImMetadataService,
+            'setRecoverBlockUsingLastBlock'
+        ).returns(Promise.resolve());
+        stub(
+            services.ubi.CommunityService,
+            'getCommunityOnlyByPublicId'
+        ).returns(Promise.resolve({ id: thisCommunityId } as any));
         getLastBlockStub = stub(services.app.ImMetadataService, 'getLastBlock');
-        getRecoverBlockStub = stub(services.app.ImMetadataService, 'getRecoverBlock');
+        getRecoverBlockStub = stub(
+            services.app.ImMetadataService,
+            'getRecoverBlock'
+        );
         getLastBlockStub.returns(Promise.resolve(lastBlock));
         getRecoverBlockStub.returns(Promise.resolve(lastBlock));
         claimAdd = stub(services.ubi.ClaimService, 'add');
@@ -132,7 +153,10 @@ describe('[jobs] subscribers', () => {
             );
         managerRemove = stub(services.ubi.ManagerService, 'remove');
         managerRemove.returns(Promise.resolve());
-        getAllAddressesAndIds = stub(services.ubi.CommunityService, 'getAllAddressesAndIds');
+        getAllAddressesAndIds = stub(
+            services.ubi.CommunityService,
+            'getAllAddressesAndIds'
+        );
         getAllAddressesAndIds.returns(
             Promise.resolve(tests.fake.community.communityAddressesAndIds)
         );
@@ -140,7 +164,10 @@ describe('[jobs] subscribers', () => {
             services.app.ImMetadataService,
             'removeRecoverBlock'
         );
-        stub(services.ubi.CommunityService, 'getOnlyCommunityByContractAddress').returns(
+        stub(
+            services.ubi.CommunityService,
+            'getOnlyCommunityByContractAddress'
+        ).returns(
             Promise.resolve({
                 id: thisCommunityId,
                 publicId: thisCommunityPublicId,

@@ -9,7 +9,11 @@ export default (app: Router): void => {
     const route = Router();
     app.use('/claim-location', route);
 
-    route.get('/', database.cacheWithRedis('1 day'), claimLocationController.getAll);
+    route.get(
+        '/',
+        database.cacheWithRedis('1 day'),
+        claimLocationController.getAll
+    );
 
     route.post(
         '/',

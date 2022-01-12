@@ -4,7 +4,10 @@ import {
     AppAnonymousReportCreation,
 } from '../../interfaces/app/appAnonymousReport';
 import { AppNotification } from '../../interfaces/app/appNotification';
-import { AppUser, AppUserCreationAttributes } from '../../interfaces/app/appUser';
+import {
+    AppUser,
+    AppUserCreationAttributes,
+} from '../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../interfaces/ubi/community';
 import { ProfileContentStorage } from '../storage';
 import { BaseError } from '../../utils/baseError';
@@ -14,12 +17,7 @@ import { Op, QueryTypes } from 'sequelize';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
-import {
-    IUserHello,
-    IUserAuth,
-    IBeneficiary,
-    IManager,
-} from '../endpoints';
+import { IUserHello, IUserAuth, IBeneficiary, IManager } from '../endpoints';
 import CommunityService from '../ubi/community';
 import ExchangeRatesService from './exchangeRates';
 export default class UserService {

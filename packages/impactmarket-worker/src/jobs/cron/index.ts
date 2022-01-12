@@ -14,4 +14,4 @@ export {
     updateExchangeRates,
     user,
     filters,
-}
+};

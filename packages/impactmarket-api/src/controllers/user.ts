@@ -61,7 +61,10 @@ class UserController {
         if (token !== undefined && phone !== undefined) {
             if (token.length > 0) {
                 // failing to set the push notification, should not be a blocker!
-                services.app.UserService.setPushNotificationsToken(req.user.address, token);
+                services.app.UserService.setPushNotificationsToken(
+                    req.user.address,
+                    token
+                );
             }
             services.app.UserService.hello(req.user.address, phone)
                 .then((user) => standardResponse(res, 201, true, user))
@@ -69,7 +72,10 @@ class UserController {
                     standardResponse(res, 400, false, '', { error: e })
                 );
         } else {
-            services.app.UserService.welcome(req.user.address, pushNotificationToken)
+            services.app.UserService.welcome(
+                req.user.address,
+                pushNotificationToken
+            )
                 .then((user) => standardResponse(res, 201, true, user))
                 .catch((e) =>
                     standardResponse(res, 400, false, '', { error: e })
@@ -160,7 +166,10 @@ class UserController {
             return;
         }
         const { token } = req.body;
-        services.app.UserService.setPushNotificationsToken(req.user.address, token)
+        services.app.UserService.setPushNotificationsToken(
+            req.user.address,
+            token
+        )
             .then((r) => standardResponse(res, 201, r, ''))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -208,7 +217,10 @@ class UserController {
             return;
         }
         const { age } = req.body;
-        services.app.UserService.setYear(req.user.address, new Date().getFullYear() - age)
+        services.app.UserService.setYear(
+            req.user.address,
+            new Date().getFullYear() - age
+        )
             .then((r) => standardResponse(res, 201, r, ''))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -278,7 +290,10 @@ class UserController {
         const { address, token, phone } = req.body;
         if (token.length > 0) {
             // failing to set the push notification, should not be a blocker!
-            services.app.UserService.setPushNotificationsToken(address, token).catch((e) =>
+            services.app.UserService.setPushNotificationsToken(
+                address,
+                token
+            ).catch((e) =>
                 utils.Logger.warn(`Error setting push notification token ` + e)
             );
         }
@@ -313,7 +328,10 @@ class UserController {
             return;
         }
 
-        services.app.UserService.edit({ address: req.user.address, ...req.body })
+        services.app.UserService.edit({
+            address: req.user.address,
+            ...req.body,
+        })
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })

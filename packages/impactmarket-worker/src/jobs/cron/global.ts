@@ -34,7 +34,10 @@ async function calculateMetricsGrowth(
         ),
         raised: utils.util.calculateGrowth(past.tRaised, present.tRaised),
         backers: utils.util.calculateGrowth(past.tBackers, present.tBackers),
-        fundingRate: utils.util.calculateGrowth(past.fundingRate, present.fundingRate),
+        fundingRate: utils.util.calculateGrowth(
+            past.fundingRate,
+            present.fundingRate
+        ),
         volume: utils.util.calculateGrowth(past.tVolume, present.tVolume),
         transactions: utils.util.calculateGrowth(
             past.tTransactions,
@@ -489,7 +492,8 @@ async function calculateChartsData(
  */
 export async function calcuateGlobalMetrics(): Promise<void> {
     // const reachedAddressService = new ReachedAddressService();
-    const globalDailyStateService = new services.global.GlobalDailyStateService();
+    const globalDailyStateService =
+        new services.global.GlobalDailyStateService();
     const todayMidnightTime = new Date();
     todayMidnightTime.setUTCHours(0, 0, 0, 0);
     const yesterdayDateOnly = new Date(); // yesterdayDateOnly

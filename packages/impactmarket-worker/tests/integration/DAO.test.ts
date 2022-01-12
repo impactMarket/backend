@@ -3,7 +3,13 @@ import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, restore, replace, match } from 'sinon';
 
-import { config, database, interfaces, services, tests } from '@impactmarket/core';
+import {
+    config,
+    database,
+    interfaces,
+    services,
+    tests,
+} from '@impactmarket/core';
 
 import { ChainSubscribers } from '../../src/jobs/chainSubscribers';
 import IPCTDelegateContractJSON from './IPCTDelegate.json';
@@ -39,14 +45,20 @@ describe('DAO', () => {
         proposalUpdated.returns(Promise.resolve([1, {} as any]));
         replace(database.sequelize, 'transaction', sequelize.transaction);
         let lastBlock = 0;
-        stub(services.app.ImMetadataService, 'setLastBlock').callsFake(async (v) => {
-            lastBlock = v;
-        });
-        stub(services.app.ImMetadataService, 'setRecoverBlockUsingLastBlock').returns(
-            Promise.resolve()
+        stub(services.app.ImMetadataService, 'setLastBlock').callsFake(
+            async (v) => {
+                lastBlock = v;
+            }
         );
+        stub(
+            services.app.ImMetadataService,
+            'setRecoverBlockUsingLastBlock'
+        ).returns(Promise.resolve());
         getLastBlockStub = stub(services.app.ImMetadataService, 'getLastBlock');
-        getRecoverBlockStub = stub(services.app.ImMetadataService, 'getRecoverBlock');
+        getRecoverBlockStub = stub(
+            services.app.ImMetadataService,
+            'getRecoverBlock'
+        );
         getLastBlockStub.returns(Promise.resolve(lastBlock));
         getRecoverBlockStub.returns(Promise.resolve(lastBlock));
 

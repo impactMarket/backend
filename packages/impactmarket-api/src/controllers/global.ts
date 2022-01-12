@@ -14,7 +14,8 @@ const globalStatus = (req: Request, res: Response) => {
                 lastQuarterAvgSSI:
                     await globalDailyStateService.last90DaysAvgSSI(),
                 today: await globalDailyStateService.notYetCountedToday(),
-                totalBackers: await services.ubi.InflowService.countEvergreenBackers(),
+                totalBackers:
+                    await services.ubi.InflowService.countEvergreenBackers(),
                 reachedLastMonth:
                     await reachedAddressService.getAllReachedLast30Days(),
                 growth: await globalGrowth.getLast(),

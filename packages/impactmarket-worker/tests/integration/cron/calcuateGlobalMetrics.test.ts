@@ -12,7 +12,10 @@ describe('#calcuateGlobalMetrics()', () => {
     let communities: interfaces.ubi.community.CommunityAttributes[] = [];
     let sequelize: Sequelize;
 
-    const globalDailyStateCreate = spy(database.models.globalDailyState, 'create');
+    const globalDailyStateCreate = spy(
+        database.models.globalDailyState,
+        'create'
+    );
     before(async () => {
         sequelize = tests.config.setup.sequelizeSetup();
         await sequelize.sync();
@@ -65,7 +68,10 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.InflowFactory(community);
         await tests.factories.InflowFactory(community);
         await tests.factories.InflowFactory(community);
-        const beneficiaries = await tests.factories.BeneficiaryFactory(users, community.id);
+        const beneficiaries = await tests.factories.BeneficiaryFactory(
+            users,
+            community.id
+        );
         await tests.factories.ClaimFactory(beneficiaries[0], community);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
 
@@ -76,13 +82,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING TWO DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -91,13 +105,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING THREE DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -106,13 +128,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING FOUR DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -121,13 +151,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING FIVE DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -136,13 +174,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING SIX DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -151,13 +197,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING SEVEN DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -252,13 +306,17 @@ describe('#calcuateGlobalMetrics()', () => {
                 updatedAt: new Date(),
             },
         };
-        let beneficiaries: interfaces.ubi.beneficiary.BeneficiaryAttributes[] = [];
+        let beneficiaries: interfaces.ubi.beneficiary.BeneficiaryAttributes[] =
+            [];
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.InflowFactory(community1);
         await tests.factories.InflowFactory(community1);
         beneficiaries = beneficiaries.concat(
-            await tests.factories.BeneficiaryFactory(users.slice(0, 2), community1.id)
+            await tests.factories.BeneficiaryFactory(
+                users.slice(0, 2),
+                community1.id
+            )
         );
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
@@ -267,7 +325,10 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.InflowFactory(community2);
         await tests.factories.InflowFactory(community2);
         beneficiaries = beneficiaries.concat(
-            await tests.factories.BeneficiaryFactory(users.slice(2, 5), community2.id)
+            await tests.factories.BeneficiaryFactory(
+                users.slice(2, 5),
+                community2.id
+            )
         );
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
@@ -281,13 +342,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -295,13 +364,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '70000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[3], true, {
-            withAddress: beneficiaries[4].address,
-            amount: '500000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '70000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[3],
+            true,
+            {
+                withAddress: beneficiaries[4].address,
+                amount: '500000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING TWO DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -311,13 +388,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -325,13 +410,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '40000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '200000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '40000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '200000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING THREE DAYS FROM NOW
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000);
@@ -341,13 +434,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -355,13 +456,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 4);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[3], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[3].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[3],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[3].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING FOUR DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -371,13 +480,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -386,13 +503,21 @@ describe('#calcuateGlobalMetrics()', () => {
         // no claim, on purpose
         // tk.travel(new Date().getTime() + 1000 * 60 * 4);
         // await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '50000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[3], true, {
-            withAddress: beneficiaries[4].address,
-            amount: '100000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '50000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[3],
+            true,
+            {
+                withAddress: beneficiaries[4].address,
+                amount: '100000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING FIVE DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -402,13 +527,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -417,13 +550,21 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[2].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[2].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING SIX DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -433,13 +574,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -448,13 +597,21 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[2].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[2].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING SEVEN DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -496,13 +653,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -510,13 +675,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[2].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[2].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING SEVEN DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -555,7 +728,10 @@ describe('#calcuateGlobalMetrics()', () => {
 
         // community 1
         beneficiaries = beneficiaries.concat(
-            await tests.factories.BeneficiaryFactory(users.slice(5, 7), community1.id)
+            await tests.factories.BeneficiaryFactory(
+                users.slice(5, 7),
+                community1.id
+            )
         );
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
@@ -565,13 +741,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[5], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 1);
         await tests.factories.ClaimFactory(beneficiaries[6], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -579,13 +763,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[2].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[2].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING SEVEN DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -623,18 +815,30 @@ describe('#calcuateGlobalMetrics()', () => {
         await globalDailyStateCreate.resetHistory();
 
         // community 1
-        await tests.factories.BeneficiaryFactory(users.slice(5, 7), community1.id, true);
+        await tests.factories.BeneficiaryFactory(
+            users.slice(5, 7),
+            community1.id,
+            true
+        );
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         beneficiaries = beneficiaries.concat(
             await tests.factories.BeneficiaryFactory([users[7]], community2.id)
@@ -647,13 +851,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[7], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[2].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[2].address,
+                amount: '1000000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING SEVEN DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -800,13 +1012,17 @@ describe('#calcuateGlobalMetrics()', () => {
                 updatedAt: new Date(),
             },
         };
-        let beneficiaries: interfaces.ubi.beneficiary.BeneficiaryAttributes[] = [];
+        let beneficiaries: interfaces.ubi.beneficiary.BeneficiaryAttributes[] =
+            [];
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.InflowFactory(community1);
         await tests.factories.InflowFactory(community1);
         beneficiaries = beneficiaries.concat(
-            await tests.factories.BeneficiaryFactory(users.slice(0, 2), community1.id)
+            await tests.factories.BeneficiaryFactory(
+                users.slice(0, 2),
+                community1.id
+            )
         );
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
@@ -815,7 +1031,10 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.InflowFactory(community2);
         await tests.factories.InflowFactory(community2);
         beneficiaries = beneficiaries.concat(
-            await tests.factories.BeneficiaryFactory(users.slice(10, 13), community2.id)
+            await tests.factories.BeneficiaryFactory(
+                users.slice(10, 13),
+                community2.id
+            )
         );
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
@@ -825,7 +1044,10 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.InflowFactory(community3);
         await tests.factories.InflowFactory(community3);
         beneficiaries = beneficiaries.concat(
-            await tests.factories.BeneficiaryFactory(users.slice(20, 24), community3.id)
+            await tests.factories.BeneficiaryFactory(
+                users.slice(20, 24),
+                community3.id
+            )
         );
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
         await tests.factories.ClaimFactory(beneficiaries[6], community3);
@@ -836,7 +1058,10 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.InflowFactory(community4);
         await tests.factories.InflowFactory(community4);
         beneficiaries = beneficiaries.concat(
-            await tests.factories.BeneficiaryFactory(users.slice(30, 34), community4.id)
+            await tests.factories.BeneficiaryFactory(
+                users.slice(30, 34),
+                community4.id
+            )
         );
         await tests.factories.ClaimFactory(beneficiaries[9], community4);
         await tests.factories.ClaimFactory(beneficiaries[10], community4);
@@ -851,13 +1076,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -865,13 +1098,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '70000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[3], true, {
-            withAddress: beneficiaries[4].address,
-            amount: '500000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '70000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[3],
+            true,
+            {
+                withAddress: beneficiaries[4].address,
+                amount: '500000000000000000',
+            }
+        );
         // community 3
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
@@ -881,13 +1122,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[7], community3);
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[8], community3);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[5], true, {
-            amount: '70000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            withAddress: beneficiaries[7].address,
-            amount: '500000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[5],
+            true,
+            {
+                amount: '70000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[6],
+            true,
+            {
+                withAddress: beneficiaries[7].address,
+                amount: '500000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING TWO DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -897,13 +1146,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -911,13 +1168,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '40000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '200000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '40000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '200000000000000000',
+            }
+        );
         // community 3
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
@@ -927,13 +1192,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[7], community3);
         // tk.travel(new Date().getTime() + 1000 * 60 * 2);
         // await tests.factories.ClaimFactory(beneficiaries[8], community3);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[8], true, {
-            amount: '70000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            withAddress: beneficiaries[5].address,
-            amount: '500000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[8],
+            true,
+            {
+                amount: '70000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[6],
+            true,
+            {
+                withAddress: beneficiaries[5].address,
+                amount: '500000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING THREE DAYS FROM NOW
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 24 + 12 * 60 * 1000);
@@ -943,13 +1216,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -957,13 +1238,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 4);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[3], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[3].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[3],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[3].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 3
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
@@ -973,13 +1262,21 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[7], community3);
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[8], community3);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[5], true, {
-            amount: '70000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            withAddress: beneficiaries[7].address,
-            amount: '500000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[5],
+            true,
+            {
+                amount: '70000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[6],
+            true,
+            {
+                withAddress: beneficiaries[7].address,
+                amount: '500000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING FOUR DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -989,13 +1286,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -1004,13 +1309,21 @@ describe('#calcuateGlobalMetrics()', () => {
         // no claim, on purpose
         // tk.travel(new Date().getTime() + 1000 * 60 * 4);
         // await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '50000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[3], true, {
-            withAddress: beneficiaries[4].address,
-            amount: '100000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '50000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[3],
+            true,
+            {
+                withAddress: beneficiaries[4].address,
+                amount: '100000000000000000',
+            }
+        );
         // community 3
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
@@ -1020,13 +1333,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[7], community3);
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[8], community3);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[5], true, {
-            amount: '70000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            withAddress: beneficiaries[7].address,
-            amount: '500000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[5],
+            true,
+            {
+                amount: '70000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[6],
+            true,
+            {
+                withAddress: beneficiaries[7].address,
+                amount: '500000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING FIVE DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -1036,13 +1357,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -1051,13 +1380,21 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[2].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[2].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 3
         await tests.factories.InflowFactory(community3);
         // await tests.factories.ClaimFactory(beneficiaries[5], community3);
@@ -1067,13 +1404,21 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[7], community3);
         // tk.travel(new Date().getTime() + 1000 * 60 * 2);
         // await tests.factories.ClaimFactory(beneficiaries[8], community3);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[5], true, {
-            amount: '70000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            withAddress: beneficiaries[7].address,
-            amount: '500000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[5],
+            true,
+            {
+                amount: '70000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[6],
+            true,
+            {
+                withAddress: beneficiaries[7].address,
+                amount: '500000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING SIX DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -1083,13 +1428,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -1098,16 +1451,27 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[2].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[2].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 3
         beneficiaries = beneficiaries.concat(
-            await tests.factories.BeneficiaryFactory(users.slice(24, 26), community3.id)
+            await tests.factories.BeneficiaryFactory(
+                users.slice(24, 26),
+                community3.id
+            )
         );
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
@@ -1121,13 +1485,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[13], community3);
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[14], community3);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[5], true, {
-            amount: '70000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            withAddress: beneficiaries[7].address,
-            amount: '500000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[5],
+            true,
+            {
+                amount: '70000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[6],
+            true,
+            {
+                withAddress: beneficiaries[7].address,
+                amount: '500000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING SEVEN DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -1169,13 +1541,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -1183,13 +1563,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[2].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[2].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 3
         await tests.factories.InflowFactory(community3);
         // await tests.factories.ClaimFactory(beneficiaries[5], community3);
@@ -1244,7 +1632,10 @@ describe('#calcuateGlobalMetrics()', () => {
 
         // community 1
         beneficiaries = beneficiaries.concat(
-            await tests.factories.BeneficiaryFactory(users.slice(5, 7), community1.id)
+            await tests.factories.BeneficiaryFactory(
+                users.slice(5, 7),
+                community1.id
+            )
         );
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
@@ -1254,13 +1645,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[5], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 1);
         await tests.factories.ClaimFactory(beneficiaries[6], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
@@ -1268,13 +1667,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[2].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[2].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 3
         // await tests.factories.InflowFactory(community3);
         // await tests.factories.ClaimFactory(beneficiaries[5], community3);
@@ -1328,18 +1735,30 @@ describe('#calcuateGlobalMetrics()', () => {
         await globalDailyStateCreate.resetHistory();
 
         // community 1
-        await tests.factories.BeneficiaryFactory(users.slice(5, 7), community1.id, true);
+        await tests.factories.BeneficiaryFactory(
+            users.slice(5, 7),
+            community1.id,
+            true
+        );
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: beneficiaries[1].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: beneficiaries[1].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 2
         beneficiaries = beneficiaries.concat(
             await tests.factories.BeneficiaryFactory([users[14]], community2.id)
@@ -1352,13 +1771,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[15], community2);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[2], true, {
-            amount: '500000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: beneficiaries[2].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[2],
+            true,
+            {
+                amount: '500000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: beneficiaries[2].address,
+                amount: '1000000000000000000',
+            }
+        );
         // community 3
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
@@ -1372,13 +1799,21 @@ describe('#calcuateGlobalMetrics()', () => {
         await tests.factories.ClaimFactory(beneficiaries[13], community3);
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[14], community3);
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[5], true, {
-            amount: '70000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[6], true, {
-            withAddress: beneficiaries[7].address,
-            amount: '500000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[5],
+            true,
+            {
+                amount: '70000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[6],
+            true,
+            {
+                withAddress: beneficiaries[7].address,
+                amount: '500000000000000000',
+            }
+        );
 
         // THIS IS HAPPENING SEVEN DAYS FROM NOW
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -1439,7 +1874,10 @@ describe('#calcuateGlobalMetrics()', () => {
 
         // next day
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
-        const beneficiaries = await tests.factories.BeneficiaryFactory(users, community.id);
+        const beneficiaries = await tests.factories.BeneficiaryFactory(
+            users,
+            community.id
+        );
         await tests.factories.InflowFactory(community);
         await tests.factories.ClaimFactory(beneficiaries[0], community);
 
@@ -1457,11 +1895,12 @@ describe('#calcuateGlobalMetrics()', () => {
                     communityId: community.id,
                 },
             });
-        const globalBeforeUpdate = await database.models.globalDailyState.findOne({
-            where: {
-                date,
-            },
-        });
+        const globalBeforeUpdate =
+            await database.models.globalDailyState.findOne({
+                where: {
+                    date,
+                },
+            });
 
         // remove community and beneficiaries
         await database.models.community.update(
@@ -1499,11 +1938,12 @@ describe('#calcuateGlobalMetrics()', () => {
                     communityId: community.id,
                 },
             });
-        const globalAfterUpdate = await database.models.globalDailyState.findOne({
-            where: {
-                date: newDate,
-            },
-        });
+        const globalAfterUpdate =
+            await database.models.globalDailyState.findOne({
+                where: {
+                    date: newDate,
+                },
+            });
 
         expect(communityBeforeUpdate!.beneficiaries).to.be.equal(1);
         expect(communityAfterUpdate!.beneficiaries).to.be.equal(-1);

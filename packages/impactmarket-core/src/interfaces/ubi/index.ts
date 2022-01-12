@@ -38,4 +38,4 @@ export {
     ubiCommunitySuspect,
     ubiPromoter,
     ubiPromoterSocialMedia,
-}
+};

@@ -152,7 +152,9 @@ class CommunityController {
     };
 
     getClaimLocation = (req: Request, res: Response) => {
-        services.ubi.ClaimLocationService.getByCommunity(parseInt(req.params.id, 10))
+        services.ubi.ClaimLocationService.getByCommunity(
+            parseInt(req.params.id, 10)
+        )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -172,7 +174,10 @@ class CommunityController {
             active = false;
         }
 
-        services.ubi.CommunityService.getManagers(parseInt(req.params.id, 10), active)
+        services.ubi.CommunityService.getManagers(
+            parseInt(req.params.id, 10),
+            active
+        )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -409,7 +414,9 @@ class CommunityController {
 }
 
 const getHistoricalSSI = (req: Request, res: Response) => {
-    services.ubi.CommunityDailyMetricsService.getHistoricalSSI(parseInt(req.params.id, 10))
+    services.ubi.CommunityDailyMetricsService.getHistoricalSSI(
+        parseInt(req.params.id, 10)
+    )
         .then((community) => {
             res.send(community);
         })
@@ -433,7 +440,10 @@ const searchManager = (req: RequestWithUser, res: Response) => {
         controllerLogAndFail('User not identified!', 400, res);
         return;
     }
-    services.ubi.CommunityService.searchManager(req.user.address, req.params.managerQuery)
+    services.ubi.CommunityService.searchManager(
+        req.user.address,
+        req.params.managerQuery
+    )
         .then((r) => res.send(r))
         .catch((e) => res.status(404).send(e));
 };

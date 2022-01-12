@@ -13,7 +13,11 @@ export default (app: Router): void => {
         globalController.globalStatus
     );
 
-    route.get('/numbers', database.cacheWithRedis('1 hour'), globalController.numbers);
+    route.get(
+        '/numbers',
+        database.cacheWithRedis('1 hour'),
+        globalController.numbers
+    );
 
     route.get(
         '/demographics',

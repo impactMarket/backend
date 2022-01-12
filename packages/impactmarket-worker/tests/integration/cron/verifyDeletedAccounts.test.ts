@@ -204,11 +204,12 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         }))!.toJSON();
 
-        const transactions = (await database.models.ubiBeneficiaryTransaction.findOne({
-            where: {
-                beneficiary: users[1].address,
-            },
-        }))!.toJSON();
+        const transactions =
+            (await database.models.ubiBeneficiaryTransaction.findOne({
+                where: {
+                    beneficiary: users[1].address,
+                },
+            }))!.toJSON();
 
         const claims = (await database.models.ubiClaim.findOne({
             where: {
@@ -357,7 +358,9 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     });
 
     it('get managers after delete user', async () => {
-        const manager = await services.ubi.CommunityService.getManagers(communities[0].id);
+        const manager = await services.ubi.CommunityService.getManagers(
+            communities[0].id
+        );
         expect(manager[0]).to.include({
             address: users[0].address,
             user: null,

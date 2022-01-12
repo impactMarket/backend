@@ -49,11 +49,12 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await tests.factories.BeneficiaryFactory(users, communities[0].id);
 
         await verifyCommunitySuspectActivity();
-        const suspectActivity = await database.models.ubiCommunitySuspect.findAll({
-            where: {
-                communityId: communities[0].id,
-            },
-        });
+        const suspectActivity =
+            await database.models.ubiCommunitySuspect.findAll({
+                where: {
+                    communityId: communities[0].id,
+                },
+            });
 
         expect(suspectActivity[0]).to.include({
             communityId: communities[0].id,
@@ -76,11 +77,12 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await tests.factories.BeneficiaryFactory(users, communities[0].id);
 
         await verifyCommunitySuspectActivity();
-        const suspectActivity = await database.models.ubiCommunitySuspect.findAll({
-            where: {
-                communityId: communities[0].id,
-            },
-        });
+        const suspectActivity =
+            await database.models.ubiCommunitySuspect.findAll({
+                where: {
+                    communityId: communities[0].id,
+                },
+            });
 
         expect(suspectActivity[0]).to.include({
             communityId: communities[0].id,
@@ -103,11 +105,12 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await tests.factories.BeneficiaryFactory(users, communities[0].id);
 
         await verifyCommunitySuspectActivity();
-        const suspectActivity = await database.models.ubiCommunitySuspect.findAll({
-            where: {
-                communityId: communities[0].id,
-            },
-        });
+        const suspectActivity =
+            await database.models.ubiCommunitySuspect.findAll({
+                where: {
+                    communityId: communities[0].id,
+                },
+            });
 
         expect(suspectActivity[0]).to.include({
             communityId: communities[0].id,
@@ -130,11 +133,12 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await tests.factories.BeneficiaryFactory(users, communities[0].id);
 
         await verifyCommunitySuspectActivity();
-        const suspectActivity = await database.models.ubiCommunitySuspect.findAll({
-            where: {
-                communityId: communities[0].id,
-            },
-        });
+        const suspectActivity =
+            await database.models.ubiCommunitySuspect.findAll({
+                where: {
+                    communityId: communities[0].id,
+                },
+            });
 
         expect(suspectActivity[0]).to.include({
             communityId: communities[0].id,
@@ -154,11 +158,12 @@ describe('[jobs - cron] verifyCommunitySuspectActivity', () => {
         await tests.factories.BeneficiaryFactory(users, communities[0].id);
 
         await verifyCommunitySuspectActivity();
-        const suspectActivity = await database.models.ubiCommunitySuspect.findAll({
-            where: {
-                communityId: communities[0].id,
-            },
-        });
+        const suspectActivity =
+            await database.models.ubiCommunitySuspect.findAll({
+                where: {
+                    communityId: communities[0].id,
+                },
+            });
 
         expect(suspectActivity.length).to.be.equal(0);
     });

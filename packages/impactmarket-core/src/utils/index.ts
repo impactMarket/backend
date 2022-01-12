@@ -5,11 +5,4 @@ import { Logger } from './logger';
 import * as util from './util';
 import * as jwt from './jwt';
 
-export {
-    BaseError,
-    countries,
-    dataFetching,
-    Logger,
-    util,
-    jwt,
-};
+export { BaseError, countries, dataFetching, Logger, util, jwt };

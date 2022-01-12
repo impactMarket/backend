@@ -53,7 +53,7 @@ const UserFactory = async (
 ) => {
     const result: AppUser[] = [];
     for (let index = 0; index < options.n; index++) {
-        const newUser = await AppUserModel.create(
+        const newUser = (await AppUserModel.create(
             await data(options.props ? options.props[index] : undefined),
             {
                 include: [
@@ -63,7 +63,7 @@ const UserFactory = async (
                     },
                 ],
             } as any
-        ) as AppUserModel; // use any :facepalm:
+        )) as AppUserModel; // use any :facepalm:
         result.push(newUser.toJSON() as AppUser);
     }
     return result;

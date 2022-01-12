@@ -2,7 +2,13 @@ import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
 
-import { database, tests, config, contracts, services } from '@impactmarket/core';
+import {
+    database,
+    tests,
+    config,
+    contracts,
+    services,
+} from '@impactmarket/core';
 
 import { ChainSubscribers } from '../../src/jobs/chainSubscribers';
 import CommunityAdminContractJSON from './CommunityAdmin.json';
@@ -39,14 +45,20 @@ describe('communityAdmin', () => {
         let lastBlock = 0;
 
         stub(services.ubi.ManagerService, 'add').returns(Promise.resolve(true));
-        stub(services.app.ImMetadataService, 'setLastBlock').callsFake(async (v) => {
-            lastBlock = v;
-        });
-        stub(services.app.ImMetadataService, 'setRecoverBlockUsingLastBlock').returns(
-            Promise.resolve()
+        stub(services.app.ImMetadataService, 'setLastBlock').callsFake(
+            async (v) => {
+                lastBlock = v;
+            }
         );
+        stub(
+            services.app.ImMetadataService,
+            'setRecoverBlockUsingLastBlock'
+        ).returns(Promise.resolve());
         getLastBlockStub = stub(services.app.ImMetadataService, 'getLastBlock');
-        getRecoverBlockStub = stub(services.app.ImMetadataService, 'getRecoverBlock');
+        getRecoverBlockStub = stub(
+            services.app.ImMetadataService,
+            'getRecoverBlock'
+        );
         getLastBlockStub.returns(Promise.resolve(lastBlock));
         getRecoverBlockStub.returns(Promise.resolve(lastBlock));
 

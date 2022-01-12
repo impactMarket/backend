@@ -29,6 +29,10 @@
         "worker-dev": "lerna exec --scope @impactmarket/worker yarn worker-dev",
         "build": "lerna exec yarn build",
         "test": "lerna exec yarn test",
-        "coverage:ci": "nyc --reporter=lcov npx lerna exec yarn test"
+        "coverage:ci": "nyc --reporter=lcov npx lerna exec yarn test",
+        "prettier": "prettier --write \"./**/*.ts\"",
+        "eslint": "eslint --fix \"./**/*.ts\"",
+        "prettier-no-fix": "prettier --write \"./**/*.ts\"",
+        "eslint-no-fix": "eslint --fix \"./**/*.ts\""
     }
 }

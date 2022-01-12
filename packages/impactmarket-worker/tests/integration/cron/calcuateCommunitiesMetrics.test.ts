@@ -13,17 +13,11 @@ describe('calcuateCommunitiesMetrics', () => {
     let communities: any[] = [];
     let sequelize: Sequelize;
     let ubiCommunityDailyStateCreate: Sinon.SinonSpy<
-        [
-            values?: any,
-            options?: CreateOptions<any>
-        ],
+        [values?: any, options?: CreateOptions<any>],
         Promise<Model<any, any>>
     >;
     let ubiCommunityDailyMetricsCreate: Sinon.SinonSpy<
-        [
-            values?: any,
-            options?: CreateOptions<any>
-        ],
+        [values?: any, options?: CreateOptions<any>],
         Promise<Model<any, any>>
     >;
 
@@ -75,7 +69,10 @@ describe('calcuateCommunitiesMetrics', () => {
             // this two has to come first!
             await tests.config.setup.truncate(sequelize, 'Inflow');
             await tests.config.setup.truncate(sequelize, 'UbiClaimModel');
-            await tests.config.setup.truncate(sequelize, 'UbiBeneficiaryTransactionModel');
+            await tests.config.setup.truncate(
+                sequelize,
+                'UbiBeneficiaryTransactionModel'
+            );
             await tests.config.setup.truncate(sequelize, 'Beneficiary');
             await tests.config.setup.truncate(sequelize, 'AppUserModel');
             await tests.config.setup.truncate(sequelize);
@@ -84,7 +81,10 @@ describe('calcuateCommunitiesMetrics', () => {
         it('txs and inflow, few claims', async () => {
             await tests.factories.InflowFactory(community);
             await tests.factories.InflowFactory(community);
-            beneficiaries = await tests.factories.BeneficiaryFactory(users, community.id);
+            beneficiaries = await tests.factories.BeneficiaryFactory(
+                users,
+                community.id
+            );
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
 
@@ -100,16 +100,28 @@ describe('calcuateCommunitiesMetrics', () => {
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                amount: '500000000000000000',
-            });
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                withAddress: beneficiaries[1].address,
-                amount: '1000000000000000000',
-            });
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[1], false, {
-                amount: '1000000000000000000',
-            });
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[0],
+                true,
+                {
+                    amount: '500000000000000000',
+                }
+            );
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[0],
+                true,
+                {
+                    withAddress: beneficiaries[1].address,
+                    amount: '1000000000000000000',
+                }
+            );
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[1],
+                false,
+                {
+                    amount: '1000000000000000000',
+                }
+            );
             await tests.factories.InflowFactory(community);
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
@@ -139,7 +151,10 @@ describe('calcuateCommunitiesMetrics', () => {
         it('txs and inflow, stops activity for four days', async () => {
             await tests.factories.InflowFactory(community);
             await tests.factories.InflowFactory(community);
-            beneficiaries = await tests.factories.BeneficiaryFactory(users, community.id);
+            beneficiaries = await tests.factories.BeneficiaryFactory(
+                users,
+                community.id
+            );
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
 
@@ -155,16 +170,28 @@ describe('calcuateCommunitiesMetrics', () => {
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                amount: '500000000000000000',
-            });
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                withAddress: beneficiaries[1].address,
-                amount: '1000000000000000000',
-            });
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[1], false, {
-                amount: '1000000000000000000',
-            });
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[0],
+                true,
+                {
+                    amount: '500000000000000000',
+                }
+            );
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[0],
+                true,
+                {
+                    withAddress: beneficiaries[1].address,
+                    amount: '1000000000000000000',
+                }
+            );
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[1],
+                false,
+                {
+                    amount: '1000000000000000000',
+                }
+            );
             await tests.factories.InflowFactory(community);
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
@@ -208,7 +235,10 @@ describe('calcuateCommunitiesMetrics', () => {
         it('txs and inflow, stops activity for two days and gets activity again', async () => {
             await tests.factories.InflowFactory(community);
             await tests.factories.InflowFactory(community);
-            beneficiaries = await tests.factories.BeneficiaryFactory(users, community.id);
+            beneficiaries = await tests.factories.BeneficiaryFactory(
+                users,
+                community.id
+            );
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
 
@@ -224,16 +254,28 @@ describe('calcuateCommunitiesMetrics', () => {
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                amount: '500000000000000000',
-            });
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                withAddress: beneficiaries[1].address,
-                amount: '1000000000000000000',
-            });
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[1], false, {
-                amount: '1000000000000000000',
-            });
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[0],
+                true,
+                {
+                    amount: '500000000000000000',
+                }
+            );
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[0],
+                true,
+                {
+                    withAddress: beneficiaries[1].address,
+                    amount: '1000000000000000000',
+                }
+            );
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[1],
+                false,
+                {
+                    amount: '1000000000000000000',
+                }
+            );
             await tests.factories.InflowFactory(community);
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
@@ -254,16 +296,28 @@ describe('calcuateCommunitiesMetrics', () => {
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                amount: '500000000000000000',
-            });
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                withAddress: beneficiaries[1].address,
-                amount: '1000000000000000000',
-            });
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[1], false, {
-                amount: '1000000000000000000',
-            });
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[0],
+                true,
+                {
+                    amount: '500000000000000000',
+                }
+            );
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[0],
+                true,
+                {
+                    withAddress: beneficiaries[1].address,
+                    amount: '1000000000000000000',
+                }
+            );
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[1],
+                false,
+                {
+                    amount: '1000000000000000000',
+                }
+            );
             await tests.factories.InflowFactory(community);
 
             // THIS IS HAPPENING SIX DAYS FROM NOW
@@ -292,7 +346,10 @@ describe('calcuateCommunitiesMetrics', () => {
             // THIS IS HAPPENING TODAY
             await tests.factories.InflowFactory(community);
             await tests.factories.InflowFactory(community);
-            const beneficiaries = await tests.factories.BeneficiaryFactory(users, community.id);
+            const beneficiaries = await tests.factories.BeneficiaryFactory(
+                users,
+                community.id
+            );
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
 
@@ -399,7 +456,10 @@ describe('calcuateCommunitiesMetrics', () => {
         it('first metrics, few claims', async () => {
             await tests.factories.InflowFactory(community);
             await tests.factories.InflowFactory(community);
-            const beneficiaries = await tests.factories.BeneficiaryFactory(users, community.id);
+            const beneficiaries = await tests.factories.BeneficiaryFactory(
+                users,
+                community.id
+            );
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
 
@@ -433,7 +493,10 @@ describe('calcuateCommunitiesMetrics', () => {
         it('first metrics, not enough claims', async () => {
             await tests.factories.InflowFactory(community);
             await tests.factories.InflowFactory(community);
-            const beneficiaries = await tests.factories.BeneficiaryFactory(users, community.id);
+            const beneficiaries = await tests.factories.BeneficiaryFactory(
+                users,
+                community.id
+            );
             await tests.factories.ClaimFactory(beneficiaries[0], community);
 
             // THIS IS HAPPENING TOMORROW
@@ -536,7 +599,10 @@ describe('calcuateCommunitiesMetrics', () => {
             // THIS IS HAPPENING TOMORROW
             tk.travel(tests.config.utils.jumpToTomorrowMidnight());
             beneficiaries = beneficiaries.concat(
-                await tests.factories.BeneficiaryFactory([users[4]], community.id)
+                await tests.factories.BeneficiaryFactory(
+                    [users[4]],
+                    community.id
+                )
             );
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
@@ -549,25 +615,44 @@ describe('calcuateCommunitiesMetrics', () => {
 
             // THIS IS HAPPENING TWO DAYS FROM NOW
             tk.travel(tests.config.utils.jumpToTomorrowMidnight());
-            await tests.factories.BeneficiaryFactory(users.slice(1, 4), community.id, true);
+            await tests.factories.BeneficiaryFactory(
+                users.slice(1, 4),
+                community.id,
+                true
+            );
             beneficiaries = beneficiaries.concat(
-                await tests.factories.BeneficiaryFactory([users[5]], community.id)
+                await tests.factories.BeneficiaryFactory(
+                    [users[5]],
+                    community.id
+                )
             );
             await tests.factories.ClaimFactory(beneficiaries[0], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[4], community);
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[5], community);
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                amount: '500000000000000000',
-            });
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-                withAddress: beneficiaries[1].address,
-                amount: '1000000000000000000',
-            });
-            await tests.factories.BeneficiaryTransactionFactory(beneficiaries[1], false, {
-                amount: '1000000000000000000',
-            });
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[0],
+                true,
+                {
+                    amount: '500000000000000000',
+                }
+            );
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[0],
+                true,
+                {
+                    withAddress: beneficiaries[1].address,
+                    amount: '1000000000000000000',
+                }
+            );
+            await tests.factories.BeneficiaryTransactionFactory(
+                beneficiaries[1],
+                false,
+                {
+                    amount: '1000000000000000000',
+                }
+            );
             await tests.factories.InflowFactory(community);
 
             // THIS IS HAPPENING THREE DAYS FROM NOW
@@ -578,7 +663,10 @@ describe('calcuateCommunitiesMetrics', () => {
         after(async () => {
             await tests.config.setup.truncate(sequelize, 'Inflow');
             await tests.config.setup.truncate(sequelize, 'UbiClaimModel');
-            await tests.config.setup.truncate(sequelize, 'UbiBeneficiaryTransactionModel');
+            await tests.config.setup.truncate(
+                sequelize,
+                'UbiBeneficiaryTransactionModel'
+            );
             await tests.config.setup.truncate(sequelize, 'Beneficiary');
             await tests.config.setup.truncate(sequelize, 'AppUserModel');
             await tests.config.setup.truncate(sequelize, 'Community');

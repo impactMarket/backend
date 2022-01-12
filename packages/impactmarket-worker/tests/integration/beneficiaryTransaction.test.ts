@@ -4,7 +4,7 @@ import tk from 'timekeeper';
 
 import { database, tests } from '@impactmarket/core';
 
-import * as merkleTree from '../../src/jobs/cron/filters/merkleTree'
+import * as merkleTree from '../../src/jobs/cron/filters/merkleTree';
 import { cleanupNetworkRewards } from '../../src/jobs/cron/network';
 
 describe('beneficiary transactions', () => {
@@ -36,18 +36,30 @@ describe('beneficiary transactions', () => {
             communities[0].id
         );
         // add fake transactions
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[0], true, {
-            withAddress: users[5].address,
-            amount: '1000000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[1], true, {
-            withAddress: users[6].address,
-            amount: '1000000000000000000',
-        });
-        await tests.factories.BeneficiaryTransactionFactory(beneficiaries[4], true, {
-            withAddress: users[3].address,
-            amount: '1000000000000000000',
-        });
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[0],
+            true,
+            {
+                withAddress: users[5].address,
+                amount: '1000000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[1],
+            true,
+            {
+                withAddress: users[6].address,
+                amount: '1000000000000000000',
+            }
+        );
+        await tests.factories.BeneficiaryTransactionFactory(
+            beneficiaries[4],
+            true,
+            {
+                withAddress: users[3].address,
+                amount: '1000000000000000000',
+            }
+        );
         const tree1 = await tests.factories.BeneficiaryTransactionFactory(
             beneficiaries[2],
             true,

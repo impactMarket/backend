@@ -39,7 +39,8 @@ let waitingForResponseAfterTxRegWarn = false;
 export default async (): Promise<void> => {
     cron();
 
-    availableCommunities = await services.ubi.CommunityService.listCommunitiesStructOnly();
+    availableCommunities =
+        await services.ubi.CommunityService.listCommunitiesStructOnly();
     beneficiaries = (
         await database.models.beneficiary.findAll({
             attributes: ['address'],
@@ -105,7 +106,9 @@ export default async (): Promise<void> => {
                         }
                     })
                     .catch(() => {
-                        utils.Logger.error('Checking again if RPC is available...');
+                        utils.Logger.error(
+                            'Checking again if RPC is available...'
+                        );
                         successfullAnswersAfterTxRegWarn = 0;
                     });
             }, 2000);
@@ -199,7 +202,9 @@ function reconnectChainSubscriber() {
                         usingFallbackUrl = true;
                         failedAnswers = 0;
                     } else {
-                        utils.Logger.error('Checking again if RPC is available...');
+                        utils.Logger.error(
+                            'Checking again if RPC is available...'
+                        );
                         successfullAnswersAfterCrash = 0;
                         failedAnswers += 1;
                     }
@@ -244,7 +249,9 @@ function cron() {
             () => {
                 updateExchangeRates()
                     .then(() => {
-                        services.app.CronJobExecutedService.add('updateExchangeRates');
+                        services.app.CronJobExecutedService.add(
+                            'updateExchangeRates'
+                        );
                         utils.Logger.info(
                             'updateExchangeRates successfully executed!'
                         );
@@ -342,7 +349,9 @@ function cron() {
             utils.Logger.info('Calculating community metrics...');
             cleanupNetworkRewards()
                 .then(() => {
-                    services.app.CronJobExecutedService.add('cleanupNetworkRewards');
+                    services.app.CronJobExecutedService.add(
+                        'cleanupNetworkRewards'
+                    );
                     calcuateCommunitiesMetrics()
                         .then(() => {
                             services.app.CronJobExecutedService.add(
@@ -387,8 +396,12 @@ function cron() {
         () => {
             services.global.GlobalDemographicsService.calculateDemographics()
                 .then(() => {
-                    services.app.CronJobExecutedService.add('calculateDemographics');
-                    utils.Logger.info('calculateDemographics successfully executed!');
+                    services.app.CronJobExecutedService.add(
+                        'calculateDemographics'
+                    );
+                    utils.Logger.info(
+                        'calculateDemographics successfully executed!'
+                    );
                 })
                 .catch((e) => {
                     utils.Logger.error('calculateDemographics FAILED! ' + e);
@@ -433,7 +446,9 @@ function cron() {
             utils.Logger.info('Verify stories...');
             verifyStoriesLifecycle()
                 .then(() => {
-                    services.app.CronJobExecutedService.add('verifyStoriesLifecycle');
+                    services.app.CronJobExecutedService.add(
+                        'verifyStoriesLifecycle'
+                    );
                     utils.Logger.info(
                         'verifyStoriesLifecycle successfully executed!'
                     );
@@ -462,7 +477,9 @@ function cron() {
                     );
                 })
                 .catch((e) => {
-                    utils.Logger.error('verifyCommunitySuspectActivity FAILED! ' + e);
+                    utils.Logger.error(
+                        'verifyCommunitySuspectActivity FAILED! ' + e
+                    );
                 });
         },
         null,
@@ -477,13 +494,17 @@ function cron() {
             utils.Logger.info('Verify user suspicious activity...');
             verifyUserSuspectActivity()
                 .then(() => {
-                    services.app.CronJobExecutedService.add('verifyUserSuspectActivity');
+                    services.app.CronJobExecutedService.add(
+                        'verifyUserSuspectActivity'
+                    );
                     utils.Logger.info(
                         'verifyUserSuspectActivity successfully executed!'
                     );
                 })
                 .catch((e) => {
-                    utils.Logger.error('verifyUserSuspectActivity FAILED! ' + e);
+                    utils.Logger.error(
+                        'verifyUserSuspectActivity FAILED! ' + e
+                    );
                 });
         },
         null,
@@ -499,13 +520,17 @@ function cron() {
                 utils.Logger.info('Verify deleted accounts...');
                 verifyDeletedAccounts()
                     .then(() => {
-                        services.app.CronJobExecutedService.add('verifyDeletedAccounts');
+                        services.app.CronJobExecutedService.add(
+                            'verifyDeletedAccounts'
+                        );
                         utils.Logger.info(
                             'verifyDeletedAccounts successfully executed!'
                         );
                     })
                     .catch((e) => {
-                        utils.Logger.error('verifyDeletedAccounts FAILED! ' + e);
+                        utils.Logger.error(
+                            'verifyDeletedAccounts FAILED! ' + e
+                        );
                     });
             },
             null,

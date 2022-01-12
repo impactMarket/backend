@@ -12,4 +12,4 @@ export {
     ImpactMarketABI,
     IPCTDelegate,
     OldCommunityABI,
-}
+};

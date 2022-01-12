@@ -583,7 +583,11 @@ export default (app: Router): void => {
      *                   count:
      *                     type: string
      */
-    route.get('/count/:query?', database.cacheWithRedis('5 minutes'), controller.count);
+    route.get(
+        '/count/:query?',
+        database.cacheWithRedis('5 minutes'),
+        controller.count
+    );
 
     route.get('/:id/ubi', controller.findRequestChangeUbiParams);
 
@@ -612,7 +616,11 @@ export default (app: Router): void => {
      *               items:
      *                 type: integer
      */
-    route.get('/:id/past-ssi', database.cacheWithRedis('1 hour'), controller.getPastSSI);
+    route.get(
+        '/:id/past-ssi',
+        database.cacheWithRedis('1 hour'),
+        controller.getPastSSI
+    );
 
     /**
      * @swagger
@@ -783,7 +791,11 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunitySuspect'
      */
-    route.get('/:id/suspect', database.cacheWithRedis('1 hour'), controller.getSuspect);
+    route.get(
+        '/:id/suspect',
+        database.cacheWithRedis('1 hour'),
+        controller.getSuspect
+    );
 
     /**
      * @swagger
@@ -858,7 +870,11 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityDailyMetrics'
      */
-    route.get('/:id/metrics', database.cacheWithRedis('1 hour'), controller.getMetrics);
+    route.get(
+        '/:id/metrics',
+        database.cacheWithRedis('1 hour'),
+        controller.getMetrics
+    );
 
     /**
      * @swagger

@@ -1,3 +1,3 @@
-import * as cronJobs from './src/jobs/cron'
+import * as cronJobs from './src/jobs/cron';
 
-export { cronJobs }
+export { cronJobs };

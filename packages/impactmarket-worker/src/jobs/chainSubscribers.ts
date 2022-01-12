@@ -1,4 +1,10 @@
-import { services, utils, config, contracts, database } from '@impactmarket/core';
+import {
+    services,
+    utils,
+    config,
+    contracts,
+    database,
+} from '@impactmarket/core';
 import { ethers } from 'ethers';
 
 /* istanbul ignore next */
@@ -36,7 +42,9 @@ class ChainSubscribers {
         this.ifaceCommunityAdmin = new ethers.utils.Interface(
             contracts.CommunityAdminABI
         );
-        this.ifaceCommunity = new ethers.utils.Interface(contracts.CommunityABI);
+        this.ifaceCommunity = new ethers.utils.Interface(
+            contracts.CommunityABI
+        );
         this.ifaceERC20 = new ethers.utils.Interface(contracts.ERC20ABI);
         this.ifaceIPCTDelegate = new ethers.utils.Interface(
             contracts.IPCTDelegate
@@ -178,15 +186,17 @@ class ChainSubscribers {
             const from = parsedLog.args[0];
             const contractAddress = parsedLog.args[1];
             const amount = parsedLog.args[2].toString();
-            utils.util.getBlockTime(log.blockHash).then((txAt) =>
-                services.ubi.InflowService.add(
-                    from,
-                    contractAddress,
-                    amount,
-                    log.transactionHash,
-                    txAt
-                ).catch(asyncTxsFailure)
-            );
+            utils.util
+                .getBlockTime(log.blockHash)
+                .then((txAt) =>
+                    services.ubi.InflowService.add(
+                        from,
+                        contractAddress,
+                        amount,
+                        log.transactionHash,
+                        txAt
+                    ).catch(asyncTxsFailure)
+                );
             result = parsedLog;
         } else if (
             // do not count from communities [eg. claims]
@@ -287,7 +297,10 @@ class ChainSubscribers {
                 this.beneficiariesInPublicCommunities.push(beneficiaryAddress);
             }
             // allBeneficiaryAddressses.push(beneficiaryAddress);
-            utils.util.notifyBeneficiaryAdded(beneficiaryAddress, communityAddress);
+            utils.util.notifyBeneficiaryAdded(
+                beneficiaryAddress,
+                communityAddress
+            );
             try {
                 const txAt = await utils.util.getBlockTime(log.blockHash);
                 await services.ubi.BeneficiaryService.add(
@@ -766,10 +779,11 @@ class ChainSubscribers {
                         // in case new manager means new community
                         const communityId =
                             communityAddressesAndIds.get(communityAddress)!;
-                        const findCommunity = await database.models.community.findOne({
-                            attributes: ['id'],
-                            where: { publicId: communityId },
-                        });
+                        const findCommunity =
+                            await database.models.community.findOne({
+                                attributes: ['id'],
+                                where: { publicId: communityId },
+                            });
                         await services.ubi.ManagerService.add(
                             managerAddress,
                             findCommunity!.id
@@ -822,10 +836,14 @@ class ChainSubscribers {
                                             _communityAddress
                                         )!;
                                     const findCommunity =
-                                        await database.models.community.findOne({
-                                            attributes: ['id'],
-                                            where: { publicId: communityId },
-                                        });
+                                        await database.models.community.findOne(
+                                            {
+                                                attributes: ['id'],
+                                                where: {
+                                                    publicId: communityId,
+                                                },
+                                            }
+                                        );
                                     services.ubi.ManagerService.add(
                                         _managerAddress,
                                         findCommunity!.id

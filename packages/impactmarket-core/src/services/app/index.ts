@@ -10,4 +10,4 @@ export {
     ExchangeRatesService,
     ImMetadataService,
     UserService,
-}
+};

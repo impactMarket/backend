@@ -1,4 +1,7 @@
-import { UbiPromoter, UbiPromoterCreation } from '../../../interfaces/ubi/ubiPromoter';
+import {
+    UbiPromoter,
+    UbiPromoterCreation,
+} from '../../../interfaces/ubi/ubiPromoter';
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 export class UbiPromoterModel extends Model<UbiPromoter, UbiPromoterCreation> {
