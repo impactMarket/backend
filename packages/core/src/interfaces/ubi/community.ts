@@ -2,14 +2,14 @@ import { ICommunityContractParams } from '../../types';
 import { AppMediaContent } from '../app/appMediaContent';
 import { AppProposal } from '../app/appProposal';
 import { StoryCommunity } from '../story/storyCommunity';
-import { BeneficiaryAttributes } from '../ubi/beneficiary';
-import { UbiClaimLocation } from '../ubi/ubiClaimLocation';
-import { UbiCommunityContract } from '../ubi/ubiCommunityContract';
-import { UbiCommunityDailyMetrics } from '../ubi/ubiCommunityDailyMetrics';
-import { UbiCommunityDailyState } from '../ubi/ubiCommunityDailyState';
-import { UbiCommunityDemographics } from '../ubi/ubiCommunityDemographics';
-import { UbiCommunityState } from '../ubi/ubiCommunityState';
-import { UbiCommunitySuspect } from '../ubi/ubiCommunitySuspect';
+import { BeneficiaryAttributes } from './beneficiary';
+import { UbiClaimLocation } from './ubiClaimLocation';
+import { UbiCommunityContract } from './ubiCommunityContract';
+import { UbiCommunityDailyMetrics } from './ubiCommunityDailyMetrics';
+import { UbiCommunityDailyState } from './ubiCommunityDailyState';
+import { UbiCommunityDemographics } from './ubiCommunityDemographics';
+import { UbiCommunityState } from './ubiCommunityState';
+import { UbiCommunitySuspect } from './ubiCommunitySuspect';
 
 /**
  * @swagger

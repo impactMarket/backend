@@ -4,7 +4,7 @@ import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import redisStore from 'rate-limit-redis';
 
-import { RequestWithUser, UserInRequest } from '../middlewares/core';
+import { RequestWithUser, UserInRequest } from './core';
 
 export function authenticateToken(
     req: RequestWithUser,

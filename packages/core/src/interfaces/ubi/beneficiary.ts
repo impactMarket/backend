@@ -1,5 +1,5 @@
 import { AppUser } from '../app/appUser';
-import { CommunityAttributes } from '../ubi/community';
+import { CommunityAttributes } from './community';
 
 /**
  * @swagger
