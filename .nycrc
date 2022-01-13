@@ -1,14 +1,14 @@
 {
     "extends": "@istanbuljs/nyc-config-typescript",
     "exclude": [
-        "packages/impactmarket-core/src/config",
-        "packages/impactmarket-core/src/database",
-        "packages/impactmarket-api/src/middlewares",
-        "packages/impactmarket-core/src/services/storage",
-        "packages/impactmarket-core/src/utils/logger.ts",
-        "packages/impactmarket-core/src/services/transactions.ts",
-        "packages/impactmarket-core/tests",
-        "packages/impactmarket-worker/tests",
-        "packages/impactmarket-api/tests"
+        "packages/core/src/config",
+        "packages/core/src/database",
+        "packages/api/src/middlewares",
+        "packages/core/src/services/storage",
+        "packages/core/src/utils/logger.ts",
+        "packages/core/src/services/transactions.ts",
+        "packages/core/tests",
+        "packages/worker/tests",
+        "packages/api/tests"
     ]
 }
