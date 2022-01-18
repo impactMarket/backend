@@ -14,29 +14,29 @@
  *            type: integer
  *          communityId:
  *            type: string
- *          claimed
+ *          claimed:
  *            type: string
- *          claims
+ *          claims:
  *            type: integer
- *          beneficiaries
+ *          beneficiaries:
  *            type: integer
- *          raised
+ *          raised:
  *            type: string
- *          backers
+ *          backers:
  *            type: integer
- *          monthlyBackers
+ *          monthlyBackers:
  *            type: integer
- *          volume
+ *          volume:
  *            type: string
- *          transactions
+ *          transactions:
  *            type: number
- *          reach
+ *          reach:
  *            type: number
- *          reachOut
+ *          reachOut:
  *            type: number
- *          fundingRate
+ *          fundingRate:
  *            type: number
- *          date
+ *          date:
  *            type: string
  */
 
