@@ -20,10 +20,7 @@ describe('#calcuateGlobalMetrics()', () => {
     before(async () => {
         sequelize = tests.config.setup.sequelizeSetup();
         await sequelize.sync();
-        returnSubgraph = stub(
-            subgraph.queries.beneficiary,
-            'getBeneficiaries'
-        );
+        returnSubgraph = stub(subgraph.queries.beneficiary, 'getBeneficiaries');
     });
 
     afterEach(async () => {
@@ -39,13 +36,13 @@ describe('#calcuateGlobalMetrics()', () => {
     });
 
     it('first day, one community', async () => {
-        let beneficiariesSubgraph: {
-            lastClaimAt: number,
-            preLastClaimAt: number,
-            claims: number,
+        const beneficiariesSubgraph: {
+            lastClaimAt: number;
+            preLastClaimAt: number;
+            claims: number;
             community: {
-                id: string
-            }
+                id: string;
+            };
         }[] = [];
 
         // THIS IS HAPPENNING TODAY
@@ -92,8 +89,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community.contractAddress!.toLowerCase()
-            }
+                id: community.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[1], community);
         beneficiariesSubgraph.push({
@@ -101,8 +98,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community.contractAddress!.toLowerCase()
-            }
+                id: community.contractAddress!.toLowerCase(),
+            },
         });
 
         // THIS IS HAPPENING TOMORROW
@@ -112,13 +109,15 @@ describe('#calcuateGlobalMetrics()', () => {
 
         await tests.factories.InflowFactory(community);
         await tests.factories.ClaimFactory(beneficiaries[0], community);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -146,13 +145,15 @@ describe('#calcuateGlobalMetrics()', () => {
 
         await tests.factories.InflowFactory(community);
         await tests.factories.ClaimFactory(beneficiaries[0], community);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -179,13 +180,15 @@ describe('#calcuateGlobalMetrics()', () => {
         await calcuateCommunitiesMetrics();
         await tests.factories.InflowFactory(community);
         await tests.factories.ClaimFactory(beneficiaries[0], community);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -212,13 +215,15 @@ describe('#calcuateGlobalMetrics()', () => {
         await calcuateCommunitiesMetrics();
         await tests.factories.InflowFactory(community);
         await tests.factories.ClaimFactory(beneficiaries[0], community);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -246,13 +251,15 @@ describe('#calcuateGlobalMetrics()', () => {
 
         await tests.factories.InflowFactory(community);
         await tests.factories.ClaimFactory(beneficiaries[0], community);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -280,13 +287,15 @@ describe('#calcuateGlobalMetrics()', () => {
 
         await tests.factories.InflowFactory(community);
         await tests.factories.ClaimFactory(beneficiaries[0], community);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -344,13 +353,13 @@ describe('#calcuateGlobalMetrics()', () => {
     });
 
     it('four days, two communities', async () => {
-        let beneficiariesSubgraph: {
-            lastClaimAt: number,
-            preLastClaimAt: number,
-            claims: number,
+        const beneficiariesSubgraph: {
+            lastClaimAt: number;
+            preLastClaimAt: number;
+            claims: number;
             community: {
-                id: string
-            }
+                id: string;
+            };
         }[] = [];
 
         // THIS IS HAPPENNING TODAY
@@ -428,8 +437,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community1.contractAddress!.toLowerCase()
-            }
+                id: community1.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
         beneficiariesSubgraph.push({
@@ -437,10 +446,10 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community1.contractAddress!.toLowerCase()
-            }
+                id: community1.contractAddress!.toLowerCase(),
+            },
         });
-        
+
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.InflowFactory(community2);
@@ -457,8 +466,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community2.contractAddress!.toLowerCase()
-            }
+                id: community2.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         beneficiariesSubgraph.push({
@@ -466,8 +475,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community2.contractAddress!.toLowerCase()
-            }
+                id: community2.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
         beneficiariesSubgraph.push({
@@ -475,8 +484,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community2.contractAddress!.toLowerCase()
-            }
+                id: community2.contractAddress!.toLowerCase(),
+            },
         });
 
         // THIS IS HAPPENING TOMORROW
@@ -487,13 +496,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
-        
+
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -515,19 +526,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -555,13 +569,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -583,19 +599,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -623,13 +642,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -651,19 +672,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 4);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -691,13 +715,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -719,13 +745,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
@@ -756,13 +784,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -784,7 +814,8 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
         // no claim, on purpose
@@ -792,7 +823,8 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -820,13 +852,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -848,7 +882,8 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
@@ -857,7 +892,8 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -917,13 +953,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -945,19 +983,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 5);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -1023,13 +1064,15 @@ describe('#calcuateGlobalMetrics()', () => {
         );
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -1040,8 +1083,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community1.contractAddress!.toLowerCase()
-            }
+                id: community1.contractAddress!.toLowerCase(),
+            },
         });
 
         tk.travel(new Date().getTime() + 1000 * 60 * 1);
@@ -1051,8 +1094,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community1.contractAddress!.toLowerCase()
-            }
+                id: community1.contractAddress!.toLowerCase(),
+            },
         });
 
         await tests.factories.BeneficiaryTransactionFactory(
@@ -1073,19 +1116,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 5);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -1150,13 +1196,15 @@ describe('#calcuateGlobalMetrics()', () => {
         );
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -1181,19 +1229,22 @@ describe('#calcuateGlobalMetrics()', () => {
         );
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 5);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -1204,8 +1255,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community2.contractAddress!.toLowerCase()
-            }
+                id: community2.contractAddress!.toLowerCase(),
+            },
         });
 
         await tests.factories.BeneficiaryTransactionFactory(
@@ -1262,13 +1313,13 @@ describe('#calcuateGlobalMetrics()', () => {
     });
 
     it('four days, four communities, one intermitente activity, one inactive', async () => {
-        let beneficiariesSubgraph: {
-            lastClaimAt: number,
-            preLastClaimAt: number,
-            claims: number,
+        const beneficiariesSubgraph: {
+            lastClaimAt: number;
+            preLastClaimAt: number;
+            claims: number;
             community: {
-                id: string
-            }
+                id: string;
+            };
         }[] = [];
         // THIS IS HAPPENNING TODAY
         tk.travel(tests.config.utils.jumpToTomorrowMidnight());
@@ -1397,8 +1448,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community1.contractAddress!.toLowerCase()
-            }
+                id: community1.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
         beneficiariesSubgraph.push({
@@ -1406,8 +1457,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community1.contractAddress!.toLowerCase()
-            }
+                id: community1.contractAddress!.toLowerCase(),
+            },
         });
         // community 2
         await tests.factories.InflowFactory(community2);
@@ -1425,8 +1476,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community2.contractAddress!.toLowerCase()
-            }
+                id: community2.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
         beneficiariesSubgraph.push({
@@ -1434,8 +1485,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community2.contractAddress!.toLowerCase()
-            }
+                id: community2.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
         beneficiariesSubgraph.push({
@@ -1443,8 +1494,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community2.contractAddress!.toLowerCase()
-            }
+                id: community2.contractAddress!.toLowerCase(),
+            },
         });
         // community 3
         await tests.factories.InflowFactory(community3);
@@ -1462,8 +1513,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community3.contractAddress!.toLowerCase()
-            }
+                id: community3.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[6], community3);
         beneficiariesSubgraph.push({
@@ -1471,8 +1522,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community3.contractAddress!.toLowerCase()
-            }
+                id: community3.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[7], community3);
         beneficiariesSubgraph.push({
@@ -1480,8 +1531,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community3.contractAddress!.toLowerCase()
-            }
+                id: community3.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[8], community3);
         beneficiariesSubgraph.push({
@@ -1489,8 +1540,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community3.contractAddress!.toLowerCase()
-            }
+                id: community3.contractAddress!.toLowerCase(),
+            },
         });
         // community 4
         await tests.factories.InflowFactory(community4);
@@ -1508,8 +1559,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community4.contractAddress!.toLowerCase()
-            }
+                id: community4.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[10], community4);
         beneficiariesSubgraph.push({
@@ -1517,8 +1568,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community4.contractAddress!.toLowerCase()
-            }
+                id: community4.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[11], community4);
         beneficiariesSubgraph.push({
@@ -1526,8 +1577,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community4.contractAddress!.toLowerCase()
-            }
+                id: community4.contractAddress!.toLowerCase(),
+            },
         });
         await tests.factories.ClaimFactory(beneficiaries[12], community4);
         beneficiariesSubgraph.push({
@@ -1535,8 +1586,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community4.contractAddress!.toLowerCase()
-            }
+                id: community4.contractAddress!.toLowerCase(),
+            },
         });
 
         // THIS IS HAPPENING TOMORROW
@@ -1547,13 +1598,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -1575,19 +1628,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -1609,25 +1665,29 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 3
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
-        beneficiariesSubgraph[5].preLastClaimAt = beneficiariesSubgraph[5].lastClaimAt;
+        beneficiariesSubgraph[5].preLastClaimAt =
+            beneficiariesSubgraph[5].lastClaimAt;
         beneficiariesSubgraph[5].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[5].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[6], community3);
-        beneficiariesSubgraph[6].preLastClaimAt = beneficiariesSubgraph[6].lastClaimAt;
+        beneficiariesSubgraph[6].preLastClaimAt =
+            beneficiariesSubgraph[6].lastClaimAt;
         beneficiariesSubgraph[6].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[6].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[7], community3);
-        beneficiariesSubgraph[7].preLastClaimAt = beneficiariesSubgraph[7].lastClaimAt;
+        beneficiariesSubgraph[7].preLastClaimAt =
+            beneficiariesSubgraph[7].lastClaimAt;
         beneficiariesSubgraph[7].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[7].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[8], community3);
-        beneficiariesSubgraph[8].preLastClaimAt = beneficiariesSubgraph[8].lastClaimAt;
+        beneficiariesSubgraph[8].preLastClaimAt =
+            beneficiariesSubgraph[8].lastClaimAt;
         beneficiariesSubgraph[8].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[8].claims += 1;
 
@@ -1655,13 +1715,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -1683,19 +1745,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -1717,19 +1782,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 3
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
-        beneficiariesSubgraph[5].preLastClaimAt = beneficiariesSubgraph[5].lastClaimAt;
+        beneficiariesSubgraph[5].preLastClaimAt =
+            beneficiariesSubgraph[5].lastClaimAt;
         beneficiariesSubgraph[5].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[5].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[6], community3);
-        beneficiariesSubgraph[6].preLastClaimAt = beneficiariesSubgraph[6].lastClaimAt;
+        beneficiariesSubgraph[6].preLastClaimAt =
+            beneficiariesSubgraph[6].lastClaimAt;
         beneficiariesSubgraph[6].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[6].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[7], community3);
-        beneficiariesSubgraph[7].preLastClaimAt = beneficiariesSubgraph[7].lastClaimAt;
+        beneficiariesSubgraph[7].preLastClaimAt =
+            beneficiariesSubgraph[7].lastClaimAt;
         beneficiariesSubgraph[7].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[7].claims += 1;
 
@@ -1759,13 +1827,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -1787,19 +1857,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 4);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -1821,13 +1894,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 3
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
-        beneficiariesSubgraph[5].preLastClaimAt = beneficiariesSubgraph[5].lastClaimAt;
+        beneficiariesSubgraph[5].preLastClaimAt =
+            beneficiariesSubgraph[5].lastClaimAt;
         beneficiariesSubgraph[5].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[5].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 15);
         await tests.factories.ClaimFactory(beneficiaries[6], community3);
-        beneficiariesSubgraph[6].preLastClaimAt = beneficiariesSubgraph[6].lastClaimAt;
+        beneficiariesSubgraph[6].preLastClaimAt =
+            beneficiariesSubgraph[6].lastClaimAt;
         beneficiariesSubgraph[6].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[6].claims += 1;
 
@@ -1835,7 +1910,8 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[7], community3);
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[8], community3);
-        beneficiariesSubgraph[8].preLastClaimAt = beneficiariesSubgraph[8].lastClaimAt;
+        beneficiariesSubgraph[8].preLastClaimAt =
+            beneficiariesSubgraph[8].lastClaimAt;
         beneficiariesSubgraph[8].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[8].claims += 1;
 
@@ -1863,13 +1939,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -1891,13 +1969,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
@@ -1922,25 +2002,29 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 3
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
-        beneficiariesSubgraph[5].preLastClaimAt = beneficiariesSubgraph[5].lastClaimAt;
+        beneficiariesSubgraph[5].preLastClaimAt =
+            beneficiariesSubgraph[5].lastClaimAt;
         beneficiariesSubgraph[5].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[5].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[6], community3);
-        beneficiariesSubgraph[6].preLastClaimAt = beneficiariesSubgraph[6].lastClaimAt;
+        beneficiariesSubgraph[6].preLastClaimAt =
+            beneficiariesSubgraph[6].lastClaimAt;
         beneficiariesSubgraph[6].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[6].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[7], community3);
-        beneficiariesSubgraph[7].preLastClaimAt = beneficiariesSubgraph[7].lastClaimAt;
+        beneficiariesSubgraph[7].preLastClaimAt =
+            beneficiariesSubgraph[7].lastClaimAt;
         beneficiariesSubgraph[7].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[7].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[8], community3);
-        beneficiariesSubgraph[8].preLastClaimAt = beneficiariesSubgraph[8].lastClaimAt;
+        beneficiariesSubgraph[8].preLastClaimAt =
+            beneficiariesSubgraph[8].lastClaimAt;
         beneficiariesSubgraph[8].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[8].claims += 1;
 
@@ -1968,13 +2052,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -1996,7 +2082,8 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
@@ -2005,7 +2092,8 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -2057,13 +2145,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -2085,7 +2175,8 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
@@ -2094,7 +2185,8 @@ describe('#calcuateGlobalMetrics()', () => {
         // await tests.factories.ClaimFactory(beneficiaries[3], community2);
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -2122,25 +2214,29 @@ describe('#calcuateGlobalMetrics()', () => {
         );
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
-        beneficiariesSubgraph[5].preLastClaimAt = beneficiariesSubgraph[5].lastClaimAt;
+        beneficiariesSubgraph[5].preLastClaimAt =
+            beneficiariesSubgraph[5].lastClaimAt;
         beneficiariesSubgraph[5].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[5].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[6], community3);
-        beneficiariesSubgraph[6].preLastClaimAt = beneficiariesSubgraph[6].lastClaimAt;
+        beneficiariesSubgraph[6].preLastClaimAt =
+            beneficiariesSubgraph[6].lastClaimAt;
         beneficiariesSubgraph[6].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[6].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[7], community3);
-        beneficiariesSubgraph[7].preLastClaimAt = beneficiariesSubgraph[7].lastClaimAt;
+        beneficiariesSubgraph[7].preLastClaimAt =
+            beneficiariesSubgraph[7].lastClaimAt;
         beneficiariesSubgraph[7].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[7].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[8], community3);
-        beneficiariesSubgraph[8].preLastClaimAt = beneficiariesSubgraph[8].lastClaimAt;
+        beneficiariesSubgraph[8].preLastClaimAt =
+            beneficiariesSubgraph[8].lastClaimAt;
         beneficiariesSubgraph[8].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[8].claims += 1;
 
@@ -2151,9 +2247,9 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community3.contractAddress!.toLowerCase()
-            }
-        })
+                id: community3.contractAddress!.toLowerCase(),
+            },
+        });
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[14], community3);
@@ -2162,9 +2258,9 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community3.contractAddress!.toLowerCase()
-            }
-        })
+                id: community3.contractAddress!.toLowerCase(),
+            },
+        });
 
         await tests.factories.BeneficiaryTransactionFactory(
             beneficiaries[5],
@@ -2222,13 +2318,15 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 1
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -2250,19 +2348,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 5);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -2344,25 +2445,29 @@ describe('#calcuateGlobalMetrics()', () => {
         );
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 1);
         await tests.factories.ClaimFactory(beneficiaries[5], community1);
-        beneficiariesSubgraph[5].preLastClaimAt = beneficiariesSubgraph[5].lastClaimAt;
+        beneficiariesSubgraph[5].preLastClaimAt =
+            beneficiariesSubgraph[5].lastClaimAt;
         beneficiariesSubgraph[5].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[5].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 1);
         await tests.factories.ClaimFactory(beneficiaries[6], community1);
-        beneficiariesSubgraph[6].preLastClaimAt = beneficiariesSubgraph[6].lastClaimAt;
+        beneficiariesSubgraph[6].preLastClaimAt =
+            beneficiariesSubgraph[6].lastClaimAt;
         beneficiariesSubgraph[6].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[6].claims += 1;
 
@@ -2384,19 +2489,22 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 2
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 5);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -2477,13 +2585,15 @@ describe('#calcuateGlobalMetrics()', () => {
         );
         await tests.factories.InflowFactory(community1);
         await tests.factories.ClaimFactory(beneficiaries[0], community1);
-        beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+        beneficiariesSubgraph[0].preLastClaimAt =
+            beneficiariesSubgraph[0].lastClaimAt;
         beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[0].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 8);
         await tests.factories.ClaimFactory(beneficiaries[1], community1);
-        beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+        beneficiariesSubgraph[1].preLastClaimAt =
+            beneficiariesSubgraph[1].lastClaimAt;
         beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[1].claims += 1;
 
@@ -2508,19 +2618,22 @@ describe('#calcuateGlobalMetrics()', () => {
         );
         await tests.factories.InflowFactory(community2);
         await tests.factories.ClaimFactory(beneficiaries[2], community2);
-        beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+        beneficiariesSubgraph[2].preLastClaimAt =
+            beneficiariesSubgraph[2].lastClaimAt;
         beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[2].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 5);
         await tests.factories.ClaimFactory(beneficiaries[3], community2);
-        beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+        beneficiariesSubgraph[3].preLastClaimAt =
+            beneficiariesSubgraph[3].lastClaimAt;
         beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[3].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 12);
         await tests.factories.ClaimFactory(beneficiaries[4], community2);
-        beneficiariesSubgraph[4].preLastClaimAt = beneficiariesSubgraph[4].lastClaimAt;
+        beneficiariesSubgraph[4].preLastClaimAt =
+            beneficiariesSubgraph[4].lastClaimAt;
         beneficiariesSubgraph[4].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[4].claims += 1;
 
@@ -2531,8 +2644,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community2.contractAddress!.toLowerCase()
-            }
+                id: community2.contractAddress!.toLowerCase(),
+            },
         });
 
         await tests.factories.BeneficiaryTransactionFactory(
@@ -2553,37 +2666,43 @@ describe('#calcuateGlobalMetrics()', () => {
         // community 3
         await tests.factories.InflowFactory(community3);
         await tests.factories.ClaimFactory(beneficiaries[5], community3);
-        beneficiariesSubgraph[5].preLastClaimAt = beneficiariesSubgraph[5].lastClaimAt;
+        beneficiariesSubgraph[5].preLastClaimAt =
+            beneficiariesSubgraph[5].lastClaimAt;
         beneficiariesSubgraph[5].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[5].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 9);
         await tests.factories.ClaimFactory(beneficiaries[6], community3);
-        beneficiariesSubgraph[6].preLastClaimAt = beneficiariesSubgraph[6].lastClaimAt;
+        beneficiariesSubgraph[6].preLastClaimAt =
+            beneficiariesSubgraph[6].lastClaimAt;
         beneficiariesSubgraph[6].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[6].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[7], community3);
-        beneficiariesSubgraph[7].preLastClaimAt = beneficiariesSubgraph[7].lastClaimAt;
+        beneficiariesSubgraph[7].preLastClaimAt =
+            beneficiariesSubgraph[7].lastClaimAt;
         beneficiariesSubgraph[7].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[7].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[8], community3);
-        beneficiariesSubgraph[8].preLastClaimAt = beneficiariesSubgraph[8].lastClaimAt;
+        beneficiariesSubgraph[8].preLastClaimAt =
+            beneficiariesSubgraph[8].lastClaimAt;
         beneficiariesSubgraph[8].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[8].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[13], community3);
-        beneficiariesSubgraph[13].preLastClaimAt = beneficiariesSubgraph[13].lastClaimAt;
+        beneficiariesSubgraph[13].preLastClaimAt =
+            beneficiariesSubgraph[13].lastClaimAt;
         beneficiariesSubgraph[13].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[13].claims += 1;
 
         tk.travel(new Date().getTime() + 1000 * 60 * 2);
         await tests.factories.ClaimFactory(beneficiaries[14], community3);
-        beneficiariesSubgraph[14].preLastClaimAt = beneficiariesSubgraph[14].lastClaimAt;
+        beneficiariesSubgraph[14].preLastClaimAt =
+            beneficiariesSubgraph[14].lastClaimAt;
         beneficiariesSubgraph[14].lastClaimAt = new Date().getTime() / 1000;
         beneficiariesSubgraph[14].claims += 1;
 
@@ -2641,13 +2760,13 @@ describe('#calcuateGlobalMetrics()', () => {
     });
 
     it('calculate global/community metrics after remove a community', async () => {
-        let beneficiariesSubgraph: {
-            lastClaimAt: number,
-            preLastClaimAt: number,
-            claims: number,
+        const beneficiariesSubgraph: {
+            lastClaimAt: number;
+            preLastClaimAt: number;
+            claims: number;
             community: {
-                id: string
-            }
+                id: string;
+            };
         }[] = [];
 
         const users = await tests.factories.UserFactory({ n: 1 });
@@ -2684,8 +2803,8 @@ describe('#calcuateGlobalMetrics()', () => {
             preLastClaimAt: 0,
             claims: 1,
             community: {
-                id: community.contractAddress!.toLowerCase()
-            }
+                id: community.contractAddress!.toLowerCase(),
+            },
         });
 
         // next day

@@ -88,10 +88,10 @@ export interface BeneficiaryCreationAttributes {
 }
 
 export interface BeneficiarySubgraph {
-    claims: number,
+    claims: number;
     community: {
-        id: string
-    },
-    lastClaimAt: number,
-    preLastClaimAt: number
+        id: string;
+    };
+    lastClaimAt: number;
+    preLastClaimAt: number;
 }

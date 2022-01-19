@@ -1,17 +1,22 @@
-import { client } from '../config';
 import { gql } from 'apollo-boost';
-import { BeneficiarySubgraph } from '../../interfaces/ubi/beneficiary';
 
-export const getBeneficiaries = async (communities: string[]): Promise<BeneficiarySubgraph[]> => {
+import { BeneficiarySubgraph } from '../../interfaces/ubi/beneficiary';
+import { client } from '../config';
+
+export const getBeneficiaries = async (
+    communities: string[]
+): Promise<BeneficiarySubgraph[]> => {
     try {
         const aMonthAgo = new Date();
         aMonthAgo.setDate(aMonthAgo.getDate() - 30);
         aMonthAgo.setUTCHours(0, 0, 0, 0);
-        const communitiesFormated = communities.map(el => `"${el.toLowerCase()}"`);
+        const communitiesFormated = communities.map(
+            (el) => `"${el.toLowerCase()}"`
+        );
         const first = 1000;
-        let result: BeneficiarySubgraph[] = [];
+        const result: BeneficiarySubgraph[] = [];
 
-        for (let i = 0; ; i+= first) {
+        for (let i = 0; ; i += first) {
             const query = gql`
                 {
                     beneficiaryEntities(
@@ -20,7 +25,7 @@ export const getBeneficiaries = async (communities: string[]): Promise<Beneficia
                         where: {
                             community_in:[${communitiesFormated}]
                             claims_gt: 1
-                            lastClaimAt_gte: ${aMonthAgo.getTime()/1000}
+                            lastClaimAt_gte: ${aMonthAgo.getTime() / 1000}
                         }
                     ) {
                         lastClaimAt
@@ -31,19 +36,22 @@ export const getBeneficiaries = async (communities: string[]): Promise<Beneficia
                         }
                     }
                 }
-            `
+            `;
             const queryResult = await client.query({
-                query
+                query,
             });
 
-            if(!queryResult.data.beneficiaryEntities || !queryResult.data.beneficiaryEntities.length) {
+            if (
+                !queryResult.data.beneficiaryEntities ||
+                !queryResult.data.beneficiaryEntities.length
+            ) {
                 break;
             }
 
-            result.push(...queryResult.data.beneficiaryEntities)
+            result.push(...queryResult.data.beneficiaryEntities);
         }
         return result;
     } catch (error) {
-        throw new Error(error);   
+        throw new Error(error);
     }
-}
+};

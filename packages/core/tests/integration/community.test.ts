@@ -1,3 +1,4 @@
+import { cronJobs } from '@impactmarket/worker';
 import { expect } from 'chai';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
@@ -11,7 +12,6 @@ import { CommunityContentStorage } from '../../src/services/storage';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import CommunityService from '../../src/services/ubi/community';
 import ManagerService from '../../src/services/ubi/managers';
-import { cronJobs } from '@impactmarket/worker';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';

@@ -1,4 +1,10 @@
-import { interfaces, services, config, database, subgraph } from '@impactmarket/core';
+import {
+    interfaces,
+    services,
+    config,
+    database,
+    subgraph,
+} from '@impactmarket/core';
 import { WebClient } from '@slack/web-api';
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
@@ -34,7 +40,10 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
 }
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
-    type ICommunityToMetrics = Omit<interfaces.ubi.community.CommunityAttributes, 'beneficiaries'> & {
+    type ICommunityToMetrics = Omit<
+        interfaces.ubi.community.CommunityAttributes,
+        'beneficiaries'
+    > & {
         beneficiaries: interfaces.ubi.beneficiary.BeneficiarySubgraph[];
         beneficiariesClaiming: { count: number; claimed: string };
         activity: {
@@ -100,9 +109,13 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         order: [['id', 'DESC']],
     });
 
-    const communitiesId: string[] = communitiesStatePre.map(el => el.contractAddress!);
+    const communitiesId: string[] = communitiesStatePre.map(
+        (el) => el.contractAddress!
+    );
 
-    const beneficiaries = await subgraph.queries.beneficiary.getBeneficiaries(communitiesId);
+    const beneficiaries = await subgraph.queries.beneficiary.getBeneficiaries(
+        communitiesId
+    );
 
     const communityNumbers: any = await database.models.community.findAll({
         attributes: [
@@ -455,7 +468,11 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const crb = communityRemovedBeneficiaryActivity.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
-        const beneficiary = beneficiaries.filter(el => el.community.id === communitiesState[index].contractAddress?.toLowerCase());
+        const beneficiary = beneficiaries.filter(
+            (el) =>
+                el.community.id ===
+                communitiesState[index].contractAddress?.toLowerCase()
+        );
         communities.push({
             ...communitiesState[index],
             beneficiaries: beneficiary as any,
@@ -545,8 +562,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 (beneficiary.claims - 2) * community.contract.incrementInterval;
             const timeWaited =
                 Math.floor(
-                    (beneficiary.lastClaimAt -
-                        beneficiary.preLastClaimAt)
+                    beneficiary.lastClaimAt - beneficiary.preLastClaimAt
                 ) - timeToWait;
             //
             beneficiariesTimeToWait.push(timeToWait);

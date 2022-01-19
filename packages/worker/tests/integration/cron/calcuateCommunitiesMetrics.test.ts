@@ -31,10 +31,7 @@ describe('calcuateCommunitiesMetrics', () => {
             database.models.ubiCommunityDailyMetrics,
             'create'
         );
-        returnSubgraph = stub(
-            subgraph.queries.beneficiary,
-            'getBeneficiaries'
-        );
+        returnSubgraph = stub(subgraph.queries.beneficiary, 'getBeneficiaries');
     });
 
     after(async () => {
@@ -85,15 +82,15 @@ describe('calcuateCommunitiesMetrics', () => {
         });
 
         it('txs and inflow, few claims', async () => {
-            let beneficiariesSubgraph: {
-                lastClaimAt: number,
-                preLastClaimAt: number,
-                claims: number,
+            const beneficiariesSubgraph: {
+                lastClaimAt: number;
+                preLastClaimAt: number;
+                claims: number;
                 community: {
-                    id: string
-                }
+                    id: string;
+                };
             }[] = [];
-        
+
             await tests.factories.InflowFactory(community);
             await tests.factories.InflowFactory(community);
             beneficiaries = await tests.factories.BeneficiaryFactory(
@@ -106,8 +103,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
             await tests.factories.ClaimFactory(beneficiaries[1], community);
             beneficiariesSubgraph.push({
@@ -115,20 +112,22 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
 
             // THIS IS HAPPENING TOMORROW
             tk.travel(tests.config.utils.jumpToTomorrowMidnight());
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
-            
+
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
@@ -138,13 +137,15 @@ describe('calcuateCommunitiesMetrics', () => {
             // THIS IS HAPPENING TWO DAYS FROM NOW
             tk.travel(tests.config.utils.jumpToTomorrowMidnight());
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
@@ -199,13 +200,13 @@ describe('calcuateCommunitiesMetrics', () => {
         });
 
         it('txs and inflow, stops activity for four days', async () => {
-            let beneficiariesSubgraph: {
-                lastClaimAt: number,
-                preLastClaimAt: number,
-                claims: number,
+            const beneficiariesSubgraph: {
+                lastClaimAt: number;
+                preLastClaimAt: number;
+                claims: number;
                 community: {
-                    id: string
-                }
+                    id: string;
+                };
             }[] = [];
 
             await tests.factories.InflowFactory(community);
@@ -220,8 +221,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
             await tests.factories.ClaimFactory(beneficiaries[1], community);
             beneficiariesSubgraph.push({
@@ -229,20 +230,22 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
 
             // THIS IS HAPPENING TOMORROW
             tk.travel(tests.config.utils.jumpToTomorrowMidnight());
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
@@ -252,13 +255,15 @@ describe('calcuateCommunitiesMetrics', () => {
             // THIS IS HAPPENING TWO DAYS FROM NOW
             tk.travel(tests.config.utils.jumpToTomorrowMidnight());
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
@@ -328,13 +333,13 @@ describe('calcuateCommunitiesMetrics', () => {
         });
 
         it('txs and inflow, stops activity for two days and gets activity again', async () => {
-            let beneficiariesSubgraph: {
-                lastClaimAt: number,
-                preLastClaimAt: number,
-                claims: number,
+            const beneficiariesSubgraph: {
+                lastClaimAt: number;
+                preLastClaimAt: number;
+                claims: number;
                 community: {
-                    id: string
-                }
+                    id: string;
+                };
             }[] = [];
 
             await tests.factories.InflowFactory(community);
@@ -349,8 +354,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
             await tests.factories.ClaimFactory(beneficiaries[1], community);
             beneficiariesSubgraph.push({
@@ -358,20 +363,22 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
 
             // THIS IS HAPPENING TOMORROW
             tk.travel(tests.config.utils.jumpToTomorrowMidnight());
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
@@ -381,13 +388,15 @@ describe('calcuateCommunitiesMetrics', () => {
             // THIS IS HAPPENING TWO DAYS FROM NOW
             tk.travel(tests.config.utils.jumpToTomorrowMidnight());
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
@@ -433,13 +442,15 @@ describe('calcuateCommunitiesMetrics', () => {
             tk.travel(tests.config.utils.jumpToTomorrowMidnight());
             await calcuateCommunitiesMetrics();
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
@@ -492,13 +503,13 @@ describe('calcuateCommunitiesMetrics', () => {
         });
 
         it('inflow no txs, few claims', async () => {
-            let beneficiariesSubgraph: {
-                lastClaimAt: number,
-                preLastClaimAt: number,
-                claims: number,
+            const beneficiariesSubgraph: {
+                lastClaimAt: number;
+                preLastClaimAt: number;
+                claims: number;
                 community: {
-                    id: string
-                }
+                    id: string;
+                };
             }[] = [];
 
             // THIS IS HAPPENING TODAY
@@ -514,8 +525,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
             await tests.factories.ClaimFactory(beneficiaries[1], community);
             beneficiariesSubgraph.push({
@@ -523,8 +534,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
 
             // THIS IS HAPPENING TOMORROW
@@ -532,13 +543,15 @@ describe('calcuateCommunitiesMetrics', () => {
             returnSubgraph.returns(beneficiariesSubgraph);
             await calcuateCommunitiesMetrics();
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
@@ -549,13 +562,15 @@ describe('calcuateCommunitiesMetrics', () => {
             await calcuateCommunitiesMetrics();
 
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
@@ -604,17 +619,17 @@ describe('calcuateCommunitiesMetrics', () => {
                     preLastClaimAt: 0,
                     claims: 0,
                     community: {
-                        id: community.contractAddress.toLowerCase()
-                    }
+                        id: community.contractAddress.toLowerCase(),
+                    },
                 },
                 {
                     lastClaimAt: 0,
                     preLastClaimAt: 0,
                     claims: 0,
                     community: {
-                        id: community.contractAddress.toLowerCase()
-                    }
-                }
+                        id: community.contractAddress.toLowerCase(),
+                    },
+                },
             ]);
             await calcuateCommunitiesMetrics();
             assert.callCount(ubiCommunityDailyStateCreate, 1);
@@ -652,17 +667,17 @@ describe('calcuateCommunitiesMetrics', () => {
                     preLastClaimAt: 0,
                     claims: 0,
                     community: {
-                        id: community.contractAddress.toLowerCase()
-                    }
+                        id: community.contractAddress.toLowerCase(),
+                    },
                 },
                 {
                     lastClaimAt: 0,
                     preLastClaimAt: 0,
                     claims: 0,
                     community: {
-                        id: community.contractAddress.toLowerCase()
-                    }
-                }
+                        id: community.contractAddress.toLowerCase(),
+                    },
+                },
             ]);
             await calcuateCommunitiesMetrics();
             assert.callCount(ubiCommunityDailyStateCreate, 1);
@@ -685,13 +700,13 @@ describe('calcuateCommunitiesMetrics', () => {
         });
 
         it('first metrics, few claims', async () => {
-            let beneficiariesSubgraph: {
-                lastClaimAt: number,
-                preLastClaimAt: number,
-                claims: number,
+            const beneficiariesSubgraph: {
+                lastClaimAt: number;
+                preLastClaimAt: number;
+                claims: number;
                 community: {
-                    id: string
-                }
+                    id: string;
+                };
             }[] = [];
 
             await tests.factories.InflowFactory(community);
@@ -706,8 +721,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
             await tests.factories.ClaimFactory(beneficiaries[1], community);
             beneficiariesSubgraph.push({
@@ -715,20 +730,22 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
 
             // THIS IS HAPPENING TOMORROW
             tk.travel(tests.config.utils.jumpToTomorrowMidnight());
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
@@ -760,7 +777,7 @@ describe('calcuateCommunitiesMetrics', () => {
                 lastClaimAt: 0,
                 preLastClaimAt: 0,
                 claims: 0,
-            }
+            };
 
             await tests.factories.InflowFactory(community);
             await tests.factories.InflowFactory(community);
@@ -784,8 +801,8 @@ describe('calcuateCommunitiesMetrics', () => {
                     preLastClaimAt: beneficiary1.preLastClaimAt,
                     claims: beneficiary1.claims,
                     community: {
-                        id: community.contractAddress.toLowerCase()
-                    }
+                        id: community.contractAddress.toLowerCase(),
+                    },
                 },
             ]);
             await calcuateCommunitiesMetrics();
@@ -840,13 +857,13 @@ describe('calcuateCommunitiesMetrics', () => {
     });
 
     describe('recent community with added/removed beneficiaries, txs and inflow', () => {
-        let beneficiariesSubgraph: {
-            lastClaimAt: number,
-            preLastClaimAt: number,
-            claims: number,
+        const beneficiariesSubgraph: {
+            lastClaimAt: number;
+            preLastClaimAt: number;
+            claims: number;
             community: {
-                id: string
-            }
+                id: string;
+            };
         }[] = [];
 
         before(async () => {
@@ -891,8 +908,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
             await tests.factories.ClaimFactory(beneficiaries[1], community);
             beneficiariesSubgraph.push({
@@ -900,8 +917,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
             await tests.factories.ClaimFactory(beneficiaries[2], community);
             beneficiariesSubgraph.push({
@@ -909,8 +926,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
 
             // THIS IS HAPPENING TOMORROW
@@ -922,19 +939,22 @@ describe('calcuateCommunitiesMetrics', () => {
                 )
             );
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await tests.factories.ClaimFactory(beneficiaries[1], community);
-            beneficiariesSubgraph[1].preLastClaimAt = beneficiariesSubgraph[1].lastClaimAt;
+            beneficiariesSubgraph[1].preLastClaimAt =
+                beneficiariesSubgraph[1].lastClaimAt;
             beneficiariesSubgraph[1].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[1].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 3);
             await tests.factories.ClaimFactory(beneficiaries[2], community);
-            beneficiariesSubgraph[2].preLastClaimAt = beneficiariesSubgraph[2].lastClaimAt;
+            beneficiariesSubgraph[2].preLastClaimAt =
+                beneficiariesSubgraph[2].lastClaimAt;
             beneficiariesSubgraph[2].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[2].claims += 1;
 
@@ -945,8 +965,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
 
             returnSubgraph.returns(beneficiariesSubgraph);
@@ -966,13 +986,15 @@ describe('calcuateCommunitiesMetrics', () => {
                 )
             );
             await tests.factories.ClaimFactory(beneficiaries[0], community);
-            beneficiariesSubgraph[0].preLastClaimAt = beneficiariesSubgraph[0].lastClaimAt;
+            beneficiariesSubgraph[0].preLastClaimAt =
+                beneficiariesSubgraph[0].lastClaimAt;
             beneficiariesSubgraph[0].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[0].claims += 1;
 
             tk.travel(new Date().getTime() + 1000 * 60 * 8);
             await tests.factories.ClaimFactory(beneficiaries[4], community);
-            beneficiariesSubgraph[3].preLastClaimAt = beneficiariesSubgraph[3].lastClaimAt;
+            beneficiariesSubgraph[3].preLastClaimAt =
+                beneficiariesSubgraph[3].lastClaimAt;
             beneficiariesSubgraph[3].lastClaimAt = new Date().getTime() / 1000;
             beneficiariesSubgraph[3].claims += 1;
 
@@ -983,8 +1005,8 @@ describe('calcuateCommunitiesMetrics', () => {
                 preLastClaimAt: 0,
                 claims: 1,
                 community: {
-                    id: community.contractAddress!.toLowerCase()
-                }
+                    id: community.contractAddress!.toLowerCase(),
+                },
             });
 
             await tests.factories.BeneficiaryTransactionFactory(
