@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { AppUser } from '../../interfaces/app/appUser';
 import {
     Op,
     QueryTypes,
@@ -855,7 +856,20 @@ export default class CommunityService {
         });
     }
 
-    public static async getManagers(communityId: number, active?: boolean) {
+    public static async getManagers(communityId: number, active?: boolean): Promise<{
+        isDeleted: boolean;
+        addedBeneficiaries: number;
+        pending: boolean;
+        id?: number;
+        address?: string;
+        communityId?: number;
+        active?: boolean;
+        readRules?: boolean;
+        blocked?: boolean;
+        createdAt?: Date;
+        updatedAt?: Date;
+        user?: AppUser;
+    }[]> {
         const community = (await this.community.findOne({
             where: { id: communityId },
         }))!;
@@ -867,56 +881,85 @@ export default class CommunityService {
             };
         }
 
-        const result = await this.manager.findAll({
-            include: [
-                {
-                    model: this.appUser,
-                    as: 'user',
-                    include: [
-                        {
-                            model: this.appMediaContent,
-                            as: 'avatar',
-                            required: false,
-                            include: [
-                                {
-                                    model: this.appMediaThumbnail,
-                                    as: 'thumbnails',
-                                    separate: true,
-                                },
-                            ],
-                        },
-                    ],
+        if (community.status === 'pending') {
+            const user = await this.appUser.findOne({
+                include: [
+                    {
+                        model: this.appMediaContent,
+                        as: 'avatar',
+                        required: false,
+                        include: [
+                            {
+                                model: this.appMediaThumbnail,
+                                as: 'thumbnails',
+                                separate: true,
+                            },
+                        ],
+                    },
+                ],
+                where: {
+                    address: community.requestByAddress
+                }
+            });
+            return [{
+                user: user as AppUser,
+                isDeleted: false,
+                addedBeneficiaries: 0,
+                pending: true,
+            }];
+        } else {
+            const result = await this.manager.findAll({
+                include: [
+                    {
+                        model: this.appUser,
+                        as: 'user',
+                        include: [
+                            {
+                                model: this.appMediaContent,
+                                as: 'avatar',
+                                required: false,
+                                include: [
+                                    {
+                                        model: this.appMediaThumbnail,
+                                        as: 'thumbnails',
+                                        separate: true,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+                where: {
+                    communityId: community.id,
+                    ...activeCondition,
                 },
-            ],
-            where: {
-                communityId: community.id,
-                ...activeCondition,
-            },
-        });
+            });
 
-        const beneficiariesAdded = await this.ubiBeneficiaryRegistry.findAll({
-            attributes: [[fn('COUNT', col('address')), 'count'], 'from'],
-            where: {
-                from: {
-                    [Op.in]: result.map((el) => el.address),
+            const beneficiariesAdded = await this.ubiBeneficiaryRegistry.findAll({
+                attributes: [[fn('COUNT', col('address')), 'count'], 'from'],
+                where: {
+                    from: {
+                        [Op.in]: result.map((el) => el.address),
+                    },
                 },
-            },
-            group: ['from'],
-            raw: true,
-        });
+                group: ['from'],
+                raw: true,
+            });
 
-        return result.map((r) => {
-            const manager = r.toJSON() as ManagerAttributes;
-            const addedBeneficiaries = beneficiariesAdded.find(
-                (el) => el.from === manager.address
-            );
-            return {
-                ...manager,
-                isDeleted: !manager.user,
-                addedBeneficiaries:
-                    Number((addedBeneficiaries as any)?.count) || 0,
-            };
-        });
+            return result.map((r) => {
+                const manager = r.toJSON() as ManagerAttributes;
+                const addedBeneficiaries = beneficiariesAdded.find(
+                    (el) => el.from === manager.address
+                );
+                return {
+                    ...manager,
+                    isDeleted: !manager.user,
+                    addedBeneficiaries:
+                        Number((addedBeneficiaries as any)?.count) || 0,
+                    pending: false,
+                };
+            });
+        }
     }
 
     public static async getPromoter(communityId: number) {

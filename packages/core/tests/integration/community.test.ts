@@ -2027,6 +2027,33 @@ describe('community service', () => {
             // eslint-disable-next-line no-unused-expressions
             expect(managers[0].isDeleted).to.be.false;
         });
+
+        it('should return a manager from a pending community', async () => {
+            const users = await UserFactory({ n: 1 });
+            const community = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'pending',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const managers = await CommunityService.getManagers(community[0].id);
+
+            expect(managers[0].addedBeneficiaries).to.be.equal(0);
+            expect(managers[0].isDeleted).to.be.false;
+            expect(managers[0].user).to.exist;
+            expect(managers[0].pending).to.be.true;
+        })
     });
 
     describe('delete submission pending', () => {
