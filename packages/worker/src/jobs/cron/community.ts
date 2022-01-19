@@ -1,4 +1,4 @@
-import { interfaces, services, config, database } from '@impactmarket/core';
+import { interfaces, services, config, database, subgraph } from '@impactmarket/core';
 import { WebClient } from '@slack/web-api';
 import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
@@ -34,7 +34,8 @@ export async function verifyCommunitySuspectActivity(): Promise<void> {
 }
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
-    type ICommunityToMetrics = interfaces.ubi.community.CommunityAttributes & {
+    type ICommunityToMetrics = Omit<interfaces.ubi.community.CommunityAttributes, 'beneficiaries'> & {
+        beneficiaries: interfaces.ubi.beneficiary.BeneficiarySubgraph[];
         beneficiariesClaiming: { count: number; claimed: string };
         activity: {
             claimed: string;
@@ -77,7 +78,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     };
 
     const communitiesStatePre = await database.models.community.findAll({
-        attributes: ['id', 'started'],
+        attributes: ['id', 'started', 'contractAddress'],
         include: [
             {
                 model: database.models.ubiCommunityContract,
@@ -91,16 +92,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 order: [['date', 'DESC']],
                 limit: 4,
             },
-            {
-                model: database.models.beneficiary,
-                as: 'beneficiaries',
-                required: false,
-                where: {
-                    claims: { [Op.gt]: 1 },
-                    lastClaimAt: { [Op.gte]: aMonthAgo },
-                    active: true,
-                },
-            },
         ],
         where: {
             ...whereCommunity,
@@ -108,6 +99,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         },
         order: [['id', 'DESC']],
     });
+
+    const communitiesId: string[] = communitiesStatePre.map(el => el.contractAddress!);
+
+    const beneficiaries = await subgraph.queries.beneficiary.getBeneficiaries(communitiesId);
 
     const communityNumbers: any = await database.models.community.findAll({
         attributes: [
@@ -460,8 +455,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const crb = communityRemovedBeneficiaryActivity.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
+        const beneficiary = beneficiaries.filter(el => el.community.id === communitiesState[index].contractAddress?.toLowerCase());
         communities.push({
             ...communitiesState[index],
+            beneficiaries: beneficiary as any,
             beneficiariesClaiming: cn
                 ? {
                       count: parseInt(cn.count, 10),
@@ -535,7 +532,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             if (
                 beneficiary.claims < 2 ||
                 beneficiary.lastClaimAt === null ||
-                beneficiary.penultimateClaimAt === null
+                beneficiary.preLastClaimAt === null
             ) {
                 continue;
             }
@@ -548,9 +545,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 (beneficiary.claims - 2) * community.contract.incrementInterval;
             const timeWaited =
                 Math.floor(
-                    (beneficiary.lastClaimAt.getTime() -
-                        beneficiary.penultimateClaimAt.getTime()) /
-                        1000
+                    (beneficiary.lastClaimAt -
+                        beneficiary.preLastClaimAt)
                 ) - timeToWait;
             //
             beneficiariesTimeToWait.push(timeToWait);
