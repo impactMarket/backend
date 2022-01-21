@@ -245,6 +245,8 @@ export default {
     claimLocationTimeframe: validatedEnv.CLAIM_LOCATION_TIMEFRAME,
     claimInactivityThreshold: validatedEnv.CLAIM_INACTIVITY_THRESHOLD,
 
+    loginInactivityThreshold: validatedEnv.LOGIN_INACTIVITY_THRESHOLD,
+
     defaultLimit: validatedEnv.DEFAULT_LIMIT,
     defaultOffset: validatedEnv.DEFAULT_OFFSET,
 

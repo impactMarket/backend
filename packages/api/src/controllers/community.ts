@@ -74,6 +74,7 @@ class CommunityController {
                 inactivity,
                 unidentified,
                 blocked,
+                loginInactivity,
             } = req.query;
             if (search === undefined || typeof search !== 'string') {
                 throw new Error('invalid search!');
@@ -85,6 +86,7 @@ class CommunityController {
                 inactivity: inactivity === 'true',
                 unidentified: unidentified === 'true',
                 blocked: blocked === 'true',
+                loginInactivity: loginInactivity === 'true',
             })
                 .then((r) => standardResponse(res, 200, true, r))
                 .catch((e) =>
@@ -99,6 +101,7 @@ class CommunityController {
                 inactivity,
                 unidentified,
                 blocked,
+                loginInactivity,
             } = req.query;
             if (active === undefined || typeof active !== 'string') {
                 active = 'true';
@@ -119,6 +122,7 @@ class CommunityController {
                     inactivity: inactivity === 'true',
                     unidentified: unidentified === 'true',
                     blocked: blocked === 'true',
+                    loginInactivity: loginInactivity === 'true',
                 }
             )
                 .then((r) => standardResponse(res, 200, true, r))

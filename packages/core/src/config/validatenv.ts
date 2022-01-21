@@ -85,6 +85,7 @@ function validateEnv() {
         COMMUNITY_ADMIN_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         CLAIM_LOCATION_TIMEFRAME: num({ default: 150 }),
         CLAIM_INACTIVITY_THRESHOLD: num({ default: 4 }),
+        LOGIN_INACTIVITY_THRESHOLD: num({ default: 10 }),
         DEFAULT_LIMIT: num({ default: 10 }),
         DEFAULT_OFFSET: num({ default: 0 }),
         ENABLED_CACHE_WITH_REDIS: bool({ default: true }),
