@@ -1,3 +1,4 @@
+import { cronJobs } from '@impactmarket/worker';
 import { expect } from 'chai';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
@@ -11,7 +12,6 @@ import { CommunityContentStorage } from '../../src/services/storage';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import CommunityService from '../../src/services/ubi/community';
 import ManagerService from '../../src/services/ubi/managers';
-import { cronJobs } from '@impactmarket/worker';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';
@@ -1915,9 +1915,9 @@ describe('community service', () => {
 
             managers.forEach((manager) => {
                 if (manager.address === users[0].address) {
-                    expect(manager.addedBeneficiaries).to.be.equal(2);
+                    expect(manager.added).to.be.equal(2);
                 } else {
-                    expect(manager.addedBeneficiaries).to.be.equal(0);
+                    expect(manager.added).to.be.equal(0);
                 }
             });
         });
@@ -1973,13 +1973,13 @@ describe('community service', () => {
 
             managers.forEach((manager) => {
                 if (manager.address === users[0].address) {
-                    expect(manager.addedBeneficiaries).to.be.equal(1);
+                    expect(manager.added).to.be.equal(1);
                     // eslint-disable-next-line no-unused-expressions
                     expect(manager.user).to.be.null;
                     // eslint-disable-next-line no-unused-expressions
                     expect(manager.isDeleted).to.be.true;
                 } else {
-                    expect(manager.addedBeneficiaries).to.be.equal(0);
+                    expect(manager.added).to.be.equal(0);
                 }
             });
         });
@@ -2021,9 +2021,7 @@ describe('community service', () => {
                 false
             );
 
-            expect(managers[0].addedBeneficiaries).to.be.equal(1);
-            // eslint-disable-next-line no-unused-expressions
-            expect(managers[0].active).to.be.false;
+            expect(managers[0].added).to.be.equal(1);
             // eslint-disable-next-line no-unused-expressions
             expect(managers[0].isDeleted).to.be.false;
         });
@@ -2047,13 +2045,15 @@ describe('community service', () => {
                 },
             ]);
 
-            const managers = await CommunityService.getManagers(community[0].id);
+            const managers = await CommunityService.getManagers(
+                community[0].id
+            );
 
-            expect(managers[0].addedBeneficiaries).to.be.equal(0);
+            expect(managers[0].added).to.be.equal(0);
             expect(managers[0].isDeleted).to.be.false;
             expect(managers[0].user).to.exist;
-            expect(managers[0].pending).to.be.true;
-        })
+            expect(managers[0].address).to.not.exist;
+        });
     });
 
     describe('delete submission pending', () => {

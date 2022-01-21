@@ -1,5 +1,4 @@
 import { ethers } from 'ethers';
-import { AppUser } from '../../interfaces/app/appUser';
 import {
     Op,
     QueryTypes,
@@ -19,6 +18,7 @@ import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import { models, sequelize } from '../../database';
 import { Community } from '../../database/models/ubi/community';
 import { ManagerAttributes } from '../../database/models/ubi/manager';
+import { AppUser } from '../../interfaces/app/appUser';
 import {
     CommunityAttributes,
     IBaseCommunityAttributes,
@@ -856,20 +856,17 @@ export default class CommunityService {
         });
     }
 
-    public static async getManagers(communityId: number, active?: boolean): Promise<{
-        isDeleted: boolean;
-        addedBeneficiaries: number;
-        pending: boolean;
-        id?: number;
-        address?: string;
-        communityId?: number;
-        active?: boolean;
-        readRules?: boolean;
-        blocked?: boolean;
-        createdAt?: Date;
-        updatedAt?: Date;
-        user?: AppUser;
-    }[]> {
+    public static async getManagers(
+        communityId: number,
+        active?: boolean
+    ): Promise<
+        {
+            isDeleted: boolean;
+            added: number;
+            address?: string;
+            user?: AppUser;
+        }[]
+    > {
         const community = (await this.community.findOne({
             where: { id: communityId },
         }))!;
@@ -899,15 +896,16 @@ export default class CommunityService {
                     },
                 ],
                 where: {
-                    address: community.requestByAddress
-                }
+                    address: community.requestByAddress,
+                },
             });
-            return [{
-                user: user as AppUser,
-                isDeleted: false,
-                addedBeneficiaries: 0,
-                pending: true,
-            }];
+            return [
+                {
+                    user: user as AppUser,
+                    isDeleted: false,
+                    added: 0,
+                },
+            ];
         } else {
             const result = await this.manager.findAll({
                 attributes: ['address'],
@@ -938,27 +936,30 @@ export default class CommunityService {
                 },
             });
 
-            const beneficiariesAdded = await this.ubiBeneficiaryRegistry.findAll({
-                attributes: [[fn('COUNT', col('address')), 'count'], 'from'],
-                where: {
-                    from: {
-                        [Op.in]: result.map((el) => el.address),
+            const beneficiariesAdded =
+                await this.ubiBeneficiaryRegistry.findAll({
+                    attributes: [
+                        [fn('COUNT', col('address')), 'count'],
+                        'from',
+                    ],
+                    where: {
+                        from: {
+                            [Op.in]: result.map((el) => el.address),
+                        },
                     },
-                },
-                group: ['from'],
-                raw: true,
-            });
+                    group: ['from'],
+                    raw: true,
+                });
 
             return result.map((r) => {
                 const manager = r.toJSON() as ManagerAttributes;
-                const addedBeneficiaries = beneficiariesAdded.find(
+                const added = beneficiariesAdded.find(
                     (el) => el.from === manager.address
                 );
                 return {
                     ...manager,
                     isDeleted: !manager.user,
-                    addedBeneficiaries:
-                        Number((addedBeneficiaries as any)?.count) || 0,
+                    added: Number((added as any)?.count) || 0,
                     pending: false,
                 };
             });
