@@ -245,6 +245,9 @@ export default {
     claimLocationTimeframe: validatedEnv.CLAIM_LOCATION_TIMEFRAME,
     claimInactivityThreshold: validatedEnv.CLAIM_INACTIVITY_THRESHOLD,
 
+    /**
+     * Days without login to consider a user inactive
+     */
     loginInactivityThreshold: validatedEnv.LOGIN_INACTIVITY_THRESHOLD,
 
     defaultLimit: validatedEnv.DEFAULT_LIMIT,
