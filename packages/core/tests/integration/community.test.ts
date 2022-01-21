@@ -1,10 +1,11 @@
 import { cronJobs } from '@impactmarket/worker';
 import { expect } from 'chai';
+import { ethers } from 'ethers';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
-import Sinon, { assert, replace, spy } from 'sinon';
+import Sinon, { assert, replace, spy, stub, SinonStub } from 'sinon';
 
-import { models } from '../../src/database';
+import { models, sequelize as database } from '../../src/database';
 import { AppMediaContent } from '../../src/interfaces/app/appMediaContent';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { UbiPromoter } from '../../src/interfaces/ubi/ubiPromoter';
@@ -12,6 +13,7 @@ import { CommunityContentStorage } from '../../src/services/storage';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import CommunityService from '../../src/services/ubi/community';
 import ManagerService from '../../src/services/ubi/managers';
+import * as subgraph from '../../src/subgraph/queries/community';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';
@@ -24,10 +26,13 @@ describe('community service', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let communityContentStorageDelete: Sinon.SinonSpy<[number], Promise<void>>;
+    let returnSubgraph: SinonStub;
+
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
         users = await UserFactory({ n: 5 });
+        replace(database, 'query', sequelize.query);
 
         replace(
             CommunityContentStorage.prototype,
@@ -41,6 +46,8 @@ describe('community service', () => {
             CommunityContentStorage.prototype,
             'deleteContent'
         );
+
+        returnSubgraph = stub(subgraph, 'getCommunityProposal');
     });
 
     describe('list', () => {
@@ -1217,6 +1224,207 @@ describe('community service', () => {
                     id: communities[1].id,
                     status: 'pending',
                 });
+            });
+        });
+
+        describe('list pending', () => {
+            afterEach(async () => {
+                await truncate(sequelize, 'Beneficiary');
+                await truncate(sequelize, 'Community');
+                returnSubgraph.resetHistory();
+            });
+
+            after(async () => {
+                returnSubgraph.restore();
+            });
+
+            it('should return pending communities with no open proposals', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                const data = ethers.utils.defaultAbiCoder.encode(
+                    [
+                        'address[]',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                    ],
+                    [
+                        [communities[0].requestByAddress],
+                        communities[0].contract!.claimAmount,
+                        communities[0].contract!.maxClaim,
+                        '10000000000000000',
+                        communities[0].contract!.baseInterval,
+                        communities[0].contract!.incrementInterval,
+                        '10000000000000000',
+                        '100000000000000000',
+                    ]
+                );
+
+                returnSubgraph.returns([data]);
+
+                const pending = await CommunityService.pending();
+
+                expect(pending.length).to.be.equal(1);
+                expect(pending[0].id).to.be.equal(communities[1].id);
+            });
+
+            it('should return pending communities with no open proposals (failed to generate calldata)', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: 'invalid_address',
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                const data = ethers.utils.defaultAbiCoder.encode(
+                    [
+                        'address[]',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                    ],
+                    [
+                        [communities[0].requestByAddress],
+                        communities[0].contract!.claimAmount,
+                        communities[0].contract!.maxClaim,
+                        '10000000000000000',
+                        communities[0].contract!.baseInterval,
+                        communities[0].contract!.incrementInterval,
+                        '10000000000000000',
+                        '100000000000000000',
+                    ]
+                );
+
+                returnSubgraph.returns([data]);
+
+                const pending = await CommunityService.pending();
+
+                expect(pending.length).to.be.equal(1);
+                expect(pending[0].id).to.be.equal(communities[1].id);
+            });
+
+            it('should return pending communities with no open proposals (failed to found proposals in subgraph)', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                ]);
+
+                returnSubgraph.returns([]);
+
+                const pending = await CommunityService.pending();
+
+                expect(pending.length).to.be.equal(2);
             });
         });
     });

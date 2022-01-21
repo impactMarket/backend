@@ -32,6 +32,7 @@ import { UbiCommunityLabel } from '../../interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '../../interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '../../interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
+import { getCommunityProposal } from '../../subgraph/queries/community';
 import { BaseError } from '../../utils/baseError';
 import { fetchData } from '../../utils/dataFetching';
 import { notifyManagerAdded } from '../../utils/util';
@@ -1236,7 +1237,49 @@ export default class CommunityService {
             type: QueryTypes.SELECT,
         });
 
-        const results: ICommunityPendingDetails[] = rawResult.map((c) => ({
+        const callData = rawResult.reduce((acc, el) => {
+            try {
+                const data = ethers.utils.defaultAbiCoder.encode(
+                    [
+                        'address[]',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                    ],
+                    [
+                        [el.requestByAddress],
+                        el.claimAmount,
+                        el.maxClaim,
+                        '10000000000000000',
+                        el.baseInterval,
+                        el.incrementInterval,
+                        '10000000000000000',
+                        '100000000000000000',
+                    ]
+                );
+                acc.push({
+                    callData: data,
+                    ...el,
+                });
+            } catch (error) {
+                acc.push(el);
+            }
+
+            return acc;
+        }, [] as any);
+
+        const communityProposal = await getCommunityProposal(
+            callData.map((el) => el.callData)
+        );
+        const pendings = callData.filter(
+            (el) => communityProposal.indexOf(el.callData) === -1
+        );
+
+        const results: ICommunityPendingDetails[] = pendings.map((c) => ({
             id: c.id,
             publicId: c.publicId,
             contractAddress: c.contractAddress,
