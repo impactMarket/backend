@@ -883,6 +883,7 @@ export default class CommunityService {
 
         if (community.status === 'pending') {
             const user = await this.appUser.findOne({
+                attributes: ['address', 'username'],
                 include: [
                     {
                         model: this.appMediaContent,
@@ -909,10 +910,12 @@ export default class CommunityService {
             }];
         } else {
             const result = await this.manager.findAll({
+                attributes: ['address'],
                 include: [
                     {
                         model: this.appUser,
                         as: 'user',
+                        attributes: ['username'],
                         include: [
                             {
                                 model: this.appMediaContent,
