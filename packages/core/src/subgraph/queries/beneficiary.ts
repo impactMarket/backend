@@ -1,6 +1,5 @@
 import { gql } from 'apollo-boost';
-
-import { BeneficiarySubgraph } from '../../interfaces/ubi/beneficiary';
+import { BeneficiarySubgraph } from '../interfaces/beneficiary';
 import { client } from '../config';
 
 export const getBeneficiaries = async (

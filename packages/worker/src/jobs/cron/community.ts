@@ -44,7 +44,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         interfaces.ubi.community.CommunityAttributes,
         'beneficiaries'
     > & {
-        beneficiaries: interfaces.ubi.beneficiary.BeneficiarySubgraph[];
+        beneficiaries: subgraph.interfaces.beneficiary.BeneficiarySubgraph[];
         beneficiariesClaiming: { count: number; claimed: string };
         activity: {
             claimed: string;
