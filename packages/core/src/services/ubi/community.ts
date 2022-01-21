@@ -18,6 +18,7 @@ import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import { models, sequelize } from '../../database';
 import { Community } from '../../database/models/ubi/community';
 import { ManagerAttributes } from '../../database/models/ubi/manager';
+import { AppUser } from '../../interfaces/app/appUser';
 import {
     CommunityAttributes,
     IBaseCommunityAttributes,
@@ -855,7 +856,17 @@ export default class CommunityService {
         });
     }
 
-    public static async getManagers(communityId: number, active?: boolean) {
+    public static async getManagers(
+        communityId: number,
+        active?: boolean
+    ): Promise<
+        {
+            isDeleted: boolean;
+            added: number;
+            address?: string;
+            user?: AppUser;
+        }[]
+    > {
         const community = (await this.community.findOne({
             where: { id: communityId },
         }))!;
@@ -867,56 +878,92 @@ export default class CommunityService {
             };
         }
 
-        const result = await this.manager.findAll({
-            include: [
+        if (community.status === 'pending') {
+            const user = await this.appUser.findOne({
+                attributes: ['address', 'username'],
+                include: [
+                    {
+                        model: this.appMediaContent,
+                        as: 'avatar',
+                        required: false,
+                        include: [
+                            {
+                                model: this.appMediaThumbnail,
+                                as: 'thumbnails',
+                                separate: true,
+                            },
+                        ],
+                    },
+                ],
+                where: {
+                    address: community.requestByAddress,
+                },
+            });
+            return [
                 {
-                    model: this.appUser,
-                    as: 'user',
-                    include: [
-                        {
-                            model: this.appMediaContent,
-                            as: 'avatar',
-                            required: false,
-                            include: [
-                                {
-                                    model: this.appMediaThumbnail,
-                                    as: 'thumbnails',
-                                    separate: true,
-                                },
-                            ],
-                        },
+                    user: user as AppUser,
+                    isDeleted: false,
+                    added: 0,
+                },
+            ];
+        } else {
+            const result = await this.manager.findAll({
+                attributes: ['address'],
+                include: [
+                    {
+                        model: this.appUser,
+                        as: 'user',
+                        attributes: ['username'],
+                        include: [
+                            {
+                                model: this.appMediaContent,
+                                as: 'avatar',
+                                required: false,
+                                include: [
+                                    {
+                                        model: this.appMediaThumbnail,
+                                        as: 'thumbnails',
+                                        separate: true,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+                where: {
+                    communityId: community.id,
+                    ...activeCondition,
+                },
+            });
+
+            const beneficiariesAdded =
+                await this.ubiBeneficiaryRegistry.findAll({
+                    attributes: [
+                        [fn('COUNT', col('address')), 'count'],
+                        'from',
                     ],
-                },
-            ],
-            where: {
-                communityId: community.id,
-                ...activeCondition,
-            },
-        });
+                    where: {
+                        from: {
+                            [Op.in]: result.map((el) => el.address),
+                        },
+                    },
+                    group: ['from'],
+                    raw: true,
+                });
 
-        const beneficiariesAdded = await this.ubiBeneficiaryRegistry.findAll({
-            attributes: [[fn('COUNT', col('address')), 'count'], 'from'],
-            where: {
-                from: {
-                    [Op.in]: result.map((el) => el.address),
-                },
-            },
-            group: ['from'],
-            raw: true,
-        });
-
-        return result.map((r) => {
-            const manager = r.toJSON() as ManagerAttributes;
-            const addedBeneficiaries = beneficiariesAdded.find(
-                (el) => el.from === manager.address
-            );
-            return {
-                ...manager,
-                isDeleted: !manager.user,
-                addedBeneficiaries:
-                    Number((addedBeneficiaries as any)?.count) || 0,
-            };
-        });
+            return result.map((r) => {
+                const manager = r.toJSON() as ManagerAttributes;
+                const added = beneficiariesAdded.find(
+                    (el) => el.from === manager.address
+                );
+                return {
+                    ...manager,
+                    isDeleted: !manager.user,
+                    added: Number((added as any)?.count) || 0,
+                    pending: false,
+                };
+            });
+        }
     }
 
     public static async getPromoter(communityId: number) {

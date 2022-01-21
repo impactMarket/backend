@@ -18,7 +18,6 @@ export interface ManagerAttributes {
 
     user?: AppUser;
     community?: CommunityAttributes;
-    addedBeneficiaries?: UbiBeneficiaryRegistry[];
 }
 export interface ManagerCreationAttributes {
     address: string;

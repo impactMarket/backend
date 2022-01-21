@@ -141,6 +141,12 @@ import communityValidators from '../validators/community';
  *          isDeleted:
  *            type: boolean
  *            description: If true, the user profile has been or will be deleted
+ *          added:
+ *            type: integer
+ *            description: Number of beneficiaries added by this manager
+ *          pending:
+ *            type: boolean
+ *            description: Shows if it is a pending community
  *      BeneficiaryActivities:
  *        type: array
  *        items:
