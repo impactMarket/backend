@@ -1,7 +1,7 @@
 import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
 import { ethers } from 'ethers';
-import { Sequelize } from 'sequelize';
+import { Sequelize, Op } from 'sequelize';
 import { assert, spy, replace, restore, SinonSpy } from 'sinon';
 import tk from 'timekeeper';
 
@@ -463,13 +463,37 @@ describe('beneficiary service', () => {
         });
 
         it('get total beneficiaries', async () => {
+            const user = await UserFactory({ n: 4 });
+            const community = await CommunityFactory([
+                {
+                    requestByAddress: user[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim,
+                    },
+                    hasAddress: true,
+            }]);
+
+            await ManagerFactory([user[0]], community[0].id);
+
+            await BeneficiaryFactory(
+                user,
+                community[0].id
+            );
+
             await models.beneficiary.update(
                 {
                     active: false,
                 },
                 {
                     where: {
-                        address: users[0].address,
+                        address: { [Op.in]: [user[1].address, user[2].address] },
                     },
                 }
             );
@@ -480,16 +504,16 @@ describe('beneficiary service', () => {
                 },
                 {
                     where: {
-                        address: users[0].address,
+                        address: user[3].address,
                     },
                 }
             );
 
             const total = await BeneficiaryService.getTotalBeneficiaries(
-                users[0].address
+                user[0].address
             );
 
-            expect(total.inactive).to.be.equal(1);
+            expect(total.inactive).to.be.equal(2);
             expect(total.suspicious).to.be.equal(1);
         });
     });
