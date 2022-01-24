@@ -461,6 +461,37 @@ describe('beneficiary service', () => {
             );
             expect(result.length).to.be.equal(0);
         });
+
+        it('get total beneficiaries', async () => {
+            await models.beneficiary.update(
+                {
+                    active: false,
+                },
+                {
+                    where: {
+                        address: users[0].address,
+                    },
+                }
+            );
+
+            await models.appUser.update(
+                {
+                    suspect: true,
+                },
+                {
+                    where: {
+                        address: users[0].address,
+                    },
+                }
+            );
+
+            const total = await BeneficiaryService.getTotalBeneficiaries(
+                users[0].address
+            );
+
+            expect(total.inactive).to.be.equal(1);
+            expect(total.suspicious).to.be.equal(1);
+        });
     });
 
     describe('beneficiary activity', () => {
