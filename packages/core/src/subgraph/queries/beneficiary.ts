@@ -1,6 +1,7 @@
 import { gql } from 'apollo-boost';
-import { BeneficiarySubgraph } from '../interfaces/beneficiary';
+
 import { client } from '../config';
+import { BeneficiarySubgraph } from '../interfaces/beneficiary';
 
 export const getBeneficiaries = async (
     communities: string[]
@@ -40,14 +41,11 @@ export const getBeneficiaries = async (
                 query,
             });
 
-            if (
-                !queryResult.data.beneficiaryEntities ||
-                !queryResult.data.beneficiaryEntities.length
-            ) {
+            result.push(...queryResult.data.beneficiaryEntities);
+
+            if (queryResult.data.beneficiaryEntities.length < first) {
                 break;
             }
-
-            result.push(...queryResult.data.beneficiaryEntities);
         }
         return result;
     } catch (error) {

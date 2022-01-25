@@ -44,7 +44,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         interfaces.ubi.community.CommunityAttributes,
         'beneficiaries'
     > & {
-        beneficiaries: subgraph.interfaces.beneficiary.BeneficiarySubgraph[];
         beneficiariesClaiming: { count: number; claimed: string };
         activity: {
             claimed: string;
@@ -108,14 +107,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         },
         order: [['id', 'DESC']],
     });
-
-    const communitiesId: string[] = communitiesStatePre.map(
-        (el) => el.contractAddress!
-    );
-
-    const beneficiaries = await subgraph.queries.beneficiary.getBeneficiaries(
-        communitiesId
-    );
 
     const communityNumbers: any = await database.models.community.findAll({
         attributes: [
@@ -468,14 +459,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const crb = communityRemovedBeneficiaryActivity.find(
             (c) => parseInt(c.id, 10) === communitiesState[index].id
         );
-        const beneficiary = beneficiaries.filter(
-            (el) =>
-                el.community.id ===
-                communitiesState[index].contractAddress?.toLowerCase()
-        );
         communities.push({
             ...communitiesState[index],
-            beneficiaries: beneficiary as any,
             beneficiariesClaiming: cn
                 ? {
                       count: parseInt(cn.count, 10),
@@ -507,137 +492,160 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         });
     }
 
-    const calculateMetrics = async (community: ICommunityToMetrics) => {
-        //
-        if (community.activity !== undefined) {
-            await database.models.ubiCommunityDailyState.create({
-                transactions: parseInt(community.activity.txs, 10),
-                reach: parseInt(community.activity.reach, 10),
-                reachOut: parseInt(community.activity.reachOut, 10),
-                volume: community.activity.volume,
-                backers: parseInt(community.activity.backers, 10),
-                monthlyBackers: parseInt(community.activity.monthlyBackers, 10),
-                raised: community.activity.raised,
-                claimed: community.activity.claimed,
-                claims: parseInt(community.activity.claims, 10),
-                fundingRate: parseFloat(community.activity.fundingRate),
-                beneficiaries: community.activity.beneficiaries,
-                communityId: community.id,
+    const calculateMetrics = async (community: ICommunityToMetrics[]) => {
+        const communitiesId: string[] = community.map(
+            (el) => el.contractAddress!
+        );
+
+        const beneficiaries =
+            await subgraph.queries.beneficiary.getBeneficiaries(communitiesId);
+
+        for (let i = 0; i < community.length; i++) {
+            const beneficiaryList = beneficiaries.filter(
+                (el) =>
+                    el.community.id ===
+                    community[i].contractAddress?.toLowerCase()
+            );
+            //
+            if (community[i].activity !== undefined) {
+                await database.models.ubiCommunityDailyState.create({
+                    transactions: parseInt(community[i].activity.txs, 10),
+                    reach: parseInt(community[i].activity.reach, 10),
+                    reachOut: parseInt(community[i].activity.reachOut, 10),
+                    volume: community[i].activity.volume,
+                    backers: parseInt(community[i].activity.backers, 10),
+                    monthlyBackers: parseInt(
+                        community[i].activity.monthlyBackers,
+                        10
+                    ),
+                    raised: community[i].activity.raised,
+                    claimed: community[i].activity.claimed,
+                    claims: parseInt(community[i].activity.claims, 10),
+                    fundingRate: parseFloat(community[i].activity.fundingRate),
+                    beneficiaries: community[i].activity.beneficiaries,
+                    communityId: community[i].id,
+                    date: yesterday,
+                });
+            }
+            // if no activity, do not calculate
+            if (
+                community[i].contract === undefined ||
+                beneficiaryList === undefined ||
+                beneficiaryList.length === 0 ||
+                community[i].metrics === undefined ||
+                community[i].beneficiariesClaiming.claimed === '0'
+            ) {
+                return;
+            }
+            let ssiDayAlone: number = 0;
+            let ssi: number = 0;
+            let ubiRate: number = 0;
+            let estimatedDuration: number = 0;
+
+            const beneficiariesTimeToWait: number[] = [];
+            const beneficiariesTimeWaited: number[] = [];
+
+            for (const beneficiary of beneficiaryList) {
+                // at least two claims are necessary
+                if (
+                    beneficiary.claims < 2 ||
+                    beneficiary.lastClaimAt === null ||
+                    beneficiary.preLastClaimAt === null
+                ) {
+                    continue;
+                }
+                // the first time you don't wait a single second, the second time, only base interval
+                if (community[i].contract === undefined) {
+                    continue;
+                }
+                const timeToWait =
+                    community[i].contract!.baseInterval +
+                    (beneficiary.claims - 2) *
+                        community[i].contract!.incrementInterval;
+                const timeWaited =
+                    Math.floor(
+                        beneficiary.lastClaimAt - beneficiary.preLastClaimAt
+                    ) - timeToWait;
+                //
+                beneficiariesTimeToWait.push(timeToWait);
+                beneficiariesTimeWaited.push(timeWaited);
+            }
+            if (
+                beneficiariesTimeToWait.length < 2 ||
+                beneficiariesTimeWaited.length < 2
+            ) {
+                return;
+            }
+            // calculate ssi day alone
+            const meanTimeToWait = mean(beneficiariesTimeToWait);
+            const madTimeWaited = median(beneficiariesTimeWaited);
+            //
+            ssiDayAlone = parseFloat(
+                ((madTimeWaited / meanTimeToWait) * 50) /* aka, 100 / 2 */
+                    .toFixed(2)
+            );
+
+            // ssi
+            const ssisAvailable = community[i].metrics!.map((m) => m.ssi);
+            if (ssisAvailable === undefined) {
+                ssi = ssiDayAlone;
+            } else {
+                const sumSSI =
+                    ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) +
+                    ssiDayAlone;
+                ssi =
+                    Math.round(
+                        parseFloat(
+                            (sumSSI / (ssisAvailable.length + 1)).toFixed(2)
+                        ) * 100
+                    ) / 100;
+            }
+
+            let daysSinceStart = Math.round(
+                (new Date().getTime() -
+                    new Date(community[i].started).getTime()) /
+                    86400000
+            ); // 86400000 1 days in ms
+            if (daysSinceStart > 30) {
+                daysSinceStart = 30;
+            }
+
+            // calculate ubiRate
+            ubiRate = parseFloat(
+                new BigNumber(community[i].beneficiariesClaiming.claimed)
+                    .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
+                    .dividedBy(community[i].beneficiariesClaiming.count)
+                    .dividedBy(daysSinceStart)
+                    .toFixed(2, 1)
+            );
+
+            // calculate estimatedDuration
+            estimatedDuration = parseFloat(
+                new BigNumber(community[i].contract!.maxClaim)
+                    .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
+                    .dividedBy(ubiRate)
+                    .dividedBy(30)
+                    .toFixed(2, 1)
+            );
+            await database.models.ubiCommunityDailyMetrics.create({
+                communityId: community[i].id,
+                ssiDayAlone,
+                ssi,
+                ubiRate,
+                estimatedDuration,
                 date: yesterday,
             });
         }
-        // if no activity, do not calculate
-        if (
-            community.contract === undefined ||
-            community.beneficiaries === undefined ||
-            community.beneficiaries.length === 0 ||
-            community.metrics === undefined ||
-            community.beneficiariesClaiming.claimed === '0'
-        ) {
-            return;
-        }
-        let ssiDayAlone: number = 0;
-        let ssi: number = 0;
-        let ubiRate: number = 0;
-        let estimatedDuration: number = 0;
-
-        const beneficiariesTimeToWait: number[] = [];
-        const beneficiariesTimeWaited: number[] = [];
-
-        for (const beneficiary of community.beneficiaries) {
-            // at least two claims are necessary
-            if (
-                beneficiary.claims < 2 ||
-                beneficiary.lastClaimAt === null ||
-                beneficiary.preLastClaimAt === null
-            ) {
-                continue;
-            }
-            // the first time you don't wait a single second, the second time, only base interval
-            if (community.contract === undefined) {
-                continue;
-            }
-            const timeToWait =
-                community.contract.baseInterval +
-                (beneficiary.claims - 2) * community.contract.incrementInterval;
-            const timeWaited =
-                Math.floor(
-                    beneficiary.lastClaimAt - beneficiary.preLastClaimAt
-                ) - timeToWait;
-            //
-            beneficiariesTimeToWait.push(timeToWait);
-            beneficiariesTimeWaited.push(timeWaited);
-        }
-        if (
-            beneficiariesTimeToWait.length < 2 ||
-            beneficiariesTimeWaited.length < 2
-        ) {
-            return;
-        }
-        // calculate ssi day alone
-        const meanTimeToWait = mean(beneficiariesTimeToWait);
-        const madTimeWaited = median(beneficiariesTimeWaited);
-        //
-        ssiDayAlone = parseFloat(
-            ((madTimeWaited / meanTimeToWait) * 50) /* aka, 100 / 2 */
-                .toFixed(2)
-        );
-
-        // ssi
-        const ssisAvailable = community.metrics.map((m) => m.ssi);
-        if (ssisAvailable === undefined) {
-            ssi = ssiDayAlone;
-        } else {
-            const sumSSI =
-                ssisAvailable.reduce((acc, cssi) => acc + cssi, 0) +
-                ssiDayAlone;
-            ssi =
-                Math.round(
-                    parseFloat(
-                        (sumSSI / (ssisAvailable.length + 1)).toFixed(2)
-                    ) * 100
-                ) / 100;
-        }
-
-        let daysSinceStart = Math.round(
-            (new Date().getTime() - new Date(community.started).getTime()) /
-                86400000
-        ); // 86400000 1 days in ms
-        if (daysSinceStart > 30) {
-            daysSinceStart = 30;
-        }
-
-        // calculate ubiRate
-        ubiRate = parseFloat(
-            new BigNumber(community.beneficiariesClaiming.claimed)
-                .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
-                .dividedBy(community.beneficiariesClaiming.count)
-                .dividedBy(daysSinceStart)
-                .toFixed(2, 1)
-        );
-
-        // calculate estimatedDuration
-        estimatedDuration = parseFloat(
-            new BigNumber(community.contract.maxClaim)
-                .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
-                .dividedBy(ubiRate)
-                .dividedBy(30)
-                .toFixed(2, 1)
-        );
-        await database.models.ubiCommunityDailyMetrics.create({
-            communityId: community.id,
-            ssiDayAlone,
-            ssi,
-            ubiRate,
-            estimatedDuration,
-            date: yesterday,
-        });
     };
 
     const pending: Promise<void>[] = [];
+    const batch = 20;
     // for each community
-    for (let index = 0; index < communities.length; index++) {
-        pending.push(calculateMetrics(communities[index]));
+    for (let i = 0; ; i = i + batch) {
+        pending.push(calculateMetrics(communities.slice(i, i + batch)));
+        if (i + batch > communities.length) {
+            break;
+        }
     }
     await Promise.all(pending);
 }
