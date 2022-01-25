@@ -535,7 +535,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 community[i].metrics === undefined ||
                 community[i].beneficiariesClaiming.claimed === '0'
             ) {
-                return;
+                continue;
             }
             let ssiDayAlone: number = 0;
             let ssi: number = 0;
@@ -574,7 +574,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 beneficiariesTimeToWait.length < 2 ||
                 beneficiariesTimeWaited.length < 2
             ) {
-                return;
+                continue;
             }
             // calculate ssi day alone
             const meanTimeToWait = mean(beneficiariesTimeToWait);
