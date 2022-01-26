@@ -639,7 +639,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     .dividedBy(30)
                     .toFixed(2, 1)
             );
-            console.log('saving daily metrics');
             dailyMetricsPromises.push(database.models.ubiCommunityDailyMetrics.create({
                 communityId: community.id,
                 ssiDayAlone,
