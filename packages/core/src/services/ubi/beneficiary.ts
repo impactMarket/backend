@@ -118,6 +118,48 @@ export default class BeneficiaryService {
         return null;
     }
 
+    public static async getTotalBeneficiaries(address: string): Promise<{
+        suspicious: number;
+        inactive: number;
+    }> {
+        const manager = await models.manager.findOne({
+            attributes: ['communityId'],
+            where: {
+                address,
+            },
+        });
+
+        if (!manager || !manager.communityId) {
+            throw new BaseError('NOT_MANAGER', 'Not a manager ' + address);
+        }
+
+        const suspicious = await models.beneficiary.count({
+            include: [
+                {
+                    attributes: ['suspect'],
+                    model: models.appUser,
+                    as: 'user',
+                },
+            ],
+            where: {
+                communityId: manager.communityId,
+                '$"user"."suspect"$': true,
+            } as any,
+        });
+
+        const inactive = await models.beneficiary.count({
+            where: {
+                communityId: manager.communityId,
+                active: false,
+            },
+        });
+
+        return {
+            suspicious,
+            inactive,
+        };
+    }
+
     public static async search(
         managerAddress: string,
         searchInput: string,

@@ -358,6 +358,38 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /community/beneficiaries/total:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Return the total of inactive and suspicious beneficiaries
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 suspicious:
+     *                   type: number
+     *                   description: Total of suspicious beneficiary.
+     *                 inactive:
+     *                   type: number
+     *                   description: Total of inactive beneficiary.
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/beneficiaries/total',
+        authenticateToken,
+        controller.getTotalBeneficiaries
+    );
+
+    /**
+     * @swagger
+     *
      * /community/beneficiaries:
      *   get:
      *     tags:
