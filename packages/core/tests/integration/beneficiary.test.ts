@@ -5,6 +5,7 @@ import { Sequelize } from 'sequelize';
 import { assert, spy, replace, restore, SinonSpy } from 'sinon';
 import tk from 'timekeeper';
 
+import config from '../../src/config';
 import { models, sequelize as database } from '../../src/database';
 import { ManagerAttributes } from '../../src/database/models/ubi/manager';
 import { AppUser } from '../../src/interfaces/app/appUser';
@@ -375,6 +376,33 @@ describe('beneficiary service', () => {
 
             expect(result.length).to.be.equal(1);
             expect(result[0].address).to.be.equal(listUsers[4].address);
+        });
+
+        it('should list suspect and login inactive beneficiaries', async () => {
+            const date = new Date();
+            date.setDate(date.getDate() - config.loginInactivityThreshold);
+
+            await sequelize.models.AppUserModel.update(
+                {
+                    suspect: true,
+                    lastLogin: date,
+                },
+                { where: { address: listUsers[0].address } }
+            );
+            const result = await BeneficiaryService.list(
+                listManagers[0].address,
+                0,
+                5,
+                {
+                    suspect: true,
+                    loginInactivity: true,
+                }
+            );
+
+            expect(result.length).to.be.equal(1);
+            expect(result[0].address).to.be.equal(listUsers[0].address);
+            // eslint-disable-next-line no-unused-expressions
+            expect(result[0].suspect).to.be.true;
         });
     });
 

@@ -349,6 +349,18 @@ export default class BeneficiaryService {
             };
         }
 
+        if (filter.loginInactivity) {
+            const date = new Date();
+            date.setDate(date.getDate() - config.loginInactivityThreshold);
+
+            where = {
+                ...where,
+                '$"user"."lastLogin"$': {
+                    [Op.lt]: date,
+                },
+            };
+        }
+
         return where;
     }
 

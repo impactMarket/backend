@@ -268,6 +268,7 @@ export type BeneficiaryFilterType = {
     active?: boolean;
     suspect?: boolean;
     inactivity?: boolean;
+    loginInactivity?: boolean;
     unidentified?: boolean;
     blocked?: boolean;
 };
