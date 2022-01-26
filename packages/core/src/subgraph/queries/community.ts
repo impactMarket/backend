@@ -39,3 +39,34 @@ export const getCommunityProposal = async (): Promise<string[]> => {
         throw new Error(error);
     }
 };
+
+export const getClaimed = async (ids: string[]): Promise<{
+    claimed: string;
+    id: string;
+}[]> => {
+    try {
+        const idsFormated = ids.map((el) => `"${el.toLocaleLowerCase()}"`);
+
+        const query = gql`
+            {
+                communityEntities(
+                    first: ${idsFormated.length}
+                    where: {
+                        id_in:[${idsFormated}]
+                    }
+                ) {
+                    id
+                    claimed
+                }
+            }
+        `;
+
+        const queryResult = await client.query({
+            query,
+        });
+
+        return queryResult.data.communityEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+}
