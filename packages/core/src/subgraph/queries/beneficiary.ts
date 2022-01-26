@@ -4,15 +4,12 @@ import { client } from '../config';
 import { BeneficiarySubgraph } from '../interfaces/beneficiary';
 
 export const getBeneficiaries = async (
-    communities: string[]
+    community: string
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const aMonthAgo = new Date();
         aMonthAgo.setDate(aMonthAgo.getDate() - 30);
         aMonthAgo.setUTCHours(0, 0, 0, 0);
-        const communitiesFormated = communities.map(
-            (el) => `"${el.toLowerCase()}"`
-        );
         const first = 1000;
         const result: BeneficiarySubgraph[] = [];
 
@@ -23,7 +20,7 @@ export const getBeneficiaries = async (
                         first: ${first}
                         skip: ${i}
                         where: {
-                            community_in:[${communitiesFormated}]
+                            community:"${community.toLowerCase()}"
                             claims_gt: 1
                             lastClaimAt_gte: ${aMonthAgo.getTime() / 1000}
                         }
