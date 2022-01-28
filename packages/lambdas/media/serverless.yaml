@@ -1,0 +1,29 @@
+service: media-lambda
+
+frameworkVersion: '3'
+
+custom:
+  bucket: bucket-test-jp2
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: us-east-1
+  iam: 
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:*
+          Resource: "arn:aws:s3:::${self:custom.bucket}/*"
+functions:
+  media:
+    handler: handler.media
+    events:
+      - s3:
+          bucket: ${self:custom.bucket}
+          event: s3:ObjectCreated:*
+          existing: true
+
+plugins:
+  - serverless-plugin-typescript
