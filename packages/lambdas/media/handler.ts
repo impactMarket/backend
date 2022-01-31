@@ -18,11 +18,6 @@ export const media = async (event: any, context: any) => {
     // assuming "key" follows the principal "topic/imageName.format"
     try {
         const { ContentType, Body } = await s3.getObject(params).promise();
-        console.log(process.env.E_AWS_REGION)
-        console.log(process.env.E_AWS_SECRET_ACCESS_KEY)
-        console.log(process.env.E_AWS_SECRET_ACCESS_KEY)
-
-        console.log('ContentType => ', ContentType)
         
         if (Body && ContentType) {
             const keySplit = key.split('/');

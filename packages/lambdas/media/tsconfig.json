@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "noImplicitAny": true,
         "sourceMap": true,
         "target": "es2017",
         "module": "commonjs",
@@ -13,7 +12,9 @@
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true,
         "esModuleInterop": true,
-        "outDir": "./build"
+        "outDir": "./build",
+        "noImplicitAny": false,
+        "skipLibCheck": true
     },
     "include": ["src/**/*", "handler.ts"],
     "exclude": ["node_modules", "**/*.spec.ts"]

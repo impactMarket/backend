@@ -1,7 +1,7 @@
 import sizeOf from 'image-size';
 import sharp from 'sharp';
-// import axios from 'axios';
 import path from 'path';
+import { services } from '@impactmarket/core';
 
 import config from './config';
 import { s3 } from './aws';
@@ -20,19 +20,18 @@ interface IJobThumbnail {
     buffer: Buffer;
 }
 
-// axios.defaults.baseURL = config.apiUrl;
+const mediaService = new services.media.MediaService()
 
 async function updateMedia(data: any) {
     console.log('update media');
-    // const r = await axios.put('/media', data);
-    // return r.data.data;
+    const r = await mediaService.updateMedia(data);
+    return r;
 }
 
 async function postThumbnails(data: any[]) {
     console.log('post thumbnails');
-    
-    // const r = await axios.post('/media/thumbnails', data);
-    // return r.data.data;
+    const r = await mediaService.postThumbnails(data);
+    return r;
 }
 
 export function folderToCategory(folder: string) {
@@ -188,7 +187,7 @@ export class ContentStorage {
                 break;
         }
 
-        const thumbnailMedias = [];
+        const thumbnailMedias: any[] = [];
         for (let i = 0; i < config.thumbnails.pixelRatio.length; i++) {
             const pr = config.thumbnails.pixelRatio[i];
             for (let i = 0; i < thumbnailSizes.length; i++) {
