@@ -12,7 +12,7 @@ export default class Email {
     public async notify(msg: MailDataRequired) {
         try {
             await sgMail.send(msg);
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
 
             if (error.response) {

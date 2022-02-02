@@ -31,7 +31,7 @@ export const media = async (event: any, context: any) => {
             await s3.deleteObject(params).promise();
         }
         return ContentType;
-    } catch (err) {
+    } catch (err: any) {
         console.log(err);
         throw new Error(err);
     }

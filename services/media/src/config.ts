@@ -12,8 +12,6 @@ export default {
 
     cloudfrontUrl: process.env.CLOUDFRONT_URL!,
 
-    apiUrl: process.env.API_URL!,
-
     thumbnails: {
         story: [
             {

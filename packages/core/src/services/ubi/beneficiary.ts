@@ -61,7 +61,7 @@ export default class BeneficiaryService {
                     },
                 }
             );
-        } catch (e) {
+        } catch (e: any) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
                     'Error inserting new Beneficiary. Data = ' +
@@ -411,7 +411,7 @@ export default class BeneficiaryService {
     ): Promise<void> {
         try {
             await models.ubiBeneficiaryTransaction.create(beneficiaryTx);
-        } catch (e) {
+        } catch (e: any) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
                     'Error inserting new UbiBeneficiaryTransaction. Data = ' +
@@ -427,7 +427,7 @@ export default class BeneficiaryService {
     ): Promise<void> {
         try {
             await models.ubiBeneficiaryRegistry.create(registry);
-        } catch (e) {
+        } catch (e: any) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
                     'Error inserting new UbiBeneficiaryTransaction. Data = ' +

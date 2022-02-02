@@ -48,7 +48,7 @@ export function folderToCategory(folder: string) {
 }
 
 export class ContentStorage {
-    constructor() {}
+    // constructor() {}
 
     public async processAndUpload(
         buffer: Buffer,

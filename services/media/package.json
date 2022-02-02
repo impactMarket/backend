@@ -10,7 +10,7 @@
         "node": "14.15.1"
     },
     "dependencies": {
-        "@impactmarket/core": "file:../../core",
+        "@impactmarket/core": "1.0.0",
         "aws-sdk": "2.937.0",
         "axios": "^0.21.1",
         "image-size": "^1.0.1",
@@ -26,6 +26,7 @@
         "eslint-config-prettier": "6.11.0",
         "eslint-config-universe": "4.0.0",
         "serverless": "3.0.0",
+        "serverless-bundle": "^5.2.0",
         "serverless-plugin-typescript": "2.1.0",
         "typescript": "3.8.3"
     }

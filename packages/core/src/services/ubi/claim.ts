@@ -8,7 +8,7 @@ export default class ClaimService {
     public static async add(claimData: UbiClaimCreation): Promise<void> {
         try {
             await models.ubiClaim.create(claimData);
-        } catch (e) {
+        } catch (e: any) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
                     'Error inserting new Claim. Data = ' +

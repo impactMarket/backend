@@ -4,12 +4,19 @@ frameworkVersion: '3'
 
 custom:
   bucket: bucket-test-jp2
+  bundle:
+    packagerOptions:
+      scripts:
+        - rm -rf node_modules/sharp && npm install --arch=x64 --platform=linux sharp
+    packager: yarn
+    ignorePackages:
+      - pg-native
 
 provider:
   name: aws
   runtime: nodejs14.x
   region: us-east-1
-  iam: 
+  iam:
     role:
       statements:
         - Effect: Allow
@@ -26,4 +33,4 @@ functions:
           existing: true
 
 plugins:
-  - serverless-plugin-typescript
+  - serverless-bundle
