@@ -49,6 +49,8 @@ import * as UbiCommunitySuspect from './models/ubi/ubiCommunitySuspect';
 import * as UbiPromoter from './models/ubi/ubiPromoter';
 import * as UbiPromoterSocialMedia from './models/ubi/ubiPromoterSocialMedia';
 
+import pg from 'pg';
+
 let logging:
     | boolean
     | ((sql: string, timing?: number | undefined) => void)
@@ -62,16 +64,22 @@ const dbConfig: Options = {
     dialect: 'postgres',
     dialectOptions: {
         connectTimeout: 60000,
+        ssl: {
+            require: true,
+            rejectUnauthorized: false // <<<<<<< YOU NEED THIS
+        }
     },
     pool: {
-        max: 30,
+        max: 2,
         min: 0,
-        acquire: 60000,
-        idle: 5000,
+        acquire: 3000,
+        idle: 0,
+        evict: 10000,
     },
-    protocol: 'postgres',
-    native: true,
-    logging,
+    // protocol: 'postgres',
+    dialectModule: pg,
+    // native: true,
+    // logging,
     // query: { raw: true }, // I wish, eager loading gets fixed
 };
 const sequelize = new Sequelize(config.dbUrl, dbConfig);
