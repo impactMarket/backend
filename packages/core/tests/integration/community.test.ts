@@ -891,6 +891,11 @@ describe('community service', () => {
             afterEach(async () => {
                 await truncate(sequelize, 'Beneficiary');
                 await truncate(sequelize, 'Community');
+                returnSubgraph.resetHistory();
+            });
+
+            after(async () => {
+                returnSubgraph.restore();
             });
 
             it('filter with specific fields', async () => {
@@ -1214,7 +1219,50 @@ describe('community service', () => {
                             longitude: -46.4841214,
                         },
                     },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
                 ]);
+
+                const data = ethers.utils.defaultAbiCoder.encode(
+                    [
+                        'address[]',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                    ],
+                    [
+                        [communities[2].requestByAddress],
+                        communities[2].contract!.claimAmount,
+                        communities[2].contract!.maxClaim,
+                        '10000000000000000',
+                        communities[2].contract!.baseInterval,
+                        communities[2].contract!.incrementInterval,
+                        '10000000000000000',
+                        '100000000000000000',
+                    ]
+                );
+
+                returnSubgraph.returns([data]);
 
                 const result = await CommunityService.list({
                     status: 'pending',
@@ -1224,160 +1272,6 @@ describe('community service', () => {
                     id: communities[1].id,
                     status: 'pending',
                 });
-            });
-        });
-
-        describe('list pending', () => {
-            afterEach(async () => {
-                await truncate(sequelize, 'Beneficiary');
-                await truncate(sequelize, 'Community');
-                returnSubgraph.resetHistory();
-            });
-
-            after(async () => {
-                returnSubgraph.restore();
-            });
-
-            it('should return pending communities with no open proposals', async () => {
-                const communities = await CommunityFactory([
-                    {
-                        requestByAddress: users[0].address,
-                        started: new Date(),
-                        status: 'pending',
-                        visibility: 'public',
-                        contract: {
-                            baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
-                            communityId: 0,
-                            incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
-                        },
-                        hasAddress: true,
-                        gps: {
-                            latitude: -23.4378873,
-                            longitude: -46.4841214,
-                        },
-                    },
-                    {
-                        requestByAddress: users[1].address,
-                        started: new Date(),
-                        status: 'pending',
-                        visibility: 'public',
-                        contract: {
-                            baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
-                            communityId: 0,
-                            incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
-                        },
-                        hasAddress: true,
-                        gps: {
-                            latitude: -23.4378873,
-                            longitude: -46.4841214,
-                        },
-                    },
-                ]);
-
-                const data = ethers.utils.defaultAbiCoder.encode(
-                    [
-                        'address[]',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                    ],
-                    [
-                        [communities[0].requestByAddress],
-                        communities[0].contract!.claimAmount,
-                        communities[0].contract!.maxClaim,
-                        '10000000000000000',
-                        communities[0].contract!.baseInterval,
-                        communities[0].contract!.incrementInterval,
-                        '10000000000000000',
-                        '100000000000000000',
-                    ]
-                );
-
-                returnSubgraph.returns([data]);
-
-                const pending = await CommunityService.pending();
-
-                expect(pending.length).to.be.equal(1);
-                expect(pending[0].id).to.be.equal(communities[1].id);
-            });
-
-            it('should return pending communities with no open proposals (failed to generate calldata)', async () => {
-                const communities = await CommunityFactory([
-                    {
-                        requestByAddress: users[0].address,
-                        started: new Date(),
-                        status: 'pending',
-                        visibility: 'public',
-                        contract: {
-                            baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
-                            communityId: 0,
-                            incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
-                        },
-                        hasAddress: true,
-                        gps: {
-                            latitude: -23.4378873,
-                            longitude: -46.4841214,
-                        },
-                    },
-                    {
-                        requestByAddress: 'invalid_address',
-                        started: new Date(),
-                        status: 'pending',
-                        visibility: 'public',
-                        contract: {
-                            baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
-                            communityId: 0,
-                            incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
-                        },
-                        hasAddress: true,
-                        gps: {
-                            latitude: -23.4378873,
-                            longitude: -46.4841214,
-                        },
-                    },
-                ]);
-
-                const data = ethers.utils.defaultAbiCoder.encode(
-                    [
-                        'address[]',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                    ],
-                    [
-                        [communities[0].requestByAddress],
-                        communities[0].contract!.claimAmount,
-                        communities[0].contract!.maxClaim,
-                        '10000000000000000',
-                        communities[0].contract!.baseInterval,
-                        communities[0].contract!.incrementInterval,
-                        '10000000000000000',
-                        '100000000000000000',
-                    ]
-                );
-
-                returnSubgraph.returns([data]);
-
-                const pending = await CommunityService.pending();
-
-                expect(pending.length).to.be.equal(1);
-                expect(pending[0].id).to.be.equal(communities[1].id);
             });
 
             it('should return pending communities with no open proposals (failed to found proposals in subgraph)', async () => {
@@ -1422,9 +1316,11 @@ describe('community service', () => {
 
                 returnSubgraph.returns([]);
 
-                const pending = await CommunityService.pending();
+                const pending = await CommunityService.list({
+                    status: 'pending',
+                });
 
-                expect(pending.length).to.be.equal(2);
+                expect(pending.count).to.be.equal(2);
             });
         });
     });
