@@ -2,20 +2,11 @@ import { gql } from 'apollo-boost';
 
 import { client } from '../config';
 
-export const getCommunityProposal = async (
-    callData: string[]
-): Promise<string[]> => {
+export const getCommunityProposal = async (): Promise<string[]> => {
     try {
-        const data = callData.filter(Boolean);
-        const callDataFormated = data.map((el) => `"${el}"`);
-
         const query = gql`
             {
-                communityProposalEntities(
-                    where: {
-                        calldata_in:[${callDataFormated}]
-                    }
-                ) {
+                communityProposalEntities(first: 100) {
                     calldata
                 }
             }

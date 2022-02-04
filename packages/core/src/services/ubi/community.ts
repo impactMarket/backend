@@ -384,6 +384,16 @@ export default class CommunityService {
             };
         }
 
+        if (query.status === 'pending') {
+            const communityProposals = await this.getOpenProposals();
+            extendedWhere = {
+                ...extendedWhere,
+                id: {
+                    [Op.notIn]: communityProposals,
+                },
+            };
+        }
+
         if (query.orderBy) {
             const orders = query.orderBy.split(';');
 
@@ -724,6 +734,37 @@ export default class CommunityService {
             count: communityCount,
             rows: communities,
         };
+    }
+
+    public static async getOpenProposals(): Promise<number[]> {
+        const proposals = await getCommunityProposal();
+        const requestByAddress = proposals.map((element) => {
+            const calldata = ethers.utils.defaultAbiCoder.decode(
+                [
+                    'address[]',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                ],
+                element
+            );
+            return calldata[0][0];
+        });
+
+        const community = await this.community.findAll({
+            attributes: ['id'],
+            where: {
+                requestByAddress: {
+                    [Op.in]: requestByAddress,
+                },
+            },
+        });
+
+        return community.map((el) => el.id);
     }
 
     public static async findResquestChangeUbiParams(
@@ -1237,49 +1278,7 @@ export default class CommunityService {
             type: QueryTypes.SELECT,
         });
 
-        const callData = rawResult.reduce((acc, el) => {
-            try {
-                const data = ethers.utils.defaultAbiCoder.encode(
-                    [
-                        'address[]',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                        'uint256',
-                    ],
-                    [
-                        [el.requestByAddress],
-                        el.claimAmount,
-                        el.maxClaim,
-                        '10000000000000000',
-                        el.baseInterval,
-                        el.incrementInterval,
-                        '10000000000000000',
-                        '100000000000000000',
-                    ]
-                );
-                acc.push({
-                    callData: data,
-                    ...el,
-                });
-            } catch (error) {
-                acc.push(el);
-            }
-
-            return acc;
-        }, [] as any);
-
-        const communityProposal = await getCommunityProposal(
-            callData.map((el) => el.callData)
-        );
-        const pendings = callData.filter(
-            (el) => communityProposal.indexOf(el.callData) === -1
-        );
-
-        const results: ICommunityPendingDetails[] = pendings.map((c) => ({
+        const results: ICommunityPendingDetails[] = rawResult.map((c) => ({
             id: c.id,
             publicId: c.publicId,
             contractAddress: c.contractAddress,
