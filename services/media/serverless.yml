@@ -5,9 +5,9 @@ frameworkVersion: '3'
 custom:
   bucket: bucket-test-jp2
   bundle:
-    copyFiles:                      # Copy any additional files to the generated package
-      - from: 'src/*'              # Where the files are currently
-        to: './'
+    # copyFiles:                      # Copy any additional files to the generated package
+    #   - from: 'src/*'              # Where the files are currently
+    #     to: './'
     packagerOptions:
       scripts:
         - rm -rf node_modules/sharp && npm install --arch=x64 --platform=linux sharp
