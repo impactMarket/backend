@@ -388,7 +388,7 @@ export default class CommunityService {
             const communityProposals = await this.getOpenProposals();
             extendedWhere = {
                 ...extendedWhere,
-                id: {
+                requestByAddress: {
                     [Op.notIn]: communityProposals,
                 },
             };
@@ -736,7 +736,7 @@ export default class CommunityService {
         };
     }
 
-    public static async getOpenProposals(): Promise<number[]> {
+    public static async getOpenProposals(): Promise<string[]> {
         const proposals = await getCommunityProposal();
         const requestByAddress = proposals.map((element) => {
             const calldata = ethers.utils.defaultAbiCoder.decode(
@@ -754,17 +754,8 @@ export default class CommunityService {
             );
             return calldata[0][0];
         });
-
-        const community = await this.community.findAll({
-            attributes: ['id'],
-            where: {
-                requestByAddress: {
-                    [Op.in]: requestByAddress,
-                },
-            },
-        });
-
-        return community.map((el) => el.id);
+        
+        return requestByAddress;
     }
 
     public static async findResquestChangeUbiParams(

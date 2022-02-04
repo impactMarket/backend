@@ -4,9 +4,16 @@ import { client } from '../config';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
+        blockNumber = await provider.getBlockNumber();
+
         const query = gql`
             {
-                communityProposalEntities(first: 100) {
+                communityProposalEntities(
+                    where: {
+                        status: 0
+                        endBlock_gt: 9723222
+                    }
+                ) {
                     calldata
                 }
             }
