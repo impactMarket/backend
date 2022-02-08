@@ -145,7 +145,7 @@ export default class UserService {
                     where: { address },
                 }
             );
-        } catch (error: any) {
+        } catch (error) {
             throw new BaseError('UNEXPECTED_ERROR', error.message);
         }
     }
@@ -196,7 +196,7 @@ export default class UserService {
             );
 
             await Promise.all(promises);
-        } catch (error: any) {
+        } catch (error) {
             throw new BaseError('UNEXPECTED_ERROR', error.message);
         }
     }
@@ -687,7 +687,7 @@ export default class UserService {
                     throw new Error('User not found on HubsPot');
                 }
             }
-        } catch (error: any) {
+        } catch (error) {
             if (error.response?.body?.category === 'CONFLICT') {
                 throw new Error(error.response.body.message);
             }

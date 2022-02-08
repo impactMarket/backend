@@ -31,7 +31,7 @@ export default class ManagerService {
                     transaction: t,
                 });
                 return updated[0] > 0;
-            } catch (e: any) {
+            } catch (e) {
                 if (e.name !== 'SequelizeUniqueConstraintError') {
                     Logger.error(
                         'Error inserting new Manager. Data = ' +

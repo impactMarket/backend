@@ -14,7 +14,8 @@
         "esModuleInterop": true,
         "outDir": "./build",
         "noImplicitAny": false,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "useUnknownInCatchVariables": false,
     },
     "include": ["src/**/*", "handler.ts"],
     "exclude": ["node_modules", "**/*.spec.ts"]

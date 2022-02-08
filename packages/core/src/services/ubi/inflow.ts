@@ -25,7 +25,7 @@ export default class InflowService {
         };
         try {
             await this.inflow.create(inflowData);
-        } catch (e: any) {
+        } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
                 Logger.error(
                     'Error inserting new Inflow. Data = ' +

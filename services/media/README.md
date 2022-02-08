@@ -17,5 +17,5 @@ yarn build
 Deploy lambda
 ```
 cd services/media
-sls deploy
+sls deploy --stage STAGE
 ```
