@@ -1026,6 +1026,7 @@ describe('community service', () => {
                     'language',
                     'name',
                     'proposalId',
+                    'ambassadorId',
                     'publicId',
                     'requestByAddress',
                     'review',
