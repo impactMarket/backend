@@ -97,6 +97,7 @@ function validateEnv() {
         IMPACTLABS_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         IDO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         TREASURY_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
+        AWS_LAMBDA: bool({ default: false }),
     });
 }
 

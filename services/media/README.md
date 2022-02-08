@@ -1,6 +1,21 @@
+Configure Serverless Framework
 ```
+npm install -g serverless
+
+serverless config credentials \
+    --provider aws \
+    --key AWS_ACCESS_KEY_ID \
+    --secret AWS_SECRET_ACCESS_KEY
+```
+
+Build `core`
+```
+cd packages/core
 yarn build
--- move .js files in /build to root folder
-zip -r function.zip .
-aws lambda update-function-code --function-name newImageUploaded --zip-file fileb://function.zip
+```
+
+Deploy lambda
+```
+cd services/media
+sls deploy
 ```

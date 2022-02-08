@@ -64,22 +64,21 @@ const dbConfig: Options = {
     dialect: 'postgres',
     dialectOptions: {
         connectTimeout: 60000,
-        ssl: {
+        ssl: config.aws.lambda ? {
             require: true,
-            rejectUnauthorized: false // <<<<<<< YOU NEED THIS
-        }
+            rejectUnauthorized: false
+        } : {}
     },
-    pool: {
-        max: 2,
-        min: 0,
-        acquire: 3000,
-        idle: 0,
-        evict: 10000,
-    },
-    // protocol: 'postgres',
     dialectModule: pg,
-    // native: true,
-    // logging,
+    pool: {
+        max: 30,
+        min: 0,
+        acquire: 60000,
+        idle: 5000,
+    },
+    protocol: 'postgres',
+    native: !config.aws.lambda, // if lambda = true, then native = false
+    logging,
     // query: { raw: true }, // I wish, eager loading gets fixed
 };
 const sequelize = new Sequelize(config.dbUrl, dbConfig);

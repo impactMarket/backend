@@ -1,13 +1,10 @@
 service: media-lambda
 
 frameworkVersion: '3'
+useDotenv: true
 
 custom:
-  bucket: bucket-test-jp2
   bundle:
-    # copyFiles:                      # Copy any additional files to the generated package
-    #   - from: 'src/*'              # Where the files are currently
-    #     to: './'
     packagerOptions:
       scripts:
         - rm -rf node_modules/sharp && npm install --arch=x64 --platform=linux sharp
@@ -21,20 +18,24 @@ custom:
 provider:
   name: aws
   runtime: nodejs14.x
-  region: us-east-1
+  region: ${env:AWS_REGION}
   iam:
     role:
       statements:
         - Effect: Allow
           Action:
             - s3:*
-          Resource: "arn:aws:s3:::${self:custom.bucket}/*"
+          Resource:
+            - "arn:aws:s3:::${env:AWS_BUCKET_TEMPORARY}/*"
+            - "arn:aws:s3:::${env:AWS_BUCKET_COMMUNITY}/*"
+            - "arn:aws:s3:::${env:AWS_BUCKET_STORY}/*"
+            - "arn:aws:s3:::${env:AWS_BUCKET_PROFILE}/*"
 functions:
   media:
     handler: handler.media
     events:
       - s3:
-          bucket: ${self:custom.bucket}
+          bucket: ${env:AWS_BUCKET_TEMPORARY}
           event: s3:ObjectCreated:*
           existing: true
 
