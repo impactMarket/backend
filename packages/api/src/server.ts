@@ -7,6 +7,7 @@ import cors from 'cors';
 import express, { Request, Response } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import path from 'path';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
@@ -106,11 +107,11 @@ export default (app: express.Application): void => {
                 },
             },
             apis: [
-                './src/routes/*.ts',
-                '../core/src/services/*.ts',
-                '../core/src/interfaces/ubi/*.ts',
-                '../core/src/interfaces/app/*.ts',
-                '../core/src/interfaces/story/*.ts',
+                path.join(__dirname, '../src/routes/*.ts'),
+                path.join(__dirname, '../../core/src/services/*.ts'),
+                path.join(__dirname, '../../core/src/interfaces/ubi/*.ts'),
+                path.join(__dirname, '../../core/src/interfaces/app/*.ts'),
+                path.join(__dirname, '../../core/src/interfaces/story/*.ts'),
             ],
         };
         const swaggerSpec = swaggerJsdoc(options);
