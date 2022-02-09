@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize';
-import { stub, assert, match, SinonStub } from 'sinon';
+import { stub, assert, match, SinonStub, restore } from 'sinon';
 
 import GlobalDemographicsService from '../../../src/services/global/globalDemographics';
 
@@ -294,6 +294,10 @@ describe('globalDemographics', () => {
         );
     });
 
+    after(() => {
+        restore();
+    });
+
     it('#calculateDemographics()', async () => {
         await GlobalDemographicsService.calculateDemographics();
         //
@@ -368,9 +372,20 @@ describe('calculate global demographics', () => {
         await GlobalDemographicsService.calculateDemographics();
         await waitForStubCall(dbGlobalDemographicsInsertStub, 1);
         assert.callCount(dbGlobalDemographicsInsertStub, 1);
-        assert.calledWith(dbGlobalDemographicsInsertStub.getCall(0), {
-            
-        });
+        assert.calledWith(dbGlobalDemographicsInsertStub.getCall(0), [{
+            ageRange1:'0',
+            ageRange2:'0',
+            ageRange3:'0',
+            ageRange4:'0',
+            ageRange5:'0',
+            ageRange6:'0',
+            country: match.any,
+            date: match.any,
+            female:1,
+            male:0,
+            totalGender:2,
+            undisclosed:1,
+        }]);
     });
 });
 
