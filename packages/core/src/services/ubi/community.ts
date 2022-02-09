@@ -32,6 +32,7 @@ import { UbiCommunityLabel } from '../../interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '../../interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '../../interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
+import { getCommunityProposal } from '../../subgraph/queries/community';
 import { BaseError } from '../../utils/baseError';
 import { fetchData } from '../../utils/dataFetching';
 import { notifyManagerAdded } from '../../utils/util';
@@ -383,6 +384,16 @@ export default class CommunityService {
             };
         }
 
+        if (query.status === 'pending') {
+            const communityProposals = await this.getOpenProposals();
+            extendedWhere = {
+                ...extendedWhere,
+                requestByAddress: {
+                    [Op.notIn]: communityProposals,
+                },
+            };
+        }
+
         if (query.orderBy) {
             const orders = query.orderBy.split(';');
 
@@ -723,6 +734,28 @@ export default class CommunityService {
             count: communityCount,
             rows: communities,
         };
+    }
+
+    public static async getOpenProposals(): Promise<string[]> {
+        const proposals = await getCommunityProposal();
+        const requestByAddress = proposals.map((element) => {
+            const calldata = ethers.utils.defaultAbiCoder.decode(
+                [
+                    'address[]',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                ],
+                element
+            );
+            return calldata[0][0];
+        });
+        
+        return requestByAddress;
     }
 
     public static async findResquestChangeUbiParams(
