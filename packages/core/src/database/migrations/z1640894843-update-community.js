@@ -6,8 +6,8 @@ module.exports = {
         if (process.env.NODE_ENV === 'test') {
             return;
         }
-        await queryInterface.addColumn('community', 'ambassadorId', {
-            type: Sequelize.INTEGER,
+        await queryInterface.addColumn('community', 'ambassadorAddress', {
+            type: Sequelize.STRING(44),
             allowNull: true,
         });
     },

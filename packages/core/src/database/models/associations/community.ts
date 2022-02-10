@@ -110,8 +110,8 @@ export function communityAssociation(sequelize: Sequelize) {
         as: 'claims',
     });
     sequelize.models.Community.hasOne(sequelize.models.AppUserModel, {
-        foreignKey: 'id',
-        sourceKey: 'ambassadorId',
+        foreignKey: 'address',
+        sourceKey: 'ambassadorAddress',
         as: 'ambassador',
     });
 }

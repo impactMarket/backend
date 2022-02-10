@@ -155,7 +155,7 @@ export interface CommunityAttributes {
     review: 'pending' | 'in-progress' | 'halted' | 'closed';
     started: Date; // TODO: to be removed
     proposalId: number | null;
-    ambassadorId: number | null;
+    ambassadorAddress: string | null;
 
     // timestamps
     createdAt: Date;

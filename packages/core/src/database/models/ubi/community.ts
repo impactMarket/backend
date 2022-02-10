@@ -32,7 +32,7 @@ export class Community extends Model<
     public review!: 'pending' | 'in-progress' | 'halted' | 'closed';
     public started!: Date;
     public proposalId!: number | null;
-    public ambassadorId!: number | null;
+    public ambassadorAddress!: string | null;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -139,8 +139,8 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 type: DataTypes.INTEGER,
                 allowNull: true,
             },
-            ambassadorId: {
-                type: DataTypes.INTEGER,
+            ambassadorAddress: {
+                type: DataTypes.STRING(44),
                 allowNull: true,
             },
             createdAt: {
