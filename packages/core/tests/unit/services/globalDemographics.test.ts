@@ -1,6 +1,18 @@
-import { stub, assert, match, SinonStub } from 'sinon';
+import { Sequelize } from 'sequelize';
+import { stub, assert, match, SinonStub, restore } from 'sinon';
 
 import GlobalDemographicsService from '../../../src/services/global/globalDemographics';
+
+import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
+import { AppUser } from '../../../src/interfaces/app/appUser';
+import { BeneficiaryAttributes } from '../../../src/interfaces/ubi/beneficiary';
+import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
+import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
+import CommunityFactory from '../../factories/community';
+import UserFactory from '../../factories/user';
+import ManagerFactory from '../../factories/manager';
+import BeneficiaryFactory from '../../factories/beneficiary';
+import { models } from '../../../src/database';
 
 const genderQueryResult = [
     {
@@ -282,6 +294,10 @@ describe('globalDemographics', () => {
         );
     });
 
+    after(() => {
+        restore();
+    });
+
     it('#calculateDemographics()', async () => {
         await GlobalDemographicsService.calculateDemographics();
         //
@@ -290,3 +306,87 @@ describe('globalDemographics', () => {
         assert.calledWith(dbGlobalDemographicsInsertStub.getCall(0), results);
     });
 });
+
+describe('calculate global demographics', () => {
+    let sequelize: Sequelize;
+    let users: AppUser[];
+    let communities: CommunityAttributes[];
+    let managers: ManagerAttributes[];
+    let beneficiaries: BeneficiaryAttributes[];
+    const maxClaim = '450000000000000000000';
+    let dbGlobalDemographicsInsertStub: SinonStub;
+
+    before(async () => {
+        sequelize = sequelizeSetup();
+        await sequelize.sync();
+
+        users = await UserFactory({
+            n: 2,
+            props: [
+                {
+                    gender: 'm'
+                },
+                {
+                    gender: 'f'
+                }
+            ]
+        });
+        communities = await CommunityFactory([
+            {
+                requestByAddress: users[0].address,
+                started: new Date(),
+                status: 'valid',
+                visibility: 'public',
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '1000000000000000000',
+                    communityId: 0,
+                    incrementInterval: 5 * 60,
+                    maxClaim,
+                },
+                hasAddress: true,
+            }
+        ]);
+        managers = await ManagerFactory([users[0]], communities[0].id);
+        beneficiaries = await BeneficiaryFactory(
+            users.slice(0, 2),
+            communities[0].id
+        );
+        dbGlobalDemographicsInsertStub = stub(
+            GlobalDemographicsService.globalDemographics,
+            'bulkCreate'
+        );
+    });
+
+    after(async () => {
+        await truncate(sequelize, 'Beneficiary');
+        await truncate(sequelize);
+    });
+
+    it('calculateDemographics with undisclosed', async () => {
+        await models.appUser.destroy({
+            where: {
+                address: users[0].address
+            }
+        });
+        await GlobalDemographicsService.calculateDemographics();
+        await waitForStubCall(dbGlobalDemographicsInsertStub, 1);
+        assert.callCount(dbGlobalDemographicsInsertStub, 1);
+        assert.calledWith(dbGlobalDemographicsInsertStub.getCall(0), [{
+            ageRange1:'0',
+            ageRange2:'0',
+            ageRange3:'0',
+            ageRange4:'0',
+            ageRange5:'0',
+            ageRange6:'0',
+            country: match.any,
+            date: match.any,
+            female:1,
+            male:0,
+            totalGender:2,
+            undisclosed:1,
+        }]);
+    });
+});
+
+

@@ -143,9 +143,17 @@ export default class GlobalDemographicsService {
          and c.status = 'valid'
          group by c.country`;
 
-        const sqlGenderQuery = `select u.gender, count(u.gender) total, c.country
-        from "app_user" u, beneficiary b, community c
-        where u.address = b.address
+        const sqlGenderQuery = `
+        select
+            u.gender,
+            CASE
+                WHEN u.gender is not null THEN COUNT(u.gender)
+                ELSE COUNT(b.address)
+            END as total,
+            c.country
+        from beneficiary b
+            left join app_user u on u.address = b.address
+            inner join community c on c.id = b."communityId"
         and b.active = true
         and b."communityId" = c.id
         and c.visibility = 'public'
@@ -213,7 +221,7 @@ export default class GlobalDemographicsService {
                     totalGender: previous.totalGender + gTotal,
                     undisclosed: p + gTotal,
                 });
-            } else if (element.gender === 'u') {
+            } else if (element.gender === 'u' || element.gender === null) {
                 const p = previous.undisclosed;
                 gender.set(element.country, {
                     ...previous,
