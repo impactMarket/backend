@@ -259,13 +259,13 @@ describe('globalDemographics', () => {
     //         }
     //     },
     // });
-
+    const globalDemographicsService = new GlobalDemographicsService();
     let dbGlobalDemographicsInsertStub: SinonStub;
     let dbSequelizeQueryStub: SinonStub;
 
     before(() => {
         dbSequelizeQueryStub = stub(
-            GlobalDemographicsService.sequelize,
+            globalDemographicsService.sequelize,
             'query'
         );
 
@@ -277,13 +277,13 @@ describe('globalDemographics', () => {
             .returns(Promise.resolve(genderQueryResult as any));
 
         dbGlobalDemographicsInsertStub = stub(
-            GlobalDemographicsService.globalDemographics,
+            globalDemographicsService.globalDemographics,
             'bulkCreate'
         );
     });
 
     it('#calculateDemographics()', async () => {
-        await GlobalDemographicsService.calculateDemographics();
+        await globalDemographicsService.calculate();
         //
         await waitForStubCall(dbGlobalDemographicsInsertStub, 1);
         assert.callCount(dbGlobalDemographicsInsertStub, 1);

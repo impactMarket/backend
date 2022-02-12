@@ -6,6 +6,7 @@ import CommunityContractService from './communityContract';
 import CommunityDailyMetricsService from './communityDailyMetrics';
 import InflowService from './inflow';
 import ManagerService from './managers';
+import CommunityDemographicsService from './communityDemographics';
 
 export {
     BeneficiaryService,
@@ -16,4 +17,5 @@ export {
     CommunityDailyMetricsService,
     InflowService,
     ManagerService,
+    CommunityDemographicsService,
 };

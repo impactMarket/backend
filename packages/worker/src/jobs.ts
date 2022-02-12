@@ -235,6 +235,9 @@ function startChainSubscriber(fallback?: boolean): ChainSubscribers {
  * They all follow the API timezone, which should be UTC, same as postgresql.
  */
 function cron() {
+    const globalDemographicsService = new services.global.GlobalDemographicsService();
+    const communityDemographicsService = new services.ubi.CommunityDemographicsService();
+
     // multiple times a day
 
     // every four hour, update exchange rates
@@ -394,7 +397,7 @@ function cron() {
     new CronJob(
         '0 0 * * *',
         () => {
-            services.global.GlobalDemographicsService.calculateDemographics()
+            globalDemographicsService.calculate()
                 .then(() => {
                     services.app.CronJobExecutedService.add(
                         'calculateDemographics'
@@ -416,7 +419,7 @@ function cron() {
         new CronJob(
             '0 0 * * *',
             () => {
-                services.global.GlobalDemographicsService.calculateCommunitiesDemographics()
+                communityDemographicsService.calculate()
                     .then(() => {
                         services.app.CronJobExecutedService.add(
                             'calculateCommunitiesDemographics'
