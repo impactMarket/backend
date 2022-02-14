@@ -386,8 +386,8 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 ageRange6: '0',
                 male: '0',
                 female: '0',
-                undisclosed: '2',
-                totalGender: '2',
+                undisclosed: '3',
+                totalGender: '3',
             },
         ]);
     });
