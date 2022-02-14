@@ -2184,6 +2184,15 @@ export default class CommunityService {
             });
         }
 
+        if (fields.ambassador) {
+            extendedInclude.push({
+                attributes:
+                    fields.ambassador.length > 0 ? fields.ambassador : undefined,
+                model: models.appUser,
+                as: 'ambassador',
+            });
+        }
+
         return extendedInclude;
     }
 

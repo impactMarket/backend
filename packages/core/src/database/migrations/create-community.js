@@ -93,6 +93,10 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: true,
             },
+            ambassadorAddress: {
+                type: Sequelize.STRING(44),
+                allowNull: true,
+            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,

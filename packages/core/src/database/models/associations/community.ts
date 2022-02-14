@@ -109,11 +109,9 @@ export function communityAssociation(sequelize: Sequelize) {
         sourceKey: 'id',
         as: 'claims',
     });
-    sequelize.models.UbiCommunityDemographicsModel.belongsTo(
-        sequelize.models.Community,
-        {
-            foreignKey: 'communityId',
-            as: 'community',
-        }
-    );
+    sequelize.models.Community.hasOne(sequelize.models.AppUserModel, {
+        foreignKey: 'address',
+        sourceKey: 'ambassadorAddress',
+        as: 'ambassador',
+    });
 }
