@@ -24,8 +24,8 @@
   },
   "dependencies": {
     "@impactmarket/core": "1.0.0",
-    "@sentry/node": "6.15.0",
-    "@sentry/tracing": "6.15.0",
+    "@sentry/node": "6.17.8",
+    "@sentry/tracing": "6.17.8",
     "@slack/events-api": "3.0.1",
     "bignumber.js": "9.0.0",
     "body-parser": "1.19.0",
