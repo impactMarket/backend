@@ -1,7 +1,5 @@
 import { Sequelize } from 'sequelize';
 import { stub, assert, match, SinonStub, restore } from 'sinon';
-import { jumpToTomorrowMidnight } from '../../config/utils';
-import tk from 'timekeeper';
 
 import GlobalDemographicsService from '../../../src/services/global/globalDemographics';
 import CommunityDemographicsService from '../../../src/services/ubi/communityDemographics';
