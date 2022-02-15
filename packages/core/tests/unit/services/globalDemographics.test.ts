@@ -125,8 +125,6 @@ describe('calculate global demographics', () => {
 
         await communityDemographicsService.calculate();
 
-        tk.travel(jumpToTomorrowMidnight());
-
         await globalDemographicsService.calculate();
         await waitForStubCall(dbGlobalDemographicsInsertStub, 1);
         assert.callCount(dbGlobalDemographicsInsertStub, 1);

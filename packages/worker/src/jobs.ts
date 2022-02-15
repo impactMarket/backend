@@ -393,27 +393,6 @@ function cron() {
         true
     );
 
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '0 0 * * *',
-        () => {
-            globalDemographicsService.calculate()
-                .then(() => {
-                    services.app.CronJobExecutedService.add(
-                        'calculateDemographics'
-                    );
-                    utils.Logger.info(
-                        'calculateDemographics successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    utils.Logger.error('calculateDemographics FAILED! ' + e);
-                });
-        },
-        null,
-        true
-    );
-
     try {
         // eslint-disable-next-line no-new
         new CronJob(
@@ -427,6 +406,19 @@ function cron() {
                         utils.Logger.info(
                             'calculateCommunitiesDemographics successfully executed!'
                         );
+
+                        globalDemographicsService.calculate()
+                            .then(() => {
+                                services.app.CronJobExecutedService.add(
+                                    'calculateDemographics'
+                                );
+                                utils.Logger.info(
+                                    'calculateDemographics successfully executed!'
+                                );
+                            })
+                            .catch((e) => {
+                                utils.Logger.error('calculateDemographics FAILED! ' + e);
+                            });
                     })
                     .catch((e) => {
                         utils.Logger.error(
