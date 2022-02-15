@@ -898,6 +898,7 @@ export default class CommunityService {
             added: number;
             address?: string;
             user?: AppUser;
+            active: boolean;
         }[]
     > {
         const community = (await this.community.findOne({
@@ -913,7 +914,7 @@ export default class CommunityService {
 
         if (community.status === 'pending') {
             const user = await this.appUser.findOne({
-                attributes: ['address', 'username'],
+                attributes: ['address', 'username', 'createdAt'],
                 include: [
                     {
                         model: this.appMediaContent,
@@ -937,16 +938,17 @@ export default class CommunityService {
                     user: user as AppUser,
                     isDeleted: false,
                     added: 0,
+                    active: false,
                 },
             ];
         } else {
             const result = await this.manager.findAll({
-                attributes: ['address'],
+                attributes: ['address', 'active'],
                 include: [
                     {
                         model: this.appUser,
                         as: 'user',
-                        attributes: ['username'],
+                        attributes: ['address', 'username', 'createdAt'],
                         include: [
                             {
                                 model: this.appMediaContent,
