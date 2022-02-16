@@ -943,7 +943,7 @@ export default class CommunityService {
             ];
         } else {
             const result = await this.manager.findAll({
-                attributes: ['address', 'active'],
+                attributes: ['address', 'active', 'createdAt'],
                 include: [
                     {
                         model: this.appUser,
