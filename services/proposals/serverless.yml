@@ -1,0 +1,22 @@
+service: proposals
+
+frameworkVersion: '3'
+useDotenv: true
+
+custom:
+  bundle:
+    packager: yarn
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+
+functions:
+  verifyProposals:
+    handler: handler.verifyProposals
+    events:
+      # Invoke Lambda function every hour
+      - schedule: rate(1 hour)
+
+plugins:
+  - serverless-bundle
