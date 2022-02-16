@@ -291,7 +291,7 @@ class CommunityController {
             .then(async (manager) => {
                 if (manager !== null) {
                     services.ubi.CommunityService.edit(
-                        manager.id,
+                        manager.communityId,
                         {
                             name,
                             description,

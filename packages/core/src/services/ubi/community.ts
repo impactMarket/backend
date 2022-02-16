@@ -32,6 +32,7 @@ import { UbiCommunityLabel } from '../../interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '../../interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '../../interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
+import { getCommunityProposal } from '../../subgraph/queries/community';
 import { BaseError } from '../../utils/baseError';
 import { fetchData } from '../../utils/dataFetching';
 import { notifyManagerAdded } from '../../utils/util';
@@ -383,6 +384,16 @@ export default class CommunityService {
             };
         }
 
+        if (query.status === 'pending') {
+            const communityProposals = await this.getOpenProposals();
+            extendedWhere = {
+                ...extendedWhere,
+                requestByAddress: {
+                    [Op.notIn]: communityProposals,
+                },
+            };
+        }
+
         if (query.orderBy) {
             const orders = query.orderBy.split(';');
 
@@ -725,6 +736,28 @@ export default class CommunityService {
         };
     }
 
+    public static async getOpenProposals(): Promise<string[]> {
+        const proposals = await getCommunityProposal();
+        const requestByAddress = proposals.map((element) => {
+            const calldata = ethers.utils.defaultAbiCoder.decode(
+                [
+                    'address[]',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                    'uint256',
+                ],
+                element
+            );
+            return calldata[0][0];
+        });
+        
+        return requestByAddress;
+    }
+
     public static async findResquestChangeUbiParams(
         id: number
     ): Promise<UbiRequestChangeParams | null> {
@@ -865,6 +898,7 @@ export default class CommunityService {
             added: number;
             address?: string;
             user?: AppUser;
+            active: boolean;
         }[]
     > {
         const community = (await this.community.findOne({
@@ -880,7 +914,7 @@ export default class CommunityService {
 
         if (community.status === 'pending') {
             const user = await this.appUser.findOne({
-                attributes: ['address', 'username'],
+                attributes: ['address', 'username', 'createdAt'],
                 include: [
                     {
                         model: this.appMediaContent,
@@ -904,16 +938,17 @@ export default class CommunityService {
                     user: user as AppUser,
                     isDeleted: false,
                     added: 0,
+                    active: false,
                 },
             ];
         } else {
             const result = await this.manager.findAll({
-                attributes: ['address'],
+                attributes: ['address', 'active', 'createdAt'],
                 include: [
                     {
                         model: this.appUser,
                         as: 'user',
-                        attributes: ['username'],
+                        attributes: ['address', 'username', 'createdAt'],
                         include: [
                             {
                                 model: this.appMediaContent,
@@ -2148,6 +2183,15 @@ export default class CommunityService {
                         ),
                     } as { [Op.eq]: Literal },
                 },
+            });
+        }
+
+        if (fields.ambassador) {
+            extendedInclude.push({
+                attributes:
+                    fields.ambassador.length > 0 ? fields.ambassador : undefined,
+                model: models.appUser,
+                as: 'ambassador',
             });
         }
 

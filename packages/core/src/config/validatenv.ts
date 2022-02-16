@@ -98,6 +98,7 @@ function validateEnv() {
         IDO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         TREASURY_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_LAMBDA: bool({ default: false }),
+        SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 

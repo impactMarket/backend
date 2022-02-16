@@ -165,21 +165,12 @@ export default class GlobalDailyStateService {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
 
-        const [communitiesId] = (
+        const communitiesId = (
             await models.community.findAll({
-                attributes: ['contractAddress', 'id'],
+                attributes: ['id'],
                 where: { status: 'valid', visibility: 'public' },
             })
-        ).reduce(
-            (acc: [string[], number[]], el) => {
-                if (el.contractAddress) {
-                    acc[0].push(el.contractAddress);
-                }
-                acc[1].push(el.id);
-                return acc;
-            },
-            [[], []]
-        );
+        ).map((c) => c.id);
 
         const claimed: any = await models.ubiClaim.findAll({
             attributes: [
