@@ -5,7 +5,15 @@ useDotenv: true
 
 custom:
   bundle:
+    packagerOptions:
+      scripts:
+        - rm -rf node_modules/sharp && npm install --arch=x64 --platform=linux sharp
     packager: yarn
+    ignorePackages:
+      - pg-native
+    forceInclude:
+      - pg
+      - pg-hstore
 
 provider:
   name: aws
