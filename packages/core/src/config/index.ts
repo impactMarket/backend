@@ -113,6 +113,7 @@ export default {
             profile: validatedEnv.AWS_BUCKET_PROFILE,
             temporary: validatedEnv.AWS_BUCKET_TEMPORARY,
         },
+        lambda: validatedEnv.AWS_LAMBDA,
     },
 
     /**

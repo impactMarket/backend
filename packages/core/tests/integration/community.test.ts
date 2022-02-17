@@ -1,4 +1,3 @@
-import { cronJobs } from '@impactmarket/worker';
 import { expect } from 'chai';
 import { ethers } from 'ethers';
 import faker from 'faker';
@@ -2021,68 +2020,6 @@ describe('community service', () => {
             managers.forEach((manager) => {
                 if (manager.address === users[0].address) {
                     expect(manager.added).to.be.equal(2);
-                } else {
-                    expect(manager.added).to.be.equal(0);
-                }
-            });
-        });
-
-        it('should return a list of added beneficiaries by previous managers (deleted accounts)', async () => {
-            const users = await UserFactory({ n: 4 });
-            const community = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const tx = randomTx();
-
-            await ManagerFactory(users.slice(0, 3), community[0].id);
-            await BeneficiaryService.add(
-                users[3].address,
-                users[0].address,
-                community[0].id,
-                tx,
-                new Date()
-            );
-
-            const sixteenDaysAgo = new Date();
-            sixteenDaysAgo.setDate(sixteenDaysAgo.getDate() - 16);
-            await models.appUser.update(
-                {
-                    deletedAt: sixteenDaysAgo,
-                },
-                {
-                    where: {
-                        address: users[0].address,
-                    },
-                }
-            );
-
-            await cronJobs.user.verifyDeletedAccounts();
-
-            const managers = await CommunityService.getManagers(
-                community[0].id
-            );
-
-            managers.forEach((manager) => {
-                if (manager.address === users[0].address) {
-                    expect(manager.added).to.be.equal(1);
-                    // eslint-disable-next-line no-unused-expressions
-                    expect(manager.user).to.be.null;
-                    // eslint-disable-next-line no-unused-expressions
-                    expect(manager.isDeleted).to.be.true;
                 } else {
                     expect(manager.added).to.be.equal(0);
                 }

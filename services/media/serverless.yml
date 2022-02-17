@@ -1,0 +1,43 @@
+service: media-lambda
+
+frameworkVersion: '3'
+useDotenv: true
+
+custom:
+  bundle:
+    packagerOptions:
+      scripts:
+        - rm -rf node_modules/sharp && npm install --arch=x64 --platform=linux sharp
+    packager: yarn
+    ignorePackages:
+      - pg-native
+    forceInclude:
+      - pg
+      - pg-hstore
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ${env:AWS_REGION}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:*
+          Resource:
+            - "arn:aws:s3:::${env:AWS_BUCKET_TEMPORARY}/*"
+            - "arn:aws:s3:::${env:AWS_BUCKET_COMMUNITY}/*"
+            - "arn:aws:s3:::${env:AWS_BUCKET_STORY}/*"
+            - "arn:aws:s3:::${env:AWS_BUCKET_PROFILE}/*"
+functions:
+  media:
+    handler: handler.media
+    events:
+      - s3:
+          bucket: ${env:AWS_BUCKET_TEMPORARY}
+          event: s3:ObjectCreated:*
+          existing: true
+
+plugins:
+  - serverless-bundle

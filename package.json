@@ -17,7 +17,8 @@
         "node": "14.15.1"
     },
     "workspaces": [
-        "packages/*"
+        "packages/*",
+        "services/*"
     ],
     "devDependencies": {
         "lerna": "^4.0.0"

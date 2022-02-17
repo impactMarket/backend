@@ -49,6 +49,8 @@ import * as UbiCommunitySuspect from './models/ubi/ubiCommunitySuspect';
 import * as UbiPromoter from './models/ubi/ubiPromoter';
 import * as UbiPromoterSocialMedia from './models/ubi/ubiPromoterSocialMedia';
 
+import pg from 'pg';
+
 let logging:
     | boolean
     | ((sql: string, timing?: number | undefined) => void)
@@ -62,7 +64,12 @@ const dbConfig: Options = {
     dialect: 'postgres',
     dialectOptions: {
         connectTimeout: 60000,
+        ssl: config.aws.lambda ? {
+            require: true,
+            rejectUnauthorized: false
+        } : {}
     },
+    dialectModule: pg,
     pool: {
         max: 30,
         min: 0,
@@ -70,7 +77,7 @@ const dbConfig: Options = {
         idle: 5000,
     },
     protocol: 'postgres',
-    native: true,
+    native: !config.aws.lambda, // if lambda = true, then native = false
     logging,
     // query: { raw: true }, // I wish, eager loading gets fixed
 };
