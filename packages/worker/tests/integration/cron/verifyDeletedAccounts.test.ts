@@ -11,13 +11,14 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     let users: interfaces.app.appUser.AppUser[];
     let communities: interfaces.ubi.community.CommunityAttributes[];
     let dbGlobalDemographicsStub: SinonStub;
+    const communityDemographicsService = new services.ubi.CommunityDemographicsService();
 
     before(async () => {
         sequelize = tests.config.setup.sequelizeSetup();
         await sequelize.sync();
 
         dbGlobalDemographicsStub = stub(
-            services.global.GlobalDemographicsService.ubiCommunityDemographics,
+            communityDemographicsService.ubiCommunityDemographics,
             'bulkCreate'
         );
 
@@ -368,7 +369,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     });
 
     it('calculateCommunitiesDemographics after delete user (should ignore deleted users)', async () => {
-        await services.global.GlobalDemographicsService.calculateCommunitiesDemographics();
+        await communityDemographicsService.calculate();
         await tests.config.utils.waitForStubCall(dbGlobalDemographicsStub, 1);
         const yesterdayDateOnly = new Date();
         yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
@@ -385,8 +386,8 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 ageRange6: '0',
                 male: '0',
                 female: '0',
-                undisclosed: '2',
-                totalGender: '2',
+                undisclosed: '3',
+                totalGender: '3',
             },
         ]);
     });

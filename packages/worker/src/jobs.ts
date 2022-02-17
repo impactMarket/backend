@@ -235,6 +235,9 @@ function startChainSubscriber(fallback?: boolean): ChainSubscribers {
  * They all follow the API timezone, which should be UTC, same as postgresql.
  */
 function cron() {
+    const globalDemographicsService = new services.global.GlobalDemographicsService();
+    const communityDemographicsService = new services.ubi.CommunityDemographicsService();
+
     // multiple times a day
 
     // every four hour, update exchange rates
@@ -390,33 +393,12 @@ function cron() {
         true
     );
 
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '0 0 * * *',
-        () => {
-            services.global.GlobalDemographicsService.calculateDemographics()
-                .then(() => {
-                    services.app.CronJobExecutedService.add(
-                        'calculateDemographics'
-                    );
-                    utils.Logger.info(
-                        'calculateDemographics successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    utils.Logger.error('calculateDemographics FAILED! ' + e);
-                });
-        },
-        null,
-        true
-    );
-
     try {
         // eslint-disable-next-line no-new
         new CronJob(
             '0 0 * * *',
             () => {
-                services.global.GlobalDemographicsService.calculateCommunitiesDemographics()
+                communityDemographicsService.calculate()
                     .then(() => {
                         services.app.CronJobExecutedService.add(
                             'calculateCommunitiesDemographics'
@@ -424,6 +406,19 @@ function cron() {
                         utils.Logger.info(
                             'calculateCommunitiesDemographics successfully executed!'
                         );
+
+                        globalDemographicsService.calculate()
+                            .then(() => {
+                                services.app.CronJobExecutedService.add(
+                                    'calculateDemographics'
+                                );
+                                utils.Logger.info(
+                                    'calculateDemographics successfully executed!'
+                                );
+                            })
+                            .catch((e) => {
+                                utils.Logger.error('calculateDemographics FAILED! ' + e);
+                            });
                     })
                     .catch((e) => {
                         utils.Logger.error(
