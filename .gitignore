@@ -121,3 +121,5 @@ coverage.json
 
 orbitdb/
 path-for-js-ipfs-repo/
+
+.DS_Store
