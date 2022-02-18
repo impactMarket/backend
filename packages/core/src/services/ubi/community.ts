@@ -32,7 +32,7 @@ import { UbiCommunityLabel } from '../../interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '../../interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '../../interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
-import { getCommunityProposal } from '../../subgraph/queries/community';
+import { getCommunityProposal, getClaimed } from '../../subgraph/queries/community';
 import { BaseError } from '../../utils/baseError';
 import { fetchData } from '../../utils/dataFetching';
 import { notifyManagerAdded } from '../../utils/util';
@@ -45,6 +45,7 @@ import {
 import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
 import ManagerService from './managers';
+import { BigNumber } from 'bignumber.js';
 
 export default class CommunityService {
     public static community = models.community;
@@ -324,16 +325,16 @@ export default class CommunityService {
                   {
                       id: number;
                       beneficiaries: string;
+                      contractAddress?: string;
                   }
               ]
             | undefined = undefined;
         let claimsState:
-            | [
-                  {
-                      communityId: number;
-                      claimed: string;
-                  }
-              ]
+            | 
+                {
+                    communityId: number;
+                    claimed: string;
+                }[]
             | undefined = undefined;
         let inflowState:
             | [
@@ -588,6 +589,7 @@ export default class CommunityService {
                 beneficiariesState = (await models.community.findAll({
                     attributes: [
                         'id',
+                        'contractAddress',
                         [
                             fn(
                                 'count',
@@ -624,22 +626,15 @@ export default class CommunityService {
             }
 
             if (!claimsState) {
-                claimsState = (await models.ubiClaim.findAll({
-                    attributes: [
-                        'communityId',
-                        [
-                            fn('coalesce', fn('sum', col('amount')), '0'),
-                            'claimed',
-                        ],
-                    ],
-                    where: {
-                        communityId: {
-                            [Op.in]: communitiesId,
-                        },
-                    },
-                    group: ['communityId'],
-                    raw: true,
-                })) as any;
+                const contractAddress = beneficiariesState!.map(el => el.contractAddress!);
+                const claimed = await getClaimed(contractAddress);
+                claimsState = claimed.map(claim => {
+                    const community = beneficiariesState!.find(el => el.contractAddress?.toLocaleLowerCase() === claim.id)!;
+                    return {
+                        communityId: Number(community?.id),
+                        claimed: new BigNumber(claim.claimed).multipliedBy(10 ** 18).toString(),
+                    }
+                })
             }
 
             if (!inflowState) {
@@ -2338,6 +2333,7 @@ export default class CommunityService {
         const result = (await models.community.findAll({
             attributes: [
                 'id',
+                'contractAddress',
                 [
                     fn('count', fn('distinct', col('beneficiaries.address'))),
                     'beneficiaries',

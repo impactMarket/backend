@@ -25,7 +25,10 @@ describe('community service', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let communityContentStorageDelete: Sinon.SinonSpy<[number], Promise<void>>;
-    let returnSubgraph: SinonStub;
+    let returnProposalsSubgraph: SinonStub;
+    let returnClaimedSubgraph: SinonStub;
+
+    type SubgraphClaimed = { id: string; claimed: number }[];
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -46,7 +49,8 @@ describe('community service', () => {
             'deleteContent'
         );
 
-        returnSubgraph = stub(subgraph, 'getCommunityProposal');
+        returnProposalsSubgraph = stub(subgraph, 'getCommunityProposal');
+        returnClaimedSubgraph = stub(subgraph, 'getClaimed');
     });
 
     describe('list', () => {
@@ -78,6 +82,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnClaimedSubgraph.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        claimed: 0,
+                    },
+                ]);
+
                 const result = await CommunityService.list({
                     name: communities[0].name,
                 });
@@ -105,6 +116,13 @@ describe('community service', () => {
                             maxClaim: '450000000000000000000',
                         },
                         hasAddress: true,
+                    },
+                ]);
+
+                returnClaimedSubgraph.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        claimed: 0,
                     },
                 ]);
 
@@ -141,6 +159,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnClaimedSubgraph.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        claimed: 0,
+                    },
+                ]);
+
                 const result = await CommunityService.list({
                     name: communities[0].name.slice(
                         communities[0].name.length / 2,
@@ -171,6 +196,13 @@ describe('community service', () => {
                             maxClaim: '450000000000000000000',
                         },
                         hasAddress: true,
+                    },
+                ]);
+
+                returnClaimedSubgraph.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        claimed: 0,
                     },
                 ]);
 
@@ -235,6 +267,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnClaimedSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress!,
+                        claimed: 0,
+                    }))
+                );
+
                 const result = await CommunityService.list({
                     name: 'oreo',
                 });
@@ -257,7 +296,7 @@ describe('community service', () => {
             });
 
             it('list all communities', async () => {
-                await CommunityFactory([
+                const communities = await CommunityFactory([
                     {
                         requestByAddress: users[0].address,
                         name: 'oreoland', // no space on purpose
@@ -289,6 +328,13 @@ describe('community service', () => {
                         hasAddress: true,
                     },
                 ]);
+
+                returnClaimedSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress!,
+                        claimed: 0,
+                    }))
+                );
 
                 const result = await CommunityService.list({});
 
@@ -352,6 +398,13 @@ describe('community service', () => {
                         country: 'ES',
                     },
                 ]);
+
+                returnClaimedSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress!,
+                        claimed: 0,
+                    }))
+                );
 
                 const result = await CommunityService.list({ country: 'PT' });
 
@@ -445,6 +498,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnClaimedSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress!,
+                        claimed: 0,
+                    }))
+                );
+
                 const result = await CommunityService.list({
                     country: 'PT;ES;FR',
                 });
@@ -490,8 +550,12 @@ describe('community service', () => {
                 });
             }
             const communities = await CommunityFactory(createObject);
-
+            const claimed: SubgraphClaimed = [];
             for (const community of communities) {
+                claimed.push({
+                    id: community.contractAddress!,
+                    claimed: 0,
+                });
                 await BeneficiaryFactory(
                     await UserFactory({
                         n: Math.floor(Math.random() * 20),
@@ -499,6 +563,8 @@ describe('community service', () => {
                     community.id
                 );
             }
+
+            returnClaimedSubgraph.returns(claimed);
 
             //
 
@@ -541,7 +607,12 @@ describe('community service', () => {
             const communities = await CommunityFactory(createObject);
             const communitySuspect = communities[1];
 
+            const claimed: SubgraphClaimed = [];
             for (const community of communities) {
+                claimed.push({
+                    id: community.contractAddress!,
+                    claimed: 0,
+                });
                 await BeneficiaryFactory(
                     await UserFactory({
                         n: Math.floor(Math.random() * 20),
@@ -549,6 +620,8 @@ describe('community service', () => {
                     community.id
                 );
             }
+
+            returnClaimedSubgraph.returns(claimed);
 
             //
             const r = await CommunityService.list({
@@ -611,7 +684,12 @@ describe('community service', () => {
                     },
                 ]);
 
+                const claimed: SubgraphClaimed = [];
                 for (const community of communities) {
+                    claimed.push({
+                        id: community.contractAddress!,
+                        claimed: 0,
+                    });
                     await BeneficiaryFactory(
                         await UserFactory({
                             n:
@@ -678,6 +756,13 @@ describe('community service', () => {
                         },
                     },
                 ]);
+
+                returnClaimedSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress!,
+                        claimed: 0,
+                    }))
+                );
 
                 const result = await CommunityService.list({
                     orderBy: 'nearest',
@@ -751,7 +836,12 @@ describe('community service', () => {
                     },
                 ]);
 
+                const claimed: SubgraphClaimed = [];
                 for (const community of communities) {
+                    claimed.push({
+                        id: community.contractAddress!,
+                        claimed: 0,
+                    });
                     await BeneficiaryFactory(
                         await UserFactory({
                             n:
@@ -847,7 +937,12 @@ describe('community service', () => {
                     },
                 ]);
 
+                const claimed: SubgraphClaimed = [];
                 for (const community of communities) {
+                    claimed.push({
+                        id: community.contractAddress!,
+                        claimed: 0,
+                    });
                     await BeneficiaryFactory(
                         await UserFactory({
                             n:
@@ -890,11 +985,13 @@ describe('community service', () => {
             afterEach(async () => {
                 await truncate(sequelize, 'Beneficiary');
                 await truncate(sequelize, 'Community');
-                returnSubgraph.resetHistory();
+                returnProposalsSubgraph.resetHistory();
+                returnClaimedSubgraph.resetHistory();
             });
 
             after(async () => {
-                returnSubgraph.restore();
+                returnProposalsSubgraph.restore();
+                returnClaimedSubgraph.restore();
             });
 
             it('filter with specific fields', async () => {
@@ -1262,7 +1359,8 @@ describe('community service', () => {
                     ]
                 );
 
-                returnSubgraph.returns([data]);
+                returnProposalsSubgraph.returns([data]);
+                returnClaimedSubgraph.returns([]);
 
                 const result = await CommunityService.list({
                     status: 'pending',
@@ -1314,7 +1412,8 @@ describe('community service', () => {
                     },
                 ]);
 
-                returnSubgraph.returns([]);
+                returnProposalsSubgraph.returns([]);
+                returnClaimedSubgraph.returns([]);
 
                 const pending = await CommunityService.list({
                     status: 'pending',
