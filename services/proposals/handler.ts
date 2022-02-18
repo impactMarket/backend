@@ -33,7 +33,7 @@ export const verifyProposals = async (event: any, context: any) => {
   }
   
   const promises = newProposals.map((proposal) =>
-    axios.post(process.env.WEBHOOK_URL!, {
+    axios.post(process.env.DISCORD_WEBHOOK!, {
       embeds: [{
         type: 'rich',
         title: 'New Proposal',
