@@ -15,12 +15,12 @@ export const verifyProposals = async (event: any, context: any) => {
 
   const proposalCount = parseInt(await DAOContract.proposalCount());
 
-  const lastHour = new Date(new Date().getTime() - 30*24*60*60*1000).getTime();
+  const lastHour = new Date(new Date().getTime() - 60*60*1000).getTime();
   const newProposals: any = [];
   for(let i = proposalCount-1; ; i--) {
     const proposal = await DAOContract.proposals(i);
     const block = await getBlockByNumber(proposal.startBlock._hex);
-    // const block = await provider.getBlock(proposal.startBlock._hex);
+    // const block = await provider.getBlock(parseInt(proposal.startBlock));
     const blockTimestamp = parseInt(block.timestamp) * 1000;
 
     if(blockTimestamp >= lastHour) {
