@@ -14,6 +14,11 @@ cd packages/core
 yarn build
 ```
 
+Invoke Local
+```
+sls invoke local -f function-name
+```
+
 Deploy lambda
 ```
 cd services/proposals
