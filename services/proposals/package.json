@@ -1,26 +1,27 @@
 {
-  "name": "@impactmarket/proposals-lambda",
-  "version": "1.0.0",
-  "scripts": {
-      "build": "tsc",
-      "test": "NODE_ENV=test mocha"
-  },
-  "author": "impact-market",
-  "license": "Apache-2.0",
-  "engines": {
-      "node": "14.15.1"
-  },
-  "dependencies": {
-      "@impactmarket/core": "1.0.0",
-      "axios": "0.21.1",
-      "ethers": "5.5.1"
-  },
-  "devDependencies": {
-      "@typescript-eslint/eslint-plugin": "3.4.0",
-      "@typescript-eslint/parser": "3.4.0",
-      "eslint": "7.3.1",
-      "eslint-config-prettier": "6.11.0",
-      "eslint-config-universe": "4.0.0",
-      "serverless-bundle": "4.3.1"
-  }
+    "name": "@impactmarket/proposals-lambda",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "tsc",
+        "test": "NODE_ENV=test mocha"
+    },
+    "author": "impact-market",
+    "license": "Apache-2.0",
+    "engines": {
+        "node": "14.15.1"
+    },
+    "dependencies": {
+        "@impactmarket/core": "1.0.0",
+        "@prismicio/client": "6.3.0",
+        "axios": "0.21.1",
+        "ethers": "5.5.1"
+    },
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "3.4.0",
+        "@typescript-eslint/parser": "3.4.0",
+        "eslint": "7.3.1",
+        "eslint-config-prettier": "6.11.0",
+        "eslint-config-universe": "4.0.0",
+        "serverless-bundle": "4.3.1"
+    }
 }
