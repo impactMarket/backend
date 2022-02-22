@@ -18,6 +18,7 @@ custom:
 provider:
   name: aws
   runtime: nodejs14.x
+  region: ${env:AWS_REGION}
 
 functions:
   verifyProposals:

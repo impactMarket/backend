@@ -9,7 +9,7 @@ export const verifyProposals = async (event: any, context: any) => {
 
   const DAOContract = new ethers.Contract(
     process.env.PACT_DELEGATOR!,
-    contracts.PACTDelegateStorageV1,
+    contracts.PACTDelegateABI,
     provider
   );
 
