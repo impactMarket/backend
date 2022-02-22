@@ -22,7 +22,6 @@ import { ImMetadata } from './models/app/imMetadata';
 import * as GlobalDailyState from './models/global/globalDailyState';
 import * as GlobalDemographics from './models/global/globalDemographics';
 import * as GlobalGrowth from './models/global/globalGrowth';
-import { NotifiedBacker } from './models/notifiedBacker';
 import * as ReachedAddress from './models/reachedAddress';
 import * as StoryCommunity from './models/story/storyCommunity';
 import * as StoryContent from './models/story/storyContent';
@@ -139,8 +138,6 @@ const models: DbModels = {
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     inflow: sequelize.models.Inflow as ModelCtor<Inflow.Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager.Manager>,
-    notifiedBacker: sequelize.models
-        .NotifiedBacker as ModelCtor<NotifiedBacker>,
     reachedAddress: sequelize.models
         .ReachedAddress as ModelCtor<ReachedAddress.ReachedAddress>,
 
@@ -202,7 +199,6 @@ export {
     GlobalDailyState,
     GlobalDemographics,
     GlobalGrowth,
-    NotifiedBacker,
     ReachedAddress,
     StoryCommunity,
     StoryContent,
