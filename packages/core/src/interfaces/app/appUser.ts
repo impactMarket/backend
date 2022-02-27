@@ -69,6 +69,7 @@ export interface AppUser {
     id: number;
     address: string;
     avatarMediaId: number | null;
+    avatarMediaPath: string | null;
     username: string | null;
     language: string;
     currency: string;
@@ -102,6 +103,7 @@ export interface AppUserCreationAttributes {
     year?: number;
     children?: number;
     avatarMediaId?: number;
+    avatarMediaPath?: string;
     pushNotificationToken?: string;
     active?: boolean;
     email?: string;

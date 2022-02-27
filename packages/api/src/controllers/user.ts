@@ -22,7 +22,7 @@ class UserController {
             username,
             year,
             children,
-            avatarMediaId,
+            avatarMediaPath,
             overwrite,
             recover,
         } = req.body;
@@ -35,7 +35,7 @@ class UserController {
                 username,
                 year,
                 children,
-                avatarMediaId,
+                avatarMediaPath,
                 trust: {
                     phone,
                 },
@@ -115,8 +115,8 @@ class UserController {
             });
             return;
         }
-        const { mediaId } = req.body;
-        services.app.UserService.updateAvatar(req.user.address, mediaId)
+        const { avatarMediaPath } = req.body;
+        services.app.UserService.updateAvatar(req.user.address, avatarMediaPath)
             .then((r) => standardResponse(res, 201, r, ''))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -265,7 +265,7 @@ class UserController {
             username,
             year,
             children,
-            avatarMediaId,
+            avatarMediaPath,
         } = req.body;
         services.app.UserService.authenticate({
             address,
@@ -275,7 +275,7 @@ class UserController {
             username,
             year,
             children,
-            avatarMediaId,
+            avatarMediaPath,
             trust: {
                 phone,
             },

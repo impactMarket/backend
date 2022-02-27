@@ -294,8 +294,8 @@ export default (app: Router): void => {
      *              email:
      *                type: string
      *                required: true
-     *              coverMediaId:
-     *                type: number
+     *              coverMediaPath:
+     *                type: string
      *                required: true
      *              txReceipt:
      *                type: object
@@ -1004,8 +1004,8 @@ export default (app: Router): void => {
      *              email:
      *                type: string
      *                required: false
-     *              coverMediaId:
-     *                type: number
+     *              coverMediaPath:
+     *                type: string
      *                required: true
      *     responses:
      *       "200":
@@ -1061,8 +1061,8 @@ export default (app: Router): void => {
      *               email:
      *                 type: string
      *                 required: true
-     *               coverMediaId:
-     *                 type: number
+     *               coverMediaPath:
+     *                 type: string
      *                 required: true
      *               gps:
      *                 type: object

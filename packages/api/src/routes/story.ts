@@ -28,10 +28,10 @@ export default (app: Router): void => {
      *               communityId:
      *                 type: integer
      *                 description: The community id
-     *               mediaId:
-     *                 type: integer
+     *               storyMediaPath:
+     *                 type: string
      *                 nullable: true
-     *                 description: Id of the media in media registry (currently support only image)
+     *                 description: AWS image path
      *               message:
      *                 type: string
      *                 nullable: true

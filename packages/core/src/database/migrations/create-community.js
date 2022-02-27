@@ -71,6 +71,10 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
+            coverMediaPath: {
+                type: Sequelize.STRING(44),
+                allowNull: false,
+            },
             status: {
                 type: Sequelize.ENUM('pending', 'valid', 'removed'),
                 allowNull: false,

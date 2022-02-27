@@ -1137,6 +1137,7 @@ describe('community service', () => {
                     'country',
                     'coverImage',
                     'coverMediaId',
+                    'coverMediaPath',
                     'createdAt',
                     'currency',
                     'deletedAt',
@@ -1174,7 +1175,7 @@ describe('community service', () => {
                     contractAddress: communities[0].contractAddress,
                     country: communities[0].country,
                     coverImage: communities[0].coverImage,
-                    coverMediaId: communities[0].coverMediaId,
+                    coverMediaPath: communities[0].coverMediaPath,
                     currency: communities[0].currency,
                     description: communities[0].description,
                     descriptionEn: communities[0].descriptionEn,
@@ -1590,7 +1591,7 @@ describe('community service', () => {
                     currency: communities[0].currency,
                     description: communityNewDescription,
                     name: communities[0].name,
-                    coverMediaId: -1,
+                    coverMediaPath: "cover/image.jpg",
                 }
             );
 
@@ -1599,9 +1600,8 @@ describe('community service', () => {
             );
 
             assert.callCount(communityContentStorageDelete, 0);
-            expect(updatedCommunity.coverMediaId).to.not.be.equal(-1);
-            expect(updatedCommunity.coverMediaId).to.be.equal(
-                communities[0].coverMediaId
+            expect(updatedCommunity.coverMediaPath).to.be.equal(
+                communities[0].coverMediaPath
             );
         });
 
@@ -1631,7 +1631,7 @@ describe('community service', () => {
                     currency: communities[0].currency,
                     description: communityNewDescription,
                     name: communities[0].name,
-                    coverMediaId: 1,
+                    coverMediaPath: "cover/image.jpg",
                 }
             );
 
@@ -1639,11 +1639,9 @@ describe('community service', () => {
                 communityNewDescription
             );
 
-            assert.callCount(communityContentStorageDelete, 1);
-            expect(updatedCommunity.coverMediaId).to.not.be.equal(
-                communities[0].coverMediaId
+            expect(updatedCommunity.coverMediaPath).to.not.be.equal(
+                communities[0].coverMediaPath
             );
-            expect(updatedCommunity.coverMediaId).to.be.equal(1);
         });
 
         it('update email', async () => {
@@ -1676,7 +1674,7 @@ describe('community service', () => {
                     currency: communities[0].currency,
                     description: communityNewDescription,
                     name: communities[0].name,
-                    coverMediaId: 1,
+                    coverMediaPath: "cover/image.jpg",
                     email: 'test@gmail.com',
                 },
                 manager[0].address
@@ -1685,7 +1683,7 @@ describe('community service', () => {
             expect(updatedCommunity.description).to.be.equal(
                 communityNewDescription
             );
-            expect(updatedCommunity.coverMediaId).to.be.equal(1);
+            expect(updatedCommunity.coverMediaPath).to.be.equal('cover/image.jpg');
             expect(updatedCommunity.email).to.be.equal('test@gmail.com');
         });
     });
@@ -1860,12 +1858,6 @@ describe('community service', () => {
                 },
             ]);
 
-            const media = await models.appMediaContent.create({
-                url: 'test.com',
-                width: 0,
-                height: 0,
-            });
-
             const result = await CommunityService.editSubmission({
                 requestByAddress: manager[0].address,
                 name: 'new name',
@@ -1879,7 +1871,7 @@ describe('community service', () => {
                     longitude: 10,
                 },
                 email: 'test@email.com',
-                coverMediaId: media.id,
+                coverMediaPath: 'cover/image2.jpg',
             });
 
             expect(result).to.include({
@@ -1889,7 +1881,7 @@ describe('community service', () => {
                 currency: 'USD',
                 city: 'São Paulo',
                 country: 'Brasil',
-                coverMediaId: media.id,
+                coverMediaPath: 'cover/image2.jpg',
             });
         });
     });

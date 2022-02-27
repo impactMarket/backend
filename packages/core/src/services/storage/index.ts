@@ -168,15 +168,12 @@ export class ContentStorage {
         };
         const s3 = new AWS.S3();
         const uploadURL = await s3.getSignedUrlPromise('putObject', params);
-        const mediaContent = await this.appMediaContent.create({
-            url: `${config.cloudfrontUrl}/${filePath.replace(
-                `.${mime}`,
-                '.jpeg'
-            )}`,
-            width: 0, // updated later
-            height: 0, // updated later
-        });
-        return { uploadURL, filename, media: mediaContent };
+
+        return {
+            uploadURL,
+            filename,
+            filePath,
+        };
     }
 }
 

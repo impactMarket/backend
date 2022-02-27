@@ -52,7 +52,7 @@ const data = async (props: ICreateProps) => {
               },
         language: 'pt',
         name: props.name ? props.name : faker.company.companyName(),
-        coverMediaId: 0,
+        coverMediaPath: 'cover/image.jpg',
         started: props.started ? props.started : new Date(),
         status: props.status ? props.status : 'valid',
         visibility: props.visibility ? props.visibility : 'public',

@@ -249,7 +249,7 @@ class CommunityController {
             currency,
             city,
             country,
-            coverMediaId,
+            coverMediaPath,
             gps,
             email,
             txReceipt,
@@ -269,7 +269,7 @@ class CommunityController {
             email,
             txReceipt,
             contractParams,
-            coverMediaId,
+            coverMediaPath,
         })
             .then((community) => standardResponse(res, 201, true, community))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
@@ -285,7 +285,7 @@ class CommunityController {
             });
             return;
         }
-        const { name, description, currency, coverMediaId, email } = req.body;
+        const { name, description, currency, coverMediaPath, email } = req.body;
         // verify if the current user is manager in this community
         services.ubi.ManagerService.get(req.user.address)
             .then(async (manager) => {
@@ -296,7 +296,7 @@ class CommunityController {
                             name,
                             description,
                             currency,
-                            coverMediaId,
+                            coverMediaPath,
                             email,
                         },
                         req.user?.address
@@ -410,7 +410,7 @@ class CommunityController {
             currency,
             city,
             country,
-            coverMediaId,
+            coverMediaPath,
             gps,
             email,
             contractParams,
@@ -427,7 +427,7 @@ class CommunityController {
             gps,
             email,
             contractParams,
-            coverMediaId: parseInt(coverMediaId, 10),
+            coverMediaPath,
         })
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));

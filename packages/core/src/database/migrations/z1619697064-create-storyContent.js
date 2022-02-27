@@ -19,6 +19,10 @@ module.exports = {
                 // onDelete: 'SET NULL', // default
                 allowNull: true,
             },
+            storyMediaPath: {
+                type: Sequelize.STRING(44),
+                allowNull: true,
+            },
             message: {
                 type: Sequelize.STRING(256),
                 allowNull: true,

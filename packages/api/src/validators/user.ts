@@ -18,7 +18,7 @@ const auth = celebrate({
         gender: Joi.string().optional(),
         year: Joi.number().optional(),
         children: Joi.number().optional(),
-        avatarMediaId: Joi.number().optional(),
+        avatarMediaPath: Joi.string().optional(),
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
     }),
@@ -99,7 +99,7 @@ const edit = celebrate({
         gender: Joi.string().optional(),
         year: Joi.number().optional(),
         children: Joi.number().optional(),
-        avatarMediaId: Joi.number().optional(),
+        avatarMediaPath: Joi.string().optional(),
         pushNotificationToken: Joi.string().optional().allow(''),
         email: Joi.string()
             .email({ tlds: { allow: false } })
