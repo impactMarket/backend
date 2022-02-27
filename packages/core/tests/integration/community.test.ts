@@ -1631,7 +1631,7 @@ describe('community service', () => {
                     currency: communities[0].currency,
                     description: communityNewDescription,
                     name: communities[0].name,
-                    coverMediaPath: "cover/image.jpg",
+                    coverMediaPath: "cover/image2.jpg",
                 }
             );
 
