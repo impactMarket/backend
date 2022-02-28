@@ -16,7 +16,6 @@ import { ImMetadata } from './models/app/imMetadata';
 import { GlobalDailyState } from './models/global/globalDailyState';
 import { GlobalDemographics } from './models/global/globalDemographics';
 import { GlobalGrowthModel } from './models/global/globalGrowth';
-import { NotifiedBacker } from './models/notifiedBacker';
 import { ReachedAddress } from './models/reachedAddress';
 import { StoryCommunityModel } from './models/story/storyCommunity';
 import { StoryContentModel } from './models/story/storyContent';
@@ -53,7 +52,6 @@ export interface DbModels {
     exchangeRates: ModelCtor<ExchangeRates>;
     imMetadata: ModelCtor<ImMetadata>;
     reachedAddress: ModelCtor<ReachedAddress>;
-    notifiedBacker: ModelCtor<NotifiedBacker>;
     appMediaContent: ModelCtor<AppMediaContentModel>;
     appMediaThumbnail: ModelCtor<AppMediaThumbnailModel>;
     appNotification: ModelCtor<AppNotificationModel>;
