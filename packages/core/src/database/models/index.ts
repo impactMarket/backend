@@ -22,7 +22,6 @@ import { userAssociation } from './associations/user';
 import { initializeGlobalDailyState } from './global/globalDailyState';
 import { initializeGlobalDemographics } from './global/globalDemographics';
 import { initializeGlobalGrowth } from './global/globalGrowth';
-import { initializeNotifiedBacker } from './notifiedBacker';
 import { initializeReachedAddress } from './reachedAddress';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryContent } from './story/storyContent';
@@ -88,7 +87,6 @@ export default function initModels(sequelize: Sequelize): void {
     initializeUbiCommunityCampaign(sequelize);
 
     // others
-    initializeNotifiedBacker(sequelize);
     initializeReachedAddress(sequelize);
 
     // global

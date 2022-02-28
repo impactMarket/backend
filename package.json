@@ -1,18 +1,18 @@
 {
     "name": "impactmarket",
     "version": "1.3.3",
-    "description": "Decentralized impact-driven 2-sided marketplace to provide financial services to charities and vulnerable beneficiaries.",
+    "description": "Decentralized Poverty Alleviation Protocol.",
     "private": true,
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/impactMarket/api.git"
+        "url": "git+https://github.com/impactMarket/backend.git"
     },
     "author": "impact-market",
     "license": "Apache-2.0",
     "bugs": {
-        "url": "https://github.com/impactMarket/api/issues"
+        "url": "https://github.com/impactMarket/backend/issues"
     },
-    "homepage": "https://github.com/impactMarket/api#readme",
+    "homepage": "https://github.com/impactMarket/backend#readme",
     "engines": {
         "node": "16.13.0"
     },
@@ -24,11 +24,11 @@
         "lerna": "^4.0.0"
     },
     "scripts": {
-        "start": "lerna exec --scope @impactmarket/api yarn start",
+        "start": "lerna exec --scope @impactmarket/backend yarn start",
         "serve": "node packages/api/dist/app.js",
         "worker": "node packages/worker/dist/src/index.js",
         "worker-dev": "lerna exec --scope @impactmarket/worker yarn worker-dev",
-        "build": "lerna exec yarn build",
+        "build": "lerna exec --scope @impactmarket/* yarn build ",
         "test": "lerna exec --concurrency 1 yarn test",
         "precoverage:ci": "NODE_ENV=test sequelize db:migrate --env ci",
         "coverage:ci": "nyc --reporter=lcov lerna exec --concurrency 1 yarn test",

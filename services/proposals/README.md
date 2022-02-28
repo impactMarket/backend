@@ -21,6 +21,6 @@ sls invoke local -f function-name
 
 Deploy lambda
 ```
-cd services/media
+cd services/proposals
 sls deploy --stage STAGE
 ```

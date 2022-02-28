@@ -1,0 +1,31 @@
+service: proposals
+
+frameworkVersion: '3'
+useDotenv: true
+
+custom:
+  bundle:
+    packagerOptions:
+      scripts:
+        - rm -rf node_modules/sharp && npm install --arch=x64 --platform=linux sharp
+    packager: yarn
+    ignorePackages:
+      - pg-native
+    forceInclude:
+      - pg
+      - pg-hstore
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ${env:AWS_REGION}
+
+functions:
+  verifyProposals:
+    handler: handler.verifyProposals
+    events:
+      # Invoke Lambda function every hour
+      - schedule: rate(1 hour)
+
+plugins:
+  - serverless-bundle

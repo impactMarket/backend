@@ -27,6 +27,7 @@ describe('community service', () => {
     let communityContentStorageDelete: Sinon.SinonSpy<[number], Promise<void>>;
     let returnProposalsSubgraph: SinonStub;
     let returnClaimedSubgraph: SinonStub;
+    let returnCommunityStateSubgraph: SinonStub;
 
     type SubgraphClaimed = { id: string; claimed: number }[];
 
@@ -51,6 +52,18 @@ describe('community service', () => {
 
         returnProposalsSubgraph = stub(subgraph, 'getCommunityProposal');
         returnClaimedSubgraph = stub(subgraph, 'getClaimed');
+        returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
+        returnCommunityStateSubgraph.returns([
+            {
+                claims: 0,
+                claimed: '0',
+                beneficiaries: 0,
+                removedBeneficiaries: 0,
+                contributed: '0',
+                contributors: 0,
+                managers: 0,
+            },
+        ]);
     });
 
     describe('list', () => {
