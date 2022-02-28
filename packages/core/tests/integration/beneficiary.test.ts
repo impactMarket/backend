@@ -2,7 +2,15 @@ import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
 import { ethers } from 'ethers';
 import { Sequelize, Op } from 'sequelize';
-import { assert, spy, replace, restore, SinonSpy } from 'sinon';
+import {
+    assert,
+    spy,
+    replace,
+    restore,
+    SinonSpy,
+    SinonStub,
+    stub,
+} from 'sinon';
 import tk from 'timekeeper';
 
 import config from '../../src/config';
@@ -16,6 +24,7 @@ import UserService from '../../src/services/app/user';
 import { IListBeneficiary } from '../../src/services/endpoints';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import ClaimsService from '../../src/services/ubi/claim';
+import * as subgraph from '../../src/subgraph/queries/community';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { jumpToTomorrowMidnight, randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';
@@ -37,6 +46,7 @@ describe('beneficiary service', () => {
     let spyBeneficiaryRegistryAdd: SinonSpy;
     let spyBeneficiaryAdd: SinonSpy;
     let spyBeneficiaryUpdate: SinonSpy;
+    let returnCommunityStateSubgraph: SinonStub;
 
     const decreaseStep = '1000000000000000000';
     const maxClaim = '450000000000000000000';
@@ -90,6 +100,18 @@ describe('beneficiary service', () => {
         spyBeneficiaryAdd = spy(models.beneficiary, 'create');
         spyBeneficiaryUpdate = spy(models.beneficiary, 'update');
         replace(database, 'query', sequelize.query);
+        returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
+        returnCommunityStateSubgraph.returns([
+            {
+                claims: 0,
+                claimed: '0',
+                beneficiaries: 0,
+                removedBeneficiaries: 0,
+                contributed: '0',
+                contributors: 0,
+                managers: 0,
+            },
+        ]);
     });
 
     after(async () => {
@@ -506,14 +528,12 @@ describe('beneficiary service', () => {
                         maxClaim,
                     },
                     hasAddress: true,
-            }]);
+                },
+            ]);
 
             await ManagerFactory([user[0]], community[0].id);
 
-            await BeneficiaryFactory(
-                user,
-                community[0].id
-            );
+            await BeneficiaryFactory(user, community[0].id);
 
             await models.beneficiary.update(
                 {
@@ -521,7 +541,9 @@ describe('beneficiary service', () => {
                 },
                 {
                     where: {
-                        address: { [Op.in]: [user[1].address, user[2].address] },
+                        address: {
+                            [Op.in]: [user[1].address, user[2].address],
+                        },
                     },
                 }
             );

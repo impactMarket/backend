@@ -32,7 +32,11 @@ import { UbiCommunityLabel } from '../../interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '../../interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '../../interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
-import { getCommunityProposal, getClaimed } from '../../subgraph/queries/community';
+import {
+    getCommunityProposal,
+    getClaimed,
+    getCommunityState
+} from '../../subgraph/queries/community';
 import { BaseError } from '../../utils/baseError';
 import { fetchData } from '../../utils/dataFetching';
 import { notifyManagerAdded } from '../../utils/util';
@@ -1059,81 +1063,25 @@ export default class CommunityService {
 
     public static async getState(communityId: number) {
         const community = await this.community.findOne({
-            attributes: ['contractAddress', 'publicId'],
+            attributes: ['contractAddress'],
             where: {
                 id: communityId,
             },
         });
+        if (!community || !community.contractAddress) {
+            return null;
+        }
 
-        const communityBackers = await models.inflow.count({
-            distinct: true,
-            col: 'from',
-            where: {
-                contractAddress: community?.contractAddress,
-            },
-        });
+        const state = await getCommunityState(community.contractAddress);
 
-        const communityClaimActivity = (
-            await this.ubiClaim.findAll({
-                attributes: [
-                    [fn('coalesce', fn('sum', col('amount')), '0'), 'claimed'],
-                    [fn('coalesce', fn('count', col('amount')), '0'), 'claims'],
-                ],
-                where: {
-                    communityId,
-                },
-                raw: true,
-            })
-        )[0];
-
-        const communityInflowActivity = (
-            await models.inflow.findAll({
-                attributes: [
-                    [fn('sum', fn('coalesce', col('amount'), 0)), 'amount'],
-                ],
-                where: {
-                    contractAddress: community?.contractAddress,
-                },
-            })
-        )[0];
-
-        const communityBeneficiaryActivity = (await this.beneficiary.findAll({
-            attributes: [[fn('COUNT', col('address')), 'count'], 'active'],
-            where: {
-                communityId,
-            },
-            group: ['active'],
-            raw: true,
-        })) as any;
-
-        const communityManagerActivity = await this.manager.count({
-            where: {
-                communityId,
-                active: true,
-            },
-        });
-
-        const beneficiaries: { count: string; active: boolean } =
-            communityBeneficiaryActivity.find((el: any) => el.active);
-        const removedBeneficiaries: { count: string; active: boolean } =
-            communityBeneficiaryActivity.find((el: any) => !el.active);
-
+        const toToken = (value: string) =>
+            new BigNumber(value).multipliedBy(10 ** 18).toString();
         return {
-            claims: communityClaimActivity
-                ? Number((communityClaimActivity as any).claims)
-                : 0,
-            claimed: communityClaimActivity
-                ? (communityClaimActivity as any).claimed
-                : '0',
-            raised: communityInflowActivity.amount
-                ? communityInflowActivity.amount
-                : '0',
-            beneficiaries: beneficiaries ? Number(beneficiaries.count) : 0,
-            removedBeneficiaries: removedBeneficiaries
-                ? Number(removedBeneficiaries.count)
-                : 0,
-            managers: communityManagerActivity,
-            backers: communityBackers,
+            ...state,
+            // TODO: should be transitional
+            claimed: toToken(state.claimed),
+            raised: toToken(state.contributed),
+            backers: state.contributors,
             communityId,
         };
     }

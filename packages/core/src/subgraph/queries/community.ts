@@ -70,3 +70,41 @@ export const getClaimed = async (ids: string[]): Promise<{
         throw new Error(error);
     }
 }
+
+export const getCommunityState = async (
+    communityAddress: string
+): Promise<{
+    claims: number;
+    claimed: string;
+    beneficiaries: number;
+    removedBeneficiaries: number;
+    contributed: string;
+    contributors: number;
+    managers: number;
+}> => {
+    try {
+        const query = gql`
+            {
+                communityEntity(
+                    id: "${communityAddress}"
+                ) {
+                    claims
+                    claimed
+                    beneficiaries
+                    removedBeneficiaries
+                    contributed
+                    contributors
+                    managers
+                }
+            }
+        `;
+
+        const queryResult = await client.query({
+            query,
+        });
+
+        return queryResult.data?.communityEntity;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
