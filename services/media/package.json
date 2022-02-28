@@ -1,5 +1,5 @@
 {
-    "name": "@impactmarket/media-lambda",
+    "name": "@impactmarket-lambda/media",
     "version": "1.0.0",
     "scripts": {
         "build": "tsc",
