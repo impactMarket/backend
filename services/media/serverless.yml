@@ -1,4 +1,4 @@
-service: media-lambda
+service: media
 
 frameworkVersion: '3'
 useDotenv: true
@@ -31,7 +31,7 @@ provider:
             - "arn:aws:s3:::${env:AWS_BUCKET_STORY}/*"
             - "arn:aws:s3:::${env:AWS_BUCKET_PROFILE}/*"
 functions:
-  media:
+  uploadMedia:
     handler: handler.media
     events:
       - s3:
