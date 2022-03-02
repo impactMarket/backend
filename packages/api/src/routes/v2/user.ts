@@ -148,6 +148,37 @@ export default (app: Router): void => {
      * @swagger
      *
      * /user:
+     *   patch:
+     *     tags:
+     *     - "user"
+     *     summary: "Patch changes user"
+     *     description: "Patch changes user"
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               action:
+     *                 type: string
+     *                 enum: [beneficiary-rules]
+     *                 required: true
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.patch('/', authenticateToken, userController.patch);
+
+    /**
+     * @swagger
+     *
+     * /user:
      *   delete:
      *     tags:
      *     - "user"
@@ -162,4 +193,45 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.delete('/', authenticateToken, userController.delete);
+
+    /**
+     * @swagger
+     *
+     * /user/report:
+     *   post:
+     *     tags:
+     *     - "user"
+     *     summary: "Send anonymous report"
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               communityId:
+     *                 type: number
+     *                 required: true
+     *               category:
+     *                 type: string
+     *                 enum: [general, potential-fraud]
+     *                 required: true
+     *               message:
+     *                 type: string
+     *                 required: true
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/report',
+        authenticateToken,
+        userValidators.report,
+        userController.report
+    );
 };

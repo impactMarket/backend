@@ -36,9 +36,17 @@ const update = celebrate({
     }),
 });
 
+const report = celebrate({
+    body: Joi.object({
+        communityId: Joi.any().required(),
+        message: Joi.string().required(),
+        category: Joi.string().required(),
+    }),
+});
+
 //
 
-const report = celebrate({
+const reportv1 = celebrate({
     body: Joi.object({
         communityId: Joi.any().required(),
         message: Joi.string().required().allow(''), // TODO: temporary, fixed in mobile-app@1.0.7
@@ -165,6 +173,7 @@ export default {
     create,
     update,
     report,
+    reportv1,
     auth,
     welcome,
     updateUsername,

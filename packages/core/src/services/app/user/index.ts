@@ -157,6 +157,17 @@ export default class UserService {
         return updated[1][0];
     }
 
+    public async patch(address: string, action: string) {
+        if (action === 'beneficiary-rules') {
+            await models.beneficiary.update(
+                { readRules: true },
+                {
+                    where: { address },
+                }
+            );
+        }
+    }
+
     public async delete(address: string): Promise<boolean> {
         const roles = await getUserRoles(address);
 
@@ -182,6 +193,19 @@ export default class UserService {
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'User was not updated');
         }
+        return true;
+    }
+
+    public async report(
+        message: string,
+        communityId: number,
+        category: 'general' | 'potential-fraud'
+    ) {
+        await models.anonymousReport.create({
+            message,
+            communityId,
+            category,
+        });
         return true;
     }
 

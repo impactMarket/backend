@@ -107,7 +107,7 @@ export default (app: Router): void => {
     route.post(
         '/report',
         authenticateToken,
-        userValidators.report,
+        userValidators.reportv1,
         userController.report
     );
 
