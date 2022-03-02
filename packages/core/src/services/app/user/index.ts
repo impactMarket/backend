@@ -17,126 +17,120 @@ export default class UserService {
         overwrite: boolean = false,
         recover: boolean = false
     ) {
-        try {
-            const exists = await this._exists(userParams.address);
+        const exists = await this._exists(userParams.address);
 
-            if (overwrite) {
-                await this._overwriteUser(userParams);
-            } else {
-                // a user might be connecting with the same phone number
-                // as an existing user
-                const existsPhone = userParams.trust?.phone
-                    ? await this._existsAccountByPhone(
-                          userParams.trust.phone,
-                          userParams.address
-                      )
-                    : false;
+        if (overwrite) {
+            await this._overwriteUser(userParams);
+        } else {
+            // a user might be connecting with the same phone number
+            // as an existing user
+            const existsPhone = userParams.trust?.phone
+                ? await this._existsAccountByPhone(
+                      userParams.trust.phone,
+                      userParams.address
+                  )
+                : false;
 
-                if (existsPhone)
-                    throw new BaseError(
-                        'PHONE_CONFLICT',
-                        'phone associated with another account'
-                    );
-            }
-
-            if (recover) {
-                await this._recoverAccount(userParams.address);
-            }
-
-            let user: AppUserModel;
-            if (!exists) {
-                // create new user
-                // including their phone number information, if it exists
-                user = await models.appUser.create(
-                    userParams,
-                    userParams.trust?.phone
-                        ? {
-                              include: [
-                                  {
-                                      model: models.appUserTrust,
-                                      as: 'trust',
-                                  },
-                              ],
-                          }
-                        : {}
-                );
-            } else {
-                if (userParams.pushNotificationToken) {
-                    models.appUser.update(
-                        {
-                            pushNotificationToken:
-                                userParams.pushNotificationToken,
-                        },
-                        { where: { address: userParams.address } }
-                    );
-                }
-                // it's not null at this point
-                user = (await models.appUser.findOne({
-                    where: { address: userParams.address },
-                    include: [
-                        {
-                            model: models.appUserTrust,
-                            as: 'trust',
-                        },
-                    ],
-                }))!;
-                // if the account doesn't have a phone number
-                // but it's being provided now, add it
-                // otherwise, verify if account phone number and
-                // provided phone number are the same
-                const jsonUser = user.toJSON();
-                if (
-                    jsonUser.trust?.length === 0 &&
-                    userParams.trust &&
-                    userParams.trust.phone.length > 0
-                ) {
-                    const trust = await models.appUserTrust.create(
-                        userParams.trust
-                    );
-                    await models.appUserThroughTrust.create({
-                        userAddress: user.address,
-                        appUserTrustId: trust.id,
-                    });
-                } else if (
-                    jsonUser.trust &&
-                    jsonUser.trust.length > 0 &&
-                    userParams.trust?.phone &&
-                    userParams.trust.phone !== jsonUser.trust![0].phone
-                ) {
-                    throw new BaseError(
-                        'DIFFERENT_PHONE',
-                        'phone associated with account is different'
-                    );
-                }
-            }
-
-            if (!user.active) {
-                throw new BaseError('INACTIVE_USER', 'user is inactive');
-            }
-
-            if (user.deletedAt) {
+            if (existsPhone)
                 throw new BaseError(
-                    'DELETION_PROCESS',
-                    'account in deletion process'
+                    'PHONE_CONFLICT',
+                    'phone associated with another account'
+                );
+        }
+
+        if (recover) {
+            await this._recoverAccount(userParams.address);
+        }
+
+        let user: AppUserModel;
+        if (!exists) {
+            // create new user
+            // including their phone number information, if it exists
+            user = await models.appUser.create(
+                userParams,
+                userParams.trust?.phone
+                    ? {
+                          include: [
+                              {
+                                  model: models.appUserTrust,
+                                  as: 'trust',
+                              },
+                          ],
+                      }
+                    : {}
+            );
+        } else {
+            if (userParams.pushNotificationToken) {
+                models.appUser.update(
+                    {
+                        pushNotificationToken: userParams.pushNotificationToken,
+                    },
+                    { where: { address: userParams.address } }
                 );
             }
-
-            this._updateLastLogin(user.id);
-            // generate access token for future interactions that require authentication
-            const token = generateAccessToken(userParams.address, user.id);
-
-            // do not return trust key
+            // it's not null at this point
+            user = (await models.appUser.findOne({
+                where: { address: userParams.address },
+                include: [
+                    {
+                        model: models.appUserTrust,
+                        as: 'trust',
+                    },
+                ],
+            }))!;
+            // if the account doesn't have a phone number
+            // but it's being provided now, add it
+            // otherwise, verify if account phone number and
+            // provided phone number are the same
             const jsonUser = user.toJSON();
-            delete jsonUser['trust'];
-            return {
-                ...jsonUser,
-                ...(await this._userRoles(user.address)),
-                token,
-            };
-        } catch (e) {
-            Logger.warn(`Error while auth user ${userParams.address} ${e}`);
-            throw e;
+            if (
+                jsonUser.trust?.length === 0 &&
+                userParams.trust &&
+                userParams.trust.phone.length > 0
+            ) {
+                const trust = await models.appUserTrust.create(
+                    userParams.trust
+                );
+                await models.appUserThroughTrust.create({
+                    userAddress: user.address,
+                    appUserTrustId: trust.id,
+                });
+            } else if (
+                jsonUser.trust &&
+                jsonUser.trust.length > 0 &&
+                userParams.trust?.phone &&
+                userParams.trust.phone !== jsonUser.trust![0].phone
+            ) {
+                throw new BaseError(
+                    'DIFFERENT_PHONE',
+                    'phone associated with account is different'
+                );
+            }
         }
+
+        if (!user.active) {
+            throw new BaseError('INACTIVE_USER', 'user is inactive');
+        }
+
+        if (user.deletedAt) {
+            throw new BaseError(
+                'DELETION_PROCESS',
+                'account in deletion process'
+            );
+        }
+
+        this._updateLastLogin(user.id);
+        // generate access token for future interactions that require authentication
+        const token = generateAccessToken(userParams.address, user.id);
+
+        // do not return trust key
+        const jsonUser = user.toJSON();
+        delete jsonUser['trust'];
+        return {
+            ...jsonUser,
+            ...(await this._userRoles(user.address)),
+            token,
+        };
     }
 
     public async get(address: string) {
@@ -164,35 +158,31 @@ export default class UserService {
     }
 
     public async delete(address: string): Promise<boolean> {
-        try {
-            const roles = await getUserRoles(address);
+        const roles = await getUserRoles(address);
 
-            if (roles.manager !== null && roles.manager.state === 0) {
-                throw new BaseError(
-                    'MANAGER',
-                    "Active managers can't delete accounts"
-                );
-            }
-
-            const updated = await models.appUser.update(
-                {
-                    deletedAt: new Date(),
-                },
-                {
-                    where: {
-                        address,
-                    },
-                    returning: true,
-                }
+        if (roles.manager !== null && roles.manager.state === 0) {
+            throw new BaseError(
+                'MANAGER',
+                "Active managers can't delete accounts"
             );
-
-            if (updated[0] === 0) {
-                throw new BaseError('UPDATE_FAILED', 'User was not updated');
-            }
-            return true;
-        } catch (error) {
-            throw error;
         }
+
+        const updated = await models.appUser.update(
+            {
+                deletedAt: new Date(),
+            },
+            {
+                where: {
+                    address,
+                },
+                returning: true,
+            }
+        );
+
+        if (updated[0] === 0) {
+            throw new BaseError('UPDATE_FAILED', 'User was not updated');
+        }
+        return true;
     }
 
     private async _recoverAccount(address: string) {
