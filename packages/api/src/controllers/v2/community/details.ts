@@ -4,13 +4,13 @@ import { Request, Response } from 'express';
 import { standardResponse } from '../../../utils/api';
 
 class CommunityController {
-    private stateService: services.ubi.CommunityStateService;
+    private detailsService: services.ubi.CommunityDetailsService;
     constructor() {
-        this.stateService = new services.ubi.CommunityStateService();
+        this.detailsService = new services.ubi.CommunityDetailsService();
     }
 
     getState = (req: Request, res: Response) => {
-        this.stateService
+        this.detailsService
             .getState(parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));

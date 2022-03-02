@@ -2,7 +2,7 @@ import BeneficiaryService from './beneficiary';
 import ClaimService from './claim';
 import ClaimLocationService from './claimLocation';
 import CommunityService from './community';
-import { CommunityStateService } from './community/state';
+import { CommunityDetailsService } from './community/details';
 import CommunityContractService from './communityContract';
 import CommunityDailyMetricsService from './communityDailyMetrics';
 import CommunityDemographicsService from './communityDemographics';
@@ -19,5 +19,5 @@ export {
     InflowService,
     ManagerService,
     CommunityDemographicsService,
-    CommunityStateService,
+    CommunityDetailsService,
 };

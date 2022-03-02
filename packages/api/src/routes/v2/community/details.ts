@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { CommunityController } from '../../../controllers/v2/community/state';
+import { CommunityController } from '../../../controllers/v2/community/details';
 
 export default (route: Router): void => {
     const controller = new CommunityController();

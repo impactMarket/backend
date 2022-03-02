@@ -1,7 +1,7 @@
 import { models } from '../../../database';
 import { getCommunityState } from '../../../subgraph/queries/community';
 
-export class CommunityStateService {
+export class CommunityDetailsService {
     public async getState(communityId: number) {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
