@@ -1,6 +1,6 @@
 import './tracer'; // must come before importing any instrumented module.
 
-import { utils } from '@impactmarket/core';
+import { utils, config } from '@impactmarket/core';
 import * as Sentry from '@sentry/node';
 // import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -11,7 +11,6 @@ import path from 'path';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
-import config from './config';
 import { rateLimiter } from './middlewares';
 import routes from './routes';
 import v2routes from './routes/v2';
@@ -150,7 +149,7 @@ export default (app: express.Application): void => {
 
     // Load API routes
     app.use(config.api.prefix, routes());
-    app.use(config.api.v2prefix, v2routes());
+    app.use('/api/v2', v2routes());
 
     // The error handler must be before any other error middleware and after all controllers
     app.use(Sentry.Handlers.errorHandler());
