@@ -1,6 +1,52 @@
 import { celebrate, Joi } from 'celebrate';
 
+// v2
+
+const create = celebrate({
+    body: Joi.object({
+        address: Joi.string().required(),
+        phone: Joi.string().optional(),
+        language: Joi.string().optional(),
+        currency: Joi.string().optional(),
+        pushNotificationToken: Joi.string().optional(),
+        username: Joi.string().optional(),
+        gender: Joi.string().optional(),
+        year: Joi.number().optional(),
+        children: Joi.number().optional(),
+        avatarMediaId: Joi.number().optional(),
+        overwrite: Joi.boolean().optional(),
+        recover: Joi.boolean().optional(),
+    }),
+});
+
+const update = celebrate({
+    body: Joi.object({
+        language: Joi.string().optional(),
+        currency: Joi.string().optional(),
+        username: Joi.alternatives(Joi.string(), null).optional(),
+        gender: Joi.string().optional(),
+        year: Joi.alternatives(Joi.number(), null).optional(),
+        children: Joi.alternatives(Joi.number(), null).optional(),
+        avatarMediaId: Joi.number().optional(),
+        pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
+        email: Joi.alternatives(
+            Joi.string().email({ tlds: { allow: false } }),
+            null
+        ).optional(),
+    }),
+});
+
 const report = celebrate({
+    body: Joi.object({
+        communityId: Joi.any().required(),
+        message: Joi.string().required(),
+        category: Joi.string().required(),
+    }),
+});
+
+//
+
+const reportv1 = celebrate({
     body: Joi.object({
         communityId: Joi.any().required(),
         message: Joi.string().required().allow(''), // TODO: temporary, fixed in mobile-app@1.0.7
@@ -124,7 +170,10 @@ const saveSurvey = celebrate({
 });
 
 export default {
+    create,
+    update,
     report,
+    reportv1,
     auth,
     welcome,
     updateUsername,
