@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "request": "launch",
             "skipFiles": ["<node_internals>/**"],
-            "runtimeExecutable": "${env:HOME}/.nvm/versions/node/v14.15.1/bin/node",
+            "runtimeExecutable": "${env:HOME}/.nvm/versions/node/v16.13.0/bin/node",
             "env": {
                 "NODE_ENV": "test"
             }
@@ -19,11 +19,11 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch (NVM v14.15.1)",
+            "name": "Launch (NVM v16.13.0)",
             "skipFiles": ["<node_internals>/**"],
             "program": "${workspaceFolder}/src/api/app.ts",
             "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-            "runtimeVersion": "14.15.1",
+            "runtimeVersion": "16.13.0",
             "env": {
                 "NODE_ENV": "development"
             }

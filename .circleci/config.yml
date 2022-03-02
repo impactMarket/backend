@@ -7,7 +7,7 @@ orbs:
 jobs:
   coverage:
     docker:
-      - image: circleci/node:14.15.1
+      - image: circleci/node:16.13.0
       - image: circleci/postgres:12-alpine
         environment:
           POSTGRES_USER: citest
@@ -30,7 +30,7 @@ jobs:
           path_to_lcov: ./coverage/lcov.info
   lint:
     docker:
-      - image: circleci/node:14.15.1
+      - image: circleci/node:16.13.0
     steps:
       - checkout
       - run: yarn

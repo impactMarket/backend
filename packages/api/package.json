@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "license": "MIT",
   "engines": {
-    "node": "14.15.1"
+    "node": ">=16"
   },
   "scripts": {
     "start": "nodemon --config nodemon.json src/app.ts",
