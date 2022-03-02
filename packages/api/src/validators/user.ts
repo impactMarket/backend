@@ -1,5 +1,26 @@
 import { celebrate, Joi } from 'celebrate';
 
+// v2
+
+const create = celebrate({
+    body: Joi.object({
+        address: Joi.string().required(),
+        phone: Joi.string().required(),
+        language: Joi.string().optional(),
+        currency: Joi.string().optional(),
+        pushNotificationToken: Joi.string().optional(),
+        username: Joi.string().optional(),
+        gender: Joi.string().optional(),
+        year: Joi.number().optional(),
+        children: Joi.number().optional(),
+        avatarMediaId: Joi.number().optional(),
+        overwrite: Joi.boolean().optional(),
+        recover: Joi.boolean().optional(),
+    }),
+});
+
+//
+
 const report = celebrate({
     body: Joi.object({
         communityId: Joi.any().required(),
@@ -124,6 +145,7 @@ const saveSurvey = celebrate({
 });
 
 export default {
+    create,
     report,
     auth,
     welcome,

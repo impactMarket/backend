@@ -1,8 +1,8 @@
 import { gql } from 'apollo-boost';
-
-import { client } from '../config';
 import { ethers } from 'ethers';
+
 import config from '../../config';
+import { client } from '../config';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
@@ -40,10 +40,14 @@ export const getCommunityProposal = async (): Promise<string[]> => {
     }
 };
 
-export const getClaimed = async (ids: string[]): Promise<{
-    claimed: string;
-    id: string;
-}[]> => {
+export const getClaimed = async (
+    ids: string[]
+): Promise<
+    {
+        claimed: string;
+        id: string;
+    }[]
+> => {
     try {
         const idsFormated = ids.map((el) => `"${el.toLocaleLowerCase()}"`);
 
@@ -69,7 +73,7 @@ export const getClaimed = async (ids: string[]): Promise<{
     } catch (error) {
         throw new Error(error);
     }
-}
+};
 
 export const getCommunityState = async (
     communityAddress: string
@@ -86,7 +90,7 @@ export const getCommunityState = async (
         const query = gql`
             {
                 communityEntity(
-                    id: "${communityAddress}"
+                    id: "${communityAddress.toLowerCase()}"
                 ) {
                     claims
                     claimed
@@ -104,6 +108,64 @@ export const getCommunityState = async (
         });
 
         return queryResult.data?.communityEntity;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getUserRoles = async (
+    address: string
+): Promise<{
+    beneficiary: { community: string; state: number } | null;
+    manager: { community: string; state: number } | null;
+}> => {
+    try {
+        const query = gql`
+            {
+                beneficiaryEntity(
+                    id: "${address.toLowerCase()}"
+                ) {
+                    community {
+                        id
+                    }
+                    state
+                }
+                managerEntity(
+                    id: "${address.toLowerCase()}"
+                ) {
+                    community {
+                        id
+                    }
+                    state
+                }
+            }
+        `;
+
+        const queryResult = await client.query({
+            query,
+        });
+
+        const beneficiary =
+            queryResult.data.beneficiaryEntity === null
+                ? null
+                : {
+                      community:
+                          queryResult.data?.beneficiaryEntity?.community?.id,
+                      state: queryResult.data?.beneficiaryEntity?.state,
+                  };
+
+        const manager =
+            queryResult.data.managerEntity === null
+                ? null
+                : {
+                      community: queryResult.data.managerEntity?.community?.id,
+                      state: queryResult.data.managerEntity?.state,
+                  };
+
+        return {
+            beneficiary,
+            manager,
+        };
     } catch (error) {
         throw new Error(error);
     }
