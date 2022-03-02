@@ -5,7 +5,7 @@ import { celebrate, Joi } from 'celebrate';
 const create = celebrate({
     body: Joi.object({
         address: Joi.string().required(),
-        phone: Joi.string().required(),
+        phone: Joi.string().optional(),
         language: Joi.string().optional(),
         currency: Joi.string().optional(),
         pushNotificationToken: Joi.string().optional(),
@@ -16,6 +16,23 @@ const create = celebrate({
         avatarMediaId: Joi.number().optional(),
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
+    }),
+});
+
+const update = celebrate({
+    body: Joi.object({
+        language: Joi.string().optional(),
+        currency: Joi.string().optional(),
+        username: Joi.alternatives(Joi.string(), null).optional(),
+        gender: Joi.string().optional(),
+        year: Joi.alternatives(Joi.number(), null).optional(),
+        children: Joi.alternatives(Joi.number(), null).optional(),
+        avatarMediaId: Joi.number().optional(),
+        pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
+        email: Joi.alternatives(
+            Joi.string().email({ tlds: { allow: false } }),
+            null
+        ).optional(),
     }),
 });
 
@@ -146,6 +163,7 @@ const saveSurvey = celebrate({
 
 export default {
     create,
+    update,
     report,
     auth,
     welcome,

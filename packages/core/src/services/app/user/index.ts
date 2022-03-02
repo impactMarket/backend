@@ -1,11 +1,12 @@
 import { Op, QueryTypes } from 'sequelize';
 
 import { models, sequelize } from '../../../database';
+import { AppUserModel } from '../../../database/models/app/appUser';
 import {
     AppUser,
     AppUserCreationAttributes,
 } from '../../../interfaces/app/appUser';
-import { getUserRoles } from '../../../subgraph/queries/community';
+import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
 import { Logger } from '../../../utils/logger';
@@ -17,14 +18,18 @@ export default class UserService {
         recover: boolean = false
     ) {
         try {
-            // generate access token for future interactions that require authentication
             const exists = await this._exists(userParams.address);
 
             if (overwrite) {
                 await this._overwriteUser(userParams);
-            } else if (!exists) {
+            } else {
+                // a user might be connecting with the same phone number
+                // as an existing user
                 const existsPhone = userParams.trust?.phone
-                    ? await this._existsAccountByPhone(userParams.trust.phone)
+                    ? await this._existsAccountByPhone(
+                          userParams.trust.phone,
+                          userParams.address
+                      )
                     : false;
 
                 if (existsPhone)
@@ -38,19 +43,23 @@ export default class UserService {
                 await this._recoverAccount(userParams.address);
             }
 
-            let user: AppUser;
+            let user: AppUserModel;
             if (!exists) {
-                // create new user, including their phone number information
-                user = (
-                    await models.appUser.create(userParams, {
-                        include: [
-                            {
-                                model: models.appUserTrust,
-                                as: 'trust',
-                            },
-                        ],
-                    })
-                ).toJSON() as AppUser;
+                // create new user
+                // including their phone number information, if it exists
+                user = await models.appUser.create(
+                    userParams,
+                    userParams.trust?.phone
+                        ? {
+                              include: [
+                                  {
+                                      model: models.appUserTrust,
+                                      as: 'trust',
+                                  },
+                              ],
+                          }
+                        : {}
+                );
             } else {
                 if (userParams.pushNotificationToken) {
                     models.appUser.update(
@@ -63,14 +72,42 @@ export default class UserService {
                 }
                 // it's not null at this point
                 user = (await models.appUser.findOne({
+                    where: { address: userParams.address },
                     include: [
                         {
                             model: models.appUserTrust,
                             as: 'trust',
                         },
                     ],
-                    where: { address: userParams.address },
-                }))!.toJSON() as AppUser;
+                }))!;
+                // if the account doesn't have a phone number
+                // but it's being provided now, add it
+                // otherwise, verify if account phone number and
+                // provided phone number are the same
+                const jsonUser = user.toJSON();
+                if (
+                    jsonUser.trust?.length === 0 &&
+                    userParams.trust &&
+                    userParams.trust.phone.length > 0
+                ) {
+                    const trust = await models.appUserTrust.create(
+                        userParams.trust
+                    );
+                    await models.appUserThroughTrust.create({
+                        userAddress: user.address,
+                        appUserTrustId: trust.id,
+                    });
+                } else if (
+                    jsonUser.trust &&
+                    jsonUser.trust.length > 0 &&
+                    userParams.trust?.phone &&
+                    userParams.trust.phone !== jsonUser.trust![0].phone
+                ) {
+                    throw new BaseError(
+                        'DIFFERENT_PHONE',
+                        'phone associated with account is different'
+                    );
+                }
             }
 
             if (!user.active) {
@@ -85,10 +122,14 @@ export default class UserService {
             }
 
             this._updateLastLogin(user.id);
+            // generate access token for future interactions that require authentication
             const token = generateAccessToken(userParams.address, user.id);
 
+            // do not return trust key
+            const jsonUser = user.toJSON();
+            delete jsonUser['trust'];
             return {
-                ...user,
+                ...jsonUser,
                 ...(await this._userRoles(user.address)),
                 token,
             };
@@ -109,6 +150,49 @@ export default class UserService {
             ...user.toJSON(),
             ...(await this._userRoles(user.toJSON().address)),
         };
+    }
+
+    public async update(user: AppUser): Promise<AppUser> {
+        const updated = await models.appUser.update(user, {
+            returning: true,
+            where: { address: user.address },
+        });
+        if (updated[0] === 0) {
+            throw new BaseError('UPDATE_FAILED', 'user was not updated!');
+        }
+        return updated[1][0];
+    }
+
+    public async delete(address: string): Promise<boolean> {
+        try {
+            const roles = await getUserRoles(address);
+
+            if (roles.manager !== null && roles.manager.state === 0) {
+                throw new BaseError(
+                    'MANAGER',
+                    "Active managers can't delete accounts"
+                );
+            }
+
+            const updated = await models.appUser.update(
+                {
+                    deletedAt: new Date(),
+                },
+                {
+                    where: {
+                        address,
+                    },
+                    returning: true,
+                }
+            );
+
+            if (updated[0] === 0) {
+                throw new BaseError('UPDATE_FAILED', 'User was not updated');
+            }
+            return true;
+        } catch (error) {
+            throw error;
+        }
     }
 
     private async _recoverAccount(address: string) {
@@ -186,21 +270,33 @@ export default class UserService {
         return exists !== null;
     }
 
-    private async _existsAccountByPhone(phone: string): Promise<boolean> {
+    /**
+     * Verify if there is any other account different than `address`
+     * with the same `phone`.
+     * @param phone number to verify
+     * @param address address to verify
+     * @returns {bool} true if there is any other account with the same phone
+     */
+    private async _existsAccountByPhone(
+        phone: string,
+        address: string
+    ): Promise<boolean> {
         const query = `
-            SELECT phone, address
+            SELECT address
             FROM app_user_trust
             LEFT JOIN app_user_through_trust ON "appUserTrustId" = id
             LEFT JOIN "app_user" as "user" ON "user".address = "userAddress"
-            WHERE phone = :phone
+            WHERE phone = :phone and address != :address
             AND "user".active = TRUE`;
 
         const exists = await sequelize.query(query, {
             type: QueryTypes.SELECT,
             replacements: {
+                address,
                 phone,
             },
         });
+        console.log(exists);
 
         return exists.length > 0;
     }

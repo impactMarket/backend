@@ -54,13 +54,13 @@ export default (app: express.Application): void => {
     if (process.env.NODE_ENV === 'development') {
         swaggerServers = [
             {
-                url: 'http://localhost:5000/api',
+                url: 'http://localhost:5000/api/v2',
             },
         ];
     } else {
         swaggerServers = [
             {
-                url: `https://impactmarket-api-${process.env.API_ENVIRONMENT}.herokuapp.com/api`,
+                url: `https://impactmarket-api-${process.env.API_ENVIRONMENT}.herokuapp.com/api/v2`,
             },
         ];
         urlSchema = 'https';
@@ -109,7 +109,7 @@ export default (app: express.Application): void => {
                 },
             },
             apis: [
-                path.join(__dirname, '../src/routes/*.ts'),
+                path.join(__dirname, '../src/routes/v2/*.ts'),
                 path.join(__dirname, '../../core/src/services/*.ts'),
                 path.join(__dirname, '../../core/src/interfaces/ubi/*.ts'),
                 path.join(__dirname, '../../core/src/interfaces/app/*.ts'),

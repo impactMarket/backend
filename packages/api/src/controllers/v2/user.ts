@@ -61,6 +61,43 @@ class UserController {
             .then((user) => standardResponse(res, 201, true, user))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    public update = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        services.app.UserService.edit({
+            address: req.user.address,
+            ...req.body,
+        })
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
+
+    public delete = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        services.app.UserService.delete(req.user.address)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export default UserController;

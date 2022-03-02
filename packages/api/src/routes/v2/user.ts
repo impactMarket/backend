@@ -17,7 +17,7 @@ export default (app: Router): void => {
      *   post:
      *     tags:
      *     - "user"
-     *     summary: "Authenticate user"
+     *     summary: "Create user"
      *     requestBody:
      *       required: true
      *       content:
@@ -30,8 +30,8 @@ export default (app: Router): void => {
      *                 required: true
      *               phone:
      *                 type: string
-     *                 description: phone number (hashed once it reaches the backend)
-     *                 required: true
+     *                 description: phone number
+     *                 required: false
      *               language:
      *                 type: string
      *                 required: false
@@ -72,11 +72,94 @@ export default (app: Router): void => {
      *   get:
      *     tags:
      *     - "user"
-     *     summary: "Log user"
+     *     summary: "Get user"
+     *     responses:
      *       "200":
      *         description: "Success"
      *       "403":
      *         description: "Invalid input"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
      */
     route.get('/', authenticateToken, userController.get);
+
+    /**
+     * @swagger
+     *
+     * /user:
+     *   put:
+     *     tags:
+     *     - "user"
+     *     summary: "Update user"
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               language:
+     *                 type: string
+     *                 required: false
+     *               currency:
+     *                 type: string
+     *                 required: false
+     *               pushNotificationToken:
+     *                 type: string
+     *                 nullable: true
+     *                 required: false
+     *               username:
+     *                 type: string
+     *                 nullable: true
+     *                 required: false
+     *               gender:
+     *                 type: string
+     *                 enum: [u, m, f, o]
+     *                 required: false
+     *               year:
+     *                 type: number
+     *                 nullable: true
+     *                 required: false
+     *               children:
+     *                 type: number
+     *                 nullable: true
+     *                 required: false
+     *               avatarMediaId:
+     *                 type: number
+     *                 required: false
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put(
+        '/',
+        authenticateToken,
+        userValidators.update,
+        userController.update
+    );
+
+    /**
+     * @swagger
+     *
+     * /user:
+     *   delete:
+     *     tags:
+     *     - "user"
+     *     summary: "Delete user"
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.delete('/', authenticateToken, userController.delete);
 };
