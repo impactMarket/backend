@@ -532,4 +532,21 @@ export default (app: Router): void => {
         userValidators.saveSurvey,
         userController.saveSurvey
     );
+
+    /**
+     * @swagger
+     *
+     * /community/logs:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get user logs
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+     route.get('/logs', authenticateToken, userController.getLogs);
 };

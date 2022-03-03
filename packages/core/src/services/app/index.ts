@@ -4,6 +4,7 @@ import ExchangeRatesService from './exchangeRates';
 import ImMetadataService from './imMetadata';
 import UserService from './user';
 import UserServiceV2 from './user/index';
+import LogService from './appLog';
 
 export {
     AgendaService,
@@ -12,4 +13,5 @@ export {
     ImMetadataService,
     UserService,
     UserServiceV2,
+    LogService,
 };

@@ -11,6 +11,7 @@ import { initializeAppProposal } from './app/appProposal';
 import { initializeAppUser } from './app/appUser';
 import { initializeAppUserThroughTrust } from './app/appUserThroughTrust';
 import { initializeAppUserTrust } from './app/appUserTrust';
+import { initializeAppLog } from './app/appLog';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
 import { initializeExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
@@ -64,6 +65,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAppNotification(sequelize);
     initializeUbiBeneficiarySurvey(sequelize);
     initializeAppProposal(sequelize);
+    initializeAppLog(sequelize);
 
     // ubi
     initializeCommunity(sequelize);

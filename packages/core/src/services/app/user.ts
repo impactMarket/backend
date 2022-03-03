@@ -1,5 +1,7 @@
 import { Client } from '@hubspot/api-client';
+import { LogTypes } from '../../interfaces/app/appLog';
 import { Op, QueryTypes } from 'sequelize';
+import { LogService } from '.';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
@@ -554,6 +556,13 @@ export default class UserService {
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'user was not updated!');
         }
+
+        LogService.saveLog(
+            user.id,
+            LogTypes.EDITED_PROFILE,
+            user,
+        );
+
         return updated[1][0];
     }
 

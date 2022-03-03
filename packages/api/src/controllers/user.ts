@@ -496,6 +496,22 @@ class UserController {
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    public getLogs = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        services.app.LogService.getLog(req.user.address)
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));;
+    }
 }
 
 export default UserController;

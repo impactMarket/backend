@@ -7,6 +7,7 @@ import { AppMediaContentModel } from './models/app/appMediaContent';
 import { AppMediaThumbnailModel } from './models/app/appMediaThumbnail';
 import { AppNotificationModel } from './models/app/appNotification';
 import { AppProposalModel } from './models/app/appProposal';
+import { AppLogModel } from './models/app/appLog';
 import { AppUserModel } from './models/app/appUser';
 import { AppUserThroughTrustModel } from './models/app/appUserThroughTrust';
 import { AppUserTrustModel } from './models/app/appUserTrust';
@@ -46,6 +47,7 @@ export interface DbModels {
     appUser: ModelCtor<AppUserModel>;
     appUserTrust: ModelCtor<AppUserTrustModel>;
     appProposal: ModelCtor<AppProposalModel>;
+    appLog: ModelCtor<AppLogModel>;
     appUserThroughTrust: ModelCtor<AppUserThroughTrustModel>;
     anonymousReport: ModelCtor<AppAnonymousReportModel>;
     cronJobExecuted: ModelCtor<CronJobExecuted>;

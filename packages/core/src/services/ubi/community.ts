@@ -50,6 +50,8 @@ import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
 import ManagerService from './managers';
 import { BigNumber } from 'bignumber.js';
+import LogService from '../app/appLog';
+import { LogTypes } from '../../interfaces/app/appLog';
 
 export default class CommunityService {
     public static community = models.community;
@@ -229,6 +231,13 @@ export default class CommunityService {
         if (update[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'community was not updated!');
         }
+
+        LogService.saveLog(
+            userAddress!,
+            LogTypes.EDITED_COMMUNITY,
+            params
+        );
+
         return this._findCommunityBy({ id }, userAddress);
     }
 
