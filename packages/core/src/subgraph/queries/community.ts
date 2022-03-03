@@ -1,8 +1,8 @@
 import { gql } from 'apollo-boost';
-
-import { client } from '../config';
 import { ethers } from 'ethers';
+
 import config from '../../config';
+import { client } from '../config';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
@@ -40,10 +40,14 @@ export const getCommunityProposal = async (): Promise<string[]> => {
     }
 };
 
-export const getClaimed = async (ids: string[]): Promise<{
-    claimed: string;
-    id: string;
-}[]> => {
+export const getClaimed = async (
+    ids: string[]
+): Promise<
+    {
+        claimed: string;
+        id: string;
+    }[]
+> => {
     try {
         const idsFormated = ids.map((el) => `"${el.toLocaleLowerCase()}"`);
 
@@ -69,7 +73,7 @@ export const getClaimed = async (ids: string[]): Promise<{
     } catch (error) {
         throw new Error(error);
     }
-}
+};
 
 export const getCommunityState = async (
     communityAddress: string
@@ -86,7 +90,7 @@ export const getCommunityState = async (
         const query = gql`
             {
                 communityEntity(
-                    id: "${communityAddress}"
+                    id: "${communityAddress.toLowerCase()}"
                 ) {
                     claims
                     claimed
@@ -95,6 +99,38 @@ export const getCommunityState = async (
                     contributed
                     contributors
                     managers
+                }
+            }
+        `;
+
+        const queryResult = await client.query({
+            query,
+        });
+
+        return queryResult.data?.communityEntity;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getCommunityUBIParams = async (
+    communityAddress: string
+): Promise<{
+    claimAmount: string;
+    maxClaim: string;
+    baseInterval: number;
+    incrementInterval: number;
+}> => {
+    try {
+        const query = gql`
+            {
+                communityEntity(
+                    id: "${communityAddress.toLowerCase()}"
+                ) {
+                    claimAmount
+                    maxClaim
+                    baseInterval
+                    incrementInterval
                 }
             }
         `;

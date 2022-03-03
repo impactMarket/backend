@@ -1,6 +1,6 @@
 import './tracer'; // must come before importing any instrumented module.
 
-import { utils, config } from '@impactmarket/core';
+import { utils } from '@impactmarket/core';
 import * as Sentry from '@sentry/node';
 // import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -11,8 +11,10 @@ import path from 'path';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
+import config from './config';
 import { rateLimiter } from './middlewares';
 import routes from './routes';
+import v2routes from './routes/v2';
 
 export default (app: express.Application): void => {
     /**
@@ -52,13 +54,13 @@ export default (app: express.Application): void => {
     if (process.env.NODE_ENV === 'development') {
         swaggerServers = [
             {
-                url: 'http://localhost:5000/api',
+                url: 'http://localhost:5000/api/v2',
             },
         ];
     } else {
         swaggerServers = [
             {
-                url: `https://impactmarket-api-${process.env.API_ENVIRONMENT}.herokuapp.com/api`,
+                url: `https://impactmarket-api-${process.env.API_ENVIRONMENT}.herokuapp.com/api/v2`,
             },
         ];
         urlSchema = 'https';
@@ -107,7 +109,7 @@ export default (app: express.Application): void => {
                 },
             },
             apis: [
-                path.join(__dirname, '../src/routes/*.ts'),
+                path.join(__dirname, '../src/routes/v2/**/*.ts'),
                 path.join(__dirname, '../../core/src/services/*.ts'),
                 path.join(__dirname, '../../core/src/interfaces/ubi/*.ts'),
                 path.join(__dirname, '../../core/src/interfaces/app/*.ts'),
@@ -148,6 +150,7 @@ export default (app: express.Application): void => {
 
     // Load API routes
     app.use(config.api.prefix, routes());
+    app.use(config.api.v2prefix, v2routes());
 
     // The error handler must be before any other error middleware and after all controllers
     app.use(Sentry.Handlers.errorHandler());
