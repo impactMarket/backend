@@ -57,20 +57,6 @@ export class CommunityDetailsService {
         if (community.status === 'pending') {
             const user = await models.appUser.findOne({
                 attributes: ['address', 'username'],
-                include: [
-                    {
-                        model: models.appMediaContent,
-                        as: 'avatar',
-                        required: false,
-                        include: [
-                            {
-                                model: models.appMediaThumbnail,
-                                as: 'thumbnails',
-                                separate: true,
-                            },
-                        ],
-                    },
-                ],
                 where: {
                     address: community.requestByAddress,
                 },
@@ -101,20 +87,6 @@ export class CommunityDetailsService {
 
             const result = await models.appUser.findAll({
                 attributes: ['address', 'username'],
-                include: [
-                    {
-                        model: models.appMediaContent,
-                        as: 'avatar',
-                        required: false,
-                        include: [
-                            {
-                                model: models.appMediaThumbnail,
-                                as: 'thumbnails',
-                                separate: true,
-                            },
-                        ],
-                    },
-                ],
                 where: {
                     address: { [Op.in]: managers.map((m) => m.address) },
                 },
