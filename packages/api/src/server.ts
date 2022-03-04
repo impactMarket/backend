@@ -121,7 +121,10 @@ export default (app: express.Application): void => {
         console.log(swaggerSpec);
 
         app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-        app.use(morgan('combined'));
+        if (process.env.NODE_ENV === 'development') {
+            // redundant in production (heroku logs it already), but useful for development
+            app.use(morgan('combined'));
+        }
     }
 
     // Useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
