@@ -28,6 +28,7 @@ describe('community service', () => {
     let returnProposalsSubgraph: SinonStub;
     let returnClaimedSubgraph: SinonStub;
     let returnCommunityStateSubgraph: SinonStub;
+    let returnGetCommunityManagersSubgraph: SinonStub;
 
     type SubgraphClaimed = { id: string; claimed: number }[];
 
@@ -53,6 +54,10 @@ describe('community service', () => {
         returnProposalsSubgraph = stub(subgraph, 'getCommunityProposal');
         returnClaimedSubgraph = stub(subgraph, 'getClaimed');
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
+        returnGetCommunityManagersSubgraph = stub(
+            subgraph,
+            'getCommunityManagers'
+        );
         returnCommunityStateSubgraph.returns([
             {
                 claims: 0,
@@ -64,6 +69,17 @@ describe('community service', () => {
                 managers: 0,
             },
         ]);
+        returnGetCommunityManagersSubgraph.returns(
+            Promise.resolve([
+                {
+                    address: users[0].address,
+                    state: 0,
+                    added: 0,
+                    removed: 0,
+                    since: 0,
+                },
+            ])
+        );
     });
 
     describe('list', () => {
@@ -2169,6 +2185,25 @@ describe('community service', () => {
             );
 
             await ManagerService.remove(users[0].address, community[0].id);
+
+            returnGetCommunityManagersSubgraph.returns(
+                Promise.resolve([
+                    {
+                        address: users[0].address,
+                        state: 1,
+                        added: 1,
+                        removed: 0,
+                        since: 0,
+                    },
+                    {
+                        address: users[1].address,
+                        state: 0,
+                        added: 0,
+                        removed: 0,
+                        since: 0,
+                    },
+                ])
+            );
 
             const managers = await CommunityService.getManagers(
                 community[0].id,
