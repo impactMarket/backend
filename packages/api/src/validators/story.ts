@@ -5,6 +5,7 @@ class StoryValidator {
         body: Joi.object({
             communityId: Joi.number(),
             message: Joi.string().optional(),
+            storyMediaId: Joi.number().optional(),
             storyMediaPath: Joi.string().optional(),
         }),
     });

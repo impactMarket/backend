@@ -13,7 +13,7 @@ const create = celebrate({
         gender: Joi.string().optional(),
         year: Joi.number().optional(),
         children: Joi.number().optional(),
-        avatarMediaId: Joi.number().optional(),
+        avatarMediaPath: Joi.string().optional(),
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
     }),
@@ -27,7 +27,7 @@ const update = celebrate({
         gender: Joi.string().optional(),
         year: Joi.alternatives(Joi.number(), null).optional(),
         children: Joi.alternatives(Joi.number(), null).optional(),
-        avatarMediaId: Joi.number().optional(),
+        avatarMediaPath: Joi.string().optional(),
         pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
         email: Joi.alternatives(
             Joi.string().email({ tlds: { allow: false } }),
@@ -64,6 +64,7 @@ const auth = celebrate({
         gender: Joi.string().optional(),
         year: Joi.number().optional(),
         children: Joi.number().optional(),
+        avatarMediaId: Joi.number().optional(),
         avatarMediaPath: Joi.string().optional(),
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
@@ -145,6 +146,7 @@ const edit = celebrate({
         gender: Joi.string().optional(),
         year: Joi.number().optional(),
         children: Joi.number().optional(),
+        avatarMediaId: Joi.number().optional(),
         avatarMediaPath: Joi.string().optional(),
         pushNotificationToken: Joi.string().optional().allow(''),
         email: Joi.string()

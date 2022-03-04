@@ -1,4 +1,4 @@
-import { utils, services } from '@impactmarket/core';
+import { utils, services, database, config } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
 import { RequestWithUser } from '../middlewares/core';
@@ -12,8 +12,8 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public auth = (req: Request, res: Response) => {
-        const {
+    public auth = async (req: Request, res: Response) => {
+        let {
             address,
             phone,
             language,
@@ -23,9 +23,22 @@ class UserController {
             year,
             children,
             avatarMediaPath,
+            avatarMediaId,
             overwrite,
             recover,
         } = req.body;
+
+        if (avatarMediaId) {
+            const appMedia = await database.models.appMediaContent.findOne({
+                attributes: ['url'],
+                where: {
+                    id: avatarMediaId,
+                }
+            });
+
+            avatarMediaPath = appMedia!.url.replace(`${config.cloudfrontUrl}/`, '');
+        }
+
         services.app.UserService.authenticate(
             {
                 address,
