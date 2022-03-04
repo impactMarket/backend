@@ -146,35 +146,3 @@ export const getCommunityState = async (
         throw new Error(error);
     }
 };
-
-export const getCommunityUBIParams = async (
-    communityAddress: string
-): Promise<{
-    claimAmount: string;
-    maxClaim: string;
-    baseInterval: number;
-    incrementInterval: number;
-}> => {
-    try {
-        const query = gql`
-            {
-                communityEntity(
-                    id: "${communityAddress.toLowerCase()}"
-                ) {
-                    claimAmount
-                    maxClaim
-                    baseInterval
-                    incrementInterval
-                }
-            }
-        `;
-
-        const queryResult = await client.query({
-            query,
-        });
-
-        return queryResult.data?.communityEntity;
-    } catch (error) {
-        throw new Error(error);
-    }
-};
