@@ -146,7 +146,7 @@ export default (app: express.Application): void => {
     app.use(express.json());
     // app.use(express.urlencoded({ extended: true }));
 
-    // app.use(rateLimiter);
+    app.use(rateLimiter);
 
     // Load API routes
     app.use(config.api.prefix, routes());
