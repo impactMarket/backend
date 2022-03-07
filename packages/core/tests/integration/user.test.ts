@@ -598,6 +598,7 @@ describe('user service', () => {
         });
 
         after(async () => {
+            await truncate(sequelize, 'AppLogModel');
             await truncate(sequelize);
         });
 
@@ -827,7 +828,10 @@ describe('user service', () => {
             ]);
             await ManagerFactory([users[0]], communities[0].id);
             await BeneficiaryFactory([users[1],users[2]], communities[0].id);
-            
+        });
+
+        afterEach(async () => {
+            await truncate(sequelize, 'AppLogModel');
         });
 
         it('get user logs - edited community', async () => {
