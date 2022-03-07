@@ -70,8 +70,8 @@ export default (app: express.Application): void => {
             swaggerDefinition: {
                 openapi: '3.0.1',
                 info: {
-                    description: 'Swagger UI to impactMarket API',
-                    version: '0.0.1',
+                    description: 'Swagger UI for impactMarket API',
+                    version: '1.0.0',
                     title: 'impactMarket',
                     license: {
                         name: 'Apache 2.0',
@@ -97,7 +97,7 @@ export default (app: express.Application): void => {
                 components: {
                     securitySchemes: {
                         api_auth: {
-                            type: urlSchema,
+                            type: 'http',
                             scheme: 'bearer',
                             bearerFormat: 'JWT',
                             scopes: {
