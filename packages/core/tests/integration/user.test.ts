@@ -14,16 +14,37 @@ import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { jumpToTomorrowMidnight } from '../config/utils';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
+import BeneficiaryFactory from '../factories/beneficiary';
 import UserFactory from '../factories/user';
+import CommunityService from '../../src/services/ubi/community';
+import { LogService } from '../../src/services/app';
+import { LogTypes } from '../../src/interfaces/app/appLog';
+import * as subgraph from '../../src/subgraph/queries/community';
 
 describe('user service', () => {
     let sequelize: Sequelize;
+    let returnCommunityStateSubgraph: SinonStub;
+
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
+
+        returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
+        returnCommunityStateSubgraph.returns([
+            {
+                claims: 0,
+                claimed: '0',
+                beneficiaries: 0,
+                removedBeneficiaries: 0,
+                contributed: '0',
+                contributors: 0,
+                managers: 0,
+            },
+        ]);
     });
 
     after(async () => {
+        await truncate(sequelize, 'AppLogModel');
         await truncate(sequelize, 'AppUserModel');
         await truncate(sequelize, 'Manager');
         await truncate(sequelize, 'Beneficiary');
@@ -778,6 +799,118 @@ describe('user service', () => {
 
             // eslint-disable-next-line no-unused-expressions
             expect(resp.user.deletedAt).to.be.null;
+        });
+    });
+
+    describe('user logs', () => {
+        let users: AppUser[];
+        let communities: CommunityAttributes[];
+
+        before(async () => {
+            users = await UserFactory({ n: 4 });
+            communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                    ambassadorAddress: users[3].address,
+                },
+            ]);
+            await ManagerFactory([users[0]], communities[0].id);
+            await BeneficiaryFactory([users[1],users[2]], communities[0].id);
+            
+        });
+
+        it('get user logs - edited community', async () => {
+            await CommunityService.edit(
+                communities[0].id,
+                {
+                    name: communities[0].name,
+                    description: communities[0].description,
+                    currency: communities[0].currency,
+                    coverMediaId: communities[0].coverMediaId,
+                    email: communities[0].email,
+                },
+                users[0].address,
+            );
+
+            const logs = await LogService.getLog(users[3].address);
+
+            expect(logs[0].community).to.include({
+                id: communities[0].id,
+                name: communities[0].name,
+            });
+            expect(logs[0].logs[0]).to.include({
+                userId: users[0].id,
+                type: LogTypes.EDITED_COMMUNITY,
+            });
+            expect(logs[0].logs[0].detail).to.include({
+                name: communities[0].name,
+                description: communities[0].description,
+                currency: communities[0].currency,
+                coverMediaId: communities[0].coverMediaId,
+                email: communities[0].email,
+            });
+            expect(logs[0].logs[0].user).to.include({
+                address: users[0].address,
+                username: users[0].username,
+            });
+        });
+
+        it('get user logs - edited profile', async () => {
+            await UserService.edit({
+                username: 'new name',
+                avatarMediaId: 1,
+                address: users[1].address,
+            } as AppUser);
+
+            const logs = await LogService.getLog(users[3].address);
+
+            expect(logs[0].community).to.include({
+                id: communities[0].id,
+                name: communities[0].name,
+            });
+            expect(logs[0].logs[0]).to.include({
+                userId: users[1].id,
+                type: LogTypes.EDITED_PROFILE,
+            });
+            expect(logs[0].logs[0].detail).to.include({
+                username: 'new name',
+                avatarMediaId: 1,
+            });
+            expect(logs[0].logs[0].user).to.include({
+                address: users[1].address,
+                username: 'new name',
+            });
+        });
+
+        it('should not list logs when is not an ambassador', async () => {
+            await CommunityService.edit(
+                communities[0].id,
+                {
+                    name: communities[0].name,
+                    description: communities[0].description,
+                    currency: communities[0].currency,
+                    coverMediaId: communities[0].coverMediaId,
+                    email: communities[0].email,
+                },
+                users[0].address,
+            );
+
+            LogService.getLog(users[0].address)
+                .catch((e) => expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND'))
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
         });
     });
 });

@@ -82,7 +82,9 @@ export default class LogService {
                     where: {
                         address: { [Op.in]: addresses }
                     }
-                }]
+                }],
+                raw: true,
+                nest: true,
             });
 
             console.log({

@@ -558,7 +558,7 @@ export default class UserService {
         }
 
         LogService.saveLog(
-            user.id,
+            user.address,
             LogTypes.EDITED_PROFILE,
             user,
         );
