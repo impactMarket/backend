@@ -299,7 +299,8 @@ class CommunityController {
                             coverMediaId,
                             email,
                         },
-                        req.user?.address
+                        req.user?.address,
+                        req.user?.userId,
                     )
                         .then((community) =>
                             standardResponse(res, 200, true, community)

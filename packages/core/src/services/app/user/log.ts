@@ -1,7 +1,7 @@
-import { LogTypes, AppLog } from '../../interfaces/app/appLog';
+import { LogTypes, AppLog } from '../../../interfaces/app/appLog';
 import { Op } from 'sequelize';
-import { models } from '../../database';
-import { BaseError } from '../../utils/baseError';
+import { models } from '../../../database';
+import { BaseError } from '../../../utils/baseError';
 
 interface LogReturn {
     community: {
@@ -11,24 +11,13 @@ interface LogReturn {
     logs: AppLog[]
 }
 
-export default class LogService {
-    public static async saveLog(
-        user: string | number,
+export default class UserLogService {
+    public async create(
+        userId: number,
         type: LogTypes,
         detail: object,
     ) {
         try {
-            let userId: number;
-            if(typeof user === 'string') {
-                userId = (await models.appUser.findOne({
-                    where: {
-                        address: user,
-                    }
-                }))!.id;
-            } else {
-                userId = user
-            }
-            
             await models.appLog.create({
                 userId,
                 type,
@@ -39,7 +28,7 @@ export default class LogService {
         }
     }
 
-    public static async getLog(ambassadorAddress: string): Promise<LogReturn[]> {
+    public async get(ambassadorAddress: string): Promise<LogReturn[]> {
         const communities = await models.community.findAll({
             attributes: ['id', 'name'],
             include: [
@@ -86,14 +75,6 @@ export default class LogService {
                 raw: true,
                 nest: true,
             });
-
-            console.log({
-                community: {
-                    id: community.id,
-                    name: community.name,
-                },
-                logs,
-            })
 
             response.push({
                 community: {

@@ -50,7 +50,7 @@ import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
 import ManagerService from './managers';
 import { BigNumber } from 'bignumber.js';
-import LogService from '../app/appLog';
+import UserLogService from '../app/user/log';
 import { LogTypes } from '../../interfaces/app/appLog';
 
 export default class CommunityService {
@@ -77,6 +77,7 @@ export default class CommunityService {
 
     private static communityContentStorage = new CommunityContentStorage();
     private static promoterContentStorage = new PromoterContentStorage();
+    private static userLogService = new UserLogService();
 
     public static async create({
         requestByAddress,
@@ -205,7 +206,8 @@ export default class CommunityService {
             coverMediaId: number;
             email?: string;
         },
-        userAddress?: string
+        userAddress?: string,
+        userId?: number,
     ): Promise<CommunityAttributes> {
         const community = await this.community.findOne({
             attributes: ['coverMediaId'],
@@ -232,11 +234,13 @@ export default class CommunityService {
             throw new BaseError('UPDATE_FAILED', 'community was not updated!');
         }
 
-        LogService.saveLog(
-            userAddress!,
-            LogTypes.EDITED_COMMUNITY,
-            params
-        );
+        if (userId) {
+            this.userLogService.create(
+                userId,
+                LogTypes.EDITED_COMMUNITY,
+                params
+            );
+        }
 
         return this._findCommunityBy({ id }, userAddress);
     }
@@ -788,7 +792,7 @@ export default class CommunityService {
 
     public static async findByContractAddress(
         contractAddress: string,
-        userAddress?: string
+        userAddress?: string,
     ): Promise<CommunityAttributes> {
         return this._findCommunityBy({ contractAddress }, userAddress);
     }

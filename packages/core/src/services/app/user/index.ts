@@ -10,8 +10,12 @@ import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
 import { Logger } from '../../../utils/logger';
+import { LogTypes } from '../../../interfaces/app/appLog';
+import UserLogService from './log';
 
 export default class UserService {
+    private userLogService = new UserLogService();
+
     public async create(
         userParams: AppUserCreationAttributes,
         overwrite: boolean = false,
@@ -154,6 +158,13 @@ export default class UserService {
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'user was not updated!');
         }
+
+        this.userLogService.create(
+            updated[1][0].id,
+            LogTypes.EDITED_PROFILE,
+            user,
+        );
+
         return updated[1][0];
     }
 
