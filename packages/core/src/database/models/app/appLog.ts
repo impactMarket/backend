@@ -11,6 +11,7 @@ export class AppLogModel extends Model<AppLog, AppLogCreation> {
     public userId!: number;
     public type!: LogTypes;
     public detail!: object;
+    public communityId!: number;
     public createdAt!: Date;
 }
 
@@ -33,6 +34,10 @@ export function initializeAppLog(sequelize: Sequelize): void {
             detail: {
                 type: DataTypes.JSON,
                 allowNull: false,
+            },
+            communityId: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
             },
             createdAt: {
                 type: DataTypes.DATE,

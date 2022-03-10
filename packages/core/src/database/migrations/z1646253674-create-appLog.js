@@ -19,6 +19,10 @@ module.exports = {
         type: Sequelize.JSON,
         allowNull: false,
       },
+      communityId: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,

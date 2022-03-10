@@ -140,7 +140,22 @@ class UserController {
             return;
         }
 
-        this.userLogService.get(req.user.address)
+        const {
+            type,
+            entity
+        } = req.query;
+
+        if (type === undefined || entity === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'INVALID_QUERY',
+                    message: 'missing type or entity',
+                },
+            });
+            return;
+        }
+
+        this.userLogService.get(req.user.address, type as string, entity as string)
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));;
     }

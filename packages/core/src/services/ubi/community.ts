@@ -238,7 +238,8 @@ export default class CommunityService {
             this.userLogService.create(
                 userId,
                 LogTypes.EDITED_COMMUNITY,
-                params
+                params,
+                id,
             );
         }
 

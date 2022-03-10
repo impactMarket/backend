@@ -29,6 +29,7 @@ export interface AppLog {
     userId: number;
     type: string;
     detail: object;
+    communityId: number | null;
 
     //timestamp
     createdAt: Date;
@@ -40,4 +41,5 @@ export interface AppLogCreation {
     userId: number;
     type: string;
     detail: object;
+    communityId?: number;
 }
