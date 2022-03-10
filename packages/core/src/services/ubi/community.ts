@@ -903,7 +903,7 @@ export default class CommunityService {
             isDeleted: boolean;
             added: number;
             address: string;
-            user?: AppUser;
+            user: AppUser | null;
             active: boolean;
         }[]
     > {
@@ -989,7 +989,7 @@ export default class CommunityService {
                 address: m.address,
                 added: m.added,
                 active: m.state === 0,
-                user: users[m.address],
+                user: users[m.address] ? users[m.address] : null,
                 isDeleted: !users[m.address],
             }));
         }
