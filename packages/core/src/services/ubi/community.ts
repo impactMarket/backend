@@ -902,7 +902,7 @@ export default class CommunityService {
         {
             isDeleted: boolean;
             added: number;
-            address?: string;
+            address: string;
             user?: AppUser;
             active: boolean;
         }[]
@@ -936,6 +936,7 @@ export default class CommunityService {
             return [
                 {
                     user: user as AppUser,
+                    address: user!.address,
                     isDeleted: false,
                     added: 0,
                     active: false,
@@ -985,6 +986,7 @@ export default class CommunityService {
                 }, {});
 
             return managers.map((m) => ({
+                address: m.address,
                 added: m.added,
                 active: m.state === 0,
                 user: users[m.address],

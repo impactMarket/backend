@@ -2241,7 +2241,6 @@ describe('community service', () => {
             expect(managers[0].added).to.be.equal(0);
             expect(managers[0].isDeleted).to.be.false;
             expect(managers[0].user).to.exist;
-            expect(managers[0].address).to.not.exist;
         });
     });
 
