@@ -127,11 +127,11 @@ class UserController {
             });
             return;
         }
-        const { avatarMediaId } = req.body;
+        const { mediaId } = req.body;
         const appMedia = await database.models.appMediaContent.findOne({
             attributes: ['url'],
             where: {
-                id: avatarMediaId,
+                id: mediaId,
             },
         });
         const avatarMediaPath = appMedia!.url.replace(
