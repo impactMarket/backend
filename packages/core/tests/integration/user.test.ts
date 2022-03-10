@@ -17,13 +17,16 @@ import ManagerFactory from '../factories/manager';
 import BeneficiaryFactory from '../factories/beneficiary';
 import UserFactory from '../factories/user';
 import CommunityService from '../../src/services/ubi/community';
-import { LogService } from '../../src/services/app';
+import LogService from '../../src/services/app/user/log';
 import { LogTypes } from '../../src/interfaces/app/appLog';
 import * as subgraph from '../../src/subgraph/queries/community';
+import * as userSubgraph from '../../src/subgraph/queries/user';
 
 describe('user service', () => {
     let sequelize: Sequelize;
     let returnCommunityStateSubgraph: SinonStub;
+    let returnUserRoleSubgraph: SinonStub;
+    const logService = new LogService();
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -41,6 +44,8 @@ describe('user service', () => {
                 managers: 0,
             },
         ]);
+
+        returnUserRoleSubgraph = stub(userSubgraph, 'getUserRoles');
     });
 
     after(async () => {
@@ -826,6 +831,12 @@ describe('user service', () => {
                     ambassadorAddress: users[3].address,
                 },
             ]);
+            returnUserRoleSubgraph.returns({
+                beneficiary: {
+                    community: communities[0].contractAddress,
+                },
+                manager: null,
+            });
             await ManagerFactory([users[0]], communities[0].id);
             await BeneficiaryFactory([users[1],users[2]], communities[0].id);
         });
@@ -845,26 +856,23 @@ describe('user service', () => {
                     email: communities[0].email,
                 },
                 users[0].address,
+                users[0].id,
             );
 
-            const logs = await LogService.getLog(users[3].address);
+            const logs = await logService.get(users[3].address, 'edited_community', communities[0].id.toString());
 
-            expect(logs[0].community).to.include({
-                id: communities[0].id,
-                name: communities[0].name,
-            });
-            expect(logs[0].logs[0]).to.include({
+            expect(logs[0]).to.include({
                 userId: users[0].id,
                 type: LogTypes.EDITED_COMMUNITY,
             });
-            expect(logs[0].logs[0].detail).to.include({
+            expect(logs[0].detail).to.include({
                 name: communities[0].name,
                 description: communities[0].description,
                 currency: communities[0].currency,
                 coverMediaId: communities[0].coverMediaId,
                 email: communities[0].email,
             });
-            expect(logs[0].logs[0].user).to.include({
+            expect(logs[0].user).to.include({
                 address: users[0].address,
                 username: users[0].username,
             });
@@ -877,21 +885,17 @@ describe('user service', () => {
                 address: users[1].address,
             } as AppUser);
 
-            const logs = await LogService.getLog(users[3].address);
+            const logs = await logService.get(users[3].address, 'edited_user', users[1].address);
 
-            expect(logs[0].community).to.include({
-                id: communities[0].id,
-                name: communities[0].name,
-            });
-            expect(logs[0].logs[0]).to.include({
+            expect(logs[0]).to.include({
                 userId: users[1].id,
                 type: LogTypes.EDITED_PROFILE,
             });
-            expect(logs[0].logs[0].detail).to.include({
+            expect(logs[0].detail).to.include({
                 username: 'new name',
                 avatarMediaId: 1,
             });
-            expect(logs[0].logs[0].user).to.include({
+            expect(logs[0].user).to.include({
                 address: users[1].address,
                 username: 'new name',
             });
@@ -908,9 +912,10 @@ describe('user service', () => {
                     email: communities[0].email,
                 },
                 users[0].address,
+                users[0].id,
             );
 
-            LogService.getLog(users[0].address)
+            logService.get(users[0].address, 'edited_community', communities[0].id.toString())
                 .catch((e) => expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND'))
                 .then(() => {
                     throw new Error('expected to fail');
