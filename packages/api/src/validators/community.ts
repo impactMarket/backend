@@ -15,8 +15,7 @@ const create = celebrate({
             longitude: Joi.number().required(),
         }).required(),
         email: Joi.string().required(),
-        coverMediaId: Joi.number().optional(),
-        coverMediaPath: Joi.string().optional(),
+        coverMediaId: Joi.number().required(),
         txReceipt: Joi.when('contractAddress', {
             not: undefined,
             then: Joi.object().required(),
@@ -62,8 +61,7 @@ const edit = celebrate({
         city: Joi.string().optional(), // TODO: to remove
         country: Joi.string().optional(), // TODO: to remove
         email: Joi.string().optional(), // TODO: to remove
-        coverMediaId: Joi.number().optional(),
-        coverMediaPath: Joi.string().optional(),
+        coverMediaId: Joi.number().required(),
     }),
 });
 
@@ -81,7 +79,6 @@ const editSubmission = celebrate({
         }).required(),
         email: Joi.string().required(),
         coverMediaId: Joi.number().optional(),
-        coverMediaPath: Joi.string().optional(),
         contractParams: Joi.object().optional(),
     }),
 });

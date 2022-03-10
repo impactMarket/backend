@@ -13,7 +13,7 @@ class UserController {
     };
 
     public auth = async (req: Request, res: Response) => {
-        let {
+        const {
             address,
             phone,
             language,
@@ -22,22 +22,21 @@ class UserController {
             username,
             year,
             children,
-            avatarMediaPath,
             avatarMediaId,
             overwrite,
             recover,
         } = req.body;
 
-        if (avatarMediaId) {
-            const appMedia = await database.models.appMediaContent.findOne({
-                attributes: ['url'],
-                where: {
-                    id: avatarMediaId,
-                }
-            });
-
-            avatarMediaPath = appMedia!.url.replace(`${config.cloudfrontUrl}/`, '');
-        }
+        const appMedia = await database.models.appMediaContent.findOne({
+            attributes: ['url'],
+            where: {
+                id: avatarMediaId,
+            },
+        });
+        const avatarMediaPath = appMedia!.url.replace(
+            `${config.cloudfrontUrl}/`,
+            ''
+        );
 
         services.app.UserService.authenticate(
             {
@@ -118,7 +117,7 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public updateAvatar = (req: RequestWithUser, res: Response) => {
+    public updateAvatar = async (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
@@ -128,7 +127,17 @@ class UserController {
             });
             return;
         }
-        const { avatarMediaPath } = req.body;
+        const { avatarMediaId } = req.body;
+        const appMedia = await database.models.appMediaContent.findOne({
+            attributes: ['url'],
+            where: {
+                id: avatarMediaId,
+            },
+        });
+        const avatarMediaPath = appMedia!.url.replace(
+            `${config.cloudfrontUrl}/`,
+            ''
+        );
         services.app.UserService.updateAvatar(req.user.address, avatarMediaPath)
             .then((r) => standardResponse(res, 201, r, ''))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
@@ -278,7 +287,6 @@ class UserController {
             username,
             year,
             children,
-            avatarMediaPath,
         } = req.body;
         services.app.UserService.authenticate({
             address,
@@ -288,7 +296,6 @@ class UserController {
             username,
             year,
             children,
-            avatarMediaPath,
             trust: {
                 phone,
             },

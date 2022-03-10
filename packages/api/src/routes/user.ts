@@ -78,8 +78,8 @@ export default (app: Router): void => {
      *               children:
      *                 type: number
      *                 required: false
-     *               avatarMediaPath:
-     *                 type: string
+     *               avatarMediaId:
+     *                 type: integer
      *                 required: false
      *     responses:
      *       "200":
@@ -227,8 +227,8 @@ export default (app: Router): void => {
      *               children:
      *                 type: number
      *                 required: false
-     *               avatarMediaPath:
-     *                 type: string
+     *               avatarMediaId:
+     *                 type: integer
      *                 required: false
      *     responses:
      *       "200":

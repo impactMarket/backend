@@ -33,23 +33,18 @@ class StoryController {
             });
             return;
         }
-        let {
-            communityId,
-            message,
-            storyMediaId,
-            storyMediaPath,
-        } = req.body;
+        const { communityId, message, storyMediaId } = req.body;
 
-        if (storyMediaId) {
-            const appMedia = await database.models.appMediaContent.findOne({
-                attributes: ['url'],
-                where: {
-                    id: storyMediaId,
-                }
-            });
-
-            storyMediaPath = appMedia!.url.replace(`${config.cloudfrontUrl}/`, '');
-        }
+        const appMedia = await database.models.appMediaContent.findOne({
+            attributes: ['url'],
+            where: {
+                id: storyMediaId,
+            },
+        });
+        const storyMediaPath = appMedia!.url.replace(
+            `${config.cloudfrontUrl}/`,
+            ''
+        );
 
         this.storyService
             .add(req.user.address, {

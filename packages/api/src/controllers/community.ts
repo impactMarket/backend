@@ -240,7 +240,7 @@ class CommunityController {
     };
 
     create = async (req: Request, res: Response) => {
-        let {
+        const {
             requestByAddress, // the address making the request (will be community manager)
             name,
             contractAddress,
@@ -250,23 +250,22 @@ class CommunityController {
             city,
             country,
             coverMediaId,
-            coverMediaPath,
             gps,
             email,
             txReceipt,
             contractParams,
         } = req.body;
 
-        if (coverMediaId) {
-            const appMedia = await database.models.appMediaContent.findOne({
-                attributes: ['url'],
-                where: {
-                    id: coverMediaId,
-                }
-            });
-
-            coverMediaPath = appMedia!.url.replace(`${config.cloudfrontUrl}/`, '');
-        }
+        const appMedia = await database.models.appMediaContent.findOne({
+            attributes: ['url'],
+            where: {
+                id: coverMediaId,
+            },
+        });
+        const coverMediaPath = appMedia!.url.replace(
+            `${config.cloudfrontUrl}/`,
+            ''
+        );
 
         services.ubi.CommunityService.create({
             requestByAddress,
@@ -297,25 +296,19 @@ class CommunityController {
             });
             return;
         }
-        let {
-            name,
-            description,
-            currency,
-            coverMediaId,
-            coverMediaPath,
-            email,
-        } = req.body;
+        const { name, description, currency, coverMediaId, email } = req.body;
 
-        if (coverMediaId) {
-            const appMedia = await database.models.appMediaContent.findOne({
-                attributes: ['url'],
-                where: {
-                    id: coverMediaId,
-                }
-            });
+        const appMedia = await database.models.appMediaContent.findOne({
+            attributes: ['url'],
+            where: {
+                id: coverMediaId,
+            },
+        });
 
-            coverMediaPath = appMedia!.url.replace(`${config.cloudfrontUrl}/`, '');
-        }
+        const coverMediaPath = appMedia!.url.replace(
+            `${config.cloudfrontUrl}/`,
+            ''
+        );
 
         // verify if the current user is manager in this community
         services.ubi.ManagerService.get(req.user.address)
@@ -434,7 +427,7 @@ class CommunityController {
             return;
         }
 
-        let {
+        const {
             name,
             description,
             language,
@@ -442,22 +435,22 @@ class CommunityController {
             city,
             country,
             coverMediaId,
-            coverMediaPath,
             gps,
             email,
             contractParams,
         } = req.body;
 
-        if (coverMediaId) {
-            const appMedia = await database.models.appMediaContent.findOne({
-                attributes: ['url'],
-                where: {
-                    id: coverMediaId,
-                }
-            });
+        const appMedia = await database.models.appMediaContent.findOne({
+            attributes: ['url'],
+            where: {
+                id: coverMediaId,
+            },
+        });
 
-            coverMediaPath = appMedia!.url.replace(`${config.cloudfrontUrl}/`, '');
-        }
+        const coverMediaPath = appMedia!.url.replace(
+            `${config.cloudfrontUrl}/`,
+            ''
+        );
 
         services.ubi.CommunityService.editSubmission({
             requestByAddress: req.user.address,
