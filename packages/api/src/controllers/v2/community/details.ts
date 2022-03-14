@@ -9,16 +9,17 @@ class CommunityController {
         this.detailsService = new services.ubi.CommunityDetailsService();
     }
 
-    getState = (req: Request, res: Response) => {
-        this.detailsService
-            .getState(parseInt(req.params.id, 10))
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
+    getManagers = (req: Request, res: Response) => {
+        const { filterByActive } = req.query;
+        let active: boolean | undefined;
+        if (filterByActive === 'true') {
+            active = true;
+        } else if (filterByActive === 'false') {
+            active = false;
+        }
 
-    getUBIParams = (req: Request, res: Response) => {
         this.detailsService
-            .getUBIParams(parseInt(req.params.id, 10))
+            .getManagers(parseInt(req.params.id, 10), active)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
