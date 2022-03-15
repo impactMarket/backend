@@ -57,7 +57,6 @@ describe('community service v2', () => {
     });
 
     describe('list', () => {
-
         afterEach(async () => {
             await truncate(sequelize, 'Beneficiary');
             returnClaimedSubgraph.resetHistory();
@@ -96,7 +95,7 @@ describe('community service v2', () => {
                     {
                         id: communities[0].contractAddress,
                         beneficiaries: 0,
-                    }
+                    },
                 ]);
 
                 returnClaimedSubgraph.returns([
@@ -140,7 +139,7 @@ describe('community service v2', () => {
                     {
                         id: communities[0].contractAddress,
                         beneficiaries: 0,
-                    }
+                    },
                 ]);
 
                 returnClaimedSubgraph.returns([
@@ -187,7 +186,7 @@ describe('community service v2', () => {
                     {
                         id: communities[0].contractAddress,
                         beneficiaries: 0,
-                    }
+                    },
                 ]);
 
                 returnClaimedSubgraph.returns([
@@ -234,7 +233,7 @@ describe('community service v2', () => {
                     {
                         id: communities[0].contractAddress,
                         beneficiaries: 0,
-                    }
+                    },
                 ]);
 
                 returnClaimedSubgraph.returns([
@@ -305,10 +304,12 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                returnCommunityEntities.returns(communities.map(el => ({
-                    id: el.contractAddress,
-                    beneficiaries: 0,
-                })));
+                returnCommunityEntities.returns(
+                    communities.map((el) => ({
+                        id: el.contractAddress,
+                        beneficiaries: 0,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
@@ -372,10 +373,12 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                returnCommunityEntities.returns(communities.map(el => ({
-                    id: el.contractAddress,
-                    beneficiaries: 0,
-                })));
+                returnCommunityEntities.returns(
+                    communities.map((el) => ({
+                        id: el.contractAddress,
+                        beneficiaries: 0,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
@@ -447,10 +450,12 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                returnCommunityEntities.returns(communities.map(el => ({
-                    id: el.contractAddress,
-                    beneficiaries: 0,
-                })));
+                returnCommunityEntities.returns(
+                    communities.map((el) => ({
+                        id: el.contractAddress,
+                        beneficiaries: 0,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
@@ -551,10 +556,12 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                returnCommunityEntities.returns(communities.map(el => ({
-                    id: el.contractAddress,
-                    beneficiaries: 0,
-                })));
+                returnCommunityEntities.returns(
+                    communities.map((el) => ({
+                        id: el.contractAddress,
+                        beneficiaries: 0,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
@@ -622,10 +629,12 @@ describe('community service v2', () => {
                 );
             }
 
-            returnCommunityEntities.returns(communities.map(el => ({
-                id: el.contractAddress,
-                beneficiaries: 1,
-            })));
+            returnCommunityEntities.returns(
+                communities.map((el) => ({
+                    id: el.contractAddress,
+                    beneficiaries: 1,
+                }))
+            );
 
             returnClaimedSubgraph.returns(claimed);
 
@@ -684,10 +693,12 @@ describe('community service v2', () => {
                 );
             }
 
-            returnCommunityEntities.returns(communities.map(el => ({
-                id: el.contractAddress,
-                beneficiaries: 1,
-            })));
+            returnCommunityEntities.returns(
+                communities.map((el) => ({
+                    id: el.contractAddress,
+                    beneficiaries: 1,
+                }))
+            );
 
             returnClaimedSubgraph.returns(claimed);
 
@@ -761,7 +772,7 @@ describe('community service v2', () => {
                     await BeneficiaryFactory(
                         await UserFactory({
                             n:
-                                community.requestByAddress === users[0].address 
+                                community.requestByAddress === users[0].address
                                     ? 3
                                     : 4,
                         }),
@@ -777,18 +788,23 @@ describe('community service v2', () => {
                     {
                         id: communities[0].contractAddress,
                         beneficiaries: 3,
-                    }
+                    },
                 ]);
-                communities.forEach(el => {
-                    returnCommunityStateSubgraph.withArgs(el.contractAddress).returns({
-                        claims: 0,
-                        claimed: '0',
-                        beneficiaries: el.requestByAddress === users[0].address ? 3 : 4,
-                        removedBeneficiaries: 0,
-                        contributed: '0',
-                        contributors: 0,
-                        managers: 0,
-                    })
+                communities.forEach((el) => {
+                    returnCommunityStateSubgraph
+                        .withArgs(el.contractAddress)
+                        .returns({
+                            claims: 0,
+                            claimed: '0',
+                            beneficiaries:
+                                el.requestByAddress === users[0].address
+                                    ? 3
+                                    : 4,
+                            removedBeneficiaries: 0,
+                            contributed: '0',
+                            contributors: 0,
+                            managers: 0,
+                        });
                 });
 
                 const result = await communityService.list({});
@@ -955,19 +971,24 @@ describe('community service v2', () => {
                     {
                         id: communities[2].contractAddress,
                         beneficiaries: 4,
-                    }
+                    },
                 ]);
 
-                communities.forEach(el => {
-                    returnCommunityStateSubgraph.withArgs(el.contractAddress).returns({
-                        claims: 0,
-                        claimed: '0',
-                        beneficiaries: el.requestByAddress === users[1].address ? 5 : 4,
-                        removedBeneficiaries: 0,
-                        contributed: '0',
-                        contributors: 0,
-                        managers: 0,
-                    })
+                communities.forEach((el) => {
+                    returnCommunityStateSubgraph
+                        .withArgs(el.contractAddress)
+                        .returns({
+                            claims: 0,
+                            claimed: '0',
+                            beneficiaries:
+                                el.requestByAddress === users[1].address
+                                    ? 5
+                                    : 4,
+                            removedBeneficiaries: 0,
+                            contributed: '0',
+                            contributors: 0,
+                            managers: 0,
+                        });
                 });
 
                 const result = await communityService.list({
@@ -1083,7 +1104,7 @@ describe('community service v2', () => {
                     {
                         id: communities[1].contractAddress,
                         beneficiaries: 4,
-                    }
+                    },
                 ]);
 
                 const result = await communityService.list({
@@ -1527,7 +1548,7 @@ describe('community service v2', () => {
                     {
                         id: communities[1].contractAddress,
                         beneficiaries: 0,
-                    }
+                    },
                 ]);
 
                 const result = await communityService.list({
@@ -1590,7 +1611,7 @@ describe('community service v2', () => {
                     {
                         id: communities[1].contractAddress,
                         beneficiaries: 0,
-                    }
+                    },
                 ]);
 
                 const pending = await communityService.list({

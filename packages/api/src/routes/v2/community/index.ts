@@ -1,8 +1,7 @@
 import { Router } from 'express';
 
-import details from './details';
-
 import { CommunityController } from '../../../controllers/v2/community/index';
+import details from './details';
 
 export default (app: Router): void => {
     const controller = new CommunityController();
@@ -82,5 +81,5 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-     route.get('/:query?', controller.list);
+    route.get('/:query?', controller.list);
 };
