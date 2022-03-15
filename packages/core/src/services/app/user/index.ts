@@ -86,6 +86,7 @@ export default class UserService {
             if (
                 jsonUser.trust?.length === 0 &&
                 userParams.trust &&
+                userParams.trust.phone &&
                 userParams.trust.phone.length > 0
             ) {
                 const trust = await models.appUserTrust.create(
