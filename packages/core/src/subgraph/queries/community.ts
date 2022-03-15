@@ -144,3 +144,25 @@ export const getCommunityUBIParams = async (
         throw new Error(error);
     }
 };
+
+export const communityEntities = async (where: string, fields: string) => {
+    try {
+        const query = gql`
+            {
+                communityEntities(
+                    ${where}
+                ) {
+                    ${fields}
+                }
+            }
+        `;
+
+        const queryResult = await client.query({
+            query,
+        });
+
+        return queryResult.data?.communityEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+}
