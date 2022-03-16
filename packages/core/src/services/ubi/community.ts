@@ -1,4 +1,5 @@
-import { ethers } from 'ethers';
+import { BigNumber } from 'bignumber.js';
+import { ethers, utils } from 'ethers';
 import {
     Op,
     QueryTypes,
@@ -17,7 +18,6 @@ import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import { models, sequelize } from '../../database';
 import { Community } from '../../database/models/ubi/community';
-import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { AppUser } from '../../interfaces/app/appUser';
 import {
     CommunityAttributes,
@@ -35,7 +35,8 @@ import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
 import {
     getCommunityProposal,
     getClaimed,
-    getCommunityState
+    getCommunityState,
+    getCommunityManagers,
 } from '../../subgraph/queries/community';
 import { BaseError } from '../../utils/baseError';
 import { fetchData } from '../../utils/dataFetching';
@@ -49,7 +50,6 @@ import {
 import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
 import ManagerService from './managers';
-import { BigNumber } from 'bignumber.js';
 import UserLogService from '../app/user/log';
 import { LogTypes } from '../../interfaces/app/appLog';
 
@@ -348,11 +348,10 @@ export default class CommunityService {
               ]
             | undefined = undefined;
         let claimsState:
-            | 
-                {
-                    communityId: number;
-                    claimed: string;
-                }[]
+            | {
+                  communityId: number;
+                  claimed: string;
+              }[]
             | undefined = undefined;
         let inflowState:
             | [
@@ -644,15 +643,22 @@ export default class CommunityService {
             }
 
             if (!claimsState) {
-                const contractAddress = beneficiariesState!.map(el => el.contractAddress!);
+                const contractAddress = beneficiariesState!.map(
+                    (el) => el.contractAddress!
+                );
                 const claimed = await getClaimed(contractAddress);
-                claimsState = claimed.map(claim => {
-                    const community = beneficiariesState!.find(el => el.contractAddress?.toLocaleLowerCase() === claim.id)!;
+                claimsState = claimed.map((claim) => {
+                    const community = beneficiariesState!.find(
+                        (el) =>
+                            el.contractAddress?.toLocaleLowerCase() === claim.id
+                    )!;
                     return {
                         communityId: Number(community?.id),
-                        claimed: new BigNumber(claim.claimed).multipliedBy(10 ** 18).toString(),
-                    }
-                })
+                        claimed: new BigNumber(claim.claimed)
+                            .multipliedBy(10 ** 18)
+                            .toString(),
+                    };
+                });
             }
 
             if (!inflowState) {
@@ -767,7 +773,7 @@ export default class CommunityService {
             );
             return calldata[0][0];
         });
-        
+
         return requestByAddress;
     }
 
@@ -909,23 +915,17 @@ export default class CommunityService {
         {
             isDeleted: boolean;
             added: number;
-            address?: string;
-            user?: AppUser;
+            address: string;
+            user: AppUser | null;
             active: boolean;
         }[]
     > {
-        const community = (await this.community.findOne({
+        const community = await models.community.findOne({
+            attributes: ['status', 'contractAddress', 'requestByAddress'],
             where: { id: communityId },
-        }))!;
+        });
 
-        let activeCondition = {};
-        if (active !== undefined) {
-            activeCondition = {
-                active,
-            };
-        }
-
-        if (community.status === 'pending') {
+        if (community!.status === 'pending') {
             const user = await this.appUser.findOne({
                 attributes: ['address', 'username', 'createdAt'],
                 include: [
@@ -943,74 +943,68 @@ export default class CommunityService {
                     },
                 ],
                 where: {
-                    address: community.requestByAddress,
+                    address: community!.requestByAddress,
                 },
             });
             return [
                 {
                     user: user as AppUser,
+                    address: user!.address,
                     isDeleted: false,
                     added: 0,
                     active: false,
                 },
             ];
         } else {
-            const result = await this.manager.findAll({
-                attributes: ['address', 'active', 'createdAt'],
+            // contract address is only null while pending
+            let managers = await getCommunityManagers(
+                community!.contractAddress!
+            );
+            managers = managers.map((m) => ({
+                ...m,
+                address: utils.getAddress(m.address),
+            }));
+            if (active !== undefined) {
+                managers = managers.filter((m) => m.state === (active ? 0 : 1));
+            }
+
+            const result = await models.appUser.findAll({
+                attributes: ['address', 'username'],
                 include: [
                     {
-                        model: this.appUser,
-                        as: 'user',
-                        attributes: ['address', 'username', 'createdAt'],
+                        model: models.appMediaContent,
+                        as: 'avatar',
+                        required: false,
                         include: [
                             {
-                                model: this.appMediaContent,
-                                as: 'avatar',
-                                required: false,
-                                include: [
-                                    {
-                                        model: this.appMediaThumbnail,
-                                        as: 'thumbnails',
-                                        separate: true,
-                                    },
-                                ],
+                                model: models.appMediaThumbnail,
+                                as: 'thumbnails',
+                                separate: true,
                             },
                         ],
                     },
                 ],
                 where: {
-                    communityId: community.id,
-                    ...activeCondition,
+                    address: {
+                        [Op.in]: managers.map((m) => m.address),
+                    },
                 },
             });
 
-            const beneficiariesAdded =
-                await this.ubiBeneficiaryRegistry.findAll({
-                    attributes: [
-                        [fn('COUNT', col('address')), 'count'],
-                        'from',
-                    ],
-                    where: {
-                        from: {
-                            [Op.in]: result.map((el) => el.address),
-                        },
-                    },
-                    group: ['from'],
-                    raw: true,
-                });
+            const users = result
+                .map((u) => u.toJSON() as AppUser)
+                .reduce((r, e) => {
+                    r[e.address] = e;
+                    return r;
+                }, {});
 
-            return result.map((r) => {
-                const manager = r.toJSON() as ManagerAttributes;
-                const added = beneficiariesAdded.find(
-                    (el) => el.from === manager.address
-                );
-                return {
-                    ...manager,
-                    isDeleted: !manager.user,
-                    added: Number((added as any)?.count) || 0,
-                    pending: false,
-                };
-            });
+            return managers.map((m) => ({
+                address: m.address,
+                added: m.added,
+                active: m.state === 0,
+                user: users[m.address] ? users[m.address] : null,
+                isDeleted: !users[m.address],
+            }));
         }
     }
 
@@ -2146,7 +2140,9 @@ export default class CommunityService {
         if (fields.ambassador) {
             extendedInclude.push({
                 attributes:
-                    fields.ambassador.length > 0 ? fields.ambassador : undefined,
+                    fields.ambassador.length > 0
+                        ? fields.ambassador
+                        : undefined,
                 model: models.appUser,
                 as: 'ambassador',
             });

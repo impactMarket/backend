@@ -28,6 +28,7 @@ describe('community service', () => {
     let returnProposalsSubgraph: SinonStub;
     let returnClaimedSubgraph: SinonStub;
     let returnCommunityStateSubgraph: SinonStub;
+    let returnGetCommunityManagersSubgraph: SinonStub;
 
     type SubgraphClaimed = { id: string; claimed: number }[];
 
@@ -53,6 +54,10 @@ describe('community service', () => {
         returnProposalsSubgraph = stub(subgraph, 'getCommunityProposal');
         returnClaimedSubgraph = stub(subgraph, 'getClaimed');
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
+        returnGetCommunityManagersSubgraph = stub(
+            subgraph,
+            'getCommunityManagers'
+        );
         returnCommunityStateSubgraph.returns([
             {
                 claims: 0,
@@ -64,6 +69,17 @@ describe('community service', () => {
                 managers: 0,
             },
         ]);
+        returnGetCommunityManagersSubgraph.returns(
+            Promise.resolve([
+                {
+                    address: users[0].address,
+                    state: 0,
+                    added: 0,
+                    removed: 0,
+                    since: 0,
+                },
+            ])
+        );
     });
 
     after(() => {
@@ -2174,6 +2190,25 @@ describe('community service', () => {
 
             await ManagerService.remove(users[0].address, community[0].id);
 
+            returnGetCommunityManagersSubgraph.returns(
+                Promise.resolve([
+                    {
+                        address: users[0].address,
+                        state: 1,
+                        added: 1,
+                        removed: 0,
+                        since: 0,
+                    },
+                    {
+                        address: users[1].address,
+                        state: 0,
+                        added: 0,
+                        removed: 0,
+                        since: 0,
+                    },
+                ])
+            );
+
             const managers = await CommunityService.getManagers(
                 community[0].id,
                 false
@@ -2210,7 +2245,6 @@ describe('community service', () => {
             expect(managers[0].added).to.be.equal(0);
             expect(managers[0].isDeleted).to.be.false;
             expect(managers[0].user).to.exist;
-            expect(managers[0].address).to.not.exist;
         });
     });
 

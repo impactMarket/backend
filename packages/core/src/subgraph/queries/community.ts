@@ -75,6 +75,40 @@ export const getClaimed = async (
     }
 };
 
+export const getCommunityManagers = async (
+    communityAddress: string
+): Promise<
+    {
+        address: string;
+        state: number;
+        added: number;
+        removed: number;
+        since: number;
+    }[]
+> => {
+    try {
+        const query = gql`
+            {
+                managerEntities(where: {community: "${communityAddress.toLowerCase()}"}) {
+                    address
+                    state
+                    added
+                    removed
+                    since
+                }
+            }
+        `;
+
+        const queryResult = await client.query({
+            query,
+        });
+
+        return queryResult.data?.managerEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
 export const getCommunityState = async (
     communityAddress: string
 ): Promise<{
@@ -99,38 +133,6 @@ export const getCommunityState = async (
                     contributed
                     contributors
                     managers
-                }
-            }
-        `;
-
-        const queryResult = await client.query({
-            query,
-        });
-
-        return queryResult.data?.communityEntity;
-    } catch (error) {
-        throw new Error(error);
-    }
-};
-
-export const getCommunityUBIParams = async (
-    communityAddress: string
-): Promise<{
-    claimAmount: string;
-    maxClaim: string;
-    baseInterval: number;
-    incrementInterval: number;
-}> => {
-    try {
-        const query = gql`
-            {
-                communityEntity(
-                    id: "${communityAddress.toLowerCase()}"
-                ) {
-                    claimAmount
-                    maxClaim
-                    baseInterval
-                    incrementInterval
                 }
             }
         `;

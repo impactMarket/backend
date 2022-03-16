@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { stub, assert, SinonStub } from 'sinon';
 
+import * as subgraph from '../../../../core/src/subgraph/queries/community';
 import { verifyDeletedAccounts } from '../../../src/jobs/cron/user';
 
 describe('[jobs - cron] verifyDeletedAccounts', () => {
@@ -11,7 +12,8 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     let users: interfaces.app.appUser.AppUser[];
     let communities: interfaces.ubi.community.CommunityAttributes[];
     let dbGlobalDemographicsStub: SinonStub;
-    const communityDemographicsService = new services.ubi.CommunityDemographicsService();
+    const communityDemographicsService =
+        new services.ubi.CommunityDemographicsService();
 
     before(async () => {
         sequelize = tests.config.setup.sequelizeSetup();
@@ -358,6 +360,21 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     });
 
     it('get managers after delete user', async () => {
+        const returnGetCommunityManagersSubgraph = stub(
+            subgraph,
+            'getCommunityManagers'
+        );
+        returnGetCommunityManagersSubgraph.returns(
+            Promise.resolve([
+                {
+                    address: users[0].address,
+                    state: 0,
+                    added: 0,
+                    removed: 0,
+                    since: 0,
+                },
+            ])
+        );
         const manager = await services.ubi.CommunityService.getManagers(
             communities[0].id
         );
@@ -413,7 +430,10 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         const tx = tests.config.utils.randomTx();
 
-        await tests.factories.ManagerFactory(users.slice(0, 3), community[0].id);
+        await tests.factories.ManagerFactory(
+            users.slice(0, 3),
+            community[0].id
+        );
         await services.ubi.BeneficiaryService.add(
             users[3].address,
             users[0].address,
