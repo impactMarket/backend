@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { LogTypes, AppLog } from '../../../interfaces/app/appLog';
 import { models } from '../../../database';
 import { BaseError } from '../../../utils/baseError';
@@ -23,19 +24,16 @@ export default class UserLogService {
     }
 
     public async get(ambassadorAddress: string, type: string, entity: string): Promise<AppLog[]> {
-        const community = await models.community.findOne({
-            attributes: ['id', 'contractAddress'],
-            where: {
-                ambassadorAddress,
-            }
-        });
-
-        if (!community) {
-            throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found');
-        }
-
         if (type === LogTypes.EDITED_COMMUNITY) {
-            if (community.id !== parseInt(entity)) {
+            const community = await models.community.findOne({
+                attributes: ['id'],
+                where: {
+                    id: parseInt(entity),
+                    ambassadorAddress,
+                }
+            });
+
+            if (!community) {
                 throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found');
             }
 
@@ -56,8 +54,18 @@ export default class UserLogService {
                                     : roles.manager?.community 
                                         ? roles.manager.community 
                                         : null;
-            if (!contractAddress || (community.contractAddress?.toLocaleLowerCase() !== contractAddress.toLocaleLowerCase())) {
+            if (!contractAddress) {
                 throw new BaseError('USER_NOT_FOUND', 'user not found');
+            }
+            const community = await models.community.findOne({
+                attributes: ['id'],
+                where: {
+                    contractAddress: ethers.utils.getAddress(contractAddress),
+                    ambassadorAddress,
+                }
+            });
+            if (!community) {
+                throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found');
             }
 
             return models.appLog.findAll({
