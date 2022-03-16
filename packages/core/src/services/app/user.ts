@@ -12,14 +12,13 @@ import {
     AppUser,
     AppUserCreationAttributes,
 } from '../../interfaces/app/appUser';
-import { CommunityAttributes } from '../../interfaces/ubi/community';
 import { BaseError } from '../../utils/baseError';
 import { generateAccessToken } from '../../utils/jwt';
 import { Logger } from '../../utils/logger';
 import { IUserHello, IUserAuth, IBeneficiary, IManager } from '../endpoints';
 import { ProfileContentStorage } from '../storage';
 import CommunityService from '../ubi/community';
-import ExchangeRatesService from './exchangeRates';
+
 export default class UserService {
     public static sequelize = sequelize;
     public static appUser = models.appUser;
