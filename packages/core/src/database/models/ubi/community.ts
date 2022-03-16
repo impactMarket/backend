@@ -117,6 +117,10 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 // onDelete: 'SET NULL', // default
                 allowNull: true, // TODO: will be required once next version is released
             },
+            coverMediaPath: {
+                type: DataTypes.STRING(44),
+                allowNull: true,
+            },
             status: {
                 type: DataTypes.ENUM('pending', 'valid', 'removed'),
                 allowNull: false,

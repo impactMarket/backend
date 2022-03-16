@@ -16,6 +16,10 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: true,
             },
+            avatarMediaPath: {
+                type: Sequelize.STRING(44),
+                allowNull: true,
+            },
             username: {
                 type: Sequelize.STRING(128),
             },

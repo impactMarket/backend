@@ -10,6 +10,7 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public address!: string;
     public username!: string | null;
     public avatarMediaId!: number | null;
+    public avatarMediaPath!: string | null;
     public language!: string;
     public currency!: string;
     public pushNotificationToken!: string | null;
@@ -48,6 +49,10 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
                 },
                 // onDelete: 'SET NULL', // default
                 allowNull: true,
+            },
+            avatarMediaPath: {
+                type: DataTypes.STRING(44),
+                allowNull: true
             },
             username: {
                 type: DataTypes.STRING(128),

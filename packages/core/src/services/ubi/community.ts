@@ -90,7 +90,7 @@ export default class CommunityService {
         email,
         txReceipt,
         contractParams,
-        coverMediaId,
+        coverMediaPath,
     }: ICommunityCreationAttributes): Promise<Community> {
         let managerAddress: string = '';
         let createObject: ICommunityCreationAttributes = {
@@ -103,23 +103,11 @@ export default class CommunityService {
             country,
             gps,
             email,
-            // coverMediaId,
-            // coverImage: media!.url,
+            coverMediaPath,
             visibility: 'public', // will be changed if private
             status: 'pending', // will be changed if private
             started: new Date(),
         };
-
-        if (coverMediaId) {
-            const media = await this.appMediaContent.findOne({
-                where: { id: coverMediaId },
-            });
-            createObject = {
-                ...createObject,
-                coverMediaId,
-                coverImage: media!.url,
-            };
-        }
 
         // if it was submitted as private, validate the transaction first.
         if (txReceipt !== undefined) {
@@ -201,32 +189,17 @@ export default class CommunityService {
             name: string;
             description: string;
             currency: string;
-            coverMediaId: number;
+            coverMediaPath: string;
             email?: string;
         },
         userAddress?: string
     ): Promise<CommunityAttributes> {
-        const community = await this.community.findOne({
-            attributes: ['coverMediaId'],
-            where: { id },
-        });
-        if (community === null) {
-            throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found!');
-        }
         // since cover can't be null, we first update and then remove
-        const { name, description, currency, coverMediaId, email } = params;
+        const { name, description, currency, coverMediaPath, email } = params;
         const update = await this.community.update(
-            { name, description, currency, email },
+            { name, description, currency, email, coverMediaPath },
             { where: { id } }
         );
-        if (coverMediaId !== -1 && community.coverMediaId !== coverMediaId) {
-            // image has been replaced
-            // delete previous one! new one was already uploaded, will be updated below
-            await this.communityContentStorage.deleteContent(
-                community.coverMediaId!
-            );
-            await this.community.update({ coverMediaId }, { where: { id } });
-        }
         if (update[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'community was not updated!');
         }
@@ -1900,7 +1873,7 @@ export default class CommunityService {
                 gps,
                 email,
                 contractParams,
-                coverMediaId,
+                coverMediaPath,
             } = params;
 
             await this.community.update(
@@ -1913,6 +1886,7 @@ export default class CommunityService {
                     country,
                     gps,
                     email,
+                    coverMediaPath,
                 },
                 {
                     where: {
@@ -1922,26 +1896,6 @@ export default class CommunityService {
                 }
             );
 
-            if (
-                !!coverMediaId &&
-                coverMediaId !== -1 &&
-                community.coverMediaId !== coverMediaId
-            ) {
-                await this.communityContentStorage.deleteContent(
-                    community.coverMediaId!
-                );
-                await this.community.update(
-                    {
-                        coverMediaId,
-                    },
-                    {
-                        where: {
-                            id: community.id,
-                        },
-                        transaction: t,
-                    }
-                );
-            }
 
             if (contractParams) {
                 await CommunityContractService.update(

@@ -1,4 +1,4 @@
-import { utils, services } from '@impactmarket/core';
+import { utils, services, database, config } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
 import { RequestWithUser } from '../middlewares/core';
@@ -12,7 +12,7 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public auth = (req: Request, res: Response) => {
+    public auth = async (req: Request, res: Response) => {
         const {
             address,
             phone,
@@ -26,6 +26,18 @@ class UserController {
             overwrite,
             recover,
         } = req.body;
+
+        const appMedia = await database.models.appMediaContent.findOne({
+            attributes: ['url'],
+            where: {
+                id: avatarMediaId,
+            },
+        });
+        const avatarMediaPath = appMedia!.url.replace(
+            `${config.cloudfrontUrl}/`,
+            ''
+        );
+
         services.app.UserService.authenticate(
             {
                 address,
@@ -35,7 +47,7 @@ class UserController {
                 username,
                 year,
                 children,
-                avatarMediaId,
+                avatarMediaPath,
                 trust: {
                     phone,
                 },
@@ -105,7 +117,7 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public updateAvatar = (req: RequestWithUser, res: Response) => {
+    public updateAvatar = async (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
@@ -116,7 +128,17 @@ class UserController {
             return;
         }
         const { mediaId } = req.body;
-        services.app.UserService.updateAvatar(req.user.address, mediaId)
+        const appMedia = await database.models.appMediaContent.findOne({
+            attributes: ['url'],
+            where: {
+                id: mediaId,
+            },
+        });
+        const avatarMediaPath = appMedia!.url.replace(
+            `${config.cloudfrontUrl}/`,
+            ''
+        );
+        services.app.UserService.updateAvatar(req.user.address, avatarMediaPath)
             .then((r) => standardResponse(res, 201, r, ''))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -265,7 +287,6 @@ class UserController {
             username,
             year,
             children,
-            avatarMediaId,
         } = req.body;
         services.app.UserService.authenticate({
             address,
@@ -275,7 +296,6 @@ class UserController {
             username,
             year,
             children,
-            avatarMediaId,
             trust: {
                 phone,
             },

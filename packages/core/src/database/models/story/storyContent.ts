@@ -11,6 +11,7 @@ export class StoryContentModel extends Model<
 > {
     public id!: number;
     public mediaMediaId!: number;
+    public storyMediaPath!: string;
     public message!: string;
     public byAddress!: string;
     public isPublic!: boolean;
@@ -35,6 +36,10 @@ export function initializeStoryContent(
                     key: 'id',
                 },
                 // onDelete: 'SET NULL', // default
+                allowNull: true,
+            },
+            storyMediaPath: {
+                type: DataTypes.STRING(44),
                 allowNull: true,
             },
             message: {
