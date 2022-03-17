@@ -70,7 +70,8 @@ export default (app: Router): void => {
      *                         type: number
      */
     app.get('/exchange-rate', (req: Request, res: Response) => {
-        services.app.ExchangeRatesService.get()
+        new services.app.ExchangeRatesService()
+            .get()
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     });

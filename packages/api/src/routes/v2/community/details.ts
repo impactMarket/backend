@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/details';
+import { optionalAuthentication } from '../../../middlewares';
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -35,4 +36,29 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/getManagersResponse'
      */
     route.get('/:id/managers/:query?', controller.getManagers);
+
+    /**
+     * @swagger
+     *
+     * /community/{id-or-address}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get community by id or contract address
+     *     parameters:
+     *       - in: path
+     *         name: id-or-address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: community id or contract address
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunity'
+     */
+    route.get('/:idOrAddress', optionalAuthentication, controller.findBy);
 };
