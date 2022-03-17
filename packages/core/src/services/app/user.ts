@@ -12,14 +12,13 @@ import {
     AppUser,
     AppUserCreationAttributes,
 } from '../../interfaces/app/appUser';
-import { CommunityAttributes } from '../../interfaces/ubi/community';
 import { BaseError } from '../../utils/baseError';
 import { generateAccessToken } from '../../utils/jwt';
 import { Logger } from '../../utils/logger';
 import { IUserHello, IUserAuth, IBeneficiary, IManager } from '../endpoints';
 import { ProfileContentStorage } from '../storage';
 import CommunityService from '../ubi/community';
-import ExchangeRatesService from './exchangeRates';
+
 export default class UserService {
     public static sequelize = sequelize;
     public static appUser = models.appUser;
@@ -475,19 +474,6 @@ export default class UserService {
      * TODO: improve
      */
     private static async loadUser(user: AppUser): Promise<IUserHello> {
-        // const user = await this.appUser.findOne({
-        //     include: [
-        //         {
-        //             model: this.appUserTrust,
-        //             as: 'trust',
-        //         },
-        //     ],
-        //     where: { address: userAddress },
-        // });
-        // if (user === null) {
-        //     throw new Error('User is null?');
-        // }
-        // const fUser = user.toJSON() as User;
         const beneficiary: IBeneficiary | null = await this.beneficiary.findOne(
             {
                 attributes: ['blocked', 'readRules', 'communityId'],
@@ -500,23 +486,14 @@ export default class UserService {
         });
 
         // get user community
-        // TODO: deprecated in mobile-app@1.1.5
-        let community: CommunityAttributes | null = null;
         let managerInPendingCommunity = false;
         // reusable method
-        const getCommunity = async (communityId: number) =>
-            CommunityService.findById(communityId);
 
-        if (beneficiary) {
-            community = await getCommunity(beneficiary.communityId);
-        } else if (manager) {
-            community = await getCommunity(manager.communityId);
-        } else {
+        if (!beneficiary && !manager) {
             const communityId = await CommunityService.findByFirstManager(
                 user.address
             );
             if (communityId) {
-                community = await getCommunity(communityId);
                 managerInPendingCommunity = true;
                 manager = {
                     communityId,
@@ -535,9 +512,11 @@ export default class UserService {
                     ? user.trust[0].verifiedPhoneNumber
                     : undefined, // TODO: deprecated in mobile-app@1.1.5
             suspect: user.suspect, // TODO: deprecated
-            rates: await ExchangeRatesService.get(), // TODO: deprecated in mobile-app@1.1.5
-            community: community ? community : undefined, // TODO: deprecated in mobile-app@1.1.5
-            communityId: community ? community.id : undefined, // TODO: deprecated
+            communityId: beneficiary
+                ? beneficiary.communityId
+                : manager
+                ? manager.communityId
+                : undefined, // TODO: deprecated
             user: {
                 suspect: user.suspect,
             },
