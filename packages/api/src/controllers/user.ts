@@ -27,16 +27,19 @@ class UserController {
             recover,
         } = req.body;
 
-        const appMedia = await database.models.appMediaContent.findOne({
-            attributes: ['url'],
-            where: {
-                id: avatarMediaId,
-            },
-        });
-        const avatarMediaPath = appMedia!.url.replace(
-            `${config.cloudfrontUrl}/`,
-            ''
-        );
+        let avatarMediaPath: string | undefined = undefined;
+        if (avatarMediaId) {
+            const appMedia = await database.models.appMediaContent.findOne({
+                attributes: ['url'],
+                where: {
+                    id: avatarMediaId,
+                },
+            });
+            avatarMediaPath = appMedia!.url.replace(
+                `${config.cloudfrontUrl}/`,
+                ''
+            );
+        }
 
         services.app.UserService.authenticate(
             {
@@ -128,19 +131,30 @@ class UserController {
             return;
         }
         const { mediaId } = req.body;
-        const appMedia = await database.models.appMediaContent.findOne({
-            attributes: ['url'],
-            where: {
-                id: mediaId,
-            },
+        let avatarMediaPath: string | undefined = undefined;
+        if (mediaId) {
+            const appMedia = await database.models.appMediaContent.findOne({
+                attributes: ['url'],
+                where: {
+                    id: mediaId,
+                },
+            });
+            avatarMediaPath = appMedia!.url.replace(
+                `${config.cloudfrontUrl}/`,
+                ''
+            );
+            services.app.UserService.updateAvatar(
+                req.user.address,
+                avatarMediaPath
+            )
+                .then((r) => standardResponse(res, 201, r, ''))
+                .catch((e) =>
+                    standardResponse(res, 400, false, '', { error: e })
+                );
+        }
+        standardResponse(res, 400, false, '', {
+            error: new Error('Not found'),
         });
-        const avatarMediaPath = appMedia!.url.replace(
-            `${config.cloudfrontUrl}/`,
-            ''
-        );
-        services.app.UserService.updateAvatar(req.user.address, avatarMediaPath)
-            .then((r) => standardResponse(res, 201, r, ''))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public updateUsername = (req: RequestWithUser, res: Response) => {

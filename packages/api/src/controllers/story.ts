@@ -35,16 +35,19 @@ class StoryController {
         }
         const { communityId, message, storyMediaId } = req.body;
 
-        const appMedia = await database.models.appMediaContent.findOne({
-            attributes: ['url'],
-            where: {
-                id: storyMediaId,
-            },
-        });
-        const storyMediaPath = appMedia!.url.replace(
-            `${config.cloudfrontUrl}/`,
-            ''
-        );
+        let storyMediaPath: string | undefined = undefined;
+        if (storyMediaId) {
+            const appMedia = await database.models.appMediaContent.findOne({
+                attributes: ['url'],
+                where: {
+                    id: storyMediaId,
+                },
+            });
+            storyMediaPath = appMedia!.url.replace(
+                `${config.cloudfrontUrl}/`,
+                ''
+            );
+        }
 
         this.storyService
             .add(req.user.address, {

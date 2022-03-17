@@ -9,7 +9,8 @@ export default (app: Router): void => {
      * @deprecated use /exchange-rate
      */
     route.get('/', (req: Request, res: Response) => {
-        services.app.ExchangeRatesService.get()
+        new services.app.ExchangeRatesService()
+            .get()
             .then((rates) => res.send(rates))
             .catch((r) => res.send(r).status(403));
     });
