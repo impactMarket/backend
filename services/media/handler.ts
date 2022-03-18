@@ -45,7 +45,7 @@ export const media = async (event: any, context: any) => {
                 folderToCategory(keySplit[0])
             );
             // after successfully uploaded, delete temporary file
-            await s3.deleteObject(params).promise();
+            // await s3.deleteObject(params).promise();
         }
         return ContentType;
     } catch (err: any) {
