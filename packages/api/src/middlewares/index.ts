@@ -23,7 +23,7 @@ export function authenticateToken(
         return;
     }
 
-    jwt.verify(token, config.jwtSecret, (err, _user) => {
+    jwt.verify(token, config.jwtSecret, async (err, _user) => {
         if (err) {
             res.sendStatus(403);
             return;
@@ -32,16 +32,34 @@ export function authenticateToken(
             res.sendStatus(403);
             return;
         }
-        const user = _user as UserInRequest;
-        req.user = user;
-        //
-        if (req.body !== undefined && req.body.address !== undefined) {
-            if (req.body.address !== user.address) {
+
+        if (_user.clientId) {
+            // external token
+            const credential =
+                await database.models.appClientCredential.findOne({
+                    where: {
+                        clientId: _user.clientId,
+                        clientSecret: token,
+                        status: 'active',
+                    },
+                });
+            if (credential) {
+                next();
+            } else {
                 res.sendStatus(403);
-                return;
             }
+        } else {
+            const user = _user as UserInRequest;
+            req.user = user;
+            //
+            if (req.body !== undefined && req.body.address !== undefined) {
+                if (req.body.address !== user.address) {
+                    res.sendStatus(403);
+                    return;
+                }
+            }
+            next(); // pass the execution off to whatever request the client intended
         }
-        next(); // pass the execution off to whatever request the client intended
     });
 }
 

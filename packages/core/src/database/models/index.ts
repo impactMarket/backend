@@ -4,6 +4,7 @@ import { initializeAirgrabProof } from './airgrab/airgrabProof';
 import { initializeAirgrabUser } from './airgrab/airgrabUser';
 import { initializeAgenda } from './app/agenda';
 import { initializeAppAnonymousReport } from './app/anonymousReport';
+import { initializeAppClientCredential } from './app/appClientCredential';
 import { initializeAppMediaContent } from './app/appMediaContent';
 import { initializeAppMediaThumbnail } from './app/appMediaThumbnail';
 import { initializeAppNotification } from './app/appNotification';
@@ -64,6 +65,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAppNotification(sequelize);
     initializeUbiBeneficiarySurvey(sequelize);
     initializeAppProposal(sequelize);
+    initializeAppClientCredential(sequelize);
 
     // ubi
     initializeCommunity(sequelize);

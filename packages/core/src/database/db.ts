@@ -3,6 +3,7 @@ import { ModelCtor, Sequelize } from 'sequelize/types';
 import { AirgrabProofModel } from './models/airgrab/airgrabProof';
 import { AirgrabUserModel } from './models/airgrab/airgrabUser';
 import { AppAnonymousReportModel } from './models/app/anonymousReport';
+import { AppClientCredentialModel } from './models/app/appClientCredential';
 import { AppMediaContentModel } from './models/app/appMediaContent';
 import { AppMediaThumbnailModel } from './models/app/appMediaThumbnail';
 import { AppNotificationModel } from './models/app/appNotification';
@@ -47,6 +48,7 @@ export interface DbModels {
     appUserTrust: ModelCtor<AppUserTrustModel>;
     appProposal: ModelCtor<AppProposalModel>;
     appUserThroughTrust: ModelCtor<AppUserThroughTrustModel>;
+    appClientCredential: ModelCtor<AppClientCredentialModel>;
     anonymousReport: ModelCtor<AppAnonymousReportModel>;
     cronJobExecuted: ModelCtor<CronJobExecuted>;
     exchangeRates: ModelCtor<ExchangeRates>;
