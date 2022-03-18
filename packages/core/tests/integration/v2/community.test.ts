@@ -6,7 +6,7 @@ import { replace, stub, SinonStub } from 'sinon';
 import { models, sequelize as database } from '../../../src/database';
 import { AppUser } from '../../../src/interfaces/app/appUser';
 import { CommunityContentStorage } from '../../../src/services/storage';
-import CommunityService from '../../../src/services/ubi/community/index';
+import { CommunityListService } from '../../../src/services/ubi/community/list';
 import * as subgraph from '../../../src/subgraph/queries/community';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import BeneficiaryFactory from '../../factories/beneficiary';
@@ -23,7 +23,7 @@ describe('community service v2', () => {
 
     type SubgraphClaimed = { id: string; claimed: number }[];
 
-    const communityService = new CommunityService();
+    const communityListService = new CommunityListService();
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -105,7 +105,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     name: communities[0].name,
                 });
 
@@ -149,7 +149,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     name: communities[0].name.slice(
                         0,
                         communities[0].name.length / 2
@@ -196,7 +196,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     name: communities[0].name.slice(
                         communities[0].name.length / 2,
                         communities[0].name.length - 1
@@ -243,7 +243,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     name: communities[0].name.toUpperCase(),
                 });
 
@@ -318,7 +318,7 @@ describe('community service v2', () => {
                     }))
                 );
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     name: 'oreo',
                 });
 
@@ -387,7 +387,7 @@ describe('community service v2', () => {
                     }))
                 );
 
-                const result = await communityService.list({});
+                const result = await communityListService.list({});
 
                 result.rows.forEach((el) => {
                     // eslint-disable-next-line no-unused-expressions
@@ -464,7 +464,7 @@ describe('community service v2', () => {
                     }))
                 );
 
-                const result = await communityService.list({ country: 'PT' });
+                const result = await communityListService.list({ country: 'PT' });
 
                 expect(result.count).to.be.equal(2);
                 (expect(result.rows).to as any).containSubset([
@@ -570,7 +570,7 @@ describe('community service v2', () => {
                     }))
                 );
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     country: 'PT;ES;FR',
                 });
 
@@ -643,7 +643,7 @@ describe('community service v2', () => {
             const result: any[] = [];
 
             for (let index = 0; index < totalCommunities / 5; index++) {
-                const r = await communityService.list({
+                const r = await communityListService.list({
                     offset: (index * 5).toString(),
                     limit: '5',
                 });
@@ -703,7 +703,7 @@ describe('community service v2', () => {
             returnClaimedSubgraph.returns(claimed);
 
             //
-            const r = await communityService.list({
+            const r = await communityListService.list({
                 offset: '0',
                 limit: '5',
             });
@@ -807,7 +807,7 @@ describe('community service v2', () => {
                         });
                 });
 
-                const result = await communityService.list({});
+                const result = await communityListService.list({});
 
                 expect(result.rows[0]).to.include({
                     id: communities[1].id,
@@ -870,7 +870,7 @@ describe('community service v2', () => {
                     }))
                 );
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     orderBy: 'nearest',
                     lat: '-23.4378873',
                     lng: '-46.4841214',
@@ -991,7 +991,7 @@ describe('community service v2', () => {
                         });
                 });
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     orderBy: 'nearest:ASC;bigger:DESC',
                     lat: '-15.8697203',
                     lng: '-47.9207824',
@@ -1107,7 +1107,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     orderBy: 'bigger:ASC;nearest:DESC',
                     lat: '-15.8697203',
                     lng: '-47.9207824',
@@ -1176,7 +1176,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     fields: 'id;contractAddress;publicId;contract.maxClaim;contract.claimAmount',
                 });
 
@@ -1231,7 +1231,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     fields: 'id;contractAddress;publicId;contract.maxClaim;proposal.*',
                 });
 
@@ -1289,7 +1289,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     fields: '*;contract.*',
                 });
 
@@ -1413,7 +1413,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     fields: 'id;publicId;contractAddress;contract.*;cover.*',
                 });
 
@@ -1551,7 +1551,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const result = await communityService.list({
+                const result = await communityListService.list({
                     status: 'pending',
                 });
 
@@ -1614,7 +1614,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const pending = await communityService.list({
+                const pending = await communityListService.list({
                     status: 'pending',
                 });
 
