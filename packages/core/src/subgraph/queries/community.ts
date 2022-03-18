@@ -165,4 +165,4 @@ export const communityEntities = async (where: string, fields: string) => {
     } catch (error) {
         throw new Error(error);
     }
-}
+};

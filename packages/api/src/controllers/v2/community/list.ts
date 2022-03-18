@@ -4,9 +4,9 @@ import { Request, Response } from 'express';
 import { standardResponse } from '../../../utils/api';
 
 class CommunityController {
-    private communityService: services.ubi.CommunityServiceV2;
+    private communityService: services.ubi.CommunityListService;
     constructor() {
-        this.communityService = new services.ubi.CommunityServiceV2();
+        this.communityService = new services.ubi.CommunityListService();
     }
 
     list = (req: Request, res: Response) => {

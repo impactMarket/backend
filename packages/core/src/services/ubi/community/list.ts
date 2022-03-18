@@ -1,28 +1,21 @@
 import { ethers } from 'ethers';
+import { Op, literal, OrderItem, WhereOptions, Includeable } from 'sequelize';
+import { Literal } from 'sequelize/types/lib/utils';
+
+import config from '../../../config';
 import { models } from '../../../database';
+import { Community } from '../../../database/models/ubi/community';
+import { CommunityAttributes } from '../../../interfaces/ubi/community';
+import { UbiCommunityLabel } from '../../../interfaces/ubi/ubiCommunityLabel';
 import {
     getCommunityProposal,
     communityEntities,
 } from '../../../subgraph/queries/community';
-import {
-    CommunityAttributes,
-} from '../../../interfaces/ubi/community';
-import { UbiCommunityLabel } from '../../../interfaces/ubi/ubiCommunityLabel';
-import {
-    Op,
-    literal,
-    OrderItem,
-    WhereOptions,
-    Includeable,
-} from 'sequelize';
 import { BaseError } from '../../../utils/baseError';
-import config from '../../../config'
 import { fetchData } from '../../../utils/dataFetching';
-import { Literal } from 'sequelize/types/lib/utils';
-import { Community } from '../../../database/models/ubi/community';
 import { CommunityDetailsService } from './details';
 
-export default class CommunityService {
+export class CommunityListService {
     communityDetailsService = new CommunityDetailsService();
 
     public async list(query: {
@@ -57,7 +50,7 @@ export default class CommunityService {
                   }
               ]
             | undefined = undefined;
-        
+
         let communitiesId: number[] = [];
         let contractAddress: string[] = [];
 
@@ -187,8 +180,8 @@ export default class CommunityService {
                                     extendedWhere,
                                     orderType
                                 );
-                            contractAddress = beneficiariesState!.map(
-                                (el) => ethers.utils.getAddress(el.id)
+                            contractAddress = beneficiariesState!.map((el) =>
+                                ethers.utils.getAddress(el.id)
                             );
                         } else {
                             // list communities beneficiaries after
@@ -208,8 +201,8 @@ export default class CommunityService {
                 },
                 extendedWhere
             );
-            contractAddress = beneficiariesState!.map(
-                (el) => ethers.utils.getAddress(el.id)
+            contractAddress = beneficiariesState!.map((el) =>
+                ethers.utils.getAddress(el.id)
             );
         }
 
@@ -219,14 +212,14 @@ export default class CommunityService {
         const exclude = ['email'];
 
         if (query.fields) {
-            let fields = fetchData(query.fields!);
+            const fields = fetchData(query.fields!);
             // include id and contractAddress
             if (fields.root.length > 0) {
                 if (fields.root.indexOf('id') === -1) {
-                    fields.root.push('id')
+                    fields.root.push('id');
                 }
                 if (fields.root.indexOf('contractAddress') === -1) {
-                    fields.root.push('contractAddress')
+                    fields.root.push('contractAddress');
                 }
             }
 
@@ -269,10 +262,12 @@ export default class CommunityService {
             if (orderOption.length > 0) {
                 communitiesId = communitiesResult!.map((el) => el.id);
             } else {
-                communitiesId = contractAddress.map(address => {
-                    const community = communitiesResult.find(community => community.contractAddress === address) 
+                communitiesId = contractAddress.map((address) => {
+                    const community = communitiesResult.find(
+                        (community) => community.contractAddress === address
+                    );
                     return community!.id;
-                })
+                });
             }
         } else {
             communitiesResult = await models.community.findAll({
@@ -292,7 +287,9 @@ export default class CommunityService {
                     : config.defaultLimit,
             });
             communitiesId = communitiesResult!.map((el) => el.id);
-            contractAddress = communitiesResult!.map((el) => el.contractAddress!);
+            contractAddress = communitiesResult!.map(
+                (el) => el.contractAddress!
+            );
         }
 
         if (orderBeneficiary.active) {
@@ -304,17 +301,19 @@ export default class CommunityService {
                 },
                 {},
                 undefined,
-                contractAddress,
+                contractAddress
             );
-            contractAddress = beneficiariesState!.map(
-                (el) => ethers.utils.getAddress(el.id)
+            contractAddress = beneficiariesState!.map((el) =>
+                ethers.utils.getAddress(el.id)
             );
 
             // re-order IDs
             communitiesId = contractAddress.map((el) => {
-                const community = communitiesResult.find((community) => community.contractAddress === el);
+                const community = communitiesResult.find(
+                    (community) => community.contractAddress === el
+                );
                 return community!.id;
-            })
+            });
         }
 
         // if (orderOutOfFunds.active) {
@@ -341,7 +340,9 @@ export default class CommunityService {
             managers: number;
         } | null)[];
         if (returnState) {
-            const promises = communitiesId.map(id => this.communityDetailsService.getState(id));
+            const promises = communitiesId.map((id) =>
+                this.communityDetailsService.getState(id)
+            );
             states = await Promise.all(promises);
         }
 
@@ -357,8 +358,10 @@ export default class CommunityService {
             };
 
             if (returnState) {
-                const state = states.find(el => el?.communityId === community.id!);
-                
+                const state = states.find(
+                    (el) => el?.communityId === community.id!
+                );
+
                 community = {
                     ...community,
                     state,
@@ -391,7 +394,7 @@ export default class CommunityService {
             );
             return calldata[0][0];
         });
-        
+
         return requestByAddress;
     }
 
@@ -403,7 +406,7 @@ export default class CommunityService {
         },
         extendedWhere: WhereOptions<CommunityAttributes>,
         orderType?: string,
-        communities?: string[],
+        communities?: string[]
     ): Promise<any> {
         let contractAddress: string[] = [];
         if (Object.keys(extendedWhere).length > 0) {
@@ -415,9 +418,11 @@ export default class CommunityService {
                     ...extendedWhere,
                 },
             });
-            contractAddress = communities.map(community => community.contractAddress!);
+            contractAddress = communities.map(
+                (community) => community.contractAddress!
+            );
             if (!contractAddress || !contractAddress.length) {
-                return []
+                return [];
             }
         } else if (communities && communities.length > 0) {
             contractAddress = communities;
@@ -426,16 +431,28 @@ export default class CommunityService {
         const batch = 10;
         let result: any[] = [];
 
-        if(contractAddress.length > 0) {
+        if (contractAddress.length > 0) {
             for (let i = 0; ; i = i + batch) {
                 const addresses = contractAddress.slice(i, i + batch);
 
                 const communities = await communityEntities(
                     `orderBy: beneficiaries,
-                        orderDirection: ${orderType ? orderType.toLocaleLowerCase(): 'desc'},
-                        first: ${query.limit ? parseInt(query.limit, 10) : config.defaultLimit},
-                        skip: ${query.offset ? parseInt(query.offset, 10) : config.defaultOffset},
-                        where: { id_in: [${addresses.map((el) => `"${el.toLocaleLowerCase()}"`)}]}`,
+                        orderDirection: ${
+                            orderType ? orderType.toLocaleLowerCase() : 'desc'
+                        },
+                        first: ${
+                            query.limit
+                                ? parseInt(query.limit, 10)
+                                : config.defaultLimit
+                        },
+                        skip: ${
+                            query.offset
+                                ? parseInt(query.offset, 10)
+                                : config.defaultOffset
+                        },
+                        where: { id_in: [${addresses.map(
+                            (el) => `"${el.toLocaleLowerCase()}"`
+                        )}]}`,
                     `id, beneficiaries`
                 );
                 result.push(...communities);
@@ -446,13 +463,23 @@ export default class CommunityService {
         } else {
             result = await communityEntities(
                 `orderBy: beneficiaries,
-                    orderDirection: ${orderType ? orderType.toLocaleLowerCase(): 'desc'},
-                    first: ${query.limit ? parseInt(query.limit, 10) : config.defaultLimit},
-                    skip: ${query.offset ? parseInt(query.offset, 10) : config.defaultOffset},`,
+                    orderDirection: ${
+                        orderType ? orderType.toLocaleLowerCase() : 'desc'
+                    },
+                    first: ${
+                        query.limit
+                            ? parseInt(query.limit, 10)
+                            : config.defaultLimit
+                    },
+                    skip: ${
+                        query.offset
+                            ? parseInt(query.offset, 10)
+                            : config.defaultOffset
+                    },`,
                 `id, beneficiaries`
             );
         }
-        
+
         return result;
     }
 
@@ -548,7 +575,9 @@ export default class CommunityService {
         if (fields.ambassador) {
             extendedInclude.push({
                 attributes:
-                    fields.ambassador.length > 0 ? fields.ambassador : undefined,
+                    fields.ambassador.length > 0
+                        ? fields.ambassador
+                        : undefined,
                 model: models.appUser,
                 as: 'ambassador',
             });
