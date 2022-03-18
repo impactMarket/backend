@@ -1,8 +1,8 @@
+import { services, config } from '@impactmarket/core';
 import AWS from 'aws-sdk';
 import sizeOf from 'image-size';
-import sharp from 'sharp';
 import path from 'path';
-import { services, config } from '@impactmarket/core';
+import sharp from 'sharp';
 
 const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
 
@@ -20,7 +20,7 @@ interface IJobThumbnail {
     buffer: Buffer;
 }
 
-const mediaService = new services.media.MediaService()
+const mediaService = new services.media.MediaService();
 
 export const media = async (event: any, context: any) => {
     const bucket = event.Records[0].s3.bucket.name;
@@ -35,7 +35,7 @@ export const media = async (event: any, context: any) => {
     // assuming "key" follows the principal "topic/imageName.format"
     try {
         const { ContentType, Body } = await s3.getObject(params).promise();
-        
+
         if (Body && ContentType) {
             const keySplit = key.split('/');
             await processAndUpload(
@@ -58,13 +58,13 @@ const updateMedia = async (data: any) => {
     console.log('update media');
     const r = await mediaService.updateMedia(data);
     return r;
-}
+};
 
 const postThumbnails = async (data: any[]) => {
     console.log('post thumbnails');
     const r = await mediaService.postThumbnails(data);
     return r;
-}
+};
 
 const folderToCategory = (folder: string) => {
     if (folder.indexOf('cover') !== -1) {
@@ -77,7 +77,7 @@ const folderToCategory = (folder: string) => {
         return StorageCategory.profile;
     }
     throw new Error('invalid folder to category');
-}
+};
 
 const processAndUpload = async (
     buffer: Buffer,
@@ -132,8 +132,7 @@ const processAndUpload = async (
     }
 
     if (filename.indexOf('.jpeg') === -1) {
-        filename =
-            path.basename(filename, path.extname(filename)) + '.jpeg';
+        filename = path.basename(filename, path.extname(filename)) + '.jpeg';
     }
     const generated = _generatedStorageFilePath(category, filename);
 
@@ -162,7 +161,7 @@ const processAndUpload = async (
     });
 
     return mediaContent;
-}
+};
 
 const _generatedStorageFilePath = (
     category: StorageCategory,
@@ -197,7 +196,7 @@ const _generatedStorageFilePath = (
         }${filename}`,
         filename,
     };
-}
+};
 
 const _createThumbnailFromJob = async (jobData: IJobThumbnail) => {
     let thumbnailSizes: { width: number; height: number }[];
@@ -249,7 +248,7 @@ const _createThumbnailFromJob = async (jobData: IJobThumbnail) => {
         }
     }
     await postThumbnails(thumbnailMedias);
-}
+};
 
 const _uploadContentToS3 = async (
     category: StorageCategory,
@@ -280,4 +279,4 @@ const _mapCategoryToBucket = (category: StorageCategory) => {
         return config.aws.bucket.community;
     }
     throw new Error('invalid category');
-}
+};
