@@ -8,12 +8,16 @@ const create = celebrate({
         phone: Joi.string().optional(),
         language: Joi.string().optional(),
         currency: Joi.string().optional(),
-        pushNotificationToken: Joi.string().optional(),
+        pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
         username: Joi.string().optional(),
         gender: Joi.string().optional(),
-        year: Joi.number().optional(),
+        age: Joi.number().optional(),
         children: Joi.number().optional(),
-        avatarMediaId: Joi.number().optional(),
+        avatarMediaPath: Joi.string().optional(),
+        email: Joi.alternatives(
+            Joi.string().email({ tlds: { allow: false } }),
+            null
+        ).optional(),
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
     }),
@@ -21,14 +25,15 @@ const create = celebrate({
 
 const update = celebrate({
     body: Joi.object({
+        phone: Joi.string().optional(),
         language: Joi.string().optional(),
         currency: Joi.string().optional(),
+        pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
         username: Joi.alternatives(Joi.string(), null).optional(),
         gender: Joi.string().optional(),
-        year: Joi.alternatives(Joi.number(), null).optional(),
+        age: Joi.alternatives(Joi.number(), null).optional(),
         children: Joi.alternatives(Joi.number(), null).optional(),
-        avatarMediaId: Joi.number().optional(),
-        pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
+        avatarMediaPath: Joi.alternatives(Joi.number(), null).optional(),
         email: Joi.alternatives(
             Joi.string().email({ tlds: { allow: false } }),
             null
