@@ -32,6 +32,7 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
 
         const queryResult = await client.query({
             query,
+            fetchPolicy: 'no-cache',
         });
 
         const beneficiary =

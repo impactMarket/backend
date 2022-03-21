@@ -26,6 +26,7 @@ export const getCommunityProposal = async (): Promise<string[]> => {
 
         const queryResult = await client.query({
             query,
+            fetchPolicy: 'no-cache',
         });
 
         if (queryResult.data?.communityProposalEntities?.length) {
@@ -67,6 +68,7 @@ export const getClaimed = async (
 
         const queryResult = await client.query({
             query,
+            fetchPolicy: 'no-cache',
         });
 
         return queryResult.data.communityEntities;
@@ -101,6 +103,7 @@ export const getCommunityManagers = async (
 
         const queryResult = await client.query({
             query,
+            fetchPolicy: 'no-cache',
         });
 
         return queryResult.data?.managerEntities;
@@ -139,6 +142,7 @@ export const getCommunityState = async (
 
         const queryResult = await client.query({
             query,
+            fetchPolicy: 'no-cache',
         });
 
         return queryResult.data?.communityEntity;
