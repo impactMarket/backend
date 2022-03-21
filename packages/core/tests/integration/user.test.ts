@@ -838,7 +838,7 @@ describe('user service', () => {
                 manager: null,
             });
             await ManagerFactory([users[0]], communities[0].id);
-            await BeneficiaryFactory([users[1],users[2]], communities[0].id);
+            await BeneficiaryFactory([users[1], users[2]], communities[0].id);
         });
 
         afterEach(async () => {
@@ -852,14 +852,18 @@ describe('user service', () => {
                     name: communities[0].name,
                     description: communities[0].description,
                     currency: communities[0].currency,
-                    coverMediaId: communities[0].coverMediaId,
+                    coverMediaPath: communities[0].coverMediaPath,
                     email: communities[0].email,
                 },
                 users[0].address,
-                users[0].id,
+                users[0].id
             );
 
-            const logs = await logService.get(users[3].address, 'edited_community', communities[0].id.toString());
+            const logs = await logService.get(
+                users[3].address,
+                'edited_community',
+                communities[0].id.toString()
+            );
 
             expect(logs[0]).to.include({
                 userId: users[0].id,
@@ -885,7 +889,11 @@ describe('user service', () => {
                 address: users[1].address,
             } as AppUser);
 
-            const logs = await logService.get(users[3].address, 'edited_user', users[1].address);
+            const logs = await logService.get(
+                users[3].address,
+                'edited_user',
+                users[1].address
+            );
 
             expect(logs[0]).to.include({
                 userId: users[1].id,
@@ -908,14 +916,19 @@ describe('user service', () => {
                     name: communities[0].name,
                     description: communities[0].description,
                     currency: communities[0].currency,
-                    coverMediaId: communities[0].coverMediaId,
+                    coverMediaPath: communities[0].coverMediaPath,
                     email: communities[0].email,
                 },
                 users[0].address,
-                users[0].id,
+                users[0].id
             );
 
-            logService.get(users[0].address, 'edited_community', communities[0].id.toString())
+            logService
+                .get(
+                    users[0].address,
+                    'edited_community',
+                    communities[0].id.toString()
+                )
                 .catch((e) => expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND'))
                 .then(() => {
                     throw new Error('expected to fail');
