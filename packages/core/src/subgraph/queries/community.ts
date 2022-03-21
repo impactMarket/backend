@@ -159,6 +159,7 @@ export const communityEntities = async (where: string, fields: string) => {
 
         const queryResult = await client.query({
             query,
+            fetchPolicy: 'no-cache',
         });
 
         return queryResult.data?.communityEntities;
