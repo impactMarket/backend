@@ -51,7 +51,7 @@ export class CommunityListService {
               ]
             | undefined = undefined;
 
-        let communitiesId: number[] = [];
+        let communitiesId: (number | undefined)[];
         let contractAddress: string[] = [];
 
         if (query.filter === 'featured') {
@@ -266,7 +266,7 @@ export class CommunityListService {
                     const community = communitiesResult.find(
                         (community) => community.contractAddress === address
                     );
-                    return community!.id;
+                    return community?.id;
                 });
             }
         } else {
@@ -312,7 +312,7 @@ export class CommunityListService {
                 const community = communitiesResult.find(
                     (community) => community.contractAddress === el
                 );
-                return community!.id;
+                return community?.id;
             });
         }
 
@@ -329,6 +329,9 @@ export class CommunityListService {
         //     communitiesId = result.map((el) => el.id);
         // }
 
+        // remove empty elements 
+        communitiesId = communitiesId.filter(Number) 
+
         let states: ({
             communityId: number;
             claims: number;
@@ -341,7 +344,7 @@ export class CommunityListService {
         } | null)[];
         if (returnState) {
             const promises = communitiesId.map((id) =>
-                this.communityDetailsService.getState(id)
+                this.communityDetailsService.getState(id!)
             );
             states = await Promise.all(promises);
         }
