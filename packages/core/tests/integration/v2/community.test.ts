@@ -464,7 +464,9 @@ describe('community service v2', () => {
                     }))
                 );
 
-                const result = await communityListService.list({ country: 'PT' });
+                const result = await communityListService.list({
+                    country: 'PT',
+                });
 
                 expect(result.count).to.be.equal(2);
                 (expect(result.rows).to as any).containSubset([
@@ -1300,6 +1302,7 @@ describe('community service v2', () => {
                     'country',
                     'coverImage',
                     'coverMediaId',
+                    'coverMediaPath',
                     'createdAt',
                     'currency',
                     'deletedAt',
