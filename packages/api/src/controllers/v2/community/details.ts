@@ -1,3 +1,4 @@
+import { getAddress } from '@ethersproject/address';
 import { services } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
@@ -29,7 +30,10 @@ class CommunityController {
         const { idOrAddress } = req.params;
         if (idOrAddress.startsWith('0x')) {
             this.detailsService
-                .findByContractAddress(idOrAddress, req.user?.address)
+                .findByContractAddress(
+                    getAddress(idOrAddress),
+                    req.user?.address
+                )
                 .then((community) =>
                     standardResponse(res, 200, !!community, community)
                 )
