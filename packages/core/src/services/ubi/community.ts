@@ -50,6 +50,8 @@ import {
 import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
 import ManagerService from './managers';
+import UserLogService from '../app/user/log';
+import { LogTypes } from '../../interfaces/app/appLog';
 
 export default class CommunityService {
     public static community = models.community;
@@ -75,6 +77,7 @@ export default class CommunityService {
 
     private static communityContentStorage = new CommunityContentStorage();
     private static promoterContentStorage = new PromoterContentStorage();
+    private static userLogService = new UserLogService();
 
     public static async create({
         requestByAddress,
@@ -191,7 +194,8 @@ export default class CommunityService {
             coverMediaPath: string;
             email?: string;
         },
-        userAddress?: string
+        userAddress?: string,
+        userId?: number,
     ): Promise<CommunityAttributes> {
         // since cover can't be null, we first update and then remove
         const { name, description, currency, coverMediaPath, email } = params;
@@ -202,6 +206,16 @@ export default class CommunityService {
         if (update[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'community was not updated!');
         }
+
+        if (userId) {
+            this.userLogService.create(
+                userId,
+                LogTypes.EDITED_COMMUNITY,
+                params,
+                id,
+            );
+        }
+
         return this._findCommunityBy({ id }, userAddress);
     }
 
@@ -758,7 +772,7 @@ export default class CommunityService {
 
     public static async findByContractAddress(
         contractAddress: string,
-        userAddress?: string
+        userAddress?: string,
     ): Promise<CommunityAttributes> {
         return this._findCommunityBy({ contractAddress }, userAddress);
     }

@@ -28,6 +28,7 @@ interface ICreateProps {
         suspect: number;
     };
     proposalId?: number;
+    ambassadorAddress?: string;
 }
 /**
  * Generate an object which container attributes needed

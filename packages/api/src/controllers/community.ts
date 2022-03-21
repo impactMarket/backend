@@ -330,7 +330,8 @@ class CommunityController {
                             coverMediaPath: coverMediaPath as any,
                             email,
                         },
-                        req.user?.address
+                        req.user?.address,
+                        req.user?.userId,
                     )
                         .then((community) =>
                             standardResponse(res, 200, true, community)

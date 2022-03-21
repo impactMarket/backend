@@ -1,5 +1,7 @@
 import { Client } from '@hubspot/api-client';
+import { LogTypes } from '../../interfaces/app/appLog';
 import { Op, QueryTypes } from 'sequelize';
+import UserLogService from './user/log';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
@@ -31,6 +33,7 @@ export default class UserService {
     public static appNotification = models.appNotification;
 
     private static profileContentStorage = new ProfileContentStorage();
+    private static userLogService = new UserLogService();
 
     public static hubspotClient = new Client({ apiKey: config.hubspotKey });
 
@@ -533,6 +536,13 @@ export default class UserService {
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'user was not updated!');
         }
+
+        this.userLogService.create(
+            updated[1][0].id,
+            LogTypes.EDITED_PROFILE,
+            user,
+        );
+
         return updated[1][0];
     }
 

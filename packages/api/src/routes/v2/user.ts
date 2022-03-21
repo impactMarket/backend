@@ -234,4 +234,36 @@ export default (app: Router): void => {
         userValidators.report,
         userController.report
     );
+
+    /**
+     * @swagger
+     *
+     * /user/logs:
+     *   get:
+     *     tags:
+     *       - "user"
+     *     summary: Get user logs
+     *     parameters:
+     *       - in: query
+     *         name: type
+     *         schema:
+     *           type: string
+     *           enum: [edited_user, edited_community]
+     *         required: true
+     *         description: the log type
+     *       - in: query
+     *         name: entity
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: community ID or user address
+     *     description: Enable ambassadors to see the change logs of communities and users they are responsible for
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+     route.get('/logs', authenticateToken, userController.getLogs);
 };

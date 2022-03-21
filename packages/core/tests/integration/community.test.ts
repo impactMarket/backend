@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { ethers } from 'ethers';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
-import Sinon, { assert, replace, spy, stub, SinonStub } from 'sinon';
+import Sinon, { assert, replace, spy, stub, SinonStub, restore } from 'sinon';
 
 import { models, sequelize as database } from '../../src/database';
 import { AppMediaContent } from '../../src/interfaces/app/appMediaContent';
@@ -80,6 +80,10 @@ describe('community service', () => {
                 },
             ])
         );
+    });
+
+    after(() => {
+        restore();
     });
 
     describe('list', () => {
