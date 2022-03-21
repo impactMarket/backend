@@ -14,6 +14,7 @@ export class AppClientCredentialModel extends Model<
     public clientId!: string;
     public clientSecret!: string;
     public status!: 'active' | 'inactive';
+    public roles!: string[] | null;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -45,6 +46,10 @@ export function initializeAppClientCredential(
             status: {
                 type: DataTypes.ENUM('active', 'inactive'),
                 allowNull: false,
+            },
+            roles: {
+                type: DataTypes.ARRAY(DataTypes.TEXT),
+                allowNull: true,
             },
             createdAt: {
                 type: DataTypes.DATE,

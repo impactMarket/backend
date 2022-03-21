@@ -43,8 +43,19 @@ export function authenticateToken(
                         status: 'active',
                     },
                 });
-            if (credential) {
-                next();
+            if (credential && credential.roles) {
+                const authorization = checkRoles(
+                    credential.roles,
+                    req.path,
+                    req.method
+                );
+                if (!authorization) {
+                    res.send(`User has no permition to ${req.path}`).status(
+                        403
+                    );
+                } else {
+                    next();
+                }
             } else {
                 res.sendStatus(403);
             }
@@ -115,3 +126,23 @@ export const rateLimiter = rateLimit({
               }),
           }),
 });
+
+const checkRoles = (roles: string[], path: string, reqMethod: string) => {
+    let authorizate = false;
+    for (let i = 0; i < roles.length; i++) {
+        const [service, method] = roles[i].split(':');
+        if (service === path.replace('/', '')) {
+            if (
+                method === '*' ||
+                (reqMethod === 'GET' && method === 'read') ||
+                (reqMethod === 'POST' && method === 'create') ||
+                (reqMethod === 'PUT' && method === 'update') ||
+                (reqMethod === 'DELETE' && method === 'delete')
+            ) {
+                authorizate = true;
+                break;
+            }
+        }
+    }
+    return authorizate;
+};

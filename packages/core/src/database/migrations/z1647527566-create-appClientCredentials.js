@@ -23,6 +23,10 @@ module.exports = {
         type: Sequelize.ENUM('active', 'inactive'),
         allowNull: false,
       },
+      roles: {
+        type: Sequelize.ARRAY(Sequelize.TEXT),
+        allowNull: true,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

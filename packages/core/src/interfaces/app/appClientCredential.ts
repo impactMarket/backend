@@ -4,6 +4,7 @@ export interface AppClientCredential {
     clientId: string;
     clientSecret: string;
     status: 'active' | 'inactive';
+    roles?: string[];
 
     // timestamps
     createdAt: Date;
@@ -16,4 +17,5 @@ export interface AppClientCredentialCreationAttributes {
     clientId: string;
     clientSecret: string;
     status: 'active' | 'inactive';
+    roles?: string[];
 }

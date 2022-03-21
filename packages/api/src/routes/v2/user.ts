@@ -265,5 +265,5 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-     route.get('/logs', authenticateToken, userController.getLogs);
+    route.get('/logs', authenticateToken, userController.getLogs);
 };
