@@ -16,6 +16,7 @@ import * as AppMediaThumbnail from './models/app/appMediaThumbnail';
 import * as AppNotification from './models/app/appNotification';
 import * as AppProposal from './models/app/appProposal';
 import * as AppUser from './models/app/appUser';
+import * as AppLog from './models/app/appLog';
 import * as AppUserThroughTrust from './models/app/appUserThroughTrust';
 import * as AppUserTrust from './models/app/appUserTrust';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
@@ -94,6 +95,7 @@ const models: DbModels = {
         .AppUserThroughTrustModel as ModelCtor<AppUserThroughTrust.AppUserThroughTrustModel>,
     appClientCredential: sequelize.models
         .AppClientCredentialModel as ModelCtor<AppClientCredential.AppClientCredentialModel>,
+    appLog: sequelize.models.AppLogModel as ModelCtor<AppLog.AppLogModel>,
     community: sequelize.models.Community as ModelCtor<Community>,
     ubiCommunitySuspect: sequelize.models
         .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspect.UbiCommunitySuspectModel>,

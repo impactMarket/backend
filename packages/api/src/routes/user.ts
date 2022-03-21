@@ -79,7 +79,7 @@ export default (app: Router): void => {
      *                 type: number
      *                 required: false
      *               avatarMediaId:
-     *                 type: number
+     *                 type: integer
      *                 required: false
      *     responses:
      *       "200":
@@ -228,7 +228,7 @@ export default (app: Router): void => {
      *                 type: number
      *                 required: false
      *               avatarMediaId:
-     *                 type: number
+     *                 type: integer
      *                 required: false
      *     responses:
      *       "200":

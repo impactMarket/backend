@@ -69,7 +69,11 @@ module.exports = {
             },
             coverMediaId: {
                 type: Sequelize.INTEGER,
-                allowNull: false,
+                allowNull: true,
+            },
+            coverMediaPath: {
+                type: Sequelize.STRING(44),
+                allowNull: true,
             },
             status: {
                 type: Sequelize.ENUM('pending', 'valid', 'removed'),

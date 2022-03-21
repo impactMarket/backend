@@ -1,36 +1,29 @@
 import { expect } from 'chai';
 import { ethers } from 'ethers';
-import faker from 'faker';
 import { Sequelize } from 'sequelize';
-import Sinon, { assert, replace, spy, stub, SinonStub, restore } from 'sinon';
+import { replace, stub, SinonStub } from 'sinon';
 
-import { models, sequelize as database } from '../../src/database';
-import { AppMediaContent } from '../../src/interfaces/app/appMediaContent';
-import { AppUser } from '../../src/interfaces/app/appUser';
-import { UbiPromoter } from '../../src/interfaces/ubi/ubiPromoter';
-import { CommunityContentStorage } from '../../src/services/storage';
-import BeneficiaryService from '../../src/services/ubi/beneficiary';
-import CommunityService from '../../src/services/ubi/community';
-import ManagerService from '../../src/services/ubi/managers';
-import * as subgraph from '../../src/subgraph/queries/community';
-import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
-import { randomTx } from '../config/utils';
-import BeneficiaryFactory from '../factories/beneficiary';
-import CommunityFactory from '../factories/community';
-import ManagerFactory from '../factories/manager';
-import UserFactory from '../factories/user';
+import { models, sequelize as database } from '../../../src/database';
+import { AppUser } from '../../../src/interfaces/app/appUser';
+import { CommunityContentStorage } from '../../../src/services/storage';
+import { CommunityListService } from '../../../src/services/ubi/community/list';
+import * as subgraph from '../../../src/subgraph/queries/community';
+import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
+import BeneficiaryFactory from '../../factories/beneficiary';
+import CommunityFactory from '../../factories/community';
+import UserFactory from '../../factories/user';
 
-// in this test there are users being assined with suspicious activity and others being removed
-describe('community service', () => {
+describe('community service v2', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
-    let communityContentStorageDelete: Sinon.SinonSpy<[number], Promise<void>>;
     let returnProposalsSubgraph: SinonStub;
     let returnClaimedSubgraph: SinonStub;
     let returnCommunityStateSubgraph: SinonStub;
-    let returnGetCommunityManagersSubgraph: SinonStub;
+    let returnCommunityEntities: SinonStub;
 
     type SubgraphClaimed = { id: string; claimed: number }[];
+
+    const communityListService = new CommunityListService();
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -46,18 +39,10 @@ describe('community service', () => {
             }
         );
 
-        communityContentStorageDelete = spy(
-            CommunityContentStorage.prototype,
-            'deleteContent'
-        );
-
         returnProposalsSubgraph = stub(subgraph, 'getCommunityProposal');
+        returnCommunityEntities = stub(subgraph, 'communityEntities');
         returnClaimedSubgraph = stub(subgraph, 'getClaimed');
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
-        returnGetCommunityManagersSubgraph = stub(
-            subgraph,
-            'getCommunityManagers'
-        );
         returnCommunityStateSubgraph.returns([
             {
                 claims: 0,
@@ -69,27 +54,18 @@ describe('community service', () => {
                 managers: 0,
             },
         ]);
-        returnGetCommunityManagersSubgraph.returns(
-            Promise.resolve([
-                {
-                    address: users[0].address,
-                    state: 0,
-                    added: 0,
-                    removed: 0,
-                    since: 0,
-                },
-            ])
-        );
-    });
-
-    after(() => {
-        restore();
     });
 
     describe('list', () => {
         afterEach(async () => {
             await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize);
+            returnClaimedSubgraph.resetHistory();
+            returnCommunityEntities.resetHistory();
+        });
+
+        after(async () => {
+            returnProposalsSubgraph.restore();
+            returnCommunityEntities.restore();
         });
 
         describe('by name', () => {
@@ -115,6 +91,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 0,
+                    },
+                ]);
+
                 returnClaimedSubgraph.returns([
                     {
                         id: communities[0].contractAddress,
@@ -122,7 +105,7 @@ describe('community service', () => {
                     },
                 ]);
 
-                const result = await CommunityService.list({
+                const result = await communityListService.list({
                     name: communities[0].name,
                 });
 
@@ -152,6 +135,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 0,
+                    },
+                ]);
+
                 returnClaimedSubgraph.returns([
                     {
                         id: communities[0].contractAddress,
@@ -159,7 +149,7 @@ describe('community service', () => {
                     },
                 ]);
 
-                const result = await CommunityService.list({
+                const result = await communityListService.list({
                     name: communities[0].name.slice(
                         0,
                         communities[0].name.length / 2
@@ -192,6 +182,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 0,
+                    },
+                ]);
+
                 returnClaimedSubgraph.returns([
                     {
                         id: communities[0].contractAddress,
@@ -199,7 +196,7 @@ describe('community service', () => {
                     },
                 ]);
 
-                const result = await CommunityService.list({
+                const result = await communityListService.list({
                     name: communities[0].name.slice(
                         communities[0].name.length / 2,
                         communities[0].name.length - 1
@@ -232,6 +229,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 0,
+                    },
+                ]);
+
                 returnClaimedSubgraph.returns([
                     {
                         id: communities[0].contractAddress,
@@ -239,7 +243,7 @@ describe('community service', () => {
                     },
                 ]);
 
-                const result = await CommunityService.list({
+                const result = await communityListService.list({
                     name: communities[0].name.toUpperCase(),
                 });
 
@@ -300,6 +304,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnCommunityEntities.returns(
+                    communities.map((el) => ({
+                        id: el.contractAddress,
+                        beneficiaries: 0,
+                    }))
+                );
+
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
                         id: community.contractAddress!,
@@ -307,7 +318,7 @@ describe('community service', () => {
                     }))
                 );
 
-                const result = await CommunityService.list({
+                const result = await communityListService.list({
                     name: 'oreo',
                 });
 
@@ -362,6 +373,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnCommunityEntities.returns(
+                    communities.map((el) => ({
+                        id: el.contractAddress,
+                        beneficiaries: 0,
+                    }))
+                );
+
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
                         id: community.contractAddress!,
@@ -369,7 +387,7 @@ describe('community service', () => {
                     }))
                 );
 
-                const result = await CommunityService.list({});
+                const result = await communityListService.list({});
 
                 result.rows.forEach((el) => {
                     // eslint-disable-next-line no-unused-expressions
@@ -432,6 +450,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnCommunityEntities.returns(
+                    communities.map((el) => ({
+                        id: el.contractAddress,
+                        beneficiaries: 0,
+                    }))
+                );
+
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
                         id: community.contractAddress!,
@@ -439,7 +464,9 @@ describe('community service', () => {
                     }))
                 );
 
-                const result = await CommunityService.list({ country: 'PT' });
+                const result = await communityListService.list({
+                    country: 'PT',
+                });
 
                 expect(result.count).to.be.equal(2);
                 (expect(result.rows).to as any).containSubset([
@@ -531,6 +558,13 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnCommunityEntities.returns(
+                    communities.map((el) => ({
+                        id: el.contractAddress,
+                        beneficiaries: 0,
+                    }))
+                );
+
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
                         id: community.contractAddress!,
@@ -538,7 +572,7 @@ describe('community service', () => {
                     }))
                 );
 
-                const result = await CommunityService.list({
+                const result = await communityListService.list({
                     country: 'PT;ES;FR',
                 });
 
@@ -597,6 +631,13 @@ describe('community service', () => {
                 );
             }
 
+            returnCommunityEntities.returns(
+                communities.map((el) => ({
+                    id: el.contractAddress,
+                    beneficiaries: 1,
+                }))
+            );
+
             returnClaimedSubgraph.returns(claimed);
 
             //
@@ -604,7 +645,7 @@ describe('community service', () => {
             const result: any[] = [];
 
             for (let index = 0; index < totalCommunities / 5; index++) {
-                const r = await CommunityService.list({
+                const r = await communityListService.list({
                     offset: (index * 5).toString(),
                     limit: '5',
                 });
@@ -654,10 +695,17 @@ describe('community service', () => {
                 );
             }
 
+            returnCommunityEntities.returns(
+                communities.map((el) => ({
+                    id: el.contractAddress,
+                    beneficiaries: 1,
+                }))
+            );
+
             returnClaimedSubgraph.returns(claimed);
 
             //
-            const r = await CommunityService.list({
+            const r = await communityListService.list({
                 offset: '0',
                 limit: '5',
             });
@@ -734,7 +782,34 @@ describe('community service', () => {
                     );
                 }
 
-                const result = await CommunityService.list({});
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[1].contractAddress,
+                        beneficiaries: 4,
+                    },
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 3,
+                    },
+                ]);
+                communities.forEach((el) => {
+                    returnCommunityStateSubgraph
+                        .withArgs(el.contractAddress)
+                        .returns({
+                            claims: 0,
+                            claimed: '0',
+                            beneficiaries:
+                                el.requestByAddress === users[0].address
+                                    ? 3
+                                    : 4,
+                            removedBeneficiaries: 0,
+                            contributed: '0',
+                            contributors: 0,
+                            managers: 0,
+                        });
+                });
+
+                const result = await communityListService.list({});
 
                 expect(result.rows[0]).to.include({
                     id: communities[1].id,
@@ -797,7 +872,7 @@ describe('community service', () => {
                     }))
                 );
 
-                const result = await CommunityService.list({
+                const result = await communityListService.list({
                     orderBy: 'nearest',
                     lat: '-23.4378873',
                     lng: '-46.4841214',
@@ -886,7 +961,39 @@ describe('community service', () => {
                     );
                 }
 
-                const result = await CommunityService.list({
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[1].contractAddress,
+                        beneficiaries: 5,
+                    },
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 4,
+                    },
+                    {
+                        id: communities[2].contractAddress,
+                        beneficiaries: 4,
+                    },
+                ]);
+
+                communities.forEach((el) => {
+                    returnCommunityStateSubgraph
+                        .withArgs(el.contractAddress)
+                        .returns({
+                            claims: 0,
+                            claimed: '0',
+                            beneficiaries:
+                                el.requestByAddress === users[1].address
+                                    ? 5
+                                    : 4,
+                            removedBeneficiaries: 0,
+                            contributed: '0',
+                            contributors: 0,
+                            managers: 0,
+                        });
+                });
+
+                const result = await communityListService.list({
                     orderBy: 'nearest:ASC;bigger:DESC',
                     lat: '-15.8697203',
                     lng: '-47.9207824',
@@ -987,7 +1094,22 @@ describe('community service', () => {
                     );
                 }
 
-                const result = await CommunityService.list({
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[2].contractAddress,
+                        beneficiaries: 3,
+                    },
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 4,
+                    },
+                    {
+                        id: communities[1].contractAddress,
+                        beneficiaries: 4,
+                    },
+                ]);
+
+                const result = await communityListService.list({
                     orderBy: 'bigger:ASC;nearest:DESC',
                     lat: '-15.8697203',
                     lng: '-47.9207824',
@@ -1049,12 +1171,20 @@ describe('community service', () => {
                     },
                 ]);
 
-                const result = await CommunityService.list({
-                    fields: 'id;publicId;contract.maxClaim;contract.claimAmount',
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 0,
+                    },
+                ]);
+
+                const result = await communityListService.list({
+                    fields: 'id;contractAddress;publicId;contract.maxClaim;contract.claimAmount',
                 });
 
                 expect(result.rows[0]).to.have.deep.keys([
                     'id',
+                    'contractAddress',
                     'publicId',
                     'contract',
                 ]);
@@ -1096,12 +1226,20 @@ describe('community service', () => {
                     },
                 ]);
 
-                const result = await CommunityService.list({
-                    fields: 'id;publicId;contract.maxClaim;proposal.*',
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 0,
+                    },
+                ]);
+
+                const result = await communityListService.list({
+                    fields: 'id;contractAddress;publicId;contract.maxClaim;proposal.*',
                 });
 
                 expect(result.rows[0]).to.have.deep.keys([
                     'id',
+                    'contractAddress',
                     'publicId',
                     'contract',
                     'proposal',
@@ -1146,7 +1284,14 @@ describe('community service', () => {
                     },
                 ]);
 
-                const result = await CommunityService.list({
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 0,
+                    },
+                ]);
+
+                const result = await communityListService.list({
                     fields: '*;contract.*',
                 });
 
@@ -1195,7 +1340,7 @@ describe('community service', () => {
                     contractAddress: communities[0].contractAddress,
                     country: communities[0].country,
                     coverImage: communities[0].coverImage,
-                    coverMediaPath: communities[0].coverMediaPath,
+                    coverMediaId: communities[0].coverMediaId,
                     currency: communities[0].currency,
                     description: communities[0].description,
                     descriptionEn: communities[0].descriptionEn,
@@ -1264,7 +1409,14 @@ describe('community service', () => {
                     }
                 );
 
-                const result = await CommunityService.list({
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 0,
+                    },
+                ]);
+
+                const result = await communityListService.list({
                     fields: 'id;publicId;contractAddress;contract.*;cover.*',
                 });
 
@@ -1395,8 +1547,14 @@ describe('community service', () => {
 
                 returnProposalsSubgraph.returns([data]);
                 returnClaimedSubgraph.returns([]);
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[1].contractAddress,
+                        beneficiaries: 0,
+                    },
+                ]);
 
-                const result = await CommunityService.list({
+                const result = await communityListService.list({
                     status: 'pending',
                 });
 
@@ -1448,865 +1606,23 @@ describe('community service', () => {
 
                 returnProposalsSubgraph.returns([]);
                 returnClaimedSubgraph.returns([]);
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        beneficiaries: 0,
+                    },
+                    {
+                        id: communities[1].contractAddress,
+                        beneficiaries: 0,
+                    },
+                ]);
 
-                const pending = await CommunityService.list({
+                const pending = await communityListService.list({
                     status: 'pending',
                 });
 
                 expect(pending.count).to.be.equal(2);
             });
-        });
-    });
-
-    describe('campaign', () => {
-        let communityId: number;
-        before(async () => {
-            const communities = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-            communityId = communities[0].id;
-        });
-
-        after(async () => {
-            await truncate(sequelize, 'Community');
-            await truncate(sequelize);
-        });
-
-        it('community without campaign', async () => {
-            const result = await CommunityService.getCampaign(communityId);
-            // eslint-disable-next-line no-unused-expressions
-            expect(result).to.be.null;
-        });
-
-        it('community with campaign', async () => {
-            const campaignUrl = faker.internet.url();
-            await sequelize.models.UbiCommunityCampaignModel.create({
-                communityId,
-                campaignUrl,
-            });
-
-            const result = await CommunityService.getCampaign(communityId);
-            // eslint-disable-next-line no-unused-expressions
-            expect(result).to.not.be.null;
-            expect(result).to.include({
-                communityId,
-                campaignUrl,
-            });
-        });
-    });
-
-    describe('count', () => {
-        describe('by country', () => {
-            afterEach(async () => {
-                await truncate(sequelize, 'Community');
-            });
-
-            it('full name', async () => {
-                await CommunityFactory([
-                    {
-                        requestByAddress: users[0].address,
-                        started: new Date(),
-                        status: 'valid',
-                        visibility: 'public',
-                        contract: {
-                            baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
-                            communityId: 0,
-                            incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
-                        },
-                        hasAddress: true,
-                        country: 'PT',
-                    },
-                    {
-                        requestByAddress: users[1].address,
-                        started: new Date(),
-                        status: 'valid',
-                        visibility: 'public',
-                        contract: {
-                            baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
-                            communityId: 0,
-                            incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
-                        },
-                        hasAddress: true,
-                        country: 'PT',
-                    },
-                    {
-                        requestByAddress: users[2].address,
-                        started: new Date(),
-                        status: 'valid',
-                        visibility: 'public',
-                        contract: {
-                            baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
-                            communityId: 0,
-                            incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
-                        },
-                        hasAddress: true,
-                        country: 'ES',
-                    },
-                ]);
-
-                const result = await CommunityService.count('country');
-
-                (expect(result).to as any).containSubset([
-                    {
-                        country: 'PT',
-                        count: '2',
-                    },
-                    {
-                        country: 'ES',
-                        count: '1',
-                    },
-                ]);
-            });
-        });
-    });
-
-    describe('edit', () => {
-        afterEach(async () => {
-            await truncate(sequelize, 'Manager');
-            await truncate(sequelize);
-        });
-
-        it('without media', async () => {
-            const communities = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const communityNewDescription =
-                'bla bla bla, this community to the moon!';
-            const updatedCommunity = await CommunityService.edit(
-                communities[0].id,
-                {
-                    currency: communities[0].currency,
-                    description: communityNewDescription,
-                    name: communities[0].name,
-                    coverMediaPath: "cover/image.jpg",
-                }
-            );
-
-            expect(updatedCommunity.description).to.be.equal(
-                communityNewDescription
-            );
-
-            assert.callCount(communityContentStorageDelete, 0);
-            expect(updatedCommunity.coverMediaPath).to.be.equal(
-                communities[0].coverMediaPath
-            );
-        });
-
-        it('with media', async () => {
-            const communities = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const communityNewDescription =
-                'bla bla bla, this community to the moon!';
-            const updatedCommunity = await CommunityService.edit(
-                communities[0].id,
-                {
-                    currency: communities[0].currency,
-                    description: communityNewDescription,
-                    name: communities[0].name,
-                    coverMediaPath: "cover/image2.jpg",
-                }
-            );
-
-            expect(updatedCommunity.description).to.be.equal(
-                communityNewDescription
-            );
-
-            expect(updatedCommunity.coverMediaPath).to.not.be.equal(
-                communities[0].coverMediaPath
-            );
-        });
-
-        it('update email', async () => {
-            const manager = await UserFactory({ n: 1 });
-
-            const communities = await CommunityFactory([
-                {
-                    requestByAddress: manager[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            await ManagerFactory([manager[0]], communities[0].id);
-
-            const communityNewDescription =
-                'bla bla bla, this community to the moon!';
-            const updatedCommunity = await CommunityService.edit(
-                communities[0].id,
-                {
-                    currency: communities[0].currency,
-                    description: communityNewDescription,
-                    name: communities[0].name,
-                    coverMediaPath: "cover/image.jpg",
-                    email: 'test@gmail.com',
-                },
-                manager[0].address
-            );
-
-            expect(updatedCommunity.description).to.be.equal(
-                communityNewDescription
-            );
-            expect(updatedCommunity.coverMediaPath).to.be.equal('cover/image.jpg');
-            expect(updatedCommunity.email).to.be.equal('test@gmail.com');
-        });
-    });
-
-    describe('edit pending community', () => {
-        afterEach(async () => {
-            await truncate(sequelize, 'Manager');
-            await truncate(sequelize);
-        });
-
-        it('edit community without media and contract', async () => {
-            const manager = await UserFactory({ n: 1 });
-
-            await CommunityFactory([
-                {
-                    requestByAddress: manager[0].address,
-                    started: new Date(),
-                    status: 'pending',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const result = await CommunityService.editSubmission({
-                requestByAddress: manager[0].address,
-                name: 'new name',
-                description: 'new description',
-                language: 'pt',
-                currency: 'USD',
-                city: 'São Paulo',
-                country: 'Brasil',
-                gps: {
-                    latitude: 10,
-                    longitude: 10,
-                },
-                email: 'test@email.com',
-            });
-
-            expect(result).to.include({
-                name: 'new name',
-                description: 'new description',
-                language: 'pt',
-                currency: 'USD',
-                city: 'São Paulo',
-                country: 'Brasil',
-            });
-        });
-
-        it('should return error when a community is not pending', async () => {
-            const manager = await UserFactory({ n: 1 });
-
-            await CommunityFactory([
-                {
-                    requestByAddress: manager[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            CommunityService.editSubmission({
-                requestByAddress: manager[0].address,
-                name: 'new name',
-                description: 'new description',
-                language: 'pt',
-                currency: 'USD',
-                city: 'São Paulo',
-                country: 'Brasil',
-                gps: {
-                    latitude: 10,
-                    longitude: 10,
-                },
-                email: 'test@email.com',
-            })
-                .catch((e) => expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND'))
-                .then(() => {
-                    throw new Error(
-                        "'fails to welcome not existing account' expected to fail"
-                    );
-                });
-        });
-
-        it('edit community and contract', async () => {
-            const manager = await UserFactory({ n: 1 });
-
-            await CommunityFactory([
-                {
-                    requestByAddress: manager[0].address,
-                    started: new Date(),
-                    status: 'pending',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const result = await CommunityService.editSubmission({
-                requestByAddress: manager[0].address,
-                name: 'new name',
-                description: 'new description',
-                language: 'pt',
-                currency: 'USD',
-                city: 'São Paulo',
-                country: 'Brasil',
-                gps: {
-                    latitude: 10,
-                    longitude: 10,
-                },
-                email: 'test@email.com',
-                contractParams: {
-                    baseInterval: 60 * 60 * 24 * 7,
-                    claimAmount: '5000000000000000000',
-                    incrementInterval: 5 * 60 * 60,
-                    maxClaim: '500000000000000000000',
-                },
-            });
-
-            expect(result).to.include({
-                name: 'new name',
-                description: 'new description',
-                language: 'pt',
-                currency: 'USD',
-                city: 'São Paulo',
-                country: 'Brasil',
-            });
-            expect(result.contract).to.include({
-                baseInterval: 60 * 60 * 24 * 7,
-                claimAmount: '5000000000000000000',
-                incrementInterval: 5 * 60 * 60,
-                maxClaim: '500000000000000000000',
-            });
-        });
-
-        it('edit community and cover media', async () => {
-            const manager = await UserFactory({ n: 1 });
-
-            await CommunityFactory([
-                {
-                    requestByAddress: manager[0].address,
-                    started: new Date(),
-                    status: 'pending',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const result = await CommunityService.editSubmission({
-                requestByAddress: manager[0].address,
-                name: 'new name',
-                description: 'new description',
-                language: 'pt',
-                currency: 'USD',
-                city: 'São Paulo',
-                country: 'Brasil',
-                gps: {
-                    latitude: 10,
-                    longitude: 10,
-                },
-                email: 'test@email.com',
-                coverMediaPath: 'cover/image2.jpg',
-            });
-
-            expect(result).to.include({
-                name: 'new name',
-                description: 'new description',
-                language: 'pt',
-                currency: 'USD',
-                city: 'São Paulo',
-                country: 'Brasil',
-                coverMediaPath: 'cover/image2.jpg',
-            });
-        });
-    });
-
-    describe('promoter', () => {
-        afterEach(async () => {
-            await truncate(sequelize, 'UbiPromoterModel');
-            await truncate(sequelize);
-        });
-
-        it('get promoter', async () => {
-            const communities = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const createdMedia =
-                await sequelize.models.AppMediaContentModel.create({
-                    url: faker.image.imageUrl(),
-                    width: 0,
-                    height: 0,
-                });
-
-            const name = faker.company.companyName();
-            const description = faker.lorem.sentence();
-            const media = createdMedia.toJSON() as AppMediaContent;
-            const createdPromoter =
-                await sequelize.models.UbiPromoterModel.create({
-                    category: 'organization',
-                    name,
-                    description,
-                    logoMediaId: media.id, // on purpose
-                });
-
-            const promoter = createdPromoter.toJSON() as UbiPromoter;
-            await sequelize.models.UbiCommunityPromoterModel.create({
-                promoterId: promoter.id,
-                communityId: communities[0].id,
-            });
-            const result: UbiPromoter | null =
-                await CommunityService.getPromoter(communities[0].id);
-            // eslint-disable-next-line no-unused-expressions
-            expect(result).to.not.be.null;
-            expect(result!.name).to.be.equal(name);
-            expect(result!.description).to.be.equal(description);
-        });
-    });
-
-    describe('find', () => {
-        afterEach(async () => {
-            await truncate(sequelize, 'Manager');
-            await truncate(sequelize);
-        });
-
-        it('find by id - manager request', async () => {
-            const manager = await UserFactory({ n: 1 });
-
-            const communities = await CommunityFactory([
-                {
-                    requestByAddress: manager[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            await ManagerFactory([manager[0]], communities[0].id);
-
-            const result = await CommunityService.findById(
-                communities[0].id,
-                manager[0].address
-            );
-
-            expect(result.publicId).to.be.equal(communities[0].publicId);
-            expect(result.email).to.be.equal(communities[0].email);
-        });
-
-        it('find by id - common user request', async () => {
-            const manager = await UserFactory({ n: 1 });
-
-            const communities = await CommunityFactory([
-                {
-                    requestByAddress: manager[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            await ManagerFactory([manager[0]], communities[0].id);
-
-            const result = await CommunityService.findById(communities[0].id);
-
-            expect(result.publicId).to.be.equal(communities[0].publicId);
-            expect(result.email).to.be.equal('');
-        });
-
-        it('find by Contract Address - manager request', async () => {
-            const manager = await UserFactory({ n: 1 });
-
-            const communities = await CommunityFactory([
-                {
-                    requestByAddress: manager[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            await ManagerFactory([manager[0]], communities[0].id);
-
-            const result = await CommunityService.findByContractAddress(
-                communities[0].contractAddress!,
-                manager[0].address
-            );
-
-            expect(result.publicId).to.be.equal(communities[0].publicId);
-            expect(result.email).to.be.equal(communities[0].email);
-        });
-
-        it('find by Contract Address - common user request', async () => {
-            const manager = await UserFactory({ n: 1 });
-
-            const communities = await CommunityFactory([
-                {
-                    requestByAddress: manager[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            await ManagerFactory([manager[0]], communities[0].id);
-
-            const result = await CommunityService.findByContractAddress(
-                communities[0].contractAddress!
-            );
-
-            expect(result.publicId).to.be.equal(communities[0].publicId);
-            expect(result.email).to.be.equal('');
-        });
-    });
-
-    describe('get manager', () => {
-        afterEach(async () => {
-            await truncate(sequelize, 'Manager');
-            await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize, 'Community');
-            await truncate(sequelize);
-        });
-
-        it('should return a list of added beneficiaries by current managers', async () => {
-            const users = await UserFactory({ n: 4 });
-            const community = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const tx = randomTx();
-            const tx2 = randomTx();
-
-            await ManagerFactory(users.slice(0, 2), community[0].id);
-            await Promise.all([
-                BeneficiaryService.add(
-                    users[2].address,
-                    users[0].address,
-                    community[0].id,
-                    tx,
-                    new Date()
-                ),
-                BeneficiaryService.add(
-                    users[3].address,
-                    users[0].address,
-                    community[0].id,
-                    tx2,
-                    new Date()
-                ),
-            ]);
-
-            const managers = await CommunityService.getManagers(
-                community[0].id
-            );
-
-            managers.forEach((manager) => {
-                if (manager.address === users[0].address) {
-                    expect(manager.added).to.be.equal(2);
-                } else {
-                    expect(manager.added).to.be.equal(0);
-                }
-            });
-        });
-
-        it('should return a list of added beneficiaries by previous managers (existing accounts but not managers)', async () => {
-            const users = await UserFactory({ n: 4 });
-            const community = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const tx = randomTx();
-
-            await ManagerFactory(users.slice(0, 2), community[0].id);
-            await BeneficiaryService.add(
-                users[2].address,
-                users[0].address,
-                community[0].id,
-                tx,
-                new Date()
-            );
-
-            await ManagerService.remove(users[0].address, community[0].id);
-
-            returnGetCommunityManagersSubgraph.returns(
-                Promise.resolve([
-                    {
-                        address: users[0].address,
-                        state: 1,
-                        added: 1,
-                        removed: 0,
-                        since: 0,
-                    },
-                    {
-                        address: users[1].address,
-                        state: 0,
-                        added: 0,
-                        removed: 0,
-                        since: 0,
-                    },
-                ])
-            );
-
-            const managers = await CommunityService.getManagers(
-                community[0].id,
-                false
-            );
-
-            expect(managers[0].added).to.be.equal(1);
-            // eslint-disable-next-line no-unused-expressions
-            expect(managers[0].isDeleted).to.be.false;
-        });
-
-        it('should return a manager from a pending community', async () => {
-            const users = await UserFactory({ n: 1 });
-            const community = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'pending',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const managers = await CommunityService.getManagers(
-                community[0].id
-            );
-
-            expect(managers[0].added).to.be.equal(0);
-            expect(managers[0].isDeleted).to.be.false;
-            expect(managers[0].user).to.exist;
-        });
-    });
-
-    describe('delete submission pending', () => {
-        afterEach(async () => {
-            await truncate(sequelize, 'Manager');
-            await truncate(sequelize, 'Beneficiary');
-            await truncate(sequelize, 'Community');
-            await truncate(sequelize);
-        });
-
-        it('should delete a community submission if pending', async () => {
-            const users = await UserFactory({ n: 1 });
-            const community = await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'pending',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            const result = await CommunityService.deleteSubmission(
-                users[0].address
-            );
-            CommunityService.findById(community[0].id)
-                .catch((e) => {
-                    // eslint-disable-next-line no-unused-expressions
-                    expect(result).to.be.true;
-                    expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND');
-                })
-                .then(() => {
-                    throw new Error('expected to fail');
-                });
-        });
-
-        it('should return an error when the user does not have a pending submission', async () => {
-            const users = await UserFactory({ n: 2 });
-            await CommunityFactory([
-                {
-                    requestByAddress: users[0].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                },
-            ]);
-
-            CommunityService.deleteSubmission(users[0].address)
-                .catch((e) => {
-                    expect(e.name).to.be.equal('SUBMISSION_NOT_FOUND');
-                })
-                .then(() => {
-                    throw new Error('expected to fail');
-                });
         });
     });
 });

@@ -36,6 +36,7 @@ export const getBeneficiaries = async (
             `;
             const queryResult = await client.query({
                 query,
+                fetchPolicy: 'no-cache',
             });
 
             result.push(...queryResult.data.beneficiaryEntities);

@@ -295,7 +295,7 @@ export default (app: Router): void => {
      *                type: string
      *                required: true
      *              coverMediaId:
-     *                type: number
+     *                type: integer
      *                required: true
      *              txReceipt:
      *                type: object
@@ -1005,7 +1005,7 @@ export default (app: Router): void => {
      *                type: string
      *                required: false
      *              coverMediaId:
-     *                type: number
+     *                type: integer
      *                required: true
      *     responses:
      *       "200":
@@ -1062,7 +1062,7 @@ export default (app: Router): void => {
      *                 type: string
      *                 required: true
      *               coverMediaId:
-     *                 type: number
+     *                 type: integer
      *                 required: true
      *               gps:
      *                 type: object

@@ -1,4 +1,4 @@
-import { services } from '@impactmarket/core';
+import { config, services, database } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
 import { RequestWithUser } from '../middlewares/core';
@@ -239,7 +239,7 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    create = (req: Request, res: Response) => {
+    create = async (req: Request, res: Response) => {
         const {
             requestByAddress, // the address making the request (will be community manager)
             name,
@@ -256,6 +256,20 @@ class CommunityController {
             contractParams,
         } = req.body;
 
+        let coverMediaPath: string | undefined = undefined;
+        if (coverMediaId) {
+            const appMedia = await database.models.appMediaContent.findOne({
+                attributes: ['url'],
+                where: {
+                    id: coverMediaId,
+                },
+            });
+            coverMediaPath = appMedia!.url.replace(
+                `${config.cloudfrontUrl}/`,
+                ''
+            );
+        }
+
         services.ubi.CommunityService.create({
             requestByAddress,
             name,
@@ -269,13 +283,13 @@ class CommunityController {
             email,
             txReceipt,
             contractParams,
-            coverMediaId,
+            coverMediaPath,
         })
             .then((community) => standardResponse(res, 201, true, community))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    edit = (req: RequestWithUser, res: Response) => {
+    edit = async (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
                 error: {
@@ -286,6 +300,22 @@ class CommunityController {
             return;
         }
         const { name, description, currency, coverMediaId, email } = req.body;
+
+        let coverMediaPath: string | undefined = undefined;
+        if (coverMediaId) {
+            const appMedia = await database.models.appMediaContent.findOne({
+                attributes: ['url'],
+                where: {
+                    id: coverMediaId,
+                },
+            });
+
+            coverMediaPath = appMedia!.url.replace(
+                `${config.cloudfrontUrl}/`,
+                ''
+            );
+        }
+
         // verify if the current user is manager in this community
         services.ubi.ManagerService.get(req.user.address)
             .then(async (manager) => {
@@ -296,10 +326,12 @@ class CommunityController {
                             name,
                             description,
                             currency,
-                            coverMediaId,
+                            // should be temporary
+                            coverMediaPath: coverMediaPath as any,
                             email,
                         },
-                        req.user?.address
+                        req.user?.address,
+                        req.user?.userId,
                     )
                         .then((community) =>
                             standardResponse(res, 200, true, community)
@@ -392,7 +424,7 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    editSubmission = (req: RequestWithUser, res: Response) => {
+    editSubmission = async (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
                 error: {
@@ -416,6 +448,21 @@ class CommunityController {
             contractParams,
         } = req.body;
 
+        let coverMediaPath: string | undefined = undefined;
+        if (coverMediaId) {
+            const appMedia = await database.models.appMediaContent.findOne({
+                attributes: ['url'],
+                where: {
+                    id: coverMediaId,
+                },
+            });
+
+            coverMediaPath = appMedia!.url.replace(
+                `${config.cloudfrontUrl}/`,
+                ''
+            );
+        }
+
         services.ubi.CommunityService.editSubmission({
             requestByAddress: req.user.address,
             name,
@@ -427,7 +474,7 @@ class CommunityController {
             gps,
             email,
             contractParams,
-            coverMediaId: parseInt(coverMediaId, 10),
+            coverMediaPath,
         })
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));

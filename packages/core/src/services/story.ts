@@ -48,10 +48,10 @@ export default class StoryService {
         fromAddress: string,
         story: IAddStory
     ): Promise<ICommunityStory> {
-        let storyContentToAdd: { mediaMediaId?: number; message?: string } = {};
-        if (story.mediaId) {
+        let storyContentToAdd: { storyMediaPath?: string; message?: string } = {};
+        if (story.storyMediaPath) {
             storyContentToAdd = {
-                mediaMediaId: story.mediaId,
+                storyMediaPath: story.storyMediaPath,
             };
         }
         let storyCommunityToAdd: {
@@ -104,24 +104,6 @@ export default class StoryService {
             }
         );
         const newStory = created.toJSON() as StoryContent;
-        if (story.mediaId) {
-            const media = await this.appMediaContent.findOne({
-                where: { id: story.mediaId },
-                include: [
-                    {
-                        model: this.appMediaThumbnail,
-                        as: 'thumbnails',
-                    },
-                ],
-            });
-            return {
-                ...newStory,
-                media: media!.toJSON() as AppMediaContent,
-                loves: 0,
-                userLoved: false,
-                userReported: false,
-            };
-        }
         return { ...newStory, loves: 0, userLoved: false, userReported: false };
     }
 
@@ -330,7 +312,7 @@ export default class StoryService {
                         {
                             model: this.community,
                             as: 'community',
-                            attributes: ['id', 'name'],
+                            attributes: ['id', 'name', 'coverMediaPath'],
                             include: [
                                 {
                                     model: this.appMediaContent,
@@ -386,9 +368,11 @@ export default class StoryService {
                 id: content.storyCommunity!.communityId,
                 name: content.storyCommunity!.community!.name,
                 cover: content.storyCommunity!.community!.cover!,
+                coverMediaPath: content.storyCommunity!.community!.coverMediaPath!,
                 story: {
                     id: content.id,
                     media: content.media,
+                    storyMediaPath: content.storyMediaPath,
                     message: content.message,
                 },
             };

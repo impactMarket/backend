@@ -18,7 +18,6 @@ import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import { models, sequelize } from '../../database';
 import { Community } from '../../database/models/ubi/community';
-import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { AppUser } from '../../interfaces/app/appUser';
 import {
     CommunityAttributes,
@@ -51,6 +50,8 @@ import {
 import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
 import ManagerService from './managers';
+import UserLogService from '../app/user/log';
+import { LogTypes } from '../../interfaces/app/appLog';
 
 export default class CommunityService {
     public static community = models.community;
@@ -76,6 +77,7 @@ export default class CommunityService {
 
     private static communityContentStorage = new CommunityContentStorage();
     private static promoterContentStorage = new PromoterContentStorage();
+    private static userLogService = new UserLogService();
 
     public static async create({
         requestByAddress,
@@ -90,7 +92,7 @@ export default class CommunityService {
         email,
         txReceipt,
         contractParams,
-        coverMediaId,
+        coverMediaPath,
     }: ICommunityCreationAttributes): Promise<Community> {
         let managerAddress: string = '';
         let createObject: ICommunityCreationAttributes = {
@@ -103,23 +105,11 @@ export default class CommunityService {
             country,
             gps,
             email,
-            // coverMediaId,
-            // coverImage: media!.url,
+            coverMediaPath,
             visibility: 'public', // will be changed if private
             status: 'pending', // will be changed if private
             started: new Date(),
         };
-
-        if (coverMediaId) {
-            const media = await this.appMediaContent.findOne({
-                where: { id: coverMediaId },
-            });
-            createObject = {
-                ...createObject,
-                coverMediaId,
-                coverImage: media!.url,
-            };
-        }
 
         // if it was submitted as private, validate the transaction first.
         if (txReceipt !== undefined) {
@@ -201,35 +191,31 @@ export default class CommunityService {
             name: string;
             description: string;
             currency: string;
-            coverMediaId: number;
+            coverMediaPath: string;
             email?: string;
         },
-        userAddress?: string
+        userAddress?: string,
+        userId?: number,
     ): Promise<CommunityAttributes> {
-        const community = await this.community.findOne({
-            attributes: ['coverMediaId'],
-            where: { id },
-        });
-        if (community === null) {
-            throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found!');
-        }
         // since cover can't be null, we first update and then remove
-        const { name, description, currency, coverMediaId, email } = params;
+        const { name, description, currency, coverMediaPath, email } = params;
         const update = await this.community.update(
-            { name, description, currency, email },
+            { name, description, currency, email, coverMediaPath },
             { where: { id } }
         );
-        if (coverMediaId !== -1 && community.coverMediaId !== coverMediaId) {
-            // image has been replaced
-            // delete previous one! new one was already uploaded, will be updated below
-            await this.communityContentStorage.deleteContent(
-                community.coverMediaId!
-            );
-            await this.community.update({ coverMediaId }, { where: { id } });
-        }
         if (update[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'community was not updated!');
         }
+
+        if (userId) {
+            this.userLogService.create(
+                userId,
+                LogTypes.EDITED_COMMUNITY,
+                params,
+                id,
+            );
+        }
+
         return this._findCommunityBy({ id }, userAddress);
     }
 
@@ -786,7 +772,7 @@ export default class CommunityService {
 
     public static async findByContractAddress(
         contractAddress: string,
-        userAddress?: string
+        userAddress?: string,
     ): Promise<CommunityAttributes> {
         return this._findCommunityBy({ contractAddress }, userAddress);
     }
@@ -1077,6 +1063,87 @@ export default class CommunityService {
             claimed: toToken(state.claimed),
             raised: toToken(state.contributed),
             backers: state.contributors,
+            communityId,
+        };
+    }
+
+    public static async getStatePrivate(communityId: number) {
+        const community = await this.community.findOne({
+            attributes: ['contractAddress', 'publicId'],
+            where: {
+                id: communityId,
+            },
+        });
+
+        const communityBackers = await models.inflow.count({
+            distinct: true,
+            col: 'from',
+            where: {
+                contractAddress: community?.contractAddress,
+            },
+        });
+
+        const communityClaimActivity = (
+            await this.ubiClaim.findAll({
+                attributes: [
+                    [fn('coalesce', fn('sum', col('amount')), '0'), 'claimed'],
+                    [fn('coalesce', fn('count', col('amount')), '0'), 'claims'],
+                ],
+                where: {
+                    communityId,
+                },
+                raw: true,
+            })
+        )[0];
+
+        const communityInflowActivity = (
+            await models.inflow.findAll({
+                attributes: [
+                    [fn('sum', fn('coalesce', col('amount'), 0)), 'amount'],
+                ],
+                where: {
+                    contractAddress: community?.contractAddress,
+                },
+            })
+        )[0];
+
+        const communityBeneficiaryActivity = (await this.beneficiary.findAll({
+            attributes: [[fn('COUNT', col('address')), 'count'], 'active'],
+            where: {
+                communityId,
+            },
+            group: ['active'],
+            raw: true,
+        })) as any;
+
+        const communityManagerActivity = await this.manager.count({
+            where: {
+                communityId,
+                active: true,
+            },
+        });
+
+        const beneficiaries: { count: string; active: boolean } =
+            communityBeneficiaryActivity.find((el: any) => el.active);
+        const removedBeneficiaries: { count: string; active: boolean } =
+            communityBeneficiaryActivity.find((el: any) => !el.active);
+
+        return {
+            claims: communityClaimActivity
+                ? Number((communityClaimActivity as any).claims)
+                : 0,
+            claimed: communityClaimActivity
+                ? (communityClaimActivity as any).claimed
+                : '0',
+            raised: communityInflowActivity.amount
+                ? communityInflowActivity.amount
+                : '0',
+            beneficiaries: beneficiaries ? Number(beneficiaries.count) : 0,
+            removedBeneficiaries: removedBeneficiaries
+                ? Number(removedBeneficiaries.count)
+                : 0,
+            managers: communityManagerActivity,
+            backers: communityBackers,
             communityId,
         };
     }
@@ -1900,7 +1967,7 @@ export default class CommunityService {
                 gps,
                 email,
                 contractParams,
-                coverMediaId,
+                coverMediaPath,
             } = params;
 
             await this.community.update(
@@ -1913,6 +1980,7 @@ export default class CommunityService {
                     country,
                     gps,
                     email,
+                    coverMediaPath,
                 },
                 {
                     where: {
@@ -1922,26 +1990,6 @@ export default class CommunityService {
                 }
             );
 
-            if (
-                !!coverMediaId &&
-                coverMediaId !== -1 &&
-                community.coverMediaId !== coverMediaId
-            ) {
-                await this.communityContentStorage.deleteContent(
-                    community.coverMediaId!
-                );
-                await this.community.update(
-                    {
-                        coverMediaId,
-                    },
-                    {
-                        where: {
-                            id: community.id,
-                        },
-                        transaction: t,
-                    }
-                );
-            }
 
             if (contractParams) {
                 await CommunityContractService.update(
@@ -2017,8 +2065,34 @@ export default class CommunityService {
             );
         }
         const suspect = await this.getSuspect(community.id);
-        const contract = (await this.getContract(community.id))!;
-        const state = (await this.getState(community.id))!;
+        let contract = {
+            communityId: community.id,
+            maxClaim: '1',
+            claimAmount: '1',
+            baseInterval: 1,
+            incrementInterval: 1,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+        let state = {
+            claimed: '1',
+            raised: '1',
+            backers: 1,
+            communityId: community.id,
+            claims: 1,
+            beneficiaries: 1,
+            removedBeneficiaries: 1,
+            contributed: '1',
+            contributors: 1,
+            managers: 1,
+        };
+        if (community.visibility === 'public') {
+            contract = (await this.getContract(community.id))!;
+            state = (await this.getState(community.id))!;
+        } else if (community.visibility === 'private') {
+            contract = (await this.getContract(community.id))!;
+            state = (await this.getStatePrivate(community.id))! as any;
+        }
         const metrics = await this.getMetrics(community.id);
 
         let showEmail = false;

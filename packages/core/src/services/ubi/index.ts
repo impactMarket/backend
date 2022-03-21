@@ -3,6 +3,7 @@ import ClaimService from './claim';
 import ClaimLocationService from './claimLocation';
 import CommunityService from './community';
 import { CommunityDetailsService } from './community/details';
+import { CommunityListService } from './community/list';
 import CommunityContractService from './communityContract';
 import CommunityDailyMetricsService from './communityDailyMetrics';
 import CommunityDemographicsService from './communityDemographics';
@@ -20,4 +21,5 @@ export {
     ManagerService,
     CommunityDemographicsService,
     CommunityDetailsService,
+    CommunityListService,
 };

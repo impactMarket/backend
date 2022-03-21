@@ -1,11 +1,55 @@
 import { utils } from 'ethers';
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 
 import { models } from '../../../database';
 import { AppUser } from '../../../interfaces/app/appUser';
-import { getCommunityManagers } from '../../../subgraph/queries/community';
+import { CommunityAttributes } from '../../../interfaces/ubi/community';
+import {
+    getCommunityManagers,
+    getCommunityState,
+    getCommunityUBIParams,
+} from '../../../subgraph/queries/community';
+import { BaseError } from '../../../utils/baseError';
 
 export class CommunityDetailsService {
+    public async getState(communityId: number) {
+        const community = await models.community.findOne({
+            attributes: ['contractAddress'],
+            where: {
+                id: communityId,
+            },
+        });
+        if (!community || !community.contractAddress) {
+            return null;
+        }
+
+        const state = await getCommunityState(community.contractAddress);
+        return {
+            ...state,
+            communityId,
+        };
+    }
+
+    public async getUBIParams(communityId: number) {
+        const community = await models.community.findOne({
+            attributes: ['contractAddress'],
+            where: {
+                id: communityId,
+            },
+        });
+        if (!community || !community.contractAddress) {
+            return null;
+        }
+
+        const ubiParams = await getCommunityUBIParams(
+            community.contractAddress
+        );
+        return {
+            ...ubiParams,
+            communityId,
+        };
+    }
+
     /**
      * @swagger
      *  components:
@@ -105,5 +149,54 @@ export class CommunityDetailsService {
                 isDeleted: !users[m.address],
             }));
         }
+    }
+
+    public async findById(
+        id: number,
+        userAddress?: string
+    ): Promise<CommunityAttributes> {
+        return this._findCommunityBy({ id }, userAddress);
+    }
+
+    public async findByContractAddress(
+        contractAddress: string,
+        userAddress?: string
+    ): Promise<CommunityAttributes> {
+        return this._findCommunityBy({ contractAddress }, userAddress);
+    }
+
+    private async _findCommunityBy(
+        where: WhereOptions<CommunityAttributes>,
+        userAddress?: string
+    ): Promise<CommunityAttributes> {
+        const community = await models.community.findOne({
+            where,
+        });
+        if (community === null) {
+            throw new BaseError(
+                'COMMUNITY_NOT_FOUND',
+                'Not found community ' + where
+            );
+        }
+
+        let showEmail = false;
+        if (userAddress) {
+            const manager = await models.manager.findOne({
+                attributes: ['communityId'],
+                where: { address: userAddress, active: true },
+            });
+            if (manager !== null) {
+                showEmail = manager.communityId === community.id;
+            } else {
+                showEmail =
+                    community.status === 'pending' &&
+                    community.requestByAddress === userAddress;
+            }
+        }
+
+        return {
+            ...community.toJSON(),
+            email: showEmail ? community.email : '',
+        };
     }
 }

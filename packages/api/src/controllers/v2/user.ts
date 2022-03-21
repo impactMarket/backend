@@ -6,8 +6,11 @@ import { standardResponse } from '../../utils/api';
 
 class UserController {
     private userService: services.app.UserServiceV2;
+    private userLogService: services.app.UserLogService;
+
     constructor() {
         this.userService = new services.app.UserServiceV2();
+        this.userLogService = new services.app.UserLogService();
     }
 
     public create = (req: Request, res: Response) => {
@@ -125,6 +128,37 @@ class UserController {
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    public getLogs = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        const {
+            type,
+            entity
+        } = req.query;
+
+        if (type === undefined || entity === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'INVALID_QUERY',
+                    message: 'missing type or entity',
+                },
+            });
+            return;
+        }
+
+        this.userLogService.get(req.user.address, type as string, entity as string)
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));;
+    }
 }
 
 export default UserController;

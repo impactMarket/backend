@@ -117,9 +117,9 @@ export interface IUserAuth extends IUserHello {
 }
 
 export interface IAddStory {
-    byAddress: string;
+    byAddress?: string;
     communityId?: number;
-    mediaId?: number;
+    storyMediaPath?: string;
     message?: string;
 }
 

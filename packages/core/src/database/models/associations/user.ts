@@ -118,4 +118,10 @@ export function userAssociation(sequelize: Sequelize) {
             as: 'added',
         }
     );
+
+    sequelize.models.AppLogModel.belongsTo(sequelize.models.AppUserModel, {
+        foreignKey: 'userId',
+        targetKey: 'id',
+        as: 'user'
+    });
 }
