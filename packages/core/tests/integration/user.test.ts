@@ -873,7 +873,7 @@ describe('user service', () => {
                 name: communities[0].name,
                 description: communities[0].description,
                 currency: communities[0].currency,
-                coverMediaId: communities[0].coverMediaId,
+                // coverMediaId: communities[0].coverMediaId,
                 email: communities[0].email,
             });
             expect(logs[0].user).to.include({
