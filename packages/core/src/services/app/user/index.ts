@@ -79,6 +79,7 @@ export default class UserService {
                     {
                         model: models.appUserTrust,
                         as: 'trust',
+                        required: false,
                     },
                 ],
             }))!;
@@ -163,7 +164,7 @@ export default class UserService {
         this.userLogService.create(
             updated[1][0].id,
             LogTypes.EDITED_PROFILE,
-            user,
+            user
         );
 
         return updated[1][0];
