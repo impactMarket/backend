@@ -8,7 +8,7 @@ export default (app: Router): void => {
     const route = Router();
     const userController = new UserController();
 
-    app.use('/user', route);
+    app.use('/users', route);
 
     /**
      * @swagger
