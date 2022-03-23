@@ -68,14 +68,19 @@ export default class UserService {
             if (!exists) {
                 // create new user, including their phone number information
                 userFromRegistry = (
-                    await this.appUser.create(user, {
-                        include: [
-                            {
-                                model: this.appUserTrust,
-                                as: 'trust',
-                            },
-                        ],
-                    })
+                    await this.appUser.create(
+                        user,
+                        user.trust?.phone
+                            ? {
+                                  include: [
+                                      {
+                                          model: models.appUserTrust,
+                                          as: 'trust',
+                                      },
+                                  ],
+                              }
+                            : {}
+                    )
                 ).toJSON() as AppUser;
             } else {
                 if (user.pushNotificationToken) {
@@ -102,6 +107,7 @@ export default class UserService {
                         {
                             model: this.appUserTrust,
                             as: 'trust',
+                            required: false,
                         },
                     ],
                     where: { address: user.address },
@@ -540,7 +546,7 @@ export default class UserService {
         this.userLogService.create(
             updated[1][0].id,
             LogTypes.EDITED_PROFILE,
-            user,
+            user
         );
 
         return updated[1][0];

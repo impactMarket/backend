@@ -8,7 +8,7 @@ export default (app: Router): void => {
     const route = Router();
     const userController = new UserController();
 
-    app.use('/user', route);
+    app.use('/users', route);
 
     /**
      * @swagger
@@ -54,8 +54,8 @@ export default (app: Router): void => {
      *               children:
      *                 type: number
      *                 required: false
-     *               avatarMediaId:
-     *                 type: number
+     *               avatarMediaPath:
+     *                 type: string
      *                 required: false
      *     responses:
      *       "200":
@@ -125,8 +125,8 @@ export default (app: Router): void => {
      *                 type: number
      *                 nullable: true
      *                 required: false
-     *               avatarMediaId:
-     *                 type: number
+     *               avatarMediaPath:
+     *                 type: string
      *                 required: false
      *     responses:
      *       "200":
@@ -266,4 +266,34 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.get('/logs', authenticateToken, userController.getLogs);
+
+    /**
+     * @swagger
+     *
+     * /user/presigned/{mime}:
+     *   get:
+     *     tags:
+     *     - "user"
+     *     summary: "Get AWS presigned URL to upload media content"
+     *     parameters:
+     *       - in: path
+     *         name: mime
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: media mimetype
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/presigned/:mime',
+        authenticateToken,
+        userController.getPresignedUrlMedia
+    );
 };
