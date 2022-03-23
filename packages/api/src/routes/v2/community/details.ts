@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/details';
+import { authenticateToken } from '../../../middlewares';
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -35,4 +36,106 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/getManagersResponse'
      */
     route.get('/:id/managers/:query?', controller.getManagers);
+
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Find or list beneficiaries in manager's community
+     *     parameters:
+     *       - in: query
+     *         name: action
+     *         schema:
+     *           type: string
+     *           enum: [search, list]
+     *         required: false
+     *         description: search or list beneficiaries in a community (list by default)
+     *       - in: query
+     *         name: active
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: filter search/list by active/inactive/both (both by default)
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 5)
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/IListBeneficiary'
+     */
+     route.get(
+        '/beneficiaries/:query?',
+        authenticateToken,
+        controller.getBeneficiaries
+    );
+
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries/activity/{address}:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Get beneficiary activity
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: beneficiary address
+     *       - in: query
+     *         name: type
+     *         schema:
+     *           type: string
+     *           enum: [all, claim, transaction, registry]
+     *         required: false
+     *         description: activity type (all by default)
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 10)
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BeneficiaryActivities'
+     */
+    route.get(
+        '/beneficiaries/activity/:address/:query?',
+        authenticateToken,
+        controller.getBeneficiaryActivity
+    );
 };
