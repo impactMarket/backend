@@ -92,6 +92,18 @@ export interface AppUser {
     beneficiary?: BeneficiaryAttributes[];
     manager?: ManagerAttributes[];
 }
+export interface AppUserUpdate {
+    address: string;
+    avatarMediaPath?: string | null;
+    username?: string | null;
+    language?: string;
+    currency?: string;
+    pushNotificationToken?: string | null;
+    gender?: string;
+    year?: number | null;
+    children?: number | null;
+    email?: string;
+}
 
 export interface AppUserCreationAttributes {
     address: string;
