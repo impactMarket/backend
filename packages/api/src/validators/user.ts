@@ -61,7 +61,7 @@ const reportv1 = celebrate({
 const auth = celebrate({
     body: Joi.object({
         address: Joi.string().required(),
-        phone: Joi.string().required(),
+        phone: Joi.string().optional(),
         language: Joi.string().optional(),
         currency: Joi.string().optional(),
         pushNotificationToken: Joi.string().optional().allow(''),

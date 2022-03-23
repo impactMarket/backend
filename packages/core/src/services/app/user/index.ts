@@ -82,6 +82,7 @@ export default class UserService {
                     {
                         model: models.appUserTrust,
                         as: 'trust',
+                        required: false,
                     },
                 ],
             }))!;
