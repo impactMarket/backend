@@ -15,10 +15,6 @@ module.exports = {
         type: Sequelize.STRING(44),
         allowNull: false,
       },
-      clientSecret: {
-        type: Sequelize.STRING(256),
-        allowNull: false,
-      },
       status: {
         type: Sequelize.ENUM('active', 'inactive'),
         allowNull: false,

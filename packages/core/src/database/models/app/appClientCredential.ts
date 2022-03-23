@@ -12,7 +12,6 @@ export class AppClientCredentialModel extends Model<
     public id!: number;
     public name!: string;
     public clientId!: string;
-    public clientSecret!: string;
     public status!: 'active' | 'inactive';
     public roles!: string[] | null;
 
@@ -37,10 +36,6 @@ export function initializeAppClientCredential(
             },
             clientId: {
                 type: DataTypes.STRING(44),
-                allowNull: false,
-            },
-            clientSecret: {
-                type: DataTypes.STRING(256),
                 allowNull: false,
             },
             status: {

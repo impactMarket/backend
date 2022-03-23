@@ -2,7 +2,6 @@ export interface AppClientCredential {
     id: number;
     name: string;
     clientId: string;
-    clientSecret: string;
     status: 'active' | 'inactive';
     roles?: string[];
 
@@ -15,7 +14,6 @@ export interface AppClientCredentialCreationAttributes {
     id: number;
     name: string;
     clientId: string;
-    clientSecret: string;
     status: 'active' | 'inactive';
     roles?: string[];
 }

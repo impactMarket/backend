@@ -34,43 +34,44 @@ export function authenticateToken(
         }
 
         if (_user.clientId) {
-            // external token
+            // validate external token
             const credential =
                 await database.models.appClientCredential.findOne({
                     where: {
                         clientId: _user.clientId,
-                        clientSecret: token,
                         status: 'active',
                     },
                 });
             if (credential && credential.roles) {
+                let path = req.path.split('/')[1];
+                if (!path) {
+                    let baseUrl = req.baseUrl.split('/');
+                    path = baseUrl[baseUrl.length-1]
+                }
                 const authorization = checkRoles(
                     credential.roles,
-                    req.path,
+                    path,
                     req.method
                 );
                 if (!authorization) {
                     res.send(`User has no permition to ${req.path}`).status(
                         403
                     );
-                } else {
-                    next();
                 }
             } else {
                 res.sendStatus(403);
             }
-        } else {
-            const user = _user as UserInRequest;
-            req.user = user;
-            //
-            if (req.body !== undefined && req.body.address !== undefined) {
-                if (req.body.address !== user.address) {
-                    res.sendStatus(403);
-                    return;
-                }
-            }
-            next(); // pass the execution off to whatever request the client intended
         }
+        const user = _user as UserInRequest;
+        req.user = user;
+        //
+        if (req.body !== undefined && req.body.address !== undefined) {
+            if (req.body.address !== user.address) {
+                res.sendStatus(403);
+                return;
+            }
+        }
+        next(); // pass the execution off to whatever request the client intended
     });
 }
 
@@ -135,9 +136,8 @@ const checkRoles = (roles: string[], path: string, reqMethod: string) => {
             if (
                 method === '*' ||
                 (reqMethod === 'GET' && method === 'read') ||
-                (reqMethod === 'POST' && method === 'create') ||
-                (reqMethod === 'PUT' && method === 'update') ||
-                (reqMethod === 'DELETE' && method === 'delete')
+                (reqMethod === 'DELETE' && method === 'delete') ||
+                ((reqMethod === 'POST' || reqMethod === 'PUT' || reqMethod === 'PATCH') && method === 'write')
             ) {
                 authorizate = true;
                 break;

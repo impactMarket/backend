@@ -26,6 +26,7 @@ class UserController {
             avatarMediaId,
             overwrite,
             recover,
+            clientId,
         } = req.body;
         this.userService
             .create(
@@ -43,7 +44,8 @@ class UserController {
                     },
                 },
                 overwrite,
-                recover
+                recover,
+                clientId,
             )
             .then((user) => standardResponse(res, 201, true, user))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));

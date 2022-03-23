@@ -16,6 +16,7 @@ const create = celebrate({
         avatarMediaId: Joi.number().optional(),
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
+        clientId: Joi.string().optional(),
     }),
 });
 
