@@ -134,6 +134,7 @@ export default class UserService {
         return {
             ...jsonUser,
             ...(await this._userRoles(user.address)),
+            ...(await this._userRules(user.address)),
             token,
         };
     }
@@ -147,7 +148,8 @@ export default class UserService {
         }
         return {
             ...user.toJSON(),
-            ...(await this._userRoles(user.toJSON().address)),
+            ...(await this._userRoles(user.address)),
+            ...(await this._userRules(user.address)),
         };
     }
 
@@ -163,7 +165,7 @@ export default class UserService {
         this.userLogService.create(
             updated[1][0].id,
             LogTypes.EDITED_PROFILE,
-            user,
+            user
         );
 
         return updated[1][0];
@@ -172,6 +174,13 @@ export default class UserService {
     public async patch(address: string, action: string) {
         if (action === 'beneficiary-rules') {
             await models.beneficiary.update(
+                { readRules: true },
+                {
+                    where: { address },
+                }
+            );
+        } else if (action === 'manager-rules') {
+            await models.manager.update(
                 { readRules: true },
                 {
                     where: { address },
@@ -349,5 +358,23 @@ export default class UserService {
 
     private async _userRoles(address: string) {
         return await getUserRoles(address);
+    }
+
+    private async _userRules(address: string) {
+        const [beneficiaryRules, managerRules] = await Promise.all([
+            models.beneficiary.findOne({
+                attributes: ['readRules'],
+                where: { address },
+            }),
+            models.manager.findOne({
+                attributes: ['readRules'],
+                where: { address },
+            }),
+        ]);
+
+        return {
+            beneficiaryRules: beneficiaryRules?.readRules,
+            managerRules: managerRules?.readRules,
+        };
     }
 }

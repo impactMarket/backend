@@ -162,7 +162,7 @@ export default (app: Router): void => {
      *             properties:
      *               action:
      *                 type: string
-     *                 enum: [beneficiary-rules]
+     *                 enum: [beneficiary-rules, manager-rules]
      *                 required: true
      *     responses:
      *       "200":
@@ -265,5 +265,5 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-     route.get('/logs', authenticateToken, userController.getLogs);
+    route.get('/logs', authenticateToken, userController.getLogs);
 };
