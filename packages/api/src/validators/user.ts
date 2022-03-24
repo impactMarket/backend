@@ -14,6 +14,7 @@ const create = celebrate({
         age: Joi.number().optional(),
         children: Joi.number().optional(),
         avatarMediaPath: Joi.string().optional(),
+        bio: Joi.string().optional(),
         email: Joi.alternatives(
             Joi.string().email({ tlds: { allow: false } }),
             null
@@ -34,6 +35,7 @@ const update = celebrate({
         age: Joi.alternatives(Joi.number(), null).optional(),
         children: Joi.alternatives(Joi.number(), null).optional(),
         avatarMediaPath: Joi.alternatives(Joi.number(), null).optional(),
+        bio: Joi.string().optional(),
         email: Joi.alternatives(
             Joi.string().email({ tlds: { allow: false } }),
             null

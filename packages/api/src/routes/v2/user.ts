@@ -13,10 +13,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user:
+     * /users:
      *   post:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Create user"
      *     requestBody:
      *       required: true
@@ -48,13 +48,19 @@ export default (app: Router): void => {
      *                 type: string
      *                 enum: [u, m, f, o]
      *                 required: false
-     *               year:
+     *               age:
      *                 type: number
      *                 required: false
      *               children:
      *                 type: number
      *                 required: false
      *               avatarMediaPath:
+     *                 type: string
+     *                 required: false
+     *               email:
+     *                 type: string
+     *                 required: false
+     *               bio:
      *                 type: string
      *                 required: false
      *     responses:
@@ -68,10 +74,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user:
+     * /users:
      *   get:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Get user"
      *     responses:
      *       "200":
@@ -87,10 +93,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user:
+     * /users:
      *   put:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Update user"
      *     requestBody:
      *       required: true
@@ -117,7 +123,7 @@ export default (app: Router): void => {
      *                 type: string
      *                 enum: [u, m, f, o]
      *                 required: false
-     *               year:
+     *               age:
      *                 type: number
      *                 nullable: true
      *                 required: false
@@ -126,6 +132,12 @@ export default (app: Router): void => {
      *                 nullable: true
      *                 required: false
      *               avatarMediaPath:
+     *                 type: string
+     *                 required: false
+     *               email:
+     *                 type: string
+     *                 required: false
+     *               bio:
      *                 type: string
      *                 required: false
      *     responses:
@@ -147,10 +159,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user:
+     * /users:
      *   patch:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Patch changes user"
      *     description: "Patch changes user"
      *     requestBody:
@@ -178,10 +190,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user:
+     * /users:
      *   delete:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Delete user"
      *     responses:
      *       "200":
@@ -197,10 +209,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user/report:
+     * /users/report:
      *   post:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Send anonymous report"
      *     requestBody:
      *       required: true
@@ -238,10 +250,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user/logs:
+     * /users/logs:
      *   get:
      *     tags:
-     *       - "user"
+     *       - "users"
      *     summary: Get user logs
      *     parameters:
      *       - in: query
@@ -270,10 +282,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user/presigned/{mime}:
+     * /users/presigned/{mime}:
      *   get:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Get AWS presigned URL to upload media content"
      *     parameters:
      *       - in: path

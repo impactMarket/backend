@@ -8,10 +8,10 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /community:
+     * /communities:
      *   get:
      *     tags:
-     *       - "community"
+     *       - "communities"
      *     summary: List communities
      *     parameters:
      *       - in: query

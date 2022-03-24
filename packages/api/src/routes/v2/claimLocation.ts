@@ -7,15 +7,15 @@ import claimLocationValidators from '../../validators/claimLocation';
 
 export default (app: Router): void => {
     const route = Router();
-    app.use('/claim-location', route);
+    app.use('/claims-location', route);
 
     /**
      * @swagger
      *
-     * /claim-location:
+     * /claims-location:
      *   get:
      *     tags:
-     *     - "claim-location"
+     *     - "claims-location"
      *     summary: "Get all claim locations on the last X period"
      *     responses:
      *       "200":
@@ -32,10 +32,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /claim-location:
+     * /claims-location:
      *   post:
      *     tags:
-     *     - "claim-location"
+     *     - "claims-location"
      *     summary: "Register a claim location"
      *     requestBody:
      *      required: true

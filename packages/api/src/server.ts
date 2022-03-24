@@ -80,7 +80,7 @@ export default (app: express.Application): void => {
                 },
                 tags: [
                     {
-                        name: 'user',
+                        name: 'users',
                         description: 'Everything about your users',
                     },
                     {
@@ -88,7 +88,7 @@ export default (app: express.Application): void => {
                         description: 'Manage stories',
                     },
                     {
-                        name: 'community',
+                        name: 'communities',
                         description: 'UBI communities',
                     },
                 ],

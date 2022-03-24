@@ -21,6 +21,7 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public suspect!: boolean;
     public active!: boolean;
     public email!: string;
+    public bio!: string;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -52,7 +53,7 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             },
             avatarMediaPath: {
                 type: DataTypes.STRING(44),
-                allowNull: true
+                allowNull: true,
             },
             username: {
                 type: DataTypes.STRING(128),
@@ -79,6 +80,9 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
                 type: DataTypes.INTEGER,
             },
             email: {
+                type: DataTypes.STRING(64),
+            },
+            bio: {
                 type: DataTypes.STRING(64),
             },
             lastLogin: {

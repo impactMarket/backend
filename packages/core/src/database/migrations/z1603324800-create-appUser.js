@@ -63,6 +63,10 @@ module.exports = {
                 type: Sequelize.STRING(64),
                 allowNull: true,
             },
+            bio: {
+                type: Sequelize.STRING(512),
+                allowNull: true,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
