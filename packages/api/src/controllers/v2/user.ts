@@ -25,6 +25,7 @@ class UserController {
             children,
             avatarMediaPath,
             email,
+            gender,
             overwrite,
             recover,
         } = req.body;
@@ -40,6 +41,7 @@ class UserController {
                     children,
                     avatarMediaPath,
                     email,
+                    gender,
                     trust: {
                         phone,
                     },
@@ -94,6 +96,7 @@ class UserController {
             children,
             avatarMediaPath,
             email,
+            gender,
         } = req.body;
         this.userService
             .update({
@@ -106,6 +109,7 @@ class UserController {
                 children,
                 avatarMediaPath,
                 email,
+                gender,
             })
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>

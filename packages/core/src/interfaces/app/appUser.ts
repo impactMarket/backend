@@ -81,6 +81,7 @@ export interface AppUser {
     suspect: boolean;
     active: boolean;
     email: string;
+    bio: string;
 
     // timestamps
     createdAt: Date;
@@ -103,6 +104,7 @@ export interface AppUserUpdate {
     year?: number | null;
     children?: number | null;
     email?: string;
+    bio?: string;
 }
 
 export interface AppUserCreationAttributes {
@@ -119,6 +121,7 @@ export interface AppUserCreationAttributes {
     pushNotificationToken?: string;
     active?: boolean;
     email?: string;
+    bio?: string;
 
     trust?: AppUserTrustCreation;
 }

@@ -9,10 +9,10 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /community/{id}/managers:
+     * /communities/{id}/managers:
      *   get:
      *     tags:
-     *       - "community"
+     *       - "communities"
      *     summary: Get community managers
      *     parameters:
      *       - in: query
@@ -40,10 +40,10 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /community/{id-or-address}:
+     * /communities/{id-or-address}:
      *   get:
      *     tags:
-     *       - "community"
+     *       - "communities"
      *     summary: Get community by id or contract address
      *     parameters:
      *       - in: path
