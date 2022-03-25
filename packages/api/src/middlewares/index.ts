@@ -57,6 +57,7 @@ export function authenticateToken(
                     res.send(`User has no permition to ${req.path}`).status(
                         403
                     );
+                    return;
                 }
             } else {
                 res.sendStatus(403);
