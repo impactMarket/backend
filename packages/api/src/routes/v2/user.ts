@@ -287,13 +287,13 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /users/presigned/{mime}:
+     * /users/presigned:
      *   get:
      *     tags:
      *       - "users"
      *     summary: "Get AWS presigned URL to upload media content"
      *     parameters:
-     *       - in: path
+     *       - in: query
      *         name: mime
      *         schema:
      *           type: string
@@ -309,7 +309,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.get(
-        '/presigned/:mime',
+        '/presigned/:query?',
         authenticateToken,
         userController.getPresignedUrlMedia
     );

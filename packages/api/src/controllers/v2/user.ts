@@ -27,6 +27,7 @@ class UserController {
             avatarMediaPath,
             email,
             gender,
+            bio,
             overwrite,
             recover,
         } = req.body;
@@ -44,6 +45,7 @@ class UserController {
                     avatarMediaPath,
                     email,
                     gender,
+                    bio,
                     trust: {
                         phone,
                     },
@@ -51,7 +53,14 @@ class UserController {
                 overwrite,
                 recover
             )
-            .then((user) => standardResponse(res, 201, true, user))
+            .then((user) =>
+                standardResponse(res, 201, true, {
+                    ...user,
+                    age: user.year
+                        ? new Date().getUTCFullYear() - user.year
+                        : null,
+                })
+            )
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
@@ -100,6 +109,7 @@ class UserController {
             avatarMediaPath,
             email,
             gender,
+            bio,
         } = req.body;
         this.userService
             .update({
@@ -114,8 +124,16 @@ class UserController {
                 avatarMediaPath,
                 email,
                 gender,
+                bio,
             })
-            .then((r) => standardResponse(res, 200, true, r))
+            .then((user) =>
+                standardResponse(res, 200, true, {
+                    ...user,
+                    age: user.year
+                        ? new Date().getUTCFullYear() - user.year
+                        : null,
+                })
+            )
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })
             );
@@ -176,7 +194,12 @@ class UserController {
 
         const { type, entity } = req.query;
 
-        if (type === undefined || entity === undefined) {
+        if (
+            type === undefined ||
+            entity === undefined ||
+            !(typeof type === 'string') ||
+            !(typeof entity === 'string')
+        ) {
             standardResponse(res, 400, false, '', {
                 error: {
                     name: 'INVALID_QUERY',
@@ -187,7 +210,7 @@ class UserController {
         }
 
         this.userLogService
-            .get(req.user.address, type as string, entity as string)
+            .get(req.user.address, type, entity)
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -203,8 +226,20 @@ class UserController {
             return;
         }
 
+        const { mime } = req.query;
+
+        if (mime === undefined || !(typeof mime === 'string')) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'INVALID_QUERY',
+                    message: 'missing mime',
+                },
+            });
+            return;
+        }
+
         this.userService
-            .getPresignedUrlMedia(req.params.mime)
+            .getPresignedUrlMedia(mime)
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
