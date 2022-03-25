@@ -195,7 +195,7 @@ export default class CommunityService {
             email?: string;
         },
         userAddress?: string,
-        userId?: number,
+        userId?: number
     ): Promise<CommunityAttributes> {
         // since cover can't be null, we first update and then remove
         const { name, description, currency, coverMediaPath, email } = params;
@@ -212,7 +212,7 @@ export default class CommunityService {
                 userId,
                 LogTypes.EDITED_COMMUNITY,
                 params,
-                id,
+                id
             );
         }
 
@@ -772,7 +772,7 @@ export default class CommunityService {
 
     public static async findByContractAddress(
         contractAddress: string,
-        userAddress?: string,
+        userAddress?: string
     ): Promise<CommunityAttributes> {
         return this._findCommunityBy({ contractAddress }, userAddress);
     }
@@ -975,7 +975,9 @@ export default class CommunityService {
                 address: m.address,
                 added: m.added,
                 active: m.state === 0,
-                user: users[m.address] ? users[m.address] : null,
+                user: users[m.address]
+                    ? { ...users[m.address], createdAt: m.since * 1000 }
+                    : null,
                 isDeleted: !users[m.address],
             }));
         }
@@ -1989,7 +1991,6 @@ export default class CommunityService {
                     transaction: t,
                 }
             );
-
 
             if (contractParams) {
                 await CommunityContractService.update(
