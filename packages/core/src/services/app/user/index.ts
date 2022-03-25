@@ -2,19 +2,22 @@ import { Op, QueryTypes } from 'sequelize';
 
 import { models, sequelize } from '../../../database';
 import { AppUserModel } from '../../../database/models/app/appUser';
+import { LogTypes } from '../../../interfaces/app/appLog';
 import {
     AppUser,
     AppUserCreationAttributes,
+    AppUserUpdate,
 } from '../../../interfaces/app/appUser';
+import { ProfileContentStorage } from '../../../services/storage';
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
 import { Logger } from '../../../utils/logger';
-import { LogTypes } from '../../../interfaces/app/appLog';
 import UserLogService from './log';
 
 export default class UserService {
     private userLogService = new UserLogService();
+    private profileContentStorage = new ProfileContentStorage();
 
     public async create(
         userParams: AppUserCreationAttributes,
@@ -79,6 +82,7 @@ export default class UserService {
                     {
                         model: models.appUserTrust,
                         as: 'trust',
+                        required: false,
                     },
                 ],
             }))!;
@@ -153,7 +157,7 @@ export default class UserService {
         };
     }
 
-    public async update(user: AppUser): Promise<AppUser> {
+    public async update(user: AppUserUpdate): Promise<AppUser> {
         const updated = await models.appUser.update(user, {
             returning: true,
             where: { address: user.address },
@@ -228,6 +232,13 @@ export default class UserService {
             category,
         });
         return true;
+    }
+
+    public async getPresignedUrlMedia(mime: string): Promise<{
+        uploadURL: string;
+        filename: string;
+    }> {
+        return this.profileContentStorage.getPresignedUrlPutObject(mime);
     }
 
     private async _recoverAccount(address: string) {

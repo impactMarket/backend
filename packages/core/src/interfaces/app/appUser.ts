@@ -71,6 +71,8 @@ export interface AppUser {
     avatarMediaId: number | null;
     avatarMediaPath: string | null;
     username: string | null;
+    firstName: string | null;
+    lastName: string | null;
     language: string;
     currency: string;
     pushNotificationToken: string | null;
@@ -81,6 +83,7 @@ export interface AppUser {
     suspect: boolean;
     active: boolean;
     email: string;
+    bio: string;
 
     // timestamps
     createdAt: Date;
@@ -92,6 +95,21 @@ export interface AppUser {
     beneficiary?: BeneficiaryAttributes[];
     manager?: ManagerAttributes[];
 }
+export interface AppUserUpdate {
+    address: string;
+    avatarMediaPath?: string | null;
+    username?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    language?: string;
+    currency?: string;
+    pushNotificationToken?: string | null;
+    gender?: string;
+    year?: number | null;
+    children?: number | null;
+    email?: string;
+    bio?: string;
+}
 
 export interface AppUserCreationAttributes {
     address: string;
@@ -99,6 +117,8 @@ export interface AppUserCreationAttributes {
     currency?: string;
     suspect?: boolean; // for test purposes
     username?: string;
+    firstName?: string;
+    lastName?: string;
     gender?: string;
     year?: number;
     children?: number;
@@ -107,6 +127,7 @@ export interface AppUserCreationAttributes {
     pushNotificationToken?: string;
     active?: boolean;
     email?: string;
+    bio?: string;
 
     trust?: AppUserTrustCreation;
 }

@@ -8,12 +8,18 @@ const create = celebrate({
         phone: Joi.string().optional(),
         language: Joi.string().optional(),
         currency: Joi.string().optional(),
-        pushNotificationToken: Joi.string().optional(),
-        username: Joi.string().optional(),
+        pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
+        firstName: Joi.string().optional(),
+        lastName: Joi.string().optional(),
         gender: Joi.string().optional(),
-        year: Joi.number().optional(),
+        age: Joi.number().optional(),
         children: Joi.number().optional(),
-        avatarMediaId: Joi.number().optional(),
+        avatarMediaPath: Joi.string().optional(),
+        bio: Joi.string().optional(),
+        email: Joi.alternatives(
+            Joi.string().email({ tlds: { allow: false } }),
+            null
+        ).optional(),
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
     }),
@@ -21,14 +27,17 @@ const create = celebrate({
 
 const update = celebrate({
     body: Joi.object({
+        phone: Joi.string().optional(),
         language: Joi.string().optional(),
         currency: Joi.string().optional(),
-        username: Joi.alternatives(Joi.string(), null).optional(),
-        gender: Joi.string().optional(),
-        year: Joi.alternatives(Joi.number(), null).optional(),
-        children: Joi.alternatives(Joi.number(), null).optional(),
-        avatarMediaId: Joi.number().optional(),
         pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
+        firstName: Joi.alternatives(Joi.string(), null).optional(),
+        lastName: Joi.alternatives(Joi.string(), null).optional(),
+        gender: Joi.string().optional(),
+        age: Joi.alternatives(Joi.number(), null).optional(),
+        children: Joi.alternatives(Joi.number(), null).optional(),
+        avatarMediaPath: Joi.alternatives(Joi.number(), null).optional(),
+        bio: Joi.string().optional(),
         email: Joi.alternatives(
             Joi.string().email({ tlds: { allow: false } }),
             null
@@ -56,7 +65,7 @@ const reportv1 = celebrate({
 const auth = celebrate({
     body: Joi.object({
         address: Joi.string().required(),
-        phone: Joi.string().required(),
+        phone: Joi.string().optional(),
         language: Joi.string().optional(),
         currency: Joi.string().optional(),
         pushNotificationToken: Joi.string().optional().allow(''),
