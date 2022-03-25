@@ -9,6 +9,8 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public id!: number;
     public address!: string;
     public username!: string | null;
+    public firstName!: string | null;
+    public lastName!: string | null;
     public avatarMediaId!: number | null;
     public avatarMediaPath!: string | null;
     public language!: string;
@@ -56,6 +58,12 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
                 allowNull: true,
             },
             username: {
+                type: DataTypes.STRING(128),
+            },
+            firstName: {
+                type: DataTypes.STRING(128),
+            },
+            lastName: {
                 type: DataTypes.STRING(128),
             },
             language: {

@@ -41,7 +41,10 @@ export default (app: Router): void => {
      *               pushNotificationToken:
      *                 type: string
      *                 required: false
-     *               username:
+     *               firstName:
+     *                 type: string
+     *                 required: false
+     *               lastName:
      *                 type: string
      *                 required: false
      *               gender:
@@ -115,9 +118,11 @@ export default (app: Router): void => {
      *                 type: string
      *                 nullable: true
      *                 required: false
-     *               username:
+     *               firstName:
      *                 type: string
-     *                 nullable: true
+     *                 required: false
+     *               lastName:
+     *                 type: string
      *                 required: false
      *               gender:
      *                 type: string

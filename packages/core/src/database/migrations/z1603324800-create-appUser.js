@@ -23,6 +23,12 @@ module.exports = {
             username: {
                 type: Sequelize.STRING(128),
             },
+            firstName: {
+                type: Sequelize.STRING(128),
+            },
+            lastName: {
+                type: Sequelize.STRING(128),
+            },
             language: {
                 type: Sequelize.STRING(8),
                 defaultValue: 'en',
