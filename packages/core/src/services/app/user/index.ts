@@ -172,7 +172,7 @@ export default class UserService {
             user
         );
 
-        return updated[1][0];
+        return updated[1][0].toJSON();
     }
 
     public async patch(address: string, action: string) {
