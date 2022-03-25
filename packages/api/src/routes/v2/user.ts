@@ -179,7 +179,7 @@ export default (app: Router): void => {
      *             properties:
      *               action:
      *                 type: string
-     *                 enum: [beneficiary-rules]
+     *                 enum: [beneficiary-rules, manager-rules]
      *                 required: true
      *     responses:
      *       "200":
