@@ -36,7 +36,7 @@ const update = celebrate({
         gender: Joi.string().optional(),
         age: Joi.alternatives(Joi.number(), null).optional(),
         children: Joi.alternatives(Joi.number(), null).optional(),
-        avatarMediaPath: Joi.alternatives(Joi.number(), null).optional(),
+        avatarMediaPath: Joi.alternatives(Joi.string(), null).optional(),
         bio: Joi.string().optional(),
         email: Joi.alternatives(
             Joi.string().email({ tlds: { allow: false } }),
