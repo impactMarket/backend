@@ -92,6 +92,7 @@ export default class CommunityService {
         email,
         txReceipt,
         contractParams,
+        coverMediaId,
         coverMediaPath,
     }: ICommunityCreationAttributes): Promise<Community> {
         let managerAddress: string = '';
@@ -105,6 +106,7 @@ export default class CommunityService {
             country,
             gps,
             email,
+            coverMediaId,
             coverMediaPath,
             visibility: 'public', // will be changed if private
             status: 'pending', // will be changed if private
@@ -192,15 +194,30 @@ export default class CommunityService {
             description: string;
             currency: string;
             coverMediaPath: string;
+            coverMediaId: number;
             email?: string;
         },
         userAddress?: string,
         userId?: number
     ): Promise<CommunityAttributes> {
         // since cover can't be null, we first update and then remove
-        const { name, description, currency, coverMediaPath, email } = params;
+        const {
+            name,
+            description,
+            currency,
+            coverMediaId,
+            coverMediaPath,
+            email,
+        } = params;
         const update = await this.community.update(
-            { name, description, currency, email, coverMediaPath },
+            {
+                name,
+                description,
+                currency,
+                email,
+                coverMediaId,
+                coverMediaPath,
+            },
             { where: { id } }
         );
         if (update[0] === 0) {

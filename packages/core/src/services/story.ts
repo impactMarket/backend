@@ -48,10 +48,20 @@ export default class StoryService {
         fromAddress: string,
         story: IAddStory
     ): Promise<ICommunityStory> {
-        let storyContentToAdd: { storyMediaPath?: string; message?: string } = {};
+        let storyContentToAdd: {
+            storyMediaPath?: string;
+            storyMediaId?: number;
+            message?: string;
+        } = {};
         if (story.storyMediaPath) {
             storyContentToAdd = {
                 storyMediaPath: story.storyMediaPath,
+            };
+        }
+        if (story.storyMediaId) {
+            storyContentToAdd = {
+                ...storyContentToAdd,
+                storyMediaId: story.storyMediaId,
             };
         }
         let storyCommunityToAdd: {
@@ -368,7 +378,8 @@ export default class StoryService {
                 id: content.storyCommunity!.communityId,
                 name: content.storyCommunity!.community!.name,
                 cover: content.storyCommunity!.community!.cover!,
-                coverMediaPath: content.storyCommunity!.community!.coverMediaPath!,
+                coverMediaPath:
+                    content.storyCommunity!.community!.coverMediaPath!,
                 story: {
                     id: content.id,
                     media: content.media,

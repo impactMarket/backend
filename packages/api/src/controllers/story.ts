@@ -53,6 +53,7 @@ class StoryController {
             .add(req.user.address, {
                 communityId,
                 message,
+                storyMediaId,
                 storyMediaPath,
             })
             .then((r) => standardResponse(res, 200, true, r))
