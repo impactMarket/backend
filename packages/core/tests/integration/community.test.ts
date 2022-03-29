@@ -1611,7 +1611,8 @@ describe('community service', () => {
                     currency: communities[0].currency,
                     description: communityNewDescription,
                     name: communities[0].name,
-                    coverMediaPath: "cover/image.jpg",
+                    coverMediaId: 1,
+                    coverMediaPath: 'cover/image.jpg',
                 }
             );
 
@@ -1651,7 +1652,8 @@ describe('community service', () => {
                     currency: communities[0].currency,
                     description: communityNewDescription,
                     name: communities[0].name,
-                    coverMediaPath: "cover/image2.jpg",
+                    coverMediaId: 1,
+                    coverMediaPath: 'cover/image2.jpg',
                 }
             );
 
@@ -1694,7 +1696,8 @@ describe('community service', () => {
                     currency: communities[0].currency,
                     description: communityNewDescription,
                     name: communities[0].name,
-                    coverMediaPath: "cover/image.jpg",
+                    coverMediaId: 1,
+                    coverMediaPath: 'cover/image.jpg',
                     email: 'test@gmail.com',
                 },
                 manager[0].address
@@ -1703,7 +1706,9 @@ describe('community service', () => {
             expect(updatedCommunity.description).to.be.equal(
                 communityNewDescription
             );
-            expect(updatedCommunity.coverMediaPath).to.be.equal('cover/image.jpg');
+            expect(updatedCommunity.coverMediaPath).to.be.equal(
+                'cover/image.jpg'
+            );
             expect(updatedCommunity.email).to.be.equal('test@gmail.com');
         });
     });
