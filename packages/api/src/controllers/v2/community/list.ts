@@ -1,5 +1,6 @@
 import { services } from '@impactmarket/core';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { RequestWithUser } from 'middlewares/core';
 
 import { standardResponse } from '../../../utils/api';
 
@@ -9,9 +10,9 @@ class CommunityController {
         this.communityService = new services.ubi.CommunityListService();
     }
 
-    list = (req: Request, res: Response) => {
+    list = (req: RequestWithUser, res: Response) => {
         this.communityService
-            .list(req.query)
+            .list(req.query, req.user?.address)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
