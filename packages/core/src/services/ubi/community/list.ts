@@ -329,8 +329,8 @@ export class CommunityListService {
         //     communitiesId = result.map((el) => el.id);
         // }
 
-        // remove empty elements 
-        communitiesId = communitiesId.filter(Number) 
+        // remove empty elements
+        communitiesId = communitiesId.filter(Number);
 
         let states: ({
             communityId: number;

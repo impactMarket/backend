@@ -22,7 +22,8 @@ export default class UserService {
     public async create(
         userParams: AppUserCreationAttributes,
         overwrite: boolean = false,
-        recover: boolean = false
+        recover: boolean = false,
+        clientId?: string,
     ) {
         const exists = await this._exists(userParams.address);
 
@@ -129,8 +130,27 @@ export default class UserService {
         }
 
         this._updateLastLogin(user.id);
-        // generate access token for future interactions that require authentication
-        const token = generateAccessToken(userParams.address, user.id);
+
+        let token: string;
+        if (clientId) {
+            const credential = await models.appClientCredential.findOne({
+                where: {
+                    clientId,
+                    status: 'active'
+                }
+            });
+            if (credential) {
+                token = generateAccessToken(userParams.address, user.id, clientId);
+            } else {
+                throw new BaseError(
+                    'INVALID_CREDENTIAL',
+                    'Client credential is invalid'
+                );
+            }
+        } else {
+            // generate access token for future interactions that require authentication
+            token = generateAccessToken(userParams.address, user.id);
+        }
 
         // do not return trust key
         const jsonUser = user.toJSON();
