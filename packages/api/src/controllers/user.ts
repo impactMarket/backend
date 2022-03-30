@@ -50,6 +50,7 @@ class UserController {
                 username,
                 year,
                 children,
+                avatarMediaId,
                 avatarMediaPath,
                 trust: {
                     phone,
@@ -145,6 +146,7 @@ class UserController {
             );
             services.app.UserService.updateAvatar(
                 req.user.address,
+                mediaId,
                 avatarMediaPath
             )
                 .then((r) => standardResponse(res, 201, r, ''))
