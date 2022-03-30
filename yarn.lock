@@ -10269,6 +10269,11 @@ libnpmpublish@^4.0.0:
     semver "^7.1.3"
     ssri "^8.0.1"
 
+libphonenumber-js@1.9.50:
+  version "1.9.50"
+  resolved "https://registry.yarnpkg.com/libphonenumber-js/-/libphonenumber-js-1.9.50.tgz#f5028a2c4cc47a69d69a0de3629afad97a613712"
+  integrity sha512-cCzQPChw2XbordcO2LKiw5Htx5leHVfFk/EXkxNHqJfFo7Fndcb1kF5wPJpc316vCJhhikedYnVysMh3Sc7Ocw==
+
 libpq@^1.7.0:
   version "1.8.9"
   resolved "https://registry.yarnpkg.com/libpq/-/libpq-1.8.9.tgz#6e0c6eecb176f6656ad092d67cc0131980cba897"

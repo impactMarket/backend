@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/list';
+import { optionalAuthentication } from '../../../middlewares';
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -74,5 +75,5 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:query?', controller.list);
+    route.get('/:query?', optionalAuthentication, controller.list);
 };

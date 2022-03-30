@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import parsePhoneNumber from 'libphonenumber-js';
 import { Op, literal, OrderItem, WhereOptions, Includeable } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
@@ -18,19 +19,22 @@ import { CommunityDetailsService } from './details';
 export class CommunityListService {
     communityDetailsService = new CommunityDetailsService();
 
-    public async list(query: {
-        orderBy?: string;
-        filter?: string;
-        name?: string;
-        country?: string;
-        extended?: string;
-        offset?: string;
-        limit?: string;
-        lat?: string;
-        lng?: string;
-        fields?: string;
-        status?: 'valid' | 'pending';
-    }): Promise<{ count: number; rows: CommunityAttributes[] }> {
+    public async list(
+        query: {
+            orderBy?: string;
+            filter?: string;
+            name?: string;
+            country?: string;
+            extended?: string;
+            offset?: string;
+            limit?: string;
+            lat?: string;
+            lng?: string;
+            fields?: string;
+            status?: 'valid' | 'pending';
+        },
+        ambassadorAddress?: string
+    ): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
         const orderOutOfFunds = {
@@ -87,12 +91,47 @@ export class CommunityListService {
 
         if (query.status === 'pending') {
             const communityProposals = await this._getOpenProposals();
+            if (ambassadorAddress) {
+                const ambassador = (await models.appUser.findOne({
+                    attributes: [],
+                    include: [
+                        {
+                            model: models.appUserTrust,
+                            as: 'trust',
+                            attributes: ['phone'],
+                        },
+                    ],
+                    where: {
+                        address: ambassadorAddress,
+                    },
+                })) as any;
+                const phone = ambassador?.trust[0]?.phone;
+                if (phone) {
+                    const parsePhone = parsePhoneNumber(phone);
+                    extendedWhere = {
+                        ...extendedWhere,
+                        country: parsePhone?.country,
+                    };
+                } else {
+                    throw new BaseError(
+                        'AMBASSADOR_NOT_FOUND',
+                        'Ambassador not found'
+                    );
+                }
+            }
             extendedWhere = {
                 ...extendedWhere,
                 requestByAddress: {
                     [Op.notIn]: communityProposals,
                 },
             };
+        } else {
+            if (ambassadorAddress) {
+                extendedWhere = {
+                    ...extendedWhere,
+                    ambassadorAddress,
+                };
+            }
         }
 
         if (query.orderBy) {
@@ -193,17 +232,19 @@ export class CommunityListService {
                 }
             }
         } else {
-            beneficiariesState = await this._getBeneficiaryState(
-                {
-                    status: query.status,
-                    limit: query.limit,
-                    offset: query.offset,
-                },
-                extendedWhere
-            );
-            contractAddress = beneficiariesState!.map((el) =>
-                ethers.utils.getAddress(el.id)
-            );
+            if (query.status !== 'pending') {
+                beneficiariesState = await this._getBeneficiaryState(
+                    {
+                        status: query.status,
+                        limit: query.limit,
+                        offset: query.offset,
+                    },
+                    extendedWhere
+                );
+                contractAddress = beneficiariesState!.map((el) =>
+                    ethers.utils.getAddress(el.id)
+                );
+            }
         }
 
         let include: Includeable[];
