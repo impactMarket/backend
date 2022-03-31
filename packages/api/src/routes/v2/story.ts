@@ -13,7 +13,93 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /story/list:
+     * /stories/presigned:
+     *   get:
+     *     tags:
+     *       - "stories"
+     *     summary: "Get AWS presigned URL to upload media content"
+     *     parameters:
+     *       - in: query
+     *         name: mime
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: media mimetype
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/presigned/:query?',
+        authenticateToken,
+        storyController.getPresignedUrlMedia
+    );
+
+    /**
+     * @swagger
+     *
+     * /stories:
+     *   post:
+     *     tags:
+     *       - "stories"
+     *     summary: Add a new story
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               communityId:
+     *                 type: integer
+     *                 description: The community id
+     *               storyMediaPath:
+     *                 type: string
+     *                 nullable: true
+     *                 description: The media path of the story from presigned url
+     *               message:
+     *                 type: string
+     *                 nullable: true
+     *                 description: Story message
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post('/', authenticateToken, storyValidator.add, storyController.add);
+
+    /**
+     * @swagger
+     *
+     * /stories/{id}:
+     *   delete:
+     *     tags:
+     *       - "stories"
+     *     summary: Delete a story
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id to remove
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.delete('/:id', authenticateToken, storyController.remove);
+
+    /**
+     * @swagger
+     *
+     * /stories/list:
      *   get:
      *     tags:
      *       - "stories"
@@ -58,90 +144,4 @@ export default (app: Router): void => {
      *         description: OK
      */
     route.get('/:query?', optionalAuthentication, storyController.list);
-
-    /**
-     * @swagger
-     *
-     * /story:
-     *   post:
-     *     tags:
-     *       - "stories"
-     *     summary: Add a new story
-     *     requestBody:
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               communityId:
-     *                 type: integer
-     *                 description: The community id
-     *               storyMediaPath:
-     *                 type: string
-     *                 nullable: true
-     *                 description: The media path of the story from presigned url
-     *               message:
-     *                 type: string
-     *                 nullable: true
-     *                 description: Story message
-     *     responses:
-     *       "200":
-     *         description: "Success"
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.post('/', authenticateToken, storyValidator.add, storyController.add);
-
-    /**
-     * @swagger
-     *
-     * /story/{id}:
-     *   delete:
-     *     tags:
-     *       - "stories"
-     *     summary: Delete a story
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         schema:
-     *           type: integer
-     *         required: true
-     *         description: Story id to remove
-     *     responses:
-     *       "200":
-     *         description: OK
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.delete('/:id', authenticateToken, storyController.remove);
-
-    /**
-     * @swagger
-     *
-     * /story/media/{mime}:
-     *   get:
-     *     tags:
-     *       - "stories"
-     *     summary: Make a request for a presigned URL
-     *     parameters:
-     *       - in: path
-     *         name: mime
-     *         schema:
-     *           type: string
-     *         required: true
-     *         description: media mimetype
-     *     responses:
-     *       "200":
-     *         description: OK
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.get(
-        '/media/:mime',
-        authenticateToken,
-        storyController.getPresignedUrlMedia
-    );
 };

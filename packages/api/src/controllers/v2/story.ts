@@ -1,5 +1,5 @@
-import { config, database, services } from '@impactmarket/core';
-import { Request, Response } from 'express';
+import { services } from '@impactmarket/core';
+import { Response } from 'express';
 
 import { RequestWithUser } from '../../middlewares/core';
 import { standardResponse } from '../../utils/api';
@@ -17,8 +17,21 @@ class StoryController {
             });
             return;
         }
+
+        const { mime } = req.query;
+
+        if (mime === undefined || !(typeof mime === 'string')) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'INVALID_QUERY',
+                    message: 'missing mime',
+                },
+            });
+            return;
+        }
+
         this.storyService
-            .getPresignedUrlMedia(req.params.mime)
+            .getPresignedUrlMedia(mime)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -34,7 +47,6 @@ class StoryController {
             return;
         }
         const { communityId, message, storyMediaPath } = req.body;
-
         this.storyService
             .add(req.user.address, {
                 communityId,
