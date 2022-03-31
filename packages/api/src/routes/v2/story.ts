@@ -99,7 +99,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /stories/list:
+     * /stories:
      *   get:
      *     tags:
      *       - "stories"
