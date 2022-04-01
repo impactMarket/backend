@@ -53,7 +53,7 @@ class UserController {
                 },
                 overwrite,
                 recover,
-                clientId,
+                clientId
             )
             .then((user) =>
                 standardResponse(res, 201, true, {
