@@ -49,8 +49,8 @@ export default class StoryService {
         story: IAddStory
     ): Promise<ICommunityStory> {
         let storyContentToAdd: {
+            mediaMediaId?: number;
             storyMediaPath?: string;
-            storyMediaId?: number;
             message?: string;
         } = {};
         if (story.storyMediaPath) {
@@ -61,7 +61,7 @@ export default class StoryService {
         if (story.storyMediaId) {
             storyContentToAdd = {
                 ...storyContentToAdd,
-                storyMediaId: story.storyMediaId,
+                mediaMediaId: story.storyMediaId,
             };
         }
         let storyCommunityToAdd: {
