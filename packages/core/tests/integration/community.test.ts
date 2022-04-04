@@ -1296,6 +1296,8 @@ describe('community service', () => {
                     'width',
                     'height',
                     'pixelRatio',
+                    'mediaContentId',
+                    'id',
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,

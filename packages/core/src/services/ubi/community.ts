@@ -719,15 +719,7 @@ export default class CommunityService {
             };
 
             if (includeCover) {
-                if (community.coverMediaId && community.cover) {
-                    const media = community.cover;
-
-                    community.cover.thumbnails = createThumbnailUrl(
-                        config.aws.bucket.community,
-                        media.url.split(config.cloudfrontUrl + '/')[1],
-                        config.thumbnails.community.cover
-                    );
-                } else if (community.coverMediaPath) {
+                if (community.coverMediaPath) {
                     const thumbnails = createThumbnailUrl(
                         config.aws.bucket.community,
                         community.coverMediaPath,
@@ -740,6 +732,14 @@ export default class CommunityService {
                         url: `${config.cloudfrontUrl}/${community.coverMediaPath}`,
                         thumbnails,
                     };
+                } else if (community.cover) {
+                    const media = community.cover;
+
+                    community.cover.thumbnails = createThumbnailUrl(
+                        config.aws.bucket.community,
+                        media.url.split(config.cloudfrontUrl + '/')[1],
+                        config.thumbnails.community.cover
+                    );
                 }
             }
 
@@ -956,7 +956,20 @@ export default class CommunityService {
                     address: community!.requestByAddress,
                 },
             }))!.toJSON() as AppUser;
-            if (user.avatarMediaId) {
+            if (user.avatarMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.profile,
+                    user.avatarMediaPath,
+                    config.thumbnails.profile
+                );
+                user.avatar = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${user.avatarMediaPath}`,
+                    thumbnails,
+                };
+            } else if (user.avatarMediaId) {
                 const media = await models.appMediaContent.findOne({
                     attributes: ['url', 'width', 'height'],
                     where: {
@@ -978,19 +991,6 @@ export default class CommunityService {
                         thumbnails,
                     };
                 }
-            } else if (user.avatarMediaPath) {
-                const thumbnails = createThumbnailUrl(
-                    config.aws.bucket.profile,
-                    user.avatarMediaPath,
-                    config.thumbnails.profile
-                );
-                user.avatar = {
-                    id: 0,
-                    width: 0,
-                    height: 0,
-                    url: `${config.cloudfrontUrl}/${user.avatarMediaPath}`,
-                    thumbnails,
-                };
             }
             return [
                 {
@@ -2143,7 +2143,20 @@ export default class CommunityService {
             );
         }
         const community = result.toJSON() as CommunityAttributes;
-        if (community.coverMediaId) {
+        if (community.coverMediaPath) {
+            const thumbnails = createThumbnailUrl(
+                config.aws.bucket.profile,
+                community.coverMediaPath,
+                config.thumbnails.profile
+            );
+            community.cover = {
+                id: 0,
+                width: 0,
+                height: 0,
+                url: `${config.cloudfrontUrl}/${community.coverMediaPath}`,
+                thumbnails,
+            };
+        } else if (community.coverMediaId) {
             const media = await models.appMediaContent.findOne({
                 attributes: ['url', 'width', 'height'],
                 where: {
@@ -2165,19 +2178,6 @@ export default class CommunityService {
                     thumbnails,
                 };
             }
-        } else if (community.coverMediaPath) {
-            const thumbnails = createThumbnailUrl(
-                config.aws.bucket.profile,
-                community.coverMediaPath,
-                config.thumbnails.profile
-            );
-            community.cover = {
-                id: 0,
-                width: 0,
-                height: 0,
-                url: `${config.cloudfrontUrl}/${community.coverMediaPath}`,
-                thumbnails,
-            };
         }
         const suspect = await this.getSuspect(community.id);
         let contract = {

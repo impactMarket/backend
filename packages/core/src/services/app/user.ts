@@ -94,7 +94,20 @@ export default class UserService {
                 userFromRegistry = (await this.appUser.findOne({
                     where: { address: user.address },
                 }))!.toJSON() as AppUser;
-                if (userFromRegistry.avatarMediaId) {
+                if (userFromRegistry.avatarMediaPath) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.profile,
+                        userFromRegistry.avatarMediaPath,
+                        config.thumbnails.profile
+                    );
+                    userFromRegistry.avatar = {
+                        id: 0,
+                        width: 0,
+                        height: 0,
+                        url: `${config.cloudfrontUrl}/${userFromRegistry.avatarMediaPath}`,
+                        thumbnails,
+                    };
+                } else if (userFromRegistry.avatarMediaId) {
                     const media = await models.appMediaContent.findOne({
                         attributes: ['url', 'width', 'height'],
                         where: {
@@ -116,19 +129,6 @@ export default class UserService {
                             thumbnails,
                         };
                     }
-                } else if (userFromRegistry.avatarMediaPath) {
-                    const thumbnails = createThumbnailUrl(
-                        config.aws.bucket.profile,
-                        userFromRegistry.avatarMediaPath,
-                        config.thumbnails.profile
-                    );
-                    userFromRegistry.avatar = {
-                        id: 0,
-                        width: 0,
-                        height: 0,
-                        url: `${config.cloudfrontUrl}/${userFromRegistry.avatarMediaPath}`,
-                        thumbnails,
-                    };
                 }
             }
 

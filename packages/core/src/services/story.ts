@@ -333,7 +333,20 @@ export default class StoryService {
                 }
 
                 const story = r[0].toJSON() as StoryContent;
-                if (story.mediaMediaId && story.media) {
+                if (story.storyMediaPath) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.story,
+                        story.storyMediaPath,
+                        config.thumbnails.story
+                    );
+                    story.media = {
+                        id: 0,
+                        width: 0,
+                        height: 0,
+                        url: `${config.cloudfrontUrl}/${story.storyMediaPath}`,
+                        thumbnails,
+                    };
+                } else if (story.mediaMediaId && story.media) {
                     const media = story.media;
 
                     const thumbnails = createThumbnailUrl(
@@ -346,19 +359,6 @@ export default class StoryService {
                         width: media.width,
                         height: media.height,
                         url: media.url,
-                        thumbnails,
-                    };
-                } else if (story.storyMediaPath) {
-                    const thumbnails = createThumbnailUrl(
-                        config.aws.bucket.story,
-                        story.storyMediaPath,
-                        config.thumbnails.story
-                    );
-                    story.media = {
-                        id: 0,
-                        width: 0,
-                        height: 0,
-                        url: `${config.cloudfrontUrl}/${story.storyMediaPath}`,
                         thumbnails,
                     };
                 }
@@ -423,7 +423,20 @@ export default class StoryService {
             const content = c.toJSON() as StoryContent;
 
             // get cover thumbnails
-            if (
+            if (content.storyCommunity?.community?.coverMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.community,
+                    content.storyCommunity.community.coverMediaPath,
+                    config.thumbnails.community.cover
+                );
+                content.storyCommunity.community!.cover = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${content.storyCommunity.community.coverMediaPath}`,
+                    thumbnails,
+                };
+            } else if (
                 content.storyCommunity?.community?.coverMediaId &&
                 content.storyCommunity?.community?.cover
             ) {
@@ -441,23 +454,23 @@ export default class StoryService {
                     url: media.url,
                     thumbnails,
                 };
-            } else if (content.storyCommunity?.community?.coverMediaPath) {
-                const thumbnails = createThumbnailUrl(
-                    config.aws.bucket.community,
-                    content.storyCommunity.community.coverMediaPath,
-                    config.thumbnails.community.cover
-                );
-                content.storyCommunity.community!.cover = {
-                    id: 0,
-                    width: 0,
-                    height: 0,
-                    url: `${config.cloudfrontUrl}/${content.storyCommunity.community.coverMediaPath}`,
-                    thumbnails,
-                };
             }
 
             // get story thumbnails
-            if (content.mediaMediaId && content.media) {
+            if (content.storyMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.community,
+                    content.storyMediaPath,
+                    config.thumbnails.community.cover
+                );
+                content.media = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${content.storyMediaPath}`,
+                    thumbnails,
+                };
+            } else if (content.mediaMediaId && content.media) {
                 const media = content.media;
 
                 const thumbnails = createThumbnailUrl(
@@ -470,19 +483,6 @@ export default class StoryService {
                     width: media.width,
                     height: media.height,
                     url: media.url,
-                    thumbnails,
-                };
-            } else if (content.storyMediaPath) {
-                const thumbnails = createThumbnailUrl(
-                    config.aws.bucket.community,
-                    content.storyMediaPath,
-                    config.thumbnails.community.cover
-                );
-                content.media = {
-                    id: 0,
-                    width: 0,
-                    height: 0,
-                    url: `${config.cloudfrontUrl}/${content.storyMediaPath}`,
                     thumbnails,
                 };
             }
@@ -566,7 +566,20 @@ export default class StoryService {
             const stories = r.rows.map((s) => {
                 const content = (s.toJSON() as StoryCommunity).storyContent!;
 
-                if (content.mediaMediaId && content.media) {
+                if (content.storyMediaPath) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.story,
+                        content.storyMediaPath,
+                        config.thumbnails.story
+                    );
+                    content.media = {
+                        id: 0,
+                        width: 0,
+                        height: 0,
+                        url: `${config.cloudfrontUrl}/${content.storyMediaPath}`,
+                        thumbnails,
+                    };
+                } else if (content.mediaMediaId && content.media) {
                     const media = content.media;
 
                     const thumbnails = createThumbnailUrl(
@@ -579,19 +592,6 @@ export default class StoryService {
                         width: media.width,
                         height: media.height,
                         url: media.url,
-                        thumbnails,
-                    };
-                } else if (content.storyMediaPath) {
-                    const thumbnails = createThumbnailUrl(
-                        config.aws.bucket.story,
-                        content.storyMediaPath,
-                        config.thumbnails.story
-                    );
-                    content.media = {
-                        id: 0,
-                        width: 0,
-                        height: 0,
-                        url: `${config.cloudfrontUrl}/${content.storyMediaPath}`,
                         thumbnails,
                     };
                 }
@@ -617,7 +617,20 @@ export default class StoryService {
                 attributes: ['id', 'name', 'city', 'country', 'coverMediaId'],
                 where: { id: communityId },
             }))!.toJSON() as CommunityAttributes;
-            if (community.coverMediaId) {
+            if (community.coverMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.community,
+                    community.coverMediaPath,
+                    config.thumbnails.community.cover
+                );
+                community.cover = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${community.coverMediaPath}`,
+                    thumbnails,
+                };
+            } else if (community.coverMediaId) {
                 const media = await models.appMediaContent.findOne({
                     attributes: ['url', 'width', 'height'],
                     where: {
@@ -639,19 +652,6 @@ export default class StoryService {
                         thumbnails,
                     };
                 }
-            } else if (community.coverMediaPath) {
-                const thumbnails = createThumbnailUrl(
-                    config.aws.bucket.community,
-                    community.coverMediaPath,
-                    config.thumbnails.community.cover
-                );
-                community.cover = {
-                    id: 0,
-                    width: 0,
-                    height: 0,
-                    url: `${config.cloudfrontUrl}/${community.coverMediaPath}`,
-                    thumbnails,
-                };
             }
 
             return {
@@ -797,7 +797,20 @@ export default class StoryService {
         });
         const stories: ICommunityStory[] = r.rows.map((c) => {
             const content = c.toJSON() as StoryContent;
-            if (content.mediaMediaId && content.media) {
+            if (content.storyMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.story,
+                    content.storyMediaPath,
+                    config.thumbnails.story
+                );
+                content.media = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${content.storyMediaPath}`,
+                    thumbnails,
+                };
+            } else if (content.mediaMediaId && content.media) {
                 const media = content.media;
 
                 const thumbnails = createThumbnailUrl(
@@ -810,19 +823,6 @@ export default class StoryService {
                     width: media.width,
                     height: media.height,
                     url: media.url,
-                    thumbnails,
-                };
-            } else if (content.storyMediaPath) {
-                const thumbnails = createThumbnailUrl(
-                    config.aws.bucket.story,
-                    content.storyMediaPath,
-                    config.thumbnails.story
-                );
-                content.media = {
-                    id: 0,
-                    width: 0,
-                    height: 0,
-                    url: `${config.cloudfrontUrl}/${content.storyMediaPath}`,
                     thumbnails,
                 };
             }
