@@ -28,6 +28,7 @@ export class Community extends Model<
     public visibility!: 'public' | 'private';
     public coverImage!: string;
     public coverMediaId!: number | null; // TODO: will be required once next version is released
+    public coverMediaPath!: string | null;
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     public review!: 'pending' | 'in-progress' | 'halted' | 'closed';
     public started!: Date;

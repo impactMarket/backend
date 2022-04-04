@@ -18,6 +18,7 @@ import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import { models, sequelize } from '../../database';
 import { Community } from '../../database/models/ubi/community';
+import { LogTypes } from '../../interfaces/app/appLog';
 import { AppUser } from '../../interfaces/app/appUser';
 import {
     CommunityAttributes,
@@ -40,7 +41,8 @@ import {
 } from '../../subgraph/queries/community';
 import { BaseError } from '../../utils/baseError';
 import { fetchData } from '../../utils/dataFetching';
-import { notifyManagerAdded } from '../../utils/util';
+import { createThumbnailUrl, notifyManagerAdded } from '../../utils/util';
+import UserLogService from '../app/user/log';
 import {
     ICommunity,
     ICommunityLightDetails,
@@ -50,8 +52,6 @@ import {
 import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
 import ManagerService from './managers';
-import UserLogService from '../app/user/log';
-import { LogTypes } from '../../interfaces/app/appLog';
 
 export default class CommunityService {
     public static community = models.community;
@@ -499,10 +499,12 @@ export default class CommunityService {
         let include: Includeable[];
         let attributes: any;
         let returnState = true;
+        let includeCover = false;
         const exclude = ['email'];
         if (query.fields) {
             const fields = fetchData(query.fields);
             if (!fields.state) returnState = false;
+            if (fields.cover) includeCover = true;
             include = this._generateInclude(fields);
             attributes = fields.root
                 ? fields.root.length > 0
@@ -511,6 +513,7 @@ export default class CommunityService {
                 : [];
         } else {
             include = this._oldInclude(query.extended);
+            includeCover = true;
             attributes = {
                 exclude,
             };
@@ -697,6 +700,31 @@ export default class CommunityService {
             community = {
                 ...(filteredCommunity?.toJSON() as CommunityAttributes),
             };
+
+            if (includeCover) {
+                if (community.coverMediaId && community.cover) {
+                    const media = community.cover;
+
+                    community.cover.thumbnails = createThumbnailUrl(
+                        config.aws.bucket.community,
+                        media.url.split(config.cloudfrontUrl + '/')[1],
+                        config.thumbnails.community.cover
+                    );
+                } else if (community.coverMediaPath) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.community,
+                        community.coverMediaPath,
+                        config.thumbnails.community.cover
+                    );
+                    community.cover = {
+                        id: 0,
+                        width: 0,
+                        height: 0,
+                        url: `${config.cloudfrontUrl}/${community.coverMediaPath}`,
+                        thumbnails,
+                    };
+                }
+            }
 
             if (returnState) {
                 const beneficiariesModel = beneficiariesState?.find(
@@ -899,30 +927,58 @@ export default class CommunityService {
         });
 
         if (community!.status === 'pending') {
-            const user = await this.appUser.findOne({
-                attributes: ['address', 'username', 'createdAt'],
-                include: [
-                    {
-                        model: this.appMediaContent,
-                        as: 'avatar',
-                        required: false,
-                        include: [
-                            {
-                                model: this.appMediaThumbnail,
-                                as: 'thumbnails',
-                                separate: true,
-                            },
-                        ],
-                    },
+            const user = (await this.appUser.findOne({
+                attributes: [
+                    'address',
+                    'username',
+                    'createdAt',
+                    'avatarMediaId',
+                    'avatarMediaPath',
                 ],
                 where: {
                     address: community!.requestByAddress,
                 },
-            });
+            }))!.toJSON() as AppUser;
+            if (user.avatarMediaId) {
+                const media = await models.appMediaContent.findOne({
+                    attributes: ['url', 'width', 'height'],
+                    where: {
+                        id: user.avatarMediaId,
+                    },
+                });
+
+                if (media) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.profile,
+                        media.url.split(config.cloudfrontUrl + '/')[1],
+                        config.thumbnails.profile
+                    );
+                    user.avatar = {
+                        id: 0,
+                        width: media.width,
+                        height: media.height,
+                        url: media.url,
+                        thumbnails,
+                    };
+                }
+            } else if (user.avatarMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.profile,
+                    user.avatarMediaPath,
+                    config.thumbnails.profile
+                );
+                user.avatar = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${user.avatarMediaPath}`,
+                    thumbnails,
+                };
+            }
             return [
                 {
-                    user: user as AppUser,
-                    address: user!.address,
+                    user,
+                    address: user.address,
                     isDeleted: false,
                     added: 0,
                     active: false,
@@ -1001,20 +1057,37 @@ export default class CommunityService {
                     model: this.ubiPromoterSocialMedia,
                     as: 'socialMedia',
                 },
-                {
-                    model: this.appMediaContent,
-                    as: 'logo',
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
-                },
             ],
         });
-        return result !== null ? (result.toJSON() as UbiPromoter) : null;
+
+        if (!result) return null;
+
+        const promoter = result.toJSON() as UbiPromoter;
+
+        if (promoter.logoMediaId) {
+            const media = await models.appMediaContent.findOne({
+                attributes: ['url', 'width', 'height'],
+                where: {
+                    id: promoter.logoMediaId,
+                },
+            });
+
+            if (media) {
+                const thumbnails = createThumbnailUrl(
+                    'org-logo',
+                    media.url.split(config.cloudfrontUrl + '/')[1],
+                    config.thumbnails.promoter.logo
+                );
+                promoter.logo = {
+                    id: 0,
+                    width: media.width,
+                    height: media.height,
+                    url: media.url,
+                    thumbnails,
+                };
+            }
+        }
+        return promoter;
     }
 
     public static async getSuspect(communityId: number) {
@@ -2043,27 +2116,51 @@ export default class CommunityService {
     ): Promise<CommunityAttributes> {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const community = await this.community.findOne({
-            include: [
-                {
-                    model: this.appMediaContent,
-                    as: 'cover',
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
-                },
-            ],
+        const result = await this.community.findOne({
             where,
         });
-        if (community === null) {
+        if (result === null) {
             throw new BaseError(
                 'COMMUNITY_NOT_FOUND',
                 'Not found community ' + where
             );
+        }
+        const community = result.toJSON() as CommunityAttributes;
+        if (community.coverMediaId) {
+            const media = await models.appMediaContent.findOne({
+                attributes: ['url', 'width', 'height'],
+                where: {
+                    id: community.coverMediaId,
+                },
+            });
+
+            if (media) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.community,
+                    media.url.split(config.cloudfrontUrl + '/')[1],
+                    config.thumbnails.community.cover
+                );
+                community.cover = {
+                    id: 0,
+                    width: media.width,
+                    height: media.height,
+                    url: media.url,
+                    thumbnails,
+                };
+            }
+        } else if (community.coverMediaPath) {
+            const thumbnails = createThumbnailUrl(
+                config.aws.bucket.profile,
+                community.coverMediaPath,
+                config.thumbnails.profile
+            );
+            community.cover = {
+                id: 0,
+                width: 0,
+                height: 0,
+                url: `${config.cloudfrontUrl}/${community.coverMediaPath}`,
+                thumbnails,
+            };
         }
         const suspect = await this.getSuspect(community.id);
         let contract = {
@@ -2112,7 +2209,7 @@ export default class CommunityService {
         }
 
         return {
-            ...(community.toJSON() as CommunityAttributes),
+            ...community,
             email: showEmail ? community.email : '',
             suspect: suspect !== null ? [suspect] : undefined,
             contract,
@@ -2148,14 +2245,6 @@ export default class CommunityService {
                 model: this.appMediaContent,
                 as: 'cover',
                 duplicating: false,
-                include: [
-                    {
-                        attributes: ['url', 'width', 'height', 'pixelRatio'],
-                        model: this.appMediaThumbnail,
-                        as: 'thumbnails',
-                        separate: true,
-                    },
-                ],
             });
         }
 
@@ -2262,13 +2351,6 @@ export default class CommunityService {
                 model: this.appMediaContent,
                 as: 'cover',
                 duplicating: false,
-                include: [
-                    {
-                        model: this.appMediaThumbnail,
-                        as: 'thumbnails',
-                        separate: true,
-                    },
-                ],
             },
             {
                 attributes: { exclude: ['id', 'communityId'] },

@@ -4,6 +4,7 @@ import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
 import config from '../config';
 import { Community } from '../database/models/ubi/community';
+import { AppMediaThumbnail } from '../interfaces/app/appMediaThumbnail';
 import UserService from '../services/app/user';
 import { Logger } from './logger';
 
@@ -235,4 +236,43 @@ export function isUUID(s: string): boolean {
 export function isAddress(s: string): boolean {
     const matchResult = s.match(/^0x[a-fA-F0-9]{40}$/i);
     return matchResult ? matchResult.length > 0 : false;
+}
+
+export function createThumbnailUrl(
+    bucket: string,
+    key: string,
+    thumbnailSizes: { width: number; height: number }[]
+): AppMediaThumbnail[] {
+    const avatar: AppMediaThumbnail[] = [];
+    for (let i = 0; i < config.thumbnails.pixelRatio.length; i++) {
+        const pr = config.thumbnails.pixelRatio[i];
+        for (let i = 0; i < thumbnailSizes.length; i++) {
+            const size = thumbnailSizes[i];
+            const body = {
+                bucket,
+                key,
+                edits: {
+                    resize: {
+                        width: size.width * pr,
+                        height: size.height * pr,
+                        fit: 'inside',
+                    },
+                },
+            };
+
+            const url = `${config.imageHandlerUrl}/${Buffer.from(
+                JSON.stringify(body)
+            ).toString('base64')}`;
+            avatar.push({
+                id: 0,
+                mediaContentId: 0,
+                url,
+                width: size.width,
+                height: size.height,
+                pixelRatio: pr,
+            });
+        }
+    }
+
+    return avatar;
 }
