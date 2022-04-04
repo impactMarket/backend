@@ -33,14 +33,14 @@ class StoryController {
             });
             return;
         }
-        const { communityId, message, storyMediaId } = req.body;
+        const { communityId, message, mediaId } = req.body;
 
         let storyMediaPath: string | undefined = undefined;
-        if (storyMediaId) {
+        if (mediaId) {
             const appMedia = await database.models.appMediaContent.findOne({
                 attributes: ['url'],
                 where: {
-                    id: storyMediaId,
+                    id: mediaId,
                 },
             });
             storyMediaPath = appMedia!.url.replace(
@@ -53,6 +53,7 @@ class StoryController {
             .add(req.user.address, {
                 communityId,
                 message,
+                storyMediaId: mediaId,
                 storyMediaPath,
             })
             .then((r) => standardResponse(res, 200, true, r))

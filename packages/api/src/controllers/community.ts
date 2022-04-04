@@ -283,6 +283,7 @@ class CommunityController {
             email,
             txReceipt,
             contractParams,
+            coverMediaId,
             coverMediaPath,
         })
             .then((community) => standardResponse(res, 201, true, community))
@@ -327,11 +328,12 @@ class CommunityController {
                             description,
                             currency,
                             // should be temporary
+                            coverMediaId,
                             coverMediaPath: coverMediaPath as any,
                             email,
                         },
                         req.user?.address,
-                        req.user?.userId,
+                        req.user?.userId
                     )
                         .then((community) =>
                             standardResponse(res, 200, true, community)

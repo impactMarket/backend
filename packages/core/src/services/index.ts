@@ -5,6 +5,7 @@ import * as media from './media';
 import ReachedAddressService from './reachedAddress';
 import * as storage from './storage';
 import StoryService from './story';
+import StoryServiceV2 from './story/index';
 import * as ubi from './ubi';
 
 export {
@@ -16,4 +17,5 @@ export {
     media,
     ReachedAddressService,
     StoryService,
+    StoryServiceV2,
 };

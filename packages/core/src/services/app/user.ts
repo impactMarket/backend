@@ -310,10 +310,11 @@ export default class UserService {
 
     public static async updateAvatar(
         address: string,
+        avatarMediaId: number,
         avatarMediaPath: string
     ): Promise<boolean> {
         const updated = await this.appUser.update(
-            { avatarMediaPath },
+            { avatarMediaId, avatarMediaPath },
             { returning: true, where: { address } }
         );
         return updated[0] > 0;

@@ -49,11 +49,20 @@ export default class StoryService {
         fromAddress: string,
         story: IAddStory
     ): Promise<ICommunityStory> {
-        let storyContentToAdd: { storyMediaPath?: string; message?: string } =
-            {};
+        let storyContentToAdd: {
+            mediaMediaId?: number;
+            storyMediaPath?: string;
+            message?: string;
+        } = {};
         if (story.storyMediaPath) {
             storyContentToAdd = {
                 storyMediaPath: story.storyMediaPath,
+            };
+        }
+        if (story.storyMediaId) {
+            storyContentToAdd = {
+                ...storyContentToAdd,
+                mediaMediaId: story.storyMediaId,
             };
         }
         let storyCommunityToAdd: {

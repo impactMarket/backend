@@ -22,6 +22,7 @@ const create = celebrate({
         ).optional(),
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
+        clientId: Joi.string().optional(),
     }),
 });
 
