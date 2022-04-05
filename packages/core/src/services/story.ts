@@ -185,25 +185,7 @@ export default class StoryService {
 
         const content: StoryContent[] = r.rows.map((el) => {
             const story = el.toJSON() as StoryContent;
-            if (story.mediaMediaId && story.media) {
-                const media = story.media;
-
-                const thumbnails = createThumbnailUrl(
-                    config.aws.bucket.story,
-                    media.url.split(config.cloudfrontUrl + '/')[1],
-                    config.thumbnails.story
-                );
-                return {
-                    ...story,
-                    media: {
-                        id: 0,
-                        width: media.width,
-                        height: media.height,
-                        url: media.url,
-                        thumbnails,
-                    },
-                };
-            } else {
+            if (story.storyMediaPath) {
                 const thumbnails = createThumbnailUrl(
                     config.aws.bucket.story,
                     story.storyMediaPath!,
@@ -216,6 +198,24 @@ export default class StoryService {
                         width: 0,
                         height: 0,
                         url: `${config.cloudfrontUrl}/${story.storyMediaPath}`,
+                        thumbnails,
+                    },
+                };
+            } else {
+                const media = story.media;
+
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.story,
+                    media!.url.split(config.cloudfrontUrl + '/')[1],
+                    config.thumbnails.story
+                );
+                return {
+                    ...story,
+                    media: {
+                        id: 0,
+                        width: media!.width,
+                        height: media!.height,
+                        url: media!.url,
                         thumbnails,
                     },
                 };

@@ -264,13 +264,11 @@ export function createThumbnailUrl(
                 JSON.stringify(body)
             ).toString('base64')}`;
             avatar.push({
-                id: 0,
-                mediaContentId: 0,
                 url,
                 width: size.width,
                 height: size.height,
                 pixelRatio: pr,
-            });
+            } as any);
         }
     }
 
