@@ -84,7 +84,7 @@ export default (app: express.Application): void => {
                         description: 'Everything about your users',
                     },
                     {
-                        name: 'story',
+                        name: 'stories',
                         description: 'Manage stories',
                     },
                     {

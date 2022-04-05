@@ -201,7 +201,7 @@ export default class StoryService {
                         thumbnails,
                     },
                 };
-            } else {
+            } else if (story.mediaMediaId && story.media) {
                 const media = story.media;
 
                 const thumbnails = createThumbnailUrl(
@@ -219,6 +219,11 @@ export default class StoryService {
                         thumbnails,
                     },
                 };
+            } else {
+                return {
+                    ...story,
+                    media: {},
+                } as any;
             }
         });
 

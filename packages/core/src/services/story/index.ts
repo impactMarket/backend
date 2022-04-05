@@ -130,6 +130,56 @@ export default class StoryServiceV2 {
                 : config.defaultLimit,
         });
 
+        const promises = r.rows.map(async (c) => {
+            const content = c.toJSON() as StoryContent;
+
+            if (content.storyMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.story,
+                    content.storyMediaPath!,
+                    config.thumbnails.story
+                );
+                content.media = {
+                    url: `${config.cloudfrontUrl}/${content.storyMediaPath}`,
+                    thumbnails,
+                } as any;
+            } else if (content.mediaMediaId) {
+                const media = await models.appMediaContent.findOne({
+                    attributes: ['url'],
+                    where: {
+                        id: content.mediaMediaId,
+                    },
+                });
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.story,
+                    media!.url.split(config.cloudfrontUrl + '/')[1],
+                    config.thumbnails.story
+                );
+                content.media = {
+                    ...media!.toJSON(),
+                    thumbnails,
+                };
+            }
+
+            return {
+                id: content.id,
+                media: content.media,
+                message: content.message,
+                byAddress: content.byAddress,
+                loves: content.storyEngagement
+                    ? content.storyEngagement.loves
+                    : 0,
+                userLoved: content.storyUserEngagement
+                    ? content.storyUserEngagement.length !== 0
+                    : false,
+                userReported: content.storyUserReport
+                    ? content.storyUserReport.length !== 0
+                    : false,
+            };
+        });
+
+        const stories = await Promise.all(promises);
+
         return {
             count: r.count,
             content: {
@@ -145,24 +195,7 @@ export default class StoryServiceV2 {
                     width: 0,
                 },
                 //
-                stories: r.rows.map((c) => {
-                    const content = c.toJSON() as StoryContent;
-                    return {
-                        id: content.id,
-                        media: content.media,
-                        message: content.message,
-                        byAddress: content.byAddress,
-                        loves: content.storyEngagement
-                            ? content.storyEngagement.loves
-                            : 0,
-                        userLoved: content.storyUserEngagement
-                            ? content.storyUserEngagement.length !== 0
-                            : false,
-                        userReported: content.storyUserReport
-                            ? content.storyUserReport.length !== 0
-                            : false,
-                    };
-                }),
+                stories,
             },
         };
     }
