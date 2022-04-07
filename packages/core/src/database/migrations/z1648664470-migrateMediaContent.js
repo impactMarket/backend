@@ -34,6 +34,86 @@ module.exports = {
                 timestamps: false,
             }
         );
+        const AppUser = await queryInterface.sequelize.define(
+            'app_user',
+            {
+                id: {
+                    type: Sequelize.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
+                avatarMediaId: {
+                    type: Sequelize.INTEGER,
+                    allowNull: true,
+                },
+                avatarMediaPath: {
+                    type: Sequelize.STRING(44),
+                    allowNull: true,
+                },
+                updatedAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                },
+            },
+            {
+                tableName: 'app_user',
+                sequelize: queryInterface.sequelize, 
+            }
+        );
+        const Community = await queryInterface.sequelize.define(
+            'community',
+            {
+                id: {
+                    type: Sequelize.INTEGER,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
+                coverMediaId: {
+                    type: Sequelize.INTEGER,
+                    allowNull: true,
+                },
+                coverMediaPath: {
+                    type: Sequelize.STRING(44),
+                    allowNull: true,
+                },
+                updatedAt: {
+                    allowNull: false,
+                    type: Sequelize.DATE,
+                },
+            },
+            {
+                tableName: 'community',
+                sequelize: queryInterface.sequelize, 
+            }
+        );
+        const Story = await queryInterface.sequelize.define(
+            'story_content',
+            {
+                id: {
+                    type: Sequelize.INTEGER,
+                    allowNull: false,
+                    autoIncrement: true,
+                    primaryKey: true,
+                },
+                mediaMediaId: {
+                    type: Sequelize.INTEGER,
+                    references: {
+                        model: 'app_media_content',
+                        key: 'id',
+                    },
+                    allowNull: true,
+                },
+                storyMediaPath: {
+                    type: Sequelize.STRING(44),
+                    allowNull: true,
+                },
+            },
+            {
+                tableName: 'story_content',
+                sequelize: queryInterface.sequelize, 
+                timestamps: false,
+            }
+        );
 
         const appMediaContent = await AppMediaContent.findAll({
             attributes: ['id', 'url'],
@@ -57,7 +137,6 @@ module.exports = {
         for (let i = 0; ; i = i + batch) {
             const mediaContents = appMediaContent.slice(i, i + batch);
             const promises = mediaContents.map(async (media) => {
-                // return new Promise(async (resolve, reject) => {
                     try {
                         const key = media.url.split(process.env.CLOUDFRONT_URL + '/')[1];
                         const category = key.split('/')[0];
@@ -95,10 +174,27 @@ module.exports = {
                         const rp = await newS3.upload(paramsp).promise();
                         console.log('success for ' + media.id);
     
-                        return AppMediaContent.update(
+                        await AppMediaContent.update(
                             { url: process.env.NEW_CLOUDFRONT_URL + '/' + rp.Key },
                             { where: { id: media.id } }
                         );
+
+                        if (category === 'cover') {
+                            return Community.update(
+                                { coverMediaPath: key },
+                                { where: { coverMediaId: media.id }}
+                            );
+                        } else if (category === 'avatar') {
+                            return AppUser.update(
+                                { avatarMediaPath: key },
+                                { where: { avatarMediaId: media.id }}
+                            );
+                        } else if (category === 'story') {
+                            return Story.update(
+                                { storyMediaPath: key },
+                                { where: { mediaMediaId: media.id }}
+                            );
+                        }
                     } catch (e) {
                         console.log('failed for ', media.id);
                     }
