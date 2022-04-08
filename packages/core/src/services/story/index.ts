@@ -187,7 +187,13 @@ export default class StoryServiceV2 {
                             {
                                 model: models.community,
                                 as: 'community',
-                                attributes: ['id', 'name', 'coverMediaPath'],
+                                attributes: [
+                                    'id',
+                                    'name',
+                                    'coverMediaPath',
+                                    'city',
+                                    'country',
+                                ],
                                 ...(query.country
                                     ? {
                                           where: {

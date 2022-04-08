@@ -256,4 +256,5 @@ export default {
 
     enabledCacheWithRedis: validatedEnv.ENABLED_CACHE_WITH_REDIS,
     subgraphUrl: validatedEnv.SUBGRAPH_URL,
+    imageHandlerUrl: validatedEnv.IMAGE_HANDLER_URL,
 };
