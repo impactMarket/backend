@@ -166,12 +166,15 @@ export default class StoryServiceV2 {
         };
     }
 
-    public async list(query: {
-        offset?: string;
-        limit?: string;
-        communityId?: string[] | string;
-        country?: string[] | string;
-    }): Promise<{ count: number; content: ICommunitiesListStories[] }> {
+    public async list(
+        query: {
+            offset?: string;
+            limit?: string;
+            communityId?: string[] | string;
+            country?: string[] | string;
+        },
+        userAddress?: string,
+    ): Promise<{ count: number; content: ICommunitiesListStories[] }> {
         let r: {
             rows: StoryContentModel[];
             count: number;
@@ -231,6 +234,15 @@ export default class StoryServiceV2 {
                         model: models.storyEngagement,
                         as: 'storyEngagement',
                     },
+                    {
+                        model: models.storyUserEngagement,
+                        as: 'storyUserEngagement',
+                        required: false,
+                        duplicating: false,
+                        where: {
+                            address: userAddress,
+                        },
+                    },
                 ],
                 where: {
                     isPublic: true,
@@ -260,6 +272,7 @@ export default class StoryServiceV2 {
                 community: content.storyCommunity!.community,
                 engagement: {
                     loves: content.storyEngagement?.loves || 0,
+                    userLoved: !!content.storyUserEngagement?.length,
                 },
             };
         });
