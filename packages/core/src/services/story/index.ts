@@ -288,7 +288,11 @@ export default class StoryServiceV2 {
         }
     }
 
-    public async inapropriate(userAddress: string, contentId: number) {
+    public async inapropriate(
+        userAddress: string,
+        contentId: number,
+        typeId?: number
+    ) {
         const exists = await models.storyUserReport.findOne({
             where: {
                 contentId,
@@ -302,6 +306,7 @@ export default class StoryServiceV2 {
         } else {
             await models.storyUserReport.create({
                 contentId,
+                typeId,
                 address: userAddress,
             });
         }

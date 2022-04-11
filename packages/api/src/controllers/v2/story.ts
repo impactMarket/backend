@@ -135,8 +135,9 @@ class StoryController {
             });
             return;
         }
+        const { typeId } = req.body;
         this.storyService
-            .inapropriate(req.user.address, parseInt(req.params.id, 10))
+            .inapropriate(req.user.address, parseInt(req.params.id, 10), typeId)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

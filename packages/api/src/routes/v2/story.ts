@@ -144,4 +144,65 @@ export default (app: Router): void => {
      *         description: OK
      */
     route.get('/:query?', optionalAuthentication, storyController.list);
+
+    /**
+     * @swagger
+     *
+     * /stories/love/{id}:
+     *   put:
+     *     tags:
+     *       - "stories"
+     *     summary: Love a story
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id to love
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put('/love/:id', authenticateToken, storyController.love);
+
+    /**
+     * @swagger
+     *
+     * /stories/inapropriate/{id}:
+     *   put:
+     *     tags:
+     *       - "stories"
+     *     summary: Mark if consider story inapropriate
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id to report
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               typeId:
+     *                 type: integer
+     *                 description: type ID that describe why the story is inapropriate
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put(
+        '/inapropriate/:id',
+        authenticateToken,
+        storyController.inapropriate
+    );
 };

@@ -23,6 +23,10 @@ module.exports = {
                 type: Sequelize.STRING(44),
                 allowNull: false,
             },
+            typeId: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+            }
         });
         try {
             await queryInterface.sequelize.query(
