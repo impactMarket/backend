@@ -7,6 +7,7 @@ import {
     GlobalDailyState,
     GlobalDailyStateCreationAttributes,
 } from '../../database/models/global/globalDailyState';
+import { getUbiDailyEntity } from '../../subgraph/queries/ubi';
 
 export default class GlobalDailyStateService {
     public globalDailyState = models.globalDailyState;
@@ -73,42 +74,40 @@ export default class GlobalDailyStateService {
         // it was null just once at the system's begin.
         const aMonthAgo = new Date(from.getTime());
         aMonthAgo.setDate(aMonthAgo.getDate() - 30);
-        const result = await this.globalDailyState.findOne<any>({
-            attributes: [
-                [fn('sum', col('claimed')), 'tClaimed'],
-                [fn('sum', col('claims')), 'tClaims'],
-                [fn('sum', col('beneficiaries')), 'tBeneficiaries'],
-                [fn('sum', col('raised')), 'tRaised'],
-                [fn('sum', col('backers')), 'tBackers'],
-                [fn('sum', col('transactions')), 'tTransactions'],
-                [fn('sum', col('volume')), 'tVolume'],
-                [fn('sum', col('reach')), 'tReach'],
-                [fn('sum', col('reachOut')), 'tReachOut'],
-            ],
-            where: {
-                date: {
-                    [Op.lt]: from,
-                    [Op.gte]: aMonthAgo,
-                },
-            },
-            raw: true,
-        });
-        const frDate = new Date();
-        frDate.setDate(from.getDate() - 1);
-        const fr = await this.globalDailyState.findOne<any>({
-            attributes: ['fundingRate'],
-            where: {
-                date: frDate,
-            },
-            raw: true,
-        });
+
+        const firstDate = ((aMonthAgo.getTime() / 1000) | 0) / 86400;
+        const endDate = ((from.getTime() / 1000) | 0) / 86400;
+        const results = await getUbiDailyEntity(firstDate, endDate);
+
+        const result = results.reduce((acc, el) => {
+            return {
+                tClaimed: new BigNumber(
+                    parseFloat(acc.tClaimed || 0) + parseFloat(el.tClaimed)
+                ).toString(),
+                tClaims: el.tClaims + acc.tClaims || 0,
+                tBeneficiaries: el.tBeneficiaries + acc.tBeneficiaries || 0,
+                tRaised: new BigNumber(
+                    parseFloat(acc.tRaised || 0) + parseFloat(el.tRaised)
+                ).toString(),
+                tBackers: el.tBackers + acc.tBackers || 0,
+                tVolume: new BigNumber(
+                    parseFloat(acc.tVolume || 0) + parseFloat(el.tVolume)
+                ).toString(),
+                tTransactions: el.tTransactions + acc.tTransactions || 0,
+                tReach: el.tReach + acc.tReach || 0,
+                tReachOut: el.tReachOut + acc.tReachOut || 0,
+            };
+        }, {} as any);
+
+        const fr = results[0];
+
         return {
             tClaimed: result.tClaimed,
-            tClaims: parseInt(result.tClaims, 10),
-            tBeneficiaries: parseInt(result.tBeneficiaries, 10),
+            tClaims: result.tClaims,
+            tBeneficiaries: result.tBeneficiaries,
             tRaised: result.tRaised,
-            tBackers: parseInt(result.tBackers, 10),
-            fundingRate: parseInt(fr.fundingRate, 10),
+            tBackers: result.tBackers,
+            fundingRate: fr.fundingRate,
             tVolume: result.tVolume,
             tTransactions: result.tTransactions,
             tReach: result.tReach,
