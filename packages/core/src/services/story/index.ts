@@ -117,7 +117,33 @@ export default class StoryServiceV2 {
                     as: 'storyEngagement',
                     duplicating: false,
                 },
-                ...this._filterSubInclude(onlyFromAddress),
+                {
+                    model: models.storyUserEngagement,
+                    as: 'storyUserEngagement',
+                    required: false,
+                    duplicating: false,
+                    where: {
+                        address: onlyFromAddress,
+                    },
+                },
+                {
+                    model: models.storyCommunity,
+                    as: 'storyCommunity',
+                    required: true,
+                    include: [
+                        {
+                            model: models.community,
+                            as: 'community',
+                            attributes: [
+                                'id',
+                                'name',
+                                'coverMediaPath',
+                                'city',
+                                'country',
+                            ],
+                        },
+                    ],
+                },
             ],
             where: { byAddress: onlyFromAddress, isPublic: true },
             order: [['postedAt', 'DESC']],
@@ -128,41 +154,23 @@ export default class StoryServiceV2 {
                 ? parseInt(query.limit, 10)
                 : config.defaultLimit,
         });
-
+        const communitiesStories = r.rows.map((c) => {
+            const content = c.toJSON() as StoryContent;
+            return {
+                id: content.id,
+                storyMediaPath: content.storyMediaPath,
+                message: content.message,
+                createdAt: content.postedAt,
+                community: content.storyCommunity!.community,
+                engagement: {
+                    loves: content.storyEngagement?.loves || 0,
+                    userLoved: !!content.storyUserEngagement?.length,
+                },
+            };
+        });
         return {
             count: r.count,
-            content: {
-                id: 0,
-                // this information is on the user side already
-                name: '',
-                city: '',
-                country: '',
-                cover: {
-                    id: 0,
-                    url: '',
-                    height: 0,
-                    width: 0,
-                },
-                //
-                stories: r.rows.map((c) => {
-                    const content = c.toJSON() as StoryContent;
-                    return {
-                        id: content.id,
-                        media: content.media,
-                        message: content.message,
-                        byAddress: content.byAddress,
-                        loves: content.storyEngagement
-                            ? content.storyEngagement.loves
-                            : 0,
-                        userLoved: content.storyUserEngagement
-                            ? content.storyUserEngagement.length !== 0
-                            : false,
-                        userReported: content.storyUserReport
-                            ? content.storyUserReport.length !== 0
-                            : false,
-                    };
-                }),
-            },
+            content: communitiesStories as any,
         };
     }
 
@@ -245,6 +253,15 @@ export default class StoryServiceV2 {
                                   model: models.storyEngagement,
                                   as: 'storyEngagement',
                               },
+                              {
+                                model: models.storyUserReport,
+                                as: 'storyUserReport',
+                                required: false,
+                                duplicating: false,
+                                where: {
+                                    address: userAddress,
+                                },
+                              },
                           ]
                         : [
                               {
@@ -281,6 +298,7 @@ export default class StoryServiceV2 {
                 community: content.storyCommunity!.community,
                 engagement: {
                     loves: content.storyEngagement?.loves || 0,
+                    userReported: !!content.storyUserReport?.length,
                     userLoved: !!content.storyUserEngagement?.length,
                 },
             };
@@ -387,43 +405,5 @@ export default class StoryServiceV2 {
         //         .filter((s) => s.mediaMediaId !== null)
         //         .map((s) => s.mediaMediaId!) // not null here
         // );
-    }
-
-    private _filterSubInclude(userAddress?: string) {
-        let subInclude: Includeable[];
-        if (userAddress) {
-            subInclude = [
-                {
-                    model: models.storyEngagement,
-                    as: 'storyEngagement',
-                },
-                {
-                    model: models.storyUserEngagement,
-                    as: 'storyUserEngagement',
-                    required: false,
-                    duplicating: false,
-                    where: {
-                        address: userAddress,
-                    },
-                },
-                {
-                    model: models.storyUserReport,
-                    as: 'storyUserReport',
-                    required: false,
-                    duplicating: false,
-                    where: {
-                        address: userAddress,
-                    },
-                },
-            ];
-        } else {
-            subInclude = [
-                {
-                    model: models.storyEngagement,
-                    as: 'storyEngagement',
-                },
-            ];
-        }
-        return subInclude;
     }
 }
