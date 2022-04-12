@@ -1677,7 +1677,7 @@ describe('community service v2', () => {
                 returnClaimedSubgraph.returns([]);
                 returnCommunityEntities.returns([]);
 
-                const result = await communityListService.list({ status: 'pending' }, ambassadors[1].address);
+                const result = await communityListService.list({ status: 'pending', ambassadorAddress: ambassadors[1].address });
 
                 expect(result.count).to.be.equal(1);
                 expect(result.rows[0].id).to.be.equal(communities[0].id);
@@ -1738,7 +1738,7 @@ describe('community service v2', () => {
                 returnClaimedSubgraph.returns([]);
                 returnCommunityEntities.returns([]);
 
-                const result = await communityListService.list({}, ambassadors[0].address);
+                const result = await communityListService.list({ ambassadorAddress: ambassadors[0].address });
 
                 expect(result.count).to.be.equal(1);
                 expect(result.rows[0].id).to.be.equal(communities[0].id);
