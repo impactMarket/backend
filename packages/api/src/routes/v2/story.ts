@@ -142,6 +142,9 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
      */
     route.get('/:query?', optionalAuthentication, storyController.list);
 
