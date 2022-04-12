@@ -71,9 +71,15 @@ export default (route: Router): void => {
      *           type: number
      *         required: false
      *         description: longitude used for nearest location
+     *       - in: query
+     *         name: ambassadorAddress
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: filter communities by ambassadors
      *     responses:
      *       "200":
      *         description: OK
      */
-    route.get('/:query?', optionalAuthentication, controller.list);
+    route.get('/:query?', controller.list);
 };
