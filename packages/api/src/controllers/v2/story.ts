@@ -113,7 +113,7 @@ class StoryController {
                 );
         } else {
             this.storyService
-                .list(req.query)
+                .list(req.query, req.user?.address)
                 .then((r) =>
                     standardResponse(res, 200, true, r.content, {
                         count: r.count,
