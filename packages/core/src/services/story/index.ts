@@ -254,13 +254,13 @@ export default class StoryServiceV2 {
                                   as: 'storyEngagement',
                               },
                               {
-                                model: models.storyUserReport,
-                                as: 'storyUserReport',
-                                required: false,
-                                duplicating: false,
-                                where: {
-                                    address: userAddress,
-                                },
+                                  model: models.storyUserReport,
+                                  as: 'storyUserReport',
+                                  required: false,
+                                  duplicating: false,
+                                  where: {
+                                      address: userAddress,
+                                  },
                               },
                           ]
                         : [
@@ -294,6 +294,10 @@ export default class StoryServiceV2 {
                 id: content.id,
                 storyMediaPath: content.storyMediaPath,
                 message: content.message,
+                isDeletable: userAddress
+                    ? content.byAddress.toLowerCase() ===
+                      userAddress.toLowerCase()
+                    : false,
                 createdAt: content.postedAt,
                 community: content.storyCommunity!.community,
                 engagement: {

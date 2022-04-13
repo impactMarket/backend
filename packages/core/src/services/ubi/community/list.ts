@@ -32,8 +32,8 @@ export class CommunityListService {
             lng?: string;
             fields?: string;
             status?: 'valid' | 'pending';
+            ambassadorAddress?: string;
         },
-        ambassadorAddress?: string
     ): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
@@ -91,7 +91,7 @@ export class CommunityListService {
 
         if (query.status === 'pending') {
             const communityProposals = await this._getOpenProposals();
-            if (ambassadorAddress) {
+            if (query.ambassadorAddress) {
                 const ambassador = (await models.appUser.findOne({
                     attributes: [],
                     include: [
@@ -102,7 +102,7 @@ export class CommunityListService {
                         },
                     ],
                     where: {
-                        address: ambassadorAddress,
+                        address: query.ambassadorAddress,
                     },
                 })) as any;
                 const phone = ambassador?.trust[0]?.phone;
@@ -126,10 +126,10 @@ export class CommunityListService {
                 },
             };
         } else {
-            if (ambassadorAddress) {
+            if (query.ambassadorAddress) {
                 extendedWhere = {
                     ...extendedWhere,
-                    ambassadorAddress,
+                    ambassadorAddress: query.ambassadorAddress,
                 };
             }
         }
