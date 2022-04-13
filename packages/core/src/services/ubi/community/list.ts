@@ -479,13 +479,9 @@ export class CommunityListService {
             contractAddress = communities;
         }
 
-        // const batch = 10;
         let result: any[] = [];
 
         if (contractAddress.length > 0) {
-            // for (let i = 0; ; i = i + batch) {
-            // const addresses = contractAddress.slice(i, i + batch);
-
             result = await communityEntities(
                 `orderBy: beneficiaries,
                         orderDirection: ${
@@ -506,11 +502,6 @@ export class CommunityListService {
                         )}]}`,
                 `id, beneficiaries`
             );
-            // result.push(...communities);
-            // if (i + batch > contractAddress.length) {
-            //     break;
-            // }
-            // }
         } else {
             result = await communityEntities(
                 `orderBy: beneficiaries,
