@@ -1,10 +1,11 @@
-import { Includeable, Op } from 'sequelize';
+import { Op } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
 import { StoryContentModel } from '../../database/models/story/storyContent';
 import { StoryCommunityCreationEager } from '../../interfaces/story/storyCommunity';
 import { StoryContent } from '../../interfaces/story/storyContent';
+import { getBeneficiaryCommunity } from '../../subgraph/queries/beneficiary';
 import { BaseError } from '../../utils/baseError';
 import {
     IAddStory,
@@ -43,30 +44,29 @@ export default class StoryServiceV2 {
                 message: story.message,
             };
         }
-        if (story.communityId !== undefined) {
-            const community = await models.community.findOne({
-                attributes: ['id'],
-                where: {
-                    id: story.communityId,
-                    visibility: 'public',
-                },
-            });
+        const communityAddress = await getBeneficiaryCommunity(fromAddress);
+        const community = await models.community.findOne({
+            attributes: ['id'],
+            where: {
+                contractAddress: communityAddress,
+                visibility: 'public',
+            },
+        });
 
-            if (!community) {
-                throw new BaseError(
-                    'PRIVATE_COMMUNITY',
-                    'story cannot be added in private communities'
-                );
-            }
-
-            storyCommunityToAdd = {
-                storyCommunity: [
-                    {
-                        communityId: story.communityId,
-                    },
-                ],
-            };
+        if (!community) {
+            throw new BaseError(
+                'PRIVATE_COMMUNITY',
+                'story cannot be added in private communities'
+            );
         }
+
+        storyCommunityToAdd = {
+            storyCommunity: [
+                {
+                    communityId: community.id,
+                },
+            ],
+        };
         const created = await models.storyContent.create(
             {
                 ...storyContentToAdd,
