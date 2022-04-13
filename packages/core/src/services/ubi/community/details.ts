@@ -1,4 +1,4 @@
-import { utils } from 'ethers';
+import { utils, ethers } from 'ethers';
 import { Op, WhereOptions } from 'sequelize';
 
 import { models } from '../../../database';
@@ -182,19 +182,19 @@ export class CommunityDetailsService {
 
         let showEmail = false;
         if (userAddress) {
-            // verify if user is an ambassador or manager
-            if (community.ambassadorAddress === userAddress) {
+            // verify if user is the community creator, ambassador or manager
+            if (
+                (community.status === 'pending' &&
+                    community.requestByAddress === userAddress) ||
+                community.ambassadorAddress === userAddress
+            ) {
                 showEmail = true;
             } else {
                 const userRole = await getUserRoles(userAddress);
                 if (userRole.manager) {
                     showEmail =
-                        userRole.manager.community ===
+                        ethers.utils.getAddress(userRole.manager.community) ===
                         community.contractAddress;
-                } else {
-                    showEmail =
-                        community.status === 'pending' &&
-                        community.requestByAddress === userAddress;
                 }
             }
         }
