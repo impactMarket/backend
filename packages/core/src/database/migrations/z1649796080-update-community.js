@@ -22,7 +22,7 @@ module.exports = {
                 type: Sequelize.ENUM(
                     'pending',
                     'claimed',
-                    'declined'
+                    'declined',
                 ),
                 default: 'pending',
                 allowNull: false,

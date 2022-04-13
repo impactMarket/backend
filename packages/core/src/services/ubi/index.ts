@@ -4,6 +4,7 @@ import ClaimLocationService from './claimLocation';
 import CommunityService from './community';
 import { CommunityDetailsService } from './community/details';
 import { CommunityListService } from './community/list';
+import { CommunityEditService } from './community/edit';
 import CommunityContractService from './communityContract';
 import CommunityDailyMetricsService from './communityDailyMetrics';
 import CommunityDemographicsService from './communityDemographics';
@@ -22,4 +23,5 @@ export {
     CommunityDemographicsService,
     CommunityDetailsService,
     CommunityListService,
+    CommunityEditService,
 };
