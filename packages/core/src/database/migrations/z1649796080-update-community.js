@@ -23,6 +23,7 @@ module.exports = {
                     'pending',
                     'claimed',
                     'declined',
+                    'accepted',
                 ),
                 default: 'pending',
                 allowNull: false,

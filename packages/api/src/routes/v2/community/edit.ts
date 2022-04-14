@@ -97,7 +97,7 @@ export default (route: Router): void => {
      *             properties:
      *               review:
      *                 type: string
-     *                 enum: [claimed, declined]
+     *                 enum: [claimed, declined, pending, accepted]
      *                 required: true
      *     responses:
      *       "200":

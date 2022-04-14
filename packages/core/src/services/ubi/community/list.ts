@@ -31,7 +31,7 @@ export class CommunityListService {
         lng?: string;
         fields?: string;
         status?: 'valid' | 'pending';
-        review?: 'pending' | 'claimed' | 'declined' | 'accepted';
+        review?: 'pending' | 'claimed' | 'declined' | 'accepted' | 'accepted';
         ambassadorAddress?: string;
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
