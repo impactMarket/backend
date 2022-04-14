@@ -19,22 +19,21 @@ import { CommunityDetailsService } from './details';
 export class CommunityListService {
     communityDetailsService = new CommunityDetailsService();
 
-    public async list(
-        query: {
-            orderBy?: string;
-            filter?: string;
-            name?: string;
-            country?: string;
-            extended?: string;
-            offset?: string;
-            limit?: string;
-            lat?: string;
-            lng?: string;
-            fields?: string;
-            status?: 'valid' | 'pending';
-            ambassadorAddress?: string;
-        },
-    ): Promise<{ count: number; rows: CommunityAttributes[] }> {
+    public async list(query: {
+        orderBy?: string;
+        filter?: string;
+        name?: string;
+        country?: string;
+        extended?: string;
+        offset?: string;
+        limit?: string;
+        lat?: string;
+        lng?: string;
+        fields?: string;
+        status?: 'valid' | 'pending';
+        review?: 'pending' | 'claimed' | 'declined' | 'accepted';
+        ambassadorAddress?: string;
+    }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
         const orderOutOfFunds = {
@@ -87,6 +86,14 @@ export class CommunityListService {
                     [Op.in]: query.country.split(';'),
                 },
             };
+        }
+
+        if (query.review) {
+            extendedWhere = {
+                ...extendedWhere,
+                review: query.review,
+            };
+            query.status = 'pending';
         }
 
         if (query.status === 'pending') {
@@ -472,15 +479,11 @@ export class CommunityListService {
             contractAddress = communities;
         }
 
-        const batch = 10;
         let result: any[] = [];
 
         if (contractAddress.length > 0) {
-            for (let i = 0; ; i = i + batch) {
-                const addresses = contractAddress.slice(i, i + batch);
-
-                const communities = await communityEntities(
-                    `orderBy: beneficiaries,
+            result = await communityEntities(
+                `orderBy: beneficiaries,
                         orderDirection: ${
                             orderType ? orderType.toLocaleLowerCase() : 'desc'
                         },
@@ -494,16 +497,11 @@ export class CommunityListService {
                                 ? parseInt(query.offset, 10)
                                 : config.defaultOffset
                         },
-                        where: { id_in: [${addresses.map(
+                        where: { id_in: [${contractAddress.map(
                             (el) => `"${el.toLocaleLowerCase()}"`
                         )}]}`,
-                    `id, beneficiaries`
-                );
-                result.push(...communities);
-                if (i + batch > contractAddress.length) {
-                    break;
-                }
-            }
+                `id, beneficiaries`
+            );
         } else {
             result = await communityEntities(
                 `orderBy: beneficiaries,

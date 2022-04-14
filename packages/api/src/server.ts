@@ -169,7 +169,7 @@ export default (app: express.Application): void => {
                 error.details.get('body').details.length > 0 &&
                 error.details.get('body').details[0].message
         );
-        if (error && error.toString().indexOf('celebrate') !== -1) {
+        if (error && error.toString().indexOf('Validation failed') !== -1) {
             return res.status(200).json({
                 success: false,
                 error:

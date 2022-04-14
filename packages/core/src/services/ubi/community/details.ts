@@ -1,4 +1,4 @@
-import { utils } from 'ethers';
+import { utils, ethers } from 'ethers';
 import { Op, WhereOptions } from 'sequelize';
 
 import { models } from '../../../database';
@@ -9,6 +9,7 @@ import {
     getCommunityState,
     getCommunityUBIParams,
 } from '../../../subgraph/queries/community';
+import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 
 export class CommunityDetailsService {
@@ -181,21 +182,28 @@ export class CommunityDetailsService {
 
         let showEmail = false;
         if (userAddress) {
-            const manager = await models.manager.findOne({
-                attributes: ['communityId'],
-                where: { address: userAddress, active: true },
-            });
-            if (manager !== null) {
-                showEmail = manager.communityId === community.id;
+            // verify if user is the community creator, ambassador or manager
+            if (
+                (community.status === 'pending' &&
+                    community.requestByAddress === userAddress) ||
+                community.ambassadorAddress === userAddress
+            ) {
+                showEmail = true;
             } else {
-                showEmail =
-                    community.status === 'pending' &&
-                    community.requestByAddress === userAddress;
+                const userRole = await getUserRoles(userAddress);
+                if (userRole.manager) {
+                    showEmail =
+                        ethers.utils.getAddress(userRole.manager.community) ===
+                        community.contractAddress;
+                }
             }
         }
 
+        const state = (await this.getState(community.id)) as any;
+
         return {
             ...community.toJSON(),
+            state,
             email: showEmail ? community.email : '',
         };
     }
