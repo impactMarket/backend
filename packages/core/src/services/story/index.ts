@@ -127,6 +127,15 @@ export default class StoryServiceV2 {
                     },
                 },
                 {
+                    model: models.storyUserReport,
+                    as: 'storyUserReport',
+                    required: false,
+                    duplicating: false,
+                    where: {
+                        address: onlyFromAddress,
+                    },
+                },
+                {
                     model: models.storyCommunity,
                     as: 'storyCommunity',
                     required: true,
@@ -160,10 +169,13 @@ export default class StoryServiceV2 {
                 id: content.id,
                 storyMediaPath: content.storyMediaPath,
                 message: content.message,
+                isDeletable: content.byAddress.toLowerCase() ===
+                    onlyFromAddress.toLowerCase(),
                 createdAt: content.postedAt,
                 community: content.storyCommunity!.community,
                 engagement: {
                     loves: content.storyEngagement?.loves || 0,
+                    userReported: !!content.storyUserReport?.length,
                     userLoved: !!content.storyUserEngagement?.length,
                 },
             };
