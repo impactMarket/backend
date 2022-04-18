@@ -180,7 +180,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/list/:query?',
-        database.cacheWithRedis('10 minutes'),
+        database.cacheWithRedis('10 minutes', database.cacheOnlySuccess),
         storyController.listByOrder
     );
 
