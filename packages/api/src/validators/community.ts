@@ -99,7 +99,7 @@ const remove = celebrate({
 
 const review = celebrate({
     body: Joi.object({
-        review: Joi.string().required().valid('declined', 'claimed'),
+        review: Joi.string().required().valid('pending', 'claimed', 'declined', 'accepted'),
     }),
 });
 

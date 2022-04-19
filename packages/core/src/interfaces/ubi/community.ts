@@ -99,7 +99,7 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *            enum: [pending,valid,removed]
  *          review:
  *            type: string
- *            enum: [pending,claimed,declined]
+ *            enum: [pending,claimed,declined,accepted]
  *          started:
  *            type: string
  *          proposalId:
@@ -156,7 +156,7 @@ export interface CommunityAttributes {
     coverMediaId: number;
     coverMediaPath: string;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    review: 'pending' | 'claimed' | 'declined';
+    review: 'pending' | 'claimed' | 'declined' | 'accepted';
     started: Date; // TODO: to be removed
     proposalId: number | null;
     ambassadorAddress: string | null;

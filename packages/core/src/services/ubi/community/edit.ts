@@ -98,10 +98,10 @@ export class CommunityEditService {
 
     public async review(
         id: number,
-        review: 'declined' | 'claimed',
+        review: 'pending' | 'claimed' | 'declined' | 'accepted',
         ambassadorAddress: string
     ): Promise<boolean> {
-        // TODO: valid if ambassador
+        // TODO: validate if ambassador
 
         const result = await models.community.update(
             {
@@ -109,10 +109,7 @@ export class CommunityEditService {
                 ambassadorAddress,
             },
             {
-                where: {
-                    id,
-                    review: 'pending',
-                },
+                where: { id },
             }
         );
 
