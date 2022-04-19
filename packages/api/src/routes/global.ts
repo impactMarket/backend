@@ -9,19 +9,19 @@ export default (app: Router): void => {
 
     route.get(
         '/status',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         globalController.globalStatus
     );
 
     route.get(
         '/numbers',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         globalController.numbers
     );
 
     route.get(
         '/demographics',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         globalController.globalDemographics
     );
 };
