@@ -21,7 +21,7 @@ describe('claim location service', () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        users = await UserFactory({ n: 3 });
+        users = await UserFactory({ n: 4 });
         communities = await CommunityFactory([
             {
                 requestByAddress: users[0].address,
@@ -36,6 +36,7 @@ describe('claim location service', () => {
                     maxClaim: '450000000000000000000',
                 },
                 hasAddress: true,
+                country: 'BR',
             },
             {
                 requestByAddress: users[1].address,
@@ -51,9 +52,40 @@ describe('claim location service', () => {
                 },
                 hasAddress: true,
             },
+            {
+                requestByAddress: users[2].address,
+                started: new Date(),
+                status: 'valid',
+                visibility: 'public',
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '1000000000000000000',
+                    communityId: 0,
+                    incrementInterval: 5 * 60,
+                    maxClaim: '450000000000000000000',
+                },
+                hasAddress: true,
+                country: 'PT',
+            },
+            {
+                requestByAddress: users[3].address,
+                started: new Date(),
+                status: 'valid',
+                visibility: 'public',
+                contract: {
+                    baseInterval: 60 * 60 * 24,
+                    claimAmount: '1000000000000000000',
+                    communityId: 0,
+                    incrementInterval: 5 * 60,
+                    maxClaim: '450000000000000000000',
+                },
+                hasAddress: true,
+                country: 'AR',
+            },
         ]);
         await BeneficiaryFactory(users.slice(0, 1), communities[0].id);
         await BeneficiaryFactory(users.slice(1, 2), communities[1].id);
+        await BeneficiaryFactory(users.slice(3, 4), communities[3].id);
 
         spyClaimLocationAdd = spy(models.ubiClaimLocation, 'create');
     });
@@ -79,6 +111,41 @@ describe('claim location service', () => {
             assert.callCount(spyClaimLocationAdd, 1);
             assert.calledWith(spyClaimLocationAdd.getCall(0), {
                 communityId: communities[0].id,
+                gps: {
+                    latitude: -22.2375236,
+                    longitude: -49.9819737,
+                },
+            });
+        });
+
+        it('should return an error when a user is claiming from a location different of the community', async () => {
+            ClaimLocationService.add(
+                communities[2].id,
+                {
+                    latitude: -22.2375236,
+                    longitude: -49.9819737,
+                },
+                users[0].address
+            )
+                .catch((e) => expect(e.name).to.be.equal('INVALID_LOCATION'))
+                .then(() => {
+                    throw new Error('expected to fail');
+                });
+        });
+
+        it('should add claim location when a user is claiming from a country neighbor', async () => {
+            await ClaimLocationService.add(
+                communities[3].id,
+                {
+                    latitude: -22.2375236,
+                    longitude: -49.9819737,
+                },
+                users[3].address
+            );
+
+            assert.callCount(spyClaimLocationAdd, 1);
+            assert.calledWith(spyClaimLocationAdd.getCall(0), {
+                communityId: communities[3].id,
                 gps: {
                     latitude: -22.2375236,
                     longitude: -49.9819737,
