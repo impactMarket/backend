@@ -134,6 +134,7 @@ describe('claim location service', () => {
         });
 
         it('should add claim location when a user is claiming from a country neighbor', async () => {
+            spyClaimLocationAdd.resetHistory();
             await ClaimLocationService.add(
                 communities[3].id,
                 {
@@ -142,7 +143,6 @@ describe('claim location service', () => {
                 },
                 users[3].address
             );
-
             assert.callCount(spyClaimLocationAdd, 1);
             assert.calledWith(spyClaimLocationAdd.getCall(0), {
                 communityId: communities[3].id,
