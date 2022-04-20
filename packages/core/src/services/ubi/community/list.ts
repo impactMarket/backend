@@ -239,7 +239,8 @@ export class CommunityListService {
                 }
             }
         } else {
-            if (query.status !== 'pending') {
+            // if searching by pending or did not pass the "state" on fields, do not search on the graph
+            if (query.status !== 'pending' && (!query.fields || query.fields.indexOf('state') !== -1)) {
                 beneficiariesState = await this._getBeneficiaryState(
                     {
                         status: query.status,
