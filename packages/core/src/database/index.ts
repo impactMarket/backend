@@ -178,6 +178,7 @@ if (process.env.NODE_ENV !== 'test') {
             : {}),
     });
 }
+const cacheOnlySuccess = (req, res) => res.statusCode === 200;
 const apiCacheOptions = {
     debug: !config.enabledCacheWithRedis,
     enabled: config.enabledCacheWithRedis,
@@ -227,4 +228,4 @@ export {
     UbiPromoter,
     UbiPromoterSocialMedia,
 };
-export { sequelize, Sequelize, models, redisClient, cacheWithRedis };
+export { sequelize, Sequelize, models, redisClient, cacheWithRedis, cacheOnlySuccess };

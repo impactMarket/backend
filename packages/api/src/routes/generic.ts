@@ -115,7 +115,7 @@ export default (app: Router): void => {
      */
     app.get(
         '/circulating-supply',
-        database.cacheWithRedis('10 minutes'),
+        database.cacheWithRedis('10 minutes', database.cacheOnlySuccess),
         genericController.circulatingSupply
     );
 
