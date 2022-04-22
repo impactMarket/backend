@@ -11,7 +11,7 @@ export default (app: Router): void => {
 
     route.get(
         '/',
-        database.cacheWithRedis('1 day'),
+        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
         claimLocationController.getAll
     );
 

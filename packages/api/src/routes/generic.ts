@@ -70,7 +70,8 @@ export default (app: Router): void => {
      *                         type: number
      */
     app.get('/exchange-rate', (req: Request, res: Response) => {
-        services.app.ExchangeRatesService.get()
+        new services.app.ExchangeRatesService()
+            .get()
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     });
@@ -114,7 +115,7 @@ export default (app: Router): void => {
      */
     app.get(
         '/circulating-supply',
-        database.cacheWithRedis('10 minutes'),
+        database.cacheWithRedis('10 minutes', database.cacheOnlySuccess),
         genericController.circulatingSupply
     );
 

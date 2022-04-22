@@ -1,4 +1,5 @@
 import { gql } from 'apollo-boost';
+import { utils } from 'ethers';
 
 import { client } from '../config';
 import { BeneficiarySubgraph } from '../interfaces/beneficiary';
@@ -36,6 +37,7 @@ export const getBeneficiariesByCommunity = async (
             `;
             const queryResult = await client.query({
                 query,
+                fetchPolicy: 'no-cache',
             });
 
             result.push(...queryResult.data.beneficiaryEntities);
@@ -111,6 +113,35 @@ export const getBeneficiariesByClaimInactivity = async (
             query,
         });
         return queryResult.data.beneficiaryEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getBeneficiaryCommunity = async (
+    beneficiaryAddress: string
+): Promise<string> => {
+    try {
+        const query = gql`
+                {
+                    beneficiaryEntity(
+                        id: "${beneficiaryAddress.toLowerCase()}"
+                        status: 0
+                    ) {
+                        community {
+                            id
+                        }
+                    }
+                }
+            `;
+        const queryResult = await client.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return utils.getAddress(
+            queryResult.data.beneficiaryEntity.community.id
+        );
     } catch (error) {
         throw new Error(error);
     }

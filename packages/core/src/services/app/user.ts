@@ -7,19 +7,21 @@ import {
     AppAnonymousReport,
     AppAnonymousReportCreation,
 } from '../../interfaces/app/appAnonymousReport';
+import { LogTypes } from '../../interfaces/app/appLog';
 import { AppNotification } from '../../interfaces/app/appNotification';
 import {
     AppUser,
     AppUserCreationAttributes,
 } from '../../interfaces/app/appUser';
-import { CommunityAttributes } from '../../interfaces/ubi/community';
 import { BaseError } from '../../utils/baseError';
 import { generateAccessToken } from '../../utils/jwt';
 import { Logger } from '../../utils/logger';
+import { createThumbnailUrl } from '../../utils/util';
 import { IUserHello, IUserAuth, IBeneficiary, IManager } from '../endpoints';
 import { ProfileContentStorage } from '../storage';
 import CommunityService from '../ubi/community';
-import ExchangeRatesService from './exchangeRates';
+import UserLogService from './user/log';
+
 export default class UserService {
     public static sequelize = sequelize;
     public static appUser = models.appUser;
@@ -32,6 +34,7 @@ export default class UserService {
     public static appNotification = models.appNotification;
 
     private static profileContentStorage = new ProfileContentStorage();
+    private static userLogService = new UserLogService();
 
     public static hubspotClient = new Client({ apiKey: config.hubspotKey });
 
@@ -66,14 +69,19 @@ export default class UserService {
             if (!exists) {
                 // create new user, including their phone number information
                 userFromRegistry = (
-                    await this.appUser.create(user, {
-                        include: [
-                            {
-                                model: this.appUserTrust,
-                                as: 'trust',
-                            },
-                        ],
-                    })
+                    await this.appUser.create(
+                        user,
+                        user.trust?.phone
+                            ? {
+                                  include: [
+                                      {
+                                          model: models.appUserTrust,
+                                          as: 'trust',
+                                      },
+                                  ],
+                              }
+                            : {}
+                    )
                 ).toJSON() as AppUser;
             } else {
                 if (user.pushNotificationToken) {
@@ -84,26 +92,44 @@ export default class UserService {
                 }
                 // it's not null at this point
                 userFromRegistry = (await this.appUser.findOne({
-                    include: [
-                        {
-                            model: this.appMediaContent,
-                            as: 'avatar',
-                            required: false,
-                            include: [
-                                {
-                                    model: this.appMediaThumbnail,
-                                    as: 'thumbnails',
-                                    separate: true,
-                                },
-                            ],
-                        },
-                        {
-                            model: this.appUserTrust,
-                            as: 'trust',
-                        },
-                    ],
                     where: { address: user.address },
                 }))!.toJSON() as AppUser;
+                if (userFromRegistry.avatarMediaPath) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.profile,
+                        userFromRegistry.avatarMediaPath,
+                        config.thumbnails.profile
+                    );
+                    userFromRegistry.avatar = {
+                        id: 0,
+                        width: 0,
+                        height: 0,
+                        url: `${config.cloudfrontUrl}/${userFromRegistry.avatarMediaPath}`,
+                        thumbnails,
+                    };
+                } else if (userFromRegistry.avatarMediaId) {
+                    const media = await models.appMediaContent.findOne({
+                        attributes: ['url', 'width', 'height'],
+                        where: {
+                            id: userFromRegistry.avatarMediaId,
+                        },
+                    });
+
+                    if (media) {
+                        const thumbnails = createThumbnailUrl(
+                            config.aws.bucket.profile,
+                            media.url.split(config.cloudfrontUrl + '/')[1],
+                            config.thumbnails.profile
+                        );
+                        userFromRegistry.avatar = {
+                            id: 0,
+                            width: media.width,
+                            height: media.height,
+                            url: media.url,
+                            thumbnails,
+                        };
+                    }
+                }
             }
 
             if (!userFromRegistry.active) {
@@ -284,10 +310,11 @@ export default class UserService {
 
     public static async updateAvatar(
         address: string,
-        mediaId: number
+        avatarMediaId: number,
+        avatarMediaPath: string
     ): Promise<boolean> {
         const updated = await this.appUser.update(
-            { avatarMediaId: mediaId },
+            { avatarMediaId, avatarMediaPath },
             { returning: true, where: { address } }
         );
         return updated[0] > 0;
@@ -475,19 +502,6 @@ export default class UserService {
      * TODO: improve
      */
     private static async loadUser(user: AppUser): Promise<IUserHello> {
-        // const user = await this.appUser.findOne({
-        //     include: [
-        //         {
-        //             model: this.appUserTrust,
-        //             as: 'trust',
-        //         },
-        //     ],
-        //     where: { address: userAddress },
-        // });
-        // if (user === null) {
-        //     throw new Error('User is null?');
-        // }
-        // const fUser = user.toJSON() as User;
         const beneficiary: IBeneficiary | null = await this.beneficiary.findOne(
             {
                 attributes: ['blocked', 'readRules', 'communityId'],
@@ -500,23 +514,14 @@ export default class UserService {
         });
 
         // get user community
-        // TODO: deprecated in mobile-app@1.1.5
-        let community: CommunityAttributes | null = null;
         let managerInPendingCommunity = false;
         // reusable method
-        const getCommunity = async (communityId: number) =>
-            CommunityService.findById(communityId);
 
-        if (beneficiary) {
-            community = await getCommunity(beneficiary.communityId);
-        } else if (manager) {
-            community = await getCommunity(manager.communityId);
-        } else {
+        if (!beneficiary && !manager) {
             const communityId = await CommunityService.findByFirstManager(
                 user.address
             );
             if (communityId) {
-                community = await getCommunity(communityId);
                 managerInPendingCommunity = true;
                 manager = {
                     communityId,
@@ -535,9 +540,11 @@ export default class UserService {
                     ? user.trust[0].verifiedPhoneNumber
                     : undefined, // TODO: deprecated in mobile-app@1.1.5
             suspect: user.suspect, // TODO: deprecated
-            rates: await ExchangeRatesService.get(), // TODO: deprecated in mobile-app@1.1.5
-            community: community ? community : undefined, // TODO: deprecated in mobile-app@1.1.5
-            communityId: community ? community.id : undefined, // TODO: deprecated
+            communityId: beneficiary
+                ? beneficiary.communityId
+                : manager
+                ? manager.communityId
+                : undefined, // TODO: deprecated
             user: {
                 suspect: user.suspect,
             },
@@ -554,6 +561,13 @@ export default class UserService {
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'user was not updated!');
         }
+
+        this.userLogService.create(
+            updated[1][0].id,
+            LogTypes.EDITED_PROFILE,
+            user
+        );
+
         return updated[1][0];
     }
 

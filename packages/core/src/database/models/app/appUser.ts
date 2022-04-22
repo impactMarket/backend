@@ -9,7 +9,10 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public id!: number;
     public address!: string;
     public username!: string | null;
+    public firstName!: string | null;
+    public lastName!: string | null;
     public avatarMediaId!: number | null;
+    public avatarMediaPath!: string | null;
     public language!: string;
     public currency!: string;
     public pushNotificationToken!: string | null;
@@ -20,6 +23,7 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public suspect!: boolean;
     public active!: boolean;
     public email!: string;
+    public bio!: string;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -49,7 +53,17 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
                 // onDelete: 'SET NULL', // default
                 allowNull: true,
             },
+            avatarMediaPath: {
+                type: DataTypes.STRING(44),
+                allowNull: true,
+            },
             username: {
+                type: DataTypes.STRING(128),
+            },
+            firstName: {
+                type: DataTypes.STRING(128),
+            },
+            lastName: {
                 type: DataTypes.STRING(128),
             },
             language: {
@@ -74,6 +88,9 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
                 type: DataTypes.INTEGER,
             },
             email: {
+                type: DataTypes.STRING(64),
+            },
+            bio: {
                 type: DataTypes.STRING(64),
             },
             lastLogin: {

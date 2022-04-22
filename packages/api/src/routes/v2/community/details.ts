@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/details';
 import { authenticateToken } from '../../../middlewares';
+import { optionalAuthentication } from '../../../middlewares';
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -9,10 +10,10 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /community/{id}/managers:
+     * /communities/{id}/managers:
      *   get:
      *     tags:
-     *       - "community"
+     *       - "communities"
      *     summary: Get community managers
      *     parameters:
      *       - in: query
@@ -83,10 +84,10 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/IListBeneficiary'
      */
      route.get(
-        '/beneficiaries/:query?',
-        authenticateToken,
-        controller.getBeneficiaries
-    );
+          '/beneficiaries/:query?',
+          authenticateToken,
+          controller.getBeneficiaries
+      );
 
     /**
      * @swagger
@@ -133,9 +134,34 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/BeneficiaryActivities'
      */
-    route.get(
-        '/beneficiaries/activity/:address/:query?',
-        authenticateToken,
-        controller.getBeneficiaryActivity
-    );
+     route.get(
+          '/beneficiaries/activity/:address/:query?',
+          authenticateToken,
+          controller.getBeneficiaryActivity
+      );
+
+    /**
+     * @swagger
+     *
+     * /communities/{id-or-address}:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community by id or contract address
+     *     parameters:
+     *       - in: path
+     *         name: id-or-address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: community id or contract address
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunity'
+     */
+     route.get('/:idOrAddress', optionalAuthentication, controller.findBy);
 };

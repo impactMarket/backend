@@ -34,6 +34,7 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *          - visibility
  *          - coverImage
  *          - coverMediaId
+ *          - coverMediaPath
  *          - status
  *          - review
  *          - started
@@ -91,12 +92,14 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *            type: string
  *          coverMediaId:
  *            type: integer
+ *          coverMediaPath:
+ *            type: string
  *          status:
  *            type: string
  *            enum: [pending,valid,removed]
  *          review:
  *            type: string
- *            enum: [pending,in-progress,halted,closed]
+ *            enum: [pending,claimed,declined,accepted]
  *          started:
  *            type: string
  *          proposalId:
@@ -151,8 +154,9 @@ export interface CommunityAttributes {
     visibility: 'public' | 'private';
     coverImage: string; // TODO: to be removed
     coverMediaId: number;
+    coverMediaPath: string;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    review: 'pending' | 'in-progress' | 'halted' | 'closed';
+    review: 'pending' | 'claimed' | 'declined' | 'accepted';
     started: Date; // TODO: to be removed
     proposalId: number | null;
     ambassadorAddress: string | null;
@@ -201,5 +205,6 @@ export interface IBaseCommunityAttributes {
     };
     email: string;
     coverMediaId?: number;
+    coverMediaPath?: string;
     contractParams?: ICommunityContractParams;
 }

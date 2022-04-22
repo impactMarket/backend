@@ -16,7 +16,17 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: true,
             },
+            avatarMediaPath: {
+                type: Sequelize.STRING(44),
+                allowNull: true,
+            },
             username: {
+                type: Sequelize.STRING(128),
+            },
+            firstName: {
+                type: Sequelize.STRING(128),
+            },
+            lastName: {
                 type: Sequelize.STRING(128),
             },
             language: {
@@ -57,6 +67,10 @@ module.exports = {
             },
             email: {
                 type: Sequelize.STRING(64),
+                allowNull: true,
+            },
+            bio: {
+                type: Sequelize.STRING(512),
                 allowNull: true,
             },
             createdAt: {

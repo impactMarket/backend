@@ -210,7 +210,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/list/light/:order?',
-        database.cacheWithRedis('10 minutes'),
+        database.cacheWithRedis('10 minutes', database.cacheOnlySuccess),
         communityController.listLight
     );
     /**
@@ -236,7 +236,7 @@ export default (app: Router): void => {
 
     route.get(
         '/:id/historical-ssi',
-        database.cacheWithRedis('1 day'),
+        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
         communityController.getHistoricalSSI
     );
 
@@ -295,7 +295,7 @@ export default (app: Router): void => {
      *                type: string
      *                required: true
      *              coverMediaId:
-     *                type: number
+     *                type: integer
      *                required: true
      *              txReceipt:
      *                type: object
@@ -623,7 +623,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/count/:query?',
-        database.cacheWithRedis('5 minutes'),
+        database.cacheWithRedis('5 minutes', database.cacheOnlySuccess),
         controller.count
     );
 
@@ -656,7 +656,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/past-ssi',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getPastSSI
     );
 
@@ -681,7 +681,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/dashboard',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getDashboard
     );
 
@@ -710,7 +710,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/demographics',
-        database.cacheWithRedis('1 day'),
+        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
         controller.getDemographics
     );
 
@@ -746,7 +746,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/claim-location',
-        database.cacheWithRedis('1 day'),
+        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
         controller.getClaimLocation
     );
 
@@ -831,7 +831,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/suspect',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getSuspect
     );
 
@@ -910,7 +910,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/metrics',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getMetrics
     );
 
@@ -939,7 +939,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/campaign',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getCampaign
     );
 
@@ -1005,7 +1005,7 @@ export default (app: Router): void => {
      *                type: string
      *                required: false
      *              coverMediaId:
-     *                type: number
+     *                type: integer
      *                required: true
      *     responses:
      *       "200":
@@ -1062,7 +1062,7 @@ export default (app: Router): void => {
      *                 type: string
      *                 required: true
      *               coverMediaId:
-     *                 type: number
+     *                 type: integer
      *                 required: true
      *               gps:
      *                 type: object

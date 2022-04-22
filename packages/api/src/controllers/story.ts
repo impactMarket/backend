@@ -1,4 +1,4 @@
-import { services } from '@impactmarket/core';
+import { config, database, services } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
 import { RequestWithUser } from '../middlewares/core';
@@ -23,7 +23,7 @@ class StoryController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    add = (req: RequestWithUser, res: Response) => {
+    add = async (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
@@ -33,8 +33,29 @@ class StoryController {
             });
             return;
         }
+        const { communityId, message, mediaId } = req.body;
+
+        let storyMediaPath: string | undefined = undefined;
+        if (mediaId) {
+            const appMedia = await database.models.appMediaContent.findOne({
+                attributes: ['url'],
+                where: {
+                    id: mediaId,
+                },
+            });
+            storyMediaPath = appMedia!.url.replace(
+                `${config.cloudfrontUrl}/`,
+                ''
+            );
+        }
+
         this.storyService
-            .add(req.user.address, req.body)
+            .add(req.user.address, {
+                communityId,
+                message,
+                storyMediaId: mediaId,
+                storyMediaPath,
+            })
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

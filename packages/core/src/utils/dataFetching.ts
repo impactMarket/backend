@@ -1,5 +1,5 @@
 interface IField {
-    [key: string]: string[] | [];
+    [key: string]: string[];
 }
 
 export const fetchData = (queryString: string): IField => {

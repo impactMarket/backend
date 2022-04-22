@@ -2,20 +2,28 @@ import { Op, QueryTypes } from 'sequelize';
 
 import { models, sequelize } from '../../../database';
 import { AppUserModel } from '../../../database/models/app/appUser';
+import { LogTypes } from '../../../interfaces/app/appLog';
 import {
     AppUser,
     AppUserCreationAttributes,
+    AppUserUpdate,
 } from '../../../interfaces/app/appUser';
+import { ProfileContentStorage } from '../../../services/storage';
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
 import { Logger } from '../../../utils/logger';
+import UserLogService from './log';
 
 export default class UserService {
+    private userLogService = new UserLogService();
+    private profileContentStorage = new ProfileContentStorage();
+
     public async create(
         userParams: AppUserCreationAttributes,
         overwrite: boolean = false,
-        recover: boolean = false
+        recover: boolean = false,
+        clientId?: string,
     ) {
         const exists = await this._exists(userParams.address);
 
@@ -75,6 +83,7 @@ export default class UserService {
                     {
                         model: models.appUserTrust,
                         as: 'trust',
+                        required: false,
                     },
                 ],
             }))!;
@@ -121,8 +130,27 @@ export default class UserService {
         }
 
         this._updateLastLogin(user.id);
-        // generate access token for future interactions that require authentication
-        const token = generateAccessToken(userParams.address, user.id);
+
+        let token: string;
+        if (clientId) {
+            const credential = await models.appClientCredential.findOne({
+                where: {
+                    clientId,
+                    status: 'active'
+                }
+            });
+            if (credential) {
+                token = generateAccessToken(userParams.address, user.id, clientId);
+            } else {
+                throw new BaseError(
+                    'INVALID_CREDENTIAL',
+                    'Client credential is invalid'
+                );
+            }
+        } else {
+            // generate access token for future interactions that require authentication
+            token = generateAccessToken(userParams.address, user.id);
+        }
 
         // do not return trust key
         const jsonUser = user.toJSON();
@@ -130,6 +158,7 @@ export default class UserService {
         return {
             ...jsonUser,
             ...(await this._userRoles(user.address)),
+            ...(await this._userRules(user.address)),
             token,
         };
     }
@@ -143,11 +172,12 @@ export default class UserService {
         }
         return {
             ...user.toJSON(),
-            ...(await this._userRoles(user.toJSON().address)),
+            ...(await this._userRoles(user.address)),
+            ...(await this._userRules(user.address)),
         };
     }
 
-    public async update(user: AppUser): Promise<AppUser> {
+    public async update(user: AppUserUpdate): Promise<AppUser> {
         const updated = await models.appUser.update(user, {
             returning: true,
             where: { address: user.address },
@@ -155,12 +185,26 @@ export default class UserService {
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'user was not updated!');
         }
-        return updated[1][0];
+
+        this.userLogService.create(
+            updated[1][0].id,
+            LogTypes.EDITED_PROFILE,
+            user
+        );
+
+        return updated[1][0].toJSON();
     }
 
     public async patch(address: string, action: string) {
         if (action === 'beneficiary-rules') {
             await models.beneficiary.update(
+                { readRules: true },
+                {
+                    where: { address },
+                }
+            );
+        } else if (action === 'manager-rules') {
+            await models.manager.update(
                 { readRules: true },
                 {
                     where: { address },
@@ -208,6 +252,13 @@ export default class UserService {
             category,
         });
         return true;
+    }
+
+    public async getPresignedUrlMedia(mime: string): Promise<{
+        uploadURL: string;
+        filename: string;
+    }> {
+        return this.profileContentStorage.getPresignedUrlPutObject(mime);
     }
 
     private async _recoverAccount(address: string) {
@@ -338,5 +389,23 @@ export default class UserService {
 
     private async _userRoles(address: string) {
         return await getUserRoles(address);
+    }
+
+    private async _userRules(address: string) {
+        const [beneficiaryRules, managerRules] = await Promise.all([
+            models.beneficiary.findOne({
+                attributes: ['readRules'],
+                where: { address },
+            }),
+            models.manager.findOne({
+                attributes: ['readRules'],
+                where: { address },
+            }),
+        ]);
+
+        return {
+            beneficiaryRules: beneficiaryRules?.readRules,
+            managerRules: managerRules?.readRules,
+        };
     }
 }

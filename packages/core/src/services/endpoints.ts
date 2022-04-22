@@ -117,9 +117,10 @@ export interface IUserAuth extends IUserHello {
 }
 
 export interface IAddStory {
-    byAddress: string;
+    byAddress?: string;
     communityId?: number;
-    mediaId?: number;
+    storyMediaId?: number;
+    storyMediaPath?: string;
     message?: string;
 }
 
@@ -203,10 +204,12 @@ export interface ICommunityStory {
 export interface ICommunitiesListStories {
     id: number;
     name: string;
-    cover: AppMediaContent;
+    cover?: AppMediaContent;
+    coverMediaPath?: string;
     story: {
         id: number;
         media?: AppMediaContent;
+        storyMediaPath?: string | null;
         message: string | null;
     }; // most recent
 }
