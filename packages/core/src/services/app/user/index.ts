@@ -177,7 +177,7 @@ export default class UserService {
         };
     }
 
-    public async update(user: AppUserUpdate): Promise<AppUser> {
+    public async update(user: AppUserUpdate) {
         const updated = await models.appUser.update(user, {
             returning: true,
             where: { address: user.address },
@@ -192,7 +192,11 @@ export default class UserService {
             user
         );
 
-        return updated[1][0].toJSON();
+        return {
+            ...updated[1][0].toJSON(),
+            ...(await this._userRoles(user.address)),
+            ...(await this._userRules(user.address)),
+        };
     }
 
     public async patch(address: string, action: string) {
