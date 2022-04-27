@@ -4,7 +4,7 @@ import { utils } from 'ethers';
 import { client } from '../config';
 import { BeneficiarySubgraph } from '../interfaces/beneficiary';
 
-export const getBeneficiariesByCommunity = async (
+export const getAllBeneficiaries = async (
     community: string
 ): Promise<BeneficiarySubgraph[]> => {
     try {
@@ -53,10 +53,12 @@ export const getBeneficiariesByCommunity = async (
 };
 
 export const getBeneficiariesByAddress = async (
-    addresses: string[],
+    addresses: string[]
 ): Promise<BeneficiarySubgraph[]> => {
     try {
-        const idsFormated = addresses.map((el) => `"${el.toLocaleLowerCase()}"`);
+        const idsFormated = addresses.map(
+            (el) => `"${el.toLocaleLowerCase()}"`
+        );
 
         const query = gql`
             {
@@ -68,6 +70,7 @@ export const getBeneficiariesByAddress = async (
                     address
                     claimed
                     since
+                    state
                     community {
                         id
                     }
@@ -83,11 +86,12 @@ export const getBeneficiariesByAddress = async (
     }
 };
 
-export const getBeneficiariesByClaimInactivity = async (
-    timestamp: number,
+export const getBeneficiaries = async (
     community: string,
     limit: number,
     offset: number,
+    lastClaimAt?: string,
+    state?: string
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const query = gql`
@@ -96,13 +100,15 @@ export const getBeneficiariesByClaimInactivity = async (
                     first: ${limit}
                     skip: ${offset}
                     where: {
-                        community:"${community.toLowerCase()}",
-                        lastClaimAt_lt: ${timestamp}
+                        community:"${community.toLowerCase()}"
+                        ${lastClaimAt ? lastClaimAt : ''}
+                        ${state ? state : ''}
                     }
                 ) {
                     address
                     claimed
                     since
+                    state
                     community {
                         id
                     }
@@ -142,6 +148,41 @@ export const getBeneficiaryCommunity = async (
         return utils.getAddress(
             queryResult.data.beneficiaryEntity.community.id
         );
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const countBeneficiaries = async (
+    community: string,
+    state: string
+): Promise<number> => {
+    try {
+        const query = gql`
+                {
+                    communityEntity(
+                        id: "${community.toLowerCase()}"
+                    ) {
+                        beneficiaries
+                        removedBeneficiaries
+                    }
+                }
+            `;
+        const queryResult = await client.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        if (state === 'active') {
+            return queryResult.data.communityEntity.beneficiaries;
+        } else if (state === 'removed') {
+            return queryResult.data.communityEntity.removedBeneficiaries;
+        } else {
+            return (
+                queryResult.data.communityEntity.beneficiaries +
+                queryResult.data.communityEntity.removedBeneficiaries
+            );
+        }
     } catch (error) {
         throw new Error(error);
     }

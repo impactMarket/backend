@@ -37,18 +37,17 @@ class CommunityController {
             return;
         }
         let {
-            active,
+            state,
             offset,
             limit,
             suspect,
             inactivity,
             unidentified,
-            blocked,
             loginInactivity,
-            search
+            search,
         } = req.query;
-        if (active === undefined || typeof active !== 'string') {
-            active = 'true';
+        if (state === undefined || typeof state !== 'string') {
+            state = undefined;
         }
         if (offset === undefined || typeof offset !== 'string') {
             offset = '0';
@@ -56,55 +55,26 @@ class CommunityController {
         if (limit === undefined || typeof limit !== 'string') {
             limit = '5';
         }
-        this.detailsService.listBeneficiaries(
-            req.user.address,
-            parseInt(offset, 10),
-            parseInt(limit, 10),
-            {
-                active: active === 'true',
-                suspect: suspect ? suspect === 'true' : undefined,
-                inactivity: inactivity === 'true',
-                unidentified: unidentified ? unidentified === 'true' : undefined,
-                blocked: blocked === 'true',
-                loginInactivity: loginInactivity ? loginInactivity === 'true' : undefined,
-            },
-            search !== undefined && typeof(search) === 'string' ? search : undefined
-        )
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e })
-            );
-    };
-
-    getBeneficiaryActivity = (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 400, false, '', {
-                error: {
-                    name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
+        this.detailsService
+            .listBeneficiaries(
+                req.user.address,
+                parseInt(offset, 10),
+                parseInt(limit, 10),
+                {
+                    state,
+                    suspect: suspect ? suspect === 'true' : undefined,
+                    inactivity: inactivity ? inactivity === 'true' : undefined,
+                    unidentified: unidentified
+                        ? unidentified === 'true'
+                        : undefined,
+                    loginInactivity: loginInactivity
+                        ? loginInactivity === 'true'
+                        : undefined,
                 },
-            });
-            return;
-        }
-
-        let { offset, limit, type } = req.query;
-        if (offset === undefined || typeof offset !== 'string') {
-            offset = '0';
-        }
-        if (limit === undefined || typeof limit !== 'string') {
-            limit = '10';
-        }
-        if (type === undefined || typeof type !== 'string') {
-            type = 'ALL';
-        }
-
-        services.ubi.BeneficiaryService.getBeneficiaryActivity(
-            req.user.address,
-            req.params.address,
-            type,
-            parseInt(offset, 10),
-            parseInt(limit, 10)
-        )
+                search !== undefined && typeof search === 'string'
+                    ? search
+                    : undefined
+            )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

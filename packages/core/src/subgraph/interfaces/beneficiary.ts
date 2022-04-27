@@ -8,4 +8,5 @@ export interface BeneficiarySubgraph {
     preLastClaimAt: number;
     since?: number;
     claimed: string;
+    state: number;
 }

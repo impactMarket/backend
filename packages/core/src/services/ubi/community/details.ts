@@ -1,19 +1,18 @@
-import { utils, ethers } from 'ethers';
 import { BigNumber } from 'bignumber.js';
-import {
-    IListBeneficiary,
-    BeneficiaryFilterType,
-} from '../../endpoints';
-import { BeneficiaryAttributes } from '../../../interfaces/ubi/beneficiary';
-import { isAddress } from '../../../utils/util';
-import config from '../../../config';
-import { getBeneficiariesByAddress, getBeneficiariesByClaimInactivity } from '../../../subgraph/queries/beneficiary';
-import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
+import { utils, ethers } from 'ethers';
 import { Op, WhereOptions } from 'sequelize';
 
+import config from '../../../config';
 import { models } from '../../../database';
 import { AppUser } from '../../../interfaces/app/appUser';
+import { BeneficiaryAttributes } from '../../../interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
+import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
+import {
+    getBeneficiariesByAddress,
+    getBeneficiaries,
+    countBeneficiaries,
+} from '../../../subgraph/queries/beneficiary';
 import {
     getCommunityManagers,
     getCommunityState,
@@ -21,6 +20,8 @@ import {
 } from '../../../subgraph/queries/community';
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
+import { isAddress } from '../../../utils/util';
+import { IListBeneficiary, BeneficiaryFilterType } from '../../endpoints';
 
 export class CommunityDetailsService {
     public async getState(communityId: number) {
@@ -167,20 +168,19 @@ export class CommunityDetailsService {
         offset: number,
         limit: number,
         filter: BeneficiaryFilterType,
-        searchInput?: string,
+        searchInput?: string
     ): Promise<{
-        count: number,
-        rows: IListBeneficiary[],
+        count: number;
+        rows: IListBeneficiary[];
     }> {
         let required: boolean = false;
         const roles = await getUserRoles(managerAddress);
         if (!roles.manager) {
-            throw new BaseError(
-                'MANAGER_NOT_FOUND',
-                "Manager not found"
-            );
+            throw new BaseError('MANAGER_NOT_FOUND', 'Manager not found');
         }
-        const contractAddress = ethers.utils.getAddress(roles.manager.community);
+        const contractAddress = ethers.utils.getAddress(
+            roles.manager.community
+        );
         const community = await models.community.findOne({
             attributes: ['id'],
             where: {
@@ -189,10 +189,7 @@ export class CommunityDetailsService {
         });
 
         if (!community) {
-            throw new BaseError(
-                'COMMUNITY_NOT_FOUND',
-                "Community not found"
-            );
+            throw new BaseError('COMMUNITY_NOT_FOUND', 'Community not found');
         }
 
         let whereBeneficiary = this._getBeneficiaryFilter(filter);
@@ -211,7 +208,9 @@ export class CommunityDetailsService {
             ) {
                 whereBeneficiary = {
                     ...whereBeneficiary,
-                    '$"user"."username"$': { [Op.iLike]: `%${searchInput.slice(0, 16)}%` },
+                    '$"user"."username"$': {
+                        [Op.iLike]: `%${searchInput.slice(0, 16)}%`,
+                    },
                 };
                 required = true;
             } else {
@@ -221,79 +220,117 @@ export class CommunityDetailsService {
 
         let beneficiariesSubgraph: BeneficiarySubgraph[] | null = null;
 
-        if (filter.inactivity) {
+        if (filter.inactivity !== undefined) {
             const communityState = await getCommunityState(contractAddress);
 
-            const seconds = communityState.baseInterval *
-                config.claimInactivityThreshold;
-            const lastClaimAt = (new Date().getTime() / 1000 | 0) - seconds;
+            const seconds =
+                communityState.baseInterval * config.claimInactivityThreshold;
+            const timestamp = ((new Date().getTime() / 1000) | 0) - seconds;
+            const lastClaimAt = filter.inactivity
+                ? `lastClaimAt_lt: ${timestamp}`
+                : `lastClaimAt_gte: ${timestamp}`;
 
-            beneficiariesSubgraph = await getBeneficiariesByClaimInactivity(lastClaimAt, contractAddress, limit, offset);
-            const addresses = beneficiariesSubgraph.map(beneficiary => ethers.utils.getAddress(beneficiary.address))
+            beneficiariesSubgraph = await getBeneficiaries(
+                contractAddress,
+                limit,
+                offset,
+                lastClaimAt
+            );
+            const addresses = beneficiariesSubgraph.map((beneficiary) =>
+                ethers.utils.getAddress(beneficiary.address)
+            );
             whereBeneficiary = {
                 ...whereBeneficiary,
                 '$"user"."address"$': {
-                    [Op.in]: addresses
-                }
-            }
+                    [Op.in]: addresses,
+                },
+            };
+        } else if (filter.state !== undefined) {
+            const state = filter.state === 'active' ? 0 : 1;
+            beneficiariesSubgraph = await getBeneficiaries(
+                contractAddress,
+                limit,
+                offset,
+                undefined,
+                `state: ${state}`
+            );
+            const addresses = beneficiariesSubgraph.map((beneficiary) =>
+                ethers.utils.getAddress(beneficiary.address)
+            );
+            whereBeneficiary = {
+                ...whereBeneficiary,
+                '$"user"."address"$': {
+                    [Op.in]: addresses,
+                },
+            };
         }
 
-        const beneficiaries: {
-            count: number;
-            rows: BeneficiaryAttributes[]
-        } = await models.beneficiary.findAndCountAll({
-            include: [{
-                attributes: ['username', 'suspect'],
-                model: models.appUser,
-                as: 'user',
-                required,
-            }],
+        const count = await countBeneficiaries(
+            contractAddress,
+            filter.state ? filter.state : 'all'
+        );
+        const beneficiaries = await models.beneficiary.findAll({
+            include: [
+                {
+                    attributes: ['username', 'suspect'],
+                    model: models.appUser,
+                    as: 'user',
+                    required,
+                },
+            ],
             where: {
                 communityId: community.id,
-                ...whereBeneficiary
+                ...whereBeneficiary,
             },
             limit,
             offset,
         });
 
         if (!beneficiariesSubgraph) {
-            beneficiariesSubgraph = await getBeneficiariesByAddress(beneficiaries.rows.map(user => user.address ));
+            beneficiariesSubgraph = await getBeneficiariesByAddress(
+                beneficiaries.map((user) => user.address)
+            );
         }
 
-        const result: IListBeneficiary[] = beneficiariesSubgraph.reduce((acc, el) => {
-            const beneficiary = beneficiaries.rows.find(user => user.address === ethers.utils.getAddress(el.address));
-
-            if(beneficiary) {
-                acc.push({
-                    address: el.address,
-                    username: beneficiary.user?.username,
-                    timestamp: el.since,
-                    claimed: new BigNumber(el.claimed)
-                                .multipliedBy(10 ** 18)
-                                .toString(),
-                    blocked: false,
-                    suspect: beneficiary.user?.suspect,
-                    isDeleted: !beneficiary.user || !!beneficiary?.user!.deletedAt,
-                } as IListBeneficiary);
-            }
-            return acc;
-        }, [] as IListBeneficiary[]);
+        const result: IListBeneficiary[] = beneficiariesSubgraph.reduce(
+            (acc, el) => {
+                const beneficiary = beneficiaries
+                    .find(
+                        (user) =>
+                            user.address === ethers.utils.getAddress(el.address)
+                    )
+                    ?.toJSON() as BeneficiaryAttributes;
+                if (beneficiary) {
+                    acc.push({
+                        address: el.address,
+                        username: beneficiary.user?.username,
+                        timestamp: el.since,
+                        claimed: el.claimed,
+                        blocked: el.state === 2,
+                        suspect: beneficiary.user?.suspect,
+                        isDeleted:
+                            !beneficiary.user || !!beneficiary?.user!.deletedAt,
+                        state:
+                            el.state === 0
+                                ? 'active'
+                                : el.state === 1
+                                ? 'removed'
+                                : 'locked',
+                    } as IListBeneficiary);
+                }
+                return acc;
+            },
+            [] as IListBeneficiary[]
+        );
 
         return {
-            count: beneficiaries.count,
+            count,
             rows: result,
         };
     }
 
     public _getBeneficiaryFilter(filter: BeneficiaryFilterType) {
         let where = {};
-
-        // if (filter.active !== undefined) {
-        //     where = {
-        //         ...where,
-        //         active: filter.active,
-        //     };
-        // }
 
         if (filter.suspect !== undefined) {
             where = {
@@ -303,43 +340,36 @@ export class CommunityDetailsService {
         }
 
         if (filter.unidentified !== undefined) {
-            filter.unidentified 
-                ? where = {
-                    ...where,
-                    '$"user"."username"$': null,
-                }
-                : where = {
-                    ...where,
-                    '$"user"."username"$': {
-                        [Op.ne]: null
-                    },
-                }
+            filter.unidentified
+                ? (where = {
+                      ...where,
+                      '$"user"."username"$': null,
+                  })
+                : (where = {
+                      ...where,
+                      '$"user"."username"$': {
+                          [Op.ne]: null,
+                      },
+                  });
         }
-
-        // if (filter.blocked) {
-        //     where = {
-        //         ...where,
-        //         blocked: filter.blocked,
-        //     };
-        // }
 
         if (filter.loginInactivity !== undefined) {
             const date = new Date();
             date.setDate(date.getDate() - config.loginInactivityThreshold);
 
             filter.loginInactivity
-                ? where = {
-                    ...where,
-                    '$"user"."lastLogin"$': {
-                        [Op.lt]: date,
-                    },
-                }
-                : where = {
-                    ...where,
-                    '$"user"."lastLogin"$': {
-                        [Op.gte]: date,
-                    },
-                }
+                ? (where = {
+                      ...where,
+                      '$"user"."lastLogin"$': {
+                          [Op.lt]: date,
+                      },
+                  })
+                : (where = {
+                      ...where,
+                      '$"user"."lastLogin"$': {
+                          [Op.gte]: date,
+                      },
+                  });
         }
 
         return where;
