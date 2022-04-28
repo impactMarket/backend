@@ -104,6 +104,22 @@ class CommunityController {
                 );
         }
     };
+
+    count = (req: Request, res: Response) => {
+        const { groupBy } = req.query;
+        if (groupBy === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'INVALID_GROUP',
+                    message: 'not a valid group by',
+                },
+            });
+            return;
+        }
+        services.ubi.CommunityDetailsService.count(groupBy as string)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export { CommunityController };
