@@ -1,6 +1,12 @@
 import { services, utils } from '@impactmarket/core';
+import * as Sentry from "@sentry/serverless";
 
-export const calculateGlobalGrowth = async (event: any, context: any) => {
+Sentry.AWSLambda.init({
+  dsn: "https://9a91bd1ac97d4334a9eed2196b598814@o442089.ingest.sentry.io/6366922",
+  tracesSampleRate: 1.0,
+});
+
+export const calculateGlobalGrowth = Sentry.AWSLambda.wrapHandler(async (event, context) => {
     try {
         console.log('Start calculateGlobalGrowth: ', new Date());
         const globalGrowthService = new services.global.GlobalGrowthService();
@@ -56,5 +62,6 @@ export const calculateGlobalGrowth = async (event: any, context: any) => {
         console.log('calculateGlobalGrowth finished');
     } catch (error) {
         console.error('Error: ', error);
+        throw error;
     }
-};
+});
