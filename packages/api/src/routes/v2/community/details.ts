@@ -1,7 +1,10 @@
 import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/details';
-import { optionalAuthentication } from '../../../middlewares';
+import {
+    authenticateToken,
+    optionalAuthentication,
+} from '../../../middlewares';
 import { database } from '@impactmarket/core';
 
 export default (route: Router): void => {
@@ -75,6 +78,81 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/getManagersResponse'
      */
     route.get('/:id/managers/:query?', controller.getManagers);
+
+    /**
+     * @swagger
+     *
+     * /community/beneficiaries:
+     *   get:
+     *     tags:
+     *       - "community"
+     *     summary: Find or list beneficiaries in manager's community
+     *     parameters:
+     *       - in: query
+     *         name: state
+     *         schema:
+     *           type: string
+     *           enum: [active, removed]
+     *         required: false
+     *         description: beneficiary state
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 5)
+     *       - in: query
+     *         name: suspect
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: filter by suspect users
+     *       - in: query
+     *         name: inactivity
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: filter by inactivity users
+     *       - in: query
+     *         name: unidentified
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: filter by unidentified users
+     *       - in: query
+     *         name: loginInactivity
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *         description: filter by login inactivity
+     *       - in: query
+     *         name: search
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: search by address or username
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/IListBeneficiary'
+     */
+    route.get(
+        '/beneficiaries/:query?',
+        authenticateToken,
+        controller.getBeneficiaries
+    );
 
     /**
      * @swagger

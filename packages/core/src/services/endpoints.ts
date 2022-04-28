@@ -268,6 +268,7 @@ export type IBeneficiaryActivities = {
 };
 
 export type BeneficiaryFilterType = {
+    state?: string;
     active?: boolean;
     suspect?: boolean;
     inactivity?: boolean;
