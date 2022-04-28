@@ -10,11 +10,11 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /community/count:
+     * /communities/count:
      *   get:
      *     tags:
-     *       - "community"
-     *     summary: Count grouped communities communities
+     *       - "communities"
+     *     summary: Count grouped communities
      *     parameters:
      *       - in: query
      *         name: groupBy
