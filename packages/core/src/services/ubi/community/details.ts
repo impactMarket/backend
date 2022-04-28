@@ -1,5 +1,5 @@
 import { utils, ethers } from 'ethers';
-import { Op, WhereOptions } from 'sequelize';
+import { Op, WhereOptions, fn, col } from 'sequelize';
 
 import { models } from '../../../database';
 import { AppUser } from '../../../interfaces/app/appUser';
@@ -206,5 +206,28 @@ export class CommunityDetailsService {
             state,
             email: showEmail ? community.email : '',
         };
+    }
+
+    public static async count(groupBy: string): Promise<any[]> {
+        let groupName = '';
+        switch (groupBy) {
+            case 'country':
+                groupName = 'country';
+                break;
+        }
+        if (groupName.length === 0) {
+            throw new BaseError('INVALID_GROUP', 'invalid group');
+        }
+        const result = (await models.community.findAll({
+            attributes: [groupName, [fn('count', col(groupName)), 'count']],
+            where: {
+                visibility: 'public',
+                status: 'valid',
+            },
+            group: [groupName],
+            raw: true,
+        })) as any;
+
+        return result;
     }
 }
