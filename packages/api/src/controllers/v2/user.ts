@@ -112,6 +112,7 @@ class UserController {
             email,
             gender,
             bio,
+            country,
         } = req.body;
         this.userService
             .update({
@@ -127,6 +128,7 @@ class UserController {
                 email,
                 gender,
                 bio,
+                country,
             })
             .then((user) =>
                 standardResponse(res, 200, true, {

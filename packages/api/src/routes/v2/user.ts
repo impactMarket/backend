@@ -66,6 +66,9 @@ export default (app: Router): void => {
      *               bio:
      *                 type: string
      *                 required: false
+     *               country:
+     *                 type: string
+     *                 required: false
      *     responses:
      *       "200":
      *         description: "Success"
@@ -143,6 +146,9 @@ export default (app: Router): void => {
      *                 type: string
      *                 required: false
      *               bio:
+     *                 type: string
+     *                 required: false
+     *               country:
      *                 type: string
      *                 required: false
      *     responses:

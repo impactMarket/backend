@@ -23,6 +23,7 @@ const create = celebrate({
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
         clientId: Joi.string().optional(),
+        country: Joi.string().optional(),
     }),
 });
 
@@ -43,6 +44,7 @@ const update = celebrate({
             Joi.string().email({ tlds: { allow: false } }),
             null
         ).optional(),
+        country: Joi.string().optional(),
     }),
 });
 

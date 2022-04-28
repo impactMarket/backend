@@ -24,6 +24,7 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public active!: boolean;
     public email!: string;
     public bio!: string;
+    public country!: string;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -91,6 +92,9 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
                 type: DataTypes.STRING(64),
             },
             bio: {
+                type: DataTypes.STRING(64),
+            },
+            country: {
                 type: DataTypes.STRING(64),
             },
             lastLogin: {
