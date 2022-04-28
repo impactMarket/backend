@@ -53,6 +53,9 @@ import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
  *          lastLogin:
  *            type: date
  *            description: User last login
+ *          country:
+ *            type: string
+ *            description: User country
  *          suspect:
  *            type: boolean
  *            description: True if user is suspect, set by internal mechanism
@@ -84,6 +87,7 @@ export interface AppUser {
     active: boolean;
     email: string;
     bio: string;
+    country: string | null;
 
     // timestamps
     createdAt: Date;
@@ -109,6 +113,7 @@ export interface AppUserUpdate {
     children?: number | null;
     email?: string;
     bio?: string;
+    country?: string;
 }
 
 export interface AppUserCreationAttributes {
@@ -128,6 +133,7 @@ export interface AppUserCreationAttributes {
     active?: boolean;
     email?: string;
     bio?: string;
+    country?: string;
 
     trust?: AppUserTrustCreation;
 }
