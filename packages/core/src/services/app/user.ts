@@ -442,11 +442,11 @@ export default class UserService {
 
     public static async existsAccountByPhone(phone: string): Promise<boolean> {
         const query = `
-            SELECT phone, address
+            SELECT app_user_trust.phone, address
             FROM app_user_trust
             LEFT JOIN app_user_through_trust ON "appUserTrustId" = id
             LEFT JOIN "app_user" as "user" ON "user".address = "userAddress"
-            WHERE phone = :phone
+            WHERE app_user_trust.phone = :phone
             AND "user".active = TRUE`;
 
         const exists = await sequelize.query(query, {
