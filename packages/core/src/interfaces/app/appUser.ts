@@ -56,6 +56,9 @@ import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
  *          country:
  *            type: string
  *            description: User country
+ *          phone:
+ *            type: string
+ *            description: User phone
  *          suspect:
  *            type: boolean
  *            description: True if user is suspect, set by internal mechanism
@@ -88,6 +91,7 @@ export interface AppUser {
     email: string;
     bio: string;
     country: string | null;
+    phone: string | null;
 
     // timestamps
     createdAt: Date;
@@ -114,6 +118,7 @@ export interface AppUserUpdate {
     email?: string;
     bio?: string;
     country?: string;
+    phone?: string;
 }
 
 export interface AppUserCreationAttributes {
@@ -134,6 +139,7 @@ export interface AppUserCreationAttributes {
     email?: string;
     bio?: string;
     country?: string;
+    phone?: string;
 
     trust?: AppUserTrustCreation;
 }

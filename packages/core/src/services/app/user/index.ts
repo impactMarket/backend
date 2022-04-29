@@ -32,9 +32,9 @@ export default class UserService {
         } else {
             // a user might be connecting with the same phone number
             // as an existing user
-            const existsPhone = userParams.trust?.phone
+            const existsPhone = userParams.phone
                 ? await this._existsAccountByPhone(
-                      userParams.trust.phone,
+                      userParams.phone,
                       userParams.address
                   )
                 : false;
@@ -54,19 +54,7 @@ export default class UserService {
         if (!exists) {
             // create new user
             // including their phone number information, if it exists
-            user = await models.appUser.create(
-                userParams,
-                userParams.trust?.phone
-                    ? {
-                          include: [
-                              {
-                                  model: models.appUserTrust,
-                                  as: 'trust',
-                              },
-                          ],
-                      }
-                    : {}
-            );
+            user = await models.appUser.create(userParams);
         } else {
             if (userParams.pushNotificationToken) {
                 models.appUser.update(
@@ -79,37 +67,25 @@ export default class UserService {
             // it's not null at this point
             user = (await models.appUser.findOne({
                 where: { address: userParams.address },
-                include: [
-                    {
-                        model: models.appUserTrust,
-                        as: 'trust',
-                        required: false,
-                    },
-                ],
             }))!;
             // if the account doesn't have a phone number
             // but it's being provided now, add it
             // otherwise, verify if account phone number and
             // provided phone number are the same
             const jsonUser = user.toJSON();
-            if (
-                jsonUser.trust?.length === 0 &&
-                userParams.trust &&
-                userParams.trust.phone &&
-                userParams.trust.phone.length > 0
-            ) {
-                const trust = await models.appUserTrust.create(
-                    userParams.trust
-                );
-                await models.appUserThroughTrust.create({
-                    userAddress: user.address,
-                    appUserTrustId: trust.id,
+            if (!jsonUser.phone && userParams.phone) {
+                await models.appUser.update({
+                    phone: userParams.phone
+                }, {
+                    where: {
+                        id: jsonUser.id,
+                    }
                 });
+                user.phone = userParams.phone;
             } else if (
-                jsonUser.trust &&
-                jsonUser.trust.length > 0 &&
-                userParams.trust?.phone &&
-                userParams.trust.phone !== jsonUser.trust![0].phone
+                jsonUser.phone && 
+                userParams.phone && 
+                userParams.phone !== jsonUser.phone
             ) {
                 throw new BaseError(
                     'DIFFERENT_PHONE',
@@ -152,9 +128,7 @@ export default class UserService {
             token = generateAccessToken(userParams.address, user.id);
         }
 
-        // do not return trust key
         const jsonUser = user.toJSON();
-        delete jsonUser['trust'];
         return {
             ...jsonUser,
             ...(await this._userRoles(user.address)),
@@ -178,6 +152,16 @@ export default class UserService {
     }
 
     public async update(user: AppUserUpdate) {
+        if (user.phone) {
+            const existsPhone = await this._existsAccountByPhone(user.phone, user.address);
+
+            if (existsPhone)
+                throw new BaseError(
+                    'PHONE_CONFLICT',
+                    'phone associated with another account'
+                );
+        }
+
         const updated = await models.appUser.update(user, {
             returning: true,
             where: { address: user.address },
@@ -283,16 +267,8 @@ export default class UserService {
     private async _overwriteUser(user: AppUserCreationAttributes) {
         try {
             const usersToInactive = await models.appUser.findAll({
-                include: [
-                    {
-                        model: models.appUserTrust,
-                        as: 'trust',
-                        where: {
-                            phone: user.trust?.phone,
-                        },
-                    },
-                ],
                 where: {
+                    phone: user.phone,
                     address: {
                         [Op.not]: user.address,
                     },
@@ -351,24 +327,17 @@ export default class UserService {
         phone: string,
         address: string
     ): Promise<boolean> {
-        const query = `
-            SELECT address
-            FROM app_user_trust
-            LEFT JOIN app_user_through_trust ON "appUserTrustId" = id
-            LEFT JOIN "app_user" as "user" ON "user".address = "userAddress"
-            WHERE phone = :phone and address != :address
-            AND "user".active = TRUE`;
-
-        const exists = await sequelize.query(query, {
-            type: QueryTypes.SELECT,
-            replacements: {
-                address,
+        const user = await models.appUser.findOne({
+            where: {
                 phone,
-            },
-        });
-        console.log(exists);
+                address: {
+                    [Op.not]: address,
+                },
+                active: true
+            }
+        })
 
-        return exists.length > 0;
+        return !!user;
     }
 
     private async _updateLastLogin(id: number): Promise<void> {

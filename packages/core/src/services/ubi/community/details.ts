@@ -431,7 +431,7 @@ export class CommunityDetailsService {
         };
     }
 
-    public static async count(groupBy: string): Promise<any[]> {
+    public async count(groupBy: string): Promise<any[]> {
         let groupName = '';
         switch (groupBy) {
             case 'country':

@@ -69,6 +69,9 @@ export default (app: Router): void => {
      *               country:
      *                 type: string
      *                 required: false
+     *               phone:
+     *                 type: string
+     *                 required: false
      *     responses:
      *       "200":
      *         description: "Success"
@@ -149,6 +152,9 @@ export default (app: Router): void => {
      *                 type: string
      *                 required: false
      *               country:
+     *                 type: string
+     *                 required: false
+     *               phone:
      *                 type: string
      *                 required: false
      *     responses:
