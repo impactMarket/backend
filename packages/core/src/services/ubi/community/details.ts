@@ -437,6 +437,9 @@ export class CommunityDetailsService {
             case 'country':
                 groupName = 'country';
                 break;
+            case 'review':
+                groupName = 'review';
+                break;
         }
         if (groupName.length === 0) {
             throw new BaseError('INVALID_GROUP', 'invalid group');

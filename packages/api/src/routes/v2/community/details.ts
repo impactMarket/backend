@@ -23,7 +23,7 @@ export default (route: Router): void => {
      *         name: groupBy
      *         schema:
      *           type: string
-     *           enum: [country]
+     *           enum: [country, review]
      *         required: true
      *         description: count communities by a grouped value
      *     responses:
