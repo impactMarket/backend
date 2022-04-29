@@ -47,9 +47,7 @@ class UserController {
                     email,
                     gender,
                     bio,
-                    trust: {
-                        phone,
-                    },
+                    phone,
                 },
                 overwrite,
                 recover,
@@ -113,6 +111,7 @@ class UserController {
             gender,
             bio,
             country,
+            phone,
         } = req.body;
         this.userService
             .update({
@@ -129,6 +128,7 @@ class UserController {
                 gender,
                 bio,
                 country,
+                phone,
             })
             .then((user) =>
                 standardResponse(res, 200, true, {

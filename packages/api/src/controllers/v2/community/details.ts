@@ -116,7 +116,8 @@ class CommunityController {
             });
             return;
         }
-        services.ubi.CommunityDetailsService.count(groupBy as string)
+        this.detailsService
+            .count(groupBy as string)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
