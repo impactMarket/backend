@@ -44,7 +44,6 @@ export default (route: Router): void => {
      */
      route.get(
         '/count/:query?',
-        database.cacheWithRedis('5 minutes', database.cacheOnlySuccess),
         controller.count
     );
 
