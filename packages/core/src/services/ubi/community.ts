@@ -2145,9 +2145,9 @@ export default class CommunityService {
         const community = result.toJSON() as CommunityAttributes;
         if (community.coverMediaPath) {
             const thumbnails = createThumbnailUrl(
-                config.aws.bucket.profile,
+                config.aws.bucket.community,
                 community.coverMediaPath,
-                config.thumbnails.profile
+                config.thumbnails.community.cover
             );
             community.cover = {
                 id: 0,

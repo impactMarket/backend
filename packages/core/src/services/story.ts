@@ -619,7 +619,7 @@ export default class StoryService {
 
             // at this point, this is not null
             const community = (await this.community.findOne({
-                attributes: ['id', 'name', 'city', 'country', 'coverMediaId'],
+                attributes: ['id', 'name', 'city', 'country', 'coverMediaId', 'coverMediaPath'],
                 where: { id: communityId },
             }))!.toJSON() as CommunityAttributes;
             if (community.coverMediaPath) {
