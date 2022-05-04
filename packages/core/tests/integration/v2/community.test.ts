@@ -6,6 +6,8 @@ import { replace, stub, SinonStub } from 'sinon';
 import { models, sequelize as database } from '../../../src/database';
 import { AppUser } from '../../../src/interfaces/app/appUser';
 import { CommunityContentStorage } from '../../../src/services/storage';
+import { CommunityDetailsService } from '../../../src/services/ubi/community/details';
+import { CommunityEditService } from '../../../src/services/ubi/community/edit';
 import { CommunityListService } from '../../../src/services/ubi/community/list';
 import * as subgraph from '../../../src/subgraph/queries/community';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
@@ -24,6 +26,8 @@ describe('community service v2', () => {
     type SubgraphClaimed = { id: string; claimed: number }[];
 
     const communityListService = new CommunityListService();
+    const communityDetailsService = new CommunityDetailsService();
+    const communityEditService = new CommunityEditService();
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -61,11 +65,6 @@ describe('community service v2', () => {
             await truncate(sequelize, 'Beneficiary');
             returnClaimedSubgraph.resetHistory();
             returnCommunityEntities.resetHistory();
-        });
-
-        after(async () => {
-            returnProposalsSubgraph.restore();
-            returnCommunityEntities.restore();
         });
 
         describe('by name', () => {
@@ -1144,11 +1143,6 @@ describe('community service v2', () => {
                 returnClaimedSubgraph.resetHistory();
             });
 
-            after(async () => {
-                returnProposalsSubgraph.restore();
-                returnClaimedSubgraph.restore();
-            });
-
             it('filter with specific fields', async () => {
                 const communities = await CommunityFactory([
                     {
@@ -1623,6 +1617,394 @@ describe('community service v2', () => {
 
                 expect(pending.count).to.be.equal(2);
             });
+        });
+
+        describe('ambassador list', () => {
+            afterEach(async () => {
+                await truncate(sequelize, 'Beneficiary');
+                await truncate(sequelize, 'Community');
+                returnProposalsSubgraph.resetHistory();
+                returnClaimedSubgraph.resetHistory();
+            });
+
+            it('list pending communities in the ambassadors country', async () => {
+                const ambassadors = await UserFactory({
+                    n: 2,
+                    props: [
+                        {
+                            phone: '+12025550167',
+                        },
+                        {
+                            phone: '+5514999420299',
+                        },
+                    ],
+                });
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                        country: 'BR',
+                    },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'pending',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                        country: 'VE',
+                    },
+                ]);
+
+                returnProposalsSubgraph.returns([]);
+                returnClaimedSubgraph.returns([]);
+                returnCommunityEntities.returns([]);
+
+                const result = await communityListService.list({
+                    status: 'pending',
+                    ambassadorAddress: ambassadors[1].address,
+                });
+
+                expect(result.count).to.be.equal(1);
+                expect(result.rows[0].id).to.be.equal(communities[0].id);
+            });
+
+            it('list communities where ambassador', async () => {
+                const ambassadors = await UserFactory({
+                    n: 2,
+                    props: [
+                        {
+                            phone: '+12025550167',
+                        },
+                        {
+                            phone: '+5514999420299',
+                        },
+                    ],
+                });
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                        country: 'BR',
+                        ambassadorAddress: ambassadors[0].address,
+                    },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                        country: 'VE',
+                        ambassadorAddress: ambassadors[1].address,
+                    },
+                ]);
+
+                returnClaimedSubgraph.returns([]);
+                returnCommunityEntities.returns([]);
+
+                const result = await communityListService.list({
+                    ambassadorAddress: ambassadors[0].address,
+                });
+
+                expect(result.count).to.be.equal(1);
+                expect(result.rows[0].id).to.be.equal(communities[0].id);
+            });
+        });
+    });
+
+    describe('find', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'Community');
+            returnClaimedSubgraph.resetHistory();
+            returnCommunityEntities.resetHistory();
+        });
+
+        it('find by ID', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+                {
+                    requestByAddress: users[1].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const result = await communityDetailsService.findById(
+                communities[0].id
+            );
+
+            expect(result).to.include({
+                id: communities[0].id,
+                name: communities[0].name,
+                country: communities[0].country,
+                requestByAddress: users[0].address,
+            });
+        });
+
+        it('find by contract address', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+                {
+                    requestByAddress: users[1].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const result = await communityDetailsService.findByContractAddress(
+                communities[0].contractAddress!
+            );
+
+            expect(result).to.include({
+                id: communities[0].id,
+                name: communities[0].name,
+                country: communities[0].country,
+                requestByAddress: users[0].address,
+            });
+        });
+    });
+
+    describe('edit', () => {
+        afterEach(async () => {
+            await truncate(sequelize, 'Community');
+            returnClaimedSubgraph.resetHistory();
+            returnCommunityEntities.resetHistory();
+        });
+
+        it('edit review', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'pending',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const result = await communityEditService.review(
+                communities[0].id,
+                'claimed',
+                users[0].address
+            );
+            const community = await communityDetailsService.findById(
+                communities[0].id
+            );
+
+            expect(communities[0].review).to.be.equal('pending');
+            expect(result).to.be.true;
+            expect(community).to.include({
+                id: communities[0].id,
+                review: 'claimed',
+                ambassadorAddress: users[0].address,
+            });
+        });
+
+        it('edit submission', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'pending',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            const result = await communityEditService.review(
+                communities[0].id,
+                'claimed',
+                users[0].address
+            );
+            const community = await communityEditService.editSubmission(
+                communities[0].id,
+                {
+                    requestByAddress: users[0].address,
+                    name: 'new name',
+                    description: 'new description',
+                    language: 'pt',
+                    currency: 'BRL',
+                    city: 'São Paulo',
+                    country: 'BR',
+                    gps: {
+                        latitude: 0,
+                        longitude: 0,
+                    },
+                    email: 'test@email.com',
+                }
+            );
+
+            expect(communities[0].review).to.be.equal('pending');
+            expect(result).to.be.true;
+            expect(community).to.include({
+                id: communities[0].id,
+                review: 'claimed',
+                ambassadorAddress: users[0].address,
+                name: 'new name',
+                description: 'new description',
+                language: 'pt',
+                currency: 'BRL',
+                city: 'São Paulo',
+                country: 'BR',
+                email: 'test@email.com',
+            });
+            expect(community.gps).to.include({
+                latitude: 0,
+                longitude: 0,
+            });
+        });
+
+        it('should not edit a submission if user is not the ambassador/manager', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'pending',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: '1000000000000000000',
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: '450000000000000000000',
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            await communityEditService.review(
+                communities[0].id,
+                'claimed',
+                users[0].address
+            );
+            communityEditService
+                .editSubmission(communities[0].id, {
+                    requestByAddress: users[1].address,
+                    name: 'new name',
+                    description: 'new description',
+                    language: 'pt',
+                    currency: 'BRL',
+                    city: 'São Paulo',
+                    country: 'BR',
+                    gps: {
+                        latitude: 0,
+                        longitude: 0,
+                    },
+                    email: 'test@email.com',
+                })
+                .catch((e) => expect(e.name).to.be.equal('NOT_ALLOWED'))
+                .then(() => {
+                    throw new Error(
+                        "'fails to welcome not existing account' expected to fail"
+                    );
+                });
         });
     });
 });

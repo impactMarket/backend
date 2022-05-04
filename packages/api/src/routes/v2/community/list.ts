@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/list';
+import { optionalAuthentication } from '../../../middlewares';
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -8,10 +9,10 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /community:
+     * /communities:
      *   get:
      *     tags:
-     *       - "community"
+     *       - "communities"
      *     summary: List communities
      *     parameters:
      *       - in: query
@@ -33,6 +34,13 @@ export default (route: Router): void => {
      *           type: string
      *         required: false
      *         description: communities country (identifier, like PT for Portugal) to search, separated by ; (PT;FR)
+     *       - in: query
+     *         name: review
+     *         schema:
+     *           type: string
+     *           enum: [claimed, declined, pending, accepted]
+     *         required: false
+     *         description: community review 
      *       - in: query
      *         name: filter
      *         schema:
@@ -70,6 +78,12 @@ export default (route: Router): void => {
      *           type: number
      *         required: false
      *         description: longitude used for nearest location
+     *       - in: query
+     *         name: ambassadorAddress
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: filter communities by ambassadors
      *     responses:
      *       "200":
      *         description: OK

@@ -80,15 +80,15 @@ export default (app: express.Application): void => {
                 },
                 tags: [
                     {
-                        name: 'user',
+                        name: 'users',
                         description: 'Everything about your users',
                     },
                     {
-                        name: 'story',
+                        name: 'stories',
                         description: 'Manage stories',
                     },
                     {
-                        name: 'community',
+                        name: 'communities',
                         description: 'UBI communities',
                     },
                 ],
@@ -121,7 +121,10 @@ export default (app: express.Application): void => {
         console.log(swaggerSpec);
 
         app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-        app.use(morgan('combined'));
+        if (process.env.NODE_ENV === 'development') {
+            // redundant in production (heroku logs it already), but useful for development
+            app.use(morgan('combined'));
+        }
     }
 
     // Useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
@@ -166,7 +169,7 @@ export default (app: express.Application): void => {
                 error.details.get('body').details.length > 0 &&
                 error.details.get('body').details[0].message
         );
-        if (error && error.toString().indexOf('celebrate') !== -1) {
+        if (error && error.toString().indexOf('Validation failed') !== -1) {
             return res.status(200).json({
                 success: false,
                 error:

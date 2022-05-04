@@ -1,4 +1,5 @@
 import apicache from 'apicache';
+import pg from 'pg';
 import redis from 'redis';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
 
@@ -9,12 +10,13 @@ import initModels from './models';
 import * as AirgrabProof from './models/airgrab/airgrabProof';
 import * as AirgrabUser from './models/airgrab/airgrabUser';
 import * as AppAnonymousReport from './models/app/anonymousReport';
+import * as AppClientCredential from './models/app/appClientCredential';
+import * as AppLog from './models/app/appLog';
 import * as AppMediaContent from './models/app/appMediaContent';
 import * as AppMediaThumbnail from './models/app/appMediaThumbnail';
 import * as AppNotification from './models/app/appNotification';
 import * as AppProposal from './models/app/appProposal';
 import * as AppUser from './models/app/appUser';
-import * as AppLog from './models/app/appLog';
 import * as AppUserThroughTrust from './models/app/appUserThroughTrust';
 import * as AppUserTrust from './models/app/appUserTrust';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
@@ -49,8 +51,6 @@ import * as UbiCommunitySuspect from './models/ubi/ubiCommunitySuspect';
 import * as UbiPromoter from './models/ubi/ubiPromoter';
 import * as UbiPromoterSocialMedia from './models/ubi/ubiPromoterSocialMedia';
 
-import pg from 'pg';
-
 let logging:
     | boolean
     | ((sql: string, timing?: number | undefined) => void)
@@ -64,10 +64,12 @@ const dbConfig: Options = {
     dialect: 'postgres',
     dialectOptions: {
         connectTimeout: 60000,
-        ssl: config.aws.lambda ? {
-            require: true,
-            rejectUnauthorized: false
-        } : {}
+        ssl: config.aws.lambda
+            ? {
+                  require: true,
+                  rejectUnauthorized: false,
+              }
+            : {},
     },
     dialectModule: pg,
     pool: {
@@ -91,6 +93,8 @@ const models: DbModels = {
         .AppProposalModel as ModelCtor<AppProposal.AppProposalModel>,
     appUserThroughTrust: sequelize.models
         .AppUserThroughTrustModel as ModelCtor<AppUserThroughTrust.AppUserThroughTrustModel>,
+    appClientCredential: sequelize.models
+        .AppClientCredentialModel as ModelCtor<AppClientCredential.AppClientCredentialModel>,
     appLog: sequelize.models.AppLogModel as ModelCtor<AppLog.AppLogModel>,
     community: sequelize.models.Community as ModelCtor<Community>,
     ubiCommunitySuspect: sequelize.models

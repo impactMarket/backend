@@ -12,6 +12,7 @@ export class StoryUserReportModel extends Model<
     public id!: number;
     public contentId!: number;
     public address!: number;
+    public typeId!: number | null;
 }
 
 export function initializeStoryUserReport(
@@ -36,6 +37,10 @@ export function initializeStoryUserReport(
             },
             address: {
                 type: DataTypes.STRING(44),
+                allowNull: false,
+            },
+            typeId: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
         },

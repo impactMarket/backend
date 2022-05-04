@@ -204,10 +204,12 @@ export interface ICommunityStory {
 export interface ICommunitiesListStories {
     id: number;
     name: string;
-    cover: AppMediaContent;
+    cover?: AppMediaContent;
+    coverMediaPath?: string;
     story: {
         id: number;
         media?: AppMediaContent;
+        storyMediaPath?: string | null;
         message: string | null;
     }; // most recent
 }
@@ -266,6 +268,7 @@ export type IBeneficiaryActivities = {
 };
 
 export type BeneficiaryFilterType = {
+    state?: string;
     active?: boolean;
     suspect?: boolean;
     inactivity?: boolean;

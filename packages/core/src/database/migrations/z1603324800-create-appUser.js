@@ -23,6 +23,12 @@ module.exports = {
             username: {
                 type: Sequelize.STRING(128),
             },
+            firstName: {
+                type: Sequelize.STRING(128),
+            },
+            lastName: {
+                type: Sequelize.STRING(128),
+            },
             language: {
                 type: Sequelize.STRING(8),
                 defaultValue: 'en',
@@ -60,6 +66,18 @@ module.exports = {
                 allowNull: false,
             },
             email: {
+                type: Sequelize.STRING(64),
+                allowNull: true,
+            },
+            bio: {
+                type: Sequelize.STRING(512),
+                allowNull: true,
+            },
+            country: {
+                type: Sequelize.STRING(64),
+                allowNull: true,
+            },
+            phone: {
                 type: Sequelize.STRING(64),
                 allowNull: true,
             },

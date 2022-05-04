@@ -8,15 +8,15 @@ export default (app: Router): void => {
     const route = Router();
     const userController = new UserController();
 
-    app.use('/user', route);
+    app.use('/users', route);
 
     /**
      * @swagger
      *
-     * /user:
+     * /users:
      *   post:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Create user"
      *     requestBody:
      *       required: true
@@ -41,21 +41,36 @@ export default (app: Router): void => {
      *               pushNotificationToken:
      *                 type: string
      *                 required: false
-     *               username:
+     *               firstName:
+     *                 type: string
+     *                 required: false
+     *               lastName:
      *                 type: string
      *                 required: false
      *               gender:
      *                 type: string
      *                 enum: [u, m, f, o]
      *                 required: false
-     *               year:
+     *               age:
      *                 type: number
      *                 required: false
      *               children:
      *                 type: number
      *                 required: false
-     *               avatarMediaId:
-     *                 type: number
+     *               avatarMediaPath:
+     *                 type: string
+     *                 required: false
+     *               email:
+     *                 type: string
+     *                 required: false
+     *               bio:
+     *                 type: string
+     *                 required: false
+     *               country:
+     *                 type: string
+     *                 required: false
+     *               phone:
+     *                 type: string
      *                 required: false
      *     responses:
      *       "200":
@@ -68,10 +83,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user:
+     * /users:
      *   get:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Get user"
      *     responses:
      *       "200":
@@ -87,10 +102,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user:
+     * /users:
      *   put:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Update user"
      *     requestBody:
      *       required: true
@@ -109,15 +124,17 @@ export default (app: Router): void => {
      *                 type: string
      *                 nullable: true
      *                 required: false
-     *               username:
+     *               firstName:
      *                 type: string
-     *                 nullable: true
+     *                 required: false
+     *               lastName:
+     *                 type: string
      *                 required: false
      *               gender:
      *                 type: string
      *                 enum: [u, m, f, o]
      *                 required: false
-     *               year:
+     *               age:
      *                 type: number
      *                 nullable: true
      *                 required: false
@@ -125,8 +142,20 @@ export default (app: Router): void => {
      *                 type: number
      *                 nullable: true
      *                 required: false
-     *               avatarMediaId:
-     *                 type: number
+     *               avatarMediaPath:
+     *                 type: string
+     *                 required: false
+     *               email:
+     *                 type: string
+     *                 required: false
+     *               bio:
+     *                 type: string
+     *                 required: false
+     *               country:
+     *                 type: string
+     *                 required: false
+     *               phone:
+     *                 type: string
      *                 required: false
      *     responses:
      *       "200":
@@ -147,10 +176,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user:
+     * /users:
      *   patch:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Patch changes user"
      *     description: "Patch changes user"
      *     requestBody:
@@ -162,7 +191,7 @@ export default (app: Router): void => {
      *             properties:
      *               action:
      *                 type: string
-     *                 enum: [beneficiary-rules]
+     *                 enum: [beneficiary-rules, manager-rules]
      *                 required: true
      *     responses:
      *       "200":
@@ -178,10 +207,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user:
+     * /users:
      *   delete:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Delete user"
      *     responses:
      *       "200":
@@ -197,10 +226,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user/report:
+     * /users/report:
      *   post:
      *     tags:
-     *     - "user"
+     *       - "users"
      *     summary: "Send anonymous report"
      *     requestBody:
      *       required: true
@@ -238,10 +267,10 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /user/logs:
+     * /users/logs:
      *   get:
      *     tags:
-     *       - "user"
+     *       - "users"
      *     summary: Get user logs
      *     parameters:
      *       - in: query
@@ -265,5 +294,35 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-     route.get('/logs', authenticateToken, userController.getLogs);
+    route.get('/logs', authenticateToken, userController.getLogs);
+
+    /**
+     * @swagger
+     *
+     * /users/presigned:
+     *   get:
+     *     tags:
+     *       - "users"
+     *     summary: "Get AWS presigned URL to upload media content"
+     *     parameters:
+     *       - in: query
+     *         name: mime
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: media mimetype
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/presigned/:query?',
+        authenticateToken,
+        userController.getPresignedUrlMedia
+    );
 };

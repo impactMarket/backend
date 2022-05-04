@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import parsePhoneNumber from 'libphonenumber-js';
 import { Op, literal, OrderItem, WhereOptions, Includeable } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
@@ -30,6 +31,8 @@ export class CommunityListService {
         lng?: string;
         fields?: string;
         status?: 'valid' | 'pending';
+        review?: 'pending' | 'claimed' | 'declined' | 'accepted' | 'accepted';
+        ambassadorAddress?: string;
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
@@ -85,14 +88,57 @@ export class CommunityListService {
             };
         }
 
+        if (query.review) {
+            extendedWhere = {
+                ...extendedWhere,
+                review: query.review,
+            };
+            query.status = 'pending';
+        }
+
         if (query.status === 'pending') {
             const communityProposals = await this._getOpenProposals();
+            if (query.ambassadorAddress) {
+                const ambassador = (await models.appUser.findOne({
+                    attributes: [],
+                    include: [
+                        {
+                            model: models.appUserTrust,
+                            as: 'trust',
+                            attributes: ['phone'],
+                        },
+                    ],
+                    where: {
+                        address: query.ambassadorAddress,
+                    },
+                })) as any;
+                const phone = ambassador?.trust[0]?.phone;
+                if (phone) {
+                    const parsePhone = parsePhoneNumber(phone);
+                    extendedWhere = {
+                        ...extendedWhere,
+                        country: parsePhone?.country,
+                    };
+                } else {
+                    throw new BaseError(
+                        'AMBASSADOR_NOT_FOUND',
+                        'Ambassador not found'
+                    );
+                }
+            }
             extendedWhere = {
                 ...extendedWhere,
                 requestByAddress: {
                     [Op.notIn]: communityProposals,
                 },
             };
+        } else {
+            if (query.ambassadorAddress) {
+                extendedWhere = {
+                    ...extendedWhere,
+                    ambassadorAddress: query.ambassadorAddress,
+                };
+            }
         }
 
         if (query.orderBy) {
@@ -193,17 +239,20 @@ export class CommunityListService {
                 }
             }
         } else {
-            beneficiariesState = await this._getBeneficiaryState(
-                {
-                    status: query.status,
-                    limit: query.limit,
-                    offset: query.offset,
-                },
-                extendedWhere
-            );
-            contractAddress = beneficiariesState!.map((el) =>
-                ethers.utils.getAddress(el.id)
-            );
+            // if searching by pending or did not pass the "state" on fields, do not search on the graph
+            if (query.status !== 'pending' && (!query.fields || query.fields.indexOf('state') !== -1)) {
+                beneficiariesState = await this._getBeneficiaryState(
+                    {
+                        status: query.status,
+                        limit: query.limit,
+                        offset: query.offset,
+                    },
+                    extendedWhere
+                );
+                contractAddress = beneficiariesState!.map((el) =>
+                    ethers.utils.getAddress(el.id)
+                );
+            }
         }
 
         let include: Includeable[];
@@ -329,8 +378,8 @@ export class CommunityListService {
         //     communitiesId = result.map((el) => el.id);
         // }
 
-        // remove empty elements 
-        communitiesId = communitiesId.filter(Number) 
+        // remove empty elements
+        communitiesId = communitiesId.filter(Number);
 
         let states: ({
             communityId: number;
@@ -431,15 +480,11 @@ export class CommunityListService {
             contractAddress = communities;
         }
 
-        const batch = 10;
         let result: any[] = [];
 
         if (contractAddress.length > 0) {
-            for (let i = 0; ; i = i + batch) {
-                const addresses = contractAddress.slice(i, i + batch);
-
-                const communities = await communityEntities(
-                    `orderBy: beneficiaries,
+            result = await communityEntities(
+                `orderBy: beneficiaries,
                         orderDirection: ${
                             orderType ? orderType.toLocaleLowerCase() : 'desc'
                         },
@@ -453,16 +498,11 @@ export class CommunityListService {
                                 ? parseInt(query.offset, 10)
                                 : config.defaultOffset
                         },
-                        where: { id_in: [${addresses.map(
+                        where: { id_in: [${contractAddress.map(
                             (el) => `"${el.toLocaleLowerCase()}"`
                         )}]}`,
-                    `id, beneficiaries`
-                );
-                result.push(...communities);
-                if (i + batch > contractAddress.length) {
-                    break;
-                }
-            }
+                `id, beneficiaries`
+            );
         } else {
             result = await communityEntities(
                 `orderBy: beneficiaries,

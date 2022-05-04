@@ -31,7 +31,7 @@ describe('calcuateCommunitiesMetrics', () => {
             database.models.ubiCommunityDailyMetrics,
             'create'
         );
-        returnSubgraph = stub(subgraph.queries.beneficiary, 'getBeneficiaries');
+        returnSubgraph = stub(subgraph.queries.beneficiary, 'getAllBeneficiaries');
     });
 
     after(async () => {

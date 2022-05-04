@@ -28,8 +28,9 @@ export class Community extends Model<
     public visibility!: 'public' | 'private';
     public coverImage!: string;
     public coverMediaId!: number | null; // TODO: will be required once next version is released
+    public coverMediaPath!: string | null;
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    public review!: 'pending' | 'in-progress' | 'halted' | 'closed';
+    public review!: 'pending' | 'claimed' | 'declined' | 'accepted';
     public started!: Date;
     public proposalId!: number | null;
     public ambassadorAddress!: string | null;
@@ -126,12 +127,7 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 allowNull: false,
             },
             review: {
-                type: DataTypes.ENUM(
-                    'pending',
-                    'in-progress',
-                    'halted',
-                    'closed'
-                ),
+                type: DataTypes.ENUM('pending', 'claimed', 'declined', 'accepted'),
                 defaultValue: 'pending',
                 allowNull: false,
             },
