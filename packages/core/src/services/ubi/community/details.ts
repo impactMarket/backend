@@ -431,7 +431,7 @@ export class CommunityDetailsService {
         };
     }
 
-    public async count(groupBy: string): Promise<any[]> {
+    public async count(groupBy: string, status?: string): Promise<any[]> {
         let groupName = '';
         switch (groupBy) {
             case 'country':
@@ -441,15 +441,22 @@ export class CommunityDetailsService {
                 groupName = 'review';
                 break;
         }
+
+        let where: WhereOptions = {
+            visibility: 'public',
+        }
         if (groupName.length === 0) {
             throw new BaseError('INVALID_GROUP', 'invalid group');
         }
+        if (status) {
+            where = {
+                ...where,
+                status,
+            }
+        }
         const result = (await models.community.findAll({
             attributes: [groupName, [fn('count', col(groupName)), 'count']],
-            where: {
-                visibility: 'public',
-                status: 'valid',
-            },
+            where,
             group: [groupName],
             raw: true,
         })) as any;
