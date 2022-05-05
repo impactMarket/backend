@@ -35,6 +35,13 @@ export default (route: Router): void => {
      *         required: false
      *         description: communities country (identifier, like PT for Portugal) to search, separated by ; (PT;FR)
      *       - in: query
+     *         name: status
+     *         schema:
+     *           type: string
+     *           enum: [pending, valid, removed]
+     *         required: false
+     *         description: community review 
+     *       - in: query
      *         name: review
      *         schema:
      *           type: string
@@ -84,6 +91,12 @@ export default (route: Router): void => {
      *           type: string
      *         required: false
      *         description: filter communities by ambassadors
+     *       - in: query
+     *         name: fields
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: especify fields to return
      *     responses:
      *       "200":
      *         description: OK
