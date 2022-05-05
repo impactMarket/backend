@@ -1,6 +1,6 @@
 import { BigNumber } from 'bignumber.js';
 import { utils, ethers } from 'ethers';
-import { Op, WhereOptions, fn, col } from 'sequelize';
+import { Op, WhereOptions, fn, col, literal } from 'sequelize';
 
 import config from '../../../config';
 import { models } from '../../../database';
@@ -440,6 +440,9 @@ export class CommunityDetailsService {
             case 'review':
                 groupName = 'review';
                 break;
+            case 'reviewByCountry':
+                groupName = 'reviewByCountry';
+                break;
         }
 
         let where: WhereOptions = {
@@ -454,6 +457,23 @@ export class CommunityDetailsService {
                 status,
             }
         }
+
+        if (groupName === 'reviewByCountry') {
+            const result = (await models.community.findAll({
+                attributes: [
+                    'country', [fn('count', col('country')), 'count'],
+                    [fn('count', literal("CASE WHEN review = 'pending' THEN 1 END")), 'pending' ],
+                    [fn('count', literal("CASE WHEN review = 'claimed' THEN 1 END")), 'claimed' ],
+                    [fn('count', literal("CASE WHEN review = 'declined' THEN 1 END")), 'declined' ],
+                    [fn('count', literal("CASE WHEN review = 'accepted' THEN 1 END")), 'accepted' ],
+                ],
+                where,
+                group: ['country'],
+            })) as any;
+    
+            return result;
+        }
+
         const result = (await models.community.findAll({
             attributes: [groupName, [fn('count', col(groupName)), 'count']],
             where,
