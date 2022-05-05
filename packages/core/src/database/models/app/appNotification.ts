@@ -12,7 +12,7 @@ export class AppNotificationModel extends Model<
     public id!: number;
     public userId!: number;
     public type!: number;
-    public params!: string;
+    public params!: object;
     public read!: boolean;
 
     // timestamps!
@@ -41,7 +41,7 @@ export function initializeAppNotification(sequelize: Sequelize): void {
                 allowNull: false,
             },
             params: {
-                type: DataTypes.STRING(32),
+                type: DataTypes.JSON,
                 allowNull: true,
             },
             read: {
@@ -57,7 +57,7 @@ export function initializeAppNotification(sequelize: Sequelize): void {
         {
             tableName: 'app_notification',
             sequelize,
-            timestamps: false,
+            updatedAt: false,
         }
     );
 }

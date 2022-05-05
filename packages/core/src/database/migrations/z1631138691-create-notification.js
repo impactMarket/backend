@@ -23,7 +23,7 @@ module.exports = {
                 allowNull: true,
             },
             params: {
-                type: Sequelize.STRING(32),
+                type: Sequelize.JSON,
                 allowNull: true,
             },
             read: {
