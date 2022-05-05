@@ -23,9 +23,16 @@ export default (route: Router): void => {
      *         name: groupBy
      *         schema:
      *           type: string
-     *           enum: [country, review]
+     *           enum: [country, review, reviewByCountry]
      *         required: true
      *         description: count communities by a grouped value
+     *       - in: query
+     *         name: status
+     *         schema:
+     *           type: string
+     *           enum: [pending, valid, removed]
+     *         required: false
+     *         description: community status
      *     responses:
      *       "200":
      *         description: OK

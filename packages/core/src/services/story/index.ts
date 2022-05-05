@@ -285,7 +285,8 @@ export default class StoryServiceV2 {
                 ],
                 where: {
                     isPublic: true,
-                },
+                    '$"storyUserReport"."contentId"$': null,
+                } as any,
                 order: [['postedAt', 'DESC']],
                 offset: query.offset
                     ? parseInt(query.offset, 10)
@@ -315,7 +316,6 @@ export default class StoryServiceV2 {
                 community: content.storyCommunity!.community,
                 engagement: {
                     loves: content.storyEngagement?.loves || 0,
-                    userReported: !!content.storyUserReport?.length,
                     userLoved: !!content.storyUserEngagement?.length,
                 },
             };

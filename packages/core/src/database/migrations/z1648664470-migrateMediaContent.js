@@ -117,6 +117,11 @@ module.exports = {
 
         const appMediaContent = await AppMediaContent.findAll({
             attributes: ['id', 'url'],
+            where: {
+                url: {
+                    [Sequelize.Op.like]: `%${process.env.CLOUDFRONT_URL}%`,
+                },
+            }
         });
 
         console.log(appMediaContent.length);
@@ -133,7 +138,7 @@ module.exports = {
             region: process.env.AWS_REGION,
         });
 
-        const batch = 200;
+        const batch = 500;
         for (let i = 0; ; i = i + batch) {
             const mediaContents = appMediaContent.slice(i, i + batch);
             const promises = mediaContents.map(async (media) => {
@@ -197,6 +202,7 @@ module.exports = {
                         }
                     } catch (e) {
                         console.log('failed for ', media.id);
+                        console.log('erro ', e);
                     }
             });
             await Promise.all(promises);
