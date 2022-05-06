@@ -123,7 +123,8 @@ class CommunityController {
     };
 
     getContract = (req: Request, res: Response) => {
-        this.detailsService.getUBIParams(parseInt(req.params.id, 10))
+        this.detailsService
+            .getContract(parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
