@@ -284,7 +284,7 @@ export default class StoryServiceV2 {
                 ],
                 where: {
                     isPublic: true,
-                    '$"storyUserReport"."contentId"$': null,
+                    ...(userAddress ? { '$"storyUserReport"."contentId"$': null } : {})
                 } as any,
                 order: [['postedAt', 'DESC']],
                 offset: query.offset
