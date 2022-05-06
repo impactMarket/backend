@@ -1,5 +1,6 @@
 import { BigNumber } from 'bignumber.js';
 import { utils, ethers } from 'ethers';
+import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
 import { Op, WhereOptions, fn, col, literal } from 'sequelize';
 
 import config from '../../../config';
@@ -40,6 +41,17 @@ export class CommunityDetailsService {
             ...state,
             communityId,
         };
+    }
+
+    public async getContract(communityId: number) {
+        const result = await models.ubiCommunityContract.findOne({
+            where: {
+                communityId,
+            },
+        });
+        return result !== null
+            ? (result.toJSON() as UbiCommunityContract)
+            : null;
     }
 
     public async getUBIParams(communityId: number) {

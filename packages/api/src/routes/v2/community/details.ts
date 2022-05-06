@@ -1,3 +1,4 @@
+import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/details';
@@ -5,7 +6,6 @@ import {
     authenticateToken,
     optionalAuthentication,
 } from '../../../middlewares';
-import { database } from '@impactmarket/core';
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -49,10 +49,7 @@ export default (route: Router): void => {
      *                   count:
      *                     type: string
      */
-     route.get(
-        '/count/:query?',
-        controller.count
-    );
+    route.get('/count/:query?', controller.count);
 
     /**
      * @swagger
@@ -108,7 +105,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityContract'
      */
-     route.get('/:id/contract', controller.getContract);
+    route.get('/:id/contract', controller.getContract);
 
     /**
      * @swagger

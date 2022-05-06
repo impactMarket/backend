@@ -40,14 +40,14 @@ export default (route: Router): void => {
      *           type: string
      *           enum: [pending, valid, removed]
      *         required: false
-     *         description: community review 
+     *         description: community review
      *       - in: query
      *         name: review
      *         schema:
      *           type: string
      *           enum: [claimed, declined, pending, accepted]
      *         required: false
-     *         description: community review 
+     *         description: community review
      *       - in: query
      *         name: filter
      *         schema:
