@@ -1,6 +1,6 @@
 import { gql } from 'apollo-boost';
 
-import { client } from '../config';
+import { clientDAO } from '../config';
 
 export type UserRoles = {
     beneficiary: { community: string; state: number } | null;
@@ -30,7 +30,7 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });

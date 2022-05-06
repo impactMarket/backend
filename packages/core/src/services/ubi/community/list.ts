@@ -444,7 +444,7 @@ export class CommunityListService {
                 ],
                 element
             );
-            return calldata[0][0];
+            return ethers.utils.getAddress(calldata[0][0]);
         });
 
         return requestByAddress;
