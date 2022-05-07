@@ -35,6 +35,15 @@ export function storyAssociation(sequelize: Sequelize) {
         }
     );
 
+    sequelize.models.StoryContentModel.hasOne(
+        sequelize.models.AppUserModel,
+        {
+            foreignKey: 'address',
+            sourceKey: 'byAddress',
+            as: 'user',
+        }
+    );
+
     // used to post from the content with incude
     sequelize.models.StoryContentModel.hasOne(
         sequelize.models.StoryEngagementModel,

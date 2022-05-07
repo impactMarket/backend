@@ -520,26 +520,22 @@ describe('user service', () => {
                 {
                     userId: users[0].id,
                     type: 1,
-                    params: 'param_test',
-                    createdAt: new Date(),
+                    params: { param: 'param_test' },
                 },
                 {
                     userId: users[0].id,
                     type: 2,
-                    params: 'param_test',
-                    createdAt: new Date(),
+                    params: { param: 'param_test' },
                 },
                 {
                     userId: users[1].id,
                     type: 1,
-                    params: 'param_test',
-                    createdAt: new Date(),
+                    params: { param: 'param_test' },
                 },
                 {
                     userId: users[2].id,
                     type: 1,
-                    params: 'param_test',
-                    createdAt: new Date(),
+                    params: { param: 'param_test' },
                 },
             ]);
         });

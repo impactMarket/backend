@@ -1,3 +1,4 @@
+import { NotificationType } from '../../interfaces/app/appNotification';
 import { Op } from 'sequelize';
 
 import config from '../../config';
@@ -337,6 +338,8 @@ export default class StoryServiceV2 {
                 where: { contentId, address: userAddress },
             });
         } else {
+            this.addNotification(userAddress, contentId);
+            
             await models.storyUserEngagement.create({
                 contentId,
                 address: userAddress,
@@ -421,5 +424,25 @@ export default class StoryServiceV2 {
         //         .filter((s) => s.mediaMediaId !== null)
         //         .map((s) => s.mediaMediaId!) // not null here
         // );
+    }
+
+    private async addNotification(userAddress: string, contentId: number) {
+        const story = (await models.storyContent.findOne({
+            attributes: [],
+            where: { id: contentId },
+            include: [{
+                model: models.appUser,
+                as: 'user',
+                attributes: ['id']
+            }]
+        }))! as StoryContent;
+
+        await models.appNotification.findOrCreate({
+            where: {
+                userId: story.user!.id,
+                type: NotificationType.STORY_LIKED,
+                params: { userAddress, contentId }
+            }
+        });
     }
 }
