@@ -2,7 +2,7 @@ import { gql } from 'apollo-boost';
 import { ethers } from 'ethers';
 
 import config from '../../config';
-import { client } from '../config';
+import { clientDAO, clientSubDAO } from '../config';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
@@ -13,25 +13,25 @@ export const getCommunityProposal = async (): Promise<string[]> => {
 
         const query = gql`
             {
-                communityProposalEntities(
+                proposalEntities(
                     where: {
                         status: 0
                         endBlock_gt: ${blockNumber}
                     }
                 ) {
-                    calldata
+                    calldatas
                 }
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientSubDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
 
-        if (queryResult.data?.communityProposalEntities?.length) {
-            return queryResult.data.communityProposalEntities.map(
-                (proposal) => proposal.calldata
+        if (queryResult.data?.proposalEntities?.length) {
+            return queryResult.data.proposalEntities.map(
+                (proposal) => proposal.calldatas[0]
             );
         }
 
@@ -66,7 +66,7 @@ export const getClaimed = async (
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
@@ -101,7 +101,7 @@ export const getCommunityManagers = async (
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
@@ -142,7 +142,7 @@ export const getCommunityState = async (
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
@@ -175,7 +175,7 @@ export const getCommunityUBIParams = async (
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
@@ -198,7 +198,7 @@ export const communityEntities = async (where: string, fields: string) => {
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });

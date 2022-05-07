@@ -1,7 +1,7 @@
 import { gql } from 'apollo-boost';
 import { utils } from 'ethers';
 
-import { client } from '../config';
+import { clientDAO } from '../config';
 import { BeneficiarySubgraph } from '../interfaces/beneficiary';
 
 export const getAllBeneficiaries = async (
@@ -35,7 +35,7 @@ export const getAllBeneficiaries = async (
                     }
                 }
             `;
-            const queryResult = await client.query({
+            const queryResult = await clientDAO.query({
                 query,
                 fetchPolicy: 'no-cache',
             });
@@ -77,7 +77,7 @@ export const getBeneficiariesByAddress = async (
                 }
             }
         `;
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
         });
         return queryResult.data.beneficiaryEntities;
@@ -115,7 +115,7 @@ export const getBeneficiaries = async (
                 }
             }
         `;
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
         });
         return queryResult.data.beneficiaryEntities;
@@ -140,7 +140,7 @@ export const getBeneficiaryCommunity = async (
                     }
                 }
             `;
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
@@ -168,7 +168,7 @@ export const countBeneficiaries = async (
                     }
                 }
             `;
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
