@@ -1133,6 +1133,137 @@ describe('community service v2', () => {
                     requestByAddress: users[2].address,
                 });
             });
+
+            it('out of funds', async () => {
+                const communities = await CommunityFactory([
+                    {
+                        requestByAddress: users[0].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[1].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -23.4378873,
+                            longitude: -46.4841214,
+                        },
+                    },
+                    {
+                        requestByAddress: users[2].address,
+                        started: new Date(),
+                        status: 'valid',
+                        visibility: 'public',
+                        contract: {
+                            baseInterval: 60 * 60 * 24,
+                            claimAmount: '1000000000000000000',
+                            communityId: 0,
+                            incrementInterval: 5 * 60,
+                            maxClaim: '450000000000000000000',
+                        },
+                        hasAddress: true,
+                        gps: {
+                            latitude: -15.8697203,
+                            longitude: -47.9207824,
+                        },
+                    },
+                ]);
+
+                const claimed: SubgraphClaimed = [];
+                for (const community of communities) {
+                    claimed.push({
+                        id: community.contractAddress!,
+                        claimed: 0,
+                    });
+                    await BeneficiaryFactory(
+                        await UserFactory({
+                            n:
+                                community.requestByAddress === users[1].address
+                                    ? 5
+                                    : 4,
+                        }),
+                        community.id
+                    );
+                }
+
+                returnCommunityEntities.returns([
+                    {
+                        id: communities[1].contractAddress,
+                        estimatedFunds: '0.01',
+                    },
+                    {
+                        id: communities[2].contractAddress,
+                        estimatedFunds: '1.50',
+                    },
+                    {
+                        id: communities[0].contractAddress,
+                        estimatedFunds: '100.00',
+                    },
+                ]);
+
+                communities.forEach((el) => {
+                    returnCommunityStateSubgraph
+                        .withArgs(el.contractAddress)
+                        .returns({
+                            claims: 0,
+                            claimed: '0',
+                            beneficiaries:
+                                el.requestByAddress === users[1].address
+                                    ? 5
+                                    : 4,
+                            removedBeneficiaries: 0,
+                            contributed: '0',
+                            contributors: 0,
+                            managers: 0,
+                        });
+                });
+
+                const result = await communityListService.list({
+                    orderBy: 'out_of_funds',
+                });
+
+                expect(result.rows[0]).to.include({
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
+                });
+                expect(result.rows[1]).to.include({
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address,
+                });
+                expect(result.rows[2]).to.include({
+                    id: communities[0].id,
+                    name: communities[0].name,
+                    country: communities[0].country,
+                    requestByAddress: users[0].address,
+                });
+            });
         });
 
         describe('query string filter', () => {
