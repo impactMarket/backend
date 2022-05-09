@@ -198,7 +198,8 @@ export class CommunityListService {
                             orderOption.length === 0 &&
                             !orderBeneficiary.active
                         ) {
-                            funds = await this._getOutOfFunds(
+                            funds = await this._communityEntities(
+                                'estimatedFunds',
                                 {
                                     status: query.status,
                                     limit: query.limit,
@@ -230,7 +231,8 @@ export class CommunityListService {
                             !orderOutOfFunds.active
                         ) {
                             beneficiariesState =
-                                await this._getBeneficiaryState(
+                                await this._communityEntities(
+                                    'beneficiaries',
                                     {
                                         status: query.status,
                                         limit: query.limit,
@@ -254,7 +256,8 @@ export class CommunityListService {
         } else {
             // if searching by pending or did not pass the "state" on fields, do not search on the graph
             if (query.status !== 'pending' && (!query.fields || query.fields.indexOf('state') !== -1)) {
-                beneficiariesState = await this._getBeneficiaryState(
+                beneficiariesState = await this._communityEntities(
+                    'beneficiaries',
                     {
                         status: query.status,
                         limit: query.limit,
@@ -355,7 +358,8 @@ export class CommunityListService {
         }
 
         if (orderBeneficiary.active) {
-            beneficiariesState = await this._getBeneficiaryState(
+            beneficiariesState = await this._communityEntities(
+                'beneficiaries',
                 {
                     status: query.status,
                     limit: query.limit,
@@ -379,7 +383,8 @@ export class CommunityListService {
         }
 
         if (orderOutOfFunds.active) {
-            const result = await this._getOutOfFunds(
+            funds = await this._communityEntities(
+                'estimatedFunds',
                 {
                     status: query.status,
                     limit: query.limit,
@@ -389,7 +394,7 @@ export class CommunityListService {
                 undefined,
                 contractAddress
             );
-            contractAddress = beneficiariesState!.map((el) =>
+            contractAddress = funds!.map((el) =>
                 ethers.utils.getAddress(el.id)
             );
 
@@ -474,7 +479,8 @@ export class CommunityListService {
         return requestByAddress;
     }
 
-    private async _getBeneficiaryState(
+    private async _communityEntities(
+        orderBy: string,
         query: {
             status?: string;
             limit?: string;
@@ -508,7 +514,7 @@ export class CommunityListService {
 
         if (contractAddress.length > 0) {
             result = await communityEntities(
-                `orderBy: beneficiaries,
+                `orderBy: ${orderBy},
                         orderDirection: ${
                             orderType ? orderType.toLocaleLowerCase() : 'desc'
                         },
@@ -525,11 +531,11 @@ export class CommunityListService {
                         where: { id_in: [${contractAddress.map(
                             (el) => `"${el.toLocaleLowerCase()}"`
                         )}]}`,
-                `id, beneficiaries`
+                `id, ${orderBy}`
             );
         } else {
             result = await communityEntities(
-                `orderBy: beneficiaries,
+                `orderBy: ${orderBy},
                     orderDirection: ${
                         orderType ? orderType.toLocaleLowerCase() : 'desc'
                     },
@@ -543,83 +549,7 @@ export class CommunityListService {
                             ? parseInt(query.offset, 10)
                             : config.defaultOffset
                     },`,
-                `id, beneficiaries`
-            );
-        }
-
-        return result;
-    }
-
-    private async _getOutOfFunds(
-        query: {
-            status?: string;
-            limit?: string;
-            offset?: string;
-        },
-        extendedWhere: WhereOptions<CommunityAttributes>,
-        orderType?: string,
-        communities?: string[]
-    ): Promise<any> {
-        let contractAddress: string[] = [];
-        if (Object.keys(extendedWhere).length > 0) {
-            const communities = await models.community.findAll({
-                attributes: ['contractAddress'],
-                where: {
-                    status: query.status ? query.status : 'valid',
-                    visibility: 'public',
-                    ...extendedWhere,
-                },
-            });
-            contractAddress = communities.map(
-                (community) => community.contractAddress!
-            );
-            if (!contractAddress || !contractAddress.length) {
-                return [];
-            }
-        } else if (communities && communities.length > 0) {
-            contractAddress = communities;
-        }
-
-        let result: any[] = [];
-
-        if (contractAddress.length > 0) {
-            result = await communityEntities(
-                `orderBy: estimatedFunds,
-                        orderDirection: ${
-                            orderType ? orderType.toLocaleLowerCase() : 'asc'
-                        },
-                        first: ${
-                            query.limit
-                                ? parseInt(query.limit, 10)
-                                : config.defaultLimit
-                        },
-                        skip: ${
-                            query.offset
-                                ? parseInt(query.offset, 10)
-                                : config.defaultOffset
-                        },
-                        where: { id_in: [${contractAddress.map(
-                            (el) => `"${el.toLocaleLowerCase()}"`
-                        )}]}`,
-                `id, estimatedFunds`
-            );
-        } else {
-            result = await communityEntities(
-                `orderBy: estimatedFunds,
-                    orderDirection: ${
-                        orderType ? orderType.toLocaleLowerCase() : 'asc'
-                    },
-                    first: ${
-                        query.limit
-                            ? parseInt(query.limit, 10)
-                            : config.defaultLimit
-                    },
-                    skip: ${
-                        query.offset
-                            ? parseInt(query.offset, 10)
-                            : config.defaultOffset
-                    },`,
-                `id, estimatedFunds`
+                `id, ${orderBy}`
             );
         }
 
