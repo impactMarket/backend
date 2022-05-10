@@ -49,9 +49,18 @@ export class CommunityDetailsService {
                 communityId,
             },
         });
-        return result !== null
-            ? (result.toJSON() as UbiCommunityContract)
-            : null;
+
+        if (!result) {
+            return null;
+        }
+
+        const contract = result.toJSON() as UbiCommunityContract;
+
+        return {
+            ...contract,
+            claimAmount: ethers.utils.formatEther(contract.claimAmount),
+            maxClaim: ethers.utils.formatEther(contract.maxClaim),
+        };
     }
 
     public async getUBIParams(communityId: number) {
