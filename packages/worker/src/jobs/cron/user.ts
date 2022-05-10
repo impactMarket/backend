@@ -6,11 +6,9 @@ export async function verifyUserSuspectActivity(): Promise<void> {
         WITH active_users AS (
             SELECT 
             "user".address, 
-            "trust".phone 
+            "user".phone 
             FROM 
             "app_user" as "user"
-            LEFT OUTER JOIN app_user_through_trust AS "through_trust" ON "user".address = "through_trust"."userAddress" 
-            LEFT OUTER JOIN app_user_trust AS "trust" ON "through_trust"."appUserTrustId" = "trust".id 
             WHERE 
             "user".active = true
         ), 
