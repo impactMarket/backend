@@ -41,17 +41,10 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
         });
         await verifyUserSuspectActivity();
         const users: interfaces.app.appUser.AppUser[] =
-            await database.models.appUser.findAll({
-                include: [
-                    {
-                        model: database.models.appUserTrust,
-                        as: 'trust',
-                    },
-                ],
-            });
+            await database.models.appUser.findAll();
 
         users.forEach((user) => {
-            if (user.trust![0].phone === '00351969696966') {
+            if (user.phone === '00351969696966') {
                 expect(user.suspect).to.be.equal(true);
             } else {
                 expect(user.suspect).to.be.equal(false);
@@ -77,17 +70,10 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
         });
         await verifyUserSuspectActivity();
         const users: interfaces.app.appUser.AppUser[] =
-            await database.models.appUser.findAll({
-                include: [
-                    {
-                        model: database.models.appUserTrust,
-                        as: 'trust',
-                    },
-                ],
-            });
+            await database.models.appUser.findAll();
 
         users.forEach((user) => {
-            if (user.trust![0].phone === '00351969696969') {
+            if (user.phone === '00351969696969') {
                 expect(user.suspect).to.be.equal(false);
             } else {
                 expect(user.suspect).to.be.equal(true);
@@ -111,14 +97,7 @@ describe('[jobs - cron] verifyUserSuspectActivity', () => {
         });
         await verifyUserSuspectActivity();
         const users: interfaces.app.appUser.AppUser[] =
-            await database.models.appUser.findAll({
-                include: [
-                    {
-                        model: database.models.appUserTrust,
-                        as: 'trust',
-                    },
-                ],
-            });
+            await database.models.appUser.findAll();
 
         users.forEach((user) => {
             expect(user.suspect).to.be.equal(false);
