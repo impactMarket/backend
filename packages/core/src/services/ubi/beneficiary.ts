@@ -23,8 +23,10 @@ import {
     IBeneficiaryActivities,
     IListBeneficiary,
     BeneficiaryFilterType,
+    BeneficiaryActivity,
 } from '../endpoints';
 import CommunityService from './community';
+import { getUserActivity } from '../../subgraph/queries/user';
 
 export default class BeneficiaryService {
     public static async add(
@@ -520,8 +522,8 @@ export default class BeneficiaryService {
     private static async getClaimActivity(
         beneficiaryAddress: string,
         communityId: number,
-        offset: number,
-        limit: number
+        offset?: number,
+        limit?: number
     ): Promise<IBeneficiaryActivities[]> {
         const claims = await models.ubiClaim.findAll({
             where: {
@@ -544,41 +546,37 @@ export default class BeneficiaryService {
     private static async getRegistryActivity(
         beneficiaryAddress: string,
         communityId: number,
-        offset: number,
-        limit: number
+        offset?: number,
+        limit?: number
     ): Promise<IBeneficiaryActivities[]> {
-        const registry = await models.ubiBeneficiaryRegistry.findAll({
+        const community = await models.community.findOne({
+            attributes: ['contractAddress'],
+            where: {
+                id: communityId,
+            }
+        });
+        const registry = await getUserActivity(beneficiaryAddress, community!.contractAddress!, offset, limit);
+        const user = await models.appUser.findOne({
             where: {
                 address: beneficiaryAddress,
-                communityId,
-            },
-            include: [
-                {
-                    attributes: ['username'],
-                    model: models.appUser,
-                    as: 'user',
-                },
-            ],
-            order: [['txAt', 'DESC']],
-            limit,
-            offset,
+            }
         });
         return registry.map((el) => ({
-            id: el.id,
+            id: el.id as any,
             type: 'registry',
-            tx: el.tx,
-            txAt: el.txAt,
-            withAddress: el.from,
-            username: el['user'] ? el['user']['username'] : null,
-            activity: el.activity,
+            tx: el.id,
+            txAt: new Date(el.timestamp * 1000),
+            withAddress: el.by,
+            username: user ? user.username! : undefined,
+            activity: BeneficiaryActivity[el.activity],
         }));
     }
 
     private static async getTransactionActivity(
         beneficiaryAddress: string,
         communityId: number,
-        offset: number,
-        limit: number
+        offset?: number,
+        limit?: number
     ): Promise<IBeneficiaryActivities[]> {
         const transactions = await models.ubiBeneficiaryTransaction.findAll({
             where: {
@@ -615,30 +613,13 @@ export default class BeneficiaryService {
         offset: number,
         limit: number
     ): Promise<IBeneficiaryActivities[]> {
-        const query = `SELECT "registry".id, 'registry' AS type, tx, "txAt" AS date, "registry"."from" AS "withAddress", activity, null AS "isFromBeneficiary", null AS amount, "user"."username"
-            FROM ubi_beneficiary_registry AS "registry" LEFT JOIN "app_user" AS "user" ON "registry"."from" = "user"."address"
-            WHERE "registry"."address" = :beneficiaryAddress AND "registry"."communityId" = :communityId
-            UNION ALL
-            SELECT "transaction".id, 'transaction' AS type, tx, "transaction"."txAt" AS date, "withAddress", null as activity, "isFromBeneficiary", amount, "user"."username"
-            FROM ubi_beneficiary_transaction AS "transaction" LEFT JOIN "app_user" AS "user" ON "transaction"."withAddress" = "user"."address"
-            WHERE "transaction"."beneficiary" = :beneficiaryAddress 
-            UNION ALL
-            SELECT id, 'claim' AS type, tx, "txAt" AS date, null AS "withAddress", null as activity, null AS "isFromBeneficiary", amount, null AS "username"
-            FROM ubi_claim as "claim"
-            WHERE "claim"."address" = :beneficiaryAddress AND "claim"."communityId" = :communityId
-            ORDER BY DATE DESC
-            OFFSET :offset
-            LIMIT :limit`;
+        const registry = await this.getRegistryActivity(beneficiaryAddress, communityId);
+        const transaction = await this.getTransactionActivity(beneficiaryAddress, communityId);
+        const claim = await this.getClaimActivity(beneficiaryAddress, communityId);
 
-        return sequelize.query<IBeneficiaryActivities>(query, {
-            type: QueryTypes.SELECT,
-            replacements: {
-                beneficiaryAddress,
-                communityId,
-                offset,
-                limit,
-            },
-        });
+        const activitiesOrdered = [...registry, ...transaction, ...claim].sort((a, b) => b.txAt.getTime() - a.txAt.getTime());
+        
+        return activitiesOrdered.slice(offset, offset + limit);
     }
 
     public static async readRules(address: string): Promise<boolean> {
