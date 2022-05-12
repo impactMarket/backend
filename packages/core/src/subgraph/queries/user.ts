@@ -1,15 +1,17 @@
 import { gql } from 'apollo-boost';
 
-import { clientDAO } from '../config';
+import { clientDAO, clientSubDAO } from '../config';
 
 export type UserRoles = {
     beneficiary: { community: string; state: number } | null;
     manager: { community: string; state: number } | null;
+    subDAOMember: { state: number } | null;
+    ambassador: { communities: string[]; state: number } | null;
 };
 
 export const getUserRoles = async (address: string): Promise<UserRoles> => {
     try {
-        const query = gql`
+        const queryDAO = gql`
             {
                 beneficiaryEntity(
                     id: "${address.toLowerCase()}"
@@ -30,31 +32,65 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
             }
         `;
 
-        const queryResult = await clientDAO.query({
-            query,
+        const querySubDAO = gql`
+            {
+                subDAOMemberEntity(
+                    id: "${address.toLowerCase()}"
+                ) {
+                    status
+                }
+                ambassadorEntity(
+                    id: "${address.toLowerCase()}"
+                ) {
+                    status
+                    communities
+                }
+            }
+        `;
+
+        const queryDAOResult = await clientDAO.query({
+            query: queryDAO,
             fetchPolicy: 'no-cache',
         });
 
-        const beneficiary =
-            queryResult.data.beneficiaryEntity === null
-                ? null
-                : {
-                      community:
-                          queryResult.data?.beneficiaryEntity?.community?.id,
-                      state: queryResult.data?.beneficiaryEntity?.state,
-                  };
+        const querySubDAOResult = await clientSubDAO.query({
+            query: querySubDAO,
+            fetchPolicy: 'no-cache',
+        });
 
-        const manager =
-            queryResult.data.managerEntity === null
-                ? null
-                : {
-                      community: queryResult.data.managerEntity?.community?.id,
-                      state: queryResult.data.managerEntity?.state,
-                  };
+        const beneficiary = !queryDAOResult.data.beneficiaryEntity
+            ? null
+            : {
+                  community:
+                      queryDAOResult.data?.beneficiaryEntity?.community?.id,
+                  state: queryDAOResult.data?.beneficiaryEntity?.state,
+              };
 
+        const manager = !queryDAOResult.data.managerEntity
+            ? null
+            : {
+                  community: queryDAOResult.data.managerEntity?.community?.id,
+                  state: queryDAOResult.data.managerEntity?.state,
+              };
+
+        const subDAOMember = !querySubDAOResult.data.subDAOMemberEntity
+            ? null
+            : {
+                  state: querySubDAOResult.data.subDAOMemberEntity.status,
+              };
+
+        const ambassador = !querySubDAOResult.data.ambassadorEntity
+            ? null
+            : {
+                  communities:
+                      querySubDAOResult.data.ambassadorEntity?.communities,
+                  state: querySubDAOResult.data.ambassadorEntity?.status,
+              };
         return {
             beneficiary,
             manager,
+            subDAOMember,
+            ambassador,
         };
     } catch (error) {
         throw new Error(error);
