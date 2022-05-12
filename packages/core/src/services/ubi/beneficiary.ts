@@ -16,6 +16,7 @@ import {
     UbiBeneficiarySurveyCreation,
 } from '../../interfaces/ubi/ubiBeneficiarySurvey';
 import { UbiBeneficiaryTransactionCreation } from '../../interfaces/ubi/ubiBeneficiaryTransaction';
+import { getUserActivity } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
 import { Logger } from '../../utils/logger';
 import { isAddress } from '../../utils/util';
@@ -26,7 +27,6 @@ import {
     BeneficiaryActivity,
 } from '../endpoints';
 import CommunityService from './community';
-import { getUserActivity } from '../../subgraph/queries/user';
 
 export default class BeneficiaryService {
     public static async add(
@@ -553,23 +553,39 @@ export default class BeneficiaryService {
             attributes: ['contractAddress'],
             where: {
                 id: communityId,
-            }
+            },
         });
-        const registry = await getUserActivity(beneficiaryAddress, community!.contractAddress!, offset, limit);
-        const user = await models.appUser.findOne({
+        const registry = await getUserActivity(
+            beneficiaryAddress,
+            community!.contractAddress!,
+            offset,
+            limit
+        );
+        const users = await models.appUser.findAll({
+            attributes: ['username', 'address'],
             where: {
-                address: beneficiaryAddress,
-            }
+                address: {
+                    [Op.in]: registry.map((el) =>
+                        ethers.utils.getAddress(el.by)
+                    ),
+                },
+            },
         });
-        return registry.map((el) => ({
-            id: el.id as any,
-            type: 'registry',
-            tx: el.id,
-            txAt: new Date(el.timestamp * 1000),
-            withAddress: el.by,
-            username: user ? user.username! : undefined,
-            activity: BeneficiaryActivity[el.activity],
-        }));
+
+        return registry.map((el) => {
+            const user = users.find(
+                (user) => user.address === ethers.utils.getAddress(el.by)
+            );
+            return {
+                id: el.id as any,
+                type: 'registry',
+                tx: el.id,
+                txAt: new Date(el.timestamp * 1000),
+                withAddress: el.by,
+                username: user ? user.username! : undefined,
+                activity: BeneficiaryActivity[el.activity],
+            };
+        });
     }
 
     private static async getTransactionActivity(
@@ -613,12 +629,23 @@ export default class BeneficiaryService {
         offset: number,
         limit: number
     ): Promise<IBeneficiaryActivities[]> {
-        const registry = await this.getRegistryActivity(beneficiaryAddress, communityId);
-        const transaction = await this.getTransactionActivity(beneficiaryAddress, communityId);
-        const claim = await this.getClaimActivity(beneficiaryAddress, communityId);
+        const registry = await this.getRegistryActivity(
+            beneficiaryAddress,
+            communityId
+        );
+        const transaction = await this.getTransactionActivity(
+            beneficiaryAddress,
+            communityId
+        );
+        const claim = await this.getClaimActivity(
+            beneficiaryAddress,
+            communityId
+        );
 
-        const activitiesOrdered = [...registry, ...transaction, ...claim].sort((a, b) => b.txAt.getTime() - a.txAt.getTime());
-        
+        const activitiesOrdered = [...registry, ...transaction, ...claim].sort(
+            (a, b) => b.txAt.getTime() - a.txAt.getTime()
+        );
+
         return activitiesOrdered.slice(offset, offset + limit);
     }
 

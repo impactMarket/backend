@@ -259,7 +259,7 @@ export interface ICommunityStories {
 export enum BeneficiaryActivity {
     ADDED,
     REMOVED,
-};
+}
 
 export type IBeneficiaryActivities = {
     id: number;

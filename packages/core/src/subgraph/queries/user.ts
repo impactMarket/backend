@@ -65,17 +65,19 @@ export const getUserActivity = async (
     address: string,
     community: string,
     offset?: number,
-    limit?: number,
-): Promise<{
-    id: string;
-    by: string;
-    user: string;
-    community: {
+    limit?: number
+): Promise<
+    {
         id: string;
-    }
-    activity: number;
-    timestamp: number;
-}[]> => {
+        by: string;
+        user: string;
+        community: {
+            id: string;
+        };
+        activity: number;
+        timestamp: number;
+    }[]
+> => {
     try {
         const query = gql`
             {
