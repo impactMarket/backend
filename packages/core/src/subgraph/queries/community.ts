@@ -138,6 +138,7 @@ export const getCommunityState = async (
                     contributors
                     managers
                     baseInterval
+                    estimatedFunds
                 }
             }
         `;
