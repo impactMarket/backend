@@ -14,6 +14,7 @@ import { BeneficiaryAttributes } from '../interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../interfaces/ubi/community';
 import { BaseError } from '../utils/baseError';
 import { Logger } from '../utils/logger';
+import { createThumbnailUrl } from '../utils/util';
 import Email from './email';
 import {
     IAddStory,
@@ -169,13 +170,6 @@ export default class StoryService {
                     model: this.appMediaContent,
                     as: 'media',
                     required: false,
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
                 },
                 ...this._filterSubInclude(onlyFromAddress),
             ],
@@ -187,6 +181,50 @@ export default class StoryService {
             limit: query.limit
                 ? parseInt(query.limit, 10)
                 : config.defaultLimit,
+        });
+
+        const content: StoryContent[] = r.rows.map((el) => {
+            const story = el.toJSON() as StoryContent;
+            if (story.storyMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.story,
+                    story.storyMediaPath!,
+                    config.thumbnails.story
+                );
+                return {
+                    ...story,
+                    media: {
+                        id: 0,
+                        width: 0,
+                        height: 0,
+                        url: `${config.cloudfrontUrl}/${story.storyMediaPath}`,
+                        thumbnails,
+                    },
+                };
+            } else if (story.mediaMediaId && story.media) {
+                const media = story.media;
+
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.story,
+                    media!.url.split(config.cloudfrontUrl + '/')[1],
+                    config.thumbnails.story
+                );
+                return {
+                    ...story,
+                    media: {
+                        id: 0,
+                        width: media!.width,
+                        height: media!.height,
+                        url: media!.url,
+                        thumbnails,
+                    },
+                };
+            } else {
+                return {
+                    ...story,
+                    media: {},
+                } as any;
+            }
         });
 
         let result: BeneficiaryAttributes | ManagerAttributes;
@@ -242,21 +280,18 @@ export default class StoryService {
                     width: 0,
                 },
                 //
-                stories: r.rows.map((c) => {
-                    const content = c.toJSON() as StoryContent;
+                stories: content.map((c: StoryContent) => {
                     return {
-                        id: content.id,
-                        media: content.media,
-                        message: content.message,
-                        byAddress: content.byAddress,
-                        loves: content.storyEngagement
-                            ? content.storyEngagement.loves
-                            : 0,
-                        userLoved: content.storyUserEngagement
-                            ? content.storyUserEngagement.length !== 0
+                        id: c.id,
+                        media: c.media,
+                        message: c.message,
+                        byAddress: c.byAddress,
+                        loves: c.storyEngagement ? c.storyEngagement.loves : 0,
+                        userLoved: c.storyUserEngagement
+                            ? c.storyUserEngagement.length !== 0
                             : false,
-                        userReported: content.storyUserReport
-                            ? content.storyUserReport.length !== 0
+                        userReported: c.storyUserReport
+                            ? c.storyUserReport.length !== 0
                             : false,
                     };
                 }),
@@ -277,12 +312,6 @@ export default class StoryService {
                         model: this.appMediaContent,
                         as: 'media',
                         required: false,
-                        include: [
-                            {
-                                model: this.appMediaThumbnail,
-                                as: 'thumbnails',
-                            },
-                        ],
                     },
                 ],
                 where: {
@@ -293,22 +322,55 @@ export default class StoryService {
                 limit: 1,
             });
             if (r.length > 0) {
-                const ipctCover = await this.appMediaContent.findOne({
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
+                const ipctCover = (
+                    await this.appMediaContent.findOne({
+                        where: {
+                            id: config.impactMarketStoryCoverId,
                         },
-                    ],
-                    where: {
-                        id: config.impactMarketStoryCoverId,
-                    },
-                });
+                    })
+                )?.toJSON() as AppMediaContent;
+                if (ipctCover) {
+                    ipctCover.thumbnails = createThumbnailUrl(
+                        config.aws.bucket.story,
+                        ipctCover.url.split(config.cloudfrontUrl + '/')[1],
+                        config.thumbnails.story
+                    );
+                }
+
                 const story = r[0].toJSON() as StoryContent;
+                if (story.storyMediaPath) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.story,
+                        story.storyMediaPath,
+                        config.thumbnails.story
+                    );
+                    story.media = {
+                        id: 0,
+                        width: 0,
+                        height: 0,
+                        url: `${config.cloudfrontUrl}/${story.storyMediaPath}`,
+                        thumbnails,
+                    };
+                } else if (story.mediaMediaId && story.media) {
+                    const media = story.media;
+
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.story,
+                        media.url.split(config.cloudfrontUrl + '/')[1],
+                        config.thumbnails.story
+                    );
+                    story.media = {
+                        id: 0,
+                        width: media.width,
+                        height: media.height,
+                        url: media.url,
+                        thumbnails,
+                    };
+                }
                 ipctMostRecent = {
                     id: -1,
                     name: 'impactMarket',
-                    cover: ipctCover!.toJSON() as AppMediaContent,
+                    cover: ipctCover,
                     story,
                 };
             }
@@ -322,18 +384,16 @@ export default class StoryService {
                         {
                             model: this.community,
                             as: 'community',
-                            attributes: ['id', 'name', 'coverMediaPath'],
+                            attributes: [
+                                'id',
+                                'name',
+                                'coverMediaPath',
+                                'coverMediaId',
+                            ],
                             include: [
                                 {
                                     model: this.appMediaContent,
                                     as: 'cover',
-                                    include: [
-                                        {
-                                            model: this.appMediaThumbnail,
-                                            as: 'thumbnails',
-                                            separate: true,
-                                        },
-                                    ],
                                 },
                             ],
                         },
@@ -346,13 +406,6 @@ export default class StoryService {
                 {
                     model: this.appMediaContent,
                     as: 'media',
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
                 },
             ],
             where: {
@@ -373,6 +426,72 @@ export default class StoryService {
         });
         const communitiesStories = r.rows.map((c) => {
             const content = c.toJSON() as StoryContent;
+
+            // get cover thumbnails
+            if (content.storyCommunity?.community?.coverMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.community,
+                    content.storyCommunity.community.coverMediaPath,
+                    config.thumbnails.community.cover
+                );
+                content.storyCommunity.community!.cover = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${content.storyCommunity.community.coverMediaPath}`,
+                    thumbnails,
+                };
+            } else if (
+                content.storyCommunity?.community?.coverMediaId &&
+                content.storyCommunity?.community?.cover
+            ) {
+                const media = content.storyCommunity.community.cover;
+
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.community,
+                    media.url.split(config.cloudfrontUrl + '/')[1],
+                    config.thumbnails.community.cover
+                );
+                content.storyCommunity.community!.cover = {
+                    id: 0,
+                    width: media.width,
+                    height: media.height,
+                    url: media.url,
+                    thumbnails,
+                };
+            }
+
+            // get story thumbnails
+            if (content.storyMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.community,
+                    content.storyMediaPath,
+                    config.thumbnails.community.cover
+                );
+                content.media = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${content.storyMediaPath}`,
+                    thumbnails,
+                };
+            } else if (content.mediaMediaId && content.media) {
+                const media = content.media;
+
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.story,
+                    media.url.split(config.cloudfrontUrl + '/')[1],
+                    config.thumbnails.story
+                );
+                content.media = {
+                    id: 0,
+                    width: media.width,
+                    height: media.height,
+                    url: media.url,
+                    thumbnails,
+                };
+            }
+
             return {
                 // we can use ! because it's uncluded on the query
                 id: content.storyCommunity!.communityId,
@@ -422,13 +541,6 @@ export default class StoryService {
                                 model: this.appMediaContent,
                                 as: 'media',
                                 required: false,
-                                include: [
-                                    {
-                                        model: this.appMediaThumbnail,
-                                        as: 'thumbnails',
-                                        separate: true,
-                                    },
-                                ],
                             },
                             ...subInclude,
                         ],
@@ -456,24 +568,97 @@ export default class StoryService {
                 );
             }
 
+            const stories = r.rows.map((s) => {
+                const content = (s.toJSON() as StoryCommunity).storyContent!;
+
+                if (content.storyMediaPath) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.story,
+                        content.storyMediaPath,
+                        config.thumbnails.story
+                    );
+                    content.media = {
+                        id: 0,
+                        width: 0,
+                        height: 0,
+                        url: `${config.cloudfrontUrl}/${content.storyMediaPath}`,
+                        thumbnails,
+                    };
+                } else if (content.mediaMediaId && content.media) {
+                    const media = content.media;
+
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.story,
+                        media.url.split(config.cloudfrontUrl + '/')[1],
+                        config.thumbnails.story
+                    );
+                    content.media = {
+                        id: 0,
+                        width: media.width,
+                        height: media.height,
+                        url: media.url,
+                        thumbnails,
+                    };
+                }
+                return {
+                    id: content.id,
+                    media: content.media,
+                    message: content.message,
+                    byAddress: content.byAddress,
+                    loves: content.storyEngagement
+                        ? content.storyEngagement.loves
+                        : 0,
+                    userLoved: userAddress
+                        ? content.storyUserEngagement!.length !== 0
+                        : false,
+                    userReported: userAddress
+                        ? content.storyUserReport!.length !== 0
+                        : false,
+                };
+            });
+
             // at this point, this is not null
             const community = (await this.community.findOne({
-                attributes: ['id', 'name', 'city', 'country'],
-                include: [
-                    {
-                        model: this.appMediaContent,
-                        as: 'cover',
-                        include: [
-                            {
-                                model: this.appMediaThumbnail,
-                                as: 'thumbnails',
-                                separate: true,
-                            },
-                        ],
-                    },
-                ],
+                attributes: ['id', 'name', 'city', 'country', 'coverMediaId', 'coverMediaPath'],
                 where: { id: communityId },
             }))!.toJSON() as CommunityAttributes;
+            if (community.coverMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.community,
+                    community.coverMediaPath,
+                    config.thumbnails.community.cover
+                );
+                community.cover = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${community.coverMediaPath}`,
+                    thumbnails,
+                };
+            } else if (community.coverMediaId) {
+                const media = await models.appMediaContent.findOne({
+                    attributes: ['url', 'width', 'height'],
+                    where: {
+                        id: community.coverMediaId,
+                    },
+                });
+
+                if (media) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.community,
+                        media.url.split(config.cloudfrontUrl + '/')[1],
+                        config.thumbnails.community.cover
+                    );
+                    community.cover = {
+                        id: 0,
+                        width: media.width,
+                        height: media.height,
+                        url: media.url,
+                        thumbnails,
+                    };
+                }
+            }
+
             return {
                 count: r.count,
                 content: {
@@ -483,25 +668,7 @@ export default class StoryService {
                     country: community.country,
                     cover: community.cover!,
                     // we can use ! because it's filtered on the query
-                    stories: r.rows.map((s) => {
-                        const content = (s.toJSON() as StoryCommunity)
-                            .storyContent!;
-                        return {
-                            id: content.id,
-                            media: content.media,
-                            message: content.message,
-                            byAddress: content.byAddress,
-                            loves: content.storyEngagement
-                                ? content.storyEngagement.loves
-                                : 0,
-                            userLoved: userAddress
-                                ? content.storyUserEngagement!.length !== 0
-                                : false,
-                            userReported: userAddress
-                                ? content.storyUserReport!.length !== 0
-                                : false,
-                        };
-                    }),
+                    stories,
                 },
             };
         } catch (error) {
@@ -625,13 +792,6 @@ export default class StoryService {
                     model: this.appMediaContent,
                     as: 'media',
                     required: false,
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
                 },
             ],
             where: {
@@ -642,6 +802,35 @@ export default class StoryService {
         });
         const stories: ICommunityStory[] = r.rows.map((c) => {
             const content = c.toJSON() as StoryContent;
+            if (content.storyMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.story,
+                    content.storyMediaPath,
+                    config.thumbnails.story
+                );
+                content.media = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${content.storyMediaPath}`,
+                    thumbnails,
+                };
+            } else if (content.mediaMediaId && content.media) {
+                const media = content.media;
+
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.story,
+                    media.url.split(config.cloudfrontUrl + '/')[1],
+                    config.thumbnails.story
+                );
+                content.media = {
+                    id: 0,
+                    width: media.width,
+                    height: media.height,
+                    url: media.url,
+                    thumbnails,
+                };
+            }
             return {
                 id: content.id,
                 media: content.media,
@@ -656,17 +845,16 @@ export default class StoryService {
                     : false,
             };
         });
-        const ipctCover = await this.appMediaContent.findOne({
-            include: [
-                {
-                    model: this.appMediaThumbnail,
-                    as: 'thumbnails',
-                },
-            ],
+        const ipctCover = (await this.appMediaContent.findOne({
             where: {
                 id: config.impactMarketStoryCoverId,
             },
-        });
+        }))!.toJSON() as AppMediaContent;
+        ipctCover.thumbnails = createThumbnailUrl(
+            config.aws.bucket.community,
+            ipctCover.url.split(config.cloudfrontUrl + '/')[1],
+            config.thumbnails.community.cover
+        );
         return {
             count: r.count,
             content: {
@@ -674,7 +862,7 @@ export default class StoryService {
                 name: 'impactMarket',
                 city: '',
                 country: '',
-                cover: ipctCover!.toJSON() as AppMediaContent,
+                cover: ipctCover,
                 stories,
             },
         };

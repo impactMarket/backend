@@ -5,7 +5,12 @@ import ApolloClient, { InMemoryCache } from 'apollo-boost';
 
 import config from '../config';
 
-export const client = new ApolloClient({
+export const clientDAO = new ApolloClient({
     uri: config.subgraphUrl,
+    cache: new InMemoryCache(),
+});
+
+export const clientSubDAO = new ApolloClient({
+    uri: config.subDAOsubgraphUrl,
     cache: new InMemoryCache(),
 });

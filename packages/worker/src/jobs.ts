@@ -8,16 +8,12 @@ import {
     calcuateCommunitiesMetrics,
     internalNotifyLowCommunityFunds,
     internalNotifyNewCommunities,
-    verifyCommunitySuspectActivity,
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { cleanupNetworkRewards } from './jobs/cron/network';
 import { verifyStoriesLifecycle } from './jobs/cron/stories';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
-import {
-    verifyUserSuspectActivity,
-    verifyDeletedAccounts,
-} from './jobs/cron/user';
+import { verifyDeletedAccounts } from './jobs/cron/user';
 
 const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
 const providerFallback = new ethers.providers.JsonRpcProvider(
@@ -450,56 +446,6 @@ function cron() {
                 })
                 .catch((e) => {
                     utils.Logger.error('verifyStoriesLifecycle FAILED! ' + e);
-                });
-        },
-        null,
-        true
-    );
-
-    // at 5:12 am.
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '12 5 * * *',
-        () => {
-            utils.Logger.info('Verify community suspicious activity...');
-            verifyCommunitySuspectActivity()
-                .then(() => {
-                    services.app.CronJobExecutedService.add(
-                        'verifyCommunitySuspectActivity'
-                    );
-                    utils.Logger.info(
-                        'verifyCommunitySuspectActivity successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    utils.Logger.error(
-                        'verifyCommunitySuspectActivity FAILED! ' + e
-                    );
-                });
-        },
-        null,
-        true
-    );
-
-    // at 2:12 am and 2:12 pm.
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '12 2,14 * * *',
-        () => {
-            utils.Logger.info('Verify user suspicious activity...');
-            verifyUserSuspectActivity()
-                .then(() => {
-                    services.app.CronJobExecutedService.add(
-                        'verifyUserSuspectActivity'
-                    );
-                    utils.Logger.info(
-                        'verifyUserSuspectActivity successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    utils.Logger.error(
-                        'verifyUserSuspectActivity FAILED! ' + e
-                    );
                 });
         },
         null,

@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import parsePhoneNumber from 'libphonenumber-js';
 import { Op, literal, OrderItem, WhereOptions, Includeable } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
@@ -30,6 +31,8 @@ export class CommunityListService {
         lng?: string;
         fields?: string;
         status?: 'valid' | 'pending';
+        review?: 'pending' | 'claimed' | 'declined' | 'accepted' | 'accepted';
+        ambassadorAddress?: string;
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
@@ -47,6 +50,15 @@ export class CommunityListService {
                   {
                       id: string;
                       beneficiaries: string;
+                  }
+              ]
+            | undefined = undefined;
+
+        let funds:
+            | [
+                  {
+                      id: string;
+                      estimatedFunds: string;
                   }
               ]
             | undefined = undefined;
@@ -85,14 +97,50 @@ export class CommunityListService {
             };
         }
 
+        if (query.review) {
+            extendedWhere = {
+                ...extendedWhere,
+                review: query.review,
+            };
+            query.status = 'pending';
+        }
+
         if (query.status === 'pending') {
             const communityProposals = await this._getOpenProposals();
+            if (query.ambassadorAddress) {
+                const ambassador = (await models.appUser.findOne({
+                    attributes: ['phone'],
+                    where: {
+                        address: query.ambassadorAddress,
+                    },
+                })) as any;
+                const phone = ambassador?.phone;
+                if (phone) {
+                    const parsePhone = parsePhoneNumber(phone);
+                    extendedWhere = {
+                        ...extendedWhere,
+                        country: parsePhone?.country,
+                    };
+                } else {
+                    throw new BaseError(
+                        'AMBASSADOR_NOT_FOUND',
+                        'Ambassador not found'
+                    );
+                }
+            }
             extendedWhere = {
                 ...extendedWhere,
                 requestByAddress: {
                     [Op.notIn]: communityProposals,
                 },
             };
+        } else {
+            if (query.ambassadorAddress) {
+                extendedWhere = {
+                    ...extendedWhere,
+                    ambassadorAddress: query.ambassadorAddress,
+                };
+            }
         }
 
         if (query.orderBy) {
@@ -136,26 +184,29 @@ export class CommunityListService {
                         break;
                     }
                     case 'out_of_funds': {
-                        // this requires extended
-                        // query.extended = 'true';
-                        // // check if there was another order previously
-                        // if (
-                        //     orderOption.length === 0 &&
-                        //     !orderBeneficiary.active
-                        // ) {
-                        //     const result = await this._getOutOfFunds(
-                        //         {
-                        //             limit: query.limit,
-                        //             offset: query.offset,
-                        //         },
-                        //         orderType
-                        //     );
-                        //     // communitiesId = result.map((el) => el.id);
-                        // } else {
-                        //     // list communities out of funds after
-                        //     orderOutOfFunds.active = true;
-                        //     orderOutOfFunds.orderType = orderType;
-                        // }
+                        // check if there was another order previously
+                        if (
+                            orderOption.length === 0 &&
+                            !orderBeneficiary.active
+                        ) {
+                            funds = await this._communityEntities(
+                                'estimatedFunds',
+                                {
+                                    status: query.status,
+                                    limit: query.limit,
+                                    offset: query.offset,
+                                },
+                                extendedWhere,
+                                orderType
+                            );
+                            contractAddress = funds!.map((el) =>
+                                ethers.utils.getAddress(el.id)
+                            );
+                        } else {
+                            // list communities out of funds after
+                            orderOutOfFunds.active = true;
+                            orderOutOfFunds.orderType = orderType;
+                        }
                         break;
                     }
                     case 'newest':
@@ -171,7 +222,8 @@ export class CommunityListService {
                             !orderOutOfFunds.active
                         ) {
                             beneficiariesState =
-                                await this._getBeneficiaryState(
+                                await this._communityEntities(
+                                    'beneficiaries',
                                     {
                                         status: query.status,
                                         limit: query.limit,
@@ -193,17 +245,21 @@ export class CommunityListService {
                 }
             }
         } else {
-            beneficiariesState = await this._getBeneficiaryState(
-                {
-                    status: query.status,
-                    limit: query.limit,
-                    offset: query.offset,
-                },
-                extendedWhere
-            );
-            contractAddress = beneficiariesState!.map((el) =>
-                ethers.utils.getAddress(el.id)
-            );
+            // if searching by pending or did not pass the "state" on fields, do not search on the graph
+            if (query.status !== 'pending' && (!query.fields || query.fields.indexOf('state') !== -1)) {
+                beneficiariesState = await this._communityEntities(
+                    'beneficiaries',
+                    {
+                        status: query.status,
+                        limit: query.limit,
+                        offset: query.offset,
+                    },
+                    extendedWhere
+                );
+                contractAddress = beneficiariesState!.map((el) =>
+                    ethers.utils.getAddress(el.id)
+                );
+            }
         }
 
         let include: Includeable[];
@@ -231,10 +287,8 @@ export class CommunityListService {
                     : { exclude }
                 : [];
         } else {
-            include = this._oldInclude(query.extended);
-            attributes = {
-                exclude,
-            };
+            attributes = { exclude };
+            include = [];
         }
 
         const communityCount = await models.community.count({
@@ -293,7 +347,8 @@ export class CommunityListService {
         }
 
         if (orderBeneficiary.active) {
-            beneficiariesState = await this._getBeneficiaryState(
+            beneficiariesState = await this._communityEntities(
+                'beneficiaries',
                 {
                     status: query.status,
                     limit: query.limit,
@@ -316,21 +371,33 @@ export class CommunityListService {
             });
         }
 
-        // if (orderOutOfFunds.active) {
-        //     const result = await this._getOutOfFunds(
-        //         {
-        //             limit: query.limit,
-        //             offset: query.offset,
-        //         },
-        //         orderOutOfFunds.orderType,
-        //         communitiesId
-        //     );
-        //     // re-order by out of funds
-        //     communitiesId = result.map((el) => el.id);
-        // }
+        if (orderOutOfFunds.active) {
+            funds = await this._communityEntities(
+                'estimatedFunds',
+                {
+                    status: query.status,
+                    limit: query.limit,
+                    offset: query.offset,
+                },
+                {},
+                undefined,
+                contractAddress
+            );
+            contractAddress = funds!.map((el) =>
+                ethers.utils.getAddress(el.id)
+            );
 
-        // remove empty elements 
-        communitiesId = communitiesId.filter(Number) 
+            // re-order IDs
+            communitiesId = contractAddress.map((el) => {
+                const community = communitiesResult.find(
+                    (community) => community.contractAddress === el
+                );
+                return community?.id;
+            });
+        }
+
+        // remove empty elements
+        communitiesId = communitiesId.filter(Number);
 
         let states: ({
             communityId: number;
@@ -395,13 +462,14 @@ export class CommunityListService {
                 ],
                 element
             );
-            return calldata[0][0];
+            return ethers.utils.getAddress(calldata[0][0]);
         });
 
         return requestByAddress;
     }
 
-    private async _getBeneficiaryState(
+    private async _communityEntities(
+        orderBy: string,
         query: {
             status?: string;
             limit?: string;
@@ -431,15 +499,11 @@ export class CommunityListService {
             contractAddress = communities;
         }
 
-        const batch = 10;
         let result: any[] = [];
 
         if (contractAddress.length > 0) {
-            for (let i = 0; ; i = i + batch) {
-                const addresses = contractAddress.slice(i, i + batch);
-
-                const communities = await communityEntities(
-                    `orderBy: beneficiaries,
+            result = await communityEntities(
+                `orderBy: ${orderBy},
                         orderDirection: ${
                             orderType ? orderType.toLocaleLowerCase() : 'desc'
                         },
@@ -453,19 +517,14 @@ export class CommunityListService {
                                 ? parseInt(query.offset, 10)
                                 : config.defaultOffset
                         },
-                        where: { id_in: [${addresses.map(
+                        where: { id_in: [${contractAddress.map(
                             (el) => `"${el.toLocaleLowerCase()}"`
                         )}]}`,
-                    `id, beneficiaries`
-                );
-                result.push(...communities);
-                if (i + batch > contractAddress.length) {
-                    break;
-                }
-            }
+                `id, ${orderBy}`
+            );
         } else {
             result = await communityEntities(
-                `orderBy: beneficiaries,
+                `orderBy: ${orderBy},
                     orderDirection: ${
                         orderType ? orderType.toLocaleLowerCase() : 'desc'
                     },
@@ -479,23 +538,12 @@ export class CommunityListService {
                             ? parseInt(query.offset, 10)
                             : config.defaultOffset
                     },`,
-                `id, beneficiaries`
+                `id, ${orderBy}`
             );
         }
 
         return result;
     }
-
-    // private async _getOutOfFunds(
-    //     query: {
-    //         limit?: string;
-    //         offset?: string;
-    //     },
-    //     orderType?: string,
-    //     communitiesId?: number[]
-    // ): Promise<any> {
-
-    // }
 
     private _generateInclude(fields: any): Includeable[] {
         const extendedInclude: Includeable[] = [];
@@ -587,76 +635,5 @@ export class CommunityListService {
         }
 
         return extendedInclude;
-    }
-
-    private _oldInclude(extended?: string): Includeable[] {
-        const extendedInclude: Includeable[] = [];
-        const yesterdayDateOnly = new Date();
-        yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
-        yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
-        const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
-
-        // TODO: deprecated in mobile@1.1.6
-        if (extended) {
-            extendedInclude.push(
-                {
-                    model: models.ubiCommunityContract,
-                    as: 'contract',
-                },
-                {
-                    model: models.ubiCommunityDailyMetrics,
-                    required: false,
-                    duplicating: false,
-                    as: 'metrics',
-                    where: {
-                        date: {
-                            [Op.eq]: literal(
-                                '(select date from ubi_community_daily_metrics order by date desc limit 1)'
-                            ),
-                        } as { [Op.eq]: Literal },
-                    },
-                }
-            );
-        }
-
-        return [
-            {
-                model: models.ubiCommunitySuspect,
-                attributes: ['suspect'],
-                as: 'suspect',
-                required: false,
-                duplicating: false,
-                where: {
-                    createdAt: {
-                        [Op.eq]: literal(
-                            '(select max("createdAt") from ubi_community_suspect ucs where ucs."communityId"="Community".id and date("createdAt") > (current_date - INTERVAL \'1 day\'))'
-                        ),
-                    },
-                },
-            },
-            {
-                model: models.appMediaContent,
-                as: 'cover',
-                duplicating: false,
-                include: [
-                    {
-                        model: models.appMediaThumbnail,
-                        as: 'thumbnails',
-                        separate: true,
-                    },
-                ],
-            },
-            {
-                attributes: { exclude: ['id', 'communityId'] },
-                model: models.ubiCommunityDailyState,
-                as: 'dailyState',
-                duplicating: false,
-                where: {
-                    date: yesterdayDate,
-                },
-                required: false,
-            },
-            ...extendedInclude,
-        ] as Includeable[];
     }
 }

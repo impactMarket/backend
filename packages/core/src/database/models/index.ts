@@ -4,6 +4,8 @@ import { initializeAirgrabProof } from './airgrab/airgrabProof';
 import { initializeAirgrabUser } from './airgrab/airgrabUser';
 import { initializeAgenda } from './app/agenda';
 import { initializeAppAnonymousReport } from './app/anonymousReport';
+import { initializeAppClientCredential } from './app/appClientCredential';
+import { initializeAppLog } from './app/appLog';
 import { initializeAppMediaContent } from './app/appMediaContent';
 import { initializeAppMediaThumbnail } from './app/appMediaThumbnail';
 import { initializeAppNotification } from './app/appNotification';
@@ -11,7 +13,6 @@ import { initializeAppProposal } from './app/appProposal';
 import { initializeAppUser } from './app/appUser';
 import { initializeAppUserThroughTrust } from './app/appUserThroughTrust';
 import { initializeAppUserTrust } from './app/appUserTrust';
-import { initializeAppLog } from './app/appLog';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
 import { initializeExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
@@ -65,6 +66,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAppNotification(sequelize);
     initializeUbiBeneficiarySurvey(sequelize);
     initializeAppProposal(sequelize);
+    initializeAppClientCredential(sequelize);
     initializeAppLog(sequelize);
 
     // ubi

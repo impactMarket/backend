@@ -1,3 +1,4 @@
+import { AppUser } from '../app/appUser';
 import { AppMediaContent } from '../app/appMediaContent';
 import { StoryCommunity, StoryCommunityCreationEager } from './storyCommunity';
 import { StoryEngagement, StoryEngagementCreation } from './storyEngagement';
@@ -19,6 +20,7 @@ export interface StoryContent {
     storyEngagement?: StoryEngagement;
     storyUserEngagement?: StoryUserEngagement[];
     storyUserReport?: StoryUserReport[];
+    user?: AppUser;
 }
 
 export interface StoryContentCreation {

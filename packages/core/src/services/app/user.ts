@@ -1,7 +1,5 @@
 import { Client } from '@hubspot/api-client';
-import { LogTypes } from '../../interfaces/app/appLog';
 import { Op, QueryTypes } from 'sequelize';
-import UserLogService from './user/log';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
@@ -9,6 +7,7 @@ import {
     AppAnonymousReport,
     AppAnonymousReportCreation,
 } from '../../interfaces/app/appAnonymousReport';
+import { LogTypes } from '../../interfaces/app/appLog';
 import { AppNotification } from '../../interfaces/app/appNotification';
 import {
     AppUser,
@@ -17,16 +16,17 @@ import {
 import { BaseError } from '../../utils/baseError';
 import { generateAccessToken } from '../../utils/jwt';
 import { Logger } from '../../utils/logger';
+import { createThumbnailUrl } from '../../utils/util';
 import { IUserHello, IUserAuth, IBeneficiary, IManager } from '../endpoints';
 import { ProfileContentStorage } from '../storage';
 import CommunityService from '../ubi/community';
+import UserLogService from './user/log';
 
 export default class UserService {
     public static sequelize = sequelize;
     public static appUser = models.appUser;
     public static beneficiary = models.beneficiary;
     public static manager = models.manager;
-    public static appUserTrust = models.appUserTrust;
     public static appUserThroughTrust = models.appUserThroughTrust;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
@@ -49,8 +49,8 @@ export default class UserService {
             if (overwrite) {
                 await this.overwriteUser(user);
             } else if (!exists) {
-                const existsPhone = user.trust?.phone
-                    ? await this.existsAccountByPhone(user.trust.phone)
+                const existsPhone = user.phone
+                    ? await this.existsAccountByPhone(user.phone, user.address)
                     : false;
 
                 if (existsPhone)
@@ -68,14 +68,7 @@ export default class UserService {
             if (!exists) {
                 // create new user, including their phone number information
                 userFromRegistry = (
-                    await this.appUser.create(user, {
-                        include: [
-                            {
-                                model: this.appUserTrust,
-                                as: 'trust',
-                            },
-                        ],
-                    })
+                    await this.appUser.create(user)
                 ).toJSON() as AppUser;
             } else {
                 if (user.pushNotificationToken) {
@@ -86,26 +79,44 @@ export default class UserService {
                 }
                 // it's not null at this point
                 userFromRegistry = (await this.appUser.findOne({
-                    include: [
-                        {
-                            model: this.appMediaContent,
-                            as: 'avatar',
-                            required: false,
-                            include: [
-                                {
-                                    model: this.appMediaThumbnail,
-                                    as: 'thumbnails',
-                                    separate: true,
-                                },
-                            ],
-                        },
-                        {
-                            model: this.appUserTrust,
-                            as: 'trust',
-                        },
-                    ],
                     where: { address: user.address },
                 }))!.toJSON() as AppUser;
+                if (userFromRegistry.avatarMediaPath) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.profile,
+                        userFromRegistry.avatarMediaPath,
+                        config.thumbnails.profile
+                    );
+                    userFromRegistry.avatar = {
+                        id: 0,
+                        width: 0,
+                        height: 0,
+                        url: `${config.cloudfrontUrl}/${userFromRegistry.avatarMediaPath}`,
+                        thumbnails,
+                    };
+                } else if (userFromRegistry.avatarMediaId) {
+                    const media = await models.appMediaContent.findOne({
+                        attributes: ['url', 'width', 'height'],
+                        where: {
+                            id: userFromRegistry.avatarMediaId,
+                        },
+                    });
+
+                    if (media) {
+                        const thumbnails = createThumbnailUrl(
+                            config.aws.bucket.profile,
+                            media.url.split(config.cloudfrontUrl + '/')[1],
+                            config.thumbnails.profile
+                        );
+                        userFromRegistry.avatar = {
+                            id: 0,
+                            width: media.width,
+                            height: media.height,
+                            url: media.url,
+                            thumbnails,
+                        };
+                    }
+                }
             }
 
             if (!userFromRegistry.active) {
@@ -155,19 +166,11 @@ export default class UserService {
     public static async overwriteUser(user: AppUserCreationAttributes) {
         try {
             const usersToInactive = await this.appUser.findAll({
-                include: [
-                    {
-                        model: this.appUserTrust,
-                        as: 'trust',
-                        where: {
-                            phone: user.trust?.phone,
-                        },
-                    },
-                ],
                 where: {
                     address: {
                         [Op.not]: user.address,
                     },
+                    phone: user.phone,
                 },
             });
 
@@ -235,44 +238,10 @@ export default class UserService {
         phone?: string
     ): Promise<IUserHello> {
         const user = await this.appUser.findOne({
-            include: [
-                {
-                    model: this.appUserTrust,
-                    as: 'trust',
-                },
-            ],
             where: { address },
         });
         if (user === null) {
             throw new BaseError('USER_NOT_FOUND', address + ' user not found!');
-        }
-        if (phone) {
-            const uu = user.toJSON() as AppUser;
-            const userTrustId =
-                uu.trust && uu.trust.length > 0 ? uu.trust[0].id : undefined;
-            if (userTrustId === undefined) {
-                try {
-                    await this.sequelize.transaction(async (t) => {
-                        const userTrust = await this.appUserTrust.create(
-                            {
-                                phone,
-                            },
-                            { transaction: t }
-                        );
-                        await this.appUserThroughTrust.create(
-                            {
-                                userAddress: address,
-                                appUserTrustId: userTrust.id,
-                            },
-                            { transaction: t }
-                        );
-                    });
-                } catch (e) {
-                    Logger.error(
-                        'creating trust profile to existing account ' + e
-                    );
-                }
-            }
         }
         return UserService.loadUser(user);
     }
@@ -416,23 +385,21 @@ export default class UserService {
         return exists !== null;
     }
 
-    public static async existsAccountByPhone(phone: string): Promise<boolean> {
-        const query = `
-            SELECT phone, address
-            FROM app_user_trust
-            LEFT JOIN app_user_through_trust ON "appUserTrustId" = id
-            LEFT JOIN "app_user" as "user" ON "user".address = "userAddress"
-            WHERE phone = :phone
-            AND "user".active = TRUE`;
-
-        const exists = await sequelize.query(query, {
-            type: QueryTypes.SELECT,
-            replacements: {
+    public static async existsAccountByPhone(
+        phone: string,
+        address: string
+    ): Promise<boolean> {
+        const user = await models.appUser.findOne({
+            where: {
                 phone,
-            },
-        });
+                address: {
+                    [Op.not]: address,
+                },
+                active: true
+            }
+        })
 
-        return exists.length > 0;
+        return !!user;
     }
 
     public static async updateLastLogin(id: number): Promise<void> {
@@ -541,7 +508,7 @@ export default class UserService {
         this.userLogService.create(
             updated[1][0].id,
             LogTypes.EDITED_PROFILE,
-            user,
+            user
         );
 
         return updated[1][0];

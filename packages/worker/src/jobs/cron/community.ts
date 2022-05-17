@@ -11,35 +11,6 @@ import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
 import { col, fn, literal, Op, QueryTypes } from 'sequelize';
 
-export async function verifyCommunitySuspectActivity(): Promise<void> {
-    const query = `
-    WITH
-        communities AS (
-        SELECT "Community"."id",
-            count(*) filter ( where suspect is true ) AS "suspect",
-            count(*) as "total"
-        FROM "community" AS "Community"
-            INNER JOIN "beneficiary" AS "beneficiaries" ON "Community"."id" = "beneficiaries"."communityId" AND "beneficiaries"."active" = true
-            LEFT OUTER JOIN "app_user" AS "app_user" ON "beneficiaries"."address" = "app_user"."address"
-        WHERE "Community"."status" = 'valid' AND "Community"."visibility" = 'public'
-        GROUP BY "Community"."id"
-        having count(*) filter ( where suspect is true ) > 0
-    ),
-    suspect_level AS (
-        select ((communities.suspect::float / communities.total::float) * 100) as ps,
-                (60 * log10(((communities.suspect::float / communities.total::float) * 100) + 1)) as y,
-                id
-        from communities
-    )
-    INSERT INTO ubi_community_suspect ("communityId", percentage, suspect)
-    (select id as "communityId", (ROUND(ps * 100) / 100) as percentage, GREATEST(1, ROUND(LEAST(suspect_level.y, 100) / 10)) as suspect
-    from suspect_level)`;
-
-    await database.sequelize.query(query, {
-        type: QueryTypes.INSERT,
-    });
-}
-
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     type ICommunityToMetrics = Omit<
         interfaces.ubi.community.CommunityAttributes,
@@ -497,7 +468,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const subGraphPromises: Promise<any>[] = [];
 
         communities.forEach(community => {
-            subGraphPromises.push(subgraph.queries.beneficiary.getBeneficiaries(community.contractAddress!))
+            subGraphPromises.push(subgraph.queries.beneficiary.getAllBeneficiaries(community.contractAddress!))
         });
 
         let beneficiaries = await Promise.all(subGraphPromises);

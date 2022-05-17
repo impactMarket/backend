@@ -1,15 +1,28 @@
-import { utils } from 'ethers';
-import { Op, WhereOptions } from 'sequelize';
+import { BigNumber } from 'bignumber.js';
+import { utils, ethers } from 'ethers';
+import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
+import { Op, WhereOptions, fn, col, literal } from 'sequelize';
 
+import config from '../../../config';
 import { models } from '../../../database';
 import { AppUser } from '../../../interfaces/app/appUser';
+import { BeneficiaryAttributes } from '../../../interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
+import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
+import {
+    getBeneficiariesByAddress,
+    getBeneficiaries,
+    countBeneficiaries,
+} from '../../../subgraph/queries/beneficiary';
 import {
     getCommunityManagers,
     getCommunityState,
     getCommunityUBIParams,
 } from '../../../subgraph/queries/community';
+import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
+import { isAddress } from '../../../utils/util';
+import { IListBeneficiary, BeneficiaryFilterType } from '../../endpoints';
 
 export class CommunityDetailsService {
     public async getState(communityId: number) {
@@ -27,6 +40,26 @@ export class CommunityDetailsService {
         return {
             ...state,
             communityId,
+        };
+    }
+
+    public async getContract(communityId: number) {
+        const result = await models.ubiCommunityContract.findOne({
+            where: {
+                communityId,
+            },
+        });
+
+        if (!result) {
+            return null;
+        }
+
+        const contract = result.toJSON() as UbiCommunityContract;
+
+        return {
+            ...contract,
+            claimAmount: ethers.utils.formatEther(contract.claimAmount),
+            maxClaim: ethers.utils.formatEther(contract.maxClaim),
         };
     }
 
@@ -151,6 +184,218 @@ export class CommunityDetailsService {
         }
     }
 
+    public async listBeneficiaries(
+        managerAddress: string,
+        offset: number,
+        limit: number,
+        filter: BeneficiaryFilterType,
+        searchInput?: string
+    ): Promise<{
+        count: number;
+        rows: IListBeneficiary[];
+    }> {
+        let required: boolean = false;
+        const roles = await getUserRoles(managerAddress);
+        if (!roles.manager) {
+            throw new BaseError('MANAGER_NOT_FOUND', 'Manager not found');
+        }
+        const contractAddress = ethers.utils.getAddress(
+            roles.manager.community
+        );
+        const community = await models.community.findOne({
+            attributes: ['id'],
+            where: {
+                contractAddress,
+            },
+        });
+
+        if (!community) {
+            throw new BaseError('COMMUNITY_NOT_FOUND', 'Community not found');
+        }
+
+        let whereBeneficiary = this._getBeneficiaryFilter(filter);
+
+        if (searchInput) {
+            if (isAddress(searchInput)) {
+                whereBeneficiary = {
+                    ...whereBeneficiary,
+                    '$"user"."address"$': ethers.utils.getAddress(searchInput),
+                };
+                required = false;
+            } else if (
+                searchInput.toLowerCase().indexOf('drop') === -1 &&
+                searchInput.toLowerCase().indexOf('delete') === -1 &&
+                searchInput.toLowerCase().indexOf('update') === -1
+            ) {
+                whereBeneficiary = {
+                    ...whereBeneficiary,
+                    '$"user"."username"$': {
+                        [Op.iLike]: `%${searchInput.slice(0, 16)}%`,
+                    },
+                };
+                required = true;
+            } else {
+                throw new BaseError('INVALID_SEARCH', 'Not valid search!');
+            }
+        }
+
+        let beneficiariesSubgraph: BeneficiarySubgraph[] | null = null;
+
+        if (filter.inactivity !== undefined) {
+            const communityState = await getCommunityState(contractAddress);
+
+            const seconds =
+                communityState.baseInterval * config.claimInactivityThreshold;
+            const timestamp = ((new Date().getTime() / 1000) | 0) - seconds;
+            const lastClaimAt = filter.inactivity
+                ? `lastClaimAt_lt: ${timestamp}`
+                : `lastClaimAt_gte: ${timestamp}`;
+
+            beneficiariesSubgraph = await getBeneficiaries(
+                contractAddress,
+                limit,
+                offset,
+                lastClaimAt
+            );
+            const addresses = beneficiariesSubgraph.map((beneficiary) =>
+                ethers.utils.getAddress(beneficiary.address)
+            );
+            whereBeneficiary = {
+                ...whereBeneficiary,
+                '$"user"."address"$': {
+                    [Op.in]: addresses,
+                },
+            };
+        } else if (filter.state !== undefined) {
+            const state = filter.state === 'active' ? 0 : 1;
+            beneficiariesSubgraph = await getBeneficiaries(
+                contractAddress,
+                limit,
+                offset,
+                undefined,
+                `state: ${state}`
+            );
+            const addresses = beneficiariesSubgraph.map((beneficiary) =>
+                ethers.utils.getAddress(beneficiary.address)
+            );
+            whereBeneficiary = {
+                ...whereBeneficiary,
+                '$"user"."address"$': {
+                    [Op.in]: addresses,
+                },
+            };
+        }
+
+        const count = await countBeneficiaries(
+            contractAddress,
+            filter.state ? filter.state : 'all'
+        );
+        const beneficiaries = await models.beneficiary.findAll({
+            include: [
+                {
+                    attributes: ['username', 'suspect'],
+                    model: models.appUser,
+                    as: 'user',
+                    required,
+                },
+            ],
+            where: {
+                communityId: community.id,
+                ...whereBeneficiary,
+            },
+            limit,
+            offset,
+        });
+
+        if (!beneficiariesSubgraph) {
+            beneficiariesSubgraph = await getBeneficiariesByAddress(
+                beneficiaries.map((user) => user.address)
+            );
+        }
+
+        const result: IListBeneficiary[] = beneficiariesSubgraph.reduce(
+            (acc, el) => {
+                const beneficiary = beneficiaries
+                    .find(
+                        (user) =>
+                            user.address === ethers.utils.getAddress(el.address)
+                    )
+                    ?.toJSON() as BeneficiaryAttributes;
+                if (beneficiary) {
+                    acc.push({
+                        address: el.address,
+                        username: beneficiary.user?.username,
+                        timestamp: el.since,
+                        claimed: el.claimed,
+                        blocked: el.state === 2,
+                        suspect: beneficiary.user?.suspect,
+                        isDeleted:
+                            !beneficiary.user || !!beneficiary?.user!.deletedAt,
+                        state:
+                            el.state === 0
+                                ? 'active'
+                                : el.state === 1
+                                ? 'removed'
+                                : 'locked',
+                    } as IListBeneficiary);
+                }
+                return acc;
+            },
+            [] as IListBeneficiary[]
+        );
+
+        return {
+            count,
+            rows: result,
+        };
+    }
+
+    public _getBeneficiaryFilter(filter: BeneficiaryFilterType) {
+        let where = {};
+
+        if (filter.suspect !== undefined) {
+            where = {
+                ...where,
+                '$"user"."suspect"$': filter.suspect,
+            };
+        }
+
+        if (filter.unidentified !== undefined) {
+            filter.unidentified
+                ? (where = {
+                      ...where,
+                      '$"user"."username"$': null,
+                  })
+                : (where = {
+                      ...where,
+                      '$"user"."username"$': {
+                          [Op.ne]: null,
+                      },
+                  });
+        }
+
+        if (filter.loginInactivity !== undefined) {
+            const date = new Date();
+            date.setDate(date.getDate() - config.loginInactivityThreshold);
+
+            filter.loginInactivity
+                ? (where = {
+                      ...where,
+                      '$"user"."lastLogin"$': {
+                          [Op.lt]: date,
+                      },
+                  })
+                : (where = {
+                      ...where,
+                      '$"user"."lastLogin"$': {
+                          [Op.gte]: date,
+                      },
+                  });
+        }
+
+        return where;
+    }
+
     public async findById(
         id: number,
         userAddress?: string
@@ -181,22 +426,82 @@ export class CommunityDetailsService {
 
         let showEmail = false;
         if (userAddress) {
-            const manager = await models.manager.findOne({
-                attributes: ['communityId'],
-                where: { address: userAddress, active: true },
-            });
-            if (manager !== null) {
-                showEmail = manager.communityId === community.id;
+            // verify if user is the community creator, ambassador or manager
+            if (
+                (community.status === 'pending' &&
+                    community.requestByAddress === userAddress) ||
+                community.ambassadorAddress === userAddress
+            ) {
+                showEmail = true;
             } else {
-                showEmail =
-                    community.status === 'pending' &&
-                    community.requestByAddress === userAddress;
+                const userRole = await getUserRoles(userAddress);
+                if (userRole.manager) {
+                    showEmail =
+                        ethers.utils.getAddress(userRole.manager.community) ===
+                        community.contractAddress;
+                }
             }
         }
 
+        const state = (await this.getState(community.id)) as any;
+
         return {
             ...community.toJSON(),
+            state,
             email: showEmail ? community.email : '',
         };
+    }
+
+    public async count(groupBy: string, status?: string): Promise<any[]> {
+        let groupName = '';
+        switch (groupBy) {
+            case 'country':
+                groupName = 'country';
+                break;
+            case 'review':
+                groupName = 'review';
+                break;
+            case 'reviewByCountry':
+                groupName = 'reviewByCountry';
+                break;
+        }
+
+        let where: WhereOptions = {
+            visibility: 'public',
+        }
+        if (groupName.length === 0) {
+            throw new BaseError('INVALID_GROUP', 'invalid group');
+        }
+        if (status) {
+            where = {
+                ...where,
+                status,
+            }
+        }
+
+        if (groupName === 'reviewByCountry') {
+            const result = (await models.community.findAll({
+                attributes: [
+                    'country', [fn('count', col('country')), 'count'],
+                    [fn('count', literal("CASE WHEN review = 'pending' THEN 1 END")), 'pending' ],
+                    [fn('count', literal("CASE WHEN review = 'claimed' THEN 1 END")), 'claimed' ],
+                    [fn('count', literal("CASE WHEN review = 'declined' THEN 1 END")), 'declined' ],
+                    [fn('count', literal("CASE WHEN review = 'accepted' THEN 1 END")), 'accepted' ],
+                ],
+                where,
+                group: ['country'],
+            })) as any;
+    
+            return result;
+        }
+
+        const result = (await models.community.findAll({
+            attributes: [groupName, [fn('count', col(groupName)), 'count']],
+            where,
+            group: [groupName],
+            raw: true,
+        })) as any;
+
+        return result;
     }
 }

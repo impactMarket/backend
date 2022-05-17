@@ -187,13 +187,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         });
 
-        const phone = users[1].trust ? users[1].trust[0].phone : null;
-        const findPhone = await database.models.appUserTrust.findOne({
-            where: {
-                phone,
-            },
-        });
-
         const beneficiary = await database.models.beneficiary.findOne({
             where: {
                 address: users[1].address,
@@ -227,8 +220,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         // eslint-disable-next-line no-unused-expressions
         expect(user).to.be.null;
-        // eslint-disable-next-line no-unused-expressions
-        expect(findPhone).to.be.null;
         expect(beneficiary).to.include({
             active: true,
         });
@@ -276,12 +267,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         });
 
-        const phone = users[0].trust ? users[0].trust[0].phone : null;
-        const findPhone = await database.models.appUserTrust.findOne({
-            where: {
-                phone,
-            },
-        });
         const findStoryContent = await database.models.storyContent.findOne({
             where: {
                 byAddress: users[0].address,
@@ -296,8 +281,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         // eslint-disable-next-line no-unused-expressions
         expect(user).to.be.null;
-        // eslint-disable-next-line no-unused-expressions
-        expect(findPhone).to.be.null;
         expect(manager).to.include({
             active: true,
         });

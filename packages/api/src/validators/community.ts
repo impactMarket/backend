@@ -78,7 +78,8 @@ const editSubmission = celebrate({
             longitude: Joi.number().required(),
         }).required(),
         email: Joi.string().required(),
-        coverMediaId: Joi.number().optional(),
+        coverMediaId: Joi.number().optional(), // only v1
+        coverMediaPath: Joi.string().optional(), // only v2
         contractParams: Joi.object().optional(),
     }),
 });
@@ -96,6 +97,12 @@ const remove = celebrate({
     }),
 });
 
+const review = celebrate({
+    body: Joi.object({
+        review: Joi.string().required().valid('pending', 'claimed', 'declined', 'accepted'),
+    }),
+});
+
 export default {
     add,
     create,
@@ -103,4 +110,5 @@ export default {
     editSubmission,
     accept,
     remove,
+    review,
 };
