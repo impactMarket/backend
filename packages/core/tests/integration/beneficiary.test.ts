@@ -25,6 +25,7 @@ import { IListBeneficiary } from '../../src/services/endpoints';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import ClaimsService from '../../src/services/ubi/claim';
 import * as subgraph from '../../src/subgraph/queries/community';
+import * as userSubgraph from '../../src/subgraph/queries/user';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { jumpToTomorrowMidnight, randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';
@@ -47,6 +48,7 @@ describe('beneficiary service', () => {
     let spyBeneficiaryAdd: SinonSpy;
     let spyBeneficiaryUpdate: SinonSpy;
     let returnCommunityStateSubgraph: SinonStub;
+    let returnBeneficiaryActivitiesSubgraph: SinonStub;
 
     const decreaseStep = '1000000000000000000';
     const maxClaim = '450000000000000000000';
@@ -101,6 +103,10 @@ describe('beneficiary service', () => {
         spyBeneficiaryUpdate = spy(models.beneficiary, 'update');
         replace(database, 'query', sequelize.query);
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
+        returnBeneficiaryActivitiesSubgraph = stub(
+            userSubgraph,
+            'getUserActivity'
+        );
         returnCommunityStateSubgraph.returns([
             {
                 claims: 0,
@@ -582,6 +588,19 @@ describe('beneficiary service', () => {
                 tx,
                 new Date()
             );
+
+            returnBeneficiaryActivitiesSubgraph.returns([
+                {
+                    id: tx,
+                    by: users[0].address,
+                    user: users[16].address,
+                    community: {
+                        id: communities[0].id,
+                    },
+                    activity: 'ADDED',
+                    timestamp: (new Date().getTime() / 1000) | 0,
+                },
+            ]);
 
             tk.travel(jumpToTomorrowMidnight());
 

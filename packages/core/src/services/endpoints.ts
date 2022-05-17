@@ -256,6 +256,11 @@ export interface ICommunityStories {
     stories: ICommunityStory[];
 }
 
+export enum BeneficiaryActivity {
+    ADDED,
+    REMOVED,
+}
+
 export type IBeneficiaryActivities = {
     id: number;
     type: string;
