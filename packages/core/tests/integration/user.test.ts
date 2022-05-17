@@ -64,20 +64,13 @@ describe('user service', () => {
             const phone = faker.phone.phoneNumber();
             const newUser = await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const findUser = await models.appUser.findOne({
                 where: { address: newUser.user.address },
             });
-            const findPhone = await sequelize.models.AppUserTrustModel.findOne({
-                where: { phone },
-            });
             // eslint-disable-next-line no-unused-expressions
             expect(findUser).to.not.be.null;
-            // eslint-disable-next-line no-unused-expressions
-            expect(findPhone).to.not.be.null;
         });
 
         it('authentication creates new user with all params', async () => {
@@ -98,22 +91,17 @@ describe('user service', () => {
                 children: 1,
                 avatarMediaId: 5,
                 pushNotificationToken: 'ckniwoaicoska',
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const findUser = await models.appUser.findOne({
                 where: { address: newUser.user.address },
             });
-            const findPhone = await sequelize.models.AppUserTrustModel.findOne({
-                where: { phone },
-            });
             // eslint-disable-next-line no-unused-expressions
             expect(findUser).to.not.be.null;
             // eslint-disable-next-line no-unused-expressions
-            expect(findPhone).to.not.be.null;
             expect(newUser.user).to.include({
                 address,
+                phone,
                 language: 'pt',
                 currency,
                 suspect: false,
@@ -133,28 +121,20 @@ describe('user service', () => {
             //
             await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const loadUser = await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const findUser = await models.appUser.findOne({
                 where: { address: loadUser.user.address },
             });
-            const findPhone = await sequelize.models.AppUserTrustModel.findOne({
-                where: { phone },
-            });
             // eslint-disable-next-line no-unused-expressions
             expect(findUser).to.not.be.null;
-            // eslint-disable-next-line no-unused-expressions
-            expect(findPhone).to.not.be.null;
             expect(loadUser.user).to.include({
                 address,
+                phone,
             });
         });
 
@@ -176,9 +156,7 @@ describe('user service', () => {
                 children: 1,
                 avatarMediaId: 5,
                 pushNotificationToken: 'ckniwoaicoska',
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const loadUser = await UserService.authenticate({
                 address,
@@ -191,22 +169,16 @@ describe('user service', () => {
                 children: 1,
                 avatarMediaId: 5,
                 pushNotificationToken: 'ckniwoaicoska',
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const findUser = await models.appUser.findOne({
                 where: { address: loadUser.user.address },
             });
-            const findPhone = await sequelize.models.AppUserTrustModel.findOne({
-                where: { phone },
-            });
             // eslint-disable-next-line no-unused-expressions
             expect(findUser).to.not.be.null;
-            // eslint-disable-next-line no-unused-expressions
-            expect(findPhone).to.not.be.null;
             expect(loadUser.user).to.include({
                 address,
+                phone,
                 language: 'pt',
                 currency,
                 suspect: false,
@@ -228,16 +200,12 @@ describe('user service', () => {
 
             await UserService.authenticate({
                 address: firstAddress,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             let error: any;
             await UserService.authenticate({
                 address: secondAddress,
-                trust: {
-                    phone,
-                },
+                phone,
             }).catch((err) => {
                 error = err;
             });
@@ -256,17 +224,13 @@ describe('user service', () => {
 
             await UserService.authenticate({
                 address: firstAddress,
-                trust: {
-                    phone,
-                },
+                phone,
             });
 
             const loadUser = await UserService.authenticate(
                 {
                     address: secondAddress,
-                    trust: {
-                        phone,
-                    },
+                    phone,
                 },
                 true
             );
@@ -296,18 +260,14 @@ describe('user service', () => {
             // create the first account
             await UserService.authenticate({
                 address: firstAddress,
-                trust: {
-                    phone,
-                },
+                phone,
             });
 
             // replace by a new account
             await UserService.authenticate(
                 {
                     address: secondAddress,
-                    trust: {
-                        phone,
-                    },
+                    phone,
                 },
                 true
             );
@@ -317,9 +277,7 @@ describe('user service', () => {
             // try to login with the first account again
             await UserService.authenticate({
                 address: firstAddress,
-                trust: {
-                    phone,
-                },
+                phone,
             }).catch((err) => {
                 error = err;
             });
@@ -333,9 +291,7 @@ describe('user service', () => {
             const phone = faker.phone.phoneNumber();
             const login = await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
 
             const oldLastLogin = login.user.lastLogin;
@@ -344,9 +300,7 @@ describe('user service', () => {
 
             await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
 
             const user = await models.appUser.findOne({
@@ -365,9 +319,7 @@ describe('user service', () => {
             const phone = faker.phone.phoneNumber();
             const newUser = await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const logged = await UserService.welcome(newUser.user.address);
             // eslint-disable-next-line no-unused-expressions
@@ -380,9 +332,7 @@ describe('user service', () => {
             const phone = faker.phone.phoneNumber();
             const newUser = await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const logged = await UserService.welcome(
                 newUser.user.address,
@@ -485,9 +435,7 @@ describe('user service', () => {
             const phone = faker.phone.phoneNumber();
             await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
 
             const data = {

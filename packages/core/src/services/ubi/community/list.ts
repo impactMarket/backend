@@ -100,19 +100,12 @@ export class CommunityListService {
             const communityProposals = await this._getOpenProposals();
             if (query.ambassadorAddress) {
                 const ambassador = (await models.appUser.findOne({
-                    attributes: [],
-                    include: [
-                        {
-                            model: models.appUserTrust,
-                            as: 'trust',
-                            attributes: ['phone'],
-                        },
-                    ],
+                    attributes: ['phone'],
                     where: {
                         address: query.ambassadorAddress,
                     },
                 })) as any;
-                const phone = ambassador?.trust[0]?.phone;
+                const phone = ambassador?.phone;
                 if (phone) {
                     const parsePhone = parsePhoneNumber(phone);
                     extendedWhere = {

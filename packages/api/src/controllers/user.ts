@@ -52,9 +52,7 @@ class UserController {
                 children,
                 avatarMediaId,
                 avatarMediaPath,
-                trust: {
-                    phone,
-                },
+                phone,
             },
             overwrite,
             recover
