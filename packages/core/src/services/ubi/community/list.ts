@@ -184,8 +184,6 @@ export class CommunityListService {
                         break;
                     }
                     case 'out_of_funds': {
-                        // this requires extended
-                        query.extended = 'true';
                         // check if there was another order previously
                         if (
                             orderOption.length === 0 &&
@@ -289,10 +287,8 @@ export class CommunityListService {
                     : { exclude }
                 : [];
         } else {
-            include = this._oldInclude(query.extended);
-            attributes = {
-                exclude,
-            };
+            attributes = { exclude };
+            include = [];
         }
 
         const communityCount = await models.community.count({
@@ -639,76 +635,5 @@ export class CommunityListService {
         }
 
         return extendedInclude;
-    }
-
-    private _oldInclude(extended?: string): Includeable[] {
-        const extendedInclude: Includeable[] = [];
-        const yesterdayDateOnly = new Date();
-        yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
-        yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
-        const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
-
-        // TODO: deprecated in mobile@1.1.6
-        if (extended) {
-            extendedInclude.push(
-                {
-                    model: models.ubiCommunityContract,
-                    as: 'contract',
-                },
-                {
-                    model: models.ubiCommunityDailyMetrics,
-                    required: false,
-                    duplicating: false,
-                    as: 'metrics',
-                    where: {
-                        date: {
-                            [Op.eq]: literal(
-                                '(select date from ubi_community_daily_metrics order by date desc limit 1)'
-                            ),
-                        } as { [Op.eq]: Literal },
-                    },
-                }
-            );
-        }
-
-        return [
-            {
-                model: models.ubiCommunitySuspect,
-                attributes: ['suspect'],
-                as: 'suspect',
-                required: false,
-                duplicating: false,
-                where: {
-                    createdAt: {
-                        [Op.eq]: literal(
-                            '(select max("createdAt") from ubi_community_suspect ucs where ucs."communityId"="Community".id and date("createdAt") > (current_date - INTERVAL \'1 day\'))'
-                        ),
-                    },
-                },
-            },
-            {
-                model: models.appMediaContent,
-                as: 'cover',
-                duplicating: false,
-                include: [
-                    {
-                        model: models.appMediaThumbnail,
-                        as: 'thumbnails',
-                        separate: true,
-                    },
-                ],
-            },
-            {
-                attributes: { exclude: ['id', 'communityId'] },
-                model: models.ubiCommunityDailyState,
-                as: 'dailyState',
-                duplicating: false,
-                where: {
-                    date: yesterdayDate,
-                },
-                required: false,
-            },
-            ...extendedInclude,
-        ] as Includeable[];
     }
 }
