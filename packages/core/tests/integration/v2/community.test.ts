@@ -707,6 +707,7 @@ describe('community service v2', () => {
             const r = await communityListService.list({
                 offset: '0',
                 limit: '5',
+                fields: '*;suspect.*'
             });
             expect(
                 r.rows.filter((c) => c.id === communitySuspect.id)[0].suspect
