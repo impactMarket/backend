@@ -110,6 +110,31 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
+     * /communities/{id}/ambassador:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community ambassador
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityContract'
+     */
+     route.get('/:id/ambassador', controller.getAmbassador);
+
+    /**
+     * @swagger
+     *
      * /community/beneficiaries:
      *   get:
      *     tags:
