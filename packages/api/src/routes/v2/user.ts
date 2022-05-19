@@ -325,4 +325,109 @@ export default (app: Router): void => {
         authenticateToken,
         userController.getPresignedUrlMedia
     );
+
+    /**
+     * @swagger
+     *
+     * /users/notifications/unread:
+     *   get:
+     *     tags:
+     *       - "users"
+     *     summary: Get the number of unread notifications from a user
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    type: integer
+     *                    description: number of unread notifications
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+     route.get(
+        '/notifications/unread',
+        authenticateToken,
+        userController.getUnreadNotifications
+    );
+
+    /**
+     * @swagger
+     *
+     * /users/notifications:
+     *   get:
+     *     tags:
+     *       - "users"
+     *     summary: Get all notifications from a user
+     *     parameters:
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 10)
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    $ref: '#/components/schemas/AppNotification'
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/notifications/:query?',
+        authenticateToken,
+        userController.getNotifications
+    );
+
+    /**
+     * @swagger
+     *
+     * /users/notifications/read:
+     *   put:
+     *     tags:
+     *       - "users"
+     *     summary: Mark all notifications as read
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    type: boolean
+     *                    description: if true the notification was updated
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put(
+        '/notifications/read',
+        authenticateToken,
+        userController.readNotifications
+    );
 };
