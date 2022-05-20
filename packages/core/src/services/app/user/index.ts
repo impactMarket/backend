@@ -1,10 +1,11 @@
-import { Op, QueryTypes } from 'sequelize';
+import { Op } from 'sequelize';
 
+import config from '../../../config';
 import { models, sequelize } from '../../../database';
 import { AppUserModel } from '../../../database/models/app/appUser';
 import { LogTypes } from '../../../interfaces/app/appLog';
+import { AppNotification } from '../../../interfaces/app/appNotification';
 import {
-    AppUser,
     AppUserCreationAttributes,
     AppUserUpdate,
 } from '../../../interfaces/app/appUser';
@@ -23,7 +24,7 @@ export default class UserService {
         userParams: AppUserCreationAttributes,
         overwrite: boolean = false,
         recover: boolean = false,
-        clientId?: string,
+        clientId?: string
     ) {
         const exists = await this._exists(userParams.address);
 
@@ -74,17 +75,20 @@ export default class UserService {
             // provided phone number are the same
             const jsonUser = user.toJSON();
             if (!jsonUser.phone && userParams.phone) {
-                await models.appUser.update({
-                    phone: userParams.phone
-                }, {
-                    where: {
-                        id: jsonUser.id,
+                await models.appUser.update(
+                    {
+                        phone: userParams.phone,
+                    },
+                    {
+                        where: {
+                            id: jsonUser.id,
+                        },
                     }
-                });
+                );
                 user.phone = userParams.phone;
             } else if (
-                jsonUser.phone && 
-                userParams.phone && 
+                jsonUser.phone &&
+                userParams.phone &&
                 userParams.phone !== jsonUser.phone
             ) {
                 throw new BaseError(
@@ -112,11 +116,15 @@ export default class UserService {
             const credential = await models.appClientCredential.findOne({
                 where: {
                     clientId,
-                    status: 'active'
-                }
+                    status: 'active',
+                },
             });
             if (credential) {
-                token = generateAccessToken(userParams.address, user.id, clientId);
+                token = generateAccessToken(
+                    userParams.address,
+                    user.id,
+                    clientId
+                );
             } else {
                 throw new BaseError(
                     'INVALID_CREDENTIAL',
@@ -153,7 +161,10 @@ export default class UserService {
 
     public async update(user: AppUserUpdate) {
         if (user.phone) {
-            const existsPhone = await this._existsAccountByPhone(user.phone, user.address);
+            const existsPhone = await this._existsAccountByPhone(
+                user.phone,
+                user.address
+            );
 
             if (existsPhone)
                 throw new BaseError(
@@ -264,6 +275,55 @@ export default class UserService {
         }
     }
 
+    public async getNotifications(
+        query: {
+            offset?: string;
+            limit?: string;
+        },
+        userId: number
+    ): Promise<AppNotification[]> {
+        const notifications = await models.appNotification.findAll({
+            where: {
+                userId,
+            },
+            offset: query.offset
+                ? parseInt(query.offset, 10)
+                : config.defaultOffset,
+            limit: query.limit
+                ? parseInt(query.limit, 10)
+                : config.defaultLimit,
+            order: [['createdAt', 'DESC']],
+        });
+        return notifications as AppNotification[];
+    }
+
+    public async readNotifications(userId: number): Promise<boolean> {
+        const updated = await models.appNotification.update(
+            {
+                read: true,
+            },
+            {
+                returning: true,
+                where: {
+                    userId,
+                },
+            }
+        );
+        if (updated[0] === 0) {
+            throw new Error('notifications were not updated!');
+        }
+        return true;
+    }
+
+    public async getUnreadNotifications(userId: number): Promise<number> {
+        return models.appNotification.count({
+            where: {
+                userId,
+                read: false,
+            },
+        });
+    }
+
     private async _overwriteUser(user: AppUserCreationAttributes) {
         try {
             const usersToInactive = await models.appUser.findAll({
@@ -333,9 +393,9 @@ export default class UserService {
                 address: {
                     [Op.not]: address,
                 },
-                active: true
-            }
-        })
+                active: true,
+            },
+        });
 
         return !!user;
     }

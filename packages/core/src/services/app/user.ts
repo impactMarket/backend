@@ -395,9 +395,9 @@ export default class UserService {
                 address: {
                     [Op.not]: address,
                 },
-                active: true
-            }
-        })
+                active: true,
+            },
+        });
 
         return !!user;
     }
