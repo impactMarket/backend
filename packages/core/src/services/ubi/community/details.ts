@@ -63,6 +63,27 @@ export class CommunityDetailsService {
         };
     }
 
+    public async getAmbassador(communityId: number) {
+        const community = await models.community.findOne({
+            attributes: ['ambassadorAddress'],
+            where: {
+                id: communityId
+            }
+        });
+
+        if (!community || !community.ambassadorAddress) {
+            return null;
+        }
+
+        const ambassador = await models.appUser.findOne({
+            where: {
+                address: { [Op.iLike]: community.ambassadorAddress },
+            }
+        });
+
+        return ambassador;
+    }
+
     public async getUBIParams(communityId: number) {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],

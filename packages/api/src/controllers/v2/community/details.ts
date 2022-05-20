@@ -128,6 +128,13 @@ class CommunityController {
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    getAmbassador = (req: Request, res: Response) => {
+        this.detailsService
+            .getAmbassador(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export { CommunityController };
