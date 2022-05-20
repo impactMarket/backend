@@ -154,15 +154,14 @@ export class CommunityDetailsService {
 
         if (community.status === 'pending') {
             const user = await models.appUser.findOne({
-                attributes: ['address', 'username'],
+                attributes: ['address', 'firstName', 'lastName', 'email', 'phone', 'avatarMediaPath'],
                 where: {
                     address: community.requestByAddress,
                 },
             });
             return [
                 {
-                    address: user!.address,
-                    username: user!.username,
+                    ...user as AppUser,
                     isDeleted: false,
                     state: 0,
                     added: 0,
@@ -184,7 +183,7 @@ export class CommunityDetailsService {
             }
 
             const result = await models.appUser.findAll({
-                attributes: ['address', 'username'],
+                attributes: ['address', 'firstName', 'lastName', 'email', 'phone', 'avatarMediaPath'],
                 where: {
                     address: { [Op.in]: managers.map((m) => m.address) },
                 },
