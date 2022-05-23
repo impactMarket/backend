@@ -99,6 +99,28 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /stories/count:
+     *   get:
+     *     tags:
+     *       - "stories"
+     *     summary: Count grouped stories
+     *     parameters:
+     *       - in: query
+     *         name: groupBy
+     *         schema:
+     *           type: string
+     *           enum: [country]
+     *         required: true
+     *         description: count stories by a grouped value
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+     route.get('/count/:query?', storyController.count);
+
+    /**
+     * @swagger
+     *
      * /stories:
      *   get:
      *     tags:

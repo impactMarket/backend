@@ -1,5 +1,5 @@
 import { NotificationType } from '../../interfaces/app/appNotification';
-import { Op } from 'sequelize';
+import { col, fn, Op } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
@@ -369,6 +369,32 @@ export default class StoryServiceV2 {
                 address: userAddress,
             });
         }
+    }
+
+    public async count(groupBy: string): Promise<any[]> {
+        let groupName = '';
+        switch (groupBy) {
+            case 'country':
+                groupName = 'community.country';
+                break;
+        }
+
+        if (groupName.length === 0) {
+            throw new BaseError('INVALID_GROUP', 'invalid group');
+        }
+
+        const result = (await models.storyCommunity.findAll({
+            attributes: [groupName, [fn('count', col(groupName)), 'count']],
+            include: [{
+                attributes: [],
+                model: models.community,
+                as: 'community'
+            }],
+            group: [groupName],
+            raw: true,
+        })) as any;
+
+        return result;
     }
 
     public async deleteOlderStories() {
