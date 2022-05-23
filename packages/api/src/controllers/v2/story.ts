@@ -46,10 +46,9 @@ class StoryController {
             });
             return;
         }
-        const { communityId, message, storyMediaPath } = req.body;
+        const { message, storyMediaPath } = req.body;
         this.storyService
             .add(req.user.address, {
-                communityId,
                 message,
                 storyMediaPath,
             })

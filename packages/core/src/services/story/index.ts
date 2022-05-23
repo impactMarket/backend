@@ -6,7 +6,6 @@ import { models } from '../../database';
 import { StoryContentModel } from '../../database/models/story/storyContent';
 import { StoryCommunityCreationEager } from '../../interfaces/story/storyCommunity';
 import { StoryContent } from '../../interfaces/story/storyContent';
-import { getBeneficiaryCommunity } from '../../subgraph/queries/beneficiary';
 import { BaseError } from '../../utils/baseError';
 import {
     IAddStory,
@@ -15,6 +14,8 @@ import {
     ICommunityStory,
 } from '../endpoints';
 import { StoryContentStorage } from '../storage';
+import { getUserRoles } from '../../subgraph/queries/user';
+import { ethers } from 'ethers';
 
 export default class StoryServiceV2 {
     private storyContentStorage = new StoryContentStorage();
@@ -45,11 +46,21 @@ export default class StoryServiceV2 {
                 message: story.message,
             };
         }
-        const communityAddress = await getBeneficiaryCommunity(fromAddress);
+        const userRole = await getUserRoles(fromAddress);
+
+        if (!userRole.beneficiary && !userRole.manager) {
+            throw new BaseError(
+                'INVALID_ROLE',
+                'user not a manager/beneficiary'
+            );
+        }
+
+        const communityAddress = userRole.beneficiary ? userRole.beneficiary.community : userRole.manager!.community;
+
         const community = await models.community.findOne({
             attributes: ['id'],
             where: {
-                contractAddress: communityAddress,
+                contractAddress: ethers.utils.getAddress(communityAddress),
                 visibility: 'public',
             },
         });
