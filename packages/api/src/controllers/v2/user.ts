@@ -121,7 +121,7 @@ class UserController {
                 pushNotificationToken,
                 firstName,
                 lastName,
-                year: age ? new Date().getUTCFullYear() - age : undefined,
+                year: age ? new Date().getUTCFullYear() - age : null,
                 children,
                 avatarMediaPath,
                 email,
