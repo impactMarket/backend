@@ -1,12 +1,11 @@
 import { NotificationType } from '../../interfaces/app/appNotification';
-import { Op } from 'sequelize';
+import { col, fn, Op } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
 import { StoryContentModel } from '../../database/models/story/storyContent';
 import { StoryCommunityCreationEager } from '../../interfaces/story/storyCommunity';
 import { StoryContent } from '../../interfaces/story/storyContent';
-import { getBeneficiaryCommunity } from '../../subgraph/queries/beneficiary';
 import { BaseError } from '../../utils/baseError';
 import {
     IAddStory,
@@ -15,6 +14,8 @@ import {
     ICommunityStory,
 } from '../endpoints';
 import { StoryContentStorage } from '../storage';
+import { getUserRoles } from '../../subgraph/queries/user';
+import { ethers } from 'ethers';
 
 export default class StoryServiceV2 {
     private storyContentStorage = new StoryContentStorage();
@@ -45,11 +46,21 @@ export default class StoryServiceV2 {
                 message: story.message,
             };
         }
-        const communityAddress = await getBeneficiaryCommunity(fromAddress);
+        const userRole = await getUserRoles(fromAddress);
+
+        if (!userRole.beneficiary && !userRole.manager) {
+            throw new BaseError(
+                'INVALID_ROLE',
+                'user not a manager/beneficiary'
+            );
+        }
+
+        const communityAddress = userRole.beneficiary ? userRole.beneficiary.community : userRole.manager!.community;
+
         const community = await models.community.findOne({
             attributes: ['id'],
             where: {
-                contractAddress: communityAddress,
+                contractAddress: ethers.utils.getAddress(communityAddress),
                 visibility: 'public',
             },
         });
@@ -369,6 +380,32 @@ export default class StoryServiceV2 {
                 address: userAddress,
             });
         }
+    }
+
+    public async count(groupBy: string): Promise<any[]> {
+        let groupName = '';
+        switch (groupBy) {
+            case 'country':
+                groupName = 'community.country';
+                break;
+        }
+
+        if (groupName.length === 0) {
+            throw new BaseError('INVALID_GROUP', 'invalid group');
+        }
+
+        const result = (await models.storyCommunity.findAll({
+            attributes: [groupName, [fn('count', col(groupName)), 'count']],
+            include: [{
+                attributes: [],
+                model: models.community,
+                as: 'community'
+            }],
+            group: [groupName],
+            raw: true,
+        })) as any;
+
+        return result;
     }
 
     public async deleteOlderStories() {
