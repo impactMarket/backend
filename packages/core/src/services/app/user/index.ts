@@ -421,7 +421,18 @@ export default class UserService {
     }
 
     private async _userRoles(address: string) {
-        return await getUserRoles(address);
+        const userRoles = await getUserRoles(address);
+        let roles: string[] = [];
+        const keys = Object.keys(userRoles);
+        keys.forEach(key => {
+            if (userRoles[key]) {
+                roles.push(key);
+            }
+        });
+        return {
+            ...userRoles,
+            roles,
+        }
     }
 
     private async _userRules(address: string) {
