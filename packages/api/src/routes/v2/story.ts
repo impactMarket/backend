@@ -116,7 +116,31 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-     route.get('/count/:query?', storyController.count);
+    route.get('/count/:query?', storyController.count);
+
+    /**
+     * @swagger
+     *
+     * /stories/{id}:
+     *   get:
+     *     tags:
+     *       - "stories"
+     *     summary: Get a story by ID
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get('/:id', optionalAuthentication, storyController.getById);
 
     /**
      * @swagger
