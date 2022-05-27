@@ -88,6 +88,13 @@ class StoryController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    getById = (req: RequestWithUser, res: Response) => {
+        this.storyService
+            .getById(parseInt(req.params.id, 10), req.user?.address)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     list = (req: RequestWithUser, res: Response) => {
         const { user } = req.query;
         if (user) {

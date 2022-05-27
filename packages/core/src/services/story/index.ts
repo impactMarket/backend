@@ -118,6 +118,71 @@ export default class StoryServiceV2 {
         return result;
     }
 
+    public async getById(storyId: number, userAddress?: string): Promise<StoryContent> {
+        const story = await models.storyContent.findOne({
+            include: [
+                {
+                    model: models.storyCommunity,
+                    as: 'storyCommunity',
+                    required: true,
+                    include: [
+                        {
+                            model: models.community,
+                            as: 'community',
+                            attributes: [
+                                'id',
+                                'name',
+                                'coverMediaPath',
+                                'city',
+                                'country',
+                            ]
+                        },
+                    ],
+                },
+                ...(userAddress
+                    ? [
+                          {
+                              model: models.storyUserEngagement,
+                              as: 'storyUserEngagement',
+                              required: false,
+                              duplicating: false,
+                              where: {
+                                  address: userAddress,
+                              },
+                          },
+                          {
+                              model: models.storyEngagement,
+                              as: 'storyEngagement',
+                          },
+                          {
+                              model: models.storyUserReport,
+                              as: 'storyUserReport',
+                              required: false,
+                              duplicating: false,
+                              where: {
+                                  address: userAddress,
+                              },
+                          },
+                      ]
+                    : [
+                          {
+                              model: models.storyEngagement,
+                              as: 'storyEngagement',
+                          },
+                      ]),
+            ],
+            where: {
+                id: storyId,
+            }
+        });
+
+        if (!story) {
+            throw new BaseError('STORY_NOT_FOUND', 'story not found');
+        }
+
+        return story as StoryContent;
+    }
+
     public async listByUser(
         onlyFromAddress: string,
         query: { offset?: string; limit?: string }
