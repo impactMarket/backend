@@ -135,10 +135,10 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /community/beneficiaries:
+     * /communities/beneficiaries:
      *   get:
      *     tags:
-     *       - "community"
+     *       - "communities"
      *     summary: Find or list beneficiaries in manager's community
      *     parameters:
      *       - in: query
@@ -160,30 +160,6 @@ export default (route: Router): void => {
      *           type: integer
      *         required: false
      *         description: limit used for community pagination (default 5)
-     *       - in: query
-     *         name: suspect
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *         description: filter by suspect users
-     *       - in: query
-     *         name: inactivity
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *         description: filter by inactivity users
-     *       - in: query
-     *         name: unidentified
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *         description: filter by unidentified users
-     *       - in: query
-     *         name: loginInactivity
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *         description: filter by login inactivity
      *       - in: query
      *         name: search
      *         schema:
