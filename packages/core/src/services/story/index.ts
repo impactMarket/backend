@@ -118,7 +118,7 @@ export default class StoryServiceV2 {
         return result;
     }
 
-    public async getById(storyId: number, userAddress?: string): Promise<StoryContent> {
+    public async getById(storyId: number, userAddress?: string): Promise<ICommunitiesListStories> {
         const story = await models.storyContent.findOne({
             include: [
                 {
@@ -180,7 +180,27 @@ export default class StoryServiceV2 {
             throw new BaseError('STORY_NOT_FOUND', 'story not found');
         }
 
-        return story as StoryContent;
+
+        const content = story.toJSON() as StoryContent;
+        return {
+            // we can use ! because it's included on the query
+            id: content.id,
+            storyMediaPath: content.storyMediaPath,
+            message: content.message,
+            isDeletable: userAddress
+                ? content.byAddress.toLowerCase() ===
+                    userAddress.toLowerCase()
+                : false,
+            createdAt: content.postedAt,
+            community: content.storyCommunity!.community,
+            engagement: {
+                loves: content.storyEngagement?.loves || 0,
+                userLoved: !!content.storyUserEngagement?.length,
+                userReported: content.storyUserReport
+                    ? content.storyUserReport.length !== 0
+                    : false,
+            },
+        } as any;
     }
 
     public async listByUser(
