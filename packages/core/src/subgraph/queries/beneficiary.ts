@@ -53,7 +53,10 @@ export const getAllBeneficiaries = async (
 };
 
 export const getBeneficiariesByAddress = async (
-    addresses: string[]
+    addresses: string[],
+    state?: string,
+    inactive?: string,
+    community?: string,
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const idsFormated = addresses.map(
@@ -63,8 +66,12 @@ export const getBeneficiariesByAddress = async (
         const query = gql`
             {
                 beneficiaryEntities(
+                    first: ${idsFormated.length}
                     where: {
                         address_in: [${idsFormated}]
+                        ${state ? state : ''}
+                        ${inactive ? inactive : ''}
+                        ${community ? `community: "${community.toLocaleLowerCase()}"` : ''}
                     }
                 ) {
                     address
