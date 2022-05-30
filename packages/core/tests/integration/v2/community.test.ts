@@ -1759,13 +1759,10 @@ describe('community service v2', () => {
                 returnClaimedSubgraph.resetHistory();
             });
 
-            it('list pending communities in the ambassadors country', async () => {
+            it('list pending communities by ambassadors address', async () => {
                 const ambassadors = await UserFactory({
-                    n: 2,
+                    n: 1,
                     props: [
-                        {
-                            phone: '+12025550167',
-                        },
                         {
                             phone: '+5514999420299',
                         },
@@ -1790,11 +1787,12 @@ describe('community service v2', () => {
                             longitude: -46.4841214,
                         },
                         country: 'BR',
+                        ambassadorAddress: ambassadors[0].address,
                     },
                     {
                         requestByAddress: users[2].address,
                         started: new Date(),
-                        status: 'pending',
+                        status: 'valid',
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
@@ -1808,7 +1806,8 @@ describe('community service v2', () => {
                             latitude: -23.4378873,
                             longitude: -46.4841214,
                         },
-                        country: 'VE',
+                        country: 'BR',
+                        ambassadorAddress: ambassadors[0].address,
                     },
                 ]);
 
@@ -1818,14 +1817,14 @@ describe('community service v2', () => {
 
                 const result = await communityListService.list({
                     status: 'pending',
-                    ambassadorAddress: ambassadors[1].address,
+                    ambassadorAddress: ambassadors[0].address,
                 });
 
                 expect(result.count).to.be.equal(1);
                 expect(result.rows[0].id).to.be.equal(communities[0].id);
             });
 
-            it('list communities where ambassador', async () => {
+            it('list valid communities by ambassadors address', async () => {
                 const ambassadors = await UserFactory({
                     n: 2,
                     props: [
@@ -1861,7 +1860,7 @@ describe('community service v2', () => {
                     {
                         requestByAddress: users[2].address,
                         started: new Date(),
-                        status: 'valid',
+                        status: 'pending',
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
@@ -1875,8 +1874,8 @@ describe('community service v2', () => {
                             latitude: -23.4378873,
                             longitude: -46.4841214,
                         },
-                        country: 'VE',
-                        ambassadorAddress: ambassadors[1].address,
+                        country: 'BR',
+                        ambassadorAddress: ambassadors[0].address,
                     },
                 ]);
 
@@ -1885,6 +1884,7 @@ describe('community service v2', () => {
 
                 const result = await communityListService.list({
                     ambassadorAddress: ambassadors[0].address,
+                    status: 'valid',
                 });
 
                 expect(result.count).to.be.equal(1);
