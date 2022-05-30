@@ -64,7 +64,10 @@ export interface IManagerDetailsManager {
 
 export interface IListBeneficiary {
     address: string;
-    username: string | null;
+    username?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    avatarMediaPath?: string | null;
     timestamp: number;
     claimed: string;
     blocked: boolean;

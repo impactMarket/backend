@@ -214,7 +214,6 @@ export class CommunityDetailsService {
         count: number;
         rows: IListBeneficiary[];
     }> {
-        let required: boolean = false;
         const roles = await getUserRoles(managerAddress);
         if (!roles.manager) {
             throw new BaseError('MANAGER_NOT_FOUND', 'Manager not found');
@@ -233,27 +232,19 @@ export class CommunityDetailsService {
             throw new BaseError('COMMUNITY_NOT_FOUND', 'Community not found');
         }
 
-        let whereBeneficiary = this._getBeneficiaryFilter(filter);
+        let addresses: string[] = [];
+        let appUserFilter: WhereOptions | null = null;
+        let beneficiaryState: string | undefined = undefined;
 
         if (searchInput) {
             if (isAddress(searchInput)) {
-                whereBeneficiary = {
-                    ...whereBeneficiary,
-                    '$"user"."address"$': ethers.utils.getAddress(searchInput),
-                };
-                required = false;
+                addresses.push(ethers.utils.getAddress(searchInput));
             } else if (
                 searchInput.toLowerCase().indexOf('drop') === -1 &&
                 searchInput.toLowerCase().indexOf('delete') === -1 &&
                 searchInput.toLowerCase().indexOf('update') === -1
             ) {
-                whereBeneficiary = {
-                    ...whereBeneficiary,
-                    '$"user"."username"$': {
-                        [Op.iLike]: `%${searchInput.slice(0, 16)}%`,
-                    },
-                };
-                required = true;
+                appUserFilter = literal(`concat("firstName", ' ', "lastName") ILIKE '%${searchInput}%'`);
             } else {
                 throw new BaseError('INVALID_SEARCH', 'Not valid search!');
             }
@@ -261,159 +252,98 @@ export class CommunityDetailsService {
 
         let beneficiariesSubgraph: BeneficiarySubgraph[] | null = null;
 
-        if (filter.inactivity !== undefined) {
-            const communityState = await getCommunityState(contractAddress);
+        if (filter.state !== undefined) {
+            beneficiaryState = filter.state === 'active' ? 'state: 0' : 'state: 1';
+        }
 
-            const seconds =
-                communityState.baseInterval * config.claimInactivityThreshold;
-            const timestamp = ((new Date().getTime() / 1000) | 0) - seconds;
-            const lastClaimAt = filter.inactivity
-                ? `lastClaimAt_lt: ${timestamp}`
-                : `lastClaimAt_gte: ${timestamp}`;
-
-            beneficiariesSubgraph = await getBeneficiaries(
+        let appUsers: AppUser[] = [];
+        let count: number = 0;
+        if (appUserFilter) {
+            appUsers = await models.appUser.findAll({
+                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
+                where: appUserFilter,
+            });
+            addresses = appUsers.map(user => user.address);
+            beneficiariesSubgraph = await getBeneficiariesByAddress(
+                addresses,
+                beneficiaryState,
+                undefined,
                 contractAddress,
-                limit,
-                offset,
-                lastClaimAt
             );
-            const addresses = beneficiariesSubgraph.map((beneficiary) =>
-                ethers.utils.getAddress(beneficiary.address)
+            count = beneficiariesSubgraph.length;
+
+            if (count > limit) {
+                beneficiariesSubgraph = beneficiariesSubgraph.slice(offset, offset + limit);
+            }
+        } else if (addresses.length > 0) {
+            beneficiariesSubgraph = await getBeneficiariesByAddress(
+                addresses,
+                beneficiaryState,
+                undefined,
+                contractAddress,
             );
-            whereBeneficiary = {
-                ...whereBeneficiary,
-                '$"user"."address"$': {
-                    [Op.in]: addresses,
+            count = beneficiariesSubgraph.length;
+            appUsers = await models.appUser.findAll({
+                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
+                where: {
+                    address: {
+                        [Op.in]: addresses,
+                    },
                 },
-            };
-        } else if (filter.state !== undefined) {
-            const state = filter.state === 'active' ? 0 : 1;
+            });
+        } else {
             beneficiariesSubgraph = await getBeneficiaries(
                 contractAddress,
                 limit,
                 offset,
                 undefined,
-                `state: ${state}`
+                beneficiaryState,
             );
-            const addresses = beneficiariesSubgraph.map((beneficiary) =>
-                ethers.utils.getAddress(beneficiary.address)
+            count = await countBeneficiaries(
+                contractAddress,
+                filter.state ? filter.state : 'all'
             );
-            whereBeneficiary = {
-                ...whereBeneficiary,
-                '$"user"."address"$': {
-                    [Op.in]: addresses,
+            addresses = beneficiariesSubgraph.map(beneficiary => ethers.utils.getAddress(beneficiary.address));
+            appUsers = await models.appUser.findAll({
+                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
+                where: {
+                    address: {
+                        [Op.in]: addresses,
+                    },
                 },
-            };
+            });
         }
 
-        const count = await countBeneficiaries(
-            contractAddress,
-            filter.state ? filter.state : 'all'
-        );
-        const beneficiaries = await models.beneficiary.findAll({
-            include: [
-                {
-                    attributes: ['username', 'suspect'],
-                    model: models.appUser,
-                    as: 'user',
-                    required,
-                },
-            ],
-            where: {
-                communityId: community.id,
-                ...whereBeneficiary,
-            },
-            limit,
-            offset,
+        if (!beneficiariesSubgraph || !beneficiariesSubgraph.length) {
+            count = 0;
+        }
+
+        const result: IListBeneficiary[] = beneficiariesSubgraph.map(beneficiary => {
+            const user = appUsers.find((user) => user.address === ethers.utils.getAddress(beneficiary.address));
+            return {
+                address: beneficiary.address,
+                firstName: user?.firstName,
+                lastName: user?.lastName,
+                avatarMediaPath: user?.avatarMediaPath,
+                timestamp: beneficiary.since || 0,
+                claimed: beneficiary.claimed,
+                blocked: beneficiary.state === 2,
+                suspect: user?.suspect,
+                isDeleted:
+                    !user || !!user!.deletedAt,
+                state:
+                    beneficiary.state === 0
+                        ? 'active'
+                        : beneficiary.state === 1
+                        ? 'removed'
+                        : 'locked',
+            }
         });
-
-        if (!beneficiariesSubgraph) {
-            beneficiariesSubgraph = await getBeneficiariesByAddress(
-                beneficiaries.map((user) => user.address)
-            );
-        }
-
-        const result: IListBeneficiary[] = beneficiariesSubgraph.reduce(
-            (acc, el) => {
-                const beneficiary = beneficiaries
-                    .find(
-                        (user) =>
-                            user.address === ethers.utils.getAddress(el.address)
-                    )
-                    ?.toJSON() as BeneficiaryAttributes;
-                if (beneficiary) {
-                    acc.push({
-                        address: el.address,
-                        username: beneficiary.user?.username,
-                        timestamp: el.since,
-                        claimed: el.claimed,
-                        blocked: el.state === 2,
-                        suspect: beneficiary.user?.suspect,
-                        isDeleted:
-                            !beneficiary.user || !!beneficiary?.user!.deletedAt,
-                        state:
-                            el.state === 0
-                                ? 'active'
-                                : el.state === 1
-                                ? 'removed'
-                                : 'locked',
-                    } as IListBeneficiary);
-                }
-                return acc;
-            },
-            [] as IListBeneficiary[]
-        );
 
         return {
             count,
             rows: result,
         };
-    }
-
-    public _getBeneficiaryFilter(filter: BeneficiaryFilterType) {
-        let where = {};
-
-        if (filter.suspect !== undefined) {
-            where = {
-                ...where,
-                '$"user"."suspect"$': filter.suspect,
-            };
-        }
-
-        if (filter.unidentified !== undefined) {
-            filter.unidentified
-                ? (where = {
-                      ...where,
-                      '$"user"."username"$': null,
-                  })
-                : (where = {
-                      ...where,
-                      '$"user"."username"$': {
-                          [Op.ne]: null,
-                      },
-                  });
-        }
-
-        if (filter.loginInactivity !== undefined) {
-            const date = new Date();
-            date.setDate(date.getDate() - config.loginInactivityThreshold);
-
-            filter.loginInactivity
-                ? (where = {
-                      ...where,
-                      '$"user"."lastLogin"$': {
-                          [Op.lt]: date,
-                      },
-                  })
-                : (where = {
-                      ...where,
-                      '$"user"."lastLogin"$': {
-                          [Op.gte]: date,
-                      },
-                  });
-        }
-
-        return where;
     }
 
     public async findById(
