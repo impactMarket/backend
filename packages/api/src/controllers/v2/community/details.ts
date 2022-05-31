@@ -45,6 +45,7 @@ class CommunityController {
             unidentified,
             loginInactivity,
             search,
+            orderBy,
         } = req.query;
         if (state === undefined || typeof state !== 'string') {
             state = undefined;
@@ -54,6 +55,9 @@ class CommunityController {
         }
         if (limit === undefined || typeof limit !== 'string') {
             limit = '5';
+        }
+        if (orderBy === undefined || typeof orderBy !== 'string') {
+            orderBy = undefined;
         }
         this.detailsService
             .listBeneficiaries(
@@ -73,7 +77,8 @@ class CommunityController {
                 },
                 search !== undefined && typeof search === 'string'
                     ? search
-                    : undefined
+                    : undefined,
+                orderBy,
             )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));

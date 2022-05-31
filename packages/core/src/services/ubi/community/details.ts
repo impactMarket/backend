@@ -209,7 +209,8 @@ export class CommunityDetailsService {
         offset: number,
         limit: number,
         filter: BeneficiaryFilterType,
-        searchInput?: string
+        searchInput?: string,
+        orderBy?: string,
     ): Promise<{
         count: number;
         rows: IListBeneficiary[];
@@ -232,9 +233,17 @@ export class CommunityDetailsService {
             throw new BaseError('COMMUNITY_NOT_FOUND', 'Community not found');
         }
 
+        let orderKey: string | null = null;
+        let orderDirection: string | null = null;
         let addresses: string[] = [];
         let appUserFilter: WhereOptions | null = null;
         let beneficiaryState: string | undefined = undefined;
+
+        if (orderBy) {
+            [orderKey, orderDirection] = orderBy.split(':');
+            orderKey = orderKey === 'timestamp' ? 'since' : orderKey;
+            orderDirection = orderDirection?.toLocaleLowerCase() === 'desc' ? orderDirection : 'asc';
+        }
 
         if (searchInput) {
             if (isAddress(searchInput)) {
@@ -269,6 +278,8 @@ export class CommunityDetailsService {
                 beneficiaryState,
                 undefined,
                 contractAddress,
+                orderKey ? `orderBy: ${orderKey}` : undefined,
+                orderDirection ? `orderDirection: ${orderDirection}` : undefined,
             );
             count = beneficiariesSubgraph.length;
 
@@ -281,6 +292,8 @@ export class CommunityDetailsService {
                 beneficiaryState,
                 undefined,
                 contractAddress,
+                orderKey ? `orderBy: ${orderKey}` : undefined,
+                orderDirection ? `orderDirection: ${orderDirection}` : undefined,
             );
             count = beneficiariesSubgraph.length;
             appUsers = await models.appUser.findAll({
@@ -298,6 +311,8 @@ export class CommunityDetailsService {
                 offset,
                 undefined,
                 beneficiaryState,
+                orderKey ? `orderBy: ${orderKey}` : undefined,
+                orderDirection ? `orderDirection: ${orderDirection}` : undefined,
             );
             count = await countBeneficiaries(
                 contractAddress,

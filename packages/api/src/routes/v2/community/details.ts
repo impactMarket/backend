@@ -166,6 +166,12 @@ export default (route: Router): void => {
      *           type: string
      *         required: false
      *         description: search by address or username
+     *       - in: query
+     *         name: orderBy
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: order key and order direction separated by colon (claimed:desc)
      *     security:
      *     - api_auth:
      *       - "write:modify":
