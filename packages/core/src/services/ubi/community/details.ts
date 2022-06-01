@@ -429,6 +429,16 @@ export class CommunityDetailsService {
             }
         }
 
+        if (excludeCountry) {
+            const countries = excludeCountry.split(';');
+            where = {
+                ...where,
+                country: {
+                    [Op.notIn]: countries,
+                }
+            }
+        }
+
         if (groupName === 'reviewByCountry') {
             const result = (await models.community.findAll({
                 attributes: [
@@ -443,16 +453,6 @@ export class CommunityDetailsService {
             })) as any;
     
             return result;
-        }
-
-        if (excludeCountry) {
-            const countries = excludeCountry.split(';');
-            where = {
-                ...where,
-                country: {
-                    [Op.notIn]: countries,
-                }
-            }
         }
 
         const result = (await models.community.findAll({
