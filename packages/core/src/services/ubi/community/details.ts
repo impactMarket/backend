@@ -402,7 +402,7 @@ export class CommunityDetailsService {
         };
     }
 
-    public async count(groupBy: string, status?: string): Promise<any[]> {
+    public async count(groupBy: string, status?: string, excludeCountry?: string): Promise<any[]> {
         let groupName = '';
         switch (groupBy) {
             case 'country':
@@ -443,6 +443,16 @@ export class CommunityDetailsService {
             })) as any;
     
             return result;
+        }
+
+        if (excludeCountry) {
+            const countries = excludeCountry.split(';');
+            where = {
+                ...where,
+                country: {
+                    [Op.notIn]: countries,
+                }
+            }
         }
 
         const result = (await models.community.findAll({

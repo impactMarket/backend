@@ -33,6 +33,12 @@ export default (route: Router): void => {
      *           enum: [pending, valid, removed]
      *         required: false
      *         description: community status
+     *       - in: query
+     *         name: excludeCountry
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: countries to ignore, separated by comma (PT;FR)
      *     responses:
      *       "200":
      *         description: OK
