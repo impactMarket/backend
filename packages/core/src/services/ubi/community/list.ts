@@ -24,6 +24,7 @@ export class CommunityListService {
         filter?: string;
         name?: string;
         country?: string;
+        excludeCountry?: string;
         extended?: string;
         offset?: string;
         limit?: string;
@@ -93,6 +94,15 @@ export class CommunityListService {
                 ...extendedWhere,
                 country: {
                     [Op.in]: query.country.split(';'),
+                },
+            };
+        }
+
+        if (query.excludeCountry) {
+            extendedWhere = {
+                ...extendedWhere,
+                country: {
+                    [Op.notIn]: query.excludeCountry.split(';'),
                 },
             };
         }
