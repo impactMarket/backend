@@ -15,7 +15,7 @@
         "aws-sdk": "2.937.0",
         "axios": "0.21.1",
         "image-size": "1.0.1",
-        "sharp": "0.29.3"
+        "sharp": "0.30.5"
     },
     "devDependencies": {
         "@types/aws-lambda": "8.10.77",
