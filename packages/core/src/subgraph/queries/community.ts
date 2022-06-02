@@ -2,7 +2,7 @@ import { gql } from 'apollo-boost';
 import { ethers } from 'ethers';
 
 import config from '../../config';
-import { clientDAO, clientSubDAO } from '../config';
+import { clientDAO, clientCouncil } from '../config';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
@@ -24,7 +24,7 @@ export const getCommunityProposal = async (): Promise<string[]> => {
             }
         `;
 
-        const queryResult = await clientSubDAO.query({
+        const queryResult = await clientCouncil.query({
             query,
             fetchPolicy: 'no-cache',
         });
