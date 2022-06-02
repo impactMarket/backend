@@ -68,7 +68,8 @@ export interface IListBeneficiary {
     firstName?: string | null;
     lastName?: string | null;
     avatarMediaPath?: string | null;
-    timestamp: number;
+    timestamp?: number;
+    since?: number;
     claimed: string;
     blocked: boolean;
     // to users not yet registered, the values below do not exist

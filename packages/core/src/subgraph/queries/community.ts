@@ -77,41 +77,6 @@ export const getClaimed = async (
     }
 };
 
-export const getCommunityManagers = async (
-    communityAddress: string
-): Promise<
-    {
-        address: string;
-        state: number;
-        added: number;
-        removed: number;
-        since: number;
-    }[]
-> => {
-    try {
-        const query = gql`
-            {
-                managerEntities(where: {community: "${communityAddress.toLowerCase()}"}) {
-                    address
-                    state
-                    added
-                    removed
-                    since
-                }
-            }
-        `;
-
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
-
-        return queryResult.data?.managerEntities;
-    } catch (error) {
-        throw new Error(error);
-    }
-};
-
 export const getCommunityState = async (
     communityAddress: string
 ): Promise<{
