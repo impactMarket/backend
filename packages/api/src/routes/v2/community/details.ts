@@ -67,17 +67,36 @@ export default (route: Router): void => {
      *     summary: Get community managers
      *     parameters:
      *       - in: query
-     *         name: filterByActive
+     *         name: state
      *         schema:
-     *           type: boolean
+     *           type: string
+     *           enum: [active, removed]
      *         required: false
-     *         description: filter by active/inactive/both (if filterByActive = undefined return both)
-     *       - in: path
-     *         name: id
+     *         description: manager state
+     *       - in: query
+     *         name: offset
      *         schema:
      *           type: integer
-     *         required: true
-     *         description: community id
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 5)
+     *       - in: query
+     *         name: search
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: search by address or username
+     *       - in: query
+     *         name: orderBy
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: order key and order direction separated by colon (since:desc)
      *     responses:
      *       "200":
      *         description: OK
@@ -136,7 +155,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityContract'
      */
-     route.get('/:id/ambassador', controller.getAmbassador);
+    route.get('/:id/ambassador', controller.getAmbassador);
 
     /**
      * @swagger

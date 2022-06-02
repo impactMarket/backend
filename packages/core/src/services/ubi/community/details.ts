@@ -9,16 +9,20 @@ import { AppUser } from '../../../interfaces/app/appUser';
 import { BeneficiaryAttributes } from '../../../interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
 import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
+import { ManagerSubgraph } from '../../../subgraph/interfaces/manager';
 import {
     getBeneficiariesByAddress,
     getBeneficiaries,
     countBeneficiaries,
 } from '../../../subgraph/queries/beneficiary';
 import {
-    getCommunityManagers,
     getCommunityState,
     getCommunityUBIParams,
 } from '../../../subgraph/queries/community';
+import {
+    getCommunityManagers,
+    countManagers,
+} from '../../../subgraph/queries/manager';
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { isAddress } from '../../../utils/util';
@@ -134,73 +138,194 @@ export class CommunityDetailsService {
      *            type: integer
      *            description: Unix timestamp of when the manager was added
      */
-    public async getManagers(
+    public async listManagers(
         communityId: number,
-        active: boolean | undefined
+        offset: number,
+        limit: number,
+        filter: {
+            state?: string, 
+        },
+        searchInput?: string,
+        orderBy?: string,
     ): Promise<
         {
-            address: string;
-            username: string | null;
-            isDeleted: boolean;
-            state: number;
-            added: number;
-            removed: number;
-            since: number;
-        }[]
+            count: number,
+            rows: {
+                address: string;
+                firstName?: string | null;
+                lastName?: string | null;
+                isDeleted: boolean;
+                state?: string;
+                added: number;
+                removed: number;
+                since: number;
+            }[]
+        }
     > {
         const community = (await models.community.findOne({
-            where: { id: communityId },
+            where: {
+                id: communityId
+            },
         }))!;
 
+        let addresses: string[] = [];
+        let appUserFilter: WhereOptions | null = null;
+        let managersSubgraph: ManagerSubgraph[] | null = null;
+        let appUsers: AppUser[] = [];
+        let count: number = 0;
+        let orderKey: string | null = null;
+        let orderDirection: string | null = null;
+
+        if (orderBy) {
+            [orderKey, orderDirection] = orderBy.split(':');
+            orderDirection = orderDirection?.toLocaleLowerCase() === 'desc' ? orderDirection : 'asc';
+        }
+
+        if (searchInput) {
+            if (isAddress(searchInput)) {
+                addresses.push(ethers.utils.getAddress(searchInput));
+            } else if (
+                searchInput.toLowerCase().indexOf('drop') === -1 &&
+                searchInput.toLowerCase().indexOf('delete') === -1 &&
+                searchInput.toLowerCase().indexOf('update') === -1
+            ) {
+                appUserFilter = literal(`concat("firstName", ' ', "lastName") ILIKE '%${searchInput}%'`);
+            } else {
+                throw new BaseError('INVALID_SEARCH', 'Not valid search!');
+            }
+        }
+
         if (community.status === 'pending') {
+            if (community.requestByAddress !== addresses[0]) {
+                return {
+                    count: 0,
+                    rows: [],
+                };
+            }
             const user = await models.appUser.findOne({
                 attributes: ['address', 'firstName', 'lastName', 'email', 'phone', 'avatarMediaPath'],
                 where: {
                     address: community.requestByAddress,
                 },
             });
-            return [
-                {
-                    ...user as AppUser,
-                    isDeleted: false,
-                    state: 0,
-                    added: 0,
-                    removed: 0,
-                    since: 0,
-                },
-            ];
+            return {
+                count: !!user ? 1 : 0,
+                rows: [
+                    {
+                        ...user as AppUser,
+                        isDeleted: false,
+                        state: undefined,
+                        added: 0,
+                        removed: 0,
+                        since: 0,
+                    },
+                ]
+            };
         } else {
-            // contract address is only null while pending
-            let managers = await getCommunityManagers(
-                community.contractAddress!
-            );
-            managers = managers.map((m) => ({
-                ...m,
-                address: utils.getAddress(m.address),
-            }));
-            if (active !== undefined) {
-                managers = managers.filter((m) => m.state === (active ? 0 : 1));
+            if (appUserFilter) {
+                // filter by name
+                appUsers = await models.appUser.findAll({
+                    attributes: ['address', 'firstName', 'lastName', 'email', 'phone', 'avatarMediaPath'],
+                    where: {
+                        address: appUserFilter,
+                    },
+                });
+                addresses = appUsers.map(user => user.address);
+                managersSubgraph = await getCommunityManagers(
+                    community.contractAddress!,
+                    filter.state === 'active' 
+                        ? 'state: 0' 
+                        : filter.state === 'removed'
+                            ? 'state: 1'
+                            : undefined,
+                    addresses,
+                    orderKey ? `orderBy: ${orderKey}` : undefined,
+                    orderDirection ? `orderDirection: ${orderDirection}` : undefined,
+                );
+                count = managersSubgraph.length;
+                if (count > limit) {
+                    managersSubgraph = managersSubgraph.slice(offset, offset + limit);
+                }
+            } else if (addresses.length > 0) {
+                // filter by address
+                managersSubgraph = await getCommunityManagers(
+                    community.contractAddress!,
+                    filter.state === 'active' 
+                        ? 'state: 0' 
+                        : filter.state === 'removed'
+                            ? 'state: 1'
+                            : undefined,
+                    addresses,
+                    orderKey ? `orderBy: ${orderKey}` : undefined,
+                    orderDirection ? `orderDirection: ${orderDirection}` : undefined,
+                );
+                count = managersSubgraph.length;
+                appUsers = await models.appUser.findAll({
+                    attributes: ['address', 'firstName', 'lastName', 'email', 'phone', 'avatarMediaPath'],
+                    where: {
+                        address: {
+                            [Op.in]: addresses,
+                        },
+                    },
+                });
+            } else {
+                managersSubgraph = await getCommunityManagers(
+                    community.contractAddress!,
+                    filter.state === 'active' 
+                        ? 'state: 0' 
+                        : filter.state === 'removed'
+                            ? 'state: 1'
+                            : undefined,
+                    undefined,
+                    orderKey ? `orderBy: ${orderKey}` : undefined,
+                    orderDirection ? `orderDirection: ${orderDirection}` : undefined,
+                    limit,
+                    offset,
+                );
+                count = await countManagers(
+                    community.contractAddress!,
+                    filter.state ? filter.state : 'all'
+                );
+                addresses = managersSubgraph.map(manager => ethers.utils.getAddress(manager.address));
+                appUsers = await models.appUser.findAll({
+                    attributes: ['address', 'firstName', 'lastName', 'email', 'phone', 'avatarMediaPath'],
+                    where: {
+                        address: {
+                            [Op.in]: addresses,
+                        },
+                    },
+                });
             }
 
-            const result = await models.appUser.findAll({
-                attributes: ['address', 'firstName', 'lastName', 'email', 'phone', 'avatarMediaPath'],
-                where: {
-                    address: { [Op.in]: managers.map((m) => m.address) },
-                },
+            if (!managersSubgraph || !managersSubgraph.length) {
+                count = 0;
+            }
+
+            const result = managersSubgraph.map(manager => {
+                const user = appUsers.find((user) => user.address === ethers.utils.getAddress(manager.address));
+                return {
+                    address: ethers.utils.getAddress(manager.address),
+                    firstName: user?.firstName,
+                    lastName: user?.lastName,
+                    email: user?.email,
+                    phone: user?.phone,
+                    avatarMediaPath: user?.avatarMediaPath,
+                    added: manager.added,
+                    removed: manager.removed,
+                    since: manager.since,
+                    isDeleted:
+                        !user || !!user!.deletedAt,
+                    state:
+                        manager.state === 0
+                            ? 'active'
+                            : 'removed'
+                }
             });
-
-            const users = result
-                .map((u) => u.toJSON() as AppUser)
-                .reduce((r, e) => {
-                    r[e.address] = e;
-                    return r;
-                }, {});
-
-            return managers.map((m) => ({
-                ...m,
-                ...users[m.address],
-                isDeleted: !users[m.address],
-            }));
+    
+            return {
+                count,
+                rows: result,
+            };
         }
     }
 
@@ -241,7 +366,6 @@ export class CommunityDetailsService {
 
         if (orderBy) {
             [orderKey, orderDirection] = orderBy.split(':');
-            orderKey = orderKey === 'timestamp' ? 'since' : orderKey;
             orderDirection = orderDirection?.toLocaleLowerCase() === 'desc' ? orderDirection : 'asc';
         }
 
@@ -340,7 +464,7 @@ export class CommunityDetailsService {
                 firstName: user?.firstName,
                 lastName: user?.lastName,
                 avatarMediaPath: user?.avatarMediaPath,
-                timestamp: beneficiary.since || 0,
+                since: beneficiary.since || 0,
                 claimed: beneficiary.claimed,
                 blocked: beneficiary.state === 2,
                 suspect: user?.suspect,
