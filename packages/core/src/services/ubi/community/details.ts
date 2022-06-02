@@ -182,16 +182,11 @@ export class CommunityDetailsService {
         }
 
         if (searchInput) {
-            if (isAddress(searchInput)) {
-                addresses.push(ethers.utils.getAddress(searchInput));
-            } else if (
-                searchInput.toLowerCase().indexOf('drop') === -1 &&
-                searchInput.toLowerCase().indexOf('delete') === -1 &&
-                searchInput.toLowerCase().indexOf('update') === -1
-            ) {
-                appUserFilter = literal(`concat("firstName", ' ', "lastName") ILIKE '%${searchInput}%'`);
-            } else {
-                throw new BaseError('INVALID_SEARCH', 'Not valid search!');
+            const input = this.getSearchInput(searchInput);
+            if (input.address) {
+                addresses.push(input.address);
+            } else if (input.appUserFilter) {
+                appUserFilter = input.appUserFilter
             }
         }
 
@@ -370,16 +365,11 @@ export class CommunityDetailsService {
         }
 
         if (searchInput) {
-            if (isAddress(searchInput)) {
-                addresses.push(ethers.utils.getAddress(searchInput));
-            } else if (
-                searchInput.toLowerCase().indexOf('drop') === -1 &&
-                searchInput.toLowerCase().indexOf('delete') === -1 &&
-                searchInput.toLowerCase().indexOf('update') === -1
-            ) {
-                appUserFilter = literal(`concat("firstName", ' ', "lastName") ILIKE '%${searchInput}%'`);
-            } else {
-                throw new BaseError('INVALID_SEARCH', 'Not valid search!');
+            const input = this.getSearchInput(searchInput);
+            if (input.address) {
+                addresses.push(input.address);
+            } else if (input.appUserFilter) {
+                appUserFilter = input.appUserFilter
             }
         }
 
@@ -602,5 +592,23 @@ export class CommunityDetailsService {
         })) as any;
 
         return result;
+    }
+
+    private getSearchInput(searchInput: string) {
+        if (isAddress(searchInput)) {
+            return {
+                address: ethers.utils.getAddress(searchInput)
+            };
+        } else if (
+            searchInput.toLowerCase().indexOf('drop') === -1 &&
+            searchInput.toLowerCase().indexOf('delete') === -1 &&
+            searchInput.toLowerCase().indexOf('update') === -1
+        ) {
+            return {
+                appUserFilter: literal(`concat("firstName", ' ', "lastName") ILIKE '%${searchInput}%'`)
+            }
+        } else {
+            throw new BaseError('INVALID_SEARCH', 'Not valid search!');
+        }
     }
 }
