@@ -439,4 +439,30 @@ export default (app: Router): void => {
         userValidators.readNotifications,
         userController.readNotifications
     );
+
+    /**
+     * @swagger
+     *
+     * /users/{id-or-address}:
+     *   get:
+     *     tags:
+     *       - "users"
+     *     summary: "Get user by id or contract address"
+     *     parameters:
+     *       - in: path
+     *         name: id-or-address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: user id or address
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+     route.get('/:idOrAddress', authenticateToken, userController.findBy);
 };
