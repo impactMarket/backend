@@ -405,6 +405,17 @@ export default (app: Router): void => {
      *     tags:
      *       - "users"
      *     summary: Mark all notifications as read
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               notifications:
+     *                 type: array
+     *                 items:
+     *                   type: integer
      *     responses:
      *       "200":
      *          description: OK
@@ -425,6 +436,7 @@ export default (app: Router): void => {
     route.put(
         '/notifications/read',
         authenticateToken,
+        userValidators.readNotifications,
         userController.readNotifications
     );
 };
