@@ -140,7 +140,7 @@ export default (app: Router): void => {
      *                 data:
      *                   type: number
      */
-     app.get('/total-supply', (req: Request, res: Response) =>
+     app.get('/total-supply', (_req: Request, res: Response) =>
         res.send('10000000000')
      );
 
