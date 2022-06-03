@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 
 import config from '../../../config';
 import { models, sequelize } from '../../../database';
@@ -8,6 +8,7 @@ import { AppNotification } from '../../../interfaces/app/appNotification';
 import {
     AppUserCreationAttributes,
     AppUserUpdate,
+    AppUser,
 } from '../../../interfaces/app/appUser';
 import { ProfileContentStorage } from '../../../services/storage';
 import { getUserRoles } from '../../../subgraph/queries/user';
@@ -149,6 +150,30 @@ export default class UserService {
         const user = await models.appUser.findOne({
             where: { address },
         });
+        if (user === null) {
+            throw new BaseError('USER_NOT_FOUND', 'user not found');
+        }
+        return {
+            ...user.toJSON(),
+            ...(await this._userRoles(user.address)),
+            ...(await this._userRules(user.address)),
+        };
+    }
+
+    public async findUserBy(
+        where: WhereOptions<AppUser>,
+        userAddress: string
+    ) {
+        const userRoles = await this._userRoles(userAddress);
+
+        if (!userRoles.ambassador && !userRoles.manager && !userRoles.subDAOMember) {
+            throw new BaseError('UNAUTHORIZED', 'user must be ambassador, manager or council member');
+        }
+
+        const user = await models.appUser.findOne({
+            where,
+        });
+
         if (user === null) {
             throw new BaseError('USER_NOT_FOUND', 'user not found');
         }
