@@ -281,8 +281,11 @@ export default class UserService {
             limit?: string;
         },
         userId: number
-    ): Promise<AppNotification[]> {
-        const notifications = await models.appNotification.findAll({
+    ): Promise<{
+        count: number,
+        rows: AppNotification[],
+    }> {
+        const notifications = await models.appNotification.findAndCountAll({
             where: {
                 userId,
             },
@@ -294,10 +297,13 @@ export default class UserService {
                 : config.defaultLimit,
             order: [['createdAt', 'DESC']],
         });
-        return notifications as AppNotification[];
+        return {
+            count: notifications.count,
+            rows: notifications.rows as AppNotification[]
+        };
     }
 
-    public async readNotifications(userId: number): Promise<boolean> {
+    public async readNotifications(userId: number, notifications?: number[]): Promise<boolean> {
         const updated = await models.appNotification.update(
             {
                 read: true,
@@ -306,6 +312,9 @@ export default class UserService {
                 returning: true,
                 where: {
                     userId,
+                    id: {
+                        [Op.in]: notifications,
+                    }
                 },
             }
         );

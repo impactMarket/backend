@@ -56,6 +56,12 @@ const report = celebrate({
     }),
 });
 
+const readNotifications = celebrate({
+    body: Joi.object({
+        notifications: Joi.array().items(Joi.number()).required(),
+    }),
+});
+
 //
 
 const reportv1 = celebrate({
@@ -199,4 +205,5 @@ export default {
     edit,
     subscribeNewsletter,
     saveSurvey,
+    readNotifications,
 };

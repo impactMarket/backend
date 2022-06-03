@@ -425,6 +425,7 @@ export default (app: Router): void => {
     route.put(
         '/notifications/read',
         authenticateToken,
+        userValidators.readNotifications,
         userController.readNotifications
     );
 };

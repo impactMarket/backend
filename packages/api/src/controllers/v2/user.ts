@@ -277,7 +277,9 @@ class UserController {
             return;
         }
 
-        this.userService.readNotifications(req.user.userId)
+        const notifications = req.body.notifications;
+
+        this.userService.readNotifications(req.user.userId, notifications)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })
