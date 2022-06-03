@@ -4,4 +4,5 @@ export interface ManagerSubgraph {
     added: number;
     removed: number;
     since: number;
+    until: number;
 }
