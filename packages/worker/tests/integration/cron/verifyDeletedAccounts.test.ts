@@ -355,6 +355,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                     added: 0,
                     removed: 0,
                     since: 0,
+                    until: 0,
                 },
             ])
         );

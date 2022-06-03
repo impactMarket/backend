@@ -159,6 +159,7 @@ export class CommunityDetailsService {
                 added: number;
                 removed: number;
                 since: number;
+                until?: number;
             }[]
         }
     > {
@@ -213,6 +214,7 @@ export class CommunityDetailsService {
                         added: 0,
                         removed: 0,
                         since: 0,
+                        until: 0,
                     },
                 ]
             };
@@ -308,6 +310,7 @@ export class CommunityDetailsService {
                     added: manager.added,
                     removed: manager.removed,
                     since: manager.since,
+                    until: manager.until,
                     isDeleted:
                         !user || !!user!.deletedAt,
                     state:

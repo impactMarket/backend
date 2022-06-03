@@ -38,6 +38,7 @@ export const getCommunityManagers = async (
                     added
                     removed
                     since
+                    until
                 }
             }
         `;
