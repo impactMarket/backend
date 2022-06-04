@@ -10,7 +10,7 @@ export const clientDAO = new ApolloClient({
     cache: new InMemoryCache(),
 });
 
-export const clientSubDAO = new ApolloClient({
-    uri: config.subDAOsubgraphUrl,
+export const clientCouncil = new ApolloClient({
+    uri: config.councilSubgraphUrl,
     cache: new InMemoryCache(),
 });
