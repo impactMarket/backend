@@ -1,11 +1,99 @@
 import { Router } from 'express';
 
-import { CommunityController } from '../../../controllers/v2/community/edit';
+import { CommunityController } from '../../../controllers/v2/community/create';
 import { authenticateToken } from '../../../middlewares';
 import CommunityValidator from '../../../validators/community';
 
 export default (route: Router): void => {
     const controller = new CommunityController();
+
+    /**
+     * @swagger
+     *
+     * /communities:
+     *   post:
+     *     tags:
+     *       - "communities"
+     *     summary: Create communities
+     *     requestBody:
+     *      required: true
+     *      content:
+     *        application/json:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              requestByAddress:
+     *                type: string
+     *                required: false
+     *              name:
+     *                type: string
+     *                required: true
+     *              contractAddress:
+     *                type: string
+     *                required: false
+     *              description:
+     *                type: string
+     *                required: true
+     *              language:
+     *                type: string
+     *                required: true
+     *              currency:
+     *                type: string
+     *                required: true
+     *              city:
+     *                type: string
+     *                required: true
+     *              country:
+     *                type: string
+     *                required: true
+     *              gps:
+     *                type: object
+     *                required: true
+     *                properties:
+     *                  latitude:
+     *                    type: number
+     *                    required: true
+     *                  longitude:
+     *                    type: number
+     *                    required: true
+     *              email:
+     *                type: string
+     *                required: true
+     *              coverMediaPath:
+     *                type: string
+     *                required: true
+     *              txReceipt:
+     *                type: object
+     *                required: false
+     *              contractParams:
+     *                type: object
+     *                required: true
+     *                properties:
+     *                  claimAmount:
+     *                    type: string
+     *                    required: true
+     *                  maxClaim:
+     *                    type: string
+     *                    required: true
+     *                  baseInterval:
+     *                    type: number
+     *                    required: true
+     *                  incrementInterval:
+     *                    type: number
+     *                    required: true
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/',
+        authenticateToken,
+        CommunityValidator.create,
+        controller.create
+    );
 
     /**
      * @swagger

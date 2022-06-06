@@ -160,14 +160,18 @@ export default class UserService {
         };
     }
 
-    public async findUserBy(
-        where: WhereOptions<AppUser>,
-        userAddress: string
-    ) {
+    public async findUserBy(where: WhereOptions<AppUser>, userAddress: string) {
         const userRoles = await this._userRoles(userAddress);
 
-        if (!userRoles.ambassador && !userRoles.manager && !userRoles.councilMember) {
-            throw new BaseError('UNAUTHORIZED', 'user must be ambassador, manager or council member');
+        if (
+            !userRoles.ambassador &&
+            !userRoles.manager &&
+            !userRoles.councilMember
+        ) {
+            throw new BaseError(
+                'UNAUTHORIZED',
+                'user must be ambassador, manager or council member'
+            );
         }
 
         const user = await models.appUser.findOne({
@@ -307,8 +311,8 @@ export default class UserService {
         },
         userId: number
     ): Promise<{
-        count: number,
-        rows: AppNotification[],
+        count: number;
+        rows: AppNotification[];
     }> {
         const notifications = await models.appNotification.findAndCountAll({
             where: {
@@ -324,11 +328,14 @@ export default class UserService {
         });
         return {
             count: notifications.count,
-            rows: notifications.rows as AppNotification[]
+            rows: notifications.rows as AppNotification[],
         };
     }
 
-    public async readNotifications(userId: number, notifications?: number[]): Promise<boolean> {
+    public async readNotifications(
+        userId: number,
+        notifications?: number[]
+    ): Promise<boolean> {
         const updated = await models.appNotification.update(
             {
                 read: true,
@@ -339,7 +346,7 @@ export default class UserService {
                     userId,
                     id: {
                         [Op.in]: notifications,
-                    }
+                    },
                 },
             }
         );
@@ -456,9 +463,9 @@ export default class UserService {
 
     private async _userRoles(address: string) {
         const userRoles = await getUserRoles(address);
-        let roles: string[] = [];
+        const roles: string[] = [];
         const keys = Object.keys(userRoles);
-        keys.forEach(key => {
+        keys.forEach((key) => {
             if (userRoles[key]) {
                 roles.push(key);
             }
@@ -466,7 +473,7 @@ export default class UserService {
         return {
             ...userRoles,
             roles,
-        }
+        };
     }
 
     private async _userRules(address: string) {

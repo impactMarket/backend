@@ -1,11 +1,13 @@
-import { NotificationType } from '../../interfaces/app/appNotification';
+import { ethers } from 'ethers';
 import { col, fn, Op } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
 import { StoryContentModel } from '../../database/models/story/storyContent';
+import { NotificationType } from '../../interfaces/app/appNotification';
 import { StoryCommunityCreationEager } from '../../interfaces/story/storyCommunity';
 import { StoryContent } from '../../interfaces/story/storyContent';
+import { getUserRoles } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
 import {
     IAddStory,
@@ -14,8 +16,6 @@ import {
     ICommunityStory,
 } from '../endpoints';
 import { StoryContentStorage } from '../storage';
-import { getUserRoles } from '../../subgraph/queries/user';
-import { ethers } from 'ethers';
 
 export default class StoryServiceV2 {
     private storyContentStorage = new StoryContentStorage();
@@ -55,7 +55,9 @@ export default class StoryServiceV2 {
             );
         }
 
-        const communityAddress = userRole.beneficiary ? userRole.beneficiary.community : userRole.manager!.community;
+        const communityAddress = userRole.beneficiary
+            ? userRole.beneficiary.community
+            : userRole.manager!.community;
 
         const community = await models.community.findOne({
             attributes: ['id'],
@@ -118,7 +120,10 @@ export default class StoryServiceV2 {
         return result;
     }
 
-    public async getById(storyId: number, userAddress?: string): Promise<ICommunitiesListStories> {
+    public async getById(
+        storyId: number,
+        userAddress?: string
+    ): Promise<ICommunitiesListStories> {
         const story = await models.storyContent.findOne({
             include: [
                 {
@@ -135,7 +140,7 @@ export default class StoryServiceV2 {
                                 'coverMediaPath',
                                 'city',
                                 'country',
-                            ]
+                            ],
                         },
                     ],
                 },
@@ -173,13 +178,12 @@ export default class StoryServiceV2 {
             ],
             where: {
                 id: storyId,
-            }
+            },
         });
 
         if (!story) {
             throw new BaseError('STORY_NOT_FOUND', 'story not found');
         }
-
 
         const content = story.toJSON() as StoryContent;
         return {
@@ -188,8 +192,7 @@ export default class StoryServiceV2 {
             storyMediaPath: content.storyMediaPath,
             message: content.message,
             isDeletable: userAddress
-                ? content.byAddress.toLowerCase() ===
-                    userAddress.toLowerCase()
+                ? content.byAddress.toLowerCase() === userAddress.toLowerCase()
                 : false,
             createdAt: content.postedAt,
             community: content.storyCommunity!.community,
@@ -266,7 +269,8 @@ export default class StoryServiceV2 {
                 id: content.id,
                 storyMediaPath: content.storyMediaPath,
                 message: content.message,
-                isDeletable: content.byAddress.toLowerCase() ===
+                isDeletable:
+                    content.byAddress.toLowerCase() ===
                     onlyFromAddress.toLowerCase(),
                 createdAt: content.postedAt,
                 community: content.storyCommunity!.community,
@@ -381,7 +385,9 @@ export default class StoryServiceV2 {
                 ],
                 where: {
                     isPublic: true,
-                    ...(userAddress ? { '$"storyUserReport"."contentId"$': null } : {})
+                    ...(userAddress
+                        ? { '$"storyUserReport"."contentId"$': null }
+                        : {}),
                 } as any,
                 order: [['postedAt', 'DESC']],
                 offset: query.offset
@@ -435,7 +441,7 @@ export default class StoryServiceV2 {
             });
         } else {
             this.addNotification(userAddress, contentId);
-            
+
             await models.storyUserEngagement.create({
                 contentId,
                 address: userAddress,
@@ -481,11 +487,13 @@ export default class StoryServiceV2 {
 
         const result = (await models.storyCommunity.findAll({
             attributes: [groupName, [fn('count', col(groupName)), 'count']],
-            include: [{
-                attributes: [],
-                model: models.community,
-                as: 'community'
-            }],
+            include: [
+                {
+                    attributes: [],
+                    model: models.community,
+                    as: 'community',
+                },
+            ],
             group: [groupName],
             raw: true,
         })) as any;
@@ -552,19 +560,21 @@ export default class StoryServiceV2 {
         const story = (await models.storyContent.findOne({
             attributes: [],
             where: { id: contentId },
-            include: [{
-                model: models.appUser,
-                as: 'user',
-                attributes: ['id']
-            }]
+            include: [
+                {
+                    model: models.appUser,
+                    as: 'user',
+                    attributes: ['id'],
+                },
+            ],
         }))! as StoryContent;
 
         await models.appNotification.findOrCreate({
             where: {
                 userId: story.user!.id,
                 type: NotificationType.STORY_LIKED,
-                params: { userAddress, contentId }
-            }
+                params: { userAddress, contentId },
+            },
         });
     }
 }

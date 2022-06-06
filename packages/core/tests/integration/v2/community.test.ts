@@ -7,7 +7,7 @@ import { models, sequelize as database } from '../../../src/database';
 import { AppUser } from '../../../src/interfaces/app/appUser';
 import { CommunityContentStorage } from '../../../src/services/storage';
 import { CommunityDetailsService } from '../../../src/services/ubi/community/details';
-import { CommunityEditService } from '../../../src/services/ubi/community/edit';
+import { CommunityCreateService } from '../../../src/services/ubi/community/create';
 import { CommunityListService } from '../../../src/services/ubi/community/list';
 import * as subgraph from '../../../src/subgraph/queries/community';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
@@ -27,7 +27,7 @@ describe('community service v2', () => {
 
     const communityListService = new CommunityListService();
     const communityDetailsService = new CommunityDetailsService();
-    const communityEditService = new CommunityEditService();
+    const communityCreateService = new CommunityCreateService();
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -1948,7 +1948,7 @@ describe('community service v2', () => {
                 },
             ]);
 
-            const result = await communityEditService.review(
+            const result = await communityCreateService.review(
                 communities[0].id,
                 'claimed',
                 users[0].address
@@ -1984,12 +1984,12 @@ describe('community service v2', () => {
                 },
             ]);
 
-            const result = await communityEditService.review(
+            const result = await communityCreateService.review(
                 communities[0].id,
                 'claimed',
                 users[0].address
             );
-            const community = await communityEditService.editSubmission(
+            const community = await communityCreateService.editSubmission(
                 communities[0].id,
                 {
                     requestByAddress: users[0].address,
@@ -2045,12 +2045,12 @@ describe('community service v2', () => {
                 },
             ]);
 
-            await communityEditService.review(
+            await communityCreateService.review(
                 communities[0].id,
                 'claimed',
                 users[0].address
             );
-            communityEditService
+            communityCreateService
                 .editSubmission(communities[0].id, {
                     requestByAddress: users[1].address,
                     name: 'new name',
