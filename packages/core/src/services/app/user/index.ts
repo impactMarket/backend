@@ -166,7 +166,7 @@ export default class UserService {
     ) {
         const userRoles = await this._userRoles(userAddress);
 
-        if (!userRoles.ambassador && !userRoles.manager && !userRoles.subDAOMember) {
+        if (!userRoles.ambassador && !userRoles.manager && !userRoles.councilMember) {
             throw new BaseError('UNAUTHORIZED', 'user must be ambassador, manager or council member');
         }
 
