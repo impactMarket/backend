@@ -1,7 +1,29 @@
+import { Transaction } from 'sequelize';
+
 import { models, sequelize } from '../../../database';
+import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
 import { ICommunityContractParams } from '../../../types';
 
 export default class CommunityContractService {
+    public async add(
+        communityId: number,
+        contractParams: ICommunityContractParams,
+        t: Transaction | undefined = undefined
+    ): Promise<UbiCommunityContract> {
+        const { claimAmount, maxClaim, baseInterval, incrementInterval } =
+            contractParams;
+        return models.ubiCommunityContract.create(
+            {
+                communityId,
+                claimAmount,
+                maxClaim,
+                baseInterval,
+                incrementInterval,
+            },
+            { transaction: t }
+        );
+    }
+
     public async update(
         communityId: number,
         contractParams: ICommunityContractParams
