@@ -2,7 +2,7 @@ import { gql } from 'apollo-boost';
 import { ethers } from 'ethers';
 
 import config from '../../config';
-import { clientDAO, clientSubDAO } from '../config';
+import { clientDAO, clientCouncil } from '../config';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
@@ -24,7 +24,7 @@ export const getCommunityProposal = async (): Promise<string[]> => {
             }
         `;
 
-        const queryResult = await clientSubDAO.query({
+        const queryResult = await clientCouncil.query({
             query,
             fetchPolicy: 'no-cache',
         });
@@ -72,41 +72,6 @@ export const getClaimed = async (
         });
 
         return queryResult.data.communityEntities;
-    } catch (error) {
-        throw new Error(error);
-    }
-};
-
-export const getCommunityManagers = async (
-    communityAddress: string
-): Promise<
-    {
-        address: string;
-        state: number;
-        added: number;
-        removed: number;
-        since: number;
-    }[]
-> => {
-    try {
-        const query = gql`
-            {
-                managerEntities(where: {community: "${communityAddress.toLowerCase()}"}) {
-                    address
-                    state
-                    added
-                    removed
-                    since
-                }
-            }
-        `;
-
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
-
-        return queryResult.data?.managerEntities;
     } catch (error) {
         throw new Error(error);
     }

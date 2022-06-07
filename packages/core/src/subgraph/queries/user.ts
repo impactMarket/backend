@@ -1,11 +1,11 @@
 import { gql } from 'apollo-boost';
 
-import { clientDAO, clientSubDAO } from '../config';
+import { clientDAO, clientCouncil } from '../config';
 
 export type UserRoles = {
     beneficiary: { community: string; state: number } | null;
     manager: { community: string; state: number } | null;
-    subDAOMember: { state: number } | null;
+    councilMember: { state: number } | null;
     ambassador: { communities: string[]; state: number } | null;
 };
 
@@ -32,9 +32,9 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
             }
         `;
 
-        const querySubDAO = gql`
+        const queryCouncil = gql`
             {
-                subDAOMemberEntity(
+                impactMarketCouncilMemberEntity(
                     id: "${address.toLowerCase()}"
                 ) {
                     status
@@ -53,8 +53,8 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
             fetchPolicy: 'no-cache',
         });
 
-        const querySubDAOResult = await clientSubDAO.query({
-            query: querySubDAO,
+        const queryCouncilResult = await clientCouncil.query({
+            query: queryCouncil,
             fetchPolicy: 'no-cache',
         });
 
@@ -73,23 +73,23 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                   state: queryDAOResult.data.managerEntity?.state,
               };
 
-        const subDAOMember = !querySubDAOResult.data.subDAOMemberEntity
+        const councilMember = !queryCouncilResult.data.impactMarketCouncilMemberEntity
             ? null
             : {
-                  state: querySubDAOResult.data.subDAOMemberEntity.status,
+                  state: queryCouncilResult.data.impactMarketCouncilMemberEntity.status,
               };
 
-        const ambassador = !querySubDAOResult.data.ambassadorEntity
+        const ambassador = !queryCouncilResult.data.ambassadorEntity
             ? null
             : {
                   communities:
-                      querySubDAOResult.data.ambassadorEntity?.communities,
-                  state: querySubDAOResult.data.ambassadorEntity?.status,
+                      queryCouncilResult.data.ambassadorEntity?.communities,
+                  state: queryCouncilResult.data.ambassadorEntity?.status,
               };
         return {
             beneficiary,
             manager,
-            subDAOMember,
+            councilMember,
             ambassador,
         };
     } catch (error) {

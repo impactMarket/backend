@@ -33,7 +33,13 @@ export default (route: Router): void => {
      *         schema:
      *           type: string
      *         required: false
-     *         description: communities country (identifier, like PT for Portugal) to search, separated by ; (PT;FR)
+     *         description: communities country (identifier, like PT for Portugal) to search, separated by comma (PT;FR)
+     *       - in: query
+     *         name: excludeCountry
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: countries to ignore, separated by comma (PT;FR)
      *       - in: query
      *         name: status
      *         schema:

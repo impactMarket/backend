@@ -13,6 +13,7 @@ import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import CommunityService from '../../src/services/ubi/community';
 import ManagerService from '../../src/services/ubi/managers';
 import * as subgraph from '../../src/subgraph/queries/community';
+import * as managerSubgraph from '../../src/subgraph/queries/manager';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';
@@ -55,7 +56,7 @@ describe('community service', () => {
         returnClaimedSubgraph = stub(subgraph, 'getClaimed');
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
         returnGetCommunityManagersSubgraph = stub(
-            subgraph,
+            managerSubgraph,
             'getCommunityManagers'
         );
         returnCommunityStateSubgraph.returns([

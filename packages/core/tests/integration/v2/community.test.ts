@@ -7,7 +7,7 @@ import { models, sequelize as database } from '../../../src/database';
 import { AppUser } from '../../../src/interfaces/app/appUser';
 import { CommunityContentStorage } from '../../../src/services/storage';
 import { CommunityDetailsService } from '../../../src/services/ubi/community/details';
-import { CommunityEditService } from '../../../src/services/ubi/community/edit';
+import { CommunityCreateService } from '../../../src/services/ubi/community/create';
 import { CommunityListService } from '../../../src/services/ubi/community/list';
 import * as subgraph from '../../../src/subgraph/queries/community';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
@@ -27,7 +27,7 @@ describe('community service v2', () => {
 
     const communityListService = new CommunityListService();
     const communityDetailsService = new CommunityDetailsService();
-    const communityEditService = new CommunityEditService();
+    const communityCreateService = new CommunityCreateService();
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -652,72 +652,6 @@ describe('community service v2', () => {
                 result.push(r.rows);
             }
         }).timeout(120000); // exceptionally 120s timeout
-
-        it('with suspect activity', async () => {
-            const totalCommunities = 3;
-            const communityManagers = await UserFactory({
-                n: totalCommunities,
-            });
-            const suspect = { percentage: 50, suspect: 5 };
-            const createObject: any[] = [];
-            for (let index = 0; index < totalCommunities; index++) {
-                createObject.push({
-                    requestByAddress: communityManagers[index].address,
-                    started: new Date(),
-                    status: 'valid',
-                    visibility: 'public',
-                    contract: {
-                        baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
-                        communityId: 0,
-                        incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
-                    },
-                    hasAddress: true,
-                    suspect: index === 1 ? suspect : undefined,
-                });
-            }
-            const communities = await CommunityFactory(createObject);
-            const communitySuspect = communities[1];
-
-            const claimed: SubgraphClaimed = [];
-            for (const community of communities) {
-                claimed.push({
-                    id: community.contractAddress!,
-                    claimed: 0,
-                });
-                await BeneficiaryFactory(
-                    await UserFactory({
-                        n: Math.floor(Math.random() * 20),
-                    }),
-                    community.id
-                );
-            }
-
-            returnCommunityEntities.returns(
-                communities.map((el) => ({
-                    id: el.contractAddress,
-                    beneficiaries: 1,
-                }))
-            );
-
-            returnClaimedSubgraph.returns(claimed);
-
-            //
-            const r = await communityListService.list({
-                offset: '0',
-                limit: '5',
-                fields: '*;suspect.*'
-            });
-            expect(
-                r.rows.filter((c) => c.id === communitySuspect.id)[0].suspect
-                    ?.length
-            ).to.be.equal(1);
-            expect(
-                r.rows.filter((c) => c.id !== communitySuspect.id)[0].suspect
-                    ?.length
-            ).to.be.equal(0);
-        });
 
         describe('sort', () => {
             afterEach(async () => {
@@ -1759,13 +1693,10 @@ describe('community service v2', () => {
                 returnClaimedSubgraph.resetHistory();
             });
 
-            it('list pending communities in the ambassadors country', async () => {
+            it('list pending communities by ambassadors address', async () => {
                 const ambassadors = await UserFactory({
-                    n: 2,
+                    n: 1,
                     props: [
-                        {
-                            phone: '+12025550167',
-                        },
                         {
                             phone: '+5514999420299',
                         },
@@ -1790,11 +1721,12 @@ describe('community service v2', () => {
                             longitude: -46.4841214,
                         },
                         country: 'BR',
+                        ambassadorAddress: ambassadors[0].address,
                     },
                     {
                         requestByAddress: users[2].address,
                         started: new Date(),
-                        status: 'pending',
+                        status: 'valid',
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
@@ -1808,7 +1740,8 @@ describe('community service v2', () => {
                             latitude: -23.4378873,
                             longitude: -46.4841214,
                         },
-                        country: 'VE',
+                        country: 'BR',
+                        ambassadorAddress: ambassadors[0].address,
                     },
                 ]);
 
@@ -1818,14 +1751,14 @@ describe('community service v2', () => {
 
                 const result = await communityListService.list({
                     status: 'pending',
-                    ambassadorAddress: ambassadors[1].address,
+                    ambassadorAddress: ambassadors[0].address,
                 });
 
                 expect(result.count).to.be.equal(1);
                 expect(result.rows[0].id).to.be.equal(communities[0].id);
             });
 
-            it('list communities where ambassador', async () => {
+            it('list valid communities by ambassadors address', async () => {
                 const ambassadors = await UserFactory({
                     n: 2,
                     props: [
@@ -1861,7 +1794,7 @@ describe('community service v2', () => {
                     {
                         requestByAddress: users[2].address,
                         started: new Date(),
-                        status: 'valid',
+                        status: 'pending',
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
@@ -1875,8 +1808,8 @@ describe('community service v2', () => {
                             latitude: -23.4378873,
                             longitude: -46.4841214,
                         },
-                        country: 'VE',
-                        ambassadorAddress: ambassadors[1].address,
+                        country: 'BR',
+                        ambassadorAddress: ambassadors[0].address,
                     },
                 ]);
 
@@ -1885,6 +1818,7 @@ describe('community service v2', () => {
 
                 const result = await communityListService.list({
                     ambassadorAddress: ambassadors[0].address,
+                    status: 'valid',
                 });
 
                 expect(result.count).to.be.equal(1);
@@ -2014,7 +1948,7 @@ describe('community service v2', () => {
                 },
             ]);
 
-            const result = await communityEditService.review(
+            const result = await communityCreateService.review(
                 communities[0].id,
                 'claimed',
                 users[0].address
@@ -2050,12 +1984,12 @@ describe('community service v2', () => {
                 },
             ]);
 
-            const result = await communityEditService.review(
+            const result = await communityCreateService.review(
                 communities[0].id,
                 'claimed',
                 users[0].address
             );
-            const community = await communityEditService.editSubmission(
+            const community = await communityCreateService.editSubmission(
                 communities[0].id,
                 {
                     requestByAddress: users[0].address,
@@ -2111,12 +2045,12 @@ describe('community service v2', () => {
                 },
             ]);
 
-            await communityEditService.review(
+            await communityCreateService.review(
                 communities[0].id,
                 'claimed',
                 users[0].address
             );
-            communityEditService
+            communityCreateService
                 .editSubmission(communities[0].id, {
                     requestByAddress: users[1].address,
                     name: 'new name',

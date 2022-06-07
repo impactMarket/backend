@@ -46,10 +46,9 @@ class StoryController {
             });
             return;
         }
-        const { communityId, message, storyMediaPath } = req.body;
+        const { message, storyMediaPath } = req.body;
         this.storyService
             .add(req.user.address, {
-                communityId,
                 message,
                 storyMediaPath,
             })
@@ -86,6 +85,13 @@ class StoryController {
         this.storyService
             .remove(parseInt(req.params.id, 10), req.user.address)
             .then((r) => standardResponse(res, 200, r !== 0, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getById = (req: RequestWithUser, res: Response) => {
+        this.storyService
+            .getById(parseInt(req.params.id, 10), req.user?.address)
+            .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
