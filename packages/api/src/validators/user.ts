@@ -29,9 +29,9 @@ const create = celebrate({
 
 const update = celebrate({
     body: Joi.object({
-        phone: Joi.string().optional(),
-        language: Joi.string().optional(),
-        currency: Joi.string().optional(),
+        phone: Joi.alternatives(Joi.string(), null).optional(),
+        language: Joi.alternatives(Joi.string(), null).optional(),
+        currency: Joi.alternatives(Joi.string(), null).optional(),
         pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
         firstName: Joi.alternatives(Joi.string(), null).optional(),
         lastName: Joi.alternatives(Joi.string(), null).optional(),
@@ -39,7 +39,7 @@ const update = celebrate({
         age: Joi.alternatives(Joi.number(), null).optional(),
         children: Joi.alternatives(Joi.number(), null).optional(),
         avatarMediaPath: Joi.alternatives(Joi.string(), null).optional(),
-        bio: Joi.string().optional(),
+        bio: Joi.alternatives(Joi.string(), null).optional(),
         email: Joi.alternatives(
             Joi.string().email({ tlds: { allow: false } }),
             null
@@ -53,6 +53,12 @@ const report = celebrate({
         communityId: Joi.any().required(),
         message: Joi.string().required(),
         category: Joi.string().required(),
+    }),
+});
+
+const readNotifications = celebrate({
+    body: Joi.object({
+        notifications: Joi.array().items(Joi.number()).required(),
     }),
 });
 
@@ -199,4 +205,5 @@ export default {
     edit,
     subscribeNewsletter,
     saveSurvey,
+    readNotifications,
 };

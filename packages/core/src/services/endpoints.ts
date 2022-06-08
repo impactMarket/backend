@@ -65,7 +65,11 @@ export interface IManagerDetailsManager {
 export interface IListBeneficiary {
     address: string;
     username?: string | null;
-    timestamp: number;
+    firstName?: string | null;
+    lastName?: string | null;
+    avatarMediaPath?: string | null;
+    timestamp?: number;
+    since?: number;
     claimed: string;
     blocked: boolean;
     // to users not yet registered, the values below do not exist

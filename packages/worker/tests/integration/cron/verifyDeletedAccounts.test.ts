@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { stub, assert, SinonStub } from 'sinon';
 
-import * as subgraph from '../../../../core/src/subgraph/queries/community';
+import * as managerSubgraph from '../../../../core/src/subgraph/queries/manager';
 import { verifyDeletedAccounts } from '../../../src/jobs/cron/user';
 
 describe('[jobs - cron] verifyDeletedAccounts', () => {
@@ -344,7 +344,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
     it('get managers after delete user', async () => {
         const returnGetCommunityManagersSubgraph = stub(
-            subgraph,
+            managerSubgraph,
             'getCommunityManagers'
         );
         returnGetCommunityManagersSubgraph.returns(
@@ -355,6 +355,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                     added: 0,
                     removed: 0,
                     since: 0,
+                    until: 0,
                 },
             ])
         );

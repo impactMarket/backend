@@ -1,5 +1,5 @@
 import { services } from '@impactmarket/core';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 import { RequestWithUser } from '../../middlewares/core';
 import { standardResponse } from '../../utils/api';
@@ -46,10 +46,9 @@ class StoryController {
             });
             return;
         }
-        const { communityId, message, storyMediaPath } = req.body;
+        const { message, storyMediaPath } = req.body;
         this.storyService
             .add(req.user.address, {
-                communityId,
                 message,
                 storyMediaPath,
             })
@@ -86,6 +85,13 @@ class StoryController {
         this.storyService
             .remove(parseInt(req.params.id, 10), req.user.address)
             .then((r) => standardResponse(res, 200, r !== 0, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getById = (req: RequestWithUser, res: Response) => {
+        this.storyService
+            .getById(parseInt(req.params.id, 10), req.user?.address)
+            .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
@@ -138,6 +144,23 @@ class StoryController {
         const { typeId } = req.body;
         this.storyService
             .inapropriate(req.user.address, parseInt(req.params.id, 10), typeId)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    count = (req: Request, res: Response) => {
+        const { groupBy } = req.query;
+        if (groupBy === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'INVALID_GROUP',
+                    message: 'not a valid group by',
+                },
+            });
+            return;
+        }
+        this.storyService
+            .count(groupBy as string)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

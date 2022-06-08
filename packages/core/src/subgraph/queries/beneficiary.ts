@@ -57,6 +57,8 @@ export const getBeneficiariesByAddress = async (
     state?: string,
     inactive?: string,
     community?: string,
+    orderBy?: string,
+    orderDirection?: string,
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const idsFormated = addresses.map(
@@ -66,11 +68,14 @@ export const getBeneficiariesByAddress = async (
         const query = gql`
             {
                 beneficiaryEntities(
+                    first: ${idsFormated.length}
+                    ${orderBy ? orderBy : ''}
+                    ${orderDirection ? orderDirection : ''}
                     where: {
                         address_in: [${idsFormated}]
                         ${state ? state : ''}
                         ${inactive ? inactive : ''}
-                        ${community ? `community: ${community}` : ''}
+                        ${community ? `community: "${community.toLocaleLowerCase()}"` : ''}
                     }
                 ) {
                     address
@@ -97,7 +102,9 @@ export const getBeneficiaries = async (
     limit: number,
     offset: number,
     lastClaimAt?: string,
-    state?: string
+    state?: string,
+    orderBy?: string,
+    orderDirection?: string,
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const query = gql`
@@ -105,6 +112,8 @@ export const getBeneficiaries = async (
                 beneficiaryEntities(
                     first: ${limit}
                     skip: ${offset}
+                    ${orderBy ? orderBy : ''}
+                    ${orderDirection ? orderDirection : ''}
                     where: {
                         community:"${community.toLowerCase()}"
                         ${lastClaimAt ? lastClaimAt : ''}

@@ -37,8 +37,8 @@ import {
     getCommunityProposal,
     getClaimed,
     getCommunityState,
-    getCommunityManagers,
 } from '../../subgraph/queries/community';
+import { getCommunityManagers } from '../../subgraph/queries/manager';
 import { BaseError } from '../../utils/baseError';
 import { fetchData } from '../../utils/dataFetching';
 import { createThumbnailUrl, notifyManagerAdded } from '../../utils/util';

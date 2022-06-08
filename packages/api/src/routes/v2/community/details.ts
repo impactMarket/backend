@@ -33,6 +33,12 @@ export default (route: Router): void => {
      *           enum: [pending, valid, removed]
      *         required: false
      *         description: community status
+     *       - in: query
+     *         name: excludeCountry
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: countries to ignore, separated by comma (PT;FR)
      *     responses:
      *       "200":
      *         description: OK
@@ -61,17 +67,36 @@ export default (route: Router): void => {
      *     summary: Get community managers
      *     parameters:
      *       - in: query
-     *         name: filterByActive
+     *         name: state
      *         schema:
-     *           type: boolean
+     *           type: string
+     *           enum: [active, removed]
      *         required: false
-     *         description: filter by active/inactive/both (if filterByActive = undefined return both)
-     *       - in: path
-     *         name: id
+     *         description: manager state
+     *       - in: query
+     *         name: offset
      *         schema:
      *           type: integer
-     *         required: true
-     *         description: community id
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 5)
+     *       - in: query
+     *         name: search
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: search by address or username
+     *       - in: query
+     *         name: orderBy
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: order key and order direction separated by colon (since:desc)
      *     responses:
      *       "200":
      *         description: OK
@@ -110,10 +135,35 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /community/beneficiaries:
+     * /communities/{id}/ambassador:
      *   get:
      *     tags:
-     *       - "community"
+     *       - "communities"
+     *     summary: Get community ambassador
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityContract'
+     */
+    route.get('/:id/ambassador', controller.getAmbassador);
+
+    /**
+     * @swagger
+     *
+     * /communities/beneficiaries:
+     *   get:
+     *     tags:
+     *       - "communities"
      *     summary: Find or list beneficiaries in manager's community
      *     parameters:
      *       - in: query
@@ -136,35 +186,17 @@ export default (route: Router): void => {
      *         required: false
      *         description: limit used for community pagination (default 5)
      *       - in: query
-     *         name: suspect
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *         description: filter by suspect users
-     *       - in: query
-     *         name: inactivity
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *         description: filter by inactivity users
-     *       - in: query
-     *         name: unidentified
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *         description: filter by unidentified users
-     *       - in: query
-     *         name: loginInactivity
-     *         schema:
-     *           type: boolean
-     *         required: false
-     *         description: filter by login inactivity
-     *       - in: query
      *         name: search
      *         schema:
      *           type: string
      *         required: false
      *         description: search by address or username
+     *       - in: query
+     *         name: orderBy
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: order key and order direction separated by colon (claimed:desc)
      *     security:
      *     - api_auth:
      *       - "write:modify":

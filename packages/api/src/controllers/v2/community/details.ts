@@ -12,16 +12,34 @@ class CommunityController {
     }
 
     getManagers = (req: Request, res: Response) => {
-        const { filterByActive } = req.query;
-        let active: boolean | undefined;
-        if (filterByActive === 'true') {
-            active = true;
-        } else if (filterByActive === 'false') {
-            active = false;
+        const community = req.params.id;
+        let { state, offset, limit, search, orderBy } = req.query;
+        if (state === undefined || typeof state !== 'string') {
+            state = undefined;
+        }
+        if (offset === undefined || typeof offset !== 'string') {
+            offset = '0';
+        }
+        if (limit === undefined || typeof limit !== 'string') {
+            limit = '5';
+        }
+        if (orderBy === undefined || typeof orderBy !== 'string') {
+            orderBy = undefined;
         }
 
         this.detailsService
-            .getManagers(parseInt(req.params.id, 10), active)
+            .listManagers(
+                parseInt(community, 10),
+                parseInt(offset, 10),
+                parseInt(limit, 10),
+                {
+                    state,
+                },
+                search !== undefined && typeof search === 'string'
+                    ? search
+                    : undefined,
+                orderBy
+            )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -45,6 +63,7 @@ class CommunityController {
             unidentified,
             loginInactivity,
             search,
+            orderBy,
         } = req.query;
         if (state === undefined || typeof state !== 'string') {
             state = undefined;
@@ -54,6 +73,9 @@ class CommunityController {
         }
         if (limit === undefined || typeof limit !== 'string') {
             limit = '5';
+        }
+        if (orderBy === undefined || typeof orderBy !== 'string') {
+            orderBy = undefined;
         }
         this.detailsService
             .listBeneficiaries(
@@ -73,7 +95,8 @@ class CommunityController {
                 },
                 search !== undefined && typeof search === 'string'
                     ? search
-                    : undefined
+                    : undefined,
+                orderBy
             )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
@@ -106,7 +129,7 @@ class CommunityController {
     };
 
     count = (req: Request, res: Response) => {
-        const { groupBy, status } = req.query;
+        const { groupBy, status, excludeCountry } = req.query;
         if (groupBy === undefined) {
             standardResponse(res, 400, false, '', {
                 error: {
@@ -117,7 +140,11 @@ class CommunityController {
             return;
         }
         this.detailsService
-            .count(groupBy as string, status as string)
+            .count(
+                groupBy as string,
+                status as string,
+                excludeCountry as string
+            )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -125,6 +152,13 @@ class CommunityController {
     getContract = (req: Request, res: Response) => {
         this.detailsService
             .getContract(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getAmbassador = (req: Request, res: Response) => {
+        this.detailsService
+            .getAmbassador(parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

@@ -24,6 +24,7 @@ export class CommunityListService {
         filter?: string;
         name?: string;
         country?: string;
+        excludeCountry?: string;
         extended?: string;
         offset?: string;
         limit?: string;
@@ -97,6 +98,15 @@ export class CommunityListService {
             };
         }
 
+        if (query.excludeCountry) {
+            extendedWhere = {
+                ...extendedWhere,
+                country: {
+                    [Op.notIn]: query.excludeCountry.split(';'),
+                },
+            };
+        }
+
         if (query.review) {
             extendedWhere = {
                 ...extendedWhere,
@@ -105,42 +115,11 @@ export class CommunityListService {
             query.status = 'pending';
         }
 
-        if (query.status === 'pending') {
-            const communityProposals = await this._getOpenProposals();
-            if (query.ambassadorAddress) {
-                const ambassador = (await models.appUser.findOne({
-                    attributes: ['phone'],
-                    where: {
-                        address: query.ambassadorAddress,
-                    },
-                })) as any;
-                const phone = ambassador?.phone;
-                if (phone) {
-                    const parsePhone = parsePhoneNumber(phone);
-                    extendedWhere = {
-                        ...extendedWhere,
-                        country: parsePhone?.country,
-                    };
-                } else {
-                    throw new BaseError(
-                        'AMBASSADOR_NOT_FOUND',
-                        'Ambassador not found'
-                    );
-                }
-            }
+        if (query.ambassadorAddress) {
             extendedWhere = {
                 ...extendedWhere,
-                requestByAddress: {
-                    [Op.notIn]: communityProposals,
-                },
+                ambassadorAddress: query.ambassadorAddress,
             };
-        } else {
-            if (query.ambassadorAddress) {
-                extendedWhere = {
-                    ...extendedWhere,
-                    ambassadorAddress: query.ambassadorAddress,
-                };
-            }
         }
 
         if (query.orderBy) {

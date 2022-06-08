@@ -99,7 +99,7 @@ function validateEnv() {
         TREASURY_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_LAMBDA: bool({ default: false }),
         SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
-        SUBDAO_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
+        COUNCIL_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         IMAGE_HANDLER_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }

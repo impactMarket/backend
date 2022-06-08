@@ -15,7 +15,8 @@ const create = celebrate({
             longitude: Joi.number().required(),
         }).required(),
         email: Joi.string().required(),
-        coverMediaId: Joi.number().required(),
+        coverMediaId: Joi.number().optional(), // v1
+        coverMediaPath: Joi.string().optional(), // v2
         txReceipt: Joi.when('contractAddress', {
             not: undefined,
             then: Joi.object().required(),
@@ -99,7 +100,9 @@ const remove = celebrate({
 
 const review = celebrate({
     body: Joi.object({
-        review: Joi.string().required().valid('pending', 'claimed', 'declined', 'accepted'),
+        review: Joi.string()
+            .required()
+            .valid('pending', 'claimed', 'declined', 'accepted'),
     }),
 });
 
