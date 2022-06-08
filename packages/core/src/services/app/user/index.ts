@@ -160,7 +160,7 @@ export default class UserService {
         };
     }
 
-    public async findUserBy(where: WhereOptions<AppUser>, userAddress: string) {
+    public async findUserBy(address: string, userAddress: string) {
         const userRoles = await this._userRoles(userAddress);
 
         if (
@@ -175,16 +175,15 @@ export default class UserService {
         }
 
         const user = await models.appUser.findOne({
-            where,
+            where: {
+                address,
+            },
         });
 
-        if (user === null) {
-            throw new BaseError('USER_NOT_FOUND', 'user not found');
-        }
         return {
-            ...user.toJSON(),
-            ...(await this._userRoles(user.address)),
-            ...(await this._userRules(user.address)),
+            ...user?.toJSON(),
+            ...(await this._userRoles(address)),
+            ...(await this._userRules(address)),
         };
     }
 
