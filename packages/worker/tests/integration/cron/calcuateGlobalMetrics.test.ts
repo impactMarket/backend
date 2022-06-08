@@ -20,7 +20,7 @@ describe('#calcuateGlobalMetrics()', () => {
     before(async () => {
         sequelize = tests.config.setup.sequelizeSetup();
         await sequelize.sync();
-        returnSubgraph = stub(subgraph.queries.beneficiary, 'getAllBeneficiaries');
+        returnSubgraph = stub(subgraph.queries.beneficiary, 'getAllActiveBeneficiaries');
     });
 
     afterEach(async () => {

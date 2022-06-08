@@ -468,7 +468,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         const subGraphPromises: Promise<any>[] = [];
 
         communities.forEach(community => {
-            subGraphPromises.push(subgraph.queries.beneficiary.getAllBeneficiaries(community.contractAddress!))
+            subGraphPromises.push(subgraph.queries.beneficiary.getAllActiveBeneficiaries(community.contractAddress!))
         });
 
         let beneficiaries = await Promise.all(subGraphPromises);

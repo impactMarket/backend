@@ -1,16 +1,16 @@
+import { ethers } from 'ethers';
 import { Includeable, literal, Op } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
+import { getUserRoles } from '../subgraph/queries/user';
 
 import config from '../config';
 import { models, sequelize } from '../database';
-import { ManagerAttributes } from '../database/models/ubi/manager';
 import { AppMediaContent } from '../interfaces/app/appMediaContent';
 import {
     StoryCommunity,
     StoryCommunityCreationEager,
 } from '../interfaces/story/storyCommunity';
 import { StoryContent } from '../interfaces/story/storyContent';
-import { BeneficiaryAttributes } from '../interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../interfaces/ubi/community';
 import { BaseError } from '../utils/baseError';
 import { Logger } from '../utils/logger';
@@ -33,7 +33,6 @@ export default class StoryService {
     public community = models.community;
     public appMediaContent = models.appMediaContent;
     public appMediaThumbnail = models.appMediaThumbnail;
-    public beneficiary = models.beneficiary;
     public manager = models.manager;
     public user = models.appUser;
     public sequelize = sequelize;
@@ -227,48 +226,29 @@ export default class StoryService {
             }
         });
 
-        let result: BeneficiaryAttributes | ManagerAttributes;
+        const userRoles = await getUserRoles(onlyFromAddress);
 
-        const beneficiaryResult = await this.beneficiary.findOne({
-            attributes: ['address'],
-            include: [
-                {
-                    model: models.community,
-                    as: 'community',
-                    attributes: ['id'],
-                },
-            ],
-            where: { address: onlyFromAddress, active: true },
-        });
-
-        if (beneficiaryResult === null) {
-            const managerResult = await this.manager.findOne({
-                attributes: ['address'],
-                include: [
-                    {
-                        model: models.community,
-                        as: 'community',
-                        attributes: ['id'],
-                    },
-                ],
-                where: { address: onlyFromAddress, active: true },
-            });
-            if (managerResult === null) {
-                throw new BaseError('USER_NOT_FOUND', 'user not found!');
-            }
-            result = managerResult.toJSON() as ManagerAttributes;
-        } else {
-            result = beneficiaryResult.toJSON() as BeneficiaryAttributes;
+        if (!userRoles.beneficiary && !userRoles.manager) {
+            throw new BaseError('USER_NOT_FOUND', 'user not found!');
         }
 
-        if (result.community === undefined) {
+        const contractAddress = userRoles.beneficiary ? userRoles.beneficiary.community : userRoles.manager?.community;
+
+        const community = await models.community.findOne({
+            attributes: ['id'],
+            where: {
+                contractAddress: ethers.utils.getAddress(contractAddress!)
+            }
+        });
+
+        if (!community) {
             throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found!');
         }
 
         return {
             count: r.count,
             content: {
-                id: result.community.id,
+                id: community.id,
                 // this information is on the user side already
                 name: '',
                 city: '',

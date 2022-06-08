@@ -53,7 +53,10 @@ export const getAllBeneficiaries = async (
 };
 
 export const getBeneficiariesByAddress = async (
-    addresses: string[]
+    addresses: string[],
+    state?: string,
+    inactive?: string,
+    community?: string,
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const idsFormated = addresses.map(
@@ -65,6 +68,9 @@ export const getBeneficiariesByAddress = async (
                 beneficiaryEntities(
                     where: {
                         address_in: [${idsFormated}]
+                        ${state ? state : ''}
+                        ${inactive ? inactive : ''}
+                        ${community ? `community: ${community}` : ''}
                     }
                 ) {
                     address

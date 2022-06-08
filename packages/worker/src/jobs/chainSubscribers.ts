@@ -253,94 +253,95 @@ class ChainSubscribers {
             parsedLog = this.ifaceOldCommunity.parseLog(log);
         }
 
-        if (parsedLog.name === 'BeneficiaryAdded') {
-            let beneficiaryAddress = '',
-                managerAddress = '';
+        // if (parsedLog.name === 'BeneficiaryAdded') {
+        //     let beneficiaryAddress = '',
+        //         managerAddress = '';
 
-            if (parsedLog.args.length > 1) {
-                beneficiaryAddress = parsedLog.args[1];
-                managerAddress = parsedLog.args[0];
-            } else {
-                beneficiaryAddress = parsedLog.args[0];
-                const txResponse = await this.provider.getTransaction(
-                    log.transactionHash
-                );
-                managerAddress = txResponse.from;
-            }
+        //     if (parsedLog.args.length > 1) {
+        //         beneficiaryAddress = parsedLog.args[1];
+        //         managerAddress = parsedLog.args[0];
+        //     } else {
+        //         beneficiaryAddress = parsedLog.args[0];
+        //         const txResponse = await this.provider.getTransaction(
+        //             log.transactionHash
+        //         );
+        //         managerAddress = txResponse.from;
+        //     }
 
-            const communityAddress = log.address;
-            let communityId = this.communitiesId.get(communityAddress)!;
-            if (communityId === undefined) {
-                // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
-                const community =
-                    await services.ubi.CommunityService.getOnlyCommunityByContractAddress(
-                        communityAddress
-                    );
-                if (community === null) {
-                    utils.Logger.error(
-                        `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
-                    );
-                } else {
-                    this.isCommunityPublic.set(
-                        communityAddress,
-                        community.visibility === 'public'
-                    );
-                    this.communities.set(communityAddress, community.publicId);
-                    this.allCommunitiesAddresses.push(communityAddress);
-                    this.communitiesId.set(communityAddress, community.id);
-                    communityId = community.id;
-                }
-            }
-            const isThisCommunityPublic =
-                this.isCommunityPublic.get(communityAddress);
-            if (isThisCommunityPublic) {
-                this.beneficiariesInPublicCommunities.push(beneficiaryAddress);
-            }
-            // allBeneficiaryAddressses.push(beneficiaryAddress);
-            utils.util.notifyBeneficiaryAdded(
-                beneficiaryAddress,
-                communityAddress
-            );
-            try {
-                const txAt = await utils.util.getBlockTime(log.blockHash);
-                await services.ubi.BeneficiaryService.add(
-                    beneficiaryAddress,
-                    managerAddress,
-                    communityId,
-                    log.transactionHash,
-                    txAt
-                );
-            } catch (e) {}
-            result = parsedLog;
-        } else if (parsedLog.name === 'BeneficiaryRemoved') {
-            const communityAddress = log.address;
-            let beneficiaryAddress = '',
-                managerAddress = '';
+        //     const communityAddress = log.address;
+        //     let communityId = this.communitiesId.get(communityAddress)!;
+        //     if (communityId === undefined) {
+        //         // if for some reson (it shouldn't, might mean serious problems 😬), this is undefined
+        //         const community =
+        //             await services.ubi.CommunityService.getOnlyCommunityByContractAddress(
+        //                 communityAddress
+        //             );
+        //         if (community === null) {
+        //             utils.Logger.error(
+        //                 `Community with address ${communityAddress} wasn't found at BeneficiaryAdded`
+        //             );
+        //         } else {
+        //             this.isCommunityPublic.set(
+        //                 communityAddress,
+        //                 community.visibility === 'public'
+        //             );
+        //             this.communities.set(communityAddress, community.publicId);
+        //             this.allCommunitiesAddresses.push(communityAddress);
+        //             this.communitiesId.set(communityAddress, community.id);
+        //             communityId = community.id;
+        //         }
+        //     }
+        //     const isThisCommunityPublic =
+        //         this.isCommunityPublic.get(communityAddress);
+        //     if (isThisCommunityPublic) {
+        //         this.beneficiariesInPublicCommunities.push(beneficiaryAddress);
+        //     }
+        //     // allBeneficiaryAddressses.push(beneficiaryAddress);
+        //     utils.util.notifyBeneficiaryAdded(
+        //         beneficiaryAddress,
+        //         communityAddress
+        //     );
+        //     try {
+        //         const txAt = await utils.util.getBlockTime(log.blockHash);
+        //         await services.ubi.BeneficiaryService.add(
+        //             beneficiaryAddress,
+        //             managerAddress,
+        //             communityId,
+        //             log.transactionHash,
+        //             txAt
+        //         );
+        //     } catch (e) {}
+        //     result = parsedLog;
+        // } else if (parsedLog.name === 'BeneficiaryRemoved') {
+        //     const communityAddress = log.address;
+        //     let beneficiaryAddress = '',
+        //         managerAddress = '';
 
-            if (parsedLog.args.length > 1) {
-                beneficiaryAddress = parsedLog.args[1];
-                managerAddress = parsedLog.args[0];
-            } else {
-                beneficiaryAddress = parsedLog.args[0];
-                const txResponse = await this.provider.getTransaction(
-                    log.transactionHash
-                );
-                managerAddress = txResponse.from;
-            }
+        //     if (parsedLog.args.length > 1) {
+        //         beneficiaryAddress = parsedLog.args[1];
+        //         managerAddress = parsedLog.args[0];
+        //     } else {
+        //         beneficiaryAddress = parsedLog.args[0];
+        //         const txResponse = await this.provider.getTransaction(
+        //             log.transactionHash
+        //         );
+        //         managerAddress = txResponse.from;
+        //     }
 
-            try {
-                const communityId = this.communitiesId.get(communityAddress)!;
-                const txAt = await utils.util.getBlockTime(log.blockHash);
-                await services.ubi.BeneficiaryService.remove(
-                    beneficiaryAddress,
-                    managerAddress,
-                    communityId,
-                    log.transactionHash,
-                    txAt
-                );
-            } catch (e) {}
-            result = parsedLog;
-        } else if (parsedLog.name === 'BeneficiaryClaim') {
+        //     try {
+        //         const communityId = this.communitiesId.get(communityAddress)!;
+        //         const txAt = await utils.util.getBlockTime(log.blockHash);
+        //         await services.ubi.BeneficiaryService.remove(
+        //             beneficiaryAddress,
+        //             managerAddress,
+        //             communityId,
+        //             log.transactionHash,
+        //             txAt
+        //         );
+        //     } catch (e) {}
+        //     result = parsedLog;
+        // } else 
+        if (parsedLog.name === 'BeneficiaryClaim') {
             await services.ubi.ClaimService.add({
                 address: parsedLog.args[0],
                 communityId: this.communitiesId.get(log.address)!,
