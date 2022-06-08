@@ -224,8 +224,8 @@ export default class UserService {
 
     public async patch(address: string, action: string) {
         if (action === 'beneficiary-rules') {
-            await models.beneficiary.update(
-                { readRules: true },
+            await models.appUser.update(
+                { readBeneficiaryRules: true },
                 {
                     where: { address },
                 }
@@ -477,8 +477,8 @@ export default class UserService {
 
     private async _userRules(address: string) {
         const [beneficiaryRules, managerRules] = await Promise.all([
-            models.beneficiary.findOne({
-                attributes: ['readRules'],
+            models.appUser.findOne({
+                attributes: ['readBeneficiaryRules'],
                 where: { address },
             }),
             models.manager.findOne({
@@ -488,7 +488,7 @@ export default class UserService {
         ]);
 
         return {
-            beneficiaryRules: beneficiaryRules?.readRules,
+            beneficiaryRules: beneficiaryRules?.readBeneficiaryRules,
             managerRules: managerRules?.readRules,
         };
     }

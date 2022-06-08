@@ -1,16 +1,14 @@
 import { ethers } from 'ethers';
-import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
-import { Literal, Where } from 'sequelize/types/lib/utils';
+import { Op, WhereAttributeHash } from 'sequelize';
+import { Where } from 'sequelize/types/lib/utils';
 import { getCommunityState } from '../../subgraph/queries/community';
 
 import config from '../../config';
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { AppUser } from '../../interfaces/app/appUser';
-import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
 import {
     UbiBeneficiaryRegistryCreation,
-    UbiBeneficiaryRegistryType,
 } from '../../interfaces/ubi/ubiBeneficiaryRegistry';
 import {
     UbiBeneficiarySurvey,
@@ -28,8 +26,7 @@ import {
     BeneficiaryActivity,
 } from '../endpoints';
 import CommunityService from './community';
-import { getAllBeneficiaries, getBeneficiaries, getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
-import { BeneficiarySubgraph } from '../../subgraph/interfaces/beneficiary';
+import { getBeneficiaries, getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
 
 export default class BeneficiaryService {
     public static async getTotalBeneficiaries(address: string): Promise<{
@@ -509,9 +506,9 @@ export default class BeneficiaryService {
 
     public static async readRules(address: string): Promise<boolean> {
         try {
-            const updated = await models.beneficiary.update(
+            const updated = await models.appUser.update(
                 {
-                    readRules: true,
+                    readBeneficiaryRules: true,
                 },
                 {
                     where: { address },

@@ -85,6 +85,16 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.DATE,
             },
+            readBeneficiaryRules: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
+            readManagerRules: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
             updatedAt: {
                 allowNull: false,
                 type: Sequelize.DATE,

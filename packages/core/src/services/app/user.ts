@@ -21,11 +21,13 @@ import { IUserHello, IUserAuth, IBeneficiary, IManager } from '../endpoints';
 import { ProfileContentStorage } from '../storage';
 import CommunityService from '../ubi/community';
 import UserLogService from './user/log';
+import { getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
+import { BeneficiarySubgraph } from '../../subgraph/interfaces/beneficiary';
+import { ethers } from 'ethers';
 
 export default class UserService {
     public static sequelize = sequelize;
     public static appUser = models.appUser;
-    public static beneficiary = models.beneficiary;
     public static manager = models.manager;
     public static appUserThroughTrust = models.appUserThroughTrust;
     public static appMediaContent = models.appMediaContent;
@@ -445,12 +447,17 @@ export default class UserService {
      * TODO: improve
      */
     private static async loadUser(user: AppUser): Promise<IUserHello> {
-        const beneficiary: IBeneficiary | null = await this.beneficiary.findOne(
-            {
-                attributes: ['blocked', 'readRules', 'communityId'],
-                where: { active: true, address: user.address },
-            }
-        );
+        const getBeneficiaries = await getBeneficiariesByAddress([user.address], 'state: 0');
+        let beneficiary: BeneficiarySubgraph | null = null;
+        if (getBeneficiaries && getBeneficiaries.length > 0) {
+            beneficiary = getBeneficiaries[0];
+        }
+        // const beneficiary: IBeneficiary | null = await this.beneficiary.findOne(
+        //     {
+        //         attributes: ['blocked', 'readRules', 'communityId'],
+        //         where: { active: true, address: user.address },
+        //     }
+        // );
         let manager: IManager | null = await this.manager.findOne({
             attributes: ['readRules', 'communityId'],
             where: { active: true, address: user.address },
@@ -474,25 +481,40 @@ export default class UserService {
         }
         // until here
 
+        let communityId: number | undefined = undefined;
+        if (manager?.communityId) {
+            communityId = manager.communityId;
+        } else if (beneficiary?.community.id) {
+            const community = await models.community.findOne({
+                attributes: ['id'],
+                where: {
+                    contractAddress: ethers.utils.getAddress(beneficiary.community.id),
+                }
+            });
+            if (community) {
+                communityId = community?.id;
+            }
+        }
+
         return {
             isBeneficiary: beneficiary !== null, // TODO: deprecated
             isManager: manager !== null || managerInPendingCommunity, // TODO: deprecated
-            blocked: beneficiary !== null ? beneficiary.blocked : false, // TODO: deprecated
+            blocked: beneficiary !== null && beneficiary.state === 2, // TODO: deprecated
             verifiedPN:
                 user.trust && user.trust.length !== 0
                     ? user.trust[0].verifiedPhoneNumber
                     : undefined, // TODO: deprecated in mobile-app@1.1.5
             suspect: user.suspect, // TODO: deprecated
-            communityId: beneficiary
-                ? beneficiary.communityId
-                : manager
-                ? manager.communityId
-                : undefined, // TODO: deprecated
+            communityId, // TODO: deprecated
             user: {
                 suspect: user.suspect,
             },
             manager,
-            beneficiary,
+            beneficiary: beneficiary ? {
+                blocked: beneficiary.state === 2,
+                communityId,
+                readRules: user.readBeneficiaryRules,
+            } as any : null,
         };
     }
 
