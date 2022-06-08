@@ -99,16 +99,10 @@ class UserController {
             return;
         }
 
-        const { idOrAddress } = req.params;
-        let where: object;
-        if (idOrAddress.startsWith('0x')) {
-            where = { address: getAddress(idOrAddress) };
-        } else {
-            where = { id: parseInt(idOrAddress, 10) };
-        }
+        const { address } = req.params;
 
         this.userService
-            .findUserBy(where, req.user.address)
+            .findUserBy(getAddress(address), req.user.address)
             .then((community) =>
                 standardResponse(res, 200, true, community)
             )

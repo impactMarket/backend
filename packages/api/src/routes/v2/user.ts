@@ -443,18 +443,18 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /users/{id-or-address}:
+     * /users/{address}:
      *   get:
      *     tags:
      *       - "users"
-     *     summary: "Get user by id or contract address"
+     *     summary: "Get user by address"
      *     parameters:
      *       - in: path
-     *         name: id-or-address
+     *         name: address
      *         schema:
      *           type: string
      *         required: true
-     *         description: user id or address
+     *         description: user address
      *     responses:
      *       "200":
      *         description: "Success"
@@ -464,5 +464,5 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-     route.get('/:idOrAddress', authenticateToken, userController.findBy);
+     route.get('/:address', authenticateToken, userController.findBy);
 };
