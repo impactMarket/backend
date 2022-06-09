@@ -90,6 +90,7 @@ export const getBeneficiariesByAddress = async (
         `;
         const queryResult = await clientDAO.query({
             query,
+            fetchPolicy: 'no-cache',
         });
         return queryResult.data.beneficiaryEntities;
     } catch (error) {
@@ -132,6 +133,7 @@ export const getBeneficiaries = async (
         `;
         const queryResult = await clientDAO.query({
             query,
+            fetchPolicy: 'no-cache',
         });
         return queryResult.data.beneficiaryEntities;
     } catch (error) {
