@@ -115,6 +115,16 @@ export class CommunityListService {
             query.status = 'pending';
         }
 
+        if (query.status === 'pending') {
+            const communityProposals = await this._getOpenProposals();
+            extendedWhere = {
+                ...extendedWhere,
+                requestByAddress: {
+                    [Op.notIn]: communityProposals,
+                },
+            };
+        }
+
         if (query.ambassadorAddress) {
             extendedWhere = {
                 ...extendedWhere,
