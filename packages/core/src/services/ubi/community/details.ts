@@ -278,6 +278,12 @@ export class CommunityDetailsService {
                     },
                 });
                 addresses = appUsers.map((user) => user.address);
+                if (addresses.length === 0) {
+                    return {
+                        count: 0,
+                        rows: []
+                    }
+                }
                 managersSubgraph = await getCommunityManagers(
                     community.contractAddress!,
                     filter.state === 'active'
@@ -474,6 +480,12 @@ export class CommunityDetailsService {
                 where: appUserFilter,
             });
             addresses = appUsers.map((user) => user.address);
+            if (addresses.length === 0) {
+                return {
+                    count: 0,
+                    rows: []
+                }
+            }
             beneficiariesSubgraph = await getBeneficiariesByAddress(
                 addresses,
                 beneficiaryState,
