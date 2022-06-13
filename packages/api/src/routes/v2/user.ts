@@ -264,6 +264,23 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /users/report:
+     *   get:
+     *     tags:
+     *       - "users"
+     *     summary: "List anonymous report"
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get('/report', authenticateToken, userController.getReport);
+
+    /**
+     * @swagger
+     *
      * /users/logs:
      *   get:
      *     tags:
@@ -348,7 +365,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-     route.get(
+    route.get(
         '/notifications/unread',
         authenticateToken,
         userController.getUnreadNotifications
@@ -464,5 +481,5 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-     route.get('/:address', authenticateToken, userController.findBy);
+    route.get('/:address', authenticateToken, userController.findBy);
 };
