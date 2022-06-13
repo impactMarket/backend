@@ -180,9 +180,19 @@ export default class UserService {
             },
         });
 
+        const roles = await this._userRoles(address);
+
+        if (!user && roles.roles.length === 0) {
+            throw new BaseError(
+                'USER_NOT_FOUND',
+                'user not found'
+            );
+        }
+
         return {
+            address,
             ...user?.toJSON(),
-            ...(await this._userRoles(address)),
+            ...roles,
             ...(await this._userRules(address)),
         };
     }
