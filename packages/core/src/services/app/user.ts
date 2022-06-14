@@ -447,17 +447,12 @@ export default class UserService {
      * TODO: improve
      */
     private static async loadUser(user: AppUser): Promise<IUserHello> {
-        const getBeneficiaries = await getBeneficiariesByAddress([user.address], 'state: 0');
+        const getBeneficiaries = await getBeneficiariesByAddress([user.address], 'state_not: 1');
         let beneficiary: BeneficiarySubgraph | null = null;
         if (getBeneficiaries && getBeneficiaries.length > 0) {
             beneficiary = getBeneficiaries[0];
         }
-        // const beneficiary: IBeneficiary | null = await this.beneficiary.findOne(
-        //     {
-        //         attributes: ['blocked', 'readRules', 'communityId'],
-        //         where: { active: true, address: user.address },
-        //     }
-        // );
+
         let manager: IManager | null = await this.manager.findOne({
             attributes: ['readRules', 'communityId'],
             where: { active: true, address: user.address },

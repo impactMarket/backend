@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { Op, WhereAttributeHash } from 'sequelize';
+import { Op, WhereAttributeHash, literal } from 'sequelize';
 import { Where } from 'sequelize/types/lib/utils';
 import { getCommunityState } from '../../subgraph/queries/community';
 
@@ -7,8 +7,10 @@ import config from '../../config';
 import { models } from '../../database';
 import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { AppUser } from '../../interfaces/app/appUser';
+import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
 import {
     UbiBeneficiaryRegistryCreation,
+    UbiBeneficiaryRegistryType,
 } from '../../interfaces/ubi/ubiBeneficiaryRegistry';
 import {
     UbiBeneficiarySurvey,
@@ -29,6 +31,97 @@ import CommunityService from './community';
 import { getBeneficiaries, getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
 
 export default class BeneficiaryService {
+    public static async add(
+        address: string,
+        from: string,
+        communityId: number,
+        tx: string,
+        txAt: Date
+    ): Promise<boolean> {
+        const beneficiaryData = {
+            address,
+            communityId,
+            tx,
+            txAt,
+        };
+        try {
+            await models.beneficiary.create(beneficiaryData);
+            await this._addRegistry({
+                address,
+                from,
+                communityId,
+                activity: UbiBeneficiaryRegistryType.add,
+                tx,
+                txAt,
+            });
+            const maxClaim: any = literal(`"maxClaim" - "decreaseStep"`);
+            await models.ubiCommunityContract.update(
+                {
+                    maxClaim,
+                },
+                {
+                    where: {
+                        communityId,
+                    },
+                }
+            );
+        } catch (e) {
+            if (e.name !== 'SequelizeUniqueConstraintError') {
+                Logger.error(
+                    'Error inserting new Beneficiary. Data = ' +
+                        JSON.stringify(beneficiaryData)
+                );
+                Logger.error(e);
+            }
+        }
+        return true;
+    }
+
+    public static async remove(
+        address: string,
+        from: string,
+        communityId: number,
+        tx: string,
+        txAt: Date
+    ): Promise<void> {
+        await models.beneficiary.update(
+            { active: false },
+            { where: { address, communityId } }
+        );
+        await this._addRegistry({
+            address,
+            from,
+            communityId,
+            activity: UbiBeneficiaryRegistryType.remove,
+            tx,
+            txAt,
+        });
+        const maxClaim: any = literal(`"maxClaim" + "decreaseStep"`);
+        await models.ubiCommunityContract.update(
+            {
+                maxClaim,
+            },
+            {
+                where: {
+                    communityId,
+                },
+            }
+        );
+    }
+
+    public static async findByAddress(
+        address: string,
+        active?: boolean
+    ): Promise<BeneficiaryAttributes | null> {
+        const beneficiary = await models.beneficiary.findOne({
+            where: { address, active },
+        });
+        if (beneficiary) {
+            return beneficiary.toJSON() as BeneficiaryAttributes;
+        }
+        return null;
+    }
+
     public static async getTotalBeneficiaries(address: string): Promise<{
         suspicious: number;
         inactive: number;
@@ -114,14 +207,23 @@ export default class BeneficiaryService {
 
         const beneficiaryFilter = await this.getBeneficiaryFilter(filter!, communityId);
 
-        let appUsers: AppUser[] = [];
-        if (Object.keys(whereSearchCondition).length > 0) {
-            appUsers = await models.appUser.findAll({
-                where: whereSearchCondition,
-            });
+        const appUsers = await models.appUser.findAll({
+            where: {
+                ...whereSearchCondition,
+                ...(addresses.length > 0
+                    ? {
+                        address: {
+                            [Op.in]: addresses,
+                        }
+                    }
+                    : {})
+            }
+        });
 
-            appUsers.forEach(user => addresses.push(user.address));
+        if (!appUsers || appUsers.length === 0) {
+            return []
         }
+        appUsers.forEach(user => addresses.push(user.address));
 
         const beneficiaries = await getBeneficiariesByAddress(addresses, beneficiaryFilter.state, beneficiaryFilter.inactive, community!.contractAddress!);
         
@@ -180,25 +282,43 @@ export default class BeneficiaryService {
 
         const appUsers = await models.appUser.findAll({
             where: {
-                id: {
+                address: {
                     [Op.in]: addresses
                 },
                 ...whereSearchCondition,
             },
         });
 
-        const result: IListBeneficiary[] = beneficiaries.map((beneficiary: any) => {
-            const user = appUsers.find(user => beneficiary.address === user.address.toLowerCase());
-            return {
-                address: beneficiary.address,
-                username: user?.username,
-                timestamp: beneficiary.since * 1000,
-                claimed: beneficiary.claimed,
-                blocked: beneficiary.state === 2,
-                suspect: user?.suspect,
-                isDeleted: !user || !!user.deletedAt,
-            };
-        });
+        let result: IListBeneficiary[] = []
+        if (Object.keys(whereSearchCondition).length > 0) {
+            appUsers.forEach((user: any) => {
+                const beneficiary = beneficiaries.find(beneficiary => beneficiary.address === user.address.toLowerCase());
+                if (beneficiary) {
+                    result.push({
+                        address: beneficiary.address,
+                        username: user?.username,
+                        timestamp: beneficiary.since ? beneficiary.since * 1000 : 0,
+                        claimed: beneficiary.claimed,
+                        blocked: beneficiary.state === 2,
+                        suspect: user?.suspect,
+                        isDeleted: !!user.deletedAt,
+                    } as any);
+                }
+            });
+        } else {
+            beneficiaries.forEach((beneficiary: any) => {
+                const user = appUsers.find(user => beneficiary.address === user.address.toLowerCase());
+                result.push({
+                    address: beneficiary.address,
+                    username: user?.username,
+                    timestamp: beneficiary.since * 1000,
+                    claimed: beneficiary.claimed,
+                    blocked: beneficiary.state === 2,
+                    suspect: user?.suspect,
+                    isDeleted: !user || !!user.deletedAt,
+                } as any);
+            });
+        }
         return result;
     }
 
@@ -207,10 +327,10 @@ export default class BeneficiaryService {
     ) {
         let where = {};
 
-        if (filter.unidentified) {
+        if (filter.unidentified !== undefined) {
             where = {
                 ...where,
-                username: null,
+                username: filter.unidentified ? null : { [Op.not]: null },
             };
         }
 

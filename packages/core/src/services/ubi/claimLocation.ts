@@ -1,6 +1,8 @@
 import { point, multiPolygon } from '@turf/helpers';
 import pointsWithinPolygon from '@turf/points-within-polygon';
+import { ethers } from 'ethers';
 import { Op } from 'sequelize';
+import { getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
 
 import config from '../../config';
 import { models } from '../../database';
@@ -53,29 +55,25 @@ export default class ClaimLocationService {
                 );
             }
 
-            const beneficiary: BeneficiaryAttributes | null =
-                await models.beneficiary.findOne({
-                    attributes: [],
-                    include: [
-                        {
-                            attributes: ['id', 'publicId'],
-                            model: models.community,
-                            as: 'community',
-                        },
-                    ],
-                    where: { address },
-                });
+            const beneficiary = await getBeneficiariesByAddress([address]);
 
-            if (!beneficiary || !beneficiary.community) {
+            if (!beneficiary || !beneficiary.length) {
                 throw new BaseError('NOT_BENEFICIARY', 'Not a beneficiary');
             }
 
+            const beneficiaryCommunity = await models.community.findOne({
+                attributes: ['id', 'publicId'],
+                where: {
+                    contractAddress: ethers.utils.getAddress(beneficiary[0].community.id)
+                }
+            });
+
             if (
-                beneficiary.community.id === communityId ||
-                beneficiary.community.publicId === communityId
+                beneficiaryCommunity?.id === communityId ||
+                beneficiaryCommunity?.publicId === communityId
             ) {
                 await models.ubiClaimLocation.create({
-                    communityId: beneficiary.community.id,
+                    communityId: beneficiaryCommunity.id,
                     gps,
                 });
             } else {

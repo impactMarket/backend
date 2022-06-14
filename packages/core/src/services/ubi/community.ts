@@ -12,6 +12,7 @@ import {
     Order,
 } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
+import { countBeneficiaries } from '../../subgraph/queries/beneficiary';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
@@ -37,6 +38,8 @@ import {
     getCommunityProposal,
     getClaimed,
     getCommunityState,
+    getBiggestCommunities,
+    getCommunityStateByAddresses,
 } from '../../subgraph/queries/community';
 import { getCommunityManagers } from '../../subgraph/queries/manager';
 import { BaseError } from '../../utils/baseError';
@@ -71,7 +74,6 @@ export default class CommunityService {
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static ubiBeneficiaryRegistry = models.ubiBeneficiaryRegistry;
-    public static beneficiary = models.beneficiary;
     public static ubiClaim = models.ubiClaim;
     public static sequelize = sequelize;
 
@@ -472,45 +474,37 @@ export default class CommunityService {
                         ]);
                         break;
                     default: {
-                        // check if there was another order previously
-                        if (
-                            orderOption.length === 0 &&
-                            !orderOutOfFunds.active
-                        ) {
-                            beneficiariesState =
-                                await this._getBeneficiaryState(
-                                    {
-                                        status: query.status,
-                                        limit: query.limit,
-                                        offset: query.offset,
-                                    },
-                                    extendedWhere,
-                                    orderType
-                                );
-                            communitiesId = beneficiariesState!.map(
-                                (el) => el.id
+                        beneficiariesState =
+                            await this._getBeneficiaryState(
+                                {
+                                    status: query.status,
+                                    limit: query.limit,
+                                    offset: query.offset,
+                                },
+                                extendedWhere,
+                                orderType
                             );
-                        } else {
-                            orderBeneficiary.push([
-                                literal('count("beneficiaries"."address")'),
-                                orderType ? orderType : 'DESC',
-                            ]);
-                        }
-
+                        communitiesId = beneficiariesState!.map(
+                            (el) => el.id
+                        );
                         break;
                     }
                 }
             }
         } else {
-            beneficiariesState = await this._getBeneficiaryState(
-                {
-                    status: query.status,
-                    limit: query.limit,
-                    offset: query.offset,
-                },
-                extendedWhere
+            beneficiariesState =
+                await this._getBeneficiaryState(
+                    {
+                        status: query.status,
+                        limit: query.limit,
+                        offset: query.offset,
+                    },
+                    extendedWhere,
+                    'desc',
+                );
+            communitiesId = beneficiariesState!.map(
+                (el) => el.id
             );
-            communitiesId = beneficiariesState!.map((el) => el.id);
         }
 
         let include: Includeable[];
@@ -600,26 +594,8 @@ export default class CommunityService {
                     attributes: [
                         'id',
                         'contractAddress',
-                        [
-                            fn(
-                                'count',
-                                fn('distinct', col('beneficiaries.address'))
-                            ),
-                            'beneficiaries',
-                        ],
                     ],
                     order: orderBeneficiary,
-                    include: [
-                        {
-                            attributes: [],
-                            model: models.beneficiary,
-                            as: 'beneficiaries',
-                            where: {
-                                active: true,
-                            },
-                            duplicating: false,
-                        },
-                    ],
                     where: {
                         id: {
                             [Op.in]: communitiesId,
@@ -1199,14 +1175,8 @@ export default class CommunityService {
             })
         )[0];
 
-        const communityBeneficiaryActivity = (await this.beneficiary.findAll({
-            attributes: [[fn('COUNT', col('address')), 'count'], 'active'],
-            where: {
-                communityId,
-            },
-            group: ['active'],
-            raw: true,
-        })) as any;
+        const activeBeneficiaries = await countBeneficiaries(community!.contractAddress!, 'active')
+        const removedBeneficiaries = await countBeneficiaries(community!.contractAddress!, 'removed')
 
         const communityManagerActivity = await this.manager.count({
             where: {
@@ -1214,11 +1184,6 @@ export default class CommunityService {
                 active: true,
             },
         });
-
-        const beneficiaries: { count: string; active: boolean } =
-            communityBeneficiaryActivity.find((el: any) => el.active);
-        const removedBeneficiaries: { count: string; active: boolean } =
-            communityBeneficiaryActivity.find((el: any) => !el.active);
 
         return {
             claims: communityClaimActivity
@@ -1230,9 +1195,9 @@ export default class CommunityService {
             raised: communityInflowActivity.amount
                 ? communityInflowActivity.amount
                 : '0',
-            beneficiaries: beneficiaries ? Number(beneficiaries.count) : 0,
+            beneficiaries: activeBeneficiaries ? Number(activeBeneficiaries) : 0,
             removedBeneficiaries: removedBeneficiaries
-                ? Number(removedBeneficiaries.count)
+                ? Number(removedBeneficiaries)
                 : 0,
             managers: communityManagerActivity,
             backers: communityBackers,
@@ -1522,12 +1487,11 @@ export default class CommunityService {
         let orderOption: Order | undefined;
 
         let beneficiariesState:
-            | [
+            |
                   {
                       id: number;
                       beneficiaries: string;
-                  }
-              ]
+                  } []
             | undefined = undefined;
         let communitiesId: number[] = [];
 
@@ -1584,6 +1548,7 @@ export default class CommunityService {
         }
 
         let communitiesResult: Community[];
+        let contractAddresses: string[] = [];
 
         if (communitiesId.length > 0) {
             communitiesResult = await this.community.findAll({
@@ -1608,6 +1573,11 @@ export default class CommunityService {
                         [Op.in]: communitiesId,
                     },
                 },
+            });
+            communitiesResult!.forEach((el) => {
+                if (el.contractAddress) {
+                    contractAddresses.push(el.contractAddress);
+                }
             });
         } else {
             communitiesResult = await this.community.findAll({
@@ -1636,39 +1606,22 @@ export default class CommunityService {
                 order: orderOption,
             });
             communitiesId = communitiesResult!.map((el) => el.id);
+            communitiesResult!.forEach((el) => {
+                if (el.contractAddress) {
+                    contractAddresses.push(el.contractAddress);
+                }
+            });
         }
 
         if (!beneficiariesState) {
-            beneficiariesState = (await models.community.findAll({
-                attributes: [
-                    'id',
-                    [
-                        fn(
-                            'count',
-                            fn('distinct', col('beneficiaries.address'))
-                        ),
-                        'beneficiaries',
-                    ],
-                ],
-                include: [
-                    {
-                        attributes: [],
-                        model: models.beneficiary,
-                        as: 'beneficiaries',
-                        where: {
-                            active: true,
-                        },
-                        duplicating: false,
-                    },
-                ],
-                where: {
-                    id: {
-                        [Op.in]: communitiesId,
-                    },
-                },
-                group: ['Community.id'],
-                raw: true,
-            })) as any;
+            const resultSubgraph = await getCommunityStateByAddresses(contractAddresses);
+            beneficiariesState = resultSubgraph.map(el => {
+                const community = communitiesResult.find(community => community.contractAddress === ethers.utils.getAddress(el.id));
+                return {
+                    id: community!.id,
+                    beneficiaries: el.beneficiaries.toString(),
+                }
+            });
         }
 
         const claimsState = (await models.ubiClaim.findAll({
@@ -2449,47 +2402,42 @@ export default class CommunityService {
         extendedWhere: WhereOptions<CommunityAttributes>,
         orderType?: string
     ): Promise<any> {
-        const result = (await models.community.findAll({
+        const subgraphResult = await getBiggestCommunities(
+            query.limit
+                ? parseInt(query.limit, 10)
+                : config.defaultLimit,
+            query.offset
+                ? parseInt(query.offset, 10)
+                : config.defaultOffset,
+            orderType ? orderType.toLocaleLowerCase() : 'desc',
+        );
+
+        const localResult = await models.community.findAll({
             attributes: [
                 'id',
                 'contractAddress',
-                [
-                    fn('count', fn('distinct', col('beneficiaries.address'))),
-                    'beneficiaries',
-                ],
             ],
             where: {
                 status: query.status ? query.status : 'valid',
                 visibility: 'public',
+                contractAddress: {
+                    [Op.in]: subgraphResult.map(community => ethers.utils.getAddress(community.id)),
+                },
                 ...extendedWhere,
             },
-            include: [
-                {
-                    attributes: [],
-                    model: models.beneficiary,
-                    as: 'beneficiaries',
-                    where: {
-                        active: true,
-                    },
-                    duplicating: false,
-                    required: false,
-                },
-            ],
-            group: ['Community.id'],
-            order: [
-                [
-                    literal('count("beneficiaries"."address")'),
-                    orderType ? orderType : 'DESC',
-                ],
-            ],
-            raw: true,
-            offset: query.offset
-                ? parseInt(query.offset, 10)
-                : config.defaultOffset,
-            limit: query.limit
-                ? parseInt(query.limit, 10)
-                : config.defaultLimit,
-        })) as any;
-        return result;
+        });
+        const results: any = [];
+        subgraphResult.forEach(community => {
+            const result = localResult.find(el => el.contractAddress === ethers.utils.getAddress(community.id));
+            if (result) {
+                results.push({
+                    id: result?.id,
+                    contractAddress: result?.contractAddress,
+                    beneficiaries: community.beneficiaries,
+                });
+            }
+        });
+
+        return results;
     }
 }

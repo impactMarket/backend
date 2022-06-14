@@ -100,7 +100,7 @@ class CommunityController {
                 active: active !== undefined ? active === 'true' : undefined,
                 suspect: suspect === 'true',
                 inactivity: inactivity === 'true',
-                unidentified: unidentified === 'true',
+                unidentified: unidentified !== undefined ? unidentified === 'true' : undefined,
                 blocked: blocked === 'true',
                 loginInactivity: loginInactivity === 'true',
             })
@@ -136,7 +136,7 @@ class CommunityController {
                     active: active === 'true',
                     suspect: suspect === 'true',
                     inactivity: inactivity === 'true',
-                    unidentified: unidentified === 'true',
+                    unidentified: unidentified !== undefined ? unidentified === 'true' : undefined,
                     blocked: blocked === 'true',
                     loginInactivity: loginInactivity === 'true',
                 }
