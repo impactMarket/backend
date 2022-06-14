@@ -12,6 +12,7 @@ import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
 import * as subgraph from '../../src/subgraph/queries/community';
+import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 
 use(chaiSubset);
 
@@ -21,6 +22,7 @@ describe('manager service', () => {
     let users: AppUser[];
     let communities: CommunityAttributes[];
     let returnCommunityStateSubgraph: SinonStub;
+    let returnGetBeneficiaryByAddressSubgraph: SinonStub;
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -43,18 +45,13 @@ describe('manager service', () => {
                 hasAddress: true,
             },
         ]);
+        returnGetBeneficiaryByAddressSubgraph = stub(
+            beneficiarySubgraph,
+            'getBeneficiariesByAddress'
+        );
+        returnGetBeneficiaryByAddressSubgraph.returns([]);
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
-        returnCommunityStateSubgraph.returns([
-            {
-                claims: 0,
-                claimed: '0',
-                beneficiaries: 0,
-                removedBeneficiaries: 0,
-                contributed: '0',
-                contributors: 0,
-                managers: 0,
-            },
-        ]);
+        returnCommunityStateSubgraph.returns([]);
         // const t = await sequelize.transaction();
         // await ManagerService.add(users[0].address, communities[0].publicId, t);
         await ManagerFactory([users[0]], communities[0].id);
