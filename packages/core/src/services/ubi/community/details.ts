@@ -2,10 +2,8 @@ import { BigNumber } from 'bignumber.js';
 import { utils, ethers } from 'ethers';
 import { Op, WhereOptions, fn, col, literal, Transaction } from 'sequelize';
 
-import config from '../../../config';
 import { models } from '../../../database';
 import { AppUser } from '../../../interfaces/app/appUser';
-import { BeneficiaryAttributes } from '../../../interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
 import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
 import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
@@ -28,8 +26,11 @@ import { BaseError } from '../../../utils/baseError';
 import { Logger } from '../../../utils/logger';
 import { isAddress } from '../../../utils/util';
 import { IListBeneficiary, BeneficiaryFilterType } from '../../endpoints';
+import { CommunityContentStorage } from '../../storage';
 
 export class CommunityDetailsService {
+    private communityContentStorage = new CommunityContentStorage();
+
     public async getState(communityId: number) {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
@@ -740,6 +741,12 @@ export class CommunityDetailsService {
         })) as any;
 
         return result;
+    }
+
+    public async getPresignedUrlMedia(
+        mime: string,
+    ) {
+        return this.communityContentStorage.getPresignedUrlPutObject(mime);
     }
 
     private getSearchInput(searchInput: string) {
