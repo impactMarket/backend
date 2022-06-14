@@ -199,13 +199,13 @@ export default class BeneficiaryService {
             throw new BaseError('INVALID_SEARCH', 'Not valid search!');
         }
 
-        const userFilter = await this.getUserFilter(filter!);
+        const userFilter = filter ? await this.getUserFilter(filter) : {};
         whereSearchCondition = {
             ...whereSearchCondition,
             ...userFilter,
         };
 
-        const beneficiaryFilter = await this.getBeneficiaryFilter(filter!, communityId);
+        const beneficiaryFilter = await this.getBeneficiaryFilter(filter ? filter : {}, communityId);
 
         const appUsers = await models.appUser.findAll({
             where: {
@@ -230,7 +230,7 @@ export default class BeneficiaryService {
         const result: IListBeneficiary[] = beneficiaries.map((beneficiary: any) => {
             const user = appUsers.find(user => beneficiary.address === user.address.toLowerCase());
             return {
-                address: beneficiary.address,
+                address: ethers.utils.getAddress(beneficiary.address),
                 username: user?.username,
                 timestamp: beneficiary.since * 1000,
                 claimed: beneficiary.claimed,
@@ -295,7 +295,7 @@ export default class BeneficiaryService {
                 const beneficiary = beneficiaries.find(beneficiary => beneficiary.address === user.address.toLowerCase());
                 if (beneficiary) {
                     result.push({
-                        address: beneficiary.address,
+                        address: user.address,
                         username: user?.username,
                         timestamp: beneficiary.since ? beneficiary.since * 1000 : 0,
                         claimed: beneficiary.claimed,
@@ -309,7 +309,7 @@ export default class BeneficiaryService {
             beneficiaries.forEach((beneficiary: any) => {
                 const user = appUsers.find(user => beneficiary.address === user.address.toLowerCase());
                 result.push({
-                    address: beneficiary.address,
+                    address: ethers.utils.getAddress(beneficiary.address),
                     username: user?.username,
                     timestamp: beneficiary.since * 1000,
                     claimed: beneficiary.claimed,

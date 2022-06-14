@@ -1,5 +1,4 @@
 import { services, utils, config, database } from '@impactmarket/core';
-import { countBeneficiariesByCommunities } from '@impactmarket/core/src/subgraph/queries/beneficiary';
 import { BigNumber } from 'bignumber.js';
 import { mean, median } from 'mathjs';
 import { col, fn, Op, Sequelize, where } from 'sequelize';

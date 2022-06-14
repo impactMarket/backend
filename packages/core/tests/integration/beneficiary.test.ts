@@ -13,7 +13,6 @@ import {
 } from 'sinon';
 import tk from 'timekeeper';
 
-import config from '../../src/config';
 import { models, sequelize as database } from '../../src/database';
 import { ManagerAttributes } from '../../src/database/models/ubi/manager';
 import { AppUser } from '../../src/interfaces/app/appUser';
@@ -26,10 +25,10 @@ import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import ClaimsService from '../../src/services/ubi/claim';
 import * as subgraph from '../../src/subgraph/queries/community';
 import * as userSubgraph from '../../src/subgraph/queries/user';
+import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { jumpToTomorrowMidnight, randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';
-import ClaimFactory from '../factories/claim';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
@@ -49,6 +48,8 @@ describe('beneficiary service', () => {
     let spyBeneficiaryUpdate: SinonSpy;
     let returnCommunityStateSubgraph: SinonStub;
     let returnBeneficiaryActivitiesSubgraph: SinonStub;
+    let returnGetBeneficiarySubgraph: SinonStub;
+    let returnGetBeneficiaryByAddressSubgraph: SinonStub;
 
     const decreaseStep = '1000000000000000000';
     const maxClaim = '450000000000000000000';
@@ -107,6 +108,14 @@ describe('beneficiary service', () => {
             userSubgraph,
             'getUserActivity'
         );
+        returnGetBeneficiarySubgraph = stub(
+            beneficiarySubgraph,
+            'getBeneficiaries'
+        );
+        returnGetBeneficiaryByAddressSubgraph = stub(
+            beneficiarySubgraph,
+            'getBeneficiariesByAddress'
+        );
         returnCommunityStateSubgraph.returns([
             {
                 claims: 0,
@@ -130,90 +139,6 @@ describe('beneficiary service', () => {
         spyBeneficiaryAdd.restore();
         spyBeneficiaryRegistryAdd.restore();
         restore();
-    });
-
-    it('order by suspicious activity', async () => {
-        // set some as suspect
-        await sequelize.models.AppUserModel.update(
-            { suspect: true },
-            { where: { address: users[2].address } }
-        );
-        await sequelize.models.AppUserModel.update(
-            { suspect: true },
-            { where: { address: users[4].address } }
-        );
-        for (let index = 0; index < 8; index++) {
-            await ClaimFactory(beneficiaries[index], communities[0]);
-        }
-        // test results
-        let result: IListBeneficiary[];
-        result = await BeneficiaryService.list(managers[0].address, 0, 5, {
-            active: true,
-        });
-        (expect(result.slice(0, 2)).to as any).containSubset([
-            {
-                address: users[4].address,
-                suspect: true,
-            },
-            {
-                address: users[2].address,
-                suspect: true,
-            },
-        ]);
-        (expect(result.slice(2, 5)).to as any).containSubset([
-            {
-                address: users[7].address,
-                suspect: false,
-            },
-            {
-                address: users[6].address,
-                suspect: false,
-            },
-            {
-                address: users[5].address,
-                suspect: false,
-            },
-        ]);
-        // change suspects
-        await sequelize.models.AppUserModel.update(
-            { suspect: false },
-            { where: { address: users[4].address } }
-        );
-        await sequelize.models.AppUserModel.update(
-            { suspect: true },
-            { where: { address: users[5].address } }
-        );
-        beneficiaries = beneficiaries.concat(
-            await BeneficiaryFactory(users.slice(10, 15), communities[0].id)
-        );
-        // test results
-        result = await BeneficiaryService.list(managers[0].address, 0, 5, {
-            active: true,
-        });
-        (expect(result.slice(0, 2)).to as any).containSubset([
-            {
-                address: users[5].address,
-                suspect: true,
-            },
-            {
-                address: users[2].address,
-                suspect: true,
-            },
-        ]);
-        (expect(result.slice(2, 5)).to as any).containSubset([
-            {
-                address: users[14].address,
-                suspect: false,
-            },
-            {
-                address: users[13].address,
-                suspect: false,
-            },
-            {
-                address: users[12].address,
-                suspect: false,
-            },
-        ]);
     });
 
     it('add to public community', async () => {
@@ -330,29 +255,28 @@ describe('beneficiary service', () => {
             );
         });
 
-        it('should list suspected beneficiaries', async () => {
-            await sequelize.models.AppUserModel.update(
-                { suspect: true },
-                { where: { address: listUsers[1].address } }
-            );
-            const result = await BeneficiaryService.list(
-                listManagers[0].address,
-                0,
-                5,
-                { suspect: true }
-            );
-
-            expect(result.length).to.be.equal(1);
-            expect(result[0].address).to.be.equal(listUsers[1].address);
-            // eslint-disable-next-line no-unused-expressions
-            expect(result[0].suspect).to.be.true;
-        });
-
         it('should list undefined beneficiaries', async () => {
             await sequelize.models.AppUserModel.update(
                 { username: null },
                 { where: { address: listUsers[2].address } }
             );
+
+            let returnSubgraph: any = [];
+            beneficiaries.forEach(beneficiary => {
+                returnSubgraph.push({
+                    address: beneficiary.address.toLowerCase(),
+                    claims: 0,
+                    community: {
+                        id: listCommunity[0].contractAddress,
+                    },
+                    lastClaimAt: 0,
+                    preLastClaimAt: 0, 
+                    since: 0,
+                    claimed: 0,
+                    state: 0,
+                })
+            });
+            returnGetBeneficiarySubgraph.returns(returnSubgraph);
 
             const result = await BeneficiaryService.list(
                 listManagers[0].address,
@@ -368,10 +292,19 @@ describe('beneficiary service', () => {
         });
 
         it('should list blocked beneficiaries', async () => {
-            await sequelize.models.Beneficiary.update(
-                { blocked: true },
-                { where: { address: listUsers[3].address } }
-            );
+            returnGetBeneficiarySubgraph.resetHistory();
+            returnGetBeneficiarySubgraph.returns([{
+                address: listUsers[3].address,
+                claims: 0,
+                community: {
+                    id: listCommunity[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 2,
+            }]);
 
             const result = await BeneficiaryService.list(
                 listManagers[0].address,
@@ -390,10 +323,20 @@ describe('beneficiary service', () => {
             const lastClaimAt = new Date();
             const interval = communities[0].contract!.baseInterval * 4;
             lastClaimAt.setSeconds(lastClaimAt.getSeconds() - interval);
-            await sequelize.models.Beneficiary.update(
-                { lastClaimAt },
-                { where: { address: listUsers[4].address } }
-            );
+            
+            returnGetBeneficiarySubgraph.resetHistory();
+            returnGetBeneficiarySubgraph.returns([{
+                address: listUsers[4].address,
+                claims: 0,
+                community: {
+                    id: listCommunity[0].contractAddress,
+                },
+                lastClaimAt: lastClaimAt,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 2,
+            }]);
 
             const result = await BeneficiaryService.list(
                 listManagers[0].address,
@@ -405,38 +348,24 @@ describe('beneficiary service', () => {
             expect(result.length).to.be.equal(1);
             expect(result[0].address).to.be.equal(listUsers[4].address);
         });
-
-        it('should list suspect and login inactive beneficiaries', async () => {
-            const date = new Date();
-            date.setDate(date.getDate() - config.loginInactivityThreshold);
-
-            await sequelize.models.AppUserModel.update(
-                {
-                    suspect: true,
-                    lastLogin: date,
-                },
-                { where: { address: listUsers[0].address } }
-            );
-            const result = await BeneficiaryService.list(
-                listManagers[0].address,
-                0,
-                5,
-                {
-                    suspect: true,
-                    loginInactivity: true,
-                }
-            );
-
-            expect(result.length).to.be.equal(1);
-            expect(result[0].address).to.be.equal(listUsers[0].address);
-            // eslint-disable-next-line no-unused-expressions
-            expect(result[0].suspect).to.be.true;
-        });
     });
 
     describe('search', () => {
         it('by name (full)', async () => {
             const user = users[3];
+            returnGetBeneficiaryByAddressSubgraph.returns([{
+                address: user.address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            }]);
+
             const result: IListBeneficiary[] = await BeneficiaryService.search(
                 users[0].address,
                 user.username!
@@ -450,6 +379,18 @@ describe('beneficiary service', () => {
 
         it('by name (partially)', async () => {
             const user = users[4];
+            returnGetBeneficiaryByAddressSubgraph.returns([{
+                address: user.address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            }]);
             const result = await BeneficiaryService.search(
                 users[0].address,
                 user.username!.slice(0, user.username!.length / 2)
@@ -463,6 +404,18 @@ describe('beneficiary service', () => {
 
         it('by name (not case sensitive)', async () => {
             const user = users[5];
+            returnGetBeneficiaryByAddressSubgraph.returns([{
+                address: user.address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            }]);
             const result = await BeneficiaryService.search(
                 users[0].address,
                 user.username!.toUpperCase()
@@ -476,6 +429,18 @@ describe('beneficiary service', () => {
 
         it('by address (checksumed)', async () => {
             const user = users[6];
+            returnGetBeneficiaryByAddressSubgraph.returns([{
+                address: user.address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            }]);
             const result = await BeneficiaryService.search(
                 users[0].address,
                 user.address
@@ -489,6 +454,18 @@ describe('beneficiary service', () => {
 
         it('by address (not checksumed)', async () => {
             const user = users[7];
+            returnGetBeneficiaryByAddressSubgraph.returns([{
+                address: user.address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            }]);
             const result = await BeneficiaryService.search(
                 users[0].address,
                 user.address.toLowerCase()
@@ -502,6 +479,7 @@ describe('beneficiary service', () => {
 
         it('by non (beneficiary) existing address', async () => {
             const user = users[8];
+            returnGetBeneficiaryByAddressSubgraph.returns([]);
             const result = await BeneficiaryService.search(
                 users[0].address,
                 user.address.toLowerCase()
@@ -511,6 +489,7 @@ describe('beneficiary service', () => {
 
         it('by non (beneficiary) existing name', async () => {
             const user = users[9];
+            returnGetBeneficiaryByAddressSubgraph.returns([]);
             const result = await BeneficiaryService.search(
                 users[0].address,
                 user.username!.toUpperCase()
@@ -553,24 +532,16 @@ describe('beneficiary service', () => {
                     },
                 }
             );
-
-            await models.appUser.update(
-                {
-                    suspect: true,
-                },
-                {
-                    where: {
-                        address: user[3].address,
-                    },
-                }
-            );
+            returnCommunityStateSubgraph.resetHistory();
+            returnCommunityStateSubgraph.returns({
+                removedBeneficiaries: 2
+            });
 
             const total = await BeneficiaryService.getTotalBeneficiaries(
                 user[0].address
             );
 
             expect(total.inactive).to.be.equal(2);
-            expect(total.suspicious).to.be.equal(1);
         });
     });
 
@@ -734,6 +705,20 @@ describe('beneficiary service', () => {
         });
 
         it('readRules should be false after a beneficiary has been added', async () => {
+            returnGetBeneficiaryByAddressSubgraph.resetHistory();
+            returnGetBeneficiaryByAddressSubgraph.returns([{
+                address: users[17].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            }]);
+
             const user = await UserService.welcome(users[17].address);
 
             // eslint-disable-next-line no-unused-expressions
@@ -746,6 +731,19 @@ describe('beneficiary service', () => {
         });
 
         it('should read the beneficiary rules successfully', async () => {
+            returnGetBeneficiaryByAddressSubgraph.resetHistory();
+            returnGetBeneficiaryByAddressSubgraph.returns([{
+                address: users[17].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            }]);
             const readRules = await BeneficiaryService.readRules(
                 users[17].address
             );
