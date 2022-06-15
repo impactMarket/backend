@@ -219,11 +219,10 @@ export default class BeneficiaryService {
                     : {})
             }
         });
-
-        if (!appUsers || appUsers.length === 0) {
-            return []
+        
+        if (appUsers && appUsers.length > 0) {
+            appUsers.forEach(user => addresses.push(user.address));
         }
-        appUsers.forEach(user => addresses.push(user.address));
 
         const beneficiaries = await getBeneficiariesByAddress(addresses, beneficiaryFilter.state, beneficiaryFilter.inactive, community!.contractAddress!);
         

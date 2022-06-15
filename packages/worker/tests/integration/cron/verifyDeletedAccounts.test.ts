@@ -5,6 +5,7 @@ import { Sequelize } from 'sequelize';
 import { stub, assert, SinonStub } from 'sinon';
 
 import * as managerSubgraph from '../../../../core/src/subgraph/queries/manager';
+import * as beneficiarySubgraph from '../../../../core/src/subgraph/queries/beneficiary';
 import { verifyDeletedAccounts } from '../../../src/jobs/cron/user';
 
 describe('[jobs - cron] verifyDeletedAccounts', () => {
@@ -14,6 +15,8 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     let dbGlobalDemographicsStub: SinonStub;
     const communityDemographicsService =
         new services.ubi.CommunityDemographicsService();
+    let returnGetBeneficiaryByAddressSubgraph: SinonStub;
+    let returnGetBeneficiarySubgraph: SinonStub;
 
     before(async () => {
         sequelize = tests.config.setup.sequelizeSetup();
@@ -123,6 +126,15 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             communityId: communities[0].id,
         });
         await storyService.love(users[0].address, story.id);
+
+        returnGetBeneficiaryByAddressSubgraph = stub(
+            beneficiarySubgraph,
+            'getBeneficiariesByAddress'
+        );
+        returnGetBeneficiarySubgraph = stub(
+            beneficiarySubgraph,
+            'getBeneficiaries'
+        );
     });
 
     after(async () => {
@@ -291,17 +303,30 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     });
 
     it('search beneficiary by address after delete user', async () => {
+        returnGetBeneficiaryByAddressSubgraph.returns([{
+            address: users[1].address.toLowerCase(),
+            claims: 0,
+            community: {
+                id: communities[0].contractAddress,
+            },
+            lastClaimAt: 0,
+            preLastClaimAt: 0, 
+            since: 0,
+            claimed: 0,
+            state: 0,
+        }]);
         const beneficiary = await services.ubi.BeneficiaryService.search(
             users[0].address,
             users[1].address
         );
         expect(beneficiary[0]).to.include({
             address: users[1].address,
-            username: null,
+            username: undefined,
             isDeleted: true,
         });
     });
     it('search beneficiary by username after delete user', async () => {
+        returnGetBeneficiaryByAddressSubgraph.returns([]);
         const beneficiary = await services.ubi.BeneficiaryService.search(
             users[0].address,
             users[1].username!
@@ -310,6 +335,44 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     });
 
     it('list beneficiaries after delete user', async () => {
+        returnGetBeneficiarySubgraph.returns([
+            {
+                address: users[1].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            },
+            {
+                address: users[2].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            },
+            {
+                address: users[3].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            }
+        ]);
         const beneficiary = await services.ubi.BeneficiaryService.list(
             users[0].address,
             0,
@@ -323,7 +386,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             if (el.address === users[1].address) {
                 expect(el).to.include({
                     address: users[1].address,
-                    username: null,
+                    username: undefined,
                     isDeleted: true, // deleted
                 });
             } else if (el.address === users[2].address) {
