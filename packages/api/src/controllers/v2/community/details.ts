@@ -7,8 +7,10 @@ import { standardResponse } from '../../../utils/api';
 
 class CommunityController {
     private detailsService: services.ubi.CommunityDetailsService;
+    private claimLocationService: services.ubi.ClaimLocationServiceV2;
     constructor() {
         this.detailsService = new services.ubi.CommunityDetailsService();
+        this.claimLocationService = new services.ubi.ClaimLocationServiceV2();
     }
 
     getManagers = (req: Request, res: Response) => {
@@ -159,6 +161,14 @@ class CommunityController {
     getAmbassador = (req: Request, res: Response) => {
         this.detailsService
             .getAmbassador(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getClaimLocation = (req: Request, res: Response) => {
+        this.claimLocationService.getByCommunity(
+            parseInt(req.params.id, 10)
+        )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
