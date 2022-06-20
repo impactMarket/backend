@@ -749,6 +749,32 @@ export class CommunityDetailsService {
         return this.communityContentStorage.getPresignedUrlPutObject(mime);
     }
 
+    public async getPromoter(communityId: number) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const result = await models.ubiPromoter.findOne({
+            include: [
+                {
+                    model: models.community,
+                    as: 'community',
+                    required: true,
+                    attributes: [],
+                    where: {
+                        id: communityId,
+                    },
+                },
+                {
+                    model: models.ubiPromoterSocialMedia,
+                    as: 'socialMedia',
+                },
+            ],
+        });
+
+        if (!result) return null;
+
+        return result.toJSON();
+    }
+
     private getSearchInput(searchInput: string) {
         if (isAddress(searchInput)) {
             return {

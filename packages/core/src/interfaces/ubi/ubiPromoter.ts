@@ -34,7 +34,7 @@ export interface UbiPromoter {
     category: 'organization' | 'company' | 'individual';
     name: string;
     description: string;
-    logoMediaId: number;
+    logoMediaPath: string;
 
     logo?: AppMediaContent;
     socialMedia?: UbiPromoterSocialMedia[];
@@ -44,5 +44,5 @@ export interface UbiPromoterCreation {
     category: 'organization' | 'company' | 'individual';
     name: string;
     description: string;
-    logoMediaId: number;
+    logoMediaPath: string;
 }

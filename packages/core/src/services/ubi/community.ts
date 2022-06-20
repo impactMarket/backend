@@ -1079,32 +1079,7 @@ export default class CommunityService {
 
         if (!result) return null;
 
-        const promoter = result.toJSON() as UbiPromoter;
-
-        if (promoter.logoMediaId) {
-            const media = await models.appMediaContent.findOne({
-                attributes: ['url', 'width', 'height'],
-                where: {
-                    id: promoter.logoMediaId,
-                },
-            });
-
-            if (media) {
-                const thumbnails = createThumbnailUrl(
-                    'org-logo',
-                    media.url.split(config.cloudfrontUrl + '/')[1],
-                    config.thumbnails.promoter.logo
-                );
-                promoter.logo = {
-                    id: 0,
-                    width: media.width,
-                    height: media.height,
-                    url: media.url,
-                    thumbnails,
-                };
-            }
-        }
-        return promoter;
+        return result.toJSON() as UbiPromoter;
     }
 
     public static async getSuspect(communityId: number) {
