@@ -180,6 +180,12 @@ class CommunityController {
             .then((url) => standardResponse(res, 200, true, url))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    getPromoter = (req: Request, res: Response) => {
+        this.detailsService.getPromoter(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export { CommunityController };

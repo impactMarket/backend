@@ -302,4 +302,29 @@ export default (route: Router): void => {
         authenticateToken,
         controller.getPresignedUrlMedia
     );
+
+    /**
+     * @swagger
+     *
+     * /communities/{id}/promoter:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community promoter
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiPromoter'
+     */
+     route.get('/:id/promoter', controller.getPromoter);
 };

@@ -10,7 +10,7 @@ export class UbiPromoterModel extends Model<UbiPromoter, UbiPromoterCreation> {
     public category!: 'organization' | 'company' | 'individual';
     public name!: string;
     public description!: string;
-    public logoMediaId!: number;
+    public logoMediaPath!: string;
 }
 
 export function initializeUbiPromoter(sequelize: Sequelize): void {
@@ -33,12 +33,8 @@ export function initializeUbiPromoter(sequelize: Sequelize): void {
                 type: DataTypes.STRING(512),
                 allowNull: false,
             },
-            logoMediaId: {
-                type: DataTypes.INTEGER,
-                references: {
-                    model: 'app_media_content',
-                    key: 'id',
-                },
+            logoMediaPath: {
+                type: DataTypes.STRING(44),
                 // onDelete: 'SET NULL', // default
                 allowNull: false,
             },
