@@ -33,7 +33,10 @@
  */
 
 export enum NotificationType {
-    STORY_LIKED
+    STORY_LIKED,
+    BENEFICIARY_ADDED,
+    MANAGER_ADDED,
+    COMMUNITY_CREATED,
 }
 
 export interface AppNotification {
