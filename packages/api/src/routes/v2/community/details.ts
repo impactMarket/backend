@@ -242,6 +242,42 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
+     * /communities/{id}/claims-location:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community claims location
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   latitude:
+     *                     type: integer
+     *                   longitude:
+     *                     type: integer
+     */
+     route.get(
+        '/:id/claims-location',
+        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
+        controller.getClaimLocation
+    );
+
+    /**
+     * @swagger
+     *
      * /communities/media/{mime}:
      *   get:
      *     tags:
