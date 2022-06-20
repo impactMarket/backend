@@ -172,6 +172,14 @@ class CommunityController {
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+    
+    getPresignedUrlMedia = (req: Request, res: Response) => {
+        this.detailsService.getPresignedUrlMedia(
+            req.params.mime,
+        )
+            .then((url) => standardResponse(res, 200, true, url))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export { CommunityController };

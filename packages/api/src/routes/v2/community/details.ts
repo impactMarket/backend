@@ -274,4 +274,32 @@ export default (route: Router): void => {
         database.cacheWithRedis('1 day', database.cacheOnlySuccess),
         controller.getClaimLocation
     );
+
+    /**
+     * @swagger
+     *
+     * /communities/media/{mime}:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Make a request for a presigned URL
+     *     parameters:
+     *       - in: path
+     *         name: mime
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: media mimetype
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+     route.get(
+        '/media/:mime',
+        authenticateToken,
+        controller.getPresignedUrlMedia
+    );
 };
