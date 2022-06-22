@@ -1,7 +1,9 @@
 import { celebrate, Joi } from 'celebrate';
 
+import { defaultSchema } from './defaultSchema';
+
 const create = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         requestByAddress: Joi.string().required(),
         name: Joi.string().required(),
         contractAddress: Joi.string().optional(),
@@ -30,7 +32,7 @@ const create = celebrate({
  * @deprecated
  */
 const add = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         requestByAddress: Joi.string().required(),
         name: Joi.string().required(),
         contractAddress: Joi.string().optional(),
@@ -54,7 +56,7 @@ const add = celebrate({
 });
 
 const edit = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         name: Joi.string().required(),
         description: Joi.string().required(),
         language: Joi.string().optional(), // TODO: to remove
@@ -67,7 +69,7 @@ const edit = celebrate({
 });
 
 const editSubmission = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         name: Joi.string().required(),
         description: Joi.string().required(),
         language: Joi.string().required(),
@@ -86,20 +88,20 @@ const editSubmission = celebrate({
 });
 
 const accept = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         acceptanceTransaction: Joi.string().required(),
         publicId: Joi.string().required(),
     }),
 });
 
 const remove = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         publicId: Joi.string().required(),
     }),
 });
 
 const review = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         review: Joi.string()
             .required()
             .valid('pending', 'claimed', 'declined', 'accepted'),
