@@ -526,7 +526,10 @@ export class CommunityListService {
                         query.offset
                             ? parseInt(query.offset, 10)
                             : config.defaultOffset
-                    },`,
+                    },
+                    where: {
+                        state: 0
+                    }`,
                 `id, ${orderBy}`
             );
         }
