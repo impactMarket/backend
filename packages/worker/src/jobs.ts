@@ -11,7 +11,6 @@ import {
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { cleanupNetworkRewards } from './jobs/cron/network';
-import { verifyStoriesLifecycle } from './jobs/cron/stories';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
 import { verifyDeletedAccounts } from './jobs/cron/user';
 
@@ -428,29 +427,6 @@ function cron() {
     } catch (e) {
         /** */
     }
-
-    // everyday at 1am
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '0 1 * * *',
-        () => {
-            utils.Logger.info('Verify stories...');
-            verifyStoriesLifecycle()
-                .then(() => {
-                    services.app.CronJobExecutedService.add(
-                        'verifyStoriesLifecycle'
-                    );
-                    utils.Logger.info(
-                        'verifyStoriesLifecycle successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    utils.Logger.error('verifyStoriesLifecycle FAILED! ' + e);
-                });
-        },
-        null,
-        true
-    );
 
     try {
         // everyday at 1am
