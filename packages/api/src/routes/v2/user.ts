@@ -269,6 +269,19 @@ export default (app: Router): void => {
      *     tags:
      *       - "users"
      *     summary: "List anonymous report"
+     *     parameters:
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for report pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for report pagination
      *     responses:
      *       "200":
      *         description: "Success"
@@ -276,7 +289,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/report', authenticateToken, userController.getReport);
+    route.get('/report/:query?', authenticateToken, userController.getReport);
 
     /**
      * @swagger

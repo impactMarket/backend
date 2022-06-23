@@ -221,7 +221,7 @@ class UserController {
         }
 
         this.userService
-            .getReport(req.user.address)
+            .getReport(req.user.address, req.query)
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

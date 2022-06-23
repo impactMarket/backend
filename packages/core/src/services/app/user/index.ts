@@ -291,7 +291,10 @@ export default class UserService {
         return true;
     }
 
-    public async getReport(user: string) {
+    public async getReport(
+        user: string,
+        query: { offset?: string; limit?: string },
+    ) {
         const communities = await models.community.findAll({
             attributes: ['id'],
             where: {
@@ -303,12 +306,23 @@ export default class UserService {
             throw new BaseError('COMMUNITY_NOT_FOUND', 'no community found for this ambassador');
         }
 
-        return models.anonymousReport.findAll({
+        return models.anonymousReport.findAndCountAll({
+            include: [{
+                attributes: ['id', 'contractAddress', 'name', 'coverMediaPath'],
+                model: models.community,
+                as: 'community',
+            }],
             where: {
                 communityId: {
                     [Op.in]: communities.map(c => c.id)
                 }
-            }
+            },
+            offset: query.offset
+                ? parseInt(query.offset, 10)
+                : config.defaultOffset,
+            limit: query.limit
+                ? parseInt(query.limit, 10)
+                : config.defaultLimit,
         });
     }
 
