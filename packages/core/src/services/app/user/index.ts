@@ -291,6 +291,27 @@ export default class UserService {
         return true;
     }
 
+    public async getReport(user: string) {
+        const communities = await models.community.findAll({
+            attributes: ['id'],
+            where: {
+                ambassadorAddress: user,
+            }
+        });
+
+        if (!communities || communities.length === 0) {
+            throw new BaseError('COMMUNITY_NOT_FOUND', 'no community found for this ambassador');
+        }
+
+        return models.anonymousReport.findAll({
+            where: {
+                communityId: {
+                    [Op.in]: communities.map(c => c.id)
+                }
+            }
+        });
+    }
+
     public async getPresignedUrlMedia(mime: string): Promise<{
         uploadURL: string;
         filename: string;
