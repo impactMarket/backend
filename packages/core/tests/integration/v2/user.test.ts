@@ -80,10 +80,10 @@ describe('user service v2', () => {
 
         describe('list', () => {
             it('list by ambassador address', async () => {
-                const reports = await userService.getReport(users[1].address);
+                const reports = await userService.getReport(users[1].address, {});
 
-                expect(reports.length).to.be.eq(1);
-                expect(reports[0]).to.include({
+                expect(reports.count).to.be.eq(1);
+                expect(reports.rows[0]).to.include({
                     communityId: communities[0].id,
                     message: 'report',
                     category: 'general',
