@@ -56,9 +56,20 @@ export default class StoryService {
             storyMediaPath?: string;
             message?: string;
         } = {};
+        let storyMediaToAdd: {
+            storyMedia?: StoryMediaCreationEager[];
+        } = {};
         if (story.storyMediaPath) {
             storyContentToAdd = {
                 storyMediaPath: story.storyMediaPath,
+            };
+
+            storyMediaToAdd = {
+                storyMedia: [
+                    {
+                        storyMediaPath: story.storyMediaPath!,
+                    },
+                ],
             };
         }
         if (story.storyMediaId) {
@@ -69,9 +80,6 @@ export default class StoryService {
         }
         let storyCommunityToAdd: {
             storyCommunity?: StoryCommunityCreationEager[];
-        } = {};
-        let storyMediaToAdd: {
-            storyMedia?: StoryMediaCreationEager[];
         } = {};
         if (story.message !== undefined) {
             storyContentToAdd = {
@@ -94,14 +102,6 @@ export default class StoryService {
                     'story cannot be added in private communities'
                 );
             }
-
-            storyMediaToAdd = {
-                storyMedia: [
-                    {
-                        storyMediaPath: story.storyMediaPath!,
-                    },
-                ],
-            };
 
             storyCommunityToAdd = {
                 storyCommunity: [
