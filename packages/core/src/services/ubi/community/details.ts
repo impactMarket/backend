@@ -1,8 +1,8 @@
-import { BigNumber } from 'bignumber.js';
-import { utils, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { Op, WhereOptions, fn, col, literal, Transaction } from 'sequelize';
 
 import { models } from '../../../database';
+import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { AppUser } from '../../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
 import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
@@ -282,8 +282,8 @@ export class CommunityDetailsService {
                 if (addresses.length === 0) {
                     return {
                         count: 0,
-                        rows: []
-                    }
+                        rows: [],
+                    };
                 }
                 managersSubgraph = await getCommunityManagers(
                     community.contractAddress!,
@@ -409,6 +409,18 @@ export class CommunityDetailsService {
         }
     }
 
+    public async getManagerByAddress(
+        address: string
+    ): Promise<ManagerAttributes | null> {
+        const r = await models.manager.findOne({
+            where: { address, active: true },
+        });
+        if (r) {
+            return r.toJSON() as ManagerAttributes;
+        }
+        return null;
+    }
+
     public async listBeneficiaries(
         managerAddress: string,
         offset: number,
@@ -484,8 +496,8 @@ export class CommunityDetailsService {
             if (addresses.length === 0) {
                 return {
                     count: 0,
-                    rows: []
-                }
+                    rows: [],
+                };
             }
             beneficiariesSubgraph = await getBeneficiariesByAddress(
                 addresses,
@@ -743,9 +755,7 @@ export class CommunityDetailsService {
         return result;
     }
 
-    public async getPresignedUrlMedia(
-        mime: string,
-    ) {
+    public async getPresignedUrlMedia(mime: string) {
         return this.communityContentStorage.getPresignedUrlPutObject(mime);
     }
 

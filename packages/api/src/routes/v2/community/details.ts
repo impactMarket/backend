@@ -269,7 +269,7 @@ export default (route: Router): void => {
      *                   longitude:
      *                     type: integer
      */
-     route.get(
+    route.get(
         '/:id/claims-location',
         database.cacheWithRedis('1 day', database.cacheOnlySuccess),
         controller.getClaimLocation
@@ -297,7 +297,7 @@ export default (route: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-     route.get(
+    route.get(
         '/media/:mime',
         authenticateToken,
         controller.getPresignedUrlMedia
@@ -326,5 +326,5 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiPromoter'
      */
-     route.get('/:id/promoter', controller.getPromoter);
+    route.get('/:id/promoter', controller.getPromoter);
 };

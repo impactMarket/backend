@@ -34,6 +34,7 @@ export class Community extends Model<
     public started!: Date;
     public proposalId!: number | null;
     public ambassadorAddress!: string | null;
+    public placeId!: string | null;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -140,6 +141,10 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 allowNull: true,
             },
             ambassadorAddress: {
+                type: DataTypes.STRING(44),
+                allowNull: true,
+            },
+            placeId: {
                 type: DataTypes.STRING(44),
                 allowNull: true,
             },
