@@ -53,10 +53,12 @@ export default class StoryService {
             mediaMediaId?: number;
             storyMediaPath?: string;
             message?: string;
+            storyMedia?: string[];
         } = {};
         if (story.storyMediaPath) {
             storyContentToAdd = {
                 storyMediaPath: story.storyMediaPath,
+                storyMedia: [story.storyMediaPath],
             };
         }
         if (story.storyMediaId) {
@@ -98,6 +100,7 @@ export default class StoryService {
                 ],
             };
         }
+
         const created = await this.storyContent.create(
             {
                 ...storyContentToAdd,

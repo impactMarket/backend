@@ -24,7 +24,7 @@ export default (app: Router): void => {
      *         schema:
      *           type: string
      *         required: true
-     *         description: media mimetype
+     *         description: media mimetype, separated by semicolon (png;jpg).
      *     responses:
      *       "200":
      *         description: OK
@@ -55,10 +55,10 @@ export default (app: Router): void => {
      *               communityId:
      *                 type: integer
      *                 description: The community id
-     *               storyMediaPath:
-     *                 type: string
-     *                 nullable: true
-     *                 description: The media path of the story from presigned url
+     *               storyMedia:
+     *                 type: array
+     *                 items:
+     *                   type: string
      *               message:
      *                 type: string
      *                 nullable: true
