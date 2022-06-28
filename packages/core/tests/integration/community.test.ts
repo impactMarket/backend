@@ -1177,6 +1177,7 @@ describe('community service', () => {
                     'status',
                     'updatedAt',
                     'visibility',
+                    'placeId',
                 ]);
                 expect(result.rows[0].contract).to.have.deep.keys([
                     'claimAmount',
