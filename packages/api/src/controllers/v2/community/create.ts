@@ -128,7 +128,7 @@ class CommunityController {
             });
             return;
         }
-        const { name, description, currency, coverMediaPath, email } = req.body;
+        const { name, description, coverMediaPath } = req.body;
 
         // verify if the current user is manager in this community
         this.communityDetailsService
