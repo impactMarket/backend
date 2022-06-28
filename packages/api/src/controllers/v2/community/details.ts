@@ -166,23 +166,22 @@ class CommunityController {
     };
 
     getClaimLocation = (req: Request, res: Response) => {
-        this.claimLocationService.getByCommunity(
-            parseInt(req.params.id, 10)
-        )
+        this.claimLocationService
+            .getByCommunity(parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
-    
+
     getPresignedUrlMedia = (req: Request, res: Response) => {
-        this.detailsService.getPresignedUrlMedia(
-            req.params.mime,
-        )
+        this.detailsService
+            .getPresignedUrlMedia(req.params.mime)
             .then((url) => standardResponse(res, 200, true, url))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getPromoter = (req: Request, res: Response) => {
-        this.detailsService.getPromoter(parseInt(req.params.id, 10))
+        this.detailsService
+            .getPromoter(parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
