@@ -46,11 +46,12 @@ class StoryController {
             });
             return;
         }
-        const { message, storyMediaPath } = req.body;
+        const { message, storyMediaPath, storyMedia } = req.body;
         this.storyService
             .add(req.user.address, {
                 message,
                 storyMediaPath,
+                storyMedia,
             })
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));

@@ -24,6 +24,22 @@ export function storyAssociation(sequelize: Sequelize) {
             as: 'storyCommunity',
         }
     );
+    // used to query from the community with incude
+    sequelize.models.StoryMediaModel.belongsTo(
+        sequelize.models.StoryContentModel,
+        {
+            foreignKey: 'contentId',
+            as: 'storyContent',
+        }
+    );
+    // used to post from the content with incude
+    sequelize.models.StoryContentModel.hasMany(
+        sequelize.models.StoryMediaModel,
+        {
+            foreignKey: 'contentId',
+            as: 'storyMedia',
+        }
+    );
     // used to post from the content with incude
     sequelize.models.StoryContentModel.hasOne(
         sequelize.models.AppMediaContentModel,

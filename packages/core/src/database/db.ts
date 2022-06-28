@@ -20,6 +20,7 @@ import { GlobalDemographics } from './models/global/globalDemographics';
 import { GlobalGrowthModel } from './models/global/globalGrowth';
 import { ReachedAddress } from './models/reachedAddress';
 import { StoryCommunityModel } from './models/story/storyCommunity';
+import { StoryMediaModel } from './models/story/storyMedia';
 import { StoryContentModel } from './models/story/storyContent';
 import { StoryEngagementModel } from './models/story/storyEngagement';
 import { StoryUserEngagementModel } from './models/story/storyUserEngagement';
@@ -86,6 +87,7 @@ export interface DbModels {
     //
     storyContent: ModelCtor<StoryContentModel>;
     storyCommunity: ModelCtor<StoryCommunityModel>;
+    storyMedia: ModelCtor<StoryMediaModel>;
     storyEngagement: ModelCtor<StoryEngagementModel>;
     storyUserEngagement: ModelCtor<StoryUserEngagementModel>;
     storyUserReport: ModelCtor<StoryUserReportModel>;

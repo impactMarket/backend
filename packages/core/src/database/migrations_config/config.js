@@ -35,7 +35,7 @@ module.exports = {
     development: {
         username: 'postgres',
         password: 'mysecretpassword',
-        database: 'impactmarket',
+        database: 'newdumpdatabase',
         host: 'localhost',
         port: 5432,
         dialect: 'postgres',

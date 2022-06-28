@@ -26,6 +26,7 @@ import { initializeGlobalDemographics } from './global/globalDemographics';
 import { initializeGlobalGrowth } from './global/globalGrowth';
 import { initializeReachedAddress } from './reachedAddress';
 import { initializeStoryCommunity } from './story/storyCommunity';
+import { initializeStoryMedia } from './story/storyMedia';
 import { initializeStoryContent } from './story/storyContent';
 import { initializeStoryEngagement } from './story/storyEngagement';
 import { initializeStoryUserEngagement } from './story/storyUserEngagement';
@@ -101,6 +102,7 @@ export default function initModels(sequelize: Sequelize): void {
     // story
     initializeStoryContent(sequelize);
     initializeStoryCommunity(sequelize);
+    initializeStoryMedia(sequelize);
     initializeStoryEngagement(sequelize);
     initializeStoryUserEngagement(sequelize);
     initializeStoryUserReport(sequelize);

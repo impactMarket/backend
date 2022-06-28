@@ -27,6 +27,7 @@ import * as GlobalDemographics from './models/global/globalDemographics';
 import * as GlobalGrowth from './models/global/globalGrowth';
 import * as ReachedAddress from './models/reachedAddress';
 import * as StoryCommunity from './models/story/storyCommunity';
+import * as StoryMedia from './models/story/storyMedia';
 import * as StoryContent from './models/story/storyContent';
 import * as StoryEngagement from './models/story/storyEngagement';
 import * as StoryUserEngagement from './models/story/storyUserEngagement';
@@ -64,12 +65,12 @@ const dbConfig: Options = {
     dialect: 'postgres',
     dialectOptions: {
         connectTimeout: 60000,
-        ssl: config.aws.lambda
-            ? {
-                  require: true,
-                  rejectUnauthorized: false,
-              }
-            : {},
+        // ssl: config.aws.lambda
+        //     ? {
+        //           require: true,
+        //           rejectUnauthorized: false,
+        //       }
+        //     : {},
     },
     dialectModule: pg,
     pool: {
@@ -158,6 +159,8 @@ const models: DbModels = {
         .StoryContentModel as ModelCtor<StoryContent.StoryContentModel>,
     storyCommunity: sequelize.models
         .StoryCommunityModel as ModelCtor<StoryCommunity.StoryCommunityModel>,
+    storyMedia: sequelize.models
+        .StoryMediaModel as ModelCtor<StoryMedia.StoryMediaModel>,
     storyEngagement: sequelize.models
         .StoryEngagementModel as ModelCtor<StoryEngagement.StoryEngagementModel>,
     storyUserEngagement: sequelize.models

@@ -6,6 +6,7 @@ import { models } from '../../database';
 import { StoryContentModel } from '../../database/models/story/storyContent';
 import { NotificationType } from '../../interfaces/app/appNotification';
 import { StoryCommunityCreationEager } from '../../interfaces/story/storyCommunity';
+import { StoryMediaCreationEager } from '../../interfaces/story/storyMedia';
 import { StoryContent } from '../../interfaces/story/storyContent';
 import { getUserRoles } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
@@ -21,12 +22,18 @@ export default class StoryServiceV2 {
     private storyContentStorage = new StoryContentStorage();
 
     public getPresignedUrlMedia(mime: string) {
-        return this.storyContentStorage.getPresignedUrlPutObject(mime);
+        const mimes = mime.split(';');
+        if (mimes.length === 1) {
+            return this.storyContentStorage.getPresignedUrlPutObject(mime);
+        } else {
+            const promises = mimes.map(async el => this.storyContentStorage.getPresignedUrlPutObject(el));
+            return Promise.all(promises);
+        }
     }
 
     public async add(
         fromAddress: string,
-        story: IAddStory
+        story: IAddStory,
     ): Promise<ICommunityStory> {
         let storyContentToAdd: {
             storyMediaPath?: string;
@@ -39,6 +46,9 @@ export default class StoryServiceV2 {
         }
         let storyCommunityToAdd: {
             storyCommunity?: StoryCommunityCreationEager[];
+        } = {};
+        let storyMediaToAdd: {
+            storyMedia?: StoryMediaCreationEager[];
         } = {};
         if (story.message !== undefined) {
             storyContentToAdd = {
@@ -74,6 +84,21 @@ export default class StoryServiceV2 {
             );
         }
 
+        if (story.storyMediaPath) {
+            storyMediaToAdd = {
+                storyMedia: [
+                    {
+                        storyMediaPath: story.storyMediaPath!,
+                    },
+                ],
+            };
+        } else if (story.storyMedia && story.storyMedia.length > 0) {
+            let storyMedia = story.storyMedia.map(media => ({
+                storyMediaPath: media,
+            }));
+            storyMediaToAdd = { storyMedia }
+        }
+
         storyCommunityToAdd = {
             storyCommunity: [
                 {
@@ -85,6 +110,7 @@ export default class StoryServiceV2 {
             {
                 ...storyContentToAdd,
                 ...storyCommunityToAdd,
+                ...storyMediaToAdd,
                 byAddress: fromAddress,
                 isPublic: true,
                 postedAt: new Date(),
@@ -94,6 +120,7 @@ export default class StoryServiceV2 {
                 include: [
                     { model: models.storyCommunity, as: 'storyCommunity' },
                     { model: models.storyEngagement, as: 'storyEngagement' },
+                    { model: models.storyMedia, as: 'storyMedia' },
                 ],
             }
         );
@@ -175,6 +202,12 @@ export default class StoryServiceV2 {
                               as: 'storyEngagement',
                           },
                       ]),
+                {
+                    attributes: ['storyMediaPath'],
+                    model: models.storyMedia,
+                    as: 'storyMedia',
+                    required: false,
+                },      
             ],
             where: {
                 id: storyId,
@@ -203,6 +236,7 @@ export default class StoryServiceV2 {
                     ? content.storyUserReport.length !== 0
                     : false,
             },
+            storyMedia: content.storyMedia,
         } as any;
     }
 
@@ -234,6 +268,12 @@ export default class StoryServiceV2 {
                     where: {
                         address: onlyFromAddress,
                     },
+                },
+                {
+                    attributes: ['storyMediaPath'],
+                    model: models.storyMedia,
+                    as: 'storyMedia',
+                    required: false,
                 },
                 {
                     model: models.storyCommunity,
@@ -279,6 +319,7 @@ export default class StoryServiceV2 {
                     userReported: !!content.storyUserReport?.length,
                     userLoved: !!content.storyUserEngagement?.length,
                 },
+                storyMedia: content.storyMedia,
             };
         });
         return {
@@ -302,6 +343,7 @@ export default class StoryServiceV2 {
         };
         try {
             r = await models.storyContent.findAndCountAll({
+                subQuery: false,
                 include: [
                     {
                         model: models.storyCommunity,
@@ -382,6 +424,12 @@ export default class StoryServiceV2 {
                                   as: 'storyEngagement',
                               },
                           ]),
+                    {
+                        attributes: ['storyMediaPath'],
+                        model: models.storyMedia,
+                        as: 'storyMedia',
+                        required: false,
+                    },
                 ],
                 where: {
                     isPublic: true,
@@ -420,6 +468,7 @@ export default class StoryServiceV2 {
                     loves: content.storyEngagement?.loves || 0,
                     userLoved: !!content.storyUserEngagement?.length,
                 },
+                storyMedia: content.storyMedia,
             };
         });
         return {

@@ -9,6 +9,7 @@ import {
     StoryCommunity,
     StoryCommunityCreationEager,
 } from '../interfaces/story/storyCommunity';
+import { StoryMediaCreationEager } from '../interfaces/story/storyMedia';
 import { StoryContent } from '../interfaces/story/storyContent';
 import { BeneficiaryAttributes } from '../interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../interfaces/ubi/community';
@@ -27,6 +28,7 @@ import { StoryContentStorage } from './storage';
 export default class StoryService {
     public storyContent = models.storyContent;
     public storyCommunity = models.storyCommunity;
+    public storyMedia = models.storyMedia;
     public storyEngagement = models.storyEngagement;
     public storyUserEngagement = models.storyUserEngagement;
     public storyUserReport = models.storyUserReport;
@@ -68,6 +70,9 @@ export default class StoryService {
         let storyCommunityToAdd: {
             storyCommunity?: StoryCommunityCreationEager[];
         } = {};
+        let storyMediaToAdd: {
+            storyMedia?: StoryMediaCreationEager[];
+        } = {};
         if (story.message !== undefined) {
             storyContentToAdd = {
                 ...storyContentToAdd,
@@ -90,6 +95,14 @@ export default class StoryService {
                 );
             }
 
+            storyMediaToAdd = {
+                storyMedia: [
+                    {
+                        storyMediaPath: story.storyMediaPath!,
+                    },
+                ],
+            };
+
             storyCommunityToAdd = {
                 storyCommunity: [
                     {
@@ -102,6 +115,7 @@ export default class StoryService {
             {
                 ...storyContentToAdd,
                 ...storyCommunityToAdd,
+                ...storyMediaToAdd,
                 byAddress: fromAddress,
                 isPublic: true,
                 postedAt: new Date(),
@@ -111,6 +125,7 @@ export default class StoryService {
                 include: [
                     { model: this.storyCommunity, as: 'storyCommunity' },
                     { model: this.storyEngagement, as: 'storyEngagement' },
+                    { model: this.storyMedia, as: 'storyMedia' },
                 ],
             }
         );
