@@ -4,11 +4,11 @@ import { AirgrabProofModel } from './models/airgrab/airgrabProof';
 import { AirgrabUserModel } from './models/airgrab/airgrabUser';
 import { AppAnonymousReportModel } from './models/app/anonymousReport';
 import { AppClientCredentialModel } from './models/app/appClientCredential';
+import { AppLogModel } from './models/app/appLog';
 import { AppMediaContentModel } from './models/app/appMediaContent';
 import { AppMediaThumbnailModel } from './models/app/appMediaThumbnail';
 import { AppNotificationModel } from './models/app/appNotification';
 import { AppProposalModel } from './models/app/appProposal';
-import { AppLogModel } from './models/app/appLog';
 import { AppUserModel } from './models/app/appUser';
 import { AppUserThroughTrustModel } from './models/app/appUserThroughTrust';
 import { AppUserTrustModel } from './models/app/appUserTrust';
@@ -19,6 +19,7 @@ import { GlobalDailyState } from './models/global/globalDailyState';
 import { GlobalDemographics } from './models/global/globalDemographics';
 import { GlobalGrowthModel } from './models/global/globalGrowth';
 import { ReachedAddress } from './models/reachedAddress';
+import { StoryCommentModel } from './models/story/storyComment';
 import { StoryCommunityModel } from './models/story/storyCommunity';
 import { StoryContentModel } from './models/story/storyContent';
 import { StoryEngagementModel } from './models/story/storyEngagement';
@@ -89,6 +90,7 @@ export interface DbModels {
     storyEngagement: ModelCtor<StoryEngagementModel>;
     storyUserEngagement: ModelCtor<StoryUserEngagementModel>;
     storyUserReport: ModelCtor<StoryUserReportModel>;
+    storyComment: ModelCtor<StoryCommentModel>;
     //
     airgrabUser: ModelCtor<AirgrabUserModel>;
     airgrabProof: ModelCtor<AirgrabProofModel>;
