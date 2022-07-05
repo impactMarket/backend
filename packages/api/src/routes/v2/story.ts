@@ -25,7 +25,7 @@ export default (app: Router): void => {
      *           type: array
      *           items:
      *            type: string
-     *         required: false
+     *         required: true
      *         description: media mimetype
      *     responses:
      *       "200":
