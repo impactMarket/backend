@@ -22,9 +22,11 @@ export default (app: Router): void => {
      *       - in: query
      *         name: mime
      *         schema:
-     *           type: string
-     *         required: true
-     *         description: media mimetype, separated by semicolon (png;jpg).
+     *           type: array
+     *           items:
+     *            type: string
+     *         required: false
+     *         description: media mimetype
      *     responses:
      *       "200":
      *         description: OK

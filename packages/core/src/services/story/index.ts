@@ -20,12 +20,22 @@ import { StoryContentStorage } from '../storage';
 export default class StoryServiceV2 {
     private storyContentStorage = new StoryContentStorage();
 
-    public getPresignedUrlMedia(mime: string) {
-        const mimes = mime.split(';');
-        if (mimes.length === 1) {
-            return this.storyContentStorage.getPresignedUrlPutObject(mime);
+    public getPresignedUrlMedia(
+        query: {
+            mime?: string[] | string
+        }
+    ) {
+        if (!query.mime) {
+            throw new BaseError(
+                'INVALID_QUERY',
+                'missing mime'
+            );
+        }
+
+        if (typeof query.mime === 'string') {
+            return this.storyContentStorage.getPresignedUrlPutObject(query.mime as string);
         } else {
-            const promises = mimes.map(async el => this.storyContentStorage.getPresignedUrlPutObject(el));
+            const promises = (query.mime as string[]).map(async el => this.storyContentStorage.getPresignedUrlPutObject(el));
             return Promise.all(promises);
         }
     }
