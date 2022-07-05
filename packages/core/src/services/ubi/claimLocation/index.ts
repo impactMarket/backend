@@ -1,5 +1,6 @@
-import { point, multiPolygon } from '@turf/helpers';
+import { point, multiPolygon, polygon } from '@turf/helpers';
 import pointsWithinPolygon from '@turf/points-within-polygon';
+import distance from '@turf/distance';
 import { Op } from 'sequelize';
 
 import config from '../../../config';
@@ -28,17 +29,21 @@ export default class ClaimLocationService {
             const contries = [community!.country];
             contries.push(...countryNeighbors[community!.country].neighbours);
 
+            const points = point([gps.longitude, gps.latitude]);
             let valid = false;
             for (let i = 0; i < contries.length; i++) {
                 const countryCode = iso3Countries[contries[i]];
                 const coordinates = countries.find(
                     (el) => el.properties.ISO_A3 === countryCode
                 );
-                const points = point([gps.longitude, gps.latitude]);
                 const countryCoordinate: [any] =
                     coordinates.geometry.coordinates;
-                const searchWithin = multiPolygon(countryCoordinate);
-
+                let searchWithin: any;
+                if (coordinates.geometry.type === 'Polygon') {
+                    searchWithin = polygon(countryCoordinate);
+                } else if (coordinates.geometry.type === 'MultiPolygon') {
+                    searchWithin = multiPolygon(countryCoordinate);
+                }
                 const ptsWithin = pointsWithinPolygon(points, searchWithin);
                 if (ptsWithin.features.length) {
                     valid = true;
@@ -47,10 +52,20 @@ export default class ClaimLocationService {
             }
 
             if (!valid) {
-                throw new BaseError(
-                    'INVALID_LOCATION',
-                    'Claim location outside community country'
+                // check if its close to the community country
+                const countryCode = iso3Countries[community!.country];
+                const country = countries.find(
+                    (el) => el.properties.ISO_A3 === countryCode
                 );
+
+                const closeLocation = this.getDistance(points, country.geometry);
+
+                if (!closeLocation) {
+                    throw new BaseError(
+                        'INVALID_LOCATION',
+                        'Claim location outside community country'
+                    );
+                }
             }
 
             const beneficiary: BeneficiaryAttributes | null =
@@ -123,5 +138,40 @@ export default class ClaimLocationService {
             },
             raw: true,
         }) as any;
+    }
+
+    private getDistance(location: any, geometry: any) {
+        let close = false;
+
+        if (geometry.type === 'Polygon') {
+            const element = geometry.coordinates[0];
+            element.forEach(el => {
+                const newPoint = point(el);
+                const dist = distance(location, newPoint);
+                // less than 50 kilometers
+                if (dist < 50) {
+                    close = true;
+                    return;
+                }
+            });
+        } else if (geometry.type === 'MultiPolygon') {
+            const coordinates = geometry.coordinates;
+            for (let index = 0; index < coordinates.length; index++) {
+                const element = coordinates[index][0];
+                element.forEach(el => {
+                    const newPoint = point(el);
+                    const dist = distance(location, newPoint);
+                    // less than 50 kilometers
+                    if (dist < 50) {
+                        close = true;
+                        return;
+                    }
+                });
+
+                if (close) break;
+            }
+        }
+
+        return close;
     }
 }

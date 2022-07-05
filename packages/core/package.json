@@ -47,6 +47,7 @@
         "@hubspot/api-client": "5.0.0",
         "@impactmarket/worker": "1.0.0",
         "@sendgrid/mail": "7.6.0",
+        "@turf/distance": "6.5.0",
         "@turf/points-within-polygon": "6.5.0",
         "apicache": "1.6.3",
         "apollo-boost": "0.4.9",
