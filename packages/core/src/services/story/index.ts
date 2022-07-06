@@ -20,17 +20,34 @@ import { StoryContentStorage } from '../storage';
 export default class StoryServiceV2 {
     private storyContentStorage = new StoryContentStorage();
 
-    public getPresignedUrlMedia(mime: string) {
-        return this.storyContentStorage.getPresignedUrlPutObject(mime);
+    public getPresignedUrlMedia(
+        query: {
+            mime?: string[] | string
+        }
+    ) {
+        if (!query.mime) {
+            throw new BaseError(
+                'INVALID_QUERY',
+                'missing mime'
+            );
+        }
+
+        if (typeof query.mime === 'string') {
+            return this.storyContentStorage.getPresignedUrlPutObject(query.mime as string);
+        } else {
+            const promises = (query.mime as string[]).map(async el => this.storyContentStorage.getPresignedUrlPutObject(el));
+            return Promise.all(promises);
+        }
     }
 
     public async add(
         fromAddress: string,
-        story: IAddStory
+        story: IAddStory,
     ): Promise<ICommunityStory> {
         let storyContentToAdd: {
             storyMediaPath?: string;
             message?: string;
+            storyMedia?: string[];
         } = {};
         if (story.storyMediaPath) {
             storyContentToAdd = {
@@ -72,6 +89,13 @@ export default class StoryServiceV2 {
                 'PRIVATE_COMMUNITY',
                 'story cannot be added in private communities'
             );
+        }
+
+        if (story.storyMediaPath) {
+            storyContentToAdd.storyMedia = [story.storyMediaPath]
+        } else if (story.storyMedia && story.storyMedia.length > 0) {
+            storyContentToAdd.storyMedia = story.storyMedia
+            storyContentToAdd.storyMediaPath = story.storyMedia[0];
         }
 
         storyCommunityToAdd = {
@@ -174,7 +198,7 @@ export default class StoryServiceV2 {
                               model: models.storyEngagement,
                               as: 'storyEngagement',
                           },
-                      ]),
+                      ]),    
             ],
             where: {
                 id: storyId,
@@ -203,6 +227,7 @@ export default class StoryServiceV2 {
                     ? content.storyUserReport.length !== 0
                     : false,
             },
+            storyMedia: content.storyMedia,
         } as any;
     }
 
@@ -279,6 +304,7 @@ export default class StoryServiceV2 {
                     userReported: !!content.storyUserReport?.length,
                     userLoved: !!content.storyUserEngagement?.length,
                 },
+                storyMedia: content.storyMedia,
             };
         });
         return {
@@ -420,6 +446,7 @@ export default class StoryServiceV2 {
                     loves: content.storyEngagement?.loves || 0,
                     userLoved: !!content.storyUserEngagement?.length,
                 },
+                storyMedia: content.storyMedia,
             };
         });
         return {
