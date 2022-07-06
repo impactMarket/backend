@@ -1,11 +1,9 @@
-import { BigNumber } from 'bignumber.js';
-import { utils, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { Op, WhereOptions, fn, col, literal, Transaction } from 'sequelize';
 
-import config from '../../../config';
 import { models } from '../../../database';
+import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { AppUser } from '../../../interfaces/app/appUser';
-import { BeneficiaryAttributes } from '../../../interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
 import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
 import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
@@ -28,8 +26,11 @@ import { BaseError } from '../../../utils/baseError';
 import { Logger } from '../../../utils/logger';
 import { isAddress } from '../../../utils/util';
 import { IListBeneficiary, BeneficiaryFilterType } from '../../endpoints';
+import { CommunityContentStorage } from '../../storage';
 
 export class CommunityDetailsService {
+    private communityContentStorage = new CommunityContentStorage();
+
     public async getState(communityId: number) {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
@@ -278,6 +279,12 @@ export class CommunityDetailsService {
                     },
                 });
                 addresses = appUsers.map((user) => user.address);
+                if (addresses.length === 0) {
+                    return {
+                        count: 0,
+                        rows: [],
+                    };
+                }
                 managersSubgraph = await getCommunityManagers(
                     community.contractAddress!,
                     filter.state === 'active'
@@ -402,6 +409,18 @@ export class CommunityDetailsService {
         }
     }
 
+    public async getManagerByAddress(
+        address: string
+    ): Promise<ManagerAttributes | null> {
+        const r = await models.manager.findOne({
+            where: { address, active: true },
+        });
+        if (r) {
+            return r.toJSON() as ManagerAttributes;
+        }
+        return null;
+    }
+
     public async listBeneficiaries(
         managerAddress: string,
         offset: number,
@@ -474,6 +493,12 @@ export class CommunityDetailsService {
                 where: appUserFilter,
             });
             addresses = appUsers.map((user) => user.address);
+            if (addresses.length === 0) {
+                return {
+                    count: 0,
+                    rows: [],
+                };
+            }
             beneficiariesSubgraph = await getBeneficiariesByAddress(
                 addresses,
                 beneficiaryState,
@@ -728,6 +753,36 @@ export class CommunityDetailsService {
         })) as any;
 
         return result;
+    }
+
+    public async getPresignedUrlMedia(mime: string) {
+        return this.communityContentStorage.getPresignedUrlPutObject(mime);
+    }
+
+    public async getPromoter(communityId: number) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const result = await models.ubiPromoter.findOne({
+            include: [
+                {
+                    model: models.community,
+                    as: 'community',
+                    required: true,
+                    attributes: [],
+                    where: {
+                        id: communityId,
+                    },
+                },
+                {
+                    model: models.ubiPromoterSocialMedia,
+                    as: 'socialMedia',
+                },
+            ],
+        });
+
+        if (!result) return null;
+
+        return result.toJSON();
     }
 
     private getSearchInput(searchInput: string) {

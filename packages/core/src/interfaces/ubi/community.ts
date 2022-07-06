@@ -160,6 +160,7 @@ export interface CommunityAttributes {
     started: Date; // TODO: to be removed
     proposalId: number | null;
     ambassadorAddress: string | null;
+    placeId: string | null;
 
     // timestamps
     createdAt: Date;
@@ -207,4 +208,5 @@ export interface IBaseCommunityAttributes {
     coverMediaId?: number;
     coverMediaPath?: string;
     contractParams?: ICommunityContractParams;
+    placeId?: string;
 }

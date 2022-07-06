@@ -170,14 +170,15 @@ export default (app: express.Application): void => {
                 error.details.get('body').details[0].message
         );
         if (error && error.toString().indexOf('Validation failed') !== -1) {
-            return res.status(200).json({
+            return res.status(400).json({
                 success: false,
-                error:
-                    'celebrate error ' + error.details &&
-                    error.details.get('body') &&
-                    error.details.get('body').details &&
-                    error.details.get('body').details.length > 0 &&
-                    error.details.get('body').details[0].message,
+                error: {
+                    name: 'INVALID_PAYLOAD',
+                    message: 'body has invalid payloads',
+                    details:
+                        error.details.get('body') &&
+                        error.details.get('body').details,
+                },
             });
         }
         next();

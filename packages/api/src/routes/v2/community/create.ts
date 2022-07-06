@@ -81,6 +81,9 @@ export default (route: Router): void => {
      *                  incrementInterval:
      *                    type: number
      *                    required: true
+     *              placeId:
+     *                type: string
+     *                required: false
      *     responses:
      *       "200":
      *         description: OK
@@ -102,7 +105,7 @@ export default (route: Router): void => {
      *   patch:
      *     tags:
      *       - "communities"
-     *     summary: Edit pending community
+     *     summary: Edit pending community submission
      *     requestBody:
      *       required: true
      *       content:
@@ -154,6 +157,9 @@ export default (route: Router): void => {
      *                     type: number
      *                   incrementInterval:
      *                     type: number
+     *               placeId:
+     *                 type: string
+     *                 required: false
      *     responses:
      *       "200":
      *         description: OK
@@ -175,7 +181,7 @@ export default (route: Router): void => {
      *   put:
      *     tags:
      *       - "communities"
-     *     summary: Edit pending community
+     *     summary: Edit community review
      *     requestBody:
      *       required: true
      *       content:
@@ -200,4 +206,37 @@ export default (route: Router): void => {
         CommunityValidator.review,
         controller.review
     );
+
+    /**
+     * @swagger
+     *
+     * /communities:
+     *   put:
+     *     tags:
+     *       - "communities"
+     *     summary: Edit a valid community
+     *     requestBody:
+     *      required: true
+     *      content:
+     *        application/json:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              name:
+     *                type: string
+     *                required: false
+     *              description:
+     *                type: string
+     *                required: false
+     *              coverMediaPath:
+     *                type: string
+     *                required: false
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put('/', authenticateToken, CommunityValidator.edit, controller.edit);
 };

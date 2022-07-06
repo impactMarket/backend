@@ -1291,6 +1291,7 @@ describe('community service', () => {
                     'status',
                     'updatedAt',
                     'visibility',
+                    'placeId',
                 ]);
                 expect(result.rows[0].contract).to.have.deep.keys([
                     'claimAmount',
@@ -2050,22 +2051,14 @@ describe('community service', () => {
                 },
             ]);
 
-            const createdMedia =
-                await sequelize.models.AppMediaContentModel.create({
-                    url: faker.image.imageUrl(),
-                    width: 0,
-                    height: 0,
-                });
-
             const name = faker.company.companyName();
             const description = faker.lorem.sentence();
-            const media = createdMedia.toJSON() as AppMediaContent;
             const createdPromoter =
                 await sequelize.models.UbiPromoterModel.create({
                     category: 'organization',
                     name,
                     description,
-                    logoMediaId: media.id, // on purpose
+                    logoMediaPath: 'org-logo/123.jpeg', // on purpose
                 });
 
             const promoter = createdPromoter.toJSON() as UbiPromoter;

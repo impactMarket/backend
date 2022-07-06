@@ -2,12 +2,14 @@ import { ethers } from 'ethers';
 
 import CommunityContractABI from '../../../contracts/CommunityABI.json';
 import { Community, models, sequelize } from '../../../database';
+import { LogTypes } from '../../../interfaces/app/appLog';
 import {
     CommunityAttributes,
     IBaseCommunityAttributes,
     ICommunityCreationAttributes,
 } from '../../../interfaces/ubi/community';
 import { BaseError } from '../../../utils/baseError';
+import UserLogService from '../../app/user/log';
 import CommunityContractService from './contract';
 import { CommunityDetailsService } from './details';
 
@@ -15,6 +17,7 @@ export class CommunityCreateService {
     sequelize = sequelize;
     communityContractService = new CommunityContractService();
     communityDetailsService = new CommunityDetailsService();
+    userLogService = new UserLogService();
 
     public async create({
         requestByAddress,
@@ -30,6 +33,7 @@ export class CommunityCreateService {
         txReceipt,
         contractParams,
         coverMediaPath,
+        placeId,
     }: ICommunityCreationAttributes): Promise<Community> {
         let managerAddress: string = '';
         let createObject: ICommunityCreationAttributes = {
@@ -43,6 +47,7 @@ export class CommunityCreateService {
             gps,
             email,
             coverMediaPath,
+            placeId,
             visibility: 'public', // will be changed if private
             status: 'pending', // will be changed if private
             started: new Date(),
@@ -159,6 +164,7 @@ export class CommunityCreateService {
                 email,
                 contractParams,
                 coverMediaPath,
+                placeId,
             } = params;
 
             await models.community.update(
@@ -172,6 +178,7 @@ export class CommunityCreateService {
                     gps,
                     email,
                     coverMediaPath,
+                    placeId,
                 },
                 {
                     where: {
@@ -222,5 +229,40 @@ export class CommunityCreateService {
         }
 
         return true;
+    }
+
+    public async edit(
+        id: number,
+        params: {
+            name?: string;
+            description?: string;
+            coverMediaPath?: string;
+        },
+        userAddress?: string,
+        userId?: number
+    ): Promise<CommunityAttributes> {
+        const { name, description, coverMediaPath } = params;
+        const update = await models.community.update(
+            {
+                name,
+                description,
+                coverMediaPath,
+            },
+            { where: { id } }
+        );
+        if (update[0] === 0) {
+            throw new BaseError('UPDATE_FAILED', 'community was not updated!');
+        }
+
+        if (userId) {
+            this.userLogService.create(
+                userId,
+                LogTypes.EDITED_COMMUNITY,
+                params,
+                id
+            );
+        }
+
+        return this.communityDetailsService.findById(id, userAddress);
     }
 }

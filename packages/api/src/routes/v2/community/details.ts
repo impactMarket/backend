@@ -238,4 +238,93 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/UbiCommunity'
      */
     route.get('/:idOrAddress', optionalAuthentication, controller.findBy);
+
+    /**
+     * @swagger
+     *
+     * /communities/{id}/claims-location:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community claims location
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   latitude:
+     *                     type: integer
+     *                   longitude:
+     *                     type: integer
+     */
+    route.get(
+        '/:id/claims-location',
+        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
+        controller.getClaimLocation
+    );
+
+    /**
+     * @swagger
+     *
+     * /communities/media/{mime}:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Make a request for a presigned URL
+     *     parameters:
+     *       - in: path
+     *         name: mime
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: media mimetype
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/media/:mime',
+        authenticateToken,
+        controller.getPresignedUrlMedia
+    );
+
+    /**
+     * @swagger
+     *
+     * /communities/{id}/promoter:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community promoter
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiPromoter'
+     */
+    route.get('/:id/promoter', controller.getPromoter);
 };

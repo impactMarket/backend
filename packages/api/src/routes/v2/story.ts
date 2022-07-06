@@ -22,7 +22,9 @@ export default (app: Router): void => {
      *       - in: query
      *         name: mime
      *         schema:
-     *           type: string
+     *           type: array
+     *           items:
+     *            type: string
      *         required: true
      *         description: media mimetype
      *     responses:
@@ -55,10 +57,10 @@ export default (app: Router): void => {
      *               communityId:
      *                 type: integer
      *                 description: The community id
-     *               storyMediaPath:
-     *                 type: string
-     *                 nullable: true
-     *                 description: The media path of the story from presigned url
+     *               storyMedia:
+     *                 type: array
+     *                 items:
+     *                   type: string
      *               message:
      *                 type: string
      *                 nullable: true

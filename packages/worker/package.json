@@ -22,6 +22,7 @@
     },
     "dependencies": {
         "@impactmarket/core": "1.0.0",
+        "apollo-link-ws": "1.0.20",
         "@slack/web-api": "6.5.0",
         "axios": "0.24.0",
         "bignumber.js": "9.0.0",
@@ -31,6 +32,7 @@
         "module-alias": "2.2.2",
         "node-schedule": "2.0.0",
         "sequelize": "6.10.0",
+        "subscriptions-transport-ws": "0.11.0",
         "ts-node": "10.4.0",
         "typescript": "4.5.2"
     }

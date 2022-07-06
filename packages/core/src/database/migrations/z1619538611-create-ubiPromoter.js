@@ -19,12 +19,8 @@ module.exports = {
                 type: Sequelize.STRING(512),
                 allowNull: false,
             },
-            logoMediaId: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'app_media_content',
-                    key: 'id',
-                },
+            logoMediaPath: {
+                type: Sequelize.STRING(44),
                 // onDelete: 'SET NULL', // default
                 allowNull: false,
             },
