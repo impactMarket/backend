@@ -125,6 +125,7 @@ export interface IAddStory {
     communityId?: number;
     storyMediaId?: number;
     storyMediaPath?: string;
+    storyMedia?: string[];
     message?: string;
 }
 

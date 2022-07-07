@@ -53,10 +53,12 @@ export default class StoryService {
             mediaMediaId?: number;
             storyMediaPath?: string;
             message?: string;
+            storyMedia?: string[];
         } = {};
         if (story.storyMediaPath) {
             storyContentToAdd = {
                 storyMediaPath: story.storyMediaPath,
+                storyMedia: [story.storyMediaPath],
             };
         }
         if (story.storyMediaId) {
@@ -98,6 +100,7 @@ export default class StoryService {
                 ],
             };
         }
+
         const created = await this.storyContent.create(
             {
                 ...storyContentToAdd,
@@ -729,63 +732,6 @@ export default class StoryService {
                 where: { contentId, address: userAddress },
             });
         }
-    }
-
-    public async deleteOlderStories() {
-        const tenDaysAgo = new Date();
-        tenDaysAgo.setDate(tenDaysAgo.getDate() - 30);
-        //
-        const mostRecentStoryByCommunity = await models.storyContent.findAll({
-            attributes: ['id'],
-            include: [
-                {
-                    model: this.storyCommunity,
-                    as: 'storyCommunity',
-                    attributes: [],
-                },
-            ],
-            where: {
-                postedAt: {
-                    // TODO: use query builder instead
-                    [Op.eq]: literal(
-                        `(select max("postedAt") from story_content sc, story_community sm where sc.id=sm."contentId" and sm."communityId"="storyCommunity"."communityId" and sc."isPublic"=true)`
-                    ),
-                } as { [Op.eq]: Literal },
-            },
-            order: [['postedAt', 'DESC']],
-        });
-
-        if (mostRecentStoryByCommunity.length === 0) {
-            return;
-        }
-
-        const storiesToDelete = await models.storyContent.findAll({
-            attributes: ['id', 'mediaMediaId'],
-            where: {
-                postedAt: {
-                    [Op.lte]: tenDaysAgo,
-                },
-                id: {
-                    [Op.notIn]: mostRecentStoryByCommunity.map((sbc) => sbc.id),
-                },
-            },
-        });
-
-        if (storiesToDelete.length === 0) {
-            return;
-        }
-        await models.storyContent.destroy({
-            where: {
-                id: {
-                    [Op.in]: storiesToDelete.map((s) => s.id),
-                },
-            },
-        });
-        await this.storyContentStorage.deleteBulkContent(
-            storiesToDelete
-                .filter((s) => s.mediaMediaId !== null)
-                .map((s) => s.mediaMediaId!) // not null here
-        );
     }
 
     public async _listImpactMarketOnly(

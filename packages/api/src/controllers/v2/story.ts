@@ -18,20 +18,8 @@ class StoryController {
             return;
         }
 
-        const { mime } = req.query;
-
-        if (mime === undefined || !(typeof mime === 'string')) {
-            standardResponse(res, 400, false, '', {
-                error: {
-                    name: 'INVALID_QUERY',
-                    message: 'missing mime',
-                },
-            });
-            return;
-        }
-
         this.storyService
-            .getPresignedUrlMedia(mime)
+            .getPresignedUrlMedia(req.query)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -46,11 +34,12 @@ class StoryController {
             });
             return;
         }
-        const { message, storyMediaPath } = req.body;
+        const { message, storyMediaPath, storyMedia } = req.body;
         this.storyService
             .add(req.user.address, {
                 message,
                 storyMediaPath,
+                storyMedia,
             })
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));

@@ -8,7 +8,8 @@ class StoryValidator {
             communityId: Joi.number().optional(), // only v1
             message: Joi.string().optional(),
             mediaId: Joi.number().optional(), // only v1
-            storyMediaPath: Joi.string().optional(), // only v2
+            storyMediaPath: Joi.string().optional(), // TODO: remove
+            storyMedia: Joi.array().items(Joi.string()).optional(), // only v2
         }),
     });
 

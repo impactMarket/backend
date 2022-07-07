@@ -20,6 +20,7 @@ export interface StoryContent {
     storyEngagement?: StoryEngagement;
     storyUserEngagement?: StoryUserEngagement[];
     storyUserReport?: StoryUserReport[];
+    storyMedia?: string[];
     user?: AppUser;
 }
 
@@ -28,6 +29,7 @@ export interface StoryContentCreation {
     postedAt: Date;
     mediaMediaId?: number;
     storyMediaPath?: string;
+    storyMedia?: string[];
     message?: string;
     isPublic?: boolean;
     storyCommunity?: StoryCommunityCreationEager[];
