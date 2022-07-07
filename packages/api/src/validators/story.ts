@@ -12,6 +12,12 @@ class StoryValidator {
             storyMedia: Joi.array().items(Joi.string()).optional(), // only v2
         }),
     });
+
+    addComment = celebrate({
+        body: defaultSchema.object({
+            comment: Joi.string().required(),
+        }),
+    });
 }
 
 export default StoryValidator;

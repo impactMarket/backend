@@ -149,6 +149,21 @@ export default class StoryServiceV2 {
         userAddress?: string
     ): Promise<ICommunitiesListStories> {
         const story = await models.storyContent.findOne({
+            subQuery: false,
+            attributes: [
+                'id',
+                'message',
+                'byAddress',
+                'storyMediaPath',
+                'postedAt',
+                [
+                    fn(
+                        'count',
+                        fn('distinct', col('storyComment.id'))
+                    ),
+                    'totalComments',
+                ],
+            ],
             include: [
                 {
                     model: models.storyCommunity,
@@ -198,18 +213,36 @@ export default class StoryServiceV2 {
                               model: models.storyEngagement,
                               as: 'storyEngagement',
                           },
-                      ]),    
+                      ]),
+                {
+                    attributes: [],
+                    model: models.storyComment,
+                    as: 'storyComment',
+                    required: false,
+                }
             ],
             where: {
                 id: storyId,
             },
+            group: [
+                'StoryContentModel.id',
+                'storyCommunity.id',
+                'storyCommunity->community.id',
+                'storyEngagement.id',
+                ...(userAddress ? [
+                    'storyUserEngagement.id',
+                    'storyUserReport.id',
+                ] : []),
+            ],
         });
 
         if (!story) {
             throw new BaseError('STORY_NOT_FOUND', 'story not found');
         }
 
-        const content = story.toJSON() as StoryContent;
+        const content = story.toJSON() as StoryContent & {
+            totalComments: number,
+        };
         return {
             // we can use ! because it's included on the query
             id: content.id,
@@ -226,6 +259,7 @@ export default class StoryServiceV2 {
                 userReported: content.storyUserReport
                     ? content.storyUserReport.length !== 0
                     : false,
+                comments: content.totalComments,
             },
             storyMedia: content.storyMedia,
         } as any;
@@ -236,6 +270,21 @@ export default class StoryServiceV2 {
         query: { offset?: string; limit?: string }
     ): Promise<{ count: number; content: ICommunityStories }> {
         const r = await models.storyContent.findAndCountAll({
+            subQuery: false,
+            attributes: [
+                'id',
+                'message',
+                'byAddress',
+                'storyMediaPath',
+                'postedAt',
+                [
+                    fn(
+                        'count',
+                        fn('distinct', col('storyComment.id'))
+                    ),
+                    'totalComments',
+                ],
+            ],
             include: [
                 {
                     model: models.storyEngagement,
@@ -278,6 +327,12 @@ export default class StoryServiceV2 {
                         },
                     ],
                 },
+                {
+                    attributes: [],
+                    model: models.storyComment,
+                    as: 'storyComment',
+                    required: false,
+                }
             ],
             where: { byAddress: onlyFromAddress, isPublic: true },
             order: [['postedAt', 'DESC']],
@@ -287,9 +342,19 @@ export default class StoryServiceV2 {
             limit: query.limit
                 ? parseInt(query.limit, 10)
                 : config.defaultLimit,
+            group: [
+                'StoryContentModel.id',
+                'storyCommunity.id',
+                'storyCommunity->community.id',
+                'storyEngagement.id',
+                'storyUserEngagement.id',
+                'storyUserReport.id',
+            ],
         });
         const communitiesStories = r.rows.map((c) => {
-            const content = c.toJSON() as StoryContent;
+            const content = c.toJSON() as StoryContent & {
+                totalComments: number,
+            };
             return {
                 id: content.id,
                 storyMediaPath: content.storyMediaPath,
@@ -303,12 +368,13 @@ export default class StoryServiceV2 {
                     loves: content.storyEngagement?.loves || 0,
                     userReported: !!content.storyUserReport?.length,
                     userLoved: !!content.storyUserEngagement?.length,
+                    comments: content.totalComments,
                 },
                 storyMedia: content.storyMedia,
             };
         });
         return {
-            count: r.count,
+            count: r.count.length,
             content: communitiesStories as any,
         };
     }
@@ -324,10 +390,25 @@ export default class StoryServiceV2 {
     ): Promise<{ count: number; content: ICommunitiesListStories[] }> {
         let r: {
             rows: StoryContentModel[];
-            count: number;
+            count: number[];
         };
         try {
             r = await models.storyContent.findAndCountAll({
+                subQuery: false,
+                attributes: [
+                    'id',
+                    'message',
+                    'byAddress',
+                    'storyMediaPath',
+                    'postedAt',
+                    [
+                        fn(
+                            'count',
+                            fn('distinct', col('storyComment.id'))
+                        ),
+                        'totalComments',
+                    ],
+                ],
                 include: [
                     {
                         model: models.storyCommunity,
@@ -408,6 +489,12 @@ export default class StoryServiceV2 {
                                   as: 'storyEngagement',
                               },
                           ]),
+                    {
+                        attributes: [],
+                        model: models.storyComment,
+                        as: 'storyComment',
+                        required: false,
+                    }
                 ],
                 where: {
                     isPublic: true,
@@ -422,6 +509,16 @@ export default class StoryServiceV2 {
                 limit: query.limit
                     ? parseInt(query.limit, 10)
                     : config.defaultLimit,
+                group: [
+                    'StoryContentModel.id',
+                    'storyCommunity.id',
+                    'storyCommunity->community.id',
+                    'storyEngagement.id',
+                    ...(userAddress ? [
+                        'storyUserEngagement.id',
+                        'storyUserReport.id',
+                    ] : []),
+                ],
             });
         } catch (e) {
             return {
@@ -430,7 +527,9 @@ export default class StoryServiceV2 {
             };
         }
         const communitiesStories = r.rows.map((c) => {
-            const content = c.toJSON() as StoryContent;
+            const content = c.toJSON() as StoryContent & {
+                totalComments: number,
+            };
             return {
                 // we can use ! because it's included on the query
                 id: content.id,
@@ -445,12 +544,13 @@ export default class StoryServiceV2 {
                 engagement: {
                     loves: content.storyEngagement?.loves || 0,
                     userLoved: !!content.storyUserEngagement?.length,
+                    comments: content.totalComments,
                 },
                 storyMedia: content.storyMedia,
             };
         });
         return {
-            count: r.count,
+            count: r.count.length,
             content: communitiesStories as any,
         };
     }
@@ -526,6 +626,88 @@ export default class StoryServiceV2 {
         })) as any;
 
         return result;
+    }
+
+    public async addComment(
+        userId: number,
+        contentId: number,
+        comment: string,
+    ) {
+        try {
+            await models.storyComment.create({
+                contentId,
+                comment,
+                userId,
+            });
+            return true
+        } catch (error) {
+            throw new BaseError('ERROR', 'comment was not added');
+        }
+    }
+
+    public async getComments(
+        contentId: number,
+        query: { offset?: string; limit?: string }
+    ) {
+        try {
+            const comments = await models.storyComment.findAndCountAll({
+                include: [{
+                    attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
+                    model: models.appUser,
+                    as: 'user',
+                }],
+                where: { contentId },
+                order: [['createdAt', 'desc']],
+                offset: query.offset
+                    ? parseInt(query.offset, 10)
+                    : config.defaultOffset,
+                limit: query.limit
+                    ? parseInt(query.limit, 10)
+                    : config.defaultLimit,
+            });
+            return comments;
+        } catch (error) {
+            throw new BaseError('ERROR', 'error to get comments');
+        }
+    }
+
+    public async removeComment(
+        user: {
+            userId: number,
+            address: string
+        },
+        contentId: number,
+        commentId: number,
+    ) {
+        try {
+            const comment = await models.storyComment.findOne({
+                where: { id: commentId }
+            });
+
+            if (!comment) {
+                throw new BaseError('NOT_FOUND', 'comment not found');
+            }
+
+            if (comment.userId !== user.userId) {
+                const story = await models.storyContent.findOne({
+                    where: { id: contentId }
+                });
+
+                if (user.address !== story!.byAddress) {
+                    throw new BaseError('NOT_ALLOWED', 'user is not the comment or story creator');
+                }
+            }
+
+            await models.storyComment.destroy({
+                where: {
+                    id: commentId,
+                    userId: user.userId,
+                }
+            });
+            return true;
+        } catch (error) {
+            throw new BaseError('ERROR', 'comment was not deleted');
+        }
     }
 
     private async addNotification(userAddress: string, contentId: number) {

@@ -26,6 +26,7 @@ import * as GlobalDailyState from './models/global/globalDailyState';
 import * as GlobalDemographics from './models/global/globalDemographics';
 import * as GlobalGrowth from './models/global/globalGrowth';
 import * as ReachedAddress from './models/reachedAddress';
+import * as StoryComment from './models/story/storyComment';
 import * as StoryCommunity from './models/story/storyCommunity';
 import * as StoryContent from './models/story/storyContent';
 import * as StoryEngagement from './models/story/storyEngagement';
@@ -164,6 +165,8 @@ const models: DbModels = {
         .StoryUserEngagementModel as ModelCtor<StoryUserEngagement.StoryUserEngagementModel>,
     storyUserReport: sequelize.models
         .StoryUserReportModel as ModelCtor<StoryUserReport.StoryUserReportModel>,
+    storyComment: sequelize.models
+        .StoryCommentModel as ModelCtor<StoryComment.StoryCommentModel>,
     airgrabUser: sequelize.models
         .AirgrabUserModel as ModelCtor<AirgrabUser.AirgrabUserModel>,
     airgrabProof: sequelize.models
@@ -232,4 +235,11 @@ export {
     UbiPromoter,
     UbiPromoterSocialMedia,
 };
-export { sequelize, Sequelize, models, redisClient, cacheWithRedis, cacheOnlySuccess };
+export {
+    sequelize,
+    Sequelize,
+    models,
+    redisClient,
+    cacheWithRedis,
+    cacheOnlySuccess,
+};
