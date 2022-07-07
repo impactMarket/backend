@@ -437,21 +437,24 @@ export class CommunityListService {
 
     private async _getOpenProposals(): Promise<string[]> {
         const proposals = await getCommunityProposal();
-        const requestByAddress = proposals.map((element) => {
-            const calldata = ethers.utils.defaultAbiCoder.decode(
-                [
-                    'address[]',
-                    'uint256',
-                    'uint256',
-                    'uint256',
-                    'uint256',
-                    'uint256',
-                    'uint256',
-                    'uint256',
-                ],
-                element
-            );
-            return ethers.utils.getAddress(calldata[0][0]);
+        let requestByAddress: string[] = [];
+        proposals.forEach((element) => {
+            try {
+                const calldata = ethers.utils.defaultAbiCoder.decode(
+                    [
+                        'address[]',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                        'uint256',
+                    ],
+                    element
+                );
+                requestByAddress.push(ethers.utils.getAddress(calldata[0][0]));
+            } catch (_error) {}
         });
 
         return requestByAddress;
