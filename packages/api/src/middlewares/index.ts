@@ -1,4 +1,5 @@
 import { config, database } from '@impactmarket/core';
+import { ethers } from 'ethers';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
@@ -128,6 +129,43 @@ export const rateLimiter = rateLimit({
               }),
           }),
 });
+
+export function verifySignature(
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction
+): void {
+    const { signature, message } = req.headers;
+
+    if (!signature || !message) {
+        res.status(401).json({
+            success: false,
+            error: {
+                name: 'INVALID_SINATURE',
+                message: 'signature is invalid',
+            },
+        });
+        return;
+    }
+
+    const address = ethers.utils.verifyMessage(
+        message as string,
+        signature as string,
+    );
+
+    if (address.toLocaleLowerCase() === req.user?.address.toLocaleLowerCase()) {
+        next();
+    } else {
+        res.status(403).json({
+            success: false,
+            error: {
+                name: 'INVALID_SINATURE',
+                message: 'signature is invalid',
+            },
+        });
+        return;
+    }
+};
 
 const checkRoles = (roles: string[], path: string, reqMethod: string) => {
     let authorizate = false;
