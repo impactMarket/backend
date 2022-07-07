@@ -14,10 +14,11 @@ export const getCommunityProposal = async (): Promise<string[]> => {
         const query = gql`
             {
                 proposalEntities(
-                    where: {
-                        status: 0
-                        endBlock_gt: ${blockNumber}
-                    }
+                where: {
+                    status: 0
+                    endBlock_gt: ${blockNumber}
+                    signatures_contains:["addCommunity(address[],address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)"]
+                }
                 ) {
                     calldatas
                 }
