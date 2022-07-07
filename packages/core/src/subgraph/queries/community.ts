@@ -175,3 +175,30 @@ export const communityEntities = async (where: string, fields: string) => {
         throw new Error(error);
     }
 };
+
+export const getCommunityAmbassador = async (community: string) => {
+    try {
+        const query = gql`
+            {
+                ambassadorEntities(
+                    where:{
+                        communities_contains: ["${community}"]
+                        status: 0
+                    }
+                ) {
+                    id
+                    since
+                }
+            }
+        `;
+
+        const queryResult = await clientCouncil.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data?.ambassadorEntities[0];
+    } catch (error) {
+        throw new Error(error);
+    }
+};
