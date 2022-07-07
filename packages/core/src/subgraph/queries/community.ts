@@ -14,10 +14,11 @@ export const getCommunityProposal = async (): Promise<string[]> => {
         const query = gql`
             {
                 proposalEntities(
-                    where: {
-                        status: 0
-                        endBlock_gt: ${blockNumber}
-                    }
+                where: {
+                    status: 0
+                    endBlock_gt: ${blockNumber}
+                    signatures_contains:["addCommunity(address[],address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)"]
+                }
                 ) {
                     calldatas
                 }
@@ -206,6 +207,33 @@ export const getBiggestCommunities = async (
         });
 
         return queryResult.data.communityEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getCommunityAmbassador = async (community: string) => {
+    try {
+        const query = gql`
+            {
+                ambassadorEntities(
+                    where:{
+                        communities_contains: ["${community}"]
+                        status: 0
+                    }
+                ) {
+                    id
+                    since
+                }
+            }
+        `;
+
+        const queryResult = await clientCouncil.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data?.ambassadorEntities[0];
     } catch (error) {
         throw new Error(error);
     }

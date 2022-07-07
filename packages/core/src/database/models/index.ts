@@ -25,6 +25,7 @@ import { initializeGlobalDailyState } from './global/globalDailyState';
 import { initializeGlobalDemographics } from './global/globalDemographics';
 import { initializeGlobalGrowth } from './global/globalGrowth';
 import { initializeReachedAddress } from './reachedAddress';
+import { initializeStoryComment } from './story/storyComment';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryContent } from './story/storyContent';
 import { initializeStoryEngagement } from './story/storyEngagement';
@@ -104,6 +105,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeStoryEngagement(sequelize);
     initializeStoryUserEngagement(sequelize);
     initializeStoryUserReport(sequelize);
+    initializeStoryComment(sequelize);
 
     // airgrab
     initializeAirgrabUser(sequelize);

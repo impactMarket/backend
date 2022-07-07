@@ -256,4 +256,112 @@ export default (app: Router): void => {
         authenticateToken,
         storyController.inapropriate
     );
+
+    /**
+     * @swagger
+     *
+     * /stories/{id}/comments:
+     *   get:
+     *     tags:
+     *       - "stories"
+     *     summary: Get the story comments
+     *     parameters:
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for comments pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for comments pagination
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get('/:id/comments/:query?', storyController.getComments);
+
+    /**
+     * @swagger
+     *
+     * /stories/{id}/comments:
+     *   post:
+     *     tags:
+     *       - "stories"
+     *     summary: Post a new story comment
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               comment:
+     *                 type: string
+     *                 description: Story comment
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/:id/comments',
+        authenticateToken,
+        storyValidator.addComment,
+        storyController.addComment
+    );
+
+    /**
+     * @swagger
+     *
+     * /stories/{id}/comments/{commentId}:
+     *   delete:
+     *     tags:
+     *       - "stories"
+     *     summary: Delete a story
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id
+     *       - in: path
+     *         name: commentId
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story comment id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.delete(
+        '/:id/comments/:commentId',
+        authenticateToken,
+        storyController.removeComment
+    );
 };

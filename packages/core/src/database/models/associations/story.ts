@@ -24,6 +24,21 @@ export function storyAssociation(sequelize: Sequelize) {
             as: 'storyCommunity',
         }
     );
+    sequelize.models.StoryContentModel.hasMany(
+        sequelize.models.StoryCommentModel,
+        {
+            foreignKey: 'contentId',
+            as: 'storyComment',
+        }
+    );
+    sequelize.models.StoryCommentModel.belongsTo(
+        sequelize.models.AppUserModel,
+        {
+            foreignKey: 'userId',
+            targetKey: 'id',
+            as: 'user',
+        }
+    );
     // used to post from the content with incude
     sequelize.models.StoryContentModel.hasOne(
         sequelize.models.AppMediaContentModel,
