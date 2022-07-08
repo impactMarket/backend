@@ -154,6 +154,20 @@ export function verifySignature(
     );
 
     if (address.toLocaleLowerCase() === req.user?.address.toLocaleLowerCase()) {
+        // validate signature timestamp
+        const timestamp = (message as string).split('_')[1];
+        const expirationDate = new Date();
+        expirationDate.setSeconds(expirationDate.getSeconds() - config.signatureExpiration);
+        if (!timestamp || parseInt(timestamp) < expirationDate.getTime()) {
+            res.status(403).json({
+                success: false,
+                error: {
+                    name: 'EXPIRED_SIGNATURE',
+                    message: 'signature is expired',
+                },
+            });
+            return;
+        }
         next();
     } else {
         res.status(403).json({
