@@ -26,6 +26,8 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public bio!: string;
     public country!: string;
     public phone!: string;
+    public readBeneficiaryRules!: boolean;
+    public readManagerRules!: boolean;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -114,6 +116,16 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             active: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: true,
+                allowNull: false,
+            },
+            readBeneficiaryRules: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
+                allowNull: false,
+            },
+            readManagerRules: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
                 allowNull: false,
             },
             createdAt: {

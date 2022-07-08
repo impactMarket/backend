@@ -176,6 +176,42 @@ export const communityEntities = async (where: string, fields: string) => {
     }
 };
 
+export const getBiggestCommunities = async (
+    limit: number,
+    offset: number,
+    orderDirection?: string,
+): Promise<
+    {
+        beneficiaries: number;
+        id: string;
+    }[]
+> => {
+    try {
+        const query = gql`
+            {
+                communityEntities(
+                    first: ${limit}
+                    skip: ${offset}
+                    orderBy: beneficiaries
+                    orderDirection: ${orderDirection ? orderDirection : 'desc'}
+                ) {
+                    id
+                    beneficiaries
+                }
+            }
+        `;
+
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data.communityEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
 export const getCommunityAmbassador = async (community: string) => {
     try {
         const query = gql`
@@ -198,6 +234,41 @@ export const getCommunityAmbassador = async (community: string) => {
         });
 
         return queryResult.data?.ambassadorEntities[0];
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getCommunityStateByAddresses = async (
+    addresses: string[],
+): Promise<
+    {
+        beneficiaries: number;
+        id: string;
+    }[]
+> => {
+    const idsFormated = addresses.map((el) => `"${el.toLocaleLowerCase()}"`);
+
+    try {
+        const query = gql`
+            {
+                communityEntities(
+                    where: {
+                        id_in:[${idsFormated}]
+                    }
+                ) {
+                    id
+                    beneficiaries
+                }
+            }
+        `;
+
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data.communityEntities;
     } catch (error) {
         throw new Error(error);
     }

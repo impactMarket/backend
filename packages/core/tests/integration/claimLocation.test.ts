@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
-import { assert, spy, SinonSpy } from 'sinon';
+import { assert, spy, SinonSpy, SinonStub, stub } from 'sinon';
 
 import { models } from '../../src/database';
 import { AppUser } from '../../src/interfaces/app/appUser';
@@ -10,12 +10,14 @@ import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import UserFactory from '../factories/user';
+import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 
 describe('claim location service', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let communities: CommunityAttributes[];
     let spyClaimLocationAdd: SinonSpy;
+    let returnGetBeneficiaryByAddressSubgraph: SinonStub;
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -86,7 +88,10 @@ describe('claim location service', () => {
         await BeneficiaryFactory(users.slice(0, 1), communities[0].id);
         await BeneficiaryFactory(users.slice(1, 2), communities[1].id);
         await BeneficiaryFactory(users.slice(3, 4), communities[3].id);
-
+        returnGetBeneficiaryByAddressSubgraph = stub(
+            beneficiarySubgraph,
+            'getBeneficiariesByAddress'
+        );
         spyClaimLocationAdd = spy(models.ubiClaimLocation, 'create');
     });
 
@@ -99,6 +104,19 @@ describe('claim location service', () => {
 
     describe('add claim location', () => {
         it('should add claim location', async () => {
+            returnGetBeneficiaryByAddressSubgraph.returns([{
+                address: users[0].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            }]);
+
             await ClaimLocationService.add(
                 communities[0].id,
                 {
@@ -135,6 +153,18 @@ describe('claim location service', () => {
 
         it('should add claim location when a user is claiming from a country neighbor', async () => {
             spyClaimLocationAdd.resetHistory();
+            returnGetBeneficiaryByAddressSubgraph.returns([{
+                address: users[3].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[3].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0, 
+                since: 0,
+                claimed: 0,
+                state: 0,
+            }]);
             await ClaimLocationService.add(
                 communities[3].id,
                 {

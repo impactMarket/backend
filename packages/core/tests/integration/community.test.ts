@@ -30,6 +30,7 @@ describe('community service', () => {
     let returnClaimedSubgraph: SinonStub;
     let returnCommunityStateSubgraph: SinonStub;
     let returnGetCommunityManagersSubgraph: SinonStub;
+    let returnBiggestCommunitiesSubgraph: SinonStub;
 
     type SubgraphClaimed = { id: string; claimed: number }[];
 
@@ -58,6 +59,10 @@ describe('community service', () => {
         returnGetCommunityManagersSubgraph = stub(
             managerSubgraph,
             'getCommunityManagers'
+        );
+        returnBiggestCommunitiesSubgraph = stub(
+            subgraph,
+            'getBiggestCommunities'
         );
         returnCommunityStateSubgraph.returns([
             {
@@ -123,6 +128,11 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnBiggestCommunitiesSubgraph.returns([{
+                    beneficiaries: 0,
+                    id: communities[0].contractAddress,
+                }]);
+
                 const result = await CommunityService.list({
                     name: communities[0].name,
                 });
@@ -159,6 +169,11 @@ describe('community service', () => {
                         claimed: 0,
                     },
                 ]);
+
+                returnBiggestCommunitiesSubgraph.returns([{
+                    beneficiaries: 0,
+                    id: communities[0].contractAddress,
+                }]);
 
                 const result = await CommunityService.list({
                     name: communities[0].name.slice(
@@ -200,6 +215,11 @@ describe('community service', () => {
                     },
                 ]);
 
+                returnBiggestCommunitiesSubgraph.returns([{
+                    beneficiaries: 0,
+                    id: communities[0].contractAddress,
+                }]);
+
                 const result = await CommunityService.list({
                     name: communities[0].name.slice(
                         communities[0].name.length / 2,
@@ -239,6 +259,11 @@ describe('community service', () => {
                         claimed: 0,
                     },
                 ]);
+
+                returnBiggestCommunitiesSubgraph.returns([{
+                    beneficiaries: 0,
+                    id: communities[0].contractAddress,
+                }]);
 
                 const result = await CommunityService.list({
                     name: communities[0].name.toUpperCase(),
@@ -308,6 +333,17 @@ describe('community service', () => {
                     }))
                 );
 
+                returnBiggestCommunitiesSubgraph.returns([
+                    {
+                        beneficiaries: 0,
+                        id: communities[0].contractAddress,
+                    },
+                    {
+                        beneficiaries: 0,
+                        id: communities[1].contractAddress,
+                    },
+                ]);
+
                 const result = await CommunityService.list({
                     name: 'oreo',
                 });
@@ -369,6 +405,13 @@ describe('community service', () => {
                         claimed: 0,
                     }))
                 );
+
+                returnBiggestCommunitiesSubgraph.returns([
+                    {
+                        beneficiaries: 0,
+                        id: communities[0].contractAddress,
+                    },
+                ]);
 
                 const result = await CommunityService.list({});
 
@@ -605,9 +648,19 @@ describe('community service', () => {
             const result: any[] = [];
 
             for (let index = 0; index < totalCommunities / 5; index++) {
+                const offset = index * 5;
+                const limit = 5;
+                const sliced = communities.slice(
+                    offset,
+                    offset + limit
+                );
+                returnBiggestCommunitiesSubgraph.returns(sliced.map(el => ({
+                    beneficiaries: el.beneficiaries?.length,
+                    id: el.contractAddress,
+                })));
                 const r = await CommunityService.list({
-                    offset: (index * 5).toString(),
-                    limit: '5',
+                    offset: offset.toString(),
+                    limit: limit.toString(),
                 });
                 expect(result).to.not.have.members(r.rows);
                 result.push(r.rows);
@@ -656,7 +709,16 @@ describe('community service', () => {
             }
 
             returnClaimedSubgraph.returns(claimed);
-
+            returnBiggestCommunitiesSubgraph.returns([
+                {
+                    beneficiaries: communitySuspect.beneficiaries?.length,
+                    id: communitySuspect.contractAddress,
+                },
+                {
+                    beneficiaries: communities[0].beneficiaries?.length,
+                    id: communities[0].contractAddress,
+                }
+            ]);
             //
             const r = await CommunityService.list({
                 offset: '0',
@@ -734,6 +796,28 @@ describe('community service', () => {
                         community.id
                     );
                 }
+
+                returnClaimedSubgraph.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        claimed: 0,
+                    },
+                    {
+                        id: communities[1].contractAddress,
+                        claimed: 0,
+                    }
+                ]);
+
+                returnBiggestCommunitiesSubgraph.returns([
+                    {
+                        beneficiaries: communities[1].beneficiaries?.length,
+                        id: communities[1].contractAddress,
+                    },
+                    {
+                        beneficiaries: communities[0].beneficiaries?.length,
+                        id: communities[0].contractAddress,
+                    }
+                ]);
 
                 const result = await CommunityService.list({});
 
@@ -887,6 +971,36 @@ describe('community service', () => {
                     );
                 }
 
+                returnClaimedSubgraph.returns([
+                    {
+                        id: communities[0].contractAddress,
+                        claimed: 0,
+                    },
+                    {
+                        id: communities[1].contractAddress,
+                        claimed: 0,
+                    },
+                    {
+                        id: communities[2].contractAddress,
+                        claimed: 0,
+                    },
+                ]);
+
+                returnBiggestCommunitiesSubgraph.returns([
+                    {
+                        beneficiaries: communities[1].beneficiaries?.length,
+                        id: communities[1].contractAddress,
+                    },
+                    {
+                        beneficiaries: communities[0].beneficiaries?.length,
+                        id: communities[0].contractAddress,
+                    },
+                    {
+                        beneficiaries: communities[2].beneficiaries?.length,
+                        id: communities[2].contractAddress,
+                    }
+                ]);
+
                 const result = await CommunityService.list({
                     orderBy: 'nearest:ASC;bigger:DESC',
                     lat: '-15.8697203',
@@ -894,10 +1008,10 @@ describe('community service', () => {
                 });
 
                 expect(result.rows[0]).to.include({
-                    id: communities[1].id,
-                    name: communities[1].name,
-                    country: communities[1].country,
-                    requestByAddress: users[1].address,
+                    id: communities[2].id,
+                    name: communities[2].name,
+                    country: communities[2].country,
+                    requestByAddress: users[2].address,
                 });
                 expect(result.rows[1]).to.include({
                     id: communities[0].id,
@@ -906,10 +1020,10 @@ describe('community service', () => {
                     requestByAddress: users[0].address,
                 });
                 expect(result.rows[2]).to.include({
-                    id: communities[2].id,
-                    name: communities[2].name,
-                    country: communities[2].country,
-                    requestByAddress: users[2].address,
+                    id: communities[1].id,
+                    name: communities[1].name,
+                    country: communities[1].country,
+                    requestByAddress: users[1].address,
                 });
             });
 

@@ -1,5 +1,6 @@
 import { BigNumber } from 'bignumber.js';
 import { col, fn, Op } from 'sequelize';
+import { getUbiDailyEntity } from '../../subgraph/queries/ubi';
 
 import config from '../../config';
 import { models } from '../../database';
@@ -196,20 +197,14 @@ export default class GlobalDailyStateService {
             raw: true,
         });
 
-        const totalBeneficiaries = await models.beneficiary.count({
-            where: {
-                txAt: { [Op.gte]: today },
-                communityId: { [Op.in]: communitiesId },
-                active: true,
-            },
-        });
+        const ubiDaily = await getUbiDailyEntity(today);
 
         // TODO: subtract removed
 
         return {
             totalClaimed: claimed[0].totalClaimed,
             totalRaised: raised[0].totalRaised,
-            totalBeneficiaries,
+            totalBeneficiaries: ubiDaily.beneficiaries,
         };
     }
 }

@@ -92,6 +92,8 @@ export interface AppUser {
     bio: string;
     country: string | null;
     phone: string | null;
+    readBeneficiaryRules?: boolean | null;
+    readManagerRules?: boolean | null;
 
     // timestamps
     createdAt: Date;
@@ -140,6 +142,8 @@ export interface AppUserCreationAttributes {
     bio?: string;
     country?: string;
     phone?: string;
+    readBeneficiaryRules?: boolean;
+    readManagerRules?: boolean;
 
     trust?: AppUserTrustCreation;
 }

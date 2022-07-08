@@ -191,13 +191,52 @@ export const countBeneficiaries = async (
         });
 
         if (state === 'active') {
-            return queryResult.data.communityEntity.beneficiaries;
+            return queryResult.data.communityEntity?.beneficiaries;
         } else if (state === 'removed') {
-            return queryResult.data.communityEntity.removedBeneficiaries;
+            return queryResult.data.communityEntity?.removedBeneficiaries;
         } else {
             return (
-                queryResult.data.communityEntity.beneficiaries +
-                queryResult.data.communityEntity.removedBeneficiaries
+                queryResult.data.communityEntity?.beneficiaries +
+                queryResult.data.communityEntity?.removedBeneficiaries
+            );
+        }
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const countBeneficiariesByCommunities = async (
+    community: string[],
+    state: string
+): Promise<number> => {
+    try {
+        const idsFormated = community.map(
+            (el) => `"${el.toLocaleLowerCase()}"`
+        );
+
+        const query = gql`
+                {
+                    communityEntities(
+                        address_in: [${idsFormated}]
+                    ) {
+                        beneficiaries
+                        removedBeneficiaries
+                    }
+                }
+            `;
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        if (state === 'active') {
+            return queryResult.data.communityEntities?.beneficiaries;
+        } else if (state === 'removed') {
+            return queryResult.data.communityEntities?.removedBeneficiaries;
+        } else {
+            return (
+                queryResult.data.communityEntities?.beneficiaries +
+                queryResult.data.communityEntities?.removedBeneficiaries
             );
         }
     } catch (error) {

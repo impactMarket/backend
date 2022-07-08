@@ -20,6 +20,7 @@ import CommunityService from '../../src/services/ubi/community';
 import LogService from '../../src/services/app/user/log';
 import { LogTypes } from '../../src/interfaces/app/appLog';
 import * as subgraph from '../../src/subgraph/queries/community';
+import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 import * as userSubgraph from '../../src/subgraph/queries/user';
 
 describe('user service', () => {
@@ -27,12 +28,19 @@ describe('user service', () => {
     let returnCommunityStateSubgraph: SinonStub;
     let returnUserRoleSubgraph: SinonStub;
     const logService = new LogService();
+    let returnGetBeneficiaryByAddressSubgraph: SinonStub;
 
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
+        returnGetBeneficiaryByAddressSubgraph = stub(
+            beneficiarySubgraph,
+            'getBeneficiariesByAddress'
+        );
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
+        returnGetBeneficiaryByAddressSubgraph.returns([]);
+
         returnCommunityStateSubgraph.returns([
             {
                 claims: 0,

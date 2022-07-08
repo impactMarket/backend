@@ -2,6 +2,7 @@ import { point, multiPolygon, polygon } from '@turf/helpers';
 import pointsWithinPolygon from '@turf/points-within-polygon';
 import distance from '@turf/distance';
 import { Op } from 'sequelize';
+import { getBeneficiariesByAddress } from '../../../subgraph/queries/beneficiary';
 
 import config from '../../../config';
 import { models } from '../../../database';
@@ -10,6 +11,7 @@ import { BaseError } from '../../../utils/baseError';
 import countryNeighbors from '../../../utils/countryNeighbors.json';
 import countriesGeoJSON from '../../../utils/geoCountries.json';
 import iso3Countries from '../../../utils/iso3Countries.json';
+import { ethers } from 'ethers';
 
 export default class ClaimLocationService {
     public async add(
@@ -68,29 +70,25 @@ export default class ClaimLocationService {
                 }
             }
 
-            const beneficiary: BeneficiaryAttributes | null =
-                await models.beneficiary.findOne({
-                    attributes: [],
-                    include: [
-                        {
-                            attributes: ['id', 'publicId'],
-                            model: models.community,
-                            as: 'community',
-                        },
-                    ],
-                    where: { address },
-                });
+            const beneficiary = await getBeneficiariesByAddress([address]);
 
-            if (!beneficiary || !beneficiary.community) {
+            if (!beneficiary || !beneficiary.length) {
                 throw new BaseError('NOT_BENEFICIARY', 'Not a beneficiary');
             }
 
+            const beneficiaryCommunity = await models.community.findOne({
+                attributes: ['id', 'publicId'],
+                where: {
+                    contractAddress: ethers.utils.getAddress(beneficiary[0].community.id)
+                }
+            });
+
             if (
-                beneficiary.community.id === communityId ||
-                beneficiary.community.publicId === communityId
+                beneficiaryCommunity?.id === communityId ||
+                beneficiaryCommunity?.publicId === communityId
             ) {
                 await models.ubiClaimLocation.create({
-                    communityId: beneficiary.community.id,
+                    communityId: beneficiaryCommunity.id,
                     gps,
                 });
             } else {
