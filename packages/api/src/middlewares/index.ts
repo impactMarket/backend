@@ -148,14 +148,16 @@ export function verifySignature(
         return;
     }
 
+    const fullMessage = `${config.signatureMessage}_${message}`
+
     const address = ethers.utils.verifyMessage(
-        message as string,
+        fullMessage,
         signature as string,
     );
 
     if (address.toLocaleLowerCase() === req.user?.address.toLocaleLowerCase()) {
         // validate signature timestamp
-        const timestamp = (message as string).split('_')[1];
+        const timestamp = message as string;
         const expirationDate = new Date();
         expirationDate.setSeconds(expirationDate.getSeconds() - config.signatureExpiration);
         if (!timestamp || parseInt(timestamp) < expirationDate.getTime()) {
