@@ -244,7 +244,7 @@ export class CommunityDetailsService {
         }
 
         if (community.status === 'pending') {
-            if (community.requestByAddress !== addresses[0]) {
+            if (!!addresses[0] && community.requestByAddress !== addresses[0]) {
                 return {
                     count: 0,
                     rows: [],
@@ -267,7 +267,7 @@ export class CommunityDetailsService {
                 count: user ? 1 : 0,
                 rows: [
                     {
-                        ...(user as AppUser),
+                        ...(user?.toJSON() as AppUser),
                         isDeleted: false,
                         state: undefined,
                         added: 0,
