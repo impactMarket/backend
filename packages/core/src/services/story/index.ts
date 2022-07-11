@@ -155,6 +155,7 @@ export default class StoryServiceV2 {
                 'message',
                 'byAddress',
                 'storyMediaPath',
+                'storyMedia',
                 'postedAt',
                 [
                     fn(
@@ -276,6 +277,7 @@ export default class StoryServiceV2 {
                 'message',
                 'byAddress',
                 'storyMediaPath',
+                'storyMedia',
                 'postedAt',
                 [
                     fn(
