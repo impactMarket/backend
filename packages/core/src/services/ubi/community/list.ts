@@ -200,7 +200,13 @@ export class CommunityListService {
                     }
                     case 'newest':
                         orderOption.push([
-                            literal('"Community".started'),
+                            literal('"Community"."createdAt"'),
+                            orderType ? orderType : 'DESC',
+                        ]);
+                        break;
+                    case 'updated':
+                        orderOption.push([
+                            literal('"Community"."updatedAt"'),
                             orderType ? orderType : 'DESC',
                         ]);
                         break;
