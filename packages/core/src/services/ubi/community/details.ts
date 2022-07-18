@@ -84,13 +84,14 @@ export class CommunityDetailsService {
 
         if (community.status === 'valid') {
             const subgraphAmbassador = await getCommunityAmbassador(community.contractAddress!);
+            const address = ethers.utils.getAddress(subgraphAmbassador.id);
             const ambassador = await models.appUser.findOne({
                 where: {
-                    address: { [Op.iLike]: ethers.utils.getAddress(subgraphAmbassador.id) },
+                    address: { [Op.iLike]: address },
                 },
             });
             return {
-                address: subgraphAmbassador.id,
+                address,
                 ...ambassador?.toJSON(),
             }
         } else {
