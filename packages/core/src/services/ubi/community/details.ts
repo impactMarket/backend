@@ -78,31 +78,39 @@ export class CommunityDetailsService {
             },
         });
 
-        if (!community || (community.status === 'pending' && !community.ambassadorAddress)) {
+        if (
+            !community ||
+            (community.status === 'pending' && !community.ambassadorAddress)
+        ) {
             return null;
         }
 
         if (community.status === 'valid') {
-            const subgraphAmbassador = await getCommunityAmbassador(community.contractAddress!);
+            const subgraphAmbassador = await getCommunityAmbassador(
+                community.contractAddress!
+            );
             const ambassador = await models.appUser.findOne({
                 where: {
-                    address: { [Op.iLike]: ethers.utils.getAddress(subgraphAmbassador.id) },
+                    address: {
+                        [Op.iLike]: ethers.utils.getAddress(
+                            subgraphAmbassador.id
+                        ),
+                    },
                 },
             });
             return {
                 address: subgraphAmbassador.id,
                 ...ambassador?.toJSON(),
-            }
+            };
         } else {
             const ambassador = await models.appUser.findOne({
                 where: {
                     address: { [Op.iLike]: community.ambassadorAddress! },
                 },
             });
-    
+
             return ambassador;
         }
-
     }
 
     public async getUBIParams(communityId: number) {

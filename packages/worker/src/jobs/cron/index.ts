@@ -5,11 +5,4 @@ import * as network from './network';
 import * as updateExchangeRates from './updateExchangeRates';
 import * as user from './user';
 
-export {
-    community,
-    global,
-    network,
-    updateExchangeRates,
-    user,
-    filters,
-};
+export { community, global, network, updateExchangeRates, user, filters };

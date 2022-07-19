@@ -177,7 +177,7 @@ export class ContentStorage {
             uploadURL,
             filename,
             filePath,
-            media: mediaContent
+            media: mediaContent,
         };
     }
 }

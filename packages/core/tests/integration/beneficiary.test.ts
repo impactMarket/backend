@@ -23,9 +23,9 @@ import UserService from '../../src/services/app/user';
 import { IListBeneficiary } from '../../src/services/endpoints';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
 import ClaimsService from '../../src/services/ubi/claim';
+import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 import * as subgraph from '../../src/subgraph/queries/community';
 import * as userSubgraph from '../../src/subgraph/queries/user';
-import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { jumpToTomorrowMidnight, randomTx } from '../config/utils';
 import BeneficiaryFactory from '../factories/beneficiary';
@@ -261,8 +261,8 @@ describe('beneficiary service', () => {
                 { where: { address: listUsers[2].address } }
             );
 
-            let returnSubgraph: any = [];
-            beneficiaries.forEach(beneficiary => {
+            const returnSubgraph: any = [];
+            beneficiaries.forEach((beneficiary) => {
                 returnSubgraph.push({
                     address: beneficiary.address.toLowerCase(),
                     claims: 0,
@@ -270,11 +270,11 @@ describe('beneficiary service', () => {
                         id: listCommunity[0].contractAddress,
                     },
                     lastClaimAt: 0,
-                    preLastClaimAt: 0, 
+                    preLastClaimAt: 0,
                     since: 0,
                     claimed: 0,
                     state: 0,
-                })
+                });
             });
             returnGetBeneficiarySubgraph.returns(returnSubgraph);
 
@@ -293,18 +293,20 @@ describe('beneficiary service', () => {
 
         it('should list blocked beneficiaries', async () => {
             returnGetBeneficiarySubgraph.resetHistory();
-            returnGetBeneficiarySubgraph.returns([{
-                address: listUsers[3].address,
-                claims: 0,
-                community: {
-                    id: listCommunity[0].contractAddress,
+            returnGetBeneficiarySubgraph.returns([
+                {
+                    address: listUsers[3].address,
+                    claims: 0,
+                    community: {
+                        id: listCommunity[0].contractAddress,
+                    },
+                    lastClaimAt: 0,
+                    preLastClaimAt: 0,
+                    since: 0,
+                    claimed: 0,
+                    state: 2,
                 },
-                lastClaimAt: 0,
-                preLastClaimAt: 0, 
-                since: 0,
-                claimed: 0,
-                state: 2,
-            }]);
+            ]);
 
             const result = await BeneficiaryService.list(
                 listManagers[0].address,
@@ -323,20 +325,22 @@ describe('beneficiary service', () => {
             const lastClaimAt = new Date();
             const interval = communities[0].contract!.baseInterval * 4;
             lastClaimAt.setSeconds(lastClaimAt.getSeconds() - interval);
-            
+
             returnGetBeneficiarySubgraph.resetHistory();
-            returnGetBeneficiarySubgraph.returns([{
-                address: listUsers[4].address,
-                claims: 0,
-                community: {
-                    id: listCommunity[0].contractAddress,
+            returnGetBeneficiarySubgraph.returns([
+                {
+                    address: listUsers[4].address,
+                    claims: 0,
+                    community: {
+                        id: listCommunity[0].contractAddress,
+                    },
+                    lastClaimAt,
+                    preLastClaimAt: 0,
+                    since: 0,
+                    claimed: 0,
+                    state: 2,
                 },
-                lastClaimAt: lastClaimAt,
-                preLastClaimAt: 0, 
-                since: 0,
-                claimed: 0,
-                state: 2,
-            }]);
+            ]);
 
             const result = await BeneficiaryService.list(
                 listManagers[0].address,
@@ -353,18 +357,20 @@ describe('beneficiary service', () => {
     describe('search', () => {
         it('by name (full)', async () => {
             const user = users[3];
-            returnGetBeneficiaryByAddressSubgraph.returns([{
-                address: user.address.toLowerCase(),
-                claims: 0,
-                community: {
-                    id: communities[0].contractAddress,
+            returnGetBeneficiaryByAddressSubgraph.returns([
+                {
+                    address: user.address.toLowerCase(),
+                    claims: 0,
+                    community: {
+                        id: communities[0].contractAddress,
+                    },
+                    lastClaimAt: 0,
+                    preLastClaimAt: 0,
+                    since: 0,
+                    claimed: 0,
+                    state: 0,
                 },
-                lastClaimAt: 0,
-                preLastClaimAt: 0, 
-                since: 0,
-                claimed: 0,
-                state: 0,
-            }]);
+            ]);
 
             const result: IListBeneficiary[] = await BeneficiaryService.search(
                 users[0].address,
@@ -379,18 +385,20 @@ describe('beneficiary service', () => {
 
         it('by name (partially)', async () => {
             const user = users[4];
-            returnGetBeneficiaryByAddressSubgraph.returns([{
-                address: user.address.toLowerCase(),
-                claims: 0,
-                community: {
-                    id: communities[0].contractAddress,
+            returnGetBeneficiaryByAddressSubgraph.returns([
+                {
+                    address: user.address.toLowerCase(),
+                    claims: 0,
+                    community: {
+                        id: communities[0].contractAddress,
+                    },
+                    lastClaimAt: 0,
+                    preLastClaimAt: 0,
+                    since: 0,
+                    claimed: 0,
+                    state: 0,
                 },
-                lastClaimAt: 0,
-                preLastClaimAt: 0, 
-                since: 0,
-                claimed: 0,
-                state: 0,
-            }]);
+            ]);
             const result = await BeneficiaryService.search(
                 users[0].address,
                 user.username!.slice(0, user.username!.length / 2)
@@ -404,18 +412,20 @@ describe('beneficiary service', () => {
 
         it('by name (not case sensitive)', async () => {
             const user = users[5];
-            returnGetBeneficiaryByAddressSubgraph.returns([{
-                address: user.address.toLowerCase(),
-                claims: 0,
-                community: {
-                    id: communities[0].contractAddress,
+            returnGetBeneficiaryByAddressSubgraph.returns([
+                {
+                    address: user.address.toLowerCase(),
+                    claims: 0,
+                    community: {
+                        id: communities[0].contractAddress,
+                    },
+                    lastClaimAt: 0,
+                    preLastClaimAt: 0,
+                    since: 0,
+                    claimed: 0,
+                    state: 0,
                 },
-                lastClaimAt: 0,
-                preLastClaimAt: 0, 
-                since: 0,
-                claimed: 0,
-                state: 0,
-            }]);
+            ]);
             const result = await BeneficiaryService.search(
                 users[0].address,
                 user.username!.toUpperCase()
@@ -429,18 +439,20 @@ describe('beneficiary service', () => {
 
         it('by address (checksumed)', async () => {
             const user = users[6];
-            returnGetBeneficiaryByAddressSubgraph.returns([{
-                address: user.address.toLowerCase(),
-                claims: 0,
-                community: {
-                    id: communities[0].contractAddress,
+            returnGetBeneficiaryByAddressSubgraph.returns([
+                {
+                    address: user.address.toLowerCase(),
+                    claims: 0,
+                    community: {
+                        id: communities[0].contractAddress,
+                    },
+                    lastClaimAt: 0,
+                    preLastClaimAt: 0,
+                    since: 0,
+                    claimed: 0,
+                    state: 0,
                 },
-                lastClaimAt: 0,
-                preLastClaimAt: 0, 
-                since: 0,
-                claimed: 0,
-                state: 0,
-            }]);
+            ]);
             const result = await BeneficiaryService.search(
                 users[0].address,
                 user.address
@@ -454,18 +466,20 @@ describe('beneficiary service', () => {
 
         it('by address (not checksumed)', async () => {
             const user = users[7];
-            returnGetBeneficiaryByAddressSubgraph.returns([{
-                address: user.address.toLowerCase(),
-                claims: 0,
-                community: {
-                    id: communities[0].contractAddress,
+            returnGetBeneficiaryByAddressSubgraph.returns([
+                {
+                    address: user.address.toLowerCase(),
+                    claims: 0,
+                    community: {
+                        id: communities[0].contractAddress,
+                    },
+                    lastClaimAt: 0,
+                    preLastClaimAt: 0,
+                    since: 0,
+                    claimed: 0,
+                    state: 0,
                 },
-                lastClaimAt: 0,
-                preLastClaimAt: 0, 
-                since: 0,
-                claimed: 0,
-                state: 0,
-            }]);
+            ]);
             const result = await BeneficiaryService.search(
                 users[0].address,
                 user.address.toLowerCase()
@@ -534,7 +548,7 @@ describe('beneficiary service', () => {
             );
             returnCommunityStateSubgraph.resetHistory();
             returnCommunityStateSubgraph.returns({
-                removedBeneficiaries: 2
+                removedBeneficiaries: 2,
             });
 
             const total = await BeneficiaryService.getTotalBeneficiaries(
@@ -706,18 +720,20 @@ describe('beneficiary service', () => {
 
         it('readRules should be false after a beneficiary has been added', async () => {
             returnGetBeneficiaryByAddressSubgraph.resetHistory();
-            returnGetBeneficiaryByAddressSubgraph.returns([{
-                address: users[17].address.toLowerCase(),
-                claims: 0,
-                community: {
-                    id: communities[0].contractAddress,
+            returnGetBeneficiaryByAddressSubgraph.returns([
+                {
+                    address: users[17].address.toLowerCase(),
+                    claims: 0,
+                    community: {
+                        id: communities[0].contractAddress,
+                    },
+                    lastClaimAt: 0,
+                    preLastClaimAt: 0,
+                    since: 0,
+                    claimed: 0,
+                    state: 0,
                 },
-                lastClaimAt: 0,
-                preLastClaimAt: 0, 
-                since: 0,
-                claimed: 0,
-                state: 0,
-            }]);
+            ]);
 
             const user = await UserService.welcome(users[17].address);
 
@@ -732,18 +748,20 @@ describe('beneficiary service', () => {
 
         it('should read the beneficiary rules successfully', async () => {
             returnGetBeneficiaryByAddressSubgraph.resetHistory();
-            returnGetBeneficiaryByAddressSubgraph.returns([{
-                address: users[17].address.toLowerCase(),
-                claims: 0,
-                community: {
-                    id: communities[0].contractAddress,
+            returnGetBeneficiaryByAddressSubgraph.returns([
+                {
+                    address: users[17].address.toLowerCase(),
+                    claims: 0,
+                    community: {
+                        id: communities[0].contractAddress,
+                    },
+                    lastClaimAt: 0,
+                    preLastClaimAt: 0,
+                    since: 0,
+                    claimed: 0,
+                    state: 0,
                 },
-                lastClaimAt: 0,
-                preLastClaimAt: 0, 
-                since: 0,
-                claimed: 0,
-                state: 0,
-            }]);
+            ]);
             const readRules = await BeneficiaryService.readRules(
                 users[17].address
             );

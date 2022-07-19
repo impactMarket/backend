@@ -5,7 +5,6 @@ import { Sequelize } from 'sequelize';
 import Sinon, { assert, replace, spy, stub, SinonStub, restore } from 'sinon';
 
 import { models, sequelize as database } from '../../src/database';
-import { AppMediaContent } from '../../src/interfaces/app/appMediaContent';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { UbiPromoter } from '../../src/interfaces/ubi/ubiPromoter';
 import { CommunityContentStorage } from '../../src/services/storage';
@@ -128,10 +127,12 @@ describe('community service', () => {
                     },
                 ]);
 
-                returnBiggestCommunitiesSubgraph.returns([{
-                    beneficiaries: 0,
-                    id: communities[0].contractAddress,
-                }]);
+                returnBiggestCommunitiesSubgraph.returns([
+                    {
+                        beneficiaries: 0,
+                        id: communities[0].contractAddress,
+                    },
+                ]);
 
                 const result = await CommunityService.list({
                     name: communities[0].name,
@@ -170,10 +171,12 @@ describe('community service', () => {
                     },
                 ]);
 
-                returnBiggestCommunitiesSubgraph.returns([{
-                    beneficiaries: 0,
-                    id: communities[0].contractAddress,
-                }]);
+                returnBiggestCommunitiesSubgraph.returns([
+                    {
+                        beneficiaries: 0,
+                        id: communities[0].contractAddress,
+                    },
+                ]);
 
                 const result = await CommunityService.list({
                     name: communities[0].name.slice(
@@ -215,10 +218,12 @@ describe('community service', () => {
                     },
                 ]);
 
-                returnBiggestCommunitiesSubgraph.returns([{
-                    beneficiaries: 0,
-                    id: communities[0].contractAddress,
-                }]);
+                returnBiggestCommunitiesSubgraph.returns([
+                    {
+                        beneficiaries: 0,
+                        id: communities[0].contractAddress,
+                    },
+                ]);
 
                 const result = await CommunityService.list({
                     name: communities[0].name.slice(
@@ -260,10 +265,12 @@ describe('community service', () => {
                     },
                 ]);
 
-                returnBiggestCommunitiesSubgraph.returns([{
-                    beneficiaries: 0,
-                    id: communities[0].contractAddress,
-                }]);
+                returnBiggestCommunitiesSubgraph.returns([
+                    {
+                        beneficiaries: 0,
+                        id: communities[0].contractAddress,
+                    },
+                ]);
 
                 const result = await CommunityService.list({
                     name: communities[0].name.toUpperCase(),
@@ -650,14 +657,13 @@ describe('community service', () => {
             for (let index = 0; index < totalCommunities / 5; index++) {
                 const offset = index * 5;
                 const limit = 5;
-                const sliced = communities.slice(
-                    offset,
-                    offset + limit
+                const sliced = communities.slice(offset, offset + limit);
+                returnBiggestCommunitiesSubgraph.returns(
+                    sliced.map((el) => ({
+                        beneficiaries: el.beneficiaries?.length,
+                        id: el.contractAddress,
+                    }))
                 );
-                returnBiggestCommunitiesSubgraph.returns(sliced.map(el => ({
-                    beneficiaries: el.beneficiaries?.length,
-                    id: el.contractAddress,
-                })));
                 const r = await CommunityService.list({
                     offset: offset.toString(),
                     limit: limit.toString(),
@@ -717,7 +723,7 @@ describe('community service', () => {
                 {
                     beneficiaries: communities[0].beneficiaries?.length,
                     id: communities[0].contractAddress,
-                }
+                },
             ]);
             //
             const r = await CommunityService.list({
@@ -805,7 +811,7 @@ describe('community service', () => {
                     {
                         id: communities[1].contractAddress,
                         claimed: 0,
-                    }
+                    },
                 ]);
 
                 returnBiggestCommunitiesSubgraph.returns([
@@ -816,7 +822,7 @@ describe('community service', () => {
                     {
                         beneficiaries: communities[0].beneficiaries?.length,
                         id: communities[0].contractAddress,
-                    }
+                    },
                 ]);
 
                 const result = await CommunityService.list({});
@@ -998,7 +1004,7 @@ describe('community service', () => {
                     {
                         beneficiaries: communities[2].beneficiaries?.length,
                         id: communities[2].contractAddress,
-                    }
+                    },
                 ]);
 
                 const result = await CommunityService.list({

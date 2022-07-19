@@ -1,4 +1,5 @@
 import { Client } from '@hubspot/api-client';
+import { ethers } from 'ethers';
 import { Op, QueryTypes } from 'sequelize';
 
 import config from '../../config';
@@ -13,6 +14,8 @@ import {
     AppUser,
     AppUserCreationAttributes,
 } from '../../interfaces/app/appUser';
+import { BeneficiarySubgraph } from '../../subgraph/interfaces/beneficiary';
+import { getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
 import { BaseError } from '../../utils/baseError';
 import { generateAccessToken } from '../../utils/jwt';
 import { Logger } from '../../utils/logger';
@@ -21,9 +24,6 @@ import { IUserHello, IUserAuth, IBeneficiary, IManager } from '../endpoints';
 import { ProfileContentStorage } from '../storage';
 import CommunityService from '../ubi/community';
 import UserLogService from './user/log';
-import { getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
-import { BeneficiarySubgraph } from '../../subgraph/interfaces/beneficiary';
-import { ethers } from 'ethers';
 
 export default class UserService {
     public static sequelize = sequelize;
@@ -447,7 +447,10 @@ export default class UserService {
      * TODO: improve
      */
     private static async loadUser(user: AppUser): Promise<IUserHello> {
-        const getBeneficiaries = await getBeneficiariesByAddress([user.address], 'state_not: 1');
+        const getBeneficiaries = await getBeneficiariesByAddress(
+            [user.address],
+            'state_not: 1'
+        );
         let beneficiary: BeneficiarySubgraph | null = null;
         if (getBeneficiaries && getBeneficiaries.length > 0) {
             beneficiary = getBeneficiaries[0];
@@ -483,8 +486,10 @@ export default class UserService {
             const community = await models.community.findOne({
                 attributes: ['id'],
                 where: {
-                    contractAddress: ethers.utils.getAddress(beneficiary.community.id),
-                }
+                    contractAddress: ethers.utils.getAddress(
+                        beneficiary.community.id
+                    ),
+                },
             });
             if (community) {
                 communityId = community?.id;
@@ -505,11 +510,13 @@ export default class UserService {
                 suspect: user.suspect,
             },
             manager,
-            beneficiary: beneficiary ? {
-                blocked: beneficiary.state === 2,
-                communityId,
-                readRules: user.readBeneficiaryRules,
-            } as any : null,
+            beneficiary: beneficiary
+                ? ({
+                      blocked: beneficiary.state === 2,
+                      communityId,
+                      readRules: user.readBeneficiaryRules,
+                  } as any)
+                : null,
         };
     }
 

@@ -62,7 +62,10 @@ export const communitySubscription = async () => {
                     communityEntities.forEach(async (communityEntitiy) => {
                         const today = (new Date().getTime() / 1000 / 86400) | 0;
 
-                        if (communityEntitiy.startDayId === today && !!communityEntitiy.id) {
+                        if (
+                            communityEntitiy.startDayId === today &&
+                            !!communityEntitiy.id
+                        ) {
                             try {
                                 const community =
                                     await database.models.community.findOne({
@@ -183,7 +186,10 @@ export const userActivitySubscription = async () => {
                         const date = new Date();
                         date.setMinutes(date.getMinutes() - 2);
 
-                        if (userActivity.timestamp * 1000 > date.getTime() && !!userActivity.user) {
+                        if (
+                            userActivity.timestamp * 1000 > date.getTime() &&
+                            !!userActivity.user
+                        ) {
                             try {
                                 const user =
                                     await database.models.appUser.findOne({

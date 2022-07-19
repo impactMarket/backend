@@ -1,5 +1,4 @@
 import { ethers } from 'ethers';
-import parsePhoneNumber from 'libphonenumber-js';
 import { Op, literal, OrderItem, WhereOptions, Includeable } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
@@ -210,17 +209,16 @@ export class CommunityListService {
                             orderOption.length === 0 &&
                             !orderOutOfFunds.active
                         ) {
-                            beneficiariesState =
-                                await this._communityEntities(
-                                    'beneficiaries',
-                                    {
-                                        status: query.status,
-                                        limit: query.limit,
-                                        offset: query.offset,
-                                    },
-                                    extendedWhere,
-                                    orderType
-                                );
+                            beneficiariesState = await this._communityEntities(
+                                'beneficiaries',
+                                {
+                                    status: query.status,
+                                    limit: query.limit,
+                                    offset: query.offset,
+                                },
+                                extendedWhere,
+                                orderType
+                            );
                             contractAddress = beneficiariesState!.map((el) =>
                                 ethers.utils.getAddress(el.id)
                             );
@@ -235,7 +233,10 @@ export class CommunityListService {
             }
         } else {
             // if searching by pending or did not pass the "state" on fields, do not search on the graph
-            if (query.status !== 'pending' && (!query.fields || query.fields.indexOf('state') !== -1)) {
+            if (
+                query.status !== 'pending' &&
+                (!query.fields || query.fields.indexOf('state') !== -1)
+            ) {
                 beneficiariesState = await this._communityEntities(
                     'beneficiaries',
                     {
@@ -437,7 +438,7 @@ export class CommunityListService {
 
     private async _getOpenProposals(): Promise<string[]> {
         const proposals = await getCommunityProposal();
-        let requestByAddress: string[] = [];
+        const requestByAddress: string[] = [];
         proposals.forEach((element) => {
             try {
                 const calldata = ethers.utils.defaultAbiCoder.decode(

@@ -230,8 +230,10 @@ function startChainSubscriber(fallback?: boolean): ChainSubscribers {
  * They all follow the API timezone, which should be UTC, same as postgresql.
  */
 function cron() {
-    const globalDemographicsService = new services.global.GlobalDemographicsService();
-    const communityDemographicsService = new services.ubi.CommunityDemographicsService();
+    const globalDemographicsService =
+        new services.global.GlobalDemographicsService();
+    const communityDemographicsService =
+        new services.ubi.CommunityDemographicsService();
 
     // multiple times a day
 
@@ -393,7 +395,8 @@ function cron() {
         new CronJob(
             '0 0 * * *',
             () => {
-                communityDemographicsService.calculate()
+                communityDemographicsService
+                    .calculate()
                     .then(() => {
                         services.app.CronJobExecutedService.add(
                             'calculateCommunitiesDemographics'
@@ -402,7 +405,8 @@ function cron() {
                             'calculateCommunitiesDemographics successfully executed!'
                         );
 
-                        globalDemographicsService.calculate()
+                        globalDemographicsService
+                            .calculate()
                             .then(() => {
                                 services.app.CronJobExecutedService.add(
                                     'calculateDemographics'
@@ -412,7 +416,9 @@ function cron() {
                                 );
                             })
                             .catch((e) => {
-                                utils.Logger.error('calculateDemographics FAILED! ' + e);
+                                utils.Logger.error(
+                                    'calculateDemographics FAILED! ' + e
+                                );
                             });
                     })
                     .catch((e) => {

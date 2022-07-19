@@ -6,7 +6,8 @@ import { standardResponse } from '../utils/api';
 const reachedAddressService = new services.ReachedAddressService();
 const globalGrowth = new services.global.GlobalGrowthService();
 const globalDailyStateService = new services.global.GlobalDailyStateService();
-const globalDemographicsService = new services.global.GlobalDemographicsService();
+const globalDemographicsService =
+    new services.global.GlobalDemographicsService();
 
 const globalStatus = (req: Request, res: Response) => {
     const waitForResult = new Promise(async (resolve, reject) => {
@@ -31,7 +32,8 @@ const globalStatus = (req: Request, res: Response) => {
         .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
 const globalDemographics = (req: Request, res: Response) => {
-    globalDemographicsService.get()
+    globalDemographicsService
+        .get()
         .then((r) => res.send(r))
         .catch((e) => standardResponse(res, 400, false, '', { error: e }));
 };
