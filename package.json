@@ -31,7 +31,7 @@
         "build": "lerna exec --scope @impactmarket/* yarn build ",
         "test": "lerna exec --concurrency 1 yarn test",
         "precoverage:ci": "NODE_ENV=test sequelize db:migrate --env ci",
-        "coverage:ci": "NODE_ENV=test nyc --reporter=lcov lerna exec --concurrency 1 yarn test",
+        "coverage:ci": "nyc --reporter=lcov lerna exec --concurrency 1 yarn test",
         "prettier": "prettier --write \"./**/*.ts\"",
         "eslint": "eslint --fix \"./**/*.ts\"",
         "prettier-no-fix": "prettier --write \"./**/*.ts\"",
