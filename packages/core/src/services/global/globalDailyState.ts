@@ -1,6 +1,5 @@
 import { BigNumber } from 'bignumber.js';
 import { col, fn, Op } from 'sequelize';
-import { getUbiDailyEntity } from '../../subgraph/queries/ubi';
 
 import config from '../../config';
 import { models } from '../../database';
@@ -8,6 +7,7 @@ import {
     GlobalDailyState,
     GlobalDailyStateCreationAttributes,
 } from '../../database/models/global/globalDailyState';
+import { getUbiDailyEntity } from '../../subgraph/queries/ubi';
 
 export default class GlobalDailyStateService {
     public globalDailyState = models.globalDailyState;

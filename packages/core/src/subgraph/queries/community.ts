@@ -179,7 +179,7 @@ export const communityEntities = async (where: string, fields: string) => {
 export const getBiggestCommunities = async (
     limit: number,
     offset: number,
-    orderDirection?: string,
+    orderDirection?: string
 ): Promise<
     {
         beneficiaries: number;
@@ -240,7 +240,7 @@ export const getCommunityAmbassador = async (community: string) => {
 };
 
 export const getCommunityStateByAddresses = async (
-    addresses: string[],
+    addresses: string[]
 ): Promise<
     {
         beneficiaries: number;

@@ -2,11 +2,10 @@ import { point, multiPolygon } from '@turf/helpers';
 import pointsWithinPolygon from '@turf/points-within-polygon';
 import { ethers } from 'ethers';
 import { Op } from 'sequelize';
-import { getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
 
 import config from '../../config';
 import { models } from '../../database';
-import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
+import { getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
 import { BaseError } from '../../utils/baseError';
 import countryNeighbors from '../../utils/countryNeighbors.json';
 import countriesGeoJSON from '../../utils/geoCountries.json';
@@ -64,8 +63,10 @@ export default class ClaimLocationService {
             const beneficiaryCommunity = await models.community.findOne({
                 attributes: ['id', 'publicId'],
                 where: {
-                    contractAddress: ethers.utils.getAddress(beneficiary[0].community.id)
-                }
+                    contractAddress: ethers.utils.getAddress(
+                        beneficiary[0].community.id
+                    ),
+                },
             });
 
             if (

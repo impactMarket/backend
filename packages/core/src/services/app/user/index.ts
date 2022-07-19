@@ -183,10 +183,7 @@ export default class UserService {
         const roles = await this._userRoles(address);
 
         if (!user && roles.roles.length === 0) {
-            throw new BaseError(
-                'USER_NOT_FOUND',
-                'user not found'
-            );
+            throw new BaseError('USER_NOT_FOUND', 'user not found');
         }
 
         return {
@@ -293,29 +290,39 @@ export default class UserService {
 
     public async getReport(
         user: string,
-        query: { offset?: string; limit?: string },
+        query: { offset?: string; limit?: string }
     ) {
         const communities = await models.community.findAll({
             attributes: ['id'],
             where: {
                 ambassadorAddress: user,
-            }
+            },
         });
 
         if (!communities || communities.length === 0) {
-            throw new BaseError('COMMUNITY_NOT_FOUND', 'no community found for this ambassador');
+            throw new BaseError(
+                'COMMUNITY_NOT_FOUND',
+                'no community found for this ambassador'
+            );
         }
 
         return models.anonymousReport.findAndCountAll({
-            include: [{
-                attributes: ['id', 'contractAddress', 'name', 'coverMediaPath'],
-                model: models.community,
-                as: 'community',
-            }],
+            include: [
+                {
+                    attributes: [
+                        'id',
+                        'contractAddress',
+                        'name',
+                        'coverMediaPath',
+                    ],
+                    model: models.community,
+                    as: 'community',
+                },
+            ],
             where: {
                 communityId: {
-                    [Op.in]: communities.map(c => c.id)
-                }
+                    [Op.in]: communities.map((c) => c.id),
+                },
             },
             offset: query.offset
                 ? parseInt(query.offset, 10)

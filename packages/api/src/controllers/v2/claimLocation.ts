@@ -11,7 +11,8 @@ class ClaimLocationController {
     }
 
     getAll = (req: Request, res: Response) => {
-        this.claimLocationService.getAll()
+        this.claimLocationService
+            .getAll()
             .then((r) => {
                 res.send(r);
             })
@@ -30,7 +31,8 @@ class ClaimLocationController {
         }
         const { communityId, gps } = req.body;
 
-        this.claimLocationService.add(communityId, gps, req.user.address)
+        this.claimLocationService
+            .add(communityId, gps, req.user.address)
             .then(() => {
                 res.sendStatus(200);
             })
@@ -39,5 +41,3 @@ class ClaimLocationController {
 }
 
 export { ClaimLocationController };
-
-

@@ -5,7 +5,7 @@ import config from '../config';
 export function generateAccessToken(
     userAddress: string,
     userId: number,
-    clientId?: string,
+    clientId?: string
 ): string {
     return jwt.sign(
         {
