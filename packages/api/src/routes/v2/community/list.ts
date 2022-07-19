@@ -19,7 +19,7 @@ export default (route: Router): void => {
      *         name: orderBy
      *         schema:
      *           type: string
-     *           enum: [nearest, out_of_funds, newest, bigger]
+     *           enum: [nearest, out_of_funds, newest, updated, bigger]
      *         required: false
      *         description: communities list order (bigger by default)
      *       - in: query
