@@ -128,7 +128,12 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 allowNull: false,
             },
             review: {
-                type: DataTypes.ENUM('pending', 'claimed', 'declined', 'accepted'),
+                type: DataTypes.ENUM(
+                    'pending',
+                    'claimed',
+                    'declined',
+                    'accepted'
+                ),
                 defaultValue: 'pending',
                 allowNull: false,
             },

@@ -4,8 +4,8 @@ import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { stub, assert, SinonStub } from 'sinon';
 
-import * as managerSubgraph from '../../../../core/src/subgraph/queries/manager';
 import * as beneficiarySubgraph from '../../../../core/src/subgraph/queries/beneficiary';
+import * as managerSubgraph from '../../../../core/src/subgraph/queries/manager';
 import { verifyDeletedAccounts } from '../../../src/jobs/cron/user';
 
 describe('[jobs - cron] verifyDeletedAccounts', () => {
@@ -303,18 +303,20 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     });
 
     it('search beneficiary by address after delete user', async () => {
-        returnGetBeneficiaryByAddressSubgraph.returns([{
-            address: users[1].address.toLowerCase(),
-            claims: 0,
-            community: {
-                id: communities[0].contractAddress,
+        returnGetBeneficiaryByAddressSubgraph.returns([
+            {
+                address: users[1].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0,
+                since: 0,
+                claimed: 0,
+                state: 0,
             },
-            lastClaimAt: 0,
-            preLastClaimAt: 0, 
-            since: 0,
-            claimed: 0,
-            state: 0,
-        }]);
+        ]);
         const beneficiary = await services.ubi.BeneficiaryService.search(
             users[0].address,
             users[1].address
@@ -343,7 +345,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                     id: communities[0].contractAddress,
                 },
                 lastClaimAt: 0,
-                preLastClaimAt: 0, 
+                preLastClaimAt: 0,
                 since: 0,
                 claimed: 0,
                 state: 0,
@@ -355,7 +357,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                     id: communities[0].contractAddress,
                 },
                 lastClaimAt: 0,
-                preLastClaimAt: 0, 
+                preLastClaimAt: 0,
                 since: 0,
                 claimed: 0,
                 state: 0,
@@ -367,11 +369,11 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                     id: communities[0].contractAddress,
                 },
                 lastClaimAt: 0,
-                preLastClaimAt: 0, 
+                preLastClaimAt: 0,
                 since: 0,
                 claimed: 0,
                 state: 0,
-            }
+            },
         ]);
         const beneficiary = await services.ubi.BeneficiaryService.list(
             users[0].address,

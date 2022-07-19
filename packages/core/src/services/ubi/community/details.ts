@@ -78,12 +78,17 @@ export class CommunityDetailsService {
             },
         });
 
-        if (!community || (community.status === 'pending' && !community.ambassadorAddress)) {
+        if (
+            !community ||
+            (community.status === 'pending' && !community.ambassadorAddress)
+        ) {
             return null;
         }
 
         if (community.status === 'valid') {
-            const subgraphAmbassador = await getCommunityAmbassador(community.contractAddress!);
+            const subgraphAmbassador = await getCommunityAmbassador(
+                community.contractAddress!
+            );
             const address = ethers.utils.getAddress(subgraphAmbassador.id);
             const ambassador = await models.appUser.findOne({
                 where: {
@@ -93,17 +98,16 @@ export class CommunityDetailsService {
             return {
                 address,
                 ...ambassador?.toJSON(),
-            }
+            };
         } else {
             const ambassador = await models.appUser.findOne({
                 where: {
                     address: { [Op.iLike]: community.ambassadorAddress! },
                 },
             });
-    
+
             return ambassador;
         }
-
     }
 
     public async getUBIParams(communityId: number) {

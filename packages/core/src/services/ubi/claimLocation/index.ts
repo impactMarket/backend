@@ -1,17 +1,16 @@
+import distance from '@turf/distance';
 import { point, multiPolygon, polygon } from '@turf/helpers';
 import pointsWithinPolygon from '@turf/points-within-polygon';
-import distance from '@turf/distance';
+import { ethers } from 'ethers';
 import { Op } from 'sequelize';
-import { getBeneficiariesByAddress } from '../../../subgraph/queries/beneficiary';
 
 import config from '../../../config';
 import { models } from '../../../database';
-import { BeneficiaryAttributes } from '../../../interfaces/ubi/beneficiary';
+import { getBeneficiariesByAddress } from '../../../subgraph/queries/beneficiary';
 import { BaseError } from '../../../utils/baseError';
 import countryNeighbors from '../../../utils/countryNeighbors.json';
 import countriesGeoJSON from '../../../utils/geoCountries.json';
 import iso3Countries from '../../../utils/iso3Countries.json';
-import { ethers } from 'ethers';
 
 export default class ClaimLocationService {
     public async add(
@@ -60,7 +59,10 @@ export default class ClaimLocationService {
                     (el) => el.properties.ISO_A3 === countryCode
                 );
 
-                const closeLocation = this.getDistance(points, country.geometry);
+                const closeLocation = this.getDistance(
+                    points,
+                    country.geometry
+                );
 
                 if (!closeLocation) {
                     throw new BaseError(
@@ -79,8 +81,10 @@ export default class ClaimLocationService {
             const beneficiaryCommunity = await models.community.findOne({
                 attributes: ['id', 'publicId'],
                 where: {
-                    contractAddress: ethers.utils.getAddress(beneficiary[0].community.id)
-                }
+                    contractAddress: ethers.utils.getAddress(
+                        beneficiary[0].community.id
+                    ),
+                },
             });
 
             if (
@@ -143,26 +147,24 @@ export default class ClaimLocationService {
 
         if (geometry.type === 'Polygon') {
             const element = geometry.coordinates[0];
-            element.forEach(el => {
+            element.forEach((el) => {
                 const newPoint = point(el);
                 const dist = distance(location, newPoint);
                 // less than 50 kilometers
                 if (dist < 50) {
                     close = true;
-                    return;
                 }
             });
         } else if (geometry.type === 'MultiPolygon') {
             const coordinates = geometry.coordinates;
             for (let index = 0; index < coordinates.length; index++) {
                 const element = coordinates[index][0];
-                element.forEach(el => {
+                element.forEach((el) => {
                     const newPoint = point(el);
                     const dist = distance(location, newPoint);
                     // less than 50 kilometers
                     if (dist < 50) {
                         close = true;
-                        return;
                     }
                 });
 

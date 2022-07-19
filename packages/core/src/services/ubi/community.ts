@@ -12,7 +12,6 @@ import {
     Order,
 } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
-import { countBeneficiaries } from '../../subgraph/queries/beneficiary';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';
@@ -34,6 +33,7 @@ import { UbiCommunityLabel } from '../../interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '../../interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '../../interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
+import { countBeneficiaries } from '../../subgraph/queries/beneficiary';
 import {
     getCommunityProposal,
     getClaimed,
@@ -474,37 +474,31 @@ export default class CommunityService {
                         ]);
                         break;
                     default: {
-                        beneficiariesState =
-                            await this._getBeneficiaryState(
-                                {
-                                    status: query.status,
-                                    limit: query.limit,
-                                    offset: query.offset,
-                                },
-                                extendedWhere,
-                                orderType
-                            );
-                        communitiesId = beneficiariesState!.map(
-                            (el) => el.id
+                        beneficiariesState = await this._getBeneficiaryState(
+                            {
+                                status: query.status,
+                                limit: query.limit,
+                                offset: query.offset,
+                            },
+                            extendedWhere,
+                            orderType
                         );
+                        communitiesId = beneficiariesState!.map((el) => el.id);
                         break;
                     }
                 }
             }
         } else {
-            beneficiariesState =
-                await this._getBeneficiaryState(
-                    {
-                        status: query.status,
-                        limit: query.limit,
-                        offset: query.offset,
-                    },
-                    extendedWhere,
-                    'desc',
-                );
-            communitiesId = beneficiariesState!.map(
-                (el) => el.id
+            beneficiariesState = await this._getBeneficiaryState(
+                {
+                    status: query.status,
+                    limit: query.limit,
+                    offset: query.offset,
+                },
+                extendedWhere,
+                'desc'
             );
+            communitiesId = beneficiariesState!.map((el) => el.id);
         }
 
         let include: Includeable[];
@@ -591,10 +585,7 @@ export default class CommunityService {
         if (returnState) {
             if (!beneficiariesState) {
                 beneficiariesState = (await models.community.findAll({
-                    attributes: [
-                        'id',
-                        'contractAddress',
-                    ],
+                    attributes: ['id', 'contractAddress'],
                     order: orderBeneficiary,
                     where: {
                         id: {
@@ -1150,8 +1141,14 @@ export default class CommunityService {
             })
         )[0];
 
-        const activeBeneficiaries = await countBeneficiaries(community!.contractAddress!, 'active')
-        const removedBeneficiaries = await countBeneficiaries(community!.contractAddress!, 'removed')
+        const activeBeneficiaries = await countBeneficiaries(
+            community!.contractAddress!,
+            'active'
+        );
+        const removedBeneficiaries = await countBeneficiaries(
+            community!.contractAddress!,
+            'removed'
+        );
 
         const communityManagerActivity = await this.manager.count({
             where: {
@@ -1170,7 +1167,9 @@ export default class CommunityService {
             raised: communityInflowActivity.amount
                 ? communityInflowActivity.amount
                 : '0',
-            beneficiaries: activeBeneficiaries ? Number(activeBeneficiaries) : 0,
+            beneficiaries: activeBeneficiaries
+                ? Number(activeBeneficiaries)
+                : 0,
             removedBeneficiaries: removedBeneficiaries
                 ? Number(removedBeneficiaries)
                 : 0,
@@ -1462,11 +1461,10 @@ export default class CommunityService {
         let orderOption: Order | undefined;
 
         let beneficiariesState:
-            |
-                  {
-                      id: number;
-                      beneficiaries: string;
-                  } []
+            | {
+                  id: number;
+                  beneficiaries: string;
+              }[]
             | undefined = undefined;
         let communitiesId: number[] = [];
 
@@ -1523,7 +1521,7 @@ export default class CommunityService {
         }
 
         let communitiesResult: Community[];
-        let contractAddresses: string[] = [];
+        const contractAddresses: string[] = [];
 
         if (communitiesId.length > 0) {
             communitiesResult = await this.community.findAll({
@@ -1589,13 +1587,19 @@ export default class CommunityService {
         }
 
         if (!beneficiariesState) {
-            const resultSubgraph = await getCommunityStateByAddresses(contractAddresses);
-            beneficiariesState = resultSubgraph.map(el => {
-                const community = communitiesResult.find(community => community.contractAddress === ethers.utils.getAddress(el.id));
+            const resultSubgraph = await getCommunityStateByAddresses(
+                contractAddresses
+            );
+            beneficiariesState = resultSubgraph.map((el) => {
+                const community = communitiesResult.find(
+                    (community) =>
+                        community.contractAddress ===
+                        ethers.utils.getAddress(el.id)
+                );
                 return {
                     id: community!.id,
                     beneficiaries: el.beneficiaries.toString(),
-                }
+                };
             });
         }
 
@@ -2378,32 +2382,30 @@ export default class CommunityService {
         orderType?: string
     ): Promise<any> {
         const subgraphResult = await getBiggestCommunities(
-            query.limit
-                ? parseInt(query.limit, 10)
-                : config.defaultLimit,
-            query.offset
-                ? parseInt(query.offset, 10)
-                : config.defaultOffset,
-            orderType ? orderType.toLocaleLowerCase() : 'desc',
+            query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
+            query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+            orderType ? orderType.toLocaleLowerCase() : 'desc'
         );
 
         const localResult = await models.community.findAll({
-            attributes: [
-                'id',
-                'contractAddress',
-            ],
+            attributes: ['id', 'contractAddress'],
             where: {
                 status: query.status ? query.status : 'valid',
                 visibility: 'public',
                 contractAddress: {
-                    [Op.in]: subgraphResult.map(community => ethers.utils.getAddress(community.id)),
+                    [Op.in]: subgraphResult.map((community) =>
+                        ethers.utils.getAddress(community.id)
+                    ),
                 },
                 ...extendedWhere,
             },
         });
         const results: any = [];
-        subgraphResult.forEach(community => {
-            const result = localResult.find(el => el.contractAddress === ethers.utils.getAddress(community.id));
+        subgraphResult.forEach((community) => {
+            const result = localResult.find(
+                (el) =>
+                    el.contractAddress === ethers.utils.getAddress(community.id)
+            );
             if (result) {
                 results.push({
                     id: result?.id,

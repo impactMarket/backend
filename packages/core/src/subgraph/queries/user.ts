@@ -73,10 +73,12 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                   state: queryDAOResult.data.managerEntity?.state,
               };
 
-        const councilMember = !queryCouncilResult.data.impactMarketCouncilMemberEntity
+        const councilMember = !queryCouncilResult.data
+            .impactMarketCouncilMemberEntity
             ? null
             : {
-                  state: queryCouncilResult.data.impactMarketCouncilMemberEntity.status,
+                  state: queryCouncilResult.data.impactMarketCouncilMemberEntity
+                      .status,
               };
 
         const ambassador = !queryCouncilResult.data.ambassadorEntity

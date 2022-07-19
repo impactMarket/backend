@@ -7,12 +7,12 @@ import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import UserService from '../../src/services/app/user';
 import ManagerService from '../../src/services/ubi/managers';
+import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
+import * as subgraph from '../../src/subgraph/queries/community';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
-import * as subgraph from '../../src/subgraph/queries/community';
-import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 
 use(chaiSubset);
 

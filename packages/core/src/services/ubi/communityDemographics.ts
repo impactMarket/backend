@@ -1,7 +1,10 @@
 import { literal, QueryTypes } from 'sequelize';
 
 import { models, sequelize } from '../../database';
-import { UbiCommunityDemographicsCreation, UbiCommunityDemographics } from '../../interfaces/ubi/ubiCommunityDemographics';
+import {
+    UbiCommunityDemographicsCreation,
+    UbiCommunityDemographics,
+} from '../../interfaces/ubi/ubiCommunityDemographics';
 
 export default class CommunityDemographicsService {
     public community = models.community;

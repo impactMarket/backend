@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import { Op, WhereAttributeHash, literal } from 'sequelize';
 import { Where } from 'sequelize/types/lib/utils';
-import { getCommunityState } from '../../subgraph/queries/community';
 
 import config from '../../config';
 import { models } from '../../database';
@@ -17,6 +16,11 @@ import {
     UbiBeneficiarySurveyCreation,
 } from '../../interfaces/ubi/ubiBeneficiarySurvey';
 import { UbiBeneficiaryTransactionCreation } from '../../interfaces/ubi/ubiBeneficiaryTransaction';
+import {
+    getBeneficiaries,
+    getBeneficiariesByAddress,
+} from '../../subgraph/queries/beneficiary';
+import { getCommunityState } from '../../subgraph/queries/community';
 import { getUserActivity } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
 import { Logger } from '../../utils/logger';
@@ -28,7 +32,6 @@ import {
     BeneficiaryActivity,
 } from '../endpoints';
 import CommunityService from './community';
-import { getBeneficiaries, getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
 
 export default class BeneficiaryService {
     public static async add(
@@ -109,40 +112,35 @@ export default class BeneficiaryService {
         );
     }
 
-    public static async findByAddress(
-        address: string,
-        active?: boolean
-    ): Promise<BeneficiaryAttributes | null> {
-        const beneficiary = await models.beneficiary.findOne({
-            where: { address, active },
-        });
-        if (beneficiary) {
-            return beneficiary.toJSON() as BeneficiaryAttributes;
-        }
-        return null;
-    }
-
     public static async getTotalBeneficiaries(address: string): Promise<{
         suspicious: number;
         inactive: number;
     }> {
         const manager: ManagerAttributes | null = await models.manager.findOne({
             attributes: [],
-            include: [{
-                attributes: ['contractAddress'],
-                model: models.community,
-                as: 'community'
-            }],
+            include: [
+                {
+                    attributes: ['contractAddress'],
+                    model: models.community,
+                    as: 'community',
+                },
+            ],
             where: {
                 address,
             },
         });
 
-        if (!manager || !manager.community || !manager.community.contractAddress) {
+        if (
+            !manager ||
+            !manager.community ||
+            !manager.community.contractAddress
+        ) {
             throw new BaseError('NOT_MANAGER', 'Not a manager ' + address);
         }
 
-        const communityState = await getCommunityState(manager.community.contractAddress);
+        const communityState = await getCommunityState(
+            manager.community.contractAddress
+        );
 
         return {
             suspicious: 0,
@@ -155,7 +153,8 @@ export default class BeneficiaryService {
         searchInput: string,
         filter?: BeneficiaryFilterType
     ): Promise<IListBeneficiary[]> {
-        let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null = null;
+        let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null =
+            null;
 
         if (!isAddress(managerAddress)) {
             throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
@@ -179,11 +178,11 @@ export default class BeneficiaryService {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
             where: {
-                id: communityId
-            }
+                id: communityId,
+            },
         });
 
-        let addresses: string[] = [];
+        const addresses: string[] = [];
 
         if (isAddress(searchInput)) {
             addresses.push(ethers.utils.getAddress(searchInput));
@@ -205,39 +204,51 @@ export default class BeneficiaryService {
             ...userFilter,
         };
 
-        const beneficiaryFilter = await this.getBeneficiaryFilter(filter ? filter : {}, communityId);
+        const beneficiaryFilter = await this.getBeneficiaryFilter(
+            filter ? filter : {},
+            communityId
+        );
 
         const appUsers = await models.appUser.findAll({
             where: {
                 ...whereSearchCondition,
                 ...(addresses.length > 0
                     ? {
-                        address: {
-                            [Op.in]: addresses,
-                        }
-                    }
-                    : {})
-            }
+                          address: {
+                              [Op.in]: addresses,
+                          },
+                      }
+                    : {}),
+            },
         });
-        
+
         if (appUsers && appUsers.length > 0) {
-            appUsers.forEach(user => addresses.push(user.address));
+            appUsers.forEach((user) => addresses.push(user.address));
         }
 
-        const beneficiaries = await getBeneficiariesByAddress(addresses, beneficiaryFilter.state, beneficiaryFilter.inactive, community!.contractAddress!);
-        
-        const result: IListBeneficiary[] = beneficiaries.map((beneficiary: any) => {
-            const user = appUsers.find(user => beneficiary.address === user.address.toLowerCase());
-            return {
-                address: ethers.utils.getAddress(beneficiary.address),
-                username: user?.username,
-                timestamp: beneficiary.since * 1000,
-                claimed: beneficiary.claimed,
-                blocked: beneficiary.state === 2,
-                suspect: user?.suspect,
-                isDeleted: !user || !!user.deletedAt,
-            };
-        });
+        const beneficiaries = await getBeneficiariesByAddress(
+            addresses,
+            beneficiaryFilter.state,
+            beneficiaryFilter.inactive,
+            community!.contractAddress!
+        );
+
+        const result: IListBeneficiary[] = beneficiaries.map(
+            (beneficiary: any) => {
+                const user = appUsers.find(
+                    (user) => beneficiary.address === user.address.toLowerCase()
+                );
+                return {
+                    address: ethers.utils.getAddress(beneficiary.address),
+                    username: user?.username,
+                    timestamp: beneficiary.since * 1000,
+                    claimed: beneficiary.claimed,
+                    blocked: beneficiary.state === 2,
+                    suspect: user?.suspect,
+                    isDeleted: !user || !!user.deletedAt,
+                };
+            }
+        );
         return result;
     }
 
@@ -247,7 +258,8 @@ export default class BeneficiaryService {
         limit: number,
         filter: BeneficiaryFilterType
     ): Promise<IListBeneficiary[]> {
-        let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null = null;
+        let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null =
+            null;
 
         if (!isAddress(managerAddress)) {
             throw new BaseError(
@@ -267,36 +279,52 @@ export default class BeneficiaryService {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
             where: {
-                id: communityId
-            }
+                id: communityId,
+            },
         });
 
         whereSearchCondition = await this.getUserFilter(filter!);
 
-        const beneficiaryFilter = await this.getBeneficiaryFilter(filter!, communityId);
+        const beneficiaryFilter = await this.getBeneficiaryFilter(
+            filter!,
+            communityId
+        );
 
-        const beneficiaries = await getBeneficiaries(community!.contractAddress!, limit, offset, beneficiaryFilter.inactive, beneficiaryFilter.state);
-        
-        const addresses = beneficiaries.map(beneficiary => ethers.utils.getAddress(beneficiary.address));
+        const beneficiaries = await getBeneficiaries(
+            community!.contractAddress!,
+            limit,
+            offset,
+            beneficiaryFilter.inactive,
+            beneficiaryFilter.state
+        );
+
+        const addresses = beneficiaries.map((beneficiary) =>
+            ethers.utils.getAddress(beneficiary.address)
+        );
 
         const appUsers = await models.appUser.findAll({
             where: {
                 address: {
-                    [Op.in]: addresses
+                    [Op.in]: addresses,
                 },
                 ...whereSearchCondition,
             },
         });
 
-        let result: IListBeneficiary[] = []
+        const result: IListBeneficiary[] = [];
         if (Object.keys(whereSearchCondition).length > 0) {
             appUsers.forEach((user: any) => {
-                const beneficiary = beneficiaries.find(beneficiary => beneficiary.address === user.address.toLowerCase());
+                const beneficiary = beneficiaries.find(
+                    (beneficiary) =>
+                        beneficiary.address === user.address.toLowerCase()
+                );
                 if (beneficiary) {
                     result.push({
                         address: user.address,
                         username: user?.username,
-                        timestamp: beneficiary.since ? beneficiary.since * 1000 : 0,
+                        timestamp: beneficiary.since
+                            ? beneficiary.since * 1000
+                            : 0,
                         claimed: beneficiary.claimed,
                         blocked: beneficiary.state === 2,
                         suspect: user?.suspect,
@@ -306,7 +334,9 @@ export default class BeneficiaryService {
             });
         } else {
             beneficiaries.forEach((beneficiary: any) => {
-                const user = appUsers.find(user => beneficiary.address === user.address.toLowerCase());
+                const user = appUsers.find(
+                    (user) => beneficiary.address === user.address.toLowerCase()
+                );
                 result.push({
                     address: ethers.utils.getAddress(beneficiary.address),
                     username: user?.username,
@@ -321,9 +351,7 @@ export default class BeneficiaryService {
         return result;
     }
 
-    public static async getUserFilter(
-        filter: BeneficiaryFilterType,
-    ) {
+    public static async getUserFilter(filter: BeneficiaryFilterType) {
         let where = {};
 
         if (filter.unidentified !== undefined) {
@@ -350,9 +378,9 @@ export default class BeneficiaryService {
 
     public static async getBeneficiaryFilter(
         filter: BeneficiaryFilterType,
-        communityId: number,
+        communityId: number
     ) {
-        let where = {
+        const where = {
             state: '',
             inactive: '',
         };
@@ -364,12 +392,14 @@ export default class BeneficiaryService {
         }
 
         if (filter.inactivity) {
-            const communityContract = await models.ubiCommunityContract.findOne({
-                attributes: ['baseInterval'],
-                where: {
-                    communityId,
+            const communityContract = await models.ubiCommunityContract.findOne(
+                {
+                    attributes: ['baseInterval'],
+                    where: {
+                        communityId,
+                    },
                 }
-            });
+            );
 
             const seconds =
                 communityContract!.baseInterval *
