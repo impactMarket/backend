@@ -84,6 +84,9 @@ export class CommunityDetailsService {
 
         if (community.status === 'valid') {
             const subgraphAmbassador = await getCommunityAmbassador(community.contractAddress!);
+            if (!subgraphAmbassador) {
+                return null;
+            }
             const address = ethers.utils.getAddress(subgraphAmbassador.id);
             const ambassador = await models.appUser.findOne({
                 where: {
