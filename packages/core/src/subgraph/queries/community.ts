@@ -239,6 +239,33 @@ export const getCommunityAmbassador = async (community: string) => {
     }
 };
 
+export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
+    try {
+        const query = gql`
+            {
+                ambassadorEntities(
+                    where:{
+                        id: "${ambassadorAddress.toLocaleLowerCase()}"
+                        status: 0
+                    }
+                ) {
+                    id
+                    communities
+                }
+            }
+        `;
+
+        const queryResult = await clientCouncil.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data?.ambassadorEntities[0];
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
 export const getCommunityStateByAddresses = async (
     addresses: string[]
 ): Promise<
