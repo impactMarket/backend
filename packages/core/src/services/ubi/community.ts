@@ -489,16 +489,18 @@ export default class CommunityService {
                 }
             }
         } else {
-            beneficiariesState = await this._getBeneficiaryState(
-                {
-                    status: query.status,
-                    limit: query.limit,
-                    offset: query.offset,
-                },
-                extendedWhere,
-                'desc'
-            );
-            communitiesId = beneficiariesState!.map((el) => el.id);
+            if (query.status !== 'pending') {
+                beneficiariesState = await this._getBeneficiaryState(
+                    {
+                        status: query.status,
+                        limit: query.limit,
+                        offset: query.offset,
+                    },
+                    extendedWhere,
+                    'desc'
+                );
+                communitiesId = beneficiariesState!.map((el) => el.id);
+            }
         }
 
         let include: Includeable[];
@@ -522,6 +524,7 @@ export default class CommunityService {
             attributes = {
                 exclude,
             };
+            if (query.status === 'pending') returnState = false;
         }
 
         const communityCount = await this.community.count({
@@ -719,8 +722,26 @@ export default class CommunityService {
                 );
                 const raiseModel = inflowState?.find((el) => el.id === id);
                 const backerModel = backerState?.find((el) => el.id === id);
+                const contract = community.contract
+                    ? {
+                          contract: {
+                              ...community.contract,
+                              maxClaim: new BigNumber(
+                                  community.contract.maxClaim
+                              )
+                                  .multipliedBy(10 ** config.cUSDDecimal)
+                                  .toString() as any,
+                              claimAmount: new BigNumber(
+                                  community.contract.claimAmount
+                              )
+                                  .multipliedBy(10 ** config.cUSDDecimal)
+                                  .toString() as any,
+                          },
+                      }
+                    : {};
                 community = {
                     ...community,
+                    ...contract,
                     state: {
                         beneficiaries: beneficiariesModel
                             ? Number(beneficiariesModel.beneficiaries)
@@ -873,10 +894,20 @@ export default class CommunityService {
             },
             raw: true,
         })) as any;
+        const resultJson = result!.toJSON();
         return {
-            ...result!.toJSON(),
+            ...resultJson,
             state,
             reachedLastMonth,
+            contract: {
+                ...resultJson.contract,
+                maxClaim: new BigNumber(resultJson.contract!.maxClaim)
+                    .multipliedBy(10 ** config.cUSDDecimal)
+                    .toString() as any,
+                claimAmount: new BigNumber(resultJson.contract!.claimAmount)
+                    .multipliedBy(10 ** config.cUSDDecimal)
+                    .toString() as any,
+            },
         } as CommunityAttributes & {
             reachedLastMonth: {
                 reach: string;
@@ -1071,9 +1102,18 @@ export default class CommunityService {
                 communityId,
             },
         });
-        return result !== null
-            ? (result.toJSON() as UbiCommunityContract)
-            : null;
+        if (!result) return null;
+
+        const resultJson = result.toJSON() as UbiCommunityContract;
+        return {
+            ...resultJson,
+            maxClaim: new BigNumber(resultJson.maxClaim)
+                .multipliedBy(10 ** config.cUSDDecimal)
+                .toString(),
+            claimAmount: new BigNumber(resultJson.claimAmount)
+                .multipliedBy(10 ** config.cUSDDecimal)
+                .toString(),
+        };
     }
 
     public static async getState(communityId: number) {
@@ -1678,6 +1718,15 @@ export default class CommunityService {
             const backerModel = backerState?.find((el) => el.id === id);
             community = {
                 ...community,
+                contract: {
+                    ...community.contract!,
+                    maxClaim: new BigNumber(community.contract!.maxClaim)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
+                    claimAmount: new BigNumber(community.contract!.claimAmount)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
+                },
                 state: {
                     beneficiaries: beneficiariesModel
                         ? Number(beneficiariesModel.beneficiaries)
@@ -1778,7 +1827,21 @@ export default class CommunityService {
             },
             order: orderOption,
         });
-        return communitiesResult.map((c) => c.toJSON() as CommunityAttributes);
+        return communitiesResult.map((c) => {
+            const community = c.toJSON() as CommunityAttributes;
+            return {
+                ...community,
+                contract: {
+                    ...community.contract!,
+                    maxClaim: new BigNumber(community.contract!.maxClaim)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
+                    claimAmount: new BigNumber(community.contract!.claimAmount)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
+                },
+            };
+        });
     }
 
     /**
@@ -1956,7 +2019,15 @@ export default class CommunityService {
         return {
             ...community,
             state: communityState!,
-            contract: communityContract!,
+            contract: {
+                ...communityContract!,
+                maxClaim: new BigNumber(communityContract!.maxClaim)
+                    .multipliedBy(10 ** config.cUSDDecimal)
+                    .toString() as any,
+                claimAmount: new BigNumber(communityContract!.claimAmount)
+                    .multipliedBy(10 ** config.cUSDDecimal)
+                    .toString() as any,
+            },
             metrics: communityDailyMetrics[0]!,
         } as any;
     }
@@ -2161,7 +2232,7 @@ export default class CommunityService {
             ...community,
             email: showEmail ? community.email : '',
             suspect: suspect !== null ? [suspect] : undefined,
-            contract,
+            contract: contract as any,
             state,
             metrics: metrics !== null ? [metrics] : undefined,
         };

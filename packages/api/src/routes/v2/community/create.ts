@@ -81,6 +81,12 @@ export default (route: Router): void => {
      *                  incrementInterval:
      *                    type: number
      *                    required: true
+     *                  minTranche:
+     *                    type: number
+     *                    required: false
+     *                  maxTranche:
+     *                    type: number
+     *                    required: false
      *              placeId:
      *                type: string
      *                required: false
@@ -157,6 +163,12 @@ export default (route: Router): void => {
      *                     type: number
      *                   incrementInterval:
      *                     type: number
+     *                   minTranche:
+     *                     type: number
+     *                     required: false
+     *                   maxTranche:
+     *                     type: number
+     *                     required: false
      *               placeId:
      *                 type: string
      *                 required: false

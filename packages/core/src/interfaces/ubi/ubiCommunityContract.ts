@@ -29,12 +29,14 @@
  */
 export interface UbiCommunityContract {
     communityId: number;
-    claimAmount: string;
-    maxClaim: string;
+    claimAmount: number;
+    maxClaim: number;
     baseInterval: number;
     incrementInterval: number;
     blocked?: boolean;
-    decreaseStep?: string;
+    decreaseStep?: number;
+    minTranche?: number;
+    maxTranche?: number;
 
     // timestamps
     createdAt: Date;
@@ -43,10 +45,12 @@ export interface UbiCommunityContract {
 
 export interface UbiCommunityContractCreation {
     communityId: number;
-    claimAmount: string;
-    maxClaim: string;
+    claimAmount: number;
+    maxClaim: number;
     baseInterval: number;
     incrementInterval: number;
     blocked?: boolean;
-    decreaseStep?: string;
+    decreaseStep?: number;
+    minTranche?: number;
+    maxTranche?: number;
 }

@@ -138,6 +138,9 @@ export const getCommunityUBIParams = async (
                     maxClaim
                     baseInterval
                     incrementInterval
+                    decreaseStep
+                    minTranche
+                    maxTranche
                 }
             }
         `;

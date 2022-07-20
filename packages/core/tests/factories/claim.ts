@@ -17,7 +17,7 @@ const data = async (
 ) => {
     const defaultProps: UbiClaimCreation = {
         address: beneficiary.address,
-        amount: community.contract!.claimAmount,
+        amount: community.contract!.claimAmount.toString(),
         communityId: community.id,
         tx: randomTx(),
         txAt: new Date(),

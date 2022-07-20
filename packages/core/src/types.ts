@@ -91,12 +91,14 @@ export interface ICommunityVars {
 }
 
 export interface ICommunityContractParams {
-    claimAmount: string;
-    maxClaim: string;
+    claimAmount: string | number;
+    maxClaim: string | number;
     baseInterval: number;
     incrementInterval: number;
     blocked?: boolean;
-    decreaseStep?: string;
+    decreaseStep?: string | number;
+    minTranche?: number;
+    maxTranche?: number;
 }
 
 export interface ICommunityInfoBeneficiary {

@@ -90,7 +90,7 @@ describe('calculate global demographics', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
                     maxClaim,

@@ -51,8 +51,8 @@ describe('beneficiary service', () => {
     let returnGetBeneficiarySubgraph: SinonStub;
     let returnGetBeneficiaryByAddressSubgraph: SinonStub;
 
-    const decreaseStep = '1000000000000000000';
-    const maxClaim = '450000000000000000000';
+    const decreaseStep = 1;
+    const maxClaim = 450;
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -67,7 +67,7 @@ describe('beneficiary service', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
                     maxClaim,
@@ -81,7 +81,7 @@ describe('beneficiary service', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
                     maxClaim,
@@ -237,10 +237,10 @@ describe('beneficiary service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -521,7 +521,7 @@ describe('beneficiary service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
                         maxClaim,
@@ -839,8 +839,7 @@ describe('beneficiary service', () => {
                 where: { communityId: communities[1].id },
             });
 
-            const newMaxClaim =
-                parseInt(maxClaim, 10) - parseInt(decreaseStep, 10) * 2;
+            const newMaxClaim = maxClaim - decreaseStep * 2;
             expect(contractUpdated!.maxClaim).to.be.equal(
                 newMaxClaim.toString()
             );
@@ -886,8 +885,7 @@ describe('beneficiary service', () => {
                 where: { communityId: communities[1].id },
             });
 
-            const newMaxClaim =
-                parseInt(maxClaim, 10) - parseInt(decreaseStep, 10) * 1;
+            const newMaxClaim = maxClaim - decreaseStep * 1;
             expect(contractUpdated!.maxClaim).to.be.equal(
                 newMaxClaim.toString()
             );

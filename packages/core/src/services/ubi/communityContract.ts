@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+import config from '../../config';
 import { Transaction } from 'sequelize';
 
 import { models, sequelize } from '../../database';
@@ -15,15 +17,40 @@ export default class CommunityContractService {
         contractParams: ICommunityContractParams,
         t: Transaction | undefined = undefined
     ): Promise<UbiCommunityContract> {
-        const { claimAmount, maxClaim, baseInterval, incrementInterval } =
-            contractParams;
+        let {
+            claimAmount,
+            maxClaim,
+            baseInterval,
+            incrementInterval,
+            decreaseStep,
+            minTranche,
+            maxTranche,
+        } = contractParams;
+
+        if (typeof claimAmount === 'string' && claimAmount.length > 10) {
+            claimAmount = new BigNumber(claimAmount)
+                .dividedBy(10 ** config.cUSDDecimal)
+                .toNumber();
+        }
+        if (typeof maxClaim === 'string' && maxClaim.length > 10) {
+            maxClaim = new BigNumber(maxClaim).dividedBy(10 ** config.cUSDDecimal).toNumber();
+        }
+        if (typeof decreaseStep === 'string' && decreaseStep.length > 10) {
+            decreaseStep = new BigNumber(decreaseStep)
+                .dividedBy(10 ** config.cUSDDecimal)
+                .toNumber();
+        }
+
         return await this.ubiCommunityContract.create(
             {
                 communityId,
-                claimAmount,
-                maxClaim,
+                claimAmount: claimAmount as number,
+                maxClaim: maxClaim as number,
                 baseInterval,
                 incrementInterval,
+                minTranche,
+                maxTranche,
+                decreaseStep: decreaseStep as number,
             },
             { transaction: t }
         );
@@ -33,8 +60,29 @@ export default class CommunityContractService {
         communityId: number,
         contractParams: ICommunityContractParams
     ): Promise<boolean> {
-        const { claimAmount, maxClaim, baseInterval, incrementInterval } =
-            contractParams;
+        let {
+            claimAmount,
+            maxClaim,
+            baseInterval,
+            incrementInterval,
+            decreaseStep,
+            minTranche,
+            maxTranche,
+        } = contractParams;
+
+        if (typeof claimAmount === 'string' && claimAmount.length > 10) {
+            claimAmount = new BigNumber(claimAmount)
+                .dividedBy(10 ** config.cUSDDecimal)
+                .toNumber();
+        }
+        if (typeof maxClaim === 'string' && maxClaim.length > 10) {
+            maxClaim = new BigNumber(maxClaim).dividedBy(10 ** config.cUSDDecimal).toNumber();
+        }
+        if (typeof decreaseStep === 'string' && decreaseStep.length > 10) {
+            decreaseStep = new BigNumber(decreaseStep)
+                .dividedBy(10 ** config.cUSDDecimal)
+                .toNumber();
+        }
 
         const community = (await this.community.findOne({
             attributes: ['publicId'],
@@ -44,10 +92,13 @@ export default class CommunityContractService {
             await sequelize.transaction(async (t) => {
                 await this.ubiCommunityContract.update(
                     {
-                        claimAmount,
-                        maxClaim,
+                        claimAmount: claimAmount as number,
+                        maxClaim: maxClaim as number,
                         baseInterval,
                         incrementInterval,
+                        minTranche,
+                        maxTranche,
+                        decreaseStep: decreaseStep as number,
                     },
                     { where: { communityId }, transaction: t }
                 );

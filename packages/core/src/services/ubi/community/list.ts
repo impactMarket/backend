@@ -132,7 +132,9 @@ export class CommunityListService {
                     ambassadorAddress: query.ambassadorAddress,
                 };
             } else {
-                const ambassador = await getAmbassadorByAddress(query.ambassadorAddress);
+                const ambassador = await getAmbassadorByAddress(
+                    query.ambassadorAddress
+                );
                 if (!ambassador || !ambassador.communities) {
                     return {
                         count: 0,
@@ -141,7 +143,11 @@ export class CommunityListService {
                 }
                 extendedWhere = {
                     ...extendedWhere,
-                    contractAddress: { [Op.in]: ambassador.communities.map((address: string) => ethers.utils.getAddress(address)) },
+                    contractAddress: {
+                        [Op.in]: ambassador.communities.map((address: string) =>
+                            ethers.utils.getAddress(address)
+                        ),
+                    },
                 };
             }
         }

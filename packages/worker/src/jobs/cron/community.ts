@@ -613,7 +613,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             // calculate estimatedDuration
             estimatedDuration = parseFloat(
                 new BigNumber(community.contract.maxClaim)
-                    .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                     .dividedBy(ubiRate)
                     .dividedBy(30)
                     .toFixed(2, 1)
