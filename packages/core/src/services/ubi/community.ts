@@ -40,6 +40,7 @@ import {
     getCommunityState,
     getBiggestCommunities,
     getCommunityStateByAddresses,
+    communityEntities,
 } from '../../subgraph/queries/community';
 import { getCommunityManagers } from '../../subgraph/queries/manager';
 import { BaseError } from '../../utils/baseError';
@@ -2381,25 +2382,79 @@ export default class CommunityService {
         extendedWhere: WhereOptions<CommunityAttributes>,
         orderType?: string
     ): Promise<any> {
-        const subgraphResult = await getBiggestCommunities(
-            query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
-            query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
-            orderType ? orderType.toLocaleLowerCase() : 'desc'
-        );
-
-        const localResult = await models.community.findAll({
-            attributes: ['id', 'contractAddress'],
-            where: {
-                status: query.status ? query.status : 'valid',
-                visibility: 'public',
-                contractAddress: {
-                    [Op.in]: subgraphResult.map((community) =>
-                        ethers.utils.getAddress(community.id)
-                    ),
+        let contractAddress: string[] = [];
+        let localResult: any[] = [];
+        let subgraphResult: any[] = [];
+        if (Object.keys(extendedWhere).length > 0) {
+            localResult = await models.community.findAll({
+                attributes: ['id', 'contractAddress'],
+                where: {
+                    status: query.status ? query.status : 'valid',
+                    visibility: 'public',
+                    ...extendedWhere,
                 },
-                ...extendedWhere,
-            },
-        });
+            });
+            contractAddress = localResult.map(
+                (community) => community.contractAddress!
+            );
+            if (!contractAddress || !contractAddress.length) {
+                return [];
+            }
+        }
+
+        if (contractAddress.length > 0) {
+            subgraphResult = await communityEntities(
+                `orderBy: beneficiaries,
+                        orderDirection: ${
+                            orderType ? orderType.toLocaleLowerCase() : 'desc'
+                        },
+                        first: ${
+                            query.limit
+                                ? parseInt(query.limit, 10)
+                                : config.defaultLimit
+                        },
+                        skip: ${
+                            query.offset
+                                ? parseInt(query.offset, 10)
+                                : config.defaultOffset
+                        },
+                        where: { id_in: [${contractAddress.map(
+                            (el) => `"${el.toLocaleLowerCase()}"`
+                        )}]}`,
+                `id, beneficiaries`
+            );
+        } else {
+            subgraphResult = await communityEntities(
+                `orderBy: beneficiaries,
+                    orderDirection: ${
+                        orderType ? orderType.toLocaleLowerCase() : 'desc'
+                    },
+                    first: ${
+                        query.limit
+                            ? parseInt(query.limit, 10)
+                            : config.defaultLimit
+                    },
+                    skip: ${
+                        query.offset
+                            ? parseInt(query.offset, 10)
+                            : config.defaultOffset
+                    },
+                    where: {
+                        state: 0
+                    }`,
+                `id, beneficiaries`
+            );
+            localResult = await models.community.findAll({
+                attributes: ['id', 'contractAddress'],
+                where: {
+                    contractAddress: {
+                        [Op.in]: subgraphResult.map((community) =>
+                            ethers.utils.getAddress(community.id)
+                        ),
+                    },
+                },
+            });
+        }
         const results: any = [];
         subgraphResult.forEach((community) => {
             const result = localResult.find(
