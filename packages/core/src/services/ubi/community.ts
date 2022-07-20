@@ -38,7 +38,6 @@ import {
     getCommunityProposal,
     getClaimed,
     getCommunityState,
-    getBiggestCommunities,
     getCommunityStateByAddresses,
     communityEntities,
 } from '../../subgraph/queries/community';
