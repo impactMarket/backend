@@ -840,9 +840,7 @@ describe('beneficiary service', () => {
             });
 
             const newMaxClaim = maxClaim - decreaseStep * 2;
-            expect(contractUpdated!.maxClaim).to.be.equal(
-                newMaxClaim.toString()
-            );
+            expect(contractUpdated!.maxClaim).to.be.equal(newMaxClaim);
         });
 
         it('update max claim when remove a beneficiary', async () => {
@@ -886,9 +884,7 @@ describe('beneficiary service', () => {
             });
 
             const newMaxClaim = maxClaim - decreaseStep * 1;
-            expect(contractUpdated!.maxClaim).to.be.equal(
-                newMaxClaim.toString()
-            );
+            expect(contractUpdated!.maxClaim).to.be.equal(newMaxClaim);
         });
 
         it('update max claim when a community does not have a decrease step', async () => {

@@ -1309,6 +1309,8 @@ describe('community service', () => {
                     'communityId',
                     'createdAt',
                     'updatedAt',
+                    'maxTranche',
+                    'minTranche',
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,
@@ -1407,6 +1409,8 @@ describe('community service', () => {
                     'decreaseStep',
                     'createdAt',
                     'updatedAt',
+                    'maxTranche',
+                    'minTranche',
                 ]);
                 expect(result.rows[0].cover).to.have.deep.keys([
                     'id',
@@ -1963,9 +1967,9 @@ describe('community service', () => {
                 email: 'test@email.com',
                 contractParams: {
                     baseInterval: 60 * 60 * 24 * 7,
-                    claimAmount: 5,
+                    claimAmount: '5000000000000000000',
                     incrementInterval: 5 * 60 * 60,
-                    maxClaim: 500,
+                    maxClaim: '500000000000000000000',
                 },
             });
 
@@ -1979,9 +1983,9 @@ describe('community service', () => {
             });
             expect(result.contract).to.include({
                 baseInterval: 60 * 60 * 24 * 7,
-                claimAmount: 5,
+                claimAmount: '5000000000000000000',
                 incrementInterval: 5 * 60 * 60,
-                maxClaim: 500,
+                maxClaim: '500000000000000000000',
             });
         });
 

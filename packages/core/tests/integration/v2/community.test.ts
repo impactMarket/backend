@@ -19,6 +19,7 @@ describe('community service v2', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let returnProposalsSubgraph: SinonStub;
+    let returnAmbassadorByAddressSubgraph: SinonStub;
     let returnClaimedSubgraph: SinonStub;
     let returnCommunityStateSubgraph: SinonStub;
     let returnCommunityEntities: SinonStub;
@@ -46,6 +47,10 @@ describe('community service v2', () => {
         returnProposalsSubgraph = stub(subgraph, 'getCommunityProposal');
         returnCommunityEntities = stub(subgraph, 'communityEntities');
         returnClaimedSubgraph = stub(subgraph, 'getClaimed');
+        returnAmbassadorByAddressSubgraph = stub(
+            subgraph,
+            'getAmbassadorByAddress'
+        );
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
         returnCommunityStateSubgraph.returns([
             {
@@ -1393,6 +1398,8 @@ describe('community service v2', () => {
                     'communityId',
                     'createdAt',
                     'updatedAt',
+                    'maxTranche',
+                    'minTranche',
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,
@@ -1498,6 +1505,8 @@ describe('community service v2', () => {
                     'decreaseStep',
                     'createdAt',
                     'updatedAt',
+                    'maxTranche',
+                    'minTranche',
                 ]);
                 expect(result.rows[0].cover).to.have.deep.keys([
                     'id',
@@ -1816,6 +1825,9 @@ describe('community service v2', () => {
 
                 returnClaimedSubgraph.returns([]);
                 returnCommunityEntities.returns([]);
+                returnAmbassadorByAddressSubgraph.returns({
+                    communities: [communities[0].contractAddress],
+                });
 
                 const result = await communityListService.list({
                     ambassadorAddress: ambassadors[0].address,

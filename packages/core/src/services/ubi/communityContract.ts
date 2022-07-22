@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
-import config from '../../config';
 import { Transaction } from 'sequelize';
 
+import config from '../../config';
 import { models, sequelize } from '../../database';
 import { UbiCommunityContract } from '../../interfaces/ubi/ubiCommunityContract';
 import { ICommunityContractParams } from '../../types';
@@ -33,7 +33,9 @@ export default class CommunityContractService {
                 .toNumber();
         }
         if (typeof maxClaim === 'string' && maxClaim.length > 10) {
-            maxClaim = new BigNumber(maxClaim).dividedBy(10 ** config.cUSDDecimal).toNumber();
+            maxClaim = new BigNumber(maxClaim)
+                .dividedBy(10 ** config.cUSDDecimal)
+                .toNumber();
         }
         if (typeof decreaseStep === 'string' && decreaseStep.length > 10) {
             decreaseStep = new BigNumber(decreaseStep)
@@ -76,7 +78,9 @@ export default class CommunityContractService {
                 .toNumber();
         }
         if (typeof maxClaim === 'string' && maxClaim.length > 10) {
-            maxClaim = new BigNumber(maxClaim).dividedBy(10 ** config.cUSDDecimal).toNumber();
+            maxClaim = new BigNumber(maxClaim)
+                .dividedBy(10 ** config.cUSDDecimal)
+                .toNumber();
         }
         if (typeof decreaseStep === 'string' && decreaseStep.length > 10) {
             decreaseStep = new BigNumber(decreaseStep)
