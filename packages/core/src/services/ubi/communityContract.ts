@@ -17,42 +17,12 @@ export default class CommunityContractService {
         contractParams: ICommunityContractParams,
         t: Transaction | undefined = undefined
     ): Promise<UbiCommunityContract> {
-        let {
-            claimAmount,
-            maxClaim,
-            baseInterval,
-            incrementInterval,
-            decreaseStep,
-            minTranche,
-            maxTranche,
-        } = contractParams;
-
-        if (typeof claimAmount === 'string' && claimAmount.length > 10) {
-            claimAmount = new BigNumber(claimAmount)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
-        }
-        if (typeof maxClaim === 'string' && maxClaim.length > 10) {
-            maxClaim = new BigNumber(maxClaim)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
-        }
-        if (typeof decreaseStep === 'string' && decreaseStep.length > 10) {
-            decreaseStep = new BigNumber(decreaseStep)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
-        }
+        const params = this.formatContractParams(contractParams);
 
         return await this.ubiCommunityContract.create(
             {
                 communityId,
-                claimAmount: claimAmount as number,
-                maxClaim: maxClaim as number,
-                baseInterval,
-                incrementInterval,
-                minTranche,
-                maxTranche,
-                decreaseStep: decreaseStep as number,
+                ...params,
             },
             { transaction: t }
         );
@@ -62,31 +32,7 @@ export default class CommunityContractService {
         communityId: number,
         contractParams: ICommunityContractParams
     ): Promise<boolean> {
-        let {
-            claimAmount,
-            maxClaim,
-            baseInterval,
-            incrementInterval,
-            decreaseStep,
-            minTranche,
-            maxTranche,
-        } = contractParams;
-
-        if (typeof claimAmount === 'string' && claimAmount.length > 10) {
-            claimAmount = new BigNumber(claimAmount)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
-        }
-        if (typeof maxClaim === 'string' && maxClaim.length > 10) {
-            maxClaim = new BigNumber(maxClaim)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
-        }
-        if (typeof decreaseStep === 'string' && decreaseStep.length > 10) {
-            decreaseStep = new BigNumber(decreaseStep)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
-        }
+        const params = this.formatContractParams(contractParams);
 
         const community = (await this.community.findOne({
             attributes: ['publicId'],
@@ -94,18 +40,10 @@ export default class CommunityContractService {
         }))!;
         try {
             await sequelize.transaction(async (t) => {
-                await this.ubiCommunityContract.update(
-                    {
-                        claimAmount: claimAmount as number,
-                        maxClaim: maxClaim as number,
-                        baseInterval,
-                        incrementInterval,
-                        minTranche,
-                        maxTranche,
-                        decreaseStep: decreaseStep as number,
-                    },
-                    { where: { communityId }, transaction: t }
-                );
+                await this.ubiCommunityContract.update(params, {
+                    where: { communityId },
+                    transaction: t,
+                });
 
                 // TODO: migrate
                 await this.ubiRequestChangeParams.destroy({
@@ -145,5 +83,34 @@ export default class CommunityContractService {
                 (c) => [c.communityId, c]
             )
         );
+    }
+
+    private static formatContractParams(
+        contractParams: ICommunityContractParams
+    ) {
+        let { claimAmount, maxClaim, decreaseStep } = contractParams;
+
+        if (typeof claimAmount === 'string' && claimAmount.length > 10) {
+            claimAmount = new BigNumber(claimAmount)
+                .dividedBy(10 ** config.cUSDDecimal)
+                .toNumber();
+        }
+        if (typeof maxClaim === 'string' && maxClaim.length > 10) {
+            maxClaim = new BigNumber(maxClaim)
+                .dividedBy(10 ** config.cUSDDecimal)
+                .toNumber();
+        }
+        if (typeof decreaseStep === 'string' && decreaseStep.length > 10) {
+            decreaseStep = new BigNumber(decreaseStep)
+                .dividedBy(10 ** config.cUSDDecimal)
+                .toNumber();
+        }
+
+        return {
+            ...contractParams,
+            claimAmount: claimAmount as number,
+            maxClaim: maxClaim as number,
+            decreaseStep: decreaseStep as number,
+        };
     }
 }
