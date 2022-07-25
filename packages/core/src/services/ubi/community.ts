@@ -2384,6 +2384,13 @@ export default class CommunityService {
         let contractAddress: string[] = [];
         let localResult: any[] = [];
         let subgraphResult: any[] = [];
+        const limit = query.limit
+            ? parseInt(query.limit, 10)
+            : config.defaultLimit;
+        const offset = query.offset
+            ? parseInt(query.offset, 10)
+            : config.defaultOffset;
+
         if (Object.keys(extendedWhere).length > 0) {
             localResult = await models.community.findAll({
                 attributes: ['id', 'contractAddress'],
@@ -2407,16 +2414,8 @@ export default class CommunityService {
                         orderDirection: ${
                             orderType ? orderType.toLocaleLowerCase() : 'desc'
                         },
-                        first: ${
-                            query.limit
-                                ? parseInt(query.limit, 10)
-                                : config.defaultLimit
-                        },
-                        skip: ${
-                            query.offset
-                                ? parseInt(query.offset, 10)
-                                : config.defaultOffset
-                        },
+                        first: ${limit > 1000 ? 1000 : limit},
+                        skip: ${offset},
                         where: { id_in: [${contractAddress.map(
                             (el) => `"${el.toLocaleLowerCase()}"`
                         )}]}`,
@@ -2428,16 +2427,8 @@ export default class CommunityService {
                     orderDirection: ${
                         orderType ? orderType.toLocaleLowerCase() : 'desc'
                     },
-                    first: ${
-                        query.limit
-                            ? parseInt(query.limit, 10)
-                            : config.defaultLimit
-                    },
-                    skip: ${
-                        query.offset
-                            ? parseInt(query.offset, 10)
-                            : config.defaultOffset
-                    },
+                    first: ${limit > 1000 ? 1000 : limit},
+                    skip: ${offset},
                     where: {
                         state: 0
                     }`,
