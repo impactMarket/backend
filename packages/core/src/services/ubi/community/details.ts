@@ -70,7 +70,20 @@ export class CommunityDetailsService {
         };
     }
 
-    public async getAmbassador(communityId: number) {
+    public async getAmbassador(communityId: number, userAddress?: string) {
+        const ambassadorAttributes: string[] = [
+            'address',
+            'firstName',
+            'lastName',
+            'avatarMediaPath',
+        ];
+        if (userAddress) {
+            const userRoles = await getUserRoles(userAddress);
+            if (userRoles && userRoles.ambassador) {
+                ambassadorAttributes.push('email', 'phone');
+            }
+        }
+
         const community = await models.community.findOne({
             attributes: ['ambassadorAddress', 'status', 'contractAddress'],
             where: {
@@ -94,6 +107,7 @@ export class CommunityDetailsService {
             }
             const address = ethers.utils.getAddress(subgraphAmbassador.id);
             const ambassador = await models.appUser.findOne({
+                attributes: ambassadorAttributes,
                 where: {
                     address: { [Op.iLike]: address },
                 },
@@ -104,6 +118,7 @@ export class CommunityDetailsService {
             };
         } else {
             const ambassador = await models.appUser.findOne({
+                attributes: ambassadorAttributes,
                 where: {
                     address: { [Op.iLike]: community.ambassadorAddress! },
                 },
@@ -205,7 +220,8 @@ export class CommunityDetailsService {
             state?: string;
         },
         searchInput?: string,
-        orderBy?: string
+        orderBy?: string,
+        userAddress?: string
     ): Promise<{
         count: number;
         rows: {
@@ -220,6 +236,18 @@ export class CommunityDetailsService {
             until?: number;
         }[];
     }> {
+        const managerAttributes: string[] = [
+            'address',
+            'firstName',
+            'lastName',
+            'avatarMediaPath',
+        ];
+        if (userAddress) {
+            const userRoles = await getUserRoles(userAddress);
+            if (userRoles && userRoles.ambassador) {
+                managerAttributes.push('email', 'phone');
+            }
+        }
         const community = (await models.community.findOne({
             where: {
                 id: communityId,
@@ -259,14 +287,7 @@ export class CommunityDetailsService {
                 };
             }
             const user = await models.appUser.findOne({
-                attributes: [
-                    'address',
-                    'firstName',
-                    'lastName',
-                    'email',
-                    'phone',
-                    'avatarMediaPath',
-                ],
+                attributes: managerAttributes,
                 where: {
                     address: community.requestByAddress,
                 },
@@ -289,14 +310,7 @@ export class CommunityDetailsService {
             if (appUserFilter) {
                 // filter by name
                 appUsers = await models.appUser.findAll({
-                    attributes: [
-                        'address',
-                        'firstName',
-                        'lastName',
-                        'email',
-                        'phone',
-                        'avatarMediaPath',
-                    ],
+                    attributes: managerAttributes,
                     where: {
                         address: appUserFilter,
                     },
@@ -345,14 +359,7 @@ export class CommunityDetailsService {
                 );
                 count = managersSubgraph.length;
                 appUsers = await models.appUser.findAll({
-                    attributes: [
-                        'address',
-                        'firstName',
-                        'lastName',
-                        'email',
-                        'phone',
-                        'avatarMediaPath',
-                    ],
+                    attributes: managerAttributes,
                     where: {
                         address: {
                             [Op.in]: addresses,
@@ -383,14 +390,7 @@ export class CommunityDetailsService {
                     ethers.utils.getAddress(manager.address)
                 );
                 appUsers = await models.appUser.findAll({
-                    attributes: [
-                        'address',
-                        'firstName',
-                        'lastName',
-                        'email',
-                        'phone',
-                        'avatarMediaPath',
-                    ],
+                    attributes: managerAttributes,
                     where: {
                         address: {
                             [Op.in]: addresses,

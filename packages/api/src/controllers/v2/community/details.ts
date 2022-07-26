@@ -13,7 +13,7 @@ class CommunityController {
         this.claimLocationService = new services.ubi.ClaimLocationServiceV2();
     }
 
-    getManagers = (req: Request, res: Response) => {
+    getManagers = (req: RequestWithUser, res: Response) => {
         const community = req.params.id;
         let { state, offset, limit, search, orderBy } = req.query;
         if (state === undefined || typeof state !== 'string') {
@@ -40,7 +40,8 @@ class CommunityController {
                 search !== undefined && typeof search === 'string'
                     ? search
                     : undefined,
-                orderBy
+                orderBy,
+                req.user?.address
             )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
@@ -158,9 +159,9 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    getAmbassador = (req: Request, res: Response) => {
+    getAmbassador = (req: RequestWithUser, res: Response) => {
         this.detailsService
-            .getAmbassador(parseInt(req.params.id, 10))
+            .getAmbassador(parseInt(req.params.id, 10), req.user?.address)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
