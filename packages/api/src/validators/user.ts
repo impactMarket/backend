@@ -63,6 +63,16 @@ const readNotifications = celebrate({
     }),
 });
 
+const sendPushNotifications = celebrate({
+    body: defaultSchema.object({
+        country: Joi.string().optional(),
+        communities: Joi.array().items(Joi.number().required()).optional(),
+        title: Joi.string().required(),
+        body: Joi.string().required(),
+        data: Joi.object().optional(),
+    }),
+});
+
 //
 
 const reportv1 = celebrate({
@@ -207,4 +217,5 @@ export default {
     subscribeNewsletter,
     saveSurvey,
     readNotifications,
+    sendPushNotifications,
 };

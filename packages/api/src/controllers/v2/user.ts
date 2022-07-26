@@ -343,6 +343,17 @@ class UserController {
                 standardResponse(res, 400, false, '', { error: e.message })
             );
     };
+
+    public sendPushNotifications = (req: Request, res: Response) => {
+        const { country, communities, title, body, data } = req.body;
+
+        this.userService
+            .sendPushNotifications(title, body, country, communities, data)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
 }
 
 export default UserController;

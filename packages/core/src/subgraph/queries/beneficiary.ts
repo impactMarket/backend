@@ -26,6 +26,7 @@ export const getAllBeneficiaries = async (
                             lastClaimAt_gte: ${aMonthAgo.getTime() / 1000}
                         }
                     ) {
+                        address
                         lastClaimAt
                         preLastClaimAt
                         claims
