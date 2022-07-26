@@ -113,8 +113,9 @@ export class CommunityDetailsService {
                 },
             });
             return {
-                address,
                 ...ambassador?.toJSON(),
+                address,
+                active: subgraphAmbassador.status === 0,
             };
         } else {
             const ambassador = await models.appUser.findOne({
@@ -124,7 +125,10 @@ export class CommunityDetailsService {
                 },
             });
 
-            return ambassador;
+            return {
+                ...ambassador,
+                active: true,
+            };
         }
     }
 
