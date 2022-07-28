@@ -70,10 +70,10 @@ export default (route: Router): void => {
      *                required: true
      *                properties:
      *                  claimAmount:
-     *                    type: string
+     *                    type: number
      *                    required: true
      *                  maxClaim:
-     *                    type: string
+     *                    type: number
      *                    required: true
      *                  baseInterval:
      *                    type: number
@@ -156,9 +156,9 @@ export default (route: Router): void => {
      *                 required: false
      *                 properties:
      *                   claimAmount:
-     *                     type: string
+     *                     type: number
      *                   maxClaim:
-     *                     type: string
+     *                     type: number
      *                   baseInterval:
      *                     type: number
      *                   incrementInterval:

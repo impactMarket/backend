@@ -12,12 +12,16 @@ export default class CommunityContractService {
         contractParams: ICommunityContractParams,
         t: Transaction | undefined = undefined
     ): Promise<UbiCommunityContract> {
-        const params = this.formatContractParams(contractParams);
+        let { claimAmount, maxClaim, decreaseStep, baseInterval, incrementInterval } = contractParams;
 
         return models.ubiCommunityContract.create(
             {
                 communityId,
-                ...params,
+                claimAmount: claimAmount as number,
+                maxClaim: maxClaim as number,
+                decreaseStep: decreaseStep as number,
+                baseInterval,
+                incrementInterval,
             },
             { transaction: t }
         );
@@ -27,7 +31,7 @@ export default class CommunityContractService {
         communityId: number,
         contractParams: ICommunityContractParams
     ): Promise<boolean> {
-        const params = this.formatContractParams(contractParams);
+        let { claimAmount, maxClaim, decreaseStep, baseInterval, incrementInterval } = contractParams;
 
         const community = (await models.community.findOne({
             attributes: ['publicId'],
@@ -35,7 +39,13 @@ export default class CommunityContractService {
         }))!;
         try {
             await sequelize.transaction(async (t) => {
-                await models.ubiCommunityContract.update(params, {
+                await models.ubiCommunityContract.update({
+                    claimAmount: claimAmount as number,
+                    maxClaim: maxClaim as number,
+                    decreaseStep: decreaseStep as number,
+                    baseInterval,
+                    incrementInterval,
+                }, {
                     where: { communityId },
                     transaction: t,
                 });
@@ -55,32 +65,5 @@ export default class CommunityContractService {
             // The transaction has already been rolled back automatically by Sequelize!
             return false;
         }
-    }
-
-    private formatContractParams(contractParams: ICommunityContractParams) {
-        let { claimAmount, maxClaim, decreaseStep } = contractParams;
-
-        if (typeof claimAmount === 'string' && claimAmount.length > 10) {
-            claimAmount = new BigNumber(claimAmount)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
-        }
-        if (typeof maxClaim === 'string' && maxClaim.length > 10) {
-            maxClaim = new BigNumber(maxClaim)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
-        }
-        if (typeof decreaseStep === 'string' && decreaseStep.length > 10) {
-            decreaseStep = new BigNumber(decreaseStep)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
-        }
-
-        return {
-            ...contractParams,
-            claimAmount: claimAmount as number,
-            maxClaim: maxClaim as number,
-            decreaseStep: decreaseStep as number,
-        };
     }
 }
