@@ -172,28 +172,30 @@ export class CommunityListService {
                         break;
                     }
                     case 'out_of_funds': {
-                        // check if there was another order previously
-                        if (
-                            orderOption.length === 0 &&
-                            !orderBeneficiary.active
-                        ) {
-                            funds = await this._communityEntities(
-                                'estimatedFunds',
-                                {
-                                    status: query.status,
-                                    limit: query.limit,
-                                    offset: query.offset,
-                                },
-                                extendedWhere,
-                                orderType
-                            );
-                            contractAddress = funds!.map((el) =>
-                                ethers.utils.getAddress(el.id)
-                            );
-                        } else {
-                            // list communities out of funds after
-                            orderOutOfFunds.active = true;
-                            orderOutOfFunds.orderType = orderType;
+                        if (query.status !== 'pending') {
+                            // check if there was another order previously
+                            if (
+                                orderOption.length === 0 &&
+                                !orderBeneficiary.active
+                            ) {
+                                funds = await this._communityEntities(
+                                    'estimatedFunds',
+                                    {
+                                        status: query.status,
+                                        limit: query.limit,
+                                        offset: query.offset,
+                                    },
+                                    extendedWhere,
+                                    orderType
+                                );
+                                contractAddress = funds!.map((el) =>
+                                    ethers.utils.getAddress(el.id)
+                                );
+                            } else {
+                                // list communities out of funds after
+                                orderOutOfFunds.active = true;
+                                orderOutOfFunds.orderType = orderType;
+                            }
                         }
                         break;
                     }
@@ -210,28 +212,30 @@ export class CommunityListService {
                         ]);
                         break;
                     default: {
-                        // check if there was another order previously
-                        if (
-                            orderOption.length === 0 &&
-                            !orderOutOfFunds.active
-                        ) {
-                            beneficiariesState = await this._communityEntities(
-                                'beneficiaries',
-                                {
-                                    status: query.status,
-                                    limit: query.limit,
-                                    offset: query.offset,
-                                },
-                                extendedWhere,
-                                orderType
-                            );
-                            contractAddress = beneficiariesState!.map((el) =>
-                                ethers.utils.getAddress(el.id)
-                            );
-                        } else {
-                            // list communities beneficiaries after
-                            orderBeneficiary.active = true;
-                            orderBeneficiary.orderType = orderType;
+                        if (query.status !== 'pending') {
+                            // check if there was another order previously
+                            if (
+                                orderOption.length === 0 &&
+                                !orderOutOfFunds.active
+                            ) {
+                                beneficiariesState = await this._communityEntities(
+                                    'beneficiaries',
+                                    {
+                                        status: query.status,
+                                        limit: query.limit,
+                                        offset: query.offset,
+                                    },
+                                    extendedWhere,
+                                    orderType
+                                );
+                                contractAddress = beneficiariesState!.map((el) =>
+                                    ethers.utils.getAddress(el.id)
+                                );
+                            } else {
+                                // list communities beneficiaries after
+                                orderBeneficiary.active = true;
+                                orderBeneficiary.orderType = orderType;
+                            }
                         }
                         break;
                     }
