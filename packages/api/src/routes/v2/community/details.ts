@@ -105,7 +105,11 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/getManagersResponse'
      */
-    route.get('/:id/managers/:query?', controller.getManagers);
+    route.get(
+        '/:id/managers/:query?',
+        optionalAuthentication,
+        controller.getManagers
+    );
 
     /**
      * @swagger
@@ -155,7 +159,11 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityContract'
      */
-    route.get('/:id/ambassador', controller.getAmbassador);
+    route.get(
+        '/:id/ambassador',
+        optionalAuthentication,
+        controller.getAmbassador
+    );
 
     /**
      * @swagger

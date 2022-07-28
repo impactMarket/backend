@@ -222,11 +222,12 @@ export const getCommunityAmbassador = async (community: string) => {
                 ambassadorEntities(
                     where:{
                         communities_contains: ["${community.toLocaleLowerCase()}"]
-                        status: 0
                     }
                 ) {
                     id
                     since
+                    status
+                    until
                 }
             }
         `;
