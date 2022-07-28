@@ -521,6 +521,15 @@ export default class UserService {
                 roles.push(key);
             }
         });
+
+        const pendingCommunity = await models.community.findOne({
+            where: {
+                status: 'pending',
+                requestByAddress: address,
+            }
+        });
+        if (pendingCommunity) roles.push('pendingManager');
+
         return {
             ...userRoles,
             roles,
