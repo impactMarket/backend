@@ -709,7 +709,8 @@ export class CommunityDetailsService {
     public async count(
         groupBy: string,
         status?: string,
-        excludeCountry?: string
+        excludeCountry?: string,
+        ambassadorAddress?: string
     ): Promise<any[]> {
         let groupName = '';
         switch (groupBy) {
@@ -734,6 +735,12 @@ export class CommunityDetailsService {
             where = {
                 ...where,
                 status,
+            };
+        }
+        if (ambassadorAddress) {
+            where = {
+                ...where,
+                ambassadorAddress,
             };
         }
 

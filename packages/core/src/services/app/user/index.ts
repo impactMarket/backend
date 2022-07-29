@@ -526,7 +526,7 @@ export default class UserService {
             where: {
                 status: 'pending',
                 requestByAddress: address,
-            }
+            },
         });
         if (pendingCommunity) roles.push('pendingManager');
 

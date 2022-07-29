@@ -132,7 +132,8 @@ class CommunityController {
     };
 
     count = (req: Request, res: Response) => {
-        const { groupBy, status, excludeCountry } = req.query;
+        const { groupBy, status, excludeCountry, ambassadorAddress } =
+            req.query;
         if (groupBy === undefined) {
             standardResponse(res, 400, false, '', {
                 error: {
@@ -146,7 +147,8 @@ class CommunityController {
             .count(
                 groupBy as string,
                 status as string,
-                excludeCountry as string
+                excludeCountry as string,
+                ambassadorAddress as string
             )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));

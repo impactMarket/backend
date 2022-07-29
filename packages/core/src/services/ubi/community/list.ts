@@ -239,18 +239,19 @@ export class CommunityListService {
                                 orderOption.length === 0 &&
                                 !orderOutOfFunds.active
                             ) {
-                                beneficiariesState = await this._communityEntities(
-                                    'beneficiaries',
-                                    {
-                                        status: query.status,
-                                        limit: query.limit,
-                                        offset: query.offset,
-                                    },
-                                    extendedWhere,
-                                    orderType
-                                );
-                                contractAddress = beneficiariesState!.map((el) =>
-                                    ethers.utils.getAddress(el.id)
+                                beneficiariesState =
+                                    await this._communityEntities(
+                                        'beneficiaries',
+                                        {
+                                            status: query.status,
+                                            limit: query.limit,
+                                            offset: query.offset,
+                                        },
+                                        extendedWhere,
+                                        orderType
+                                    );
+                                contractAddress = beneficiariesState!.map(
+                                    (el) => ethers.utils.getAddress(el.id)
                                 );
                             } else {
                                 // list communities beneficiaries after
