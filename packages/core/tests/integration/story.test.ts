@@ -54,10 +54,10 @@ describe('story service', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },
@@ -68,10 +68,10 @@ describe('story service', () => {
                 visibility: 'private',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },
@@ -80,10 +80,10 @@ describe('story service', () => {
             ...communities[0],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '1000000000000000000',
+                claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: '450000000000000000000',
+                maxClaim: 450,
             },
         };
         await BeneficiaryFactory(users.slice(0, 3), community1.id);
@@ -91,10 +91,10 @@ describe('story service', () => {
             ...communities[0],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '1000000000000000000',
+                claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: '450000000000000000000',
+                maxClaim: 450,
             },
         };
         await BeneficiaryFactory(users.slice(3, 6), community2.id);

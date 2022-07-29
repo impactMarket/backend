@@ -138,6 +138,9 @@ export const getCommunityUBIParams = async (
                     maxClaim
                     baseInterval
                     incrementInterval
+                    decreaseStep
+                    minTranche
+                    maxTranche
                 }
             }
         `;
@@ -225,6 +228,33 @@ export const getCommunityAmbassador = async (community: string) => {
                     since
                     status
                     until
+                }
+            }
+        `;
+
+        const queryResult = await clientCouncil.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data?.ambassadorEntities[0];
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
+    try {
+        const query = gql`
+            {
+                ambassadorEntities(
+                    where:{
+                        id: "${ambassadorAddress.toLocaleLowerCase()}"
+                        status: 0
+                    }
+                ) {
+                    id
+                    communities
                 }
             }
         `;

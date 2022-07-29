@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize';
-import { stub, assert, match, SinonStub, restore } from 'sinon';
+import { stub, assert, match, SinonStub } from 'sinon';
 
 import { models } from '../../../src/database';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
@@ -34,7 +34,7 @@ describe('calculate global demographics', () => {
     let communities: CommunityAttributes[];
     let managers: ManagerAttributes[];
     let beneficiaries: BeneficiaryAttributes[];
-    const maxClaim = '450000000000000000000';
+    const maxClaim = 450;
     let dbGlobalDemographicsInsertStub: SinonStub;
 
     before(async () => {
@@ -90,7 +90,7 @@ describe('calculate global demographics', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
                     maxClaim,

@@ -15,18 +15,27 @@ import {
  *          - communityId
  *          - claimAmount
  *          - maxClaim
+ *          - minTranche
+ *          - maxTranche
  *          - baseInterval
  *          - incrementInterval
+ *          - decreaseStep
  *        properties:
  *          communityId:
  *            type: integer
  *            description: The community id
  *          claimAmount:
- *            type: string
+ *            type: number
  *            description: Amount per claim, same as in contract with 18 decimals
  *          maxClaim:
- *            type: string
+ *            type: number
  *            description: Maximum claim per beneficiary, same as in contract with 18 decimals
+ *          minTranche:
+ *            type: number
+ *          maxTranche:
+ *            type: number
+ *          decreaseStep:
+ *            type: number
  *          baseInterval:
  *            type: integer
  *            description: Base interval between claims
@@ -39,12 +48,14 @@ export class UbiCommunityContractModel extends Model<
     UbiCommunityContractCreation
 > {
     public communityId!: number;
-    public claimAmount!: string;
-    public maxClaim!: string;
+    public claimAmount!: number;
+    public maxClaim!: number;
     public baseInterval!: number;
     public incrementInterval!: number;
     public blocked!: boolean;
-    public decreaseStep!: string;
+    public decreaseStep!: number;
+    public minTranche!: number;
+    public maxTranche!: number;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -92,6 +103,14 @@ export function initializeUbiCommunityContract(sequelize: Sequelize): void {
                 type: DataTypes.DECIMAL(22), // max 9,999 - plus 18 decimals
                 allowNull: false,
                 defaultValue: 0,
+            },
+            minTranche: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+            },
+            maxTranche: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
             },
             createdAt: {
                 allowNull: false,

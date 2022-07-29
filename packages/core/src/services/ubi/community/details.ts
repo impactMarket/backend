@@ -51,23 +51,39 @@ export class CommunityDetailsService {
     }
 
     public async getContract(communityId: number) {
-        const result = await models.ubiCommunityContract.findOne({
+        const community = await models.community.findOne({
+            attributes: ['contractAddress', 'status'],
             where: {
-                communityId,
+                id: communityId,
             },
         });
 
-        if (!result) {
+        if (!community) {
             return null;
         }
 
-        const contract = result.toJSON() as UbiCommunityContract;
+        if (community.status === 'pending') {
+            const result = await models.ubiCommunityContract.findOne({
+                where: {
+                    communityId,
+                },
+            });
 
-        return {
-            ...contract,
-            claimAmount: ethers.utils.formatEther(contract.claimAmount),
-            maxClaim: ethers.utils.formatEther(contract.maxClaim),
-        };
+            if (!result) {
+                return null;
+            }
+
+            return result.toJSON() as UbiCommunityContract;
+        } else {
+            const subgraphResult = await getCommunityUBIParams(
+                community.contractAddress!
+            );
+            if (!subgraphResult) return null;
+            return {
+                ...subgraphResult,
+                communityId,
+            };
+        }
     }
 
     public async getAmbassador(communityId: number, userAddress?: string) {

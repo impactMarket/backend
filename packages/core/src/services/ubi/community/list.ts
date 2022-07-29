@@ -10,6 +10,7 @@ import { UbiCommunityLabel } from '../../../interfaces/ubi/ubiCommunityLabel';
 import {
     getCommunityProposal,
     communityEntities,
+    getAmbassadorByAddress,
 } from '../../../subgraph/queries/community';
 import { BaseError } from '../../../utils/baseError';
 import { fetchData } from '../../../utils/dataFetching';
@@ -125,10 +126,30 @@ export class CommunityListService {
         }
 
         if (query.ambassadorAddress) {
-            extendedWhere = {
-                ...extendedWhere,
-                ambassadorAddress: query.ambassadorAddress,
-            };
+            if (query.status === 'pending') {
+                extendedWhere = {
+                    ...extendedWhere,
+                    ambassadorAddress: query.ambassadorAddress,
+                };
+            } else {
+                const ambassador = await getAmbassadorByAddress(
+                    query.ambassadorAddress
+                );
+                if (!ambassador || !ambassador.communities) {
+                    return {
+                        count: 0,
+                        rows: [],
+                    };
+                }
+                extendedWhere = {
+                    ...extendedWhere,
+                    contractAddress: {
+                        [Op.in]: ambassador.communities.map((address: string) =>
+                            ethers.utils.getAddress(address)
+                        ),
+                    },
+                };
+            }
         }
 
         if (query.orderBy) {

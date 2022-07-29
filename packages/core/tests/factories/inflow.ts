@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 
+import config from '../../src/config';
 import {
     Inflow,
     InflowCreationAttributes,
@@ -18,6 +19,7 @@ import { randomTx } from '../config/utils';
 const data = async (community: CommunityAttributes) => {
     const randomWallet = ethers.Wallet.createRandom();
     const amount = new BigNumber(community.contract!.claimAmount)
+        .multipliedBy(10 ** config.cUSDDecimal)
         .multipliedBy(5)
         .toString();
     const defaultProps: InflowCreationAttributes = {

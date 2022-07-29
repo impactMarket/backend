@@ -19,6 +19,7 @@ describe('community service v2', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let returnProposalsSubgraph: SinonStub;
+    let returnAmbassadorByAddressSubgraph: SinonStub;
     let returnClaimedSubgraph: SinonStub;
     let returnCommunityStateSubgraph: SinonStub;
     let returnCommunityEntities: SinonStub;
@@ -46,6 +47,10 @@ describe('community service v2', () => {
         returnProposalsSubgraph = stub(subgraph, 'getCommunityProposal');
         returnCommunityEntities = stub(subgraph, 'communityEntities');
         returnClaimedSubgraph = stub(subgraph, 'getClaimed');
+        returnAmbassadorByAddressSubgraph = stub(
+            subgraph,
+            'getAmbassadorByAddress'
+        );
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
         returnCommunityStateSubgraph.returns([
             {
@@ -81,10 +86,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -125,10 +130,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -172,10 +177,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -219,10 +224,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -264,10 +269,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -279,10 +284,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -294,10 +299,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -348,10 +353,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -363,10 +368,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -409,10 +414,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'PT',
@@ -424,10 +429,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'PT',
@@ -439,10 +444,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'ES',
@@ -487,10 +492,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'PT',
@@ -502,10 +507,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'PT',
@@ -517,10 +522,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'ES',
@@ -532,10 +537,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'FR',
@@ -547,10 +552,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'MZ',
@@ -607,10 +612,10 @@ describe('community service v2', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 });
@@ -668,10 +673,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -686,10 +691,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -768,10 +773,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -786,10 +791,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -829,10 +834,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -847,10 +852,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -865,10 +870,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -962,10 +967,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -980,10 +985,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -998,10 +1003,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1078,10 +1083,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1096,10 +1101,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1114,10 +1119,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1218,10 +1223,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1276,10 +1281,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         proposalId: proposal.id,
@@ -1331,10 +1336,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1393,6 +1398,8 @@ describe('community service v2', () => {
                     'communityId',
                     'createdAt',
                     'updatedAt',
+                    'maxTranche',
+                    'minTranche',
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,
@@ -1432,10 +1439,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1498,6 +1505,8 @@ describe('community service v2', () => {
                     'decreaseStep',
                     'createdAt',
                     'updatedAt',
+                    'maxTranche',
+                    'minTranche',
                 ]);
                 expect(result.rows[0].cover).to.have.deep.keys([
                     'id',
@@ -1534,10 +1543,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1552,10 +1561,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1570,10 +1579,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1634,10 +1643,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1652,10 +1661,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1711,10 +1720,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1731,10 +1740,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1779,10 +1788,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1799,10 +1808,10 @@ describe('community service v2', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1816,6 +1825,9 @@ describe('community service v2', () => {
 
                 returnClaimedSubgraph.returns([]);
                 returnCommunityEntities.returns([]);
+                returnAmbassadorByAddressSubgraph.returns({
+                    communities: [communities[0].contractAddress],
+                });
 
                 const result = await communityListService.list({
                     ambassadorAddress: ambassadors[0].address,
@@ -1844,10 +1856,10 @@ describe('community service v2', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1858,10 +1870,10 @@ describe('community service v2', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1888,10 +1900,10 @@ describe('community service v2', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1902,10 +1914,10 @@ describe('community service v2', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1940,10 +1952,10 @@ describe('community service v2', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1976,10 +1988,10 @@ describe('community service v2', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2037,10 +2049,10 @@ describe('community service v2', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
