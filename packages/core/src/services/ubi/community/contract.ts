@@ -12,7 +12,13 @@ export default class CommunityContractService {
         contractParams: ICommunityContractParams,
         t: Transaction | undefined = undefined
     ): Promise<UbiCommunityContract> {
-        let { claimAmount, maxClaim, decreaseStep, baseInterval, incrementInterval } = contractParams;
+        const {
+            claimAmount,
+            maxClaim,
+            decreaseStep,
+            baseInterval,
+            incrementInterval,
+        } = contractParams;
 
         return models.ubiCommunityContract.create(
             {
@@ -31,7 +37,13 @@ export default class CommunityContractService {
         communityId: number,
         contractParams: ICommunityContractParams
     ): Promise<boolean> {
-        let { claimAmount, maxClaim, decreaseStep, baseInterval, incrementInterval } = contractParams;
+        const {
+            claimAmount,
+            maxClaim,
+            decreaseStep,
+            baseInterval,
+            incrementInterval,
+        } = contractParams;
 
         const community = (await models.community.findOne({
             attributes: ['publicId'],
@@ -39,16 +51,19 @@ export default class CommunityContractService {
         }))!;
         try {
             await sequelize.transaction(async (t) => {
-                await models.ubiCommunityContract.update({
-                    claimAmount: claimAmount as number,
-                    maxClaim: maxClaim as number,
-                    decreaseStep: decreaseStep as number,
-                    baseInterval,
-                    incrementInterval,
-                }, {
-                    where: { communityId },
-                    transaction: t,
-                });
+                await models.ubiCommunityContract.update(
+                    {
+                        claimAmount: claimAmount as number,
+                        maxClaim: maxClaim as number,
+                        decreaseStep: decreaseStep as number,
+                        baseInterval,
+                        incrementInterval,
+                    },
+                    {
+                        where: { communityId },
+                        transaction: t,
+                    }
+                );
 
                 // TODO: migrate
                 await models.ubiRequestChangeParams.destroy({
