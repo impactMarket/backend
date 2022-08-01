@@ -35,7 +35,7 @@ class CommunityController {
                 parseInt(offset, 10),
                 parseInt(limit, 10),
                 {
-                    state,
+                    state: state ? parseInt(state) : undefined,
                 },
                 search !== undefined && typeof search === 'string'
                     ? search
@@ -86,7 +86,7 @@ class CommunityController {
                 parseInt(offset, 10),
                 parseInt(limit, 10),
                 {
-                    state,
+                    state: state ? parseInt(state) : undefined,
                     suspect: suspect ? suspect === 'true' : undefined,
                     inactivity: inactivity ? inactivity === 'true' : undefined,
                     unidentified: unidentified

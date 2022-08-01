@@ -278,7 +278,7 @@ export type IBeneficiaryActivities = {
 };
 
 export type BeneficiaryFilterType = {
-    state?: string;
+    state?: number;
     active?: boolean;
     suspect?: boolean;
     inactivity?: boolean;

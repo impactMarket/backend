@@ -1183,11 +1183,11 @@ export default class CommunityService {
 
         const activeBeneficiaries = await countBeneficiaries(
             community!.contractAddress!,
-            'active'
+            0
         );
         const removedBeneficiaries = await countBeneficiaries(
             community!.contractAddress!,
-            'removed'
+            1
         );
 
         const communityManagerActivity = await this.manager.count({

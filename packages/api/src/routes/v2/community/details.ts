@@ -76,9 +76,9 @@ export default (route: Router): void => {
      *         name: state
      *         schema:
      *           type: string
-     *           enum: [active, removed]
+     *           enum: [0, 1]
      *         required: false
-     *         description: manager state
+     *         description: manager state (0 - active, 1 - removed)
      *       - in: query
      *         name: offset
      *         schema:
@@ -184,9 +184,9 @@ export default (route: Router): void => {
      *         name: state
      *         schema:
      *           type: string
-     *           enum: [active, removed]
+     *           enum: [0, 1, 2]
      *         required: false
-     *         description: beneficiary state
+     *         description: beneficiary state (0 - active, 1 - removed, 2 - locked)
      *       - in: query
      *         name: offset
      *         schema:
