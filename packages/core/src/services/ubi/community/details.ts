@@ -512,7 +512,7 @@ export class CommunityDetailsService {
         let beneficiariesSubgraph: BeneficiarySubgraph[] | null = null;
 
         if (filter.state !== undefined) {
-            beneficiaryState = `state: ${filter.state ? filter.state : 0}`;
+            beneficiaryState = `state: ${filter.state || 0}`;
         }
 
         let appUsers: AppUser[] = [];
