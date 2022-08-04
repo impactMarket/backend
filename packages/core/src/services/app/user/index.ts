@@ -1,4 +1,5 @@
-import { Op, WhereOptions } from 'sequelize';
+import { ethers } from 'ethers';
+import { Op } from 'sequelize';
 
 import config from '../../../config';
 import { models, sequelize } from '../../../database';
@@ -11,10 +12,12 @@ import {
     AppUser,
 } from '../../../interfaces/app/appUser';
 import { ProfileContentStorage } from '../../../services/storage';
+import { getAllBeneficiaries } from '../../../subgraph/queries/beneficiary';
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
 import { Logger } from '../../../utils/logger';
+import { sendPushNotification } from '../../../utils/util';
 import UserLogService from './log';
 
 export default class UserService {
@@ -402,7 +405,10 @@ export default class UserService {
             }
         );
         if (updated[0] === 0) {
-            throw new Error('notifications were not updated!');
+            throw new BaseError(
+                'UPDATE_FAILED',
+                'notifications were not updated!'
+            );
         }
         return true;
     }
@@ -414,6 +420,85 @@ export default class UserService {
                 read: false,
             },
         });
+    }
+
+    public async sendPushNotifications(
+        title: string,
+        body: string,
+        country?: string,
+        communitiesIds?: number[],
+        data?: any
+    ) {
+        if (country) {
+            const users = await models.appUser.findAll({
+                attributes: ['pushNotificationToken'],
+                where: {
+                    country,
+                    pushNotificationToken: {
+                        [Op.not]: null,
+                    },
+                },
+            });
+            users.forEach((user) => {
+                sendPushNotification(
+                    user.address,
+                    title,
+                    body,
+                    data,
+                    user.pushNotificationToken
+                );
+            });
+        } else if (communitiesIds && communitiesIds.length) {
+            const communities = await models.community.findAll({
+                attributes: ['contractAddress'],
+                where: {
+                    id: {
+                        [Op.in]: communitiesIds,
+                    },
+                    contractAddress: {
+                        [Op.not]: null,
+                    },
+                },
+            });
+            const beneficiaryAddress: string[] = [];
+
+            // get beneficiaries
+            for (let index = 0; index < communities.length; index++) {
+                const community = communities[index];
+                const beneficiaries = await getAllBeneficiaries(
+                    community.contractAddress!
+                );
+                beneficiaries.forEach((beneficiary) => {
+                    beneficiaryAddress.push(
+                        ethers.utils.getAddress(beneficiary.address)
+                    );
+                });
+            }
+            // get users
+            const users = await models.appUser.findAll({
+                attributes: ['pushNotificationToken'],
+                where: {
+                    address: {
+                        [Op.in]: beneficiaryAddress,
+                    },
+                    pushNotificationToken: {
+                        [Op.not]: null,
+                    },
+                },
+            });
+
+            users.forEach((user) => {
+                sendPushNotification(
+                    user.address,
+                    title,
+                    body,
+                    data,
+                    user.pushNotificationToken
+                );
+            });
+        } else {
+            throw new BaseError('INVALID_OPTION', 'invalid option');
+        }
     }
 
     private async _overwriteUser(user: AppUserCreationAttributes) {
