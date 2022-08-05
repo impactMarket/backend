@@ -204,7 +204,7 @@ export default class GlobalDailyStateService {
         return {
             totalClaimed: claimed[0].totalClaimed,
             totalRaised: raised[0].totalRaised,
-            totalBeneficiaries: ubiDaily.beneficiaries,
+            totalBeneficiaries: ubiDaily?.beneficiaries || 0,
         };
     }
 }
