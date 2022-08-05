@@ -1,18 +1,18 @@
 import { Sequelize } from 'sequelize';
-import { stub, assert, match, SinonStub, restore } from 'sinon';
+import { stub, assert, match, SinonStub } from 'sinon';
 
-import GlobalDemographicsService from '../../../src/services/global/globalDemographics';
-import CommunityDemographicsService from '../../../src/services/ubi/communityDemographics';
+import { models } from '../../../src/database';
 import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { AppUser } from '../../../src/interfaces/app/appUser';
 import { BeneficiaryAttributes } from '../../../src/interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
+import GlobalDemographicsService from '../../../src/services/global/globalDemographics';
+import CommunityDemographicsService from '../../../src/services/ubi/communityDemographics';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
-import CommunityFactory from '../../factories/community';
-import UserFactory from '../../factories/user';
-import ManagerFactory from '../../factories/manager';
 import BeneficiaryFactory from '../../factories/beneficiary';
-import { models } from '../../../src/database';
+import CommunityFactory from '../../factories/community';
+import ManagerFactory from '../../factories/manager';
+import UserFactory from '../../factories/user';
 
 const globalDemographicsService = new GlobalDemographicsService();
 const communityDemographicsService = new CommunityDemographicsService();
@@ -34,7 +34,7 @@ describe('calculate global demographics', () => {
     let communities: CommunityAttributes[];
     let managers: ManagerAttributes[];
     let beneficiaries: BeneficiaryAttributes[];
-    const maxClaim = '450000000000000000000';
+    const maxClaim = 450;
     let dbGlobalDemographicsInsertStub: SinonStub;
 
     before(async () => {
@@ -54,11 +54,11 @@ describe('calculate global demographics', () => {
             props: [
                 {
                     gender: 'm',
-                    year: ageRange1
+                    year: ageRange1,
                 },
                 {
                     gender: 'm',
-                    year: ageRange1
+                    year: ageRange1,
                 },
                 {
                     gender: 'f',
@@ -70,17 +70,17 @@ describe('calculate global demographics', () => {
                 },
                 {
                     gender: 'f',
-                    year: ageRange4
+                    year: ageRange4,
                 },
                 {
                     gender: 'u',
-                    year: ageRange5
+                    year: ageRange5,
                 },
                 {
                     gender: 'u',
-                    year: ageRange6
-                }
-            ]
+                    year: ageRange6,
+                },
+            ],
         });
         communities = await CommunityFactory([
             {
@@ -90,13 +90,13 @@ describe('calculate global demographics', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
                     maxClaim,
                 },
                 hasAddress: true,
-            }
+            },
         ]);
         managers = await ManagerFactory([users[0]], communities[0].id);
         beneficiaries = await BeneficiaryFactory(
@@ -117,8 +117,8 @@ describe('calculate global demographics', () => {
     it('calculateDemographics with undisclosed', async () => {
         await models.appUser.destroy({
             where: {
-                address: users[0].address
-            }
+                address: users[0].address,
+            },
         });
 
         await communityDemographicsService.calculate();
@@ -126,21 +126,21 @@ describe('calculate global demographics', () => {
         await globalDemographicsService.calculate();
         await waitForStubCall(dbGlobalDemographicsInsertStub, 1);
         assert.callCount(dbGlobalDemographicsInsertStub, 1);
-        assert.calledWith(dbGlobalDemographicsInsertStub.getCall(0), [{
-            ageRange1:'1',
-            ageRange2:'1',
-            ageRange3:'1',
-            ageRange4:'1',
-            ageRange5:'1',
-            ageRange6:'1',
-            country: match.any,
-            date: match.any,
-            female:'3',
-            male:'1',
-            totalGender:'7',
-            undisclosed:'3',
-        }]);
+        assert.calledWith(dbGlobalDemographicsInsertStub.getCall(0), [
+            {
+                ageRange1: '1',
+                ageRange2: '1',
+                ageRange3: '1',
+                ageRange4: '1',
+                ageRange5: '1',
+                ageRange6: '1',
+                country: match.any,
+                date: match.any,
+                female: '3',
+                male: '1',
+                totalGender: '7',
+                undisclosed: '3',
+            },
+        ]);
     });
 });
-
-

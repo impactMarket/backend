@@ -88,8 +88,8 @@ describe('DAO', () => {
                 contract: {
                     baseInterval: 5 * 60,
                     incrementInterval: 60,
-                    claimAmount: parseEther('1').toString(),
-                    maxClaim: parseEther('100').toString(),
+                    claimAmount: 1,
+                    maxClaim: 100,
                     communityId: 0,
                 },
             },
@@ -98,8 +98,8 @@ describe('DAO', () => {
                 contract: {
                     baseInterval: 5 * 60,
                     incrementInterval: 60,
-                    claimAmount: parseEther('1').toString(),
-                    maxClaim: parseEther('100').toString(),
+                    claimAmount: 1,
+                    maxClaim: 100,
                     communityId: 1,
                 },
             },

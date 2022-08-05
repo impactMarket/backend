@@ -6,22 +6,22 @@ import { SinonStub, stub, restore } from 'sinon';
 import tk from 'timekeeper';
 
 import { models } from '../../src/database';
+import { LogTypes } from '../../src/interfaces/app/appLog';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import UserService from '../../src/services/app/user';
+import LogService from '../../src/services/app/user/log';
+import CommunityService from '../../src/services/ubi/community';
+import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
+import * as subgraph from '../../src/subgraph/queries/community';
+import * as userSubgraph from '../../src/subgraph/queries/user';
 import { BaseError } from '../../src/utils/baseError';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { jumpToTomorrowMidnight } from '../config/utils';
+import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
-import BeneficiaryFactory from '../factories/beneficiary';
 import UserFactory from '../factories/user';
-import CommunityService from '../../src/services/ubi/community';
-import LogService from '../../src/services/app/user/log';
-import { LogTypes } from '../../src/interfaces/app/appLog';
-import * as subgraph from '../../src/subgraph/queries/community';
-import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
-import * as userSubgraph from '../../src/subgraph/queries/user';
 
 describe('user service', () => {
     let sequelize: Sequelize;
@@ -377,10 +377,10 @@ describe('user service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -671,10 +671,10 @@ describe('user service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -774,10 +774,10 @@ describe('user service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                     ambassadorAddress: users[3].address,

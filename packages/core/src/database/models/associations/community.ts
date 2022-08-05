@@ -105,12 +105,18 @@ export function communityAssociation(sequelize: Sequelize) {
         sourceKey: 'ambassadorAddress',
         as: 'ambassador',
     });
-    sequelize.models.UbiCommunityDemographicsModel.belongsTo(sequelize.models.Community, {
-        foreignKey: 'communityId',
-        as: 'community',
-    });
-    sequelize.models.AppAnonymousReportModel.belongsTo(sequelize.models.Community, {
-        foreignKey: 'communityId',
-        as: 'community',
-    });
+    sequelize.models.UbiCommunityDemographicsModel.belongsTo(
+        sequelize.models.Community,
+        {
+            foreignKey: 'communityId',
+            as: 'community',
+        }
+    );
+    sequelize.models.AppAnonymousReportModel.belongsTo(
+        sequelize.models.Community,
+        {
+            foreignKey: 'communityId',
+            as: 'community',
+        }
+    );
 }

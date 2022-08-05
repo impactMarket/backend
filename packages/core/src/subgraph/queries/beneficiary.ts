@@ -26,6 +26,7 @@ export const getAllBeneficiaries = async (
                             lastClaimAt_gte: ${aMonthAgo.getTime() / 1000}
                         }
                     ) {
+                        address
                         lastClaimAt
                         preLastClaimAt
                         claims
@@ -58,7 +59,7 @@ export const getBeneficiariesByAddress = async (
     inactive?: string,
     community?: string,
     orderBy?: string,
-    orderDirection?: string,
+    orderDirection?: string
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const idsFormated = addresses.map(
@@ -75,7 +76,11 @@ export const getBeneficiariesByAddress = async (
                         address_in: [${idsFormated}]
                         ${state ? state : ''}
                         ${inactive ? inactive : ''}
-                        ${community ? `community: "${community.toLocaleLowerCase()}"` : ''}
+                        ${
+                            community
+                                ? `community: "${community.toLocaleLowerCase()}"`
+                                : ''
+                        }
                     }
                 ) {
                     address
@@ -105,7 +110,7 @@ export const getBeneficiaries = async (
     lastClaimAt?: string,
     state?: string,
     orderBy?: string,
-    orderDirection?: string,
+    orderDirection?: string
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const query = gql`

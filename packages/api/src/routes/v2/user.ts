@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import UserController from '../../controllers/v2/user';
-import { authenticateToken, verifySignature } from '../../middlewares';
+import { authenticateToken, adminAuthentication, verifySignature } from '../../middlewares';
 import userValidators from '../../validators/user';
 
 export default (app: Router): void => {
@@ -496,4 +496,11 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.get('/:address', authenticateToken, userController.findBy);
+
+    route.post(
+        '/push-notifications',
+        adminAuthentication,
+        userValidators.sendPushNotifications,
+        userController.sendPushNotifications
+    );
 };

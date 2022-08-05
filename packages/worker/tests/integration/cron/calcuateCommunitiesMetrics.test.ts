@@ -31,7 +31,10 @@ describe('calcuateCommunitiesMetrics', () => {
             database.models.ubiCommunityDailyMetrics,
             'create'
         );
-        returnSubgraph = stub(subgraph.queries.beneficiary, 'getAllBeneficiaries');
+        returnSubgraph = stub(
+            subgraph.queries.beneficiary,
+            'getAllBeneficiaries'
+        );
     });
 
     after(async () => {
@@ -56,10 +59,10 @@ describe('calcuateCommunitiesMetrics', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -878,10 +881,10 @@ describe('calcuateCommunitiesMetrics', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -890,10 +893,10 @@ describe('calcuateCommunitiesMetrics', () => {
                 ...communities[0],
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
             };
             await tests.factories.InflowFactory(community);

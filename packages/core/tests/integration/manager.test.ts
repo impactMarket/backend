@@ -7,12 +7,12 @@ import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import UserService from '../../src/services/app/user';
 import ManagerService from '../../src/services/ubi/managers';
+import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
+import * as subgraph from '../../src/subgraph/queries/community';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
 import UserFactory from '../factories/user';
-import * as subgraph from '../../src/subgraph/queries/community';
-import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 
 use(chaiSubset);
 
@@ -37,10 +37,10 @@ describe('manager service', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },

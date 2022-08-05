@@ -61,11 +61,11 @@ const data = async (props: ICreateProps) => {
             ? props.contract
             : {
                   baseInterval: 60 * 60 * 24,
-                  claimAmount: '1000000000000000000',
+                  claimAmount: 1,
                   communityId: 0,
                   incrementInterval: 5 * 60,
-                  maxClaim: '450000000000000000000',
-                  decreaseStep: '1000000000000000000',
+                  maxClaim: 450,
+                  decreaseStep: 1,
               },
         ...props,
     };

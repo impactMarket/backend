@@ -1,7 +1,6 @@
 import { ethers } from 'ethers';
 import { Includeable, literal, Op } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
-import { getUserRoles } from '../subgraph/queries/user';
 
 import config from '../config';
 import { models, sequelize } from '../database';
@@ -12,6 +11,7 @@ import {
 } from '../interfaces/story/storyCommunity';
 import { StoryContent } from '../interfaces/story/storyContent';
 import { CommunityAttributes } from '../interfaces/ubi/community';
+import { getUserRoles } from '../subgraph/queries/user';
 import { BaseError } from '../utils/baseError';
 import { Logger } from '../utils/logger';
 import { createThumbnailUrl } from '../utils/util';
@@ -235,13 +235,15 @@ export default class StoryService {
             throw new BaseError('USER_NOT_FOUND', 'user not found!');
         }
 
-        const contractAddress = userRoles.beneficiary ? userRoles.beneficiary.community : userRoles.manager?.community;
+        const contractAddress = userRoles.beneficiary
+            ? userRoles.beneficiary.community
+            : userRoles.manager?.community;
 
         const community = await models.community.findOne({
             attributes: ['id'],
             where: {
-                contractAddress: ethers.utils.getAddress(contractAddress!)
-            }
+                contractAddress: ethers.utils.getAddress(contractAddress!),
+            },
         });
 
         if (!community) {

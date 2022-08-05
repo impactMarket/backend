@@ -182,16 +182,17 @@ export async function sendPushNotification(
     userAddress: string,
     title: string,
     body: string,
-    data: any
+    data: any,
+    pushNotificationToken?: string | null
 ): Promise<boolean> {
-    const user = await UserService.get(userAddress);
-    if (
-        user !== null &&
-        user.pushNotificationToken !== null &&
-        user.pushNotificationToken.length > 0
-    ) {
+    if (!pushNotificationToken) {
+        const user = await UserService.get(userAddress);
+        if (!user) return false;
+        pushNotificationToken = user.pushNotificationToken;
+    }
+    if (pushNotificationToken !== null && pushNotificationToken.length > 0) {
         const message = {
-            to: user.pushNotificationToken,
+            to: pushNotificationToken,
             sound: 'default',
             title,
             body,

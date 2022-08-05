@@ -138,6 +138,9 @@ export const getCommunityUBIParams = async (
                     maxClaim
                     baseInterval
                     incrementInterval
+                    decreaseStep
+                    minTranche
+                    maxTranche
                 }
             }
         `;
@@ -179,7 +182,7 @@ export const communityEntities = async (where: string, fields: string) => {
 export const getBiggestCommunities = async (
     limit: number,
     offset: number,
-    orderDirection?: string,
+    orderDirection?: string
 ): Promise<
     {
         beneficiaries: number;
@@ -218,12 +221,40 @@ export const getCommunityAmbassador = async (community: string) => {
             {
                 ambassadorEntities(
                     where:{
-                        communities_contains: ["${community}"]
-                        status: 0
+                        communities_contains: ["${community.toLocaleLowerCase()}"]
                     }
                 ) {
                     id
                     since
+                    status
+                    until
+                }
+            }
+        `;
+
+        const queryResult = await clientCouncil.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data?.ambassadorEntities[0];
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
+    try {
+        const query = gql`
+            {
+                ambassadorEntities(
+                    where:{
+                        id: "${ambassadorAddress.toLocaleLowerCase()}"
+                        status: 0
+                    }
+                ) {
+                    id
+                    communities
                 }
             }
         `;
@@ -240,7 +271,7 @@ export const getCommunityAmbassador = async (community: string) => {
 };
 
 export const getCommunityStateByAddresses = async (
-    addresses: string[],
+    addresses: string[]
 ): Promise<
     {
         beneficiaries: number;

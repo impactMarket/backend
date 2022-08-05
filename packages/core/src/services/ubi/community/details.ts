@@ -51,26 +51,55 @@ export class CommunityDetailsService {
     }
 
     public async getContract(communityId: number) {
-        const result = await models.ubiCommunityContract.findOne({
+        const community = await models.community.findOne({
+            attributes: ['contractAddress', 'status'],
             where: {
-                communityId,
+                id: communityId,
             },
         });
 
-        if (!result) {
+        if (!community) {
             return null;
         }
 
-        const contract = result.toJSON() as UbiCommunityContract;
+        if (community.status === 'pending') {
+            const result = await models.ubiCommunityContract.findOne({
+                where: {
+                    communityId,
+                },
+            });
 
-        return {
-            ...contract,
-            claimAmount: ethers.utils.formatEther(contract.claimAmount),
-            maxClaim: ethers.utils.formatEther(contract.maxClaim),
-        };
+            if (!result) {
+                return null;
+            }
+
+            return result.toJSON() as UbiCommunityContract;
+        } else {
+            const subgraphResult = await getCommunityUBIParams(
+                community.contractAddress!
+            );
+            if (!subgraphResult) return null;
+            return {
+                ...subgraphResult,
+                communityId,
+            };
+        }
     }
 
-    public async getAmbassador(communityId: number) {
+    public async getAmbassador(communityId: number, userAddress?: string) {
+        const ambassadorAttributes: string[] = [
+            'address',
+            'firstName',
+            'lastName',
+            'avatarMediaPath',
+        ];
+        if (userAddress) {
+            const userRoles = await getUserRoles(userAddress);
+            if (userRoles && userRoles.ambassador) {
+                ambassadorAttributes.push('email', 'phone');
+            }
+        }
+
         const community = await models.community.findOne({
             attributes: ['ambassadorAddress', 'status', 'contractAddress'],
             where: {
@@ -78,31 +107,45 @@ export class CommunityDetailsService {
             },
         });
 
-        if (!community || (community.status === 'pending' && !community.ambassadorAddress)) {
+        if (
+            !community ||
+            (community.status === 'pending' && !community.ambassadorAddress)
+        ) {
             return null;
         }
 
         if (community.status === 'valid') {
-            const subgraphAmbassador = await getCommunityAmbassador(community.contractAddress!);
+            const subgraphAmbassador = await getCommunityAmbassador(
+                community.contractAddress!
+            );
+            if (!subgraphAmbassador) {
+                return null;
+            }
+            const address = ethers.utils.getAddress(subgraphAmbassador.id);
             const ambassador = await models.appUser.findOne({
+                attributes: ambassadorAttributes,
                 where: {
-                    address: { [Op.iLike]: ethers.utils.getAddress(subgraphAmbassador.id) },
+                    address: { [Op.iLike]: address },
                 },
             });
             return {
-                address: subgraphAmbassador.id,
                 ...ambassador?.toJSON(),
-            }
+                address,
+                active: subgraphAmbassador.status === 0,
+            };
         } else {
             const ambassador = await models.appUser.findOne({
+                attributes: ambassadorAttributes,
                 where: {
                     address: { [Op.iLike]: community.ambassadorAddress! },
                 },
             });
-    
-            return ambassador;
-        }
 
+            return {
+                ...ambassador,
+                active: true,
+            };
+        }
     }
 
     public async getUBIParams(communityId: number) {
@@ -197,7 +240,8 @@ export class CommunityDetailsService {
             state?: string;
         },
         searchInput?: string,
-        orderBy?: string
+        orderBy?: string,
+        userAddress?: string
     ): Promise<{
         count: number;
         rows: {
@@ -212,6 +256,18 @@ export class CommunityDetailsService {
             until?: number;
         }[];
     }> {
+        const managerAttributes: string[] = [
+            'address',
+            'firstName',
+            'lastName',
+            'avatarMediaPath',
+        ];
+        if (userAddress) {
+            const userRoles = await getUserRoles(userAddress);
+            if (userRoles && userRoles.ambassador) {
+                managerAttributes.push('email', 'phone');
+            }
+        }
         const community = (await models.community.findOne({
             where: {
                 id: communityId,
@@ -244,21 +300,14 @@ export class CommunityDetailsService {
         }
 
         if (community.status === 'pending') {
-            if (community.requestByAddress !== addresses[0]) {
+            if (!!addresses[0] && community.requestByAddress !== addresses[0]) {
                 return {
                     count: 0,
                     rows: [],
                 };
             }
             const user = await models.appUser.findOne({
-                attributes: [
-                    'address',
-                    'firstName',
-                    'lastName',
-                    'email',
-                    'phone',
-                    'avatarMediaPath',
-                ],
+                attributes: managerAttributes,
                 where: {
                     address: community.requestByAddress,
                 },
@@ -267,7 +316,7 @@ export class CommunityDetailsService {
                 count: user ? 1 : 0,
                 rows: [
                     {
-                        ...(user as AppUser),
+                        ...(user?.toJSON() as AppUser),
                         isDeleted: false,
                         state: undefined,
                         added: 0,
@@ -281,14 +330,7 @@ export class CommunityDetailsService {
             if (appUserFilter) {
                 // filter by name
                 appUsers = await models.appUser.findAll({
-                    attributes: [
-                        'address',
-                        'firstName',
-                        'lastName',
-                        'email',
-                        'phone',
-                        'avatarMediaPath',
-                    ],
+                    attributes: managerAttributes,
                     where: {
                         address: appUserFilter,
                     },
@@ -337,14 +379,7 @@ export class CommunityDetailsService {
                 );
                 count = managersSubgraph.length;
                 appUsers = await models.appUser.findAll({
-                    attributes: [
-                        'address',
-                        'firstName',
-                        'lastName',
-                        'email',
-                        'phone',
-                        'avatarMediaPath',
-                    ],
+                    attributes: managerAttributes,
                     where: {
                         address: {
                             [Op.in]: addresses,
@@ -375,14 +410,7 @@ export class CommunityDetailsService {
                     ethers.utils.getAddress(manager.address)
                 );
                 appUsers = await models.appUser.findAll({
-                    attributes: [
-                        'address',
-                        'firstName',
-                        'lastName',
-                        'email',
-                        'phone',
-                        'avatarMediaPath',
-                    ],
+                    attributes: managerAttributes,
                     where: {
                         address: {
                             [Op.in]: addresses,
@@ -681,7 +709,8 @@ export class CommunityDetailsService {
     public async count(
         groupBy: string,
         status?: string,
-        excludeCountry?: string
+        excludeCountry?: string,
+        ambassadorAddress?: string
     ): Promise<any[]> {
         let groupName = '';
         switch (groupBy) {
@@ -706,6 +735,12 @@ export class CommunityDetailsService {
             where = {
                 ...where,
                 status,
+            };
+        }
+        if (ambassadorAddress) {
+            where = {
+                ...where,
+                ambassadorAddress,
             };
         }
 

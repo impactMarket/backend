@@ -1,5 +1,4 @@
 import { ethers } from 'ethers';
-import parsePhoneNumber from 'libphonenumber-js';
 import { Op, literal, OrderItem, WhereOptions, Includeable } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
@@ -11,6 +10,7 @@ import { UbiCommunityLabel } from '../../../interfaces/ubi/ubiCommunityLabel';
 import {
     getCommunityProposal,
     communityEntities,
+    getAmbassadorByAddress,
 } from '../../../subgraph/queries/community';
 import { BaseError } from '../../../utils/baseError';
 import { fetchData } from '../../../utils/dataFetching';
@@ -126,10 +126,30 @@ export class CommunityListService {
         }
 
         if (query.ambassadorAddress) {
-            extendedWhere = {
-                ...extendedWhere,
-                ambassadorAddress: query.ambassadorAddress,
-            };
+            if (query.status === 'pending') {
+                extendedWhere = {
+                    ...extendedWhere,
+                    ambassadorAddress: query.ambassadorAddress,
+                };
+            } else {
+                const ambassador = await getAmbassadorByAddress(
+                    query.ambassadorAddress
+                );
+                if (!ambassador || !ambassador.communities) {
+                    return {
+                        count: 0,
+                        rows: [],
+                    };
+                }
+                extendedWhere = {
+                    ...extendedWhere,
+                    contractAddress: {
+                        [Op.in]: ambassador.communities.map((address: string) =>
+                            ethers.utils.getAddress(address)
+                        ),
+                    },
+                };
+            }
         }
 
         if (query.orderBy) {
@@ -173,46 +193,14 @@ export class CommunityListService {
                         break;
                     }
                     case 'out_of_funds': {
-                        // check if there was another order previously
-                        if (
-                            orderOption.length === 0 &&
-                            !orderBeneficiary.active
-                        ) {
-                            funds = await this._communityEntities(
-                                'estimatedFunds',
-                                {
-                                    status: query.status,
-                                    limit: query.limit,
-                                    offset: query.offset,
-                                },
-                                extendedWhere,
-                                orderType
-                            );
-                            contractAddress = funds!.map((el) =>
-                                ethers.utils.getAddress(el.id)
-                            );
-                        } else {
-                            // list communities out of funds after
-                            orderOutOfFunds.active = true;
-                            orderOutOfFunds.orderType = orderType;
-                        }
-                        break;
-                    }
-                    case 'newest':
-                        orderOption.push([
-                            literal('"Community".started'),
-                            orderType ? orderType : 'DESC',
-                        ]);
-                        break;
-                    default: {
-                        // check if there was another order previously
-                        if (
-                            orderOption.length === 0 &&
-                            !orderOutOfFunds.active
-                        ) {
-                            beneficiariesState =
-                                await this._communityEntities(
-                                    'beneficiaries',
+                        if (query.status !== 'pending') {
+                            // check if there was another order previously
+                            if (
+                                orderOption.length === 0 &&
+                                !orderBeneficiary.active
+                            ) {
+                                funds = await this._communityEntities(
+                                    'estimatedFunds',
                                     {
                                         status: query.status,
                                         limit: query.limit,
@@ -221,13 +209,55 @@ export class CommunityListService {
                                     extendedWhere,
                                     orderType
                                 );
-                            contractAddress = beneficiariesState!.map((el) =>
-                                ethers.utils.getAddress(el.id)
-                            );
-                        } else {
-                            // list communities beneficiaries after
-                            orderBeneficiary.active = true;
-                            orderBeneficiary.orderType = orderType;
+                                contractAddress = funds!.map((el) =>
+                                    ethers.utils.getAddress(el.id)
+                                );
+                            } else {
+                                // list communities out of funds after
+                                orderOutOfFunds.active = true;
+                                orderOutOfFunds.orderType = orderType;
+                            }
+                        }
+                        break;
+                    }
+                    case 'newest':
+                        orderOption.push([
+                            literal('"Community"."createdAt"'),
+                            orderType ? orderType : 'DESC',
+                        ]);
+                        break;
+                    case 'updated':
+                        orderOption.push([
+                            literal('"Community"."updatedAt"'),
+                            orderType ? orderType : 'DESC',
+                        ]);
+                        break;
+                    default: {
+                        if (query.status !== 'pending') {
+                            // check if there was another order previously
+                            if (
+                                orderOption.length === 0 &&
+                                !orderOutOfFunds.active
+                            ) {
+                                beneficiariesState =
+                                    await this._communityEntities(
+                                        'beneficiaries',
+                                        {
+                                            status: query.status,
+                                            limit: query.limit,
+                                            offset: query.offset,
+                                        },
+                                        extendedWhere,
+                                        orderType
+                                    );
+                                contractAddress = beneficiariesState!.map(
+                                    (el) => ethers.utils.getAddress(el.id)
+                                );
+                            } else {
+                                // list communities beneficiaries after
+                                orderBeneficiary.active = true;
+                                orderBeneficiary.orderType = orderType;
+                            }
                         }
                         break;
                     }
@@ -235,7 +265,10 @@ export class CommunityListService {
             }
         } else {
             // if searching by pending or did not pass the "state" on fields, do not search on the graph
-            if (query.status !== 'pending' && (!query.fields || query.fields.indexOf('state') !== -1)) {
+            if (
+                query.status !== 'pending' &&
+                (!query.fields || query.fields.indexOf('state') !== -1)
+            ) {
                 beneficiariesState = await this._communityEntities(
                     'beneficiaries',
                     {
@@ -437,7 +470,7 @@ export class CommunityListService {
 
     private async _getOpenProposals(): Promise<string[]> {
         const proposals = await getCommunityProposal();
-        let requestByAddress: string[] = [];
+        const requestByAddress: string[] = [];
         proposals.forEach((element) => {
             try {
                 const calldata = ethers.utils.defaultAbiCoder.decode(

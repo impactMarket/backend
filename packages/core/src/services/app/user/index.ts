@@ -1,4 +1,5 @@
-import { Op, WhereOptions } from 'sequelize';
+import { ethers } from 'ethers';
+import { Op } from 'sequelize';
 
 import config from '../../../config';
 import { models, sequelize } from '../../../database';
@@ -11,10 +12,12 @@ import {
     AppUser,
 } from '../../../interfaces/app/appUser';
 import { ProfileContentStorage } from '../../../services/storage';
+import { getAllBeneficiaries } from '../../../subgraph/queries/beneficiary';
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
 import { Logger } from '../../../utils/logger';
+import { sendPushNotification } from '../../../utils/util';
 import UserLogService from './log';
 
 export default class UserService {
@@ -183,10 +186,7 @@ export default class UserService {
         const roles = await this._userRoles(address);
 
         if (!user && roles.roles.length === 0) {
-            throw new BaseError(
-                'USER_NOT_FOUND',
-                'user not found'
-            );
+            throw new BaseError('USER_NOT_FOUND', 'user not found');
         }
 
         return {
@@ -293,29 +293,39 @@ export default class UserService {
 
     public async getReport(
         user: string,
-        query: { offset?: string; limit?: string },
+        query: { offset?: string; limit?: string }
     ) {
         const communities = await models.community.findAll({
             attributes: ['id'],
             where: {
                 ambassadorAddress: user,
-            }
+            },
         });
 
         if (!communities || communities.length === 0) {
-            throw new BaseError('COMMUNITY_NOT_FOUND', 'no community found for this ambassador');
+            throw new BaseError(
+                'COMMUNITY_NOT_FOUND',
+                'no community found for this ambassador'
+            );
         }
 
         return models.anonymousReport.findAndCountAll({
-            include: [{
-                attributes: ['id', 'contractAddress', 'name', 'coverMediaPath'],
-                model: models.community,
-                as: 'community',
-            }],
+            include: [
+                {
+                    attributes: [
+                        'id',
+                        'contractAddress',
+                        'name',
+                        'coverMediaPath',
+                    ],
+                    model: models.community,
+                    as: 'community',
+                },
+            ],
             where: {
                 communityId: {
-                    [Op.in]: communities.map(c => c.id)
-                }
+                    [Op.in]: communities.map((c) => c.id),
+                },
             },
             offset: query.offset
                 ? parseInt(query.offset, 10)
@@ -395,7 +405,10 @@ export default class UserService {
             }
         );
         if (updated[0] === 0) {
-            throw new Error('notifications were not updated!');
+            throw new BaseError(
+                'UPDATE_FAILED',
+                'notifications were not updated!'
+            );
         }
         return true;
     }
@@ -407,6 +420,85 @@ export default class UserService {
                 read: false,
             },
         });
+    }
+
+    public async sendPushNotifications(
+        title: string,
+        body: string,
+        country?: string,
+        communitiesIds?: number[],
+        data?: any
+    ) {
+        if (country) {
+            const users = await models.appUser.findAll({
+                attributes: ['pushNotificationToken'],
+                where: {
+                    country,
+                    pushNotificationToken: {
+                        [Op.not]: null,
+                    },
+                },
+            });
+            users.forEach((user) => {
+                sendPushNotification(
+                    user.address,
+                    title,
+                    body,
+                    data,
+                    user.pushNotificationToken
+                );
+            });
+        } else if (communitiesIds && communitiesIds.length) {
+            const communities = await models.community.findAll({
+                attributes: ['contractAddress'],
+                where: {
+                    id: {
+                        [Op.in]: communitiesIds,
+                    },
+                    contractAddress: {
+                        [Op.not]: null,
+                    },
+                },
+            });
+            const beneficiaryAddress: string[] = [];
+
+            // get beneficiaries
+            for (let index = 0; index < communities.length; index++) {
+                const community = communities[index];
+                const beneficiaries = await getAllBeneficiaries(
+                    community.contractAddress!
+                );
+                beneficiaries.forEach((beneficiary) => {
+                    beneficiaryAddress.push(
+                        ethers.utils.getAddress(beneficiary.address)
+                    );
+                });
+            }
+            // get users
+            const users = await models.appUser.findAll({
+                attributes: ['pushNotificationToken'],
+                where: {
+                    address: {
+                        [Op.in]: beneficiaryAddress,
+                    },
+                    pushNotificationToken: {
+                        [Op.not]: null,
+                    },
+                },
+            });
+
+            users.forEach((user) => {
+                sendPushNotification(
+                    user.address,
+                    title,
+                    body,
+                    data,
+                    user.pushNotificationToken
+                );
+            });
+        } else {
+            throw new BaseError('INVALID_OPTION', 'invalid option');
+        }
     }
 
     private async _overwriteUser(user: AppUserCreationAttributes) {
@@ -514,6 +606,15 @@ export default class UserService {
                 roles.push(key);
             }
         });
+
+        const pendingCommunity = await models.community.findOne({
+            where: {
+                status: 'pending',
+                requestByAddress: address,
+            },
+        });
+        if (pendingCommunity) roles.push('pendingManager');
+
         return {
             ...userRoles,
             roles,

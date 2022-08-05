@@ -44,8 +44,8 @@ communitiesContract.set(
     communityIds[0],
     new UbiCommunityContractModel({
         communityId: communityIds[0],
-        claimAmount: '2000000000000000000',
-        maxClaim: '1500000000000000000000',
+        claimAmount: 2,
+        maxClaim: 1500,
         baseInterval: 86400,
         incrementInterval: 600,
     })
@@ -54,8 +54,8 @@ communitiesContract.set(
     communityIds[1],
     new UbiCommunityContractModel({
         communityId: communityIds[1],
-        claimAmount: '1000000000000000000',
-        maxClaim: '600000000000000000000',
+        claimAmount: 1,
+        maxClaim: 600,
         baseInterval: 86400,
         incrementInterval: 300,
     })
@@ -64,8 +64,8 @@ communitiesContract.set(
     communityIds[2],
     new UbiCommunityContractModel({
         communityId: communityIds[2],
-        claimAmount: '1500000000000000000',
-        maxClaim: '300000000000000000000',
+        claimAmount: 1.5,
+        maxClaim: 300,
         baseInterval: 86400,
         incrementInterval: 900,
     })
@@ -74,8 +74,8 @@ communitiesContract.set(
     communityIds[3],
     new UbiCommunityContractModel({
         communityId: communityIds[3],
-        claimAmount: '1500000000000000000',
-        maxClaim: '300000000000000000000',
+        claimAmount: 1.5,
+        maxClaim: 300,
         baseInterval: 86400,
         incrementInterval: 600,
     })
@@ -84,8 +84,8 @@ communitiesContract.set(
     communityIds[4],
     new UbiCommunityContractModel({
         communityId: communityIds[4],
-        claimAmount: '1000000000000000000',
-        maxClaim: '300000000000000000000',
+        claimAmount: 1,
+        maxClaim: 300,
         baseInterval: 86400,
         incrementInterval: 600,
     })
@@ -94,8 +94,8 @@ communitiesContract.set(
     communityIds[5],
     new UbiCommunityContractModel({
         communityId: communityIds[5],
-        claimAmount: '1000000000000000000',
-        maxClaim: '300000000000000000000',
+        claimAmount: 1,
+        maxClaim: 300,
         baseInterval: 86400,
         incrementInterval: 600,
     })

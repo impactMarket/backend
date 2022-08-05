@@ -103,12 +103,8 @@ class UserController {
 
         this.userService
             .findUserBy(getAddress(address), req.user.address)
-            .then((community) =>
-                standardResponse(res, 200, true, community)
-            )
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e })
-            );
+            .then((community) => standardResponse(res, 200, true, community))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public update = (req: RequestWithUser, res: Response) => {
@@ -300,7 +296,8 @@ class UserController {
             return;
         }
 
-        this.userService.getNotifications(req.query, req.user.userId)
+        this.userService
+            .getNotifications(req.query, req.user.userId)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })
@@ -320,7 +317,8 @@ class UserController {
 
         const notifications = req.body.notifications;
 
-        this.userService.readNotifications(req.user.userId, notifications)
+        this.userService
+            .readNotifications(req.user.userId, notifications)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })
@@ -338,7 +336,19 @@ class UserController {
             return;
         }
 
-        this.userService.getUnreadNotifications(req.user.userId)
+        this.userService
+            .getUnreadNotifications(req.user.userId)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
+
+    public sendPushNotifications = (req: Request, res: Response) => {
+        const { country, communities, title, body, data } = req.body;
+
+        this.userService
+            .sendPushNotifications(title, body, country, communities, data)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })

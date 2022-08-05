@@ -5,7 +5,6 @@ import { Sequelize } from 'sequelize';
 import Sinon, { assert, replace, spy, stub, SinonStub, restore } from 'sinon';
 
 import { models, sequelize as database } from '../../src/database';
-import { AppMediaContent } from '../../src/interfaces/app/appMediaContent';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { UbiPromoter } from '../../src/interfaces/ubi/ubiPromoter';
 import { CommunityContentStorage } from '../../src/services/storage';
@@ -28,9 +27,9 @@ describe('community service', () => {
     let communityContentStorageDelete: Sinon.SinonSpy<[number], Promise<void>>;
     let returnProposalsSubgraph: SinonStub;
     let returnClaimedSubgraph: SinonStub;
+    let returnCommunityEntitiesSubgraph: SinonStub;
     let returnCommunityStateSubgraph: SinonStub;
     let returnGetCommunityManagersSubgraph: SinonStub;
-    let returnBiggestCommunitiesSubgraph: SinonStub;
 
     type SubgraphClaimed = { id: string; claimed: number }[];
 
@@ -55,14 +54,11 @@ describe('community service', () => {
 
         returnProposalsSubgraph = stub(subgraph, 'getCommunityProposal');
         returnClaimedSubgraph = stub(subgraph, 'getClaimed');
+        returnCommunityEntitiesSubgraph = stub(subgraph, 'communityEntities');
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
         returnGetCommunityManagersSubgraph = stub(
             managerSubgraph,
             'getCommunityManagers'
-        );
-        returnBiggestCommunitiesSubgraph = stub(
-            subgraph,
-            'getBiggestCommunities'
         );
         returnCommunityStateSubgraph.returns([
             {
@@ -112,14 +108,20 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
                 ]);
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns([
                     {
@@ -127,11 +129,6 @@ describe('community service', () => {
                         claimed: 0,
                     },
                 ]);
-
-                returnBiggestCommunitiesSubgraph.returns([{
-                    beneficiaries: 0,
-                    id: communities[0].contractAddress,
-                }]);
 
                 const result = await CommunityService.list({
                     name: communities[0].name,
@@ -154,14 +151,20 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
                 ]);
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns([
                     {
@@ -169,11 +172,6 @@ describe('community service', () => {
                         claimed: 0,
                     },
                 ]);
-
-                returnBiggestCommunitiesSubgraph.returns([{
-                    beneficiaries: 0,
-                    id: communities[0].contractAddress,
-                }]);
 
                 const result = await CommunityService.list({
                     name: communities[0].name.slice(
@@ -199,14 +197,20 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
                 ]);
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns([
                     {
@@ -214,11 +218,6 @@ describe('community service', () => {
                         claimed: 0,
                     },
                 ]);
-
-                returnBiggestCommunitiesSubgraph.returns([{
-                    beneficiaries: 0,
-                    id: communities[0].contractAddress,
-                }]);
 
                 const result = await CommunityService.list({
                     name: communities[0].name.slice(
@@ -244,14 +243,20 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
                 ]);
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns([
                     {
@@ -259,11 +264,6 @@ describe('community service', () => {
                         claimed: 0,
                     },
                 ]);
-
-                returnBiggestCommunitiesSubgraph.returns([{
-                    beneficiaries: 0,
-                    id: communities[0].contractAddress,
-                }]);
 
                 const result = await CommunityService.list({
                     name: communities[0].name.toUpperCase(),
@@ -287,10 +287,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -302,10 +302,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -317,14 +317,20 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
                 ]);
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
@@ -332,17 +338,6 @@ describe('community service', () => {
                         claimed: 0,
                     }))
                 );
-
-                returnBiggestCommunitiesSubgraph.returns([
-                    {
-                        beneficiaries: 0,
-                        id: communities[0].contractAddress,
-                    },
-                    {
-                        beneficiaries: 0,
-                        id: communities[1].contractAddress,
-                    },
-                ]);
 
                 const result = await CommunityService.list({
                     name: 'oreo',
@@ -375,10 +370,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
@@ -390,14 +385,20 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                     },
                 ]);
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
@@ -405,13 +406,6 @@ describe('community service', () => {
                         claimed: 0,
                     }))
                 );
-
-                returnBiggestCommunitiesSubgraph.returns([
-                    {
-                        beneficiaries: 0,
-                        id: communities[0].contractAddress,
-                    },
-                ]);
 
                 const result = await CommunityService.list({});
 
@@ -436,10 +430,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'PT',
@@ -451,10 +445,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'PT',
@@ -466,15 +460,21 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'ES',
                     },
                 ]);
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
@@ -505,10 +505,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'PT',
@@ -520,10 +520,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'PT',
@@ -535,10 +535,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'ES',
@@ -550,10 +550,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'FR',
@@ -565,16 +565,21 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'MZ',
                     },
                 ]);
-
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
                         id: community.contractAddress!,
@@ -618,15 +623,21 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 });
             }
             const communities = await CommunityFactory(createObject);
+            returnCommunityEntitiesSubgraph.returns(
+                communities.map((community) => ({
+                    id: community.contractAddress,
+                    beneficiaries: community.beneficiaries,
+                }))
+            );
             const claimed: SubgraphClaimed = [];
             for (const community of communities) {
                 claimed.push({
@@ -650,14 +661,6 @@ describe('community service', () => {
             for (let index = 0; index < totalCommunities / 5; index++) {
                 const offset = index * 5;
                 const limit = 5;
-                const sliced = communities.slice(
-                    offset,
-                    offset + limit
-                );
-                returnBiggestCommunitiesSubgraph.returns(sliced.map(el => ({
-                    beneficiaries: el.beneficiaries?.length,
-                    id: el.contractAddress,
-                })));
                 const r = await CommunityService.list({
                     offset: offset.toString(),
                     limit: limit.toString(),
@@ -682,16 +685,22 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                     suspect: index === 1 ? suspect : undefined,
                 });
             }
             const communities = await CommunityFactory(createObject);
+            returnCommunityEntitiesSubgraph.returns(
+                communities.map((community) => ({
+                    id: community.contractAddress,
+                    beneficiaries: community.beneficiaries,
+                }))
+            );
             const communitySuspect = communities[1];
 
             const claimed: SubgraphClaimed = [];
@@ -709,16 +718,6 @@ describe('community service', () => {
             }
 
             returnClaimedSubgraph.returns(claimed);
-            returnBiggestCommunitiesSubgraph.returns([
-                {
-                    beneficiaries: communitySuspect.beneficiaries?.length,
-                    id: communitySuspect.contractAddress,
-                },
-                {
-                    beneficiaries: communities[0].beneficiaries?.length,
-                    id: communities[0].contractAddress,
-                }
-            ]);
             //
             const r = await CommunityService.list({
                 offset: '0',
@@ -749,10 +748,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -767,10 +766,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -805,10 +804,10 @@ describe('community service', () => {
                     {
                         id: communities[1].contractAddress,
                         claimed: 0,
-                    }
+                    },
                 ]);
 
-                returnBiggestCommunitiesSubgraph.returns([
+                returnCommunityEntitiesSubgraph.returns([
                     {
                         beneficiaries: communities[1].beneficiaries?.length,
                         id: communities[1].contractAddress,
@@ -816,7 +815,7 @@ describe('community service', () => {
                     {
                         beneficiaries: communities[0].beneficiaries?.length,
                         id: communities[0].contractAddress,
-                    }
+                    },
                 ]);
 
                 const result = await CommunityService.list({});
@@ -844,10 +843,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -862,10 +861,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -874,6 +873,12 @@ describe('community service', () => {
                         },
                     },
                 ]);
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
 
                 returnClaimedSubgraph.returns(
                     communities.map((community) => ({
@@ -905,10 +910,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -923,10 +928,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -941,10 +946,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -953,7 +958,12 @@ describe('community service', () => {
                         },
                     },
                 ]);
-
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
                 const claimed: SubgraphClaimed = [];
                 for (const community of communities) {
                     claimed.push({
@@ -984,21 +994,6 @@ describe('community service', () => {
                         id: communities[2].contractAddress,
                         claimed: 0,
                     },
-                ]);
-
-                returnBiggestCommunitiesSubgraph.returns([
-                    {
-                        beneficiaries: communities[1].beneficiaries?.length,
-                        id: communities[1].contractAddress,
-                    },
-                    {
-                        beneficiaries: communities[0].beneficiaries?.length,
-                        id: communities[0].contractAddress,
-                    },
-                    {
-                        beneficiaries: communities[2].beneficiaries?.length,
-                        id: communities[2].contractAddress,
-                    }
                 ]);
 
                 const result = await CommunityService.list({
@@ -1036,10 +1031,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1054,10 +1049,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1072,10 +1067,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1084,6 +1079,12 @@ describe('community service', () => {
                         },
                     },
                 ]);
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
 
                 const claimed: SubgraphClaimed = [];
                 for (const community of communities) {
@@ -1151,10 +1152,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1163,6 +1164,12 @@ describe('community service', () => {
                         },
                     },
                 ]);
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
 
                 const result = await CommunityService.list({
                     fields: 'id;publicId;contract.maxClaim;contract.claimAmount',
@@ -1201,16 +1208,21 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         proposalId: proposal.id,
                     },
                 ]);
-
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
                 const result = await CommunityService.list({
                     fields: 'id;publicId;contract.maxClaim;proposal.*',
                 });
@@ -1248,10 +1260,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1260,7 +1272,12 @@ describe('community service', () => {
                         },
                     },
                 ]);
-
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
                 const result = await CommunityService.list({
                     fields: '*;contract.*',
                 });
@@ -1303,6 +1320,8 @@ describe('community service', () => {
                     'communityId',
                     'createdAt',
                     'updatedAt',
+                    'maxTranche',
+                    'minTranche',
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,
@@ -1342,10 +1361,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1354,7 +1373,12 @@ describe('community service', () => {
                         },
                     },
                 ]);
-
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
                 const media = await models.appMediaContent.create({
                     url: 'test.com',
                     width: 0,
@@ -1401,6 +1425,8 @@ describe('community service', () => {
                     'decreaseStep',
                     'createdAt',
                     'updatedAt',
+                    'maxTranche',
+                    'minTranche',
                 ]);
                 expect(result.rows[0].cover).to.have.deep.keys([
                     'id',
@@ -1437,10 +1463,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1455,10 +1481,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1473,10 +1499,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1485,7 +1511,12 @@ describe('community service', () => {
                         },
                     },
                 ]);
-
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
                 const data = ethers.utils.defaultAbiCoder.encode(
                     [
                         'address[]',
@@ -1531,10 +1562,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1549,10 +1580,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         gps: {
@@ -1561,7 +1592,12 @@ describe('community service', () => {
                         },
                     },
                 ]);
-
+                returnCommunityEntitiesSubgraph.returns(
+                    communities.map((community) => ({
+                        id: community.contractAddress,
+                        beneficiaries: community.beneficiaries,
+                    }))
+                );
                 returnProposalsSubgraph.returns([]);
                 returnClaimedSubgraph.returns([]);
 
@@ -1585,10 +1621,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1639,10 +1675,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'PT',
@@ -1654,10 +1690,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'PT',
@@ -1669,10 +1705,10 @@ describe('community service', () => {
                         visibility: 'public',
                         contract: {
                             baseInterval: 60 * 60 * 24,
-                            claimAmount: '1000000000000000000',
+                            claimAmount: 1,
                             communityId: 0,
                             incrementInterval: 5 * 60,
-                            maxClaim: '450000000000000000000',
+                            maxClaim: 450,
                         },
                         hasAddress: true,
                         country: 'ES',
@@ -1710,10 +1746,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1751,10 +1787,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1793,10 +1829,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1846,10 +1882,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1891,10 +1927,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1933,10 +1969,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -1990,10 +2026,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2042,10 +2078,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2092,10 +2128,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2123,10 +2159,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2151,10 +2187,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2182,10 +2218,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2220,10 +2256,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2273,10 +2309,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2334,10 +2370,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2371,10 +2407,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -2404,10 +2440,10 @@ describe('community service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },

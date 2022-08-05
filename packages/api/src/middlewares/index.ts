@@ -46,8 +46,8 @@ export function authenticateToken(
             if (credential && credential.roles) {
                 let path = req.path.split('/')[1];
                 if (!path) {
-                    let baseUrl = req.baseUrl.split('/');
-                    path = baseUrl[baseUrl.length-1]
+                    const baseUrl = req.baseUrl.split('/');
+                    path = baseUrl[baseUrl.length - 1];
                 }
                 const authorization = checkRoles(
                     credential.roles,
@@ -192,7 +192,10 @@ const checkRoles = (roles: string[], path: string, reqMethod: string) => {
                 method === '*' ||
                 (reqMethod === 'GET' && method === 'read') ||
                 (reqMethod === 'DELETE' && method === 'delete') ||
-                ((reqMethod === 'POST' || reqMethod === 'PUT' || reqMethod === 'PATCH') && method === 'write')
+                ((reqMethod === 'POST' ||
+                    reqMethod === 'PUT' ||
+                    reqMethod === 'PATCH') &&
+                    method === 'write')
             ) {
                 authorizate = true;
                 break;

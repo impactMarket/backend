@@ -34,6 +34,12 @@ export default (route: Router): void => {
      *         required: false
      *         description: community status
      *       - in: query
+     *         name: ambassadorAddress
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: filter communities by ambassadors
+     *       - in: query
      *         name: excludeCountry
      *         schema:
      *           type: string
@@ -105,7 +111,11 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/getManagersResponse'
      */
-    route.get('/:id/managers/:query?', controller.getManagers);
+    route.get(
+        '/:id/managers/:query?',
+        optionalAuthentication,
+        controller.getManagers
+    );
 
     /**
      * @swagger
@@ -155,7 +165,11 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityContract'
      */
-    route.get('/:id/ambassador', controller.getAmbassador);
+    route.get(
+        '/:id/ambassador',
+        optionalAuthentication,
+        controller.getAmbassador
+    );
 
     /**
      * @swagger
