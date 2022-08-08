@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import UserController from '../../controllers/v2/user';
-import { authenticateToken, adminAuthentication } from '../../middlewares';
+import { authenticateToken, adminAuthentication, verifySignature } from '../../middlewares';
 import userValidators from '../../validators/user';
 
 export default (app: Router): void => {
@@ -166,6 +166,7 @@ export default (app: Router): void => {
     route.put(
         '/',
         authenticateToken,
+        verifySignature,
         userValidators.update,
         userController.update
     );

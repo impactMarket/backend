@@ -101,6 +101,8 @@ function validateEnv() {
         SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         COUNCIL_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         IMAGE_HANDLER_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
+        SIGNATURE_EXPIRATION: num({ default: 864000 }),
+        SIGNATURE_MESSAGE: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 

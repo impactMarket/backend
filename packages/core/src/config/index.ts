@@ -258,4 +258,6 @@ export default {
     subgraphUrl: validatedEnv.SUBGRAPH_URL,
     councilSubgraphUrl: validatedEnv.COUNCIL_SUBGRAPH_URL,
     imageHandlerUrl: validatedEnv.IMAGE_HANDLER_URL,
+    signatureExpiration: validatedEnv.SIGNATURE_EXPIRATION,
+    signatureMessage: validatedEnv.SIGNATURE_MESSAGE,
 };

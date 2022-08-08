@@ -1,4 +1,5 @@
 import { config, database } from '@impactmarket/core';
+import { ethers } from 'ethers';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
@@ -128,6 +129,59 @@ export const rateLimiter = rateLimit({
               }),
           }),
 });
+
+export function verifySignature(
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction
+): void {
+    const { signature, message } = req.headers;
+
+    if (!signature || !message) {
+        res.status(401).json({
+            success: false,
+            error: {
+                name: 'INVALID_SINATURE',
+                message: 'signature is invalid',
+            },
+        });
+        return;
+    }
+
+    const fullMessage = `${config.signatureMessage}_${message}`
+
+    const address = ethers.utils.verifyMessage(
+        fullMessage,
+        signature as string,
+    );
+
+    if (address.toLocaleLowerCase() === req.user?.address.toLocaleLowerCase()) {
+        // validate signature timestamp
+        const timestamp = message as string;
+        const expirationDate = new Date();
+        expirationDate.setSeconds(expirationDate.getSeconds() - config.signatureExpiration);
+        if (!timestamp || parseInt(timestamp) < expirationDate.getTime()) {
+            res.status(403).json({
+                success: false,
+                error: {
+                    name: 'EXPIRED_SIGNATURE',
+                    message: 'signature is expired',
+                },
+            });
+            return;
+        }
+        next();
+    } else {
+        res.status(403).json({
+            success: false,
+            error: {
+                name: 'INVALID_SINATURE',
+                message: 'signature is invalid',
+            },
+        });
+        return;
+    }
+};
 
 const checkRoles = (roles: string[], path: string, reqMethod: string) => {
     let authorizate = false;
