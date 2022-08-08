@@ -1,11 +1,13 @@
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
 import config from '../config';
 import { Community } from '../database/models/ubi/community';
 import { AppMediaThumbnail } from '../interfaces/app/appMediaThumbnail';
 import UserService from '../services/app/user';
+import { BaseError } from './baseError';
 import { Logger } from './logger';
 
 BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
@@ -275,3 +277,21 @@ export function createThumbnailUrl(
 
     return avatar;
 }
+
+export const getSearchInput = (searchInput: string) => {
+    if (isAddress(searchInput)) {
+        return {
+            address: ethers.utils.getAddress(searchInput),
+        };
+    } else if (
+        searchInput.toLowerCase().indexOf('drop') === -1 &&
+        searchInput.toLowerCase().indexOf('delete') === -1 &&
+        searchInput.toLowerCase().indexOf('update') === -1
+    ) {
+        return {
+            name: searchInput,
+        };
+    } else {
+        throw new BaseError('INVALID_SEARCH', 'Not valid search!');
+    }
+};

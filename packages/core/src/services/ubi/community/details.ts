@@ -25,7 +25,7 @@ import {
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { Logger } from '../../../utils/logger';
-import { isAddress } from '../../../utils/util';
+import { isAddress, getSearchInput } from '../../../utils/util';
 import { IListBeneficiary, BeneficiaryFilterType } from '../../endpoints';
 import { CommunityContentStorage } from '../../storage';
 
@@ -291,11 +291,13 @@ export class CommunityDetailsService {
         }
 
         if (searchInput) {
-            const input = this.getSearchInput(searchInput);
+            const input = getSearchInput(searchInput);
             if (input.address) {
                 addresses.push(input.address);
-            } else if (input.appUserFilter) {
-                appUserFilter = input.appUserFilter;
+            } else if (input.name) {
+                appUserFilter = literal(
+                    `concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`
+                );
             }
         }
 
@@ -508,11 +510,13 @@ export class CommunityDetailsService {
         }
 
         if (searchInput) {
-            const input = this.getSearchInput(searchInput);
+            const input = getSearchInput(searchInput);
             if (input.address) {
                 addresses.push(input.address);
-            } else if (input.appUserFilter) {
-                appUserFilter = input.appUserFilter;
+            } else if (input.name) {
+                appUserFilter = literal(
+                    `concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`
+                );
             }
         }
 
@@ -833,25 +837,5 @@ export class CommunityDetailsService {
         if (!result) return null;
 
         return result.toJSON();
-    }
-
-    private getSearchInput(searchInput: string) {
-        if (isAddress(searchInput)) {
-            return {
-                address: ethers.utils.getAddress(searchInput),
-            };
-        } else if (
-            searchInput.toLowerCase().indexOf('drop') === -1 &&
-            searchInput.toLowerCase().indexOf('delete') === -1 &&
-            searchInput.toLowerCase().indexOf('update') === -1
-        ) {
-            return {
-                appUserFilter: literal(
-                    `concat("firstName", ' ', "lastName") ILIKE '%${searchInput}%'`
-                ),
-            };
-        } else {
-            throw new BaseError('INVALID_SEARCH', 'Not valid search!');
-        }
     }
 }

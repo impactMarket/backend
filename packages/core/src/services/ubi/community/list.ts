@@ -14,6 +14,7 @@ import {
 } from '../../../subgraph/queries/community';
 import { BaseError } from '../../../utils/baseError';
 import { fetchData } from '../../../utils/dataFetching';
+import { getSearchInput } from '../../../utils/util';
 import { CommunityDetailsService } from './details';
 
 export class CommunityListService {
@@ -22,7 +23,8 @@ export class CommunityListService {
     public async list(query: {
         orderBy?: string;
         filter?: string;
-        name?: string;
+        name?: string; // TODO: remove
+        search?: string;
         country?: string;
         excludeCountry?: string;
         extended?: string;
@@ -80,6 +82,7 @@ export class CommunityListService {
             };
         }
 
+        // TODO: remove
         if (query.name) {
             extendedWhere = {
                 ...extendedWhere,
@@ -87,6 +90,23 @@ export class CommunityListService {
                     [Op.iLike]: `%${query.name}%`,
                 },
             };
+        }
+
+        if (query.search) {
+            const input = getSearchInput(query.search);
+            if (input.address) {
+                extendedWhere = {
+                    ...extendedWhere,
+                    requestByAddress: query.search,
+                };
+            } else if (input.name) {
+                extendedWhere = {
+                    ...extendedWhere,
+                    name: {
+                        [Op.iLike]: `%${input.name}%`,
+                    },
+                };
+            }
         }
 
         if (query.country) {
