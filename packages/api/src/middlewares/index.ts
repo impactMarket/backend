@@ -159,7 +159,7 @@ export function verifySignature(
         // validate signature timestamp
         const timestamp = message as string;
         const expirationDate = new Date();
-        expirationDate.setSeconds(expirationDate.getSeconds() - config.signatureExpiration);
+        expirationDate.setDate(expirationDate.getDate() - config.signatureExpiration);
         if (!timestamp || parseInt(timestamp) < expirationDate.getTime()) {
             res.status(403).json({
                 success: false,
