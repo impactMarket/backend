@@ -110,7 +110,7 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    name: communities[0].name,
+                    search: communities[0].name,
                 });
 
                 expect(result.rows[0]).to.include({
@@ -154,7 +154,7 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    name: communities[0].name.slice(
+                    search: communities[0].name.slice(
                         0,
                         communities[0].name.length / 2
                     ),
@@ -201,7 +201,7 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    name: communities[0].name.slice(
+                    search: communities[0].name.slice(
                         communities[0].name.length / 2,
                         communities[0].name.length - 1
                     ),
@@ -248,7 +248,7 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    name: communities[0].name.toUpperCase(),
+                    search: communities[0].name.toUpperCase(),
                 });
 
                 expect(result.rows[0]).to.include({
@@ -323,7 +323,7 @@ describe('community service v2', () => {
                 );
 
                 const result = await communityListService.list({
-                    name: 'oreo',
+                    search: 'oreo',
                 });
 
                 expect(result.count).to.be.equal(2);
@@ -595,6 +595,50 @@ describe('community service v2', () => {
                         id: communities[3].id,
                     },
                 ]);
+            });
+        });
+
+        it('by requestedByAddress', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[0].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: 1,
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: 450,
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            returnCommunityEntities.returns([
+                {
+                    id: communities[0].contractAddress,
+                    beneficiaries: 0,
+                },
+            ]);
+
+            returnClaimedSubgraph.returns([
+                {
+                    id: communities[0].contractAddress,
+                    claimed: 0,
+                },
+            ]);
+
+            const result = await communityListService.list({
+                search: users[0].address,
+            });
+
+            expect(result.rows[0]).to.include({
+                id: communities[0].id,
+                name: communities[0].name,
+                country: communities[0].country,
+                requestByAddress: users[0].address,
             });
         });
 
