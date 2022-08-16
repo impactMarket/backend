@@ -23,7 +23,6 @@ export class CommunityListService {
     public async list(query: {
         orderBy?: string;
         filter?: string;
-        name?: string; // TODO: remove
         search?: string;
         country?: string;
         excludeCountry?: string;
@@ -79,16 +78,6 @@ export class CommunityListService {
             extendedWhere = {
                 ...extendedWhere,
                 id: { [Op.in]: featuredIds },
-            };
-        }
-
-        // TODO: remove
-        if (query.name) {
-            extendedWhere = {
-                ...extendedWhere,
-                name: {
-                    [Op.iLike]: `%${query.name}%`,
-                },
             };
         }
 
