@@ -168,6 +168,13 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    getMerchant = (req: Request, res: Response) => {
+        this.detailsService
+            .getMerchant(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     getClaimLocation = (req: Request, res: Response) => {
         this.claimLocationService
             .getByCommunity(parseInt(req.params.id, 10))

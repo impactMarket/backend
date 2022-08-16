@@ -18,6 +18,8 @@ import { ImMetadata } from './models/app/imMetadata';
 import { GlobalDailyState } from './models/global/globalDailyState';
 import { GlobalDemographics } from './models/global/globalDemographics';
 import { GlobalGrowthModel } from './models/global/globalGrowth';
+import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
+import { MerchantRegistryModel } from './models/merchant/merchantRegistry';
 import { ReachedAddress } from './models/reachedAddress';
 import { StoryCommentModel } from './models/story/storyComment';
 import { StoryCommunityModel } from './models/story/storyCommunity';
@@ -94,6 +96,9 @@ export interface DbModels {
     //
     airgrabUser: ModelCtor<AirgrabUserModel>;
     airgrabProof: ModelCtor<AirgrabProofModel>;
+    //
+    merchantRegistry: ModelCtor<MerchantRegistryModel>;
+    merchantCommunity: ModelCtor<MerchantCommunityModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;

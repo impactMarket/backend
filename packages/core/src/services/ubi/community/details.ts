@@ -148,6 +148,26 @@ export class CommunityDetailsService {
         }
     }
 
+    public async getMerchant(communityId: number) {
+        try {
+            const merchant = await models.merchantRegistry.findAll({
+                include: [
+                    {
+                        attributes: [],
+                        model: models.merchantCommunity,
+                        as: 'merchantCommunity',
+                        where: {
+                            communityId,
+                        },
+                    },
+                ],
+            });
+            return merchant;
+        } catch (error) {
+            throw new BaseError('UNEXPECTED_ERROR', error);
+        }
+    }
+
     public async getUBIParams(communityId: number) {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],

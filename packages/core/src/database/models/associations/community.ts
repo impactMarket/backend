@@ -119,4 +119,11 @@ export function communityAssociation(sequelize: Sequelize) {
             as: 'community',
         }
     );
+    sequelize.models.MerchantRegistryModel.hasMany(
+        sequelize.models.MerchantCommunityModel,
+        {
+            foreignKey: 'merchantId',
+            as: 'merchantCommunity',
+        }
+    );
 }
