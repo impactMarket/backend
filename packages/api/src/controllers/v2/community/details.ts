@@ -188,6 +188,23 @@ class CommunityController {
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    addBeneficiaries = (req: RequestWithUser, res: Response) => {
+        const file = req.file;
+        if (!file) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'INVALID_FILE',
+                    message: 'file is invalid',
+                },
+            });
+            return;
+        }
+        this.detailsService
+            .addBeneficiaries(file)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export { CommunityController };

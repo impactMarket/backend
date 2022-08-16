@@ -6,6 +6,11 @@ import {
     authenticateToken,
     optionalAuthentication,
 } from '../../../middlewares';
+import CommunityValidator from '../../../validators/community';
+
+import multer from 'multer';
+const upload = multer({ storage: multer.memoryStorage() });
+
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -341,4 +346,37 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/UbiPromoter'
      */
     route.get('/:id/promoter', controller.getPromoter);
+
+    /**
+     * @swagger
+     *
+     * /communities/beneficiaries:
+     *   post:
+     *     tags:
+     *       - "communities"
+     *     summary: Add beneficiaries
+     *     requestBody:
+     *      required: true
+     *      content:
+     *        multipart/form-data:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              file:
+     *                type: string
+     *                format: binary
+     *                required: true
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/beneficiaries',
+        upload.single('file'),
+        authenticateToken,
+        controller.addBeneficiaries
+    );
 };

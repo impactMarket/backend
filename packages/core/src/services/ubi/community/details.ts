@@ -835,6 +835,12 @@ export class CommunityDetailsService {
         return result.toJSON();
     }
 
+    public async addBeneficiaries(file: Express.Multer.File) {
+        const beneficiaries = file.buffer.toString('utf-8').replace(/\n/g, "").split('\r');
+
+        return beneficiaries
+    }
+
     private getSearchInput(searchInput: string) {
         if (isAddress(searchInput)) {
             return {
