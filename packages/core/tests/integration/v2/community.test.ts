@@ -601,7 +601,7 @@ describe('community service v2', () => {
         it('by requestedByAddress', async () => {
             const communities = await CommunityFactory([
                 {
-                    requestByAddress: users[0].address,
+                    requestByAddress: users[1].address,
                     started: new Date(),
                     status: 'valid',
                     visibility: 'public',
@@ -631,14 +631,14 @@ describe('community service v2', () => {
             ]);
 
             const result = await communityListService.list({
-                search: users[0].address,
+                search: users[1].address,
             });
 
             expect(result.rows[0]).to.include({
                 id: communities[0].id,
                 name: communities[0].name,
                 country: communities[0].country,
-                requestByAddress: users[0].address,
+                requestByAddress: users[1].address,
             });
         });
 
