@@ -23,20 +23,20 @@ export const herokuTrigger = async (event: any, context: any) => {
         const requestBody = JSON.parse(event.body);
         console.log(requestBody);
         const projectName = requestBody.data.app.name;
-        const stage =
-            projectName.indexOf('production') !== -1 ? 'production' : 'staging';
+        const stage = process.env.STAGE;
 
         const herokuConfigVars = await getHerokuConfigVars(projectName);
         const { REDIS_URL, DATABASE_URL } = herokuConfigVars;
 
         const listFunctions = await lambda.listFunctions().promise();
-        listFunctions.Functions?.forEach(async (res) => {
+        const promises = listFunctions.Functions?.map(async (res) => {
             const tags = await lambda
                 .listTags({ Resource: res.FunctionArn! })
                 .promise();
+
             if (tags.Tags && tags.Tags.STAGE === stage) {
                 console.log('updating: ', res.FunctionName);
-                await lambda
+                return lambda
                     .updateFunctionConfiguration({
                         FunctionName: res.FunctionName!,
                         Environment: {
@@ -50,6 +50,8 @@ export const herokuTrigger = async (event: any, context: any) => {
                     .promise();
             }
         });
+
+        await Promise.all(promises!);
 
         return {
             statusCode: 200,

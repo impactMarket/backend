@@ -13,8 +13,8 @@ provider:
         - Effect: Allow
           Action:
             - lambda:ListFunctions
-            - lambda:GetFunctionConfiguration
             - lambda:UpdateFunctionConfiguration
+            - lambda:ListTags
           Resource:
             - "*"
 
