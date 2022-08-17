@@ -177,7 +177,7 @@ export const getBeneficiaryCommunity = async (
 
 export const countBeneficiaries = async (
     community: string,
-    state: string
+    state?: number
 ): Promise<number> => {
     try {
         const query = gql`
@@ -195,15 +195,21 @@ export const countBeneficiaries = async (
             fetchPolicy: 'no-cache',
         });
 
-        if (state === 'active') {
-            return queryResult.data.communityEntity?.beneficiaries;
-        } else if (state === 'removed') {
-            return queryResult.data.communityEntity?.removedBeneficiaries;
-        } else {
-            return (
-                queryResult.data.communityEntity?.beneficiaries +
-                queryResult.data.communityEntity?.removedBeneficiaries
-            );
+        switch (state) {
+            case 0:
+                return queryResult.data.communityEntity?.beneficiaries;
+            case 1:
+                return queryResult.data.communityEntity?.removedBeneficiaries;
+            case 2:
+                return queryResult.data.communityEntity?.lockedBeneficiaries;
+            default:
+                return (
+                    queryResult.data.communityEntity?.beneficiaries +
+                    queryResult.data.communityEntity?.removedBeneficiaries +
+                    (queryResult.data.communityEntity?.lockedBeneficiaries
+                        ? queryResult.data.communityEntity?.lockedBeneficiaries
+                        : 0) // TODO: remove "if" when TheGraph updates
+                );
         }
     } catch (error) {
         throw new Error(error);
