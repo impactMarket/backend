@@ -142,7 +142,7 @@ export class CommunityDetailsService {
             });
 
             return {
-                ...ambassador,
+                ...ambassador?.toJSON(),
                 active: true,
             };
         }
