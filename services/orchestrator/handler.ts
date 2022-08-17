@@ -22,29 +22,33 @@ export const herokuTrigger = async (event: any, context: any) => {
     try {
         const requestBody = JSON.parse(event.body);
         console.log(requestBody);
+        const projectName = requestBody.data.app.name;
+        const stage =
+            projectName.indexOf('production') !== -1 ? 'production' : 'staging';
 
-        const herokuConfigVars = await getHerokuConfigVars(
-            requestBody.data.app.id
-        );
+        const herokuConfigVars = await getHerokuConfigVars(projectName);
         const { REDIS_URL, DATABASE_URL } = herokuConfigVars;
 
         const listFunctions = await lambda.listFunctions().promise();
         listFunctions.Functions?.forEach(async (res) => {
-            const config = await lambda
-                .getFunctionConfiguration({ FunctionName: res.FunctionName! })
+            const tags = await lambda
+                .listTags({ Resource: res.FunctionArn! })
                 .promise();
-            await lambda
-                .updateFunctionConfiguration({
-                    FunctionName: res.FunctionName!,
-                    Environment: {
-                        Variables: {
-                            ...config.Environment?.Variables,
-                            REDIS_URL,
-                            DATABASE_URL,
+            if (tags.Tags && tags.Tags.STAGE === stage) {
+                console.log('updating: ', res.FunctionName);
+                await lambda
+                    .updateFunctionConfiguration({
+                        FunctionName: res.FunctionName!,
+                        Environment: {
+                            Variables: {
+                                ...res.Environment?.Variables,
+                                REDIS_URL,
+                                DATABASE_URL,
+                            },
                         },
-                    },
-                })
-                .promise();
+                    })
+                    .promise();
+            }
         });
 
         return {
