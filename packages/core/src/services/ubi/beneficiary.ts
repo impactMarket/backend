@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { Op, WhereAttributeHash, literal } from 'sequelize';
 import { Where } from 'sequelize/types/lib/utils';
@@ -240,9 +241,11 @@ export default class BeneficiaryService {
                 );
                 return {
                     address: ethers.utils.getAddress(beneficiary.address),
-                    username: user?.username,
+                    username: user?.username ? user.username : null,
                     timestamp: beneficiary.since * 1000,
-                    claimed: beneficiary.claimed,
+                    claimed: new BigNumber(beneficiary.claimed)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
                     blocked: beneficiary.state === 2,
                     suspect: user?.suspect,
                     isDeleted: !user || !!user.deletedAt,
@@ -321,11 +324,13 @@ export default class BeneficiaryService {
                 if (beneficiary) {
                     result.push({
                         address: user.address,
-                        username: user?.username,
+                        username: user?.username ? user.username : null,
                         timestamp: beneficiary.since
                             ? beneficiary.since * 1000
                             : 0,
-                        claimed: beneficiary.claimed,
+                        claimed: new BigNumber(beneficiary.claimed)
+                            .multipliedBy(10 ** config.cUSDDecimal)
+                            .toString() as any,
                         blocked: beneficiary.state === 2,
                         suspect: user?.suspect,
                         isDeleted: !!user.deletedAt,
@@ -339,9 +344,11 @@ export default class BeneficiaryService {
                 );
                 result.push({
                     address: ethers.utils.getAddress(beneficiary.address),
-                    username: user?.username,
+                    username: user?.username ? user.username : null,
                     timestamp: beneficiary.since * 1000,
-                    claimed: beneficiary.claimed,
+                    claimed: new BigNumber(beneficiary.claimed)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
                     blocked: beneficiary.state === 2,
                     suspect: user?.suspect,
                     isDeleted: !user || !!user.deletedAt,
