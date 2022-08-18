@@ -6,7 +6,6 @@ import {
     authenticateToken,
     optionalAuthentication,
 } from '../../../middlewares';
-import CommunityValidator from '../../../validators/community';
 
 import multer from 'multer';
 const upload = multer({ storage: multer.memoryStorage() });

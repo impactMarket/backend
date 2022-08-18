@@ -835,7 +835,13 @@ export class CommunityDetailsService {
         return result.toJSON();
     }
 
-    public async addBeneficiaries(file: Express.Multer.File) {
+    public async addBeneficiaries(file: Express.Multer.File, address: string) {
+        const role = await getUserRoles(address);
+        const contractAddress = role.manager?.community;
+
+        if (!contractAddress) {
+            throw new BaseError('NOT_MANAGER', 'user not a manager');
+        }
         const beneficiaries = file.buffer.toString('utf-8').replace(/\n/g, "").split('\r');
 
         return beneficiaries
