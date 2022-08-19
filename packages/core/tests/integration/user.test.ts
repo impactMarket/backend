@@ -797,44 +797,6 @@ describe('user service', () => {
             await truncate(sequelize, 'AppLogModel');
         });
 
-        it('get user logs - edited community', async () => {
-            await CommunityService.edit(
-                communities[0].id,
-                {
-                    name: communities[0].name,
-                    description: communities[0].description,
-                    currency: communities[0].currency,
-                    coverMediaId: communities[0].coverMediaId,
-                    coverMediaPath: communities[0].coverMediaPath,
-                    email: communities[0].email,
-                },
-                users[0].address,
-                users[0].id
-            );
-
-            const logs = await logService.get(
-                users[3].address,
-                'edited_community',
-                communities[0].id.toString()
-            );
-
-            expect(logs[0]).to.include({
-                userId: users[0].id,
-                type: LogTypes.EDITED_COMMUNITY,
-            });
-            expect(logs[0].detail).to.include({
-                name: communities[0].name,
-                description: communities[0].description,
-                currency: communities[0].currency,
-                // coverMediaId: communities[0].coverMediaId,
-                email: communities[0].email,
-            });
-            expect(logs[0].user).to.include({
-                address: users[0].address,
-                username: users[0].username,
-            });
-        });
-
         it('get user logs - edited profile', async () => {
             await UserService.edit({
                 username: 'new name',
@@ -860,33 +822,6 @@ describe('user service', () => {
                 address: users[1].address,
                 username: 'new name',
             });
-        });
-
-        it('should not list logs when is not an ambassador', async () => {
-            await CommunityService.edit(
-                communities[0].id,
-                {
-                    name: communities[0].name,
-                    description: communities[0].description,
-                    currency: communities[0].currency,
-                    coverMediaId: communities[0].coverMediaId,
-                    coverMediaPath: communities[0].coverMediaPath,
-                    email: communities[0].email,
-                },
-                users[0].address,
-                users[0].id
-            );
-
-            logService
-                .get(
-                    users[0].address,
-                    'edited_community',
-                    communities[0].id.toString()
-                )
-                .catch((e) => expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND'))
-                .then(() => {
-                    throw new Error('expected to fail');
-                });
         });
     });
 });

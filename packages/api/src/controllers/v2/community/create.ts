@@ -142,12 +142,8 @@ class CommunityController {
                 },
                 req.user?.userId
             )
-            .then((community) =>
-                standardResponse(res, 200, true, community)
-            )
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e })
-            );
+            .then((community) => standardResponse(res, 200, true, community))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 
