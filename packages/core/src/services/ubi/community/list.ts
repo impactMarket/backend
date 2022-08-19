@@ -86,7 +86,7 @@ export class CommunityListService {
             if (input.address) {
                 extendedWhere = {
                     ...extendedWhere,
-                    requestByAddress: query.search,
+                    requestByAddress: input.address,
                 };
             } else if (input.name) {
                 extendedWhere = {

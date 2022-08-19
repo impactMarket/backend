@@ -1,6 +1,6 @@
+import { getAddress } from '@ethersproject/address';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
 import config from '../config';
@@ -281,7 +281,7 @@ export function createThumbnailUrl(
 export const getSearchInput = (searchInput: string) => {
     if (isAddress(searchInput)) {
         return {
-            address: ethers.utils.getAddress(searchInput),
+            address: getAddress(searchInput),
         };
     } else if (
         searchInput.toLowerCase().indexOf('drop') === -1 &&
