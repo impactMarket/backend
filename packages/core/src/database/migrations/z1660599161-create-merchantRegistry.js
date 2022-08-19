@@ -11,10 +11,6 @@ module.exports = {
                 type: Sequelize.STRING(64),
                 allowNull: false,
             },
-            street: {
-                type: Sequelize.STRING(128),
-                allowNull: false,
-            },
             city: {
                 type: Sequelize.STRING(64),
                 allowNull: false,

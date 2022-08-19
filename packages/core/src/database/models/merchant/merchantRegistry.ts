@@ -3,7 +3,6 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export interface MerchantRegistry {
     id: number;
     name: string;
-    street: string;
     city: string;
     country: string;
     gps: {
@@ -18,7 +17,6 @@ export interface MerchantRegistry {
 
 export interface MerchantRegistryCreationAttributes {
     name: string;
-    street: string;
     city: string;
     country: string;
     gps: {
@@ -35,7 +33,6 @@ export class MerchantRegistryModel extends Model<
 > {
     public id!: number;
     public name!: string;
-    public street!: string;
     public city!: string;
     public country!: string;
     public gps!: {
@@ -62,10 +59,6 @@ export function initializeMerchantRegistry(
             },
             name: {
                 type: DataTypes.STRING(64),
-                allowNull: false,
-            },
-            street: {
-                type: DataTypes.STRING(128),
                 allowNull: false,
             },
             city: {
