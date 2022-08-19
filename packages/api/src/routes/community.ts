@@ -972,63 +972,6 @@ export default (app: Router): void => {
      * @swagger
      *
      * /community:
-     *   put:
-     *     tags:
-     *       - "community"
-     *     summary: Edit existing community
-     *     requestBody:
-     *      required: true
-     *      content:
-     *        application/json:
-     *          schema:
-     *            type: object
-     *            properties:
-     *              name:
-     *                type: string
-     *                required: true
-     *              description:
-     *                type: string
-     *                required: true
-     *              language:
-     *                type: string
-     *                required: false
-     *              currency:
-     *                type: string
-     *                required: true
-     *              city:
-     *                type: string
-     *                required: false
-     *              country:
-     *                type: string
-     *                required: false
-     *              email:
-     *                type: string
-     *                required: false
-     *              coverMediaId:
-     *                type: integer
-     *                required: true
-     *     responses:
-     *       "200":
-     *         description: OK
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/Community'
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.put(
-        '/',
-        authenticateToken,
-        communityValidators.edit,
-        controller.edit
-    );
-
-    /**
-     * @swagger
-     *
-     * /community:
      *   patch:
      *     tags:
      *       - "community"

@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { ethers } from 'ethers';
 import faker from 'faker';
 import { Sequelize } from 'sequelize';
-import { SinonStub, stub } from 'sinon';
+import { SinonStub, stub, restore } from 'sinon';
 
 import { models } from '../../../src/database';
 import { LogTypes } from '../../../src/interfaces/app/appLog';
@@ -10,6 +10,8 @@ import { AppUser } from '../../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
 import UserService from '../../../src/services/app/user/index';
 import UserLogService from '../../../src/services/app/user/log';
+import { CommunityCreateService } from '../../../src/services/ubi/community/create';
+import * as communitySubgraph from '../../../src/subgraph/queries/community';
 import * as userSubgraph from '../../../src/subgraph/queries/user';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import CommunityFactory from '../../factories/community';
@@ -20,9 +22,11 @@ describe('user service v2', () => {
     let users: AppUser[];
     let communities: CommunityAttributes[];
     let returnUserRoleSubgraph: SinonStub;
+    let returnCommunityStateSubgraph: SinonStub;
 
     const userService = new UserService();
     const userLogService = new UserLogService();
+    const communityCreateService = new CommunityCreateService();
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -63,12 +67,17 @@ describe('user service v2', () => {
         ]);
 
         returnUserRoleSubgraph = stub(userSubgraph, 'getUserRoles');
+        returnCommunityStateSubgraph = stub(
+            communitySubgraph,
+            'getCommunityState'
+        );
     });
 
     after(async () => {
         await truncate(sequelize, 'AppUserModel');
         await truncate(sequelize, 'Community');
         await truncate(sequelize);
+        restore();
     });
 
     describe('create', () => {
@@ -639,20 +648,57 @@ describe('user service v2', () => {
             await truncate(sequelize, 'AppLogModel');
         });
 
-        it('get EDITED_COMMUNITY log', async () => {
-            await models.appLog.create({
-                type: LogTypes.EDITED_COMMUNITY,
-                communityId: communities[0].id,
-                userId: users[0].id,
-                detail: {},
+        it('get user logs - edited community', async () => {
+            returnUserRoleSubgraph.returns({
+                ambassador: {
+                    communities: [
+                        communities[0].contractAddress?.toLocaleLowerCase(),
+                    ],
+                },
             });
+            returnCommunityStateSubgraph.returns({
+                claims: 0,
+                claimed: '0',
+                beneficiaries: 0,
+                removedBeneficiaries: 0,
+                contributed: '0',
+                contributors: 0,
+                managers: 0,
+                baseInterval: 0,
+            });
+
+            await communityCreateService.edit(
+                users[1].address,
+                communities[0].id,
+                {
+                    name: communities[0].name,
+                    description: communities[0].description,
+                    coverMediaPath: communities[0].coverMediaPath,
+                },
+                users[1].id
+            );
+
             const logs = await userLogService.get(
                 users[1].address,
-                LogTypes.EDITED_COMMUNITY,
+                'edited_community',
                 communities[0].id.toString()
             );
-            expect(logs.length).to.be.eq(1);
+
+            expect(logs[0]).to.include({
+                userId: users[1].id,
+                type: LogTypes.EDITED_COMMUNITY,
+            });
+            expect(logs[0].detail).to.include({
+                name: communities[0].name,
+                description: communities[0].description,
+                coverMediaPath: communities[0].coverMediaPath,
+            });
+            expect(logs[0].user).to.include({
+                address: users[1].address,
+                username: users[1].username,
+            });
         });
+
         it('failed to get logs from a invalid community', async () => {
             let error: any;
             await userLogService

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
-import { replace, stub, SinonStub } from 'sinon';
+import { replace, stub, SinonStub, restore } from 'sinon';
 
 import { models, sequelize as database } from '../../../src/database';
 import { AppUser } from '../../../src/interfaces/app/appUser';
@@ -10,6 +10,7 @@ import { CommunityCreateService } from '../../../src/services/ubi/community/crea
 import { CommunityDetailsService } from '../../../src/services/ubi/community/details';
 import { CommunityListService } from '../../../src/services/ubi/community/list';
 import * as subgraph from '../../../src/subgraph/queries/community';
+import * as userSubgraph from '../../../src/subgraph/queries/user';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
@@ -23,6 +24,7 @@ describe('community service v2', () => {
     let returnClaimedSubgraph: SinonStub;
     let returnCommunityStateSubgraph: SinonStub;
     let returnCommunityEntities: SinonStub;
+    let returnUserRoleSubgraph: SinonStub;
 
     type SubgraphClaimed = { id: string; claimed: number }[];
 
@@ -63,6 +65,11 @@ describe('community service v2', () => {
                 managers: 0,
             },
         ]);
+        returnUserRoleSubgraph = stub(userSubgraph, 'getUserRoles');
+    });
+
+    after(() => {
+        restore();
     });
 
     describe('list', () => {
@@ -70,6 +77,7 @@ describe('community service v2', () => {
             await truncate(sequelize, 'Beneficiary');
             returnClaimedSubgraph.resetHistory();
             returnCommunityEntities.resetHistory();
+            returnUserRoleSubgraph.resetHistory();
         });
 
         describe('by name', () => {
@@ -1961,6 +1969,14 @@ describe('community service v2', () => {
                 },
             ]);
 
+            returnUserRoleSubgraph.returns({
+                ambassador: {
+                    communities: [
+                        communities[0].contractAddress?.toLocaleLowerCase(),
+                    ],
+                },
+            });
+
             const result = await communityCreateService.review(
                 communities[0].id,
                 'claimed',
@@ -1996,6 +2012,14 @@ describe('community service v2', () => {
                     hasAddress: true,
                 },
             ]);
+
+            returnUserRoleSubgraph.returns({
+                ambassador: {
+                    communities: [
+                        communities[0].contractAddress?.toLocaleLowerCase(),
+                    ],
+                },
+            });
 
             const result = await communityCreateService.review(
                 communities[0].id,
@@ -2057,6 +2081,14 @@ describe('community service v2', () => {
                     hasAddress: true,
                 },
             ]);
+
+            returnUserRoleSubgraph.returns({
+                ambassador: {
+                    communities: [
+                        communities[0].contractAddress?.toLocaleLowerCase(),
+                    ],
+                },
+            });
 
             await communityCreateService.review(
                 communities[0].id,
