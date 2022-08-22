@@ -28,6 +28,12 @@ import { Logger } from '../../../utils/logger';
 import { isAddress } from '../../../utils/util';
 import { IListBeneficiary, BeneficiaryFilterType } from '../../endpoints';
 import { CommunityContentStorage } from '../../storage';
+import csv from 'csvtojson';
+import { getAddress } from '@ethersproject/address';
+import json2csv from 'json2csv';
+import fs from 'fs'
+const writeFile = fs.promises.writeFile;
+
 
 export class CommunityDetailsService {
     private communityContentStorage = new CommunityContentStorage();
@@ -842,9 +848,84 @@ export class CommunityDetailsService {
         if (!contractAddress) {
             throw new BaseError('NOT_MANAGER', 'user not a manager');
         }
-        const beneficiaries = file.buffer.toString('utf-8').replace(/\n/g, "").split('\r');
 
-        return beneficiaries
+        let failedAddress: any[] = [];
+        let addressesToAdd: string[] = [];
+        let usersToCreate: any[] = [];
+
+        // convert csv to json
+        const string = file.buffer.toString().replace(/;/g, ",");
+        const beneficiaries = await csv({ ignoreEmpty: true }).fromString(string);
+
+        // check valid address
+        for (let i = 0; i < beneficiaries.length; i++) {
+            const beneficiary = beneficiaries[i];
+            try {
+                const address = getAddress(beneficiary.address);
+                const user = await models.appUser.findOne({
+                    where: { address }
+                });
+    
+                if (!user) {
+                    const validate = this.validateUserRegistry(beneficiary);
+                    if (validate.valid) {
+                        usersToCreate.push({
+                            address,
+                            phone: beneficiary.phone,
+                            firstName: beneficiary.firstName,
+                            lastName: beneficiary.lastName,
+                            age: beneficiary.yearOfBirth,
+                            gender: beneficiary.gender,
+                        });
+                    } else {
+                        failedAddress.push({
+                            address: beneficiary.address,
+                            error: validate.error,
+                        });
+                    }
+                } else {
+                    addressesToAdd.push(address);
+                }
+            } catch (error) {
+                failedAddress.push({
+                    address: beneficiary.address,
+                    error: 'invalid address',
+                });
+            }
+        };
+
+        // create accounts
+        if (usersToCreate.length > 0) {
+            const users = await models.appUser.bulkCreate(usersToCreate);
+            users.forEach(user => {
+                addressesToAdd.push(user.address);
+            });
+        }
+
+        // add beneficiaries
+
+        if (failedAddress.length > 0) {
+            // Write data into csv file named failed.csv
+            var fields = ['address', 'error'];
+            const data = json2csv.parse(failedAddress, { fields })
+            const filePath = './public/';
+            const fileName = 'failed.csv';
+            await writeFile(filePath + fileName, data);
+            setTimeout(async () => {
+                // delete file after 30 seconds
+                await fs.promises.unlink(filePath + fileName)
+            }, 30000);
+            
+            return {
+                success: false,
+                filePath,
+                fileName,
+            };
+        } else {
+            return {
+                success: true,
+            }
+        }
     }
 
     private getSearchInput(searchInput: string) {
@@ -865,5 +946,44 @@ export class CommunityDetailsService {
         } else {
             throw new BaseError('INVALID_SEARCH', 'Not valid search!');
         }
+    }
+
+    private validateUserRegistry(user: any) {
+        // validate firstName and lastName
+        if (!user.firstName || !user.lastName) {
+            return {
+                valid: false,
+                error: 'invalid firstName/lastName'
+            };
+        }
+
+        // validate yearOfBirth
+        const year = parseInt(user.yearOfBirth);
+        if (!year) {
+            return {
+                valid: false,
+                error: 'invalid yearOfBirth'
+            };
+        }
+
+        // validate phone
+        if (!user.phone || typeof user.phone !== 'string') {
+            return {
+                valid: false,
+                error: 'invalid phone'
+            };
+        }
+
+        // validate gender
+        if (!user.gender || ['m', 'f', 'u'].indexOf(user.gender.toLocaleLowerCase()) === -1) {
+            return {
+                valid: false,
+                error: 'invalid gender'
+            };
+        }
+
+        return {
+            valid: true
+        };
     }
 }

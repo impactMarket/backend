@@ -21,6 +21,8 @@ export default (app: express.Application): void => {
      * Health Check endpoints
      * @TODO Explain why they are here
      */
+     app.use('/static', express.static('public'));
+
     app.get('/status', (req, res) => {
         res.status(200).end();
     });

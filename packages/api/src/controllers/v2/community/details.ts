@@ -190,7 +190,7 @@ class CommunityController {
     };
 
     addBeneficiaries = (req: RequestWithUser, res: Response) => {
-        const file = req.file;
+        const file = req['file'];
 
         if (req.user === undefined) {
             standardResponse(res, 400, false, '', {
@@ -213,7 +213,15 @@ class CommunityController {
         }
         this.detailsService
             .addBeneficiaries(file, req.user.address)
-            .then((r) => standardResponse(res, 200, true, r))
+            .then((r) => {
+                if(r.success) {
+                    standardResponse(res, 200, true, r)
+                } else {
+                    res.status(400).sendFile(r.fileName!, {
+                        root: r.filePath
+                    });
+                }
+            })
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
