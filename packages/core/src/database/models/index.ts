@@ -24,6 +24,13 @@ import { userAssociation } from './associations/user';
 import { initializeGlobalDailyState } from './global/globalDailyState';
 import { initializeGlobalDemographics } from './global/globalDemographics';
 import { initializeGlobalGrowth } from './global/globalGrowth';
+import { initializeLearnAndEarnCategory } from './learnAndEarn/learnAndEarnCategory';
+import { initializeLearnAndEarnLesson } from './learnAndEarn/learnAndEarnLesson';
+import { initializeLearnAndEarnLevel } from './learnAndEarn/learnAndEarnLevel';
+import { initializeLearnAndEarnQuiz } from './learnAndEarn/learnAndEarnQuiz';
+import { initializeLearnAndEarnUserCategory } from './learnAndEarn/learnAndEarnUserCategory';
+import { initializeLearnAndEarnUserLesson } from './learnAndEarn/learnAndEarnUserLesson';
+import { initializeLearnAndEarnUserLevel } from './learnAndEarn/learnAndEarnUserLevel';
 import { initializeReachedAddress } from './reachedAddress';
 import { initializeStoryComment } from './story/storyComment';
 import { initializeStoryCommunity } from './story/storyCommunity';
@@ -117,4 +124,13 @@ export default function initModels(sequelize: Sequelize): void {
     storyAssociation(sequelize);
     appAssociation(sequelize);
     airgrabAssociation(sequelize);
+
+    // L&E
+    initializeLearnAndEarnCategory(sequelize);
+    initializeLearnAndEarnLesson(sequelize);
+    initializeLearnAndEarnLevel(sequelize);
+    initializeLearnAndEarnQuiz(sequelize);
+    initializeLearnAndEarnUserCategory(sequelize);
+    initializeLearnAndEarnUserLesson(sequelize);
+    initializeLearnAndEarnUserLevel(sequelize);
 }

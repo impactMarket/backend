@@ -25,6 +25,13 @@ import { ImMetadata } from './models/app/imMetadata';
 import * as GlobalDailyState from './models/global/globalDailyState';
 import * as GlobalDemographics from './models/global/globalDemographics';
 import * as GlobalGrowth from './models/global/globalGrowth';
+import * as LearnAndEarnCategory from './models/learnAndEarn/learnAndEarnCategory';
+import * as LearnAndEarnLesson from './models/learnAndEarn/learnAndEarnLesson';
+import * as LearnAndEarnLevel from './models/learnAndEarn/learnAndEarnLevel';
+import * as LearnAndEarnQuiz from './models/learnAndEarn/learnAndEarnQuiz';
+import * as LearnAndEarnUserCategory from './models/learnAndEarn/learnAndEarnUserCategory';
+import * as LearnAndEarnUserLesson from './models/learnAndEarn/learnAndEarnUserLesson';
+import * as LearnAndEarnUserLevel from './models/learnAndEarn/learnAndEarnUserLevel';
 import * as ReachedAddress from './models/reachedAddress';
 import * as StoryComment from './models/story/storyComment';
 import * as StoryCommunity from './models/story/storyCommunity';
@@ -171,6 +178,21 @@ const models: DbModels = {
         .AirgrabUserModel as ModelCtor<AirgrabUser.AirgrabUserModel>,
     airgrabProof: sequelize.models
         .AirgrabProofModel as ModelCtor<AirgrabProof.AirgrabProofModel>,
+    // L&E
+    learnAndEarnCategory: sequelize.models
+        .LearnAndEarnCategoryModel as ModelCtor<LearnAndEarnCategory.LearnAndEarnCategoryModel>,
+    learnAndEarnLesson: sequelize.models
+        .LearnAndEarnLessonModel as ModelCtor<LearnAndEarnLesson.LearnAndEarnLessonModel>,
+    learnAndEarnLevel: sequelize.models
+        .LearnAndEarnLevelModel as ModelCtor<LearnAndEarnLevel.LearnAndEarnLevelModel>,
+    learnAndEarnQuiz: sequelize.models
+        .LearnAndEarnQuizModel as ModelCtor<LearnAndEarnQuiz.LearnAndEarnQuizModel>,
+    learnAndEarnUserCategory: sequelize.models
+        .LearnAndEarnUserCategoryModel as ModelCtor<LearnAndEarnUserCategory.LearnAndEarnUserCategoryModel>,
+    learnAndEarnUserLesson: sequelize.models
+        .LearnAndEarnUserLessonModel as ModelCtor<LearnAndEarnUserLesson.LearnAndEarnUserLessonModel>,
+    learnAndEarnUserLevel: sequelize.models
+        .LearnAndEarnUserLevelModel as ModelCtor<LearnAndEarnUserLevel.LearnAndEarnUserLevelModel>,
 };
 
 let redisClient: redis.RedisClient | undefined;
