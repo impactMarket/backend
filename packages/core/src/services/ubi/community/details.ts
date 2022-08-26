@@ -5,6 +5,7 @@ import { models } from '../../../database';
 import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { AppUser } from '../../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
+import { UbiCommunityCampaign } from '../../../interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
 import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
 import { ManagerSubgraph } from '../../../subgraph/interfaces/manager';
@@ -824,5 +825,16 @@ export class CommunityDetailsService {
         if (!result) return null;
 
         return result.toJSON();
+    }
+
+    public async getCampaign(communityId: number) {
+        const result = await models.ubiCommunityCampaign.findOne({
+            where: {
+                communityId,
+            },
+        });
+        return result !== null
+            ? (result.toJSON() as UbiCommunityCampaign)
+            : null;
     }
 }
