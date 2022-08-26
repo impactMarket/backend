@@ -126,12 +126,23 @@ export class CommunityListService {
 
         if (query.status === 'pending') {
             const communityProposals = await this._getOpenProposals();
-            extendedWhere = {
-                ...extendedWhere,
-                requestByAddress: {
-                    [Op.notIn]: communityProposals,
-                },
-            };
+
+            if (extendedWhere.requestByAddress) {
+                const address = extendedWhere.requestByAddress;
+                if (communityProposals.indexOf(address as string) !== -1) {
+                    return {
+                        count: 0,
+                        rows: [],
+                    };
+                }
+            } else {
+                extendedWhere = {
+                    ...extendedWhere,
+                    requestByAddress: {
+                        [Op.notIn]: communityProposals,
+                    },
+                };
+            }
         }
 
         if (query.ambassadorAddress) {
