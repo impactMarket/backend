@@ -341,4 +341,33 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/UbiPromoter'
      */
     route.get('/:id/promoter', controller.getPromoter);
+
+    /**
+     * @swagger
+     *
+     * /communities/{id}/campaign:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community campaign
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityCampaign'
+     */
+    route.get(
+        '/:id/campaign',
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
+        controller.getCampaign
+    );
 };
