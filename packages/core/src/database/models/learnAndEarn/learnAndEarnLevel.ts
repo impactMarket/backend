@@ -13,6 +13,7 @@ export class LearnAndEarnLevelModel extends Model<
     public prismicId!: string;
     public categoryId!: number;
     public active!: boolean;
+    public totalReward!: number;
 }
 
 export function initializeLearnAndEarnLevel(
@@ -42,6 +43,11 @@ export function initializeLearnAndEarnLevel(
             active: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
+            },
+            totalReward: {
+                type: DataTypes.FLOAT,
+                allowNull: false,
+                defaultValue: 0,
             },
         },
         {

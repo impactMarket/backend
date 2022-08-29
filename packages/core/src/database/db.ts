@@ -21,6 +21,7 @@ import { GlobalGrowthModel } from './models/global/globalGrowth';
 import { LearnAndEarnCategoryModel } from './models/learnAndEarn/learnAndEarnCategory';
 import { LearnAndEarnLessonModel } from './models/learnAndEarn/learnAndEarnLesson';
 import { LearnAndEarnLevelModel } from './models/learnAndEarn/learnAndEarnLevel';
+import { LearnAndEarnPaymentModel } from './models/learnAndEarn/learnAndEarnPayment';
 import { LearnAndEarnQuizModel } from './models/learnAndEarn/learnAndEarnQuiz';
 import { LearnAndEarnUserCategoryModel } from './models/learnAndEarn/learnAndEarnUserCategory';
 import { LearnAndEarnUserLessonModel } from './models/learnAndEarn/learnAndEarnUserLesson';
@@ -109,6 +110,7 @@ export interface DbModels {
     learnAndEarnUserCategory: ModelCtor<LearnAndEarnUserCategoryModel>;
     learnAndEarnUserLesson: ModelCtor<LearnAndEarnUserLessonModel>;
     learnAndEarnUserLevel: ModelCtor<LearnAndEarnUserLevelModel>;
+    learnAndEarnPayment: ModelCtor<LearnAndEarnPaymentModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;

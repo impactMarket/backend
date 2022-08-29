@@ -28,6 +28,7 @@ import * as GlobalGrowth from './models/global/globalGrowth';
 import * as LearnAndEarnCategory from './models/learnAndEarn/learnAndEarnCategory';
 import * as LearnAndEarnLesson from './models/learnAndEarn/learnAndEarnLesson';
 import * as LearnAndEarnLevel from './models/learnAndEarn/learnAndEarnLevel';
+import * as LearnAndEarnPayment from './models/learnAndEarn/learnAndEarnPayment';
 import * as LearnAndEarnQuiz from './models/learnAndEarn/learnAndEarnQuiz';
 import * as LearnAndEarnUserCategory from './models/learnAndEarn/learnAndEarnUserCategory';
 import * as LearnAndEarnUserLesson from './models/learnAndEarn/learnAndEarnUserLesson';
@@ -193,6 +194,8 @@ const models: DbModels = {
         .LearnAndEarnUserLessonModel as ModelCtor<LearnAndEarnUserLesson.LearnAndEarnUserLessonModel>,
     learnAndEarnUserLevel: sequelize.models
         .LearnAndEarnUserLevelModel as ModelCtor<LearnAndEarnUserLevel.LearnAndEarnUserLevelModel>,
+    learnAndEarnPayment: sequelize.models
+        .LearnAndEarnPaymentModel as ModelCtor<LearnAndEarnPayment.LearnAndEarnPaymentModel>,
 };
 
 let redisClient: redis.RedisClient | undefined;

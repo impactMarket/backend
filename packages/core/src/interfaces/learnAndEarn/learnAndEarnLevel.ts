@@ -23,10 +23,12 @@ export interface LearnAndEarnLevel {
     prismicId: string;
     categoryId: number;
     active: boolean;
+    totalReward: number;
 }
 
 export interface LearnAndEarnLevelCreation {
     prismicId: string;
     categoryId: number;
     active: boolean;
+    totalReward: number;
 }

@@ -1,6 +1,7 @@
 import * as app from './app';
 import Email from './email';
 import * as global from './global';
+import LearnAndEarnService from './learnAndEarn';
 import * as media from './media';
 import ReachedAddressService from './reachedAddress';
 import * as storage from './storage';
@@ -18,4 +19,5 @@ export {
     ReachedAddressService,
     StoryService,
     StoryServiceV2,
+    LearnAndEarnService,
 };
