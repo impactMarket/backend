@@ -323,7 +323,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         );
         expect(beneficiary[0]).to.include({
             address: users[1].address,
-            username: undefined,
+            username: null,
             isDeleted: true,
         });
     });
@@ -388,7 +388,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             if (el.address === users[1].address) {
                 expect(el).to.include({
                     address: users[1].address,
-                    username: undefined,
+                    username: null,
                     isDeleted: true, // deleted
                 });
             } else if (el.address === users[2].address) {

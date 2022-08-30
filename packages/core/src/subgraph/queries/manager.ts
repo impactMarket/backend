@@ -56,7 +56,7 @@ export const getCommunityManagers = async (
 
 export const countManagers = async (
     community: string,
-    state: string
+    state?: number
 ): Promise<number> => {
     try {
         const query = gql`
@@ -74,9 +74,9 @@ export const countManagers = async (
             fetchPolicy: 'no-cache',
         });
 
-        if (state === 'active') {
+        if (state === 0) {
             return queryResult.data.communityEntity.managers;
-        } else if (state === 'removed') {
+        } else if (state === 1) {
             return queryResult.data.communityEntity.removedManagers;
         } else {
             return (

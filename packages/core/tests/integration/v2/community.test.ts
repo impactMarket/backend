@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
-import { replace, stub, SinonStub } from 'sinon';
+import { replace, stub, SinonStub, restore } from 'sinon';
 
 import { models, sequelize as database } from '../../../src/database';
 import { AppUser } from '../../../src/interfaces/app/appUser';
@@ -10,6 +10,7 @@ import { CommunityCreateService } from '../../../src/services/ubi/community/crea
 import { CommunityDetailsService } from '../../../src/services/ubi/community/details';
 import { CommunityListService } from '../../../src/services/ubi/community/list';
 import * as subgraph from '../../../src/subgraph/queries/community';
+import * as userSubgraph from '../../../src/subgraph/queries/user';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
@@ -23,6 +24,7 @@ describe('community service v2', () => {
     let returnClaimedSubgraph: SinonStub;
     let returnCommunityStateSubgraph: SinonStub;
     let returnCommunityEntities: SinonStub;
+    let returnUserRoleSubgraph: SinonStub;
 
     type SubgraphClaimed = { id: string; claimed: number }[];
 
@@ -63,6 +65,11 @@ describe('community service v2', () => {
                 managers: 0,
             },
         ]);
+        returnUserRoleSubgraph = stub(userSubgraph, 'getUserRoles');
+    });
+
+    after(() => {
+        restore();
     });
 
     describe('list', () => {
@@ -70,6 +77,7 @@ describe('community service v2', () => {
             await truncate(sequelize, 'Beneficiary');
             returnClaimedSubgraph.resetHistory();
             returnCommunityEntities.resetHistory();
+            returnUserRoleSubgraph.resetHistory();
         });
 
         describe('by name', () => {
@@ -110,7 +118,7 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    name: communities[0].name,
+                    search: communities[0].name,
                 });
 
                 expect(result.rows[0]).to.include({
@@ -154,7 +162,7 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    name: communities[0].name.slice(
+                    search: communities[0].name.slice(
                         0,
                         communities[0].name.length / 2
                     ),
@@ -201,7 +209,7 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    name: communities[0].name.slice(
+                    search: communities[0].name.slice(
                         communities[0].name.length / 2,
                         communities[0].name.length - 1
                     ),
@@ -248,7 +256,7 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    name: communities[0].name.toUpperCase(),
+                    search: communities[0].name.toUpperCase(),
                 });
 
                 expect(result.rows[0]).to.include({
@@ -323,7 +331,7 @@ describe('community service v2', () => {
                 );
 
                 const result = await communityListService.list({
-                    name: 'oreo',
+                    search: 'oreo',
                 });
 
                 expect(result.count).to.be.equal(2);
@@ -595,6 +603,50 @@ describe('community service v2', () => {
                         id: communities[3].id,
                     },
                 ]);
+            });
+        });
+
+        it('by requestedByAddress', async () => {
+            const communities = await CommunityFactory([
+                {
+                    requestByAddress: users[1].address,
+                    started: new Date(),
+                    status: 'valid',
+                    visibility: 'public',
+                    contract: {
+                        baseInterval: 60 * 60 * 24,
+                        claimAmount: 1,
+                        communityId: 0,
+                        incrementInterval: 5 * 60,
+                        maxClaim: 450,
+                    },
+                    hasAddress: true,
+                },
+            ]);
+
+            returnCommunityEntities.returns([
+                {
+                    id: communities[0].contractAddress,
+                    beneficiaries: 0,
+                },
+            ]);
+
+            returnClaimedSubgraph.returns([
+                {
+                    id: communities[0].contractAddress,
+                    claimed: 0,
+                },
+            ]);
+
+            const result = await communityListService.list({
+                search: users[1].address,
+            });
+
+            expect(result.rows[0]).to.include({
+                id: communities[0].id,
+                name: communities[0].name,
+                country: communities[0].country,
+                requestByAddress: users[1].address,
             });
         });
 
@@ -1961,6 +2013,14 @@ describe('community service v2', () => {
                 },
             ]);
 
+            returnUserRoleSubgraph.returns({
+                ambassador: {
+                    communities: [
+                        communities[0].contractAddress?.toLocaleLowerCase(),
+                    ],
+                },
+            });
+
             const result = await communityCreateService.review(
                 communities[0].id,
                 'claimed',
@@ -1996,6 +2056,14 @@ describe('community service v2', () => {
                     hasAddress: true,
                 },
             ]);
+
+            returnUserRoleSubgraph.returns({
+                ambassador: {
+                    communities: [
+                        communities[0].contractAddress?.toLocaleLowerCase(),
+                    ],
+                },
+            });
 
             const result = await communityCreateService.review(
                 communities[0].id,
@@ -2057,6 +2125,14 @@ describe('community service v2', () => {
                     hasAddress: true,
                 },
             ]);
+
+            returnUserRoleSubgraph.returns({
+                ambassador: {
+                    communities: [
+                        communities[0].contractAddress?.toLocaleLowerCase(),
+                    ],
+                },
+            });
 
             await communityCreateService.review(
                 communities[0].id,

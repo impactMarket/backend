@@ -8,6 +8,7 @@ import {
     IBaseCommunityAttributes,
     ICommunityCreationAttributes,
 } from '../../../interfaces/ubi/community';
+import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import UserLogService from '../../app/user/log';
 import CommunityContractService from './contract';
@@ -212,7 +213,11 @@ export class CommunityCreateService {
         review: 'pending' | 'claimed' | 'declined' | 'accepted',
         ambassadorAddress: string
     ): Promise<boolean> {
-        // TODO: validate if ambassador
+        const roles = await getUserRoles(ambassadorAddress);
+
+        if (!roles.ambassador || !roles.ambassador.communities) {
+            throw new BaseError('NOT_AMBASSADOR', 'user is not an ambassador');
+        }
 
         const result = await models.community.update(
             {
@@ -232,23 +237,56 @@ export class CommunityCreateService {
     }
 
     public async edit(
-        id: number,
+        address: string,
+        communityId: number,
         params: {
             name?: string;
             description?: string;
             coverMediaPath?: string;
         },
-        userAddress?: string,
         userId?: number
     ): Promise<CommunityAttributes> {
         const { name, description, coverMediaPath } = params;
+
+        const roles = await getUserRoles(address);
+
+        if (!roles.ambassador || !roles.ambassador.communities) {
+            throw new BaseError('NOT_AMBASSADOR', 'user is not an ambassador');
+        }
+
+        const community = await models.community.findOne({
+            attributes: ['contractAddress'],
+            where: {
+                id: communityId,
+            },
+        });
+
+        if (!community || !community.contractAddress) {
+            throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found');
+        }
+
+        if (
+            roles.ambassador.communities.indexOf(
+                community.contractAddress.toLocaleLowerCase()
+            ) === -1
+        ) {
+            throw new BaseError(
+                'UNAUTHORIZED',
+                'user is not the ambassador of the requested community'
+            );
+        }
+
         const update = await models.community.update(
             {
                 name,
                 description,
                 coverMediaPath,
             },
-            { where: { id } }
+            {
+                where: {
+                    id: communityId,
+                },
+            }
         );
         if (update[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'community was not updated!');
@@ -259,10 +297,10 @@ export class CommunityCreateService {
                 userId,
                 LogTypes.EDITED_COMMUNITY,
                 params,
-                id
+                communityId
             );
         }
 
-        return this.communityDetailsService.findById(id, userAddress);
+        return this.communityDetailsService.findById(communityId, address);
     }
 }

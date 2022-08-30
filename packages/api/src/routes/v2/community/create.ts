@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/create';
-import { authenticateToken } from '../../../middlewares';
+import { authenticateToken, verifySignature } from '../../../middlewares';
 import CommunityValidator from '../../../validators/community';
 
 export default (route: Router): void => {
@@ -250,5 +250,11 @@ export default (route: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.put('/', authenticateToken, CommunityValidator.edit, controller.edit);
+    route.put(
+        '/:id',
+        authenticateToken,
+        verifySignature,
+        CommunityValidator.edit,
+        controller.edit
+    );
 };

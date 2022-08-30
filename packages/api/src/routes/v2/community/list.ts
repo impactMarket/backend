@@ -23,11 +23,11 @@ export default (route: Router): void => {
      *         required: false
      *         description: communities list order (bigger by default)
      *       - in: query
-     *         name: name
+     *         name: search
      *         schema:
      *           type: string
      *         required: false
-     *         description: communities name to search
+     *         description: search by name or requestByAddress
      *       - in: query
      *         name: country
      *         schema:

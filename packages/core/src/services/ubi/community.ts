@@ -189,55 +189,6 @@ export default class CommunityService {
         return this.communityContentStorage.getPresignedUrlPutObject(mime);
     }
 
-    public static async edit(
-        id: number,
-        params: {
-            name: string;
-            description: string;
-            currency: string;
-            coverMediaPath: string;
-            coverMediaId: number;
-            email?: string;
-        },
-        userAddress?: string,
-        userId?: number
-    ): Promise<CommunityAttributes> {
-        // since cover can't be null, we first update and then remove
-        const {
-            name,
-            description,
-            currency,
-            coverMediaId,
-            coverMediaPath,
-            email,
-        } = params;
-        const update = await this.community.update(
-            {
-                name,
-                description,
-                currency,
-                email,
-                coverMediaId,
-                coverMediaPath,
-            },
-            { where: { id } }
-        );
-        if (update[0] === 0) {
-            throw new BaseError('UPDATE_FAILED', 'community was not updated!');
-        }
-
-        if (userId) {
-            this.userLogService.create(
-                userId,
-                LogTypes.EDITED_COMMUNITY,
-                params,
-                id
-            );
-        }
-
-        return this._findCommunityBy({ id }, userAddress);
-    }
-
     public static async delete(id: number): Promise<boolean> {
         const c = await this.community.findOne({
             where: {
@@ -1183,11 +1134,11 @@ export default class CommunityService {
 
         const activeBeneficiaries = await countBeneficiaries(
             community!.contractAddress!,
-            'active'
+            0
         );
         const removedBeneficiaries = await countBeneficiaries(
             community!.contractAddress!,
-            'removed'
+            1
         );
 
         const communityManagerActivity = await this.manager.count({

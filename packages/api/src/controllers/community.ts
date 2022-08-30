@@ -296,69 +296,6 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    edit = async (req: RequestWithUser, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 400, false, '', {
-                error: {
-                    name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
-            });
-            return;
-        }
-        const { name, description, currency, coverMediaId, email } = req.body;
-
-        let coverMediaPath: string | undefined = undefined;
-        if (coverMediaId) {
-            const appMedia = await database.models.appMediaContent.findOne({
-                attributes: ['url'],
-                where: {
-                    id: coverMediaId,
-                },
-            });
-
-            coverMediaPath = appMedia!.url.replace(
-                `${config.cloudfrontUrl}/`,
-                ''
-            );
-        }
-
-        // verify if the current user is manager in this community
-        services.ubi.ManagerService.get(req.user.address)
-            .then(async (manager) => {
-                if (manager !== null) {
-                    services.ubi.CommunityService.edit(
-                        manager.communityId,
-                        {
-                            name,
-                            description,
-                            currency,
-                            // should be temporary
-                            coverMediaId,
-                            coverMediaPath: coverMediaPath as any,
-                            email,
-                        },
-                        req.user?.address,
-                        req.user?.userId
-                    )
-                        .then((community) =>
-                            standardResponse(res, 200, true, community)
-                        )
-                        .catch((e) =>
-                            standardResponse(res, 400, false, '', { error: e })
-                        );
-                } else {
-                    standardResponse(res, 403, false, '', {
-                        error: {
-                            name: 'NOT_MANAGER',
-                            message: 'Not manager!',
-                        },
-                    });
-                }
-            })
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
     // admin methods
 
     accept = (req: Request, res: Response) => {

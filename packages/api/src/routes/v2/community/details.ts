@@ -76,9 +76,9 @@ export default (route: Router): void => {
      *         name: state
      *         schema:
      *           type: string
-     *           enum: [active, removed]
+     *           enum: [0, 1]
      *         required: false
-     *         description: manager state
+     *         description: manager state (0 - active, 1 - removed)
      *       - in: query
      *         name: offset
      *         schema:
@@ -205,9 +205,9 @@ export default (route: Router): void => {
      *         name: state
      *         schema:
      *           type: string
-     *           enum: [active, removed]
+     *           enum: [0, 1, 2]
      *         required: false
-     *         description: beneficiary state
+     *         description: beneficiary state (0 - active, 1 - removed, 2 - locked)
      *       - in: query
      *         name: offset
      *         schema:
@@ -362,4 +362,33 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/UbiPromoter'
      */
     route.get('/:id/promoter', controller.getPromoter);
+
+    /**
+     * @swagger
+     *
+     * /communities/{id}/campaign:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community campaign
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityCampaign'
+     */
+    route.get(
+        '/:id/campaign',
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
+        controller.getCampaign
+    );
 };
