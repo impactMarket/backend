@@ -163,9 +163,8 @@ export function verifySignature(
                 message: 'signature is invalid',
             },
         });
-        return;
     }
-};
+}
 
 const checkRoles = (roles: string[], path: string, reqMethod: string) => {
     let authorizate = false;

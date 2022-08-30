@@ -25,6 +25,8 @@ import { ImMetadata } from './models/app/imMetadata';
 import * as GlobalDailyState from './models/global/globalDailyState';
 import * as GlobalDemographics from './models/global/globalDemographics';
 import * as GlobalGrowth from './models/global/globalGrowth';
+import * as MerchantCommunity from './models/merchant/merchantCommunity';
+import * as MerchantRegistry from './models/merchant/merchantRegistry';
 import * as ReachedAddress from './models/reachedAddress';
 import * as StoryComment from './models/story/storyComment';
 import * as StoryCommunity from './models/story/storyCommunity';
@@ -171,6 +173,10 @@ const models: DbModels = {
         .AirgrabUserModel as ModelCtor<AirgrabUser.AirgrabUserModel>,
     airgrabProof: sequelize.models
         .AirgrabProofModel as ModelCtor<AirgrabProof.AirgrabProofModel>,
+    merchantRegistry: sequelize.models
+        .MerchantRegistryModel as ModelCtor<MerchantRegistry.MerchantRegistryModel>,
+    merchantCommunity: sequelize.models
+        .MerchantCommunityModel as ModelCtor<MerchantCommunity.MerchantCommunityModel>,
 };
 
 let redisClient: redis.RedisClient | undefined;
