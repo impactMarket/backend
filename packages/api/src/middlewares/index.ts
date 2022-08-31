@@ -148,12 +148,28 @@ export function verifySignature(
         return;
     }
 
+    const fullMessage = `${config.signatureMessage}_${message}`
+
     const address = ethers.utils.verifyMessage(
-        message as string,
+        fullMessage,
         signature as string,
     );
 
     if (address.toLocaleLowerCase() === req.user?.address.toLocaleLowerCase()) {
+        // validate signature timestamp
+        const timestamp = message as string;
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() - config.signatureExpiration);
+        if (!timestamp || parseInt(timestamp) < expirationDate.getTime()) {
+            res.status(403).json({
+                success: false,
+                error: {
+                    name: 'EXPIRED_SIGNATURE',
+                    message: 'signature is expired',
+                },
+            });
+            return;
+        }
         next();
     } else {
         res.status(403).json({
