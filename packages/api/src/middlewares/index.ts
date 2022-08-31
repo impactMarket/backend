@@ -154,6 +154,30 @@ export function verifySignature(
     );
 
     if (address.toLocaleLowerCase() === req.user?.address.toLocaleLowerCase()) {
+        // validate signature timestamp
+        const timestamp = (message as string).match(/(\d+$)/);
+        if (!timestamp || !timestamp[0]) {
+            res.status(403).json({
+                success: false,
+                error: {
+                    name: 'EXPIRED_SIGNATURE',
+                    message: 'signature is expired',
+                },
+            });
+            return;
+        }
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() - config.signatureExpiration);
+        if (parseInt(timestamp[0]) < expirationDate.getTime()) {
+            res.status(403).json({
+                success: false,
+                error: {
+                    name: 'EXPIRED_SIGNATURE',
+                    message: 'signature is expired',
+                },
+            });
+            return;
+        }
         next();
     } else {
         res.status(403).json({
