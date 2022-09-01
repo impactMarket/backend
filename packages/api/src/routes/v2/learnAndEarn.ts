@@ -26,4 +26,41 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.get('/total', authenticateToken, learnAndEarnController.total);
+
+    /**
+     * @swagger
+     *
+     * /learn-and-earn/answer:
+     *   post:
+     *     tags:
+     *       - "learn-and-earn"
+     *     summary: "Verify answers"
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               answers:
+     *                 type: array
+     *                 items:
+     *                   type: object
+     *                   properties:
+     *                     answer:
+     *                       type: string
+     *                     quiz:
+     *                       type: string
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/answer',
+        authenticateToken,
+        learnAndEarnValidator.answer,
+        learnAndEarnController.answer
+    );
 };

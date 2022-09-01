@@ -3,10 +3,14 @@ import { celebrate, Joi } from 'celebrate';
 import { defaultSchema } from './defaultSchema';
 
 class LearnAndEarnValidator {
-    add = celebrate({
+    answer = celebrate({
         body: defaultSchema.object({
-            message: Joi.string().optional(),
-            storyMedia: Joi.array().items(Joi.string()).optional(),
+            answers: defaultSchema.array().items(
+                defaultSchema.object({
+                    quiz: Joi.string().required(),
+                    answer: Joi.string().required(),
+                }).required()
+            ).required(),
         }),
     });
 }

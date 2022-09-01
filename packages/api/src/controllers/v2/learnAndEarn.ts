@@ -23,6 +23,25 @@ class LearnAndEarnController {
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    answer = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        const { answers } = req.body;
+
+        this.learnAndEarnService
+            .answer(req.user.userId, answers)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export default LearnAndEarnController;
