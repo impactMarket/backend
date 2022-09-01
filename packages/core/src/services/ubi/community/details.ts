@@ -420,7 +420,7 @@ export class CommunityDetailsService {
                 );
                 count = await countManagers(
                     community.contractAddress!,
-                    filter.state ? filter.state : undefined
+                    filter.state,
                 );
                 addresses = managersSubgraph.map((manager) =>
                     ethers.utils.getAddress(manager.address)
