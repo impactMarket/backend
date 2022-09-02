@@ -1,3 +1,4 @@
+import { getAddress } from '@ethersproject/address';
 import { ethers } from 'ethers';
 import { Op } from 'sequelize';
 
@@ -295,19 +296,19 @@ export default class UserService {
         user: string,
         query: { offset?: string; limit?: string }
     ) {
-        const communities = await models.community.findAll({
-            attributes: ['id'],
-            where: {
-                ambassadorAddress: user,
-            },
-        });
+        const userRoles = await getUserRoles(user);
 
-        if (!communities || communities.length === 0) {
+        if (
+            !userRoles.ambassador ||
+            userRoles.ambassador.communities.length === 0
+        ) {
             throw new BaseError(
                 'COMMUNITY_NOT_FOUND',
                 'no community found for this ambassador'
             );
         }
+
+        const communities = userRoles.ambassador.communities;
 
         return models.anonymousReport.findAndCountAll({
             include: [
@@ -320,13 +321,13 @@ export default class UserService {
                     ],
                     model: models.community,
                     as: 'community',
+                    where: {
+                        contractAddress: {
+                            [Op.in]: communities.map((c) => getAddress(c)),
+                        },
+                    },
                 },
             ],
-            where: {
-                communityId: {
-                    [Op.in]: communities.map((c) => c.id),
-                },
-            },
             offset: query.offset
                 ? parseInt(query.offset, 10)
                 : config.defaultOffset,
