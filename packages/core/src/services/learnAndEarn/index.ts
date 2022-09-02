@@ -81,14 +81,17 @@ export default class LearnAndEarnService {
         }
     }
 
-    public async answer(userId: number, answers: { quiz: string, answer: string }[]) {
+    public async answer(
+        userId: number,
+        answers: { quiz: string; answer: string }[]
+    ) {
         try {
             const quizzes = await models.learnAndEarnQuiz.findAll({
                 where: {
                     prismicId: {
-                        [Op.in]: answers.map(el => el.quiz)
-                    }
-                }
+                        [Op.in]: answers.map((el) => el.quiz),
+                    },
+                },
             });
 
             if (!quizzes || !quizzes.length) {
@@ -96,43 +99,49 @@ export default class LearnAndEarnService {
             }
 
             const wrongAnswers = answers.reduce((acc, el) => {
-                const quiz = quizzes.find(quiz => quiz.prismicId === el.quiz);
+                const quiz = quizzes.find((quiz) => quiz.prismicId === el.quiz);
                 if (quiz?.answerId !== el.answer) {
-                    acc.push(el.quiz)
+                    acc.push(el.quiz);
                 }
-                return acc
+                return acc;
             }, [] as string[]);
 
             if (wrongAnswers && wrongAnswers.length > 0) {
-                // marcar tentativas realizadas
-                const tries = await models.learnAndEarnUserLesson.update({
-                    attempts: literal('attempts + 1')
-                }, {
-                    where: {
-                        userId,
-                        lessonId: quizzes[0].lessonId,
-                        status: 'pending',
+                // set attempts
+                const userLesson = await models.learnAndEarnUserLesson.update(
+                    {
+                        attempts: literal('attempts + 1'),
                     },
-                    returning: true,
-                });
+                    {
+                        where: {
+                            userId,
+                            lessonId: quizzes[0].lessonId,
+                            status: 'pending',
+                        },
+                        returning: true,
+                    }
+                );
 
-                // retornar respostas erradas
+                // return wrong answers
                 return {
                     success: false,
                     wrongAnswers,
-                    attempts: tries[1][0].attempts
-                }
+                    attempts: userLesson[1][0].attempts,
+                };
             } else {
-                // completar lesson, calcular pontos
+                // complete lesson, calculate points
                 const userLesson = await models.learnAndEarnUserLesson.findOne({
                     where: {
                         lessonId: quizzes[0].lessonId,
-                        status: 'pending'
-                    }
+                        status: 'pending',
+                    },
                 });
 
                 if (!userLesson) {
-                    throw new BaseError('LESSON_ALREADY_COMPLETED', 'lesson already completed')
+                    throw new BaseError(
+                        'LESSON_ALREADY_COMPLETED',
+                        'lesson already completed'
+                    );
                 }
 
                 const attempts = userLesson?.attempts! + 1;
@@ -152,133 +161,209 @@ export default class LearnAndEarnService {
                         break;
                 }
 
-                await models.learnAndEarnUserLesson.update({
-                    attempts,
-                    points,
-                    status: 'complete',
-                    completionDate: new Date(),
-                }, {
-                    where: {
-                        userId,
-                        lessonId: quizzes[0].lessonId
-                    },
-                });
-
-                // verificar se todas as lessons foram completadas para esse level
-                const lesson = await models.learnAndEarnLesson.findOne({ where : { id: quizzes[0].lessonId }});
-                const pendingLessons = (await models.learnAndEarnLesson.findAll({
-                    attributes: [
-                        [
-                            literal(
-                                `count(*) FILTER (WHERE "userLesson".status = 'pending' or "userLesson".status is null)`
-                            ),
-                            'pending',
-                        ],
-                    ],
-                    include: [
-                        {
-                            attributes: [],
-                            model: models.learnAndEarnUserLesson,
-                            as: 'userLesson',
-                            where: {
-                                userId,
-                            },
-                            required: false,
-                        },
-                    ],
-                    where: {
-                        levelId: lesson!.levelId,
-                        active: true,
-                    },
-                    raw: true,
-                })) as any;
-
-                if (pendingLessons[0] && pendingLessons[0].pending === '0') {
-                    // se sim, completar o level e fazer o pagamento
-                    await models.learnAndEarnUserLevel.update({
+                await models.learnAndEarnUserLesson.update(
+                    {
+                        attempts,
+                        points,
                         status: 'complete',
                         completionDate: new Date(),
-                    },{
+                    },
+                    {
                         where: {
                             userId,
-                            levelId: lesson!.levelId,
+                            lessonId: quizzes[0].lessonId,
                         },
-                    });
+                    }
+                );
+
+                const lesson = await models.learnAndEarnLesson.findOne({
+                    where: { id: quizzes[0].lessonId },
+                });
+                const totalPoints = await this.getTotalPoints(
+                    userId,
+                    lesson!.levelId
+                );
+                // verify if all the lessons was completed
+                const pendingLessons = await this.countPendingLessons(
+                    lesson!.levelId,
+                    userId
+                );
+
+                if (pendingLessons === 0) {
+                    // if so, complete the level and make the payment
+                    await models.learnAndEarnUserLevel.update(
+                        {
+                            status: 'complete',
+                            completionDate: new Date(),
+                        },
+                        {
+                            where: {
+                                userId,
+                                levelId: lesson!.levelId,
+                            },
+                        }
+                    );
 
                     // TODO: payment
 
-                    // verificar se a categoria foi completa
-                    const level = await models.learnAndEarnLevel.findOne({ where : { id: lesson!.levelId }});
-                    const pendingLevels = (await models.learnAndEarnLevel.findAll({
-                        attributes: [
-                            [
-                                literal(
-                                    `count(*) FILTER (WHERE "userLevel".status = 'pending' or "userLevel".status is null)`
-                                ),
-                                'pending',
-                            ],
-                        ],
-                        include: [
+                    // verify if the category was completed
+                    const level = await models.learnAndEarnLevel.findOne({
+                        where: { id: lesson!.levelId },
+                    });
+                    const pendingLevels = await this.countPendingLevels(
+                        level!.categoryId,
+                        userId
+                    );
+
+                    if (pendingLevels === 0) {
+                        // if so, complete category
+                        await models.learnAndEarnUserCategory.update(
                             {
-                                attributes: [],
-                                model: models.learnAndEarnUserLevel,
-                                as: 'userLevel',
+                                status: 'complete',
+                                completionDate: new Date(),
+                            },
+                            {
                                 where: {
                                     userId,
+                                    categoryId: level!.categoryId,
                                 },
-                                required: false,
-                            },
-                        ],
-                        where: {
-                            active: true,
-                            categoryId: level!.categoryId,
-                        },
-                        raw: true,
-                    })) as any;
-
-                    if (pendingLevels[0] && pendingLevels[0].pending === '0') {
-                        // se sim, completar a categoria
-                        await models.learnAndEarnUserCategory.update({
-                            status: 'complete',
-                            completionDate: new Date(),
-                        },{
-                            where: {
-                                userId,
-                                categoryId: level!.categoryId,
-                            },
-                        });
-                        const category = await models.learnAndEarnCategory.findOne({
-                            attributes: ['prismicId'],
-                            where: {
-                                id: level!.categoryId,
                             }
-                        });
+                        );
+                        const category =
+                            await models.learnAndEarnCategory.findOne({
+                                attributes: ['prismicId'],
+                                where: {
+                                    id: level!.categoryId,
+                                },
+                            });
 
                         return {
                             success: true,
                             attempts,
                             points,
+                            totalPoints,
+                            pendingLessons,
                             levelCompleted: level!.prismicId,
                             categoryCompleted: category!.prismicId,
-                        }
+                        };
                     } else {
                         return {
                             success: true,
                             attempts,
                             points,
+                            totalPoints,
+                            pendingLessons,
                             levelCompleted: level!.prismicId,
-                        }
+                        };
                     }
                 } else {
                     return {
                         success: true,
                         attempts,
                         points,
-                    }
+                        totalPoints,
+                        pendingLessons,
+                    };
                 }
             }
         } catch (error) {
-            throw new BaseError(error.name || 'VERIFY_ANSWER_FAILED', error.message || 'failed to verify answers');
+            throw new BaseError(
+                error.name || 'VERIFY_ANSWER_FAILED',
+                error.message || 'failed to verify answers'
+            );
         }
+    }
+
+    private async countPendingLessons(
+        levelId: number,
+        userId: number
+    ): Promise<number> {
+        const pendingLessons = (await models.learnAndEarnLesson.findAll({
+            attributes: [
+                [
+                    literal(
+                        `count(*) FILTER (WHERE "userLesson".status = 'pending' or "userLesson".status is null)`
+                    ),
+                    'pending',
+                ],
+            ],
+            include: [
+                {
+                    attributes: [],
+                    model: models.learnAndEarnUserLesson,
+                    as: 'userLesson',
+                    where: {
+                        userId,
+                    },
+                    required: false,
+                },
+            ],
+            where: {
+                levelId,
+                active: true,
+            },
+            raw: true,
+        })) as any;
+
+        return parseInt(pendingLessons[0].pending);
+    }
+
+    private async countPendingLevels(
+        categoryId: number,
+        userId: number
+    ): Promise<number> {
+        const pendingLevels = (await models.learnAndEarnLevel.findAll({
+            attributes: [
+                [
+                    literal(
+                        `count(*) FILTER (WHERE "userLevel".status = 'pending' or "userLevel".status is null)`
+                    ),
+                    'pending',
+                ],
+            ],
+            include: [
+                {
+                    attributes: [],
+                    model: models.learnAndEarnUserLevel,
+                    as: 'userLevel',
+                    where: {
+                        userId,
+                    },
+                    required: false,
+                },
+            ],
+            where: {
+                active: true,
+                categoryId,
+            },
+            raw: true,
+        })) as any;
+
+        return parseInt(pendingLevels[0].pending);
+    }
+
+    private async getTotalPoints(
+        userId: number,
+        levelId: number
+    ): Promise<number> {
+        const totalPoints = (await models.learnAndEarnUserLesson.findAll({
+            attributes: [[literal(`sum(points)`), 'total']],
+            include: [
+                {
+                    attributes: [],
+                    model: models.learnAndEarnLesson,
+                    as: 'lesson',
+                    where: {
+                        levelId,
+                    },
+                },
+            ],
+            where: {
+                userId,
+            },
+            raw: true,
+        })) as any;
+
+        return parseInt(totalPoints[0].total);
     }
 }

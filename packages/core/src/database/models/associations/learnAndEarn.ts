@@ -18,4 +18,12 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
             as: 'userLesson',
         }
     );
+
+    sequelize.models.LearnAndEarnUserLessonModel.belongsTo(
+        sequelize.models.LearnAndEarnLessonModel,
+        {
+            foreignKey: 'lessonId',
+            as: 'lesson',
+        }
+    );
 }
