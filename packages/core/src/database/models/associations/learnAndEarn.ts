@@ -26,4 +26,20 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
             as: 'lesson',
         }
     );
+
+    sequelize.models.LearnAndEarnLevelModel.hasMany(
+        sequelize.models.LearnAndEarnLessonModel,
+        {
+            foreignKey: 'levelId',
+            as: 'lesson',
+        }
+    );
+
+    sequelize.models.LearnAndEarnLevelModel.belongsTo(
+        sequelize.models.LearnAndEarnCategoryModel,
+        {
+            foreignKey: 'categoryId',
+            as: 'category',
+        }
+    );
 }

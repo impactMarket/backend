@@ -274,6 +274,115 @@ export default class LearnAndEarnService {
         }
     }
 
+    public async listLevels(
+        userId: number,
+        state: string,
+        offset: number,
+        limit: number,
+        category?: string,
+        level?: string
+    ) {
+        try {
+            const where: any = {
+                [Op.and]: [
+                    literal(
+                        state === 'completed'
+                            ? `userLevel".status = 'complete'`
+                            : `"userLevel".status = 'pending' or "userLevel".status is null`
+                    ),
+                    level ? { prismicId: level } : {},
+                ],
+            };
+            const userLevels = await models.learnAndEarnLevel.findAll({
+                attributes: [
+                    ['prismicId', 'level'],
+                    'totalReward',
+                    [literal(`count(lesson.id)`), 'totalLessons'],
+                ],
+                include: [
+                    {
+                        attributes: [],
+                        model: models.learnAndEarnUserLevel,
+                        as: 'userLevel',
+                        required: false,
+                        where: {
+                            userId,
+                        },
+                        duplicating: false,
+                    },
+                    {
+                        attributes: [],
+                        model: models.learnAndEarnLesson,
+                        as: 'lesson',
+                        duplicating: false,
+                    },
+                    {
+                        attributes: ['prismicId'],
+                        model: models.learnAndEarnCategory,
+                        as: 'category',
+                        duplicating: false,
+                        ...(category
+                            ? {
+                                  where: {
+                                      prismicId: category,
+                                  },
+                              }
+                            : {}),
+                    },
+                ],
+                where,
+                group: [
+                    '"LearnAndEarnLevelModel".prismicId',
+                    '"LearnAndEarnLevelModel"."totalReward"',
+                    'category."prismicId',
+                ],
+                limit,
+                offset,
+                raw: true,
+            });
+
+            userLevels.forEach((el: any) => {
+                el.category = el['category.prismicId'];
+                delete el['category.prismicId'];
+            });
+
+            const count = await models.learnAndEarnLevel.count({
+                attributes: [],
+                include: [
+                    {
+                        attributes: [],
+                        model: models.learnAndEarnUserLevel,
+                        as: 'userLevel',
+                        required: false,
+                        where: {
+                            userId,
+                        },
+                    },
+                    {
+                        attributes: [],
+                        model: models.learnAndEarnCategory,
+                        as: 'category',
+                        ...(category
+                            ? {
+                                  where: {
+                                      prismicId: category,
+                                  },
+                              }
+                            : {}),
+                    },
+                ],
+                where,
+            });
+
+            return {
+                count,
+                rows: userLevels,
+            };
+        } catch (error) {
+            throw new BaseError('LIST_LEVELS_FAILED', 'list levels failed');
+        }
+    }
+
     private async countPendingLessons(
         levelId: number,
         userId: number
