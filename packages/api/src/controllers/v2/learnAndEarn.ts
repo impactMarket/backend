@@ -60,6 +60,23 @@ class LearnAndEarnController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    listLessons = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        this.learnAndEarnService
+            .listLessons(req.user.userId, parseInt(req.params.level))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     answer = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
@@ -75,6 +92,25 @@ class LearnAndEarnController {
 
         this.learnAndEarnService
             .answer(req.user.userId, answers)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    startLesson = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        const { lesson } = req.body;
+
+        this.learnAndEarnService
+            .startLesson(req.user.userId, lesson)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

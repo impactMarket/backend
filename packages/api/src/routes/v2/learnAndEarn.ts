@@ -67,6 +67,34 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /learn-and-earn/{level}/lessons:
+     *   get:
+     *     tags:
+     *       - "learn-and-earn"
+     *     summary: "List lessons"
+     *     parameters:
+     *       - in: path
+     *         name: level
+     *         schema:
+     *           type: number
+     *         required: true
+     *         description: level id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/:level/lessons',
+        authenticateToken,
+        learnAndEarnController.listLessons
+    );
+
+    /**
+     * @swagger
+     *
      * /learn-and-earn/answers:
      *   post:
      *     tags:
@@ -99,5 +127,35 @@ export default (app: Router): void => {
         authenticateToken,
         learnAndEarnValidator.answer,
         learnAndEarnController.answer
+    );
+
+    /**
+     * @swagger
+     *
+     * /learn-and-earn/start:
+     *   post:
+     *     tags:
+     *       - "learn-and-earn"
+     *     summary: "Start a lesson"
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               lesson:
+     *                 type: string
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/start',
+        authenticateToken,
+        learnAndEarnValidator.startLesson,
+        learnAndEarnController.startLesson
     );
 };

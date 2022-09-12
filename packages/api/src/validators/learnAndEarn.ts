@@ -18,6 +18,12 @@ class LearnAndEarnValidator {
                 .required(),
         }),
     });
+
+    startLesson = celebrate({
+        body: defaultSchema.object({
+            lesson: Joi.number().required(),
+        }),
+    });
 }
 
 export default LearnAndEarnValidator;

@@ -274,6 +274,33 @@ export default class LearnAndEarnService {
         }
     }
 
+    public async startLesson(userId: number, lessonId: number) {
+        try {
+            const userLesson = await models.learnAndEarnUserLesson.findOrCreate(
+                {
+                    where: {
+                        lessonId,
+                        userId,
+                    },
+                    defaults: {
+                        lessonId,
+                        userId,
+                        points: 0,
+                        attempts: 0,
+                        status: 'pending',
+                    },
+                }
+            );
+
+            return userLesson[0];
+        } catch (error) {
+            throw new BaseError(
+                error.name || 'START_LESSON_FAILED',
+                error.message || 'failed to start a lesson'
+            );
+        }
+    }
+
     public async listLevels(
         userId: number,
         state: string,
@@ -287,16 +314,19 @@ export default class LearnAndEarnService {
                 [Op.and]: [
                     literal(
                         state === 'completed'
-                            ? `userLevel".status = 'complete'`
+                            ? `"userLevel".status = 'complete'`
                             : `"userLevel".status = 'pending' or "userLevel".status is null`
                     ),
                     level ? { prismicId: level } : {},
+                    { active: true },
                 ],
             };
             const userLevels = await models.learnAndEarnLevel.findAll({
                 attributes: [
+                    'id',
                     ['prismicId', 'level'],
                     'totalReward',
+                    [literal(`"userLevel".status`), 'status'],
                     [literal(`count(lesson.id)`), 'totalLessons'],
                 ],
                 include: [
@@ -332,9 +362,11 @@ export default class LearnAndEarnService {
                 ],
                 where,
                 group: [
+                    '"LearnAndEarnLevelModel".id',
                     '"LearnAndEarnLevelModel".prismicId',
                     '"LearnAndEarnLevelModel"."totalReward"',
                     'category."prismicId',
+                    '"userLevel".status',
                 ],
                 limit,
                 offset,
@@ -380,6 +412,37 @@ export default class LearnAndEarnService {
             };
         } catch (error) {
             throw new BaseError('LIST_LEVELS_FAILED', 'list levels failed');
+        }
+    }
+
+    public async listLessons(userId: number, levelId: number) {
+        try {
+            const lessons = await models.learnAndEarnLesson.findAll({
+                include: [
+                    {
+                        attributes: ['status'],
+                        model: models.learnAndEarnUserLesson,
+                        as: 'userLesson',
+                        required: false,
+                        where: {
+                            userId,
+                        },
+                    },
+                ],
+                where: {
+                    levelId,
+                    active: true,
+                },
+            });
+
+            return lessons.map((lesson: any) => ({
+                id: lesson.id,
+                prismicId: lesson.prismicId,
+                levelId: lesson.levelId,
+                status: lesson.userLesson[0]?.status || null,
+            }));
+        } catch (error) {
+            throw new BaseError('LIST_LESSONS_FAILED', 'list lessons failed');
         }
     }
 
