@@ -11,9 +11,9 @@ export default class LearnAndEarnService {
                 attributes: [
                     [
                         literal(
-                            `count(*) FILTER (WHERE "userLevel".status = 'complete')`
+                            `count(*) FILTER (WHERE "userLevel".status = 'completed')`
                         ),
-                        'complete',
+                        'completed',
                     ],
                     [literal(`count(*)`), 'total'],
                 ],
@@ -39,9 +39,9 @@ export default class LearnAndEarnService {
                 attributes: [
                     [
                         literal(
-                            `count(*) FILTER (WHERE "userLesson".status = 'complete')`
+                            `count(*) FILTER (WHERE "userLesson".status = 'completed')`
                         ),
-                        'complete',
+                        'completed',
                     ],
                     [literal(`count(*)`), 'total'],
                 ],
@@ -81,16 +81,11 @@ export default class LearnAndEarnService {
         }
     }
 
-    public async answer(
-        userId: number,
-        answers: { quiz: string; answer: string }[]
-    ) {
+    public async answer(userId: number, answers: string[], lesson: number) {
         try {
             const quizzes = await models.learnAndEarnQuiz.findAll({
                 where: {
-                    prismicId: {
-                        [Op.in]: answers.map((el) => el.quiz),
-                    },
+                    lessonId: lesson,
                 },
             });
 
@@ -98,13 +93,13 @@ export default class LearnAndEarnService {
                 throw new BaseError('QUIZ_NOT_FOUND', 'quiz not found');
             }
 
-            const wrongAnswers = answers.reduce((acc, el) => {
-                const quiz = quizzes.find((quiz) => quiz.prismicId === el.quiz);
-                if (quiz?.answerId !== el.answer) {
-                    acc.push(el.quiz);
+            const wrongAnswers = answers.reduce((acc, el, index) => {
+                const quiz = quizzes[index];
+                if (quiz?.answerId !== el) {
+                    acc.push(index);
                 }
                 return acc;
-            }, [] as string[]);
+            }, [] as number[]);
 
             if (wrongAnswers && wrongAnswers.length > 0) {
                 // set attempts
@@ -116,7 +111,7 @@ export default class LearnAndEarnService {
                         where: {
                             userId,
                             lessonId: quizzes[0].lessonId,
-                            status: 'pending',
+                            status: 'started',
                         },
                         returning: true,
                     }
@@ -129,11 +124,11 @@ export default class LearnAndEarnService {
                     attempts: userLesson[1][0].attempts,
                 };
             } else {
-                // complete lesson, calculate points
+                // completed lesson, calculate points
                 const userLesson = await models.learnAndEarnUserLesson.findOne({
                     where: {
                         lessonId: quizzes[0].lessonId,
-                        status: 'pending',
+                        status: 'started',
                     },
                 });
 
@@ -165,7 +160,7 @@ export default class LearnAndEarnService {
                     {
                         attempts,
                         points,
-                        status: 'complete',
+                        status: 'completed',
                         completionDate: new Date(),
                     },
                     {
@@ -193,7 +188,7 @@ export default class LearnAndEarnService {
                     // if so, complete the level and make the payment
                     await models.learnAndEarnUserLevel.update(
                         {
-                            status: 'complete',
+                            status: 'completed',
                             completionDate: new Date(),
                         },
                         {
@@ -219,7 +214,7 @@ export default class LearnAndEarnService {
                         // if so, complete category
                         await models.learnAndEarnUserCategory.update(
                             {
-                                status: 'complete',
+                                status: 'completed',
                                 completionDate: new Date(),
                             },
                             {
@@ -276,6 +271,21 @@ export default class LearnAndEarnService {
 
     public async startLesson(userId: number, lessonId: number) {
         try {
+            const status = 'started';
+            const lesson = await models.learnAndEarnLesson.findOne({
+                attributes: ['levelId'],
+                where: {
+                    id: lessonId,
+                },
+            });
+            const level = await models.learnAndEarnLevel.findOne({
+                attributes: ['id', 'categoryId'],
+                where: {
+                    id: lesson!.levelId,
+                },
+            });
+
+            // create userLesson
             const userLesson = await models.learnAndEarnUserLesson.findOrCreate(
                 {
                     where: {
@@ -287,12 +297,41 @@ export default class LearnAndEarnService {
                         userId,
                         points: 0,
                         attempts: 0,
-                        status: 'pending',
+                        status,
                     },
                 }
             );
 
-            return userLesson[0];
+            const userLevel = await models.learnAndEarnUserLevel.findOrCreate({
+                where: {
+                    levelId: lesson!.levelId,
+                    userId,
+                },
+                defaults: {
+                    levelId: lesson!.levelId,
+                    userId,
+                    status,
+                },
+            });
+
+            const userCategory =
+                await models.learnAndEarnUserCategory.findOrCreate({
+                    where: {
+                        categoryId: level!.categoryId,
+                        userId,
+                    },
+                    defaults: {
+                        categoryId: level!.categoryId,
+                        userId,
+                        status,
+                    },
+                });
+
+            return {
+                lesson: userLesson[0],
+                level: userLevel[0],
+                category: userCategory[0],
+            };
         } catch (error) {
             throw new BaseError(
                 error.name || 'START_LESSON_FAILED',
@@ -303,7 +342,7 @@ export default class LearnAndEarnService {
 
     public async listLevels(
         userId: number,
-        state: string,
+        status: string,
         offset: number,
         limit: number,
         category?: string,
@@ -313,9 +352,9 @@ export default class LearnAndEarnService {
             const where: any = {
                 [Op.and]: [
                     literal(
-                        state === 'completed'
-                            ? `"userLevel".status = 'complete'`
-                            : `"userLevel".status = 'pending' or "userLevel".status is null`
+                        status === 'completed'
+                            ? `"userLevel".status = '${status}'`
+                            : `"userLevel".status = 'started' or "userLevel".status is null`
                     ),
                     level ? { prismicId: level } : {},
                     { active: true },
@@ -326,7 +365,7 @@ export default class LearnAndEarnService {
                     'id',
                     ['prismicId', 'level'],
                     'totalReward',
-                    [literal(`"userLevel".status`), 'status'],
+                    [literal('"userLevel".status'), 'status'],
                     [literal(`count(lesson.id)`), 'totalLessons'],
                 ],
                 include: [
@@ -374,6 +413,7 @@ export default class LearnAndEarnService {
             });
 
             userLevels.forEach((el: any) => {
+                el.status = el.status || 'available';
                 el.category = el['category.prismicId'];
                 delete el['category.prismicId'];
             });
@@ -439,7 +479,7 @@ export default class LearnAndEarnService {
                 id: lesson.id,
                 prismicId: lesson.prismicId,
                 levelId: lesson.levelId,
-                status: lesson.userLesson[0]?.status || null,
+                status: lesson.userLesson[0]?.status || 'available',
             }));
         } catch (error) {
             throw new BaseError('LIST_LESSONS_FAILED', 'list lessons failed');

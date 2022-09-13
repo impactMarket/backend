@@ -7,14 +7,7 @@ class LearnAndEarnValidator {
         body: defaultSchema.object({
             answers: defaultSchema
                 .array()
-                .items(
-                    defaultSchema
-                        .object({
-                            quiz: Joi.string().required(),
-                            answer: Joi.string().required(),
-                        })
-                        .required()
-                )
+                .items(Joi.string().required())
                 .required(),
         }),
     });

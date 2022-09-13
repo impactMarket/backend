@@ -12,7 +12,7 @@ export class LearnAndEarnUserLevelModel extends Model<
     public id!: number;
     public userId!: number;
     public levelId!: number;
-    public status!: 'pending' | 'complete';
+    public status!: 'available' | 'started' | 'completed';
     public completionDate!: Date;
 }
 
@@ -46,9 +46,9 @@ export function initializeLearnAndEarnUserLevel(
                 allowNull: false,
             },
             status: {
-                type: DataTypes.ENUM('pending', 'complete'),
+                type: DataTypes.ENUM('available', 'started', 'completed'),
                 allowNull: false,
-                defaultValue: 'pending',
+                defaultValue: 'available',
             },
             completionDate: {
                 type: DataTypes.DATE,

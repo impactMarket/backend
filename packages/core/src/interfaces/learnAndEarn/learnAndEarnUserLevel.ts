@@ -26,13 +26,13 @@ export interface LearnAndEarnUserLevel {
     id: number;
     userId: number;
     levelId: number;
-    status: 'pending' | 'complete';
+    status: 'available' | 'started' | 'completed';
     completionDate: Date;
 }
 
 export interface LearnAndEarnUserLevelCreation {
     userId: number;
     levelId: number;
-    status: 'pending' | 'complete';
+    status: 'available' | 'started' | 'completed';
     completionDate?: Date;
 }

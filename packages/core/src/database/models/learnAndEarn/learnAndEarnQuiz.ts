@@ -10,7 +10,7 @@ export class LearnAndEarnQuizModel extends Model<
     LearnAndEarnQuizCreation
 > {
     public id!: number;
-    public prismicId!: string;
+    public order!: number;
     public lessonId!: number;
     public active!: boolean;
     public answerId!: string;
@@ -27,8 +27,8 @@ export function initializeLearnAndEarnQuiz(
                 autoIncrement: true,
                 primaryKey: true,
             },
-            prismicId: {
-                type: DataTypes.STRING(32),
+            order: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
             lessonId: {

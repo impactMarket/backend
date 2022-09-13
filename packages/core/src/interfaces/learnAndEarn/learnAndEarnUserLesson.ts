@@ -32,7 +32,7 @@ export interface LearnAndEarnUserLesson {
     id: number;
     userId: number;
     lessonId: number;
-    status: 'pending' | 'complete';
+    status: 'available' | 'started' | 'completed';
     completionDate: Date;
     attempts: number;
     points: number;
@@ -41,7 +41,7 @@ export interface LearnAndEarnUserLesson {
 export interface LearnAndEarnUserLessonCreation {
     userId: number;
     lessonId: number;
-    status: 'pending' | 'complete';
+    status: 'available' | 'started' | 'completed';
     completionDate?: Date;
     attempts?: number;
     points?: number;

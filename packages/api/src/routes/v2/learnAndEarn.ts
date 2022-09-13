@@ -37,12 +37,12 @@ export default (app: Router): void => {
      *     summary: "List levels"
      *     parameters:
      *       - in: query
-     *         name: state
+     *         name: status
      *         schema:
      *           type: string
-     *           enum: [available, completed]
+     *           enum: [available, started, completed]
      *         required: true
-     *         description: Lesson state
+     *         description: Lesson status
      *       - in: query
      *         name: category
      *         schema:
@@ -67,14 +67,14 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /learn-and-earn/{level}/lessons:
+     * /learn-and-earn/levels/{id}/lessons:
      *   get:
      *     tags:
      *       - "learn-and-earn"
      *     summary: "List lessons"
      *     parameters:
      *       - in: path
-     *         name: level
+     *         name: id
      *         schema:
      *           type: number
      *         required: true
@@ -87,7 +87,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.get(
-        '/:level/lessons',
+        '/levels/:id/lessons',
         authenticateToken,
         learnAndEarnController.listLessons
     );
@@ -95,7 +95,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /learn-and-earn/answers:
+     * /learn-and-earn/lessons/{id}/answers:
      *   post:
      *     tags:
      *       - "learn-and-earn"
@@ -123,7 +123,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.post(
-        '/answers',
+        '/lessons/:id/answers',
         authenticateToken,
         learnAndEarnValidator.answer,
         learnAndEarnController.answer

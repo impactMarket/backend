@@ -10,8 +10,8 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            prismicId: {
-                type: Sequelize.STRING(32),
+            order: {
+                type: Sequelize.INTEGER,
                 allowNull: false,
             },
             lessonId: {

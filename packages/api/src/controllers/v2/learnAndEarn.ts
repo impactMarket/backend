@@ -35,10 +35,10 @@ class LearnAndEarnController {
             return;
         }
 
-        let { category, state, level, limit, offset } = req.query;
+        let { category, status, level, limit, offset } = req.query;
 
-        if (!state || typeof state !== 'string') {
-            state = 'available';
+        if (!status || typeof status !== 'string') {
+            status = 'available';
         }
         if (offset === undefined || typeof offset !== 'string') {
             offset = config.defaultOffset.toString();
@@ -50,7 +50,7 @@ class LearnAndEarnController {
         this.learnAndEarnService
             .listLevels(
                 req.user.userId,
-                state,
+                status,
                 parseInt(offset, 10),
                 parseInt(limit, 10),
                 category as string,
@@ -72,7 +72,7 @@ class LearnAndEarnController {
         }
 
         this.learnAndEarnService
-            .listLessons(req.user.userId, parseInt(req.params.level))
+            .listLessons(req.user.userId, parseInt(req.params.id))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -91,7 +91,7 @@ class LearnAndEarnController {
         const { answers } = req.body;
 
         this.learnAndEarnService
-            .answer(req.user.userId, answers)
+            .answer(req.user.userId, answers, parseInt(req.params.id))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

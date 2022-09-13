@@ -6,14 +6,14 @@
  *        type: object
  *        required:
  *          - id
- *          - prismicId
+ *          - order
  *          - active
  *          - lessonId
  *          - answerId
  *        properties:
  *          id:
  *            type: integer
- *          prismicId:
+ *          order:
  *            type: string
  *          lessonId:
  *            type: number
@@ -24,14 +24,14 @@
  */
 export interface LearnAndEarnQuiz {
     id: number;
-    prismicId: string;
+    order: number;
     lessonId: number;
     answerId: string;
     active: boolean;
 }
 
 export interface LearnAndEarnQuizCreation {
-    prismicId: string;
+    order: number;
     lessonId: number;
     answerId: string;
     active: boolean;

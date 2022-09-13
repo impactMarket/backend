@@ -26,13 +26,13 @@ export interface LearnAndEarnUserCategory {
     id: number;
     userId: number;
     categoryId: number;
-    status: 'pending' | 'complete';
+    status: 'available' | 'started' | 'completed';
     completionDate: Date;
 }
 
 export interface LearnAndEarnUserCategoryCreation {
     userId: number;
     categoryId: number;
-    status: 'pending' | 'complete';
+    status: 'available' | 'started' | 'completed';
     completionDate?: Date;
 }
