@@ -222,7 +222,7 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /communities:
+     * /communities/{id}:
      *   put:
      *     tags:
      *       - "communities"

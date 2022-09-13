@@ -553,6 +553,14 @@ describe('user service v2', () => {
 
         describe('list', () => {
             it('list by ambassador address', async () => {
+                returnUserRoleSubgraph.returns({
+                    beneficiary: null,
+                    manager: null,
+                    ambassador: {
+                        communities: [communities[0].contractAddress],
+                    },
+                });
+
                 const reports = await userService.getReport(
                     users[1].address,
                     {}
@@ -567,6 +575,11 @@ describe('user service v2', () => {
             });
             it('communities not found', async () => {
                 let error: any;
+                returnUserRoleSubgraph.returns({
+                    beneficiary: null,
+                    manager: null,
+                    ambassador: null,
+                });
                 await userService
                     .getReport('invalidAddress', {})
                     .catch((err) => {
