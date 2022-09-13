@@ -5,6 +5,7 @@ import { models } from '../../../database';
 import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { AppUser } from '../../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
+import { UbiCommunityCampaign } from '../../../interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
 import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
 import { ManagerSubgraph } from '../../../subgraph/interfaces/manager';
@@ -145,6 +146,26 @@ export class CommunityDetailsService {
                 ...ambassador?.toJSON(),
                 active: true,
             };
+        }
+    }
+
+    public async getMerchant(communityId: number) {
+        try {
+            const merchant = await models.merchantRegistry.findAll({
+                include: [
+                    {
+                        attributes: [],
+                        model: models.merchantCommunity,
+                        as: 'merchantCommunity',
+                        where: {
+                            communityId,
+                        },
+                    },
+                ],
+            });
+            return merchant;
+        } catch (error) {
+            throw new BaseError('UNEXPECTED_ERROR', error);
         }
     }
 
@@ -399,7 +420,7 @@ export class CommunityDetailsService {
                 );
                 count = await countManagers(
                     community.contractAddress!,
-                    filter.state ? filter.state : undefined
+                    filter.state,
                 );
                 addresses = managersSubgraph.map((manager) =>
                     ethers.utils.getAddress(manager.address)
@@ -824,5 +845,16 @@ export class CommunityDetailsService {
         if (!result) return null;
 
         return result.toJSON();
+    }
+
+    public async getCampaign(communityId: number) {
+        const result = await models.ubiCommunityCampaign.findOne({
+            where: {
+                communityId,
+            },
+        });
+        return result !== null
+            ? (result.toJSON() as UbiCommunityCampaign)
+            : null;
     }
 }

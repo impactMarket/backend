@@ -26,6 +26,8 @@ import { LearnAndEarnQuizModel } from './models/learnAndEarn/learnAndEarnQuiz';
 import { LearnAndEarnUserCategoryModel } from './models/learnAndEarn/learnAndEarnUserCategory';
 import { LearnAndEarnUserLessonModel } from './models/learnAndEarn/learnAndEarnUserLesson';
 import { LearnAndEarnUserLevelModel } from './models/learnAndEarn/learnAndEarnUserLevel';
+import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
+import { MerchantRegistryModel } from './models/merchant/merchantRegistry';
 import { ReachedAddress } from './models/reachedAddress';
 import { StoryCommentModel } from './models/story/storyComment';
 import { StoryCommunityModel } from './models/story/storyCommunity';
@@ -111,6 +113,9 @@ export interface DbModels {
     learnAndEarnUserLesson: ModelCtor<LearnAndEarnUserLessonModel>;
     learnAndEarnUserLevel: ModelCtor<LearnAndEarnUserLevelModel>;
     learnAndEarnPayment: ModelCtor<LearnAndEarnPaymentModel>;
+    //
+    merchantRegistry: ModelCtor<MerchantRegistryModel>;
+    merchantCommunity: ModelCtor<MerchantCommunityModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;

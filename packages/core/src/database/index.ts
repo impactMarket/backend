@@ -33,6 +33,8 @@ import * as LearnAndEarnQuiz from './models/learnAndEarn/learnAndEarnQuiz';
 import * as LearnAndEarnUserCategory from './models/learnAndEarn/learnAndEarnUserCategory';
 import * as LearnAndEarnUserLesson from './models/learnAndEarn/learnAndEarnUserLesson';
 import * as LearnAndEarnUserLevel from './models/learnAndEarn/learnAndEarnUserLevel';
+import * as MerchantCommunity from './models/merchant/merchantCommunity';
+import * as MerchantRegistry from './models/merchant/merchantRegistry';
 import * as ReachedAddress from './models/reachedAddress';
 import * as StoryComment from './models/story/storyComment';
 import * as StoryCommunity from './models/story/storyCommunity';
@@ -196,6 +198,10 @@ const models: DbModels = {
         .LearnAndEarnUserLevelModel as ModelCtor<LearnAndEarnUserLevel.LearnAndEarnUserLevelModel>,
     learnAndEarnPayment: sequelize.models
         .LearnAndEarnPaymentModel as ModelCtor<LearnAndEarnPayment.LearnAndEarnPaymentModel>,
+    merchantRegistry: sequelize.models
+        .MerchantRegistryModel as ModelCtor<MerchantRegistry.MerchantRegistryModel>,
+    merchantCommunity: sequelize.models
+        .MerchantCommunityModel as ModelCtor<MerchantCommunity.MerchantCommunityModel>,
 };
 
 let redisClient: redis.RedisClient | undefined;

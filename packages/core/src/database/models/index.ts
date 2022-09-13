@@ -25,6 +25,8 @@ import { userAssociation } from './associations/user';
 import { initializeGlobalDailyState } from './global/globalDailyState';
 import { initializeGlobalDemographics } from './global/globalDemographics';
 import { initializeGlobalGrowth } from './global/globalGrowth';
+import { initializeMerchantCommunity } from './merchant/merchantCommunity';
+import { initializeMerchantRegistry } from './merchant/merchantRegistry';
 import { initializeLearnAndEarnCategory } from './learnAndEarn/learnAndEarnCategory';
 import { initializeLearnAndEarnLesson } from './learnAndEarn/learnAndEarnLesson';
 import { initializeLearnAndEarnLevel } from './learnAndEarn/learnAndEarnLevel';
@@ -119,6 +121,10 @@ export default function initModels(sequelize: Sequelize): void {
     // airgrab
     initializeAirgrabUser(sequelize);
     initializeAirgrabProof(sequelize);
+
+    // merchant
+    initializeMerchantRegistry(sequelize);
+    initializeMerchantCommunity(sequelize);
 
     // L&E
     initializeLearnAndEarnCategory(sequelize);

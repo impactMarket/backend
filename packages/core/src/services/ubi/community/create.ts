@@ -250,8 +250,11 @@ export class CommunityCreateService {
 
         const roles = await getUserRoles(address);
 
-        if (!roles.ambassador || !roles.ambassador.communities) {
-            throw new BaseError('NOT_AMBASSADOR', 'user is not an ambassador');
+        if (!roles.ambassador && !roles.councilMember) {
+            throw new BaseError(
+                'UNAUTHORIZED',
+                'user must be ambassador or council member'
+            );
         }
 
         const community = await models.community.findOne({
@@ -266,6 +269,7 @@ export class CommunityCreateService {
         }
 
         if (
+            roles.ambassador &&
             roles.ambassador.communities.indexOf(
                 community.contractAddress.toLocaleLowerCase()
             ) === -1
