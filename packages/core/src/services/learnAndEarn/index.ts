@@ -4,10 +4,23 @@ import { models } from '../../database';
 import { BaseError } from '../../utils/baseError';
 
 export default class LearnAndEarnService {
-    public async total(userId: number) {
+    public async total(userId: number): Promise<{
+        lesson: {
+            completed: number;
+            total: number;
+        };
+        level: {
+            completed: number;
+            total: number;
+        };
+        reward: {
+            received: number;
+            total: number;
+        };
+    }> {
         try {
             // get levels
-            const levels = await models.learnAndEarnLevel.findAll({
+            const levels = (await models.learnAndEarnLevel.findAll({
                 attributes: [
                     [
                         literal(
@@ -15,6 +28,7 @@ export default class LearnAndEarnService {
                         ),
                         'completed',
                     ],
+                    [literal(`sum("totalReward")`), 'totalReward'],
                     [literal(`count(*)`), 'total'],
                 ],
                 include: [
@@ -32,10 +46,10 @@ export default class LearnAndEarnService {
                     active: true,
                 },
                 raw: true,
-            });
+            })) as any;
 
             // get lessons
-            const lessons = await models.learnAndEarnLesson.findAll({
+            const lessons = (await models.learnAndEarnLesson.findAll({
                 attributes: [
                     [
                         literal(
@@ -60,7 +74,7 @@ export default class LearnAndEarnService {
                     active: true,
                 },
                 raw: true,
-            });
+            })) as any;
 
             // get earned
             const payments = await models.learnAndEarnPayment.findOne({
@@ -72,9 +86,18 @@ export default class LearnAndEarnService {
             });
 
             return {
-                lessons: lessons[0],
-                levels: levels[0],
-                received: payments?.amount || 0,
+                lesson: {
+                    completed: parseInt(lessons[0].completed),
+                    total: parseInt(lessons[0].total),
+                },
+                level: {
+                    completed: parseInt(levels[0].completed),
+                    total: parseInt(levels[0].total),
+                },
+                reward: {
+                    received: payments?.amount || 0,
+                    total: parseInt(levels[0].totalReward),
+                },
             };
         } catch (error) {
             throw new BaseError('GET_TOTAL_FAILED', 'get total failed');
@@ -179,12 +202,12 @@ export default class LearnAndEarnService {
                     lesson!.levelId
                 );
                 // verify if all the lessons was completed
-                const pendingLessons = await this.countPendingLessons(
+                const availableLessons = await this.countAvailableLessons(
                     lesson!.levelId,
                     userId
                 );
 
-                if (pendingLessons === 0) {
+                if (availableLessons === 0) {
                     // if so, complete the level and make the payment
                     await models.learnAndEarnUserLevel.update(
                         {
@@ -205,12 +228,12 @@ export default class LearnAndEarnService {
                     const level = await models.learnAndEarnLevel.findOne({
                         where: { id: lesson!.levelId },
                     });
-                    const pendingLevels = await this.countPendingLevels(
+                    const availableLevels = await this.countAvailableLevels(
                         level!.categoryId,
                         userId
                     );
 
-                    if (pendingLevels === 0) {
+                    if (availableLevels === 0) {
                         // if so, complete category
                         await models.learnAndEarnUserCategory.update(
                             {
@@ -237,7 +260,7 @@ export default class LearnAndEarnService {
                             attempts,
                             points,
                             totalPoints,
-                            pendingLessons,
+                            availableLessons,
                             levelCompleted: level!.prismicId,
                             categoryCompleted: category!.prismicId,
                         };
@@ -247,7 +270,7 @@ export default class LearnAndEarnService {
                             attempts,
                             points,
                             totalPoints,
-                            pendingLessons,
+                            availableLessons,
                             levelCompleted: level!.prismicId,
                         };
                     }
@@ -257,7 +280,7 @@ export default class LearnAndEarnService {
                         attempts,
                         points,
                         totalPoints,
-                        pendingLessons,
+                        availableLessons,
                     };
                 }
             }
@@ -328,9 +351,9 @@ export default class LearnAndEarnService {
                 });
 
             return {
-                lesson: userLesson[0],
-                level: userLevel[0],
-                category: userCategory[0],
+                lesson: userLesson[0].toJSON(),
+                level: userLevel[0].toJSON(),
+                category: userCategory[0].toJSON(),
             };
         } catch (error) {
             throw new BaseError(
@@ -347,7 +370,16 @@ export default class LearnAndEarnService {
         limit: number,
         category?: string,
         level?: string
-    ) {
+    ): Promise<{
+        count: number;
+        rows: {
+            id: number;
+            prismicId: string;
+            totalReward: number;
+            status: string;
+            totalLessons: number;
+        }[];
+    }> {
         try {
             const where: any = {
                 [Op.and]: [
@@ -363,7 +395,7 @@ export default class LearnAndEarnService {
             const userLevels = await models.learnAndEarnLevel.findAll({
                 attributes: [
                     'id',
-                    ['prismicId', 'level'],
+                    'prismicId',
                     'totalReward',
                     [literal('"userLevel".status'), 'status'],
                     [literal(`count(lesson.id)`), 'totalLessons'],
@@ -412,12 +444,6 @@ export default class LearnAndEarnService {
                 raw: true,
             });
 
-            userLevels.forEach((el: any) => {
-                el.status = el.status || 'available';
-                el.category = el['category.prismicId'];
-                delete el['category.prismicId'];
-            });
-
             const count = await models.learnAndEarnLevel.count({
                 attributes: [],
                 include: [
@@ -448,7 +474,14 @@ export default class LearnAndEarnService {
 
             return {
                 count,
-                rows: userLevels,
+                rows: userLevels.map((el: any) => ({
+                    id: el.id,
+                    prismicId: el.prismicId,
+                    totalReward: parseInt(el.totalReward),
+                    totalLessons: parseInt(el.totalLessons),
+                    status: (el.status = el.status || 'available'),
+                    category: el['category.prismicId'],
+                })),
             };
         } catch (error) {
             throw new BaseError('LIST_LEVELS_FAILED', 'list levels failed');
@@ -486,17 +519,17 @@ export default class LearnAndEarnService {
         }
     }
 
-    private async countPendingLessons(
+    private async countAvailableLessons(
         levelId: number,
         userId: number
     ): Promise<number> {
-        const pendingLessons = (await models.learnAndEarnLesson.findAll({
+        const availableLessons = (await models.learnAndEarnLesson.findAll({
             attributes: [
                 [
                     literal(
-                        `count(*) FILTER (WHERE "userLesson".status = 'pending' or "userLesson".status is null)`
+                        `count(*) FILTER (WHERE "userLesson".status = 'available' or "userLesson".status is null)`
                     ),
-                    'pending',
+                    'available',
                 ],
             ],
             include: [
@@ -517,20 +550,20 @@ export default class LearnAndEarnService {
             raw: true,
         })) as any;
 
-        return parseInt(pendingLessons[0].pending);
+        return parseInt(availableLessons[0].available);
     }
 
-    private async countPendingLevels(
+    private async countAvailableLevels(
         categoryId: number,
         userId: number
     ): Promise<number> {
-        const pendingLevels = (await models.learnAndEarnLevel.findAll({
+        const availableLevels = (await models.learnAndEarnLevel.findAll({
             attributes: [
                 [
                     literal(
-                        `count(*) FILTER (WHERE "userLevel".status = 'pending' or "userLevel".status is null)`
+                        `count(*) FILTER (WHERE "userLevel".status = 'available' or "userLevel".status is null)`
                     ),
-                    'pending',
+                    'available',
                 ],
             ],
             include: [
@@ -551,7 +584,7 @@ export default class LearnAndEarnService {
             raw: true,
         })) as any;
 
-        return parseInt(pendingLevels[0].pending);
+        return parseInt(availableLevels[0].available);
     }
 
     private async getTotalPoints(

@@ -132,7 +132,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /learn-and-earn/start:
+     * /learn-and-earn/lessons:
      *   post:
      *     tags:
      *       - "learn-and-earn"
@@ -153,7 +153,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.post(
-        '/start',
+        '/lessons',
         authenticateToken,
         learnAndEarnValidator.startLesson,
         learnAndEarnController.startLesson
