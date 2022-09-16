@@ -586,7 +586,7 @@ export class CommunityListService {
                             : config.defaultOffset
                     },
                     where: {
-                        state: 0
+                        state_not: 1
                     }`,
                 `id, ${orderBy}`
             );
