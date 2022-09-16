@@ -106,7 +106,7 @@ describe('Learn And Earn', () => {
 
             expect(total.lesson).to.include({
                 completed: 0,
-                total: 1,
+                total: 2,
             });
             expect(total.level).to.include({
                 completed: 0,
@@ -133,7 +133,7 @@ describe('Learn And Earn', () => {
                 prismicId: 'level1',
                 totalReward: 500,
                 status: 'available',
-                totalLessons: 1,
+                totalLessons: 2,
             });
         });
 
