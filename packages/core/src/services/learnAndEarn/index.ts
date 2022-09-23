@@ -2,6 +2,7 @@ import { literal, Op } from 'sequelize';
 
 import { models } from '../../database';
 import { BaseError } from '../../utils/baseError';
+import { ethers } from 'ethers';
 
 export default class LearnAndEarnService {
     public async total(userId: number): Promise<{
@@ -104,12 +105,13 @@ export default class LearnAndEarnService {
         }
     }
 
-    public async answer(userId: number, answers: string[], lesson: number) {
+    public async answer(user: { userId: number, address: string }, answers: string[], lesson: number) {
         try {
             const quizzes = await models.learnAndEarnQuiz.findAll({
                 where: {
                     lessonId: lesson,
                 },
+                order: ['order']
             });
 
             if (!quizzes || !quizzes.length) {
@@ -117,7 +119,7 @@ export default class LearnAndEarnService {
             }
 
             const wrongAnswers = answers.reduce((acc, el, index) => {
-                const quiz = quizzes[index];
+                const quiz = quizzes.find(quiz => quiz.order === index);
                 if (quiz?.answerId !== el) {
                     acc.push(index);
                 }
@@ -132,7 +134,7 @@ export default class LearnAndEarnService {
                     },
                     {
                         where: {
-                            userId,
+                            userId: user.userId,
                             lessonId: quizzes[0].lessonId,
                             status: 'started',
                         },
@@ -188,7 +190,7 @@ export default class LearnAndEarnService {
                     },
                     {
                         where: {
-                            userId,
+                            userId: user.userId,
                             lessonId: quizzes[0].lessonId,
                         },
                     }
@@ -198,13 +200,13 @@ export default class LearnAndEarnService {
                     where: { id: quizzes[0].lessonId },
                 });
                 const totalPoints = await this.getTotalPoints(
-                    userId,
+                    user.userId,
                     lesson!.levelId
                 );
                 // verify if all the lessons was completed
                 const availableLessons = await this.countAvailableLessons(
                     lesson!.levelId,
-                    userId
+                    user.userId
                 );
 
                 if (availableLessons === 0) {
@@ -216,21 +218,31 @@ export default class LearnAndEarnService {
                         },
                         {
                             where: {
-                                userId,
+                                userId: user.userId,
                                 levelId: lesson!.levelId,
                             },
                         }
                     );
 
-                    // TODO: payment
-
-                    // verify if the category was completed
+                    // create signature
                     const level = await models.learnAndEarnLevel.findOne({
                         where: { id: lesson!.levelId },
                     });
+                    const signature = await this.signParams(user.address, level!.id, level!.totalReward);
+                    const amount = await this.calculateReward(user.userId, level!.id);
+                    await models.learnAndEarnPayment.create({
+                        userId: user.userId,
+                        levelId: level!.id,
+                        amount,
+                        status: 'pending',
+                        signature,
+                    });
+
+
+                    // verify if the category was completed
                     const availableLevels = await this.countAvailableLevels(
                         level!.categoryId,
-                        userId
+                        user.userId
                     );
 
                     if (availableLevels === 0) {
@@ -242,7 +254,7 @@ export default class LearnAndEarnService {
                             },
                             {
                                 where: {
-                                    userId,
+                                    userId: user.userId,
                                     categoryId: level!.categoryId,
                                 },
                             }
@@ -611,4 +623,47 @@ export default class LearnAndEarnService {
 
         return parseInt(totalPoints[0].total);
     }
+
+    private async signParams(
+        beneficiaryAddress: string,
+        programId: number,
+        amountEarned: number
+     ): Promise<string> {
+        const signer = new ethers.Wallet('0x0123456789012345678901234567890123456789012345678901234567890123');
+
+        const message = ethers.utils.solidityKeccak256(
+           ["address", "uint256", "uint256"],
+           [beneficiaryAddress, programId, amountEarned]
+        );
+        const arrayifyMessage = ethers.utils.arrayify(message);
+        return signer.signMessage(arrayifyMessage);
+     }
+
+     private async calculateReward(userId: number, levelId: number): Promise<number> {
+        const level = await models.learnAndEarnLevel.findOne({
+            attributes: ['totalReward'],
+            where: {
+                id: levelId,
+            }
+        });
+        const points = await this.getTotalPoints(userId, levelId);
+        let percentage = 0;
+
+
+        if (points < 10) {
+            percentage = 15;
+        } else if (points >= 10 && points < 20) {
+            percentage = 35;
+        } else if (points >= 20 && points < 30) {
+            percentage = 55;
+        } else if (points >= 30 && points < 40) {
+            percentage = 75;            
+        } else if (points >= 40 && points < 50) {
+            percentage = 85;            
+        } else if (points >= 50) {
+            percentage = 100;            
+        }
+
+        return ((percentage/ 100) * level!.totalReward);
+     }
 }

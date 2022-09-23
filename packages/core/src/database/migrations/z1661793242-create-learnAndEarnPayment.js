@@ -33,13 +33,22 @@ module.exports = {
                 defaultValue: 0,
                 allowNull: false,
             },
+            signature: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            status: {
+                type: Sequelize.ENUM('pending', 'paid'),
+                allowNull: false,
+                defaultValue: 'pending',
+            },
             tx: {
                 type: Sequelize.STRING(68),
-                allowNull: false,
+                allowNull: true,
             },
             txAt: {
                 type: Sequelize.DATE,
-                allowNull: false,
+                allowNull: true,
             },
         });
     },

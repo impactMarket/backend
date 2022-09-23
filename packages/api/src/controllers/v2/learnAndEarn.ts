@@ -91,7 +91,7 @@ class LearnAndEarnController {
         const { answers } = req.body;
 
         this.learnAndEarnService
-            .answer(req.user.userId, answers, parseInt(req.params.id))
+            .answer(req.user, answers, parseInt(req.params.id))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

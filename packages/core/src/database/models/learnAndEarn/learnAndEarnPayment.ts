@@ -13,8 +13,10 @@ export class LearnAndEarnPaymentModel extends Model<
     public userId!: number;
     public levelId!: number;
     public amount!: number;
-    public tx!: string;
-    public txAt!: Date;
+    public signature!: string;
+    public status!: 'pending' | 'paid';
+    public tx!: string | null;
+    public txAt!: Date | null;
 }
 
 export function initializeLearnAndEarnPayment(
@@ -51,13 +53,22 @@ export function initializeLearnAndEarnPayment(
                 defaultValue: 0,
                 allowNull: false,
             },
-            tx: {
+            signature: {
                 type: DataTypes.STRING(68),
                 allowNull: false,
             },
+            status: {
+                type: DataTypes.ENUM('pending', 'paid'),
+                allowNull: false,
+                defaultValue: 'pending',
+            },
+            tx: {
+                type: DataTypes.STRING(68),
+                allowNull: true,
+            },
             txAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: true,
             },
         },
         {

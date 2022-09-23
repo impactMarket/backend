@@ -30,6 +30,8 @@ export interface LearnAndEarnPayment {
     userId: number;
     levelId: number;
     amount: number;
+    signature: string;
+    status: 'pending' | 'paid';
     tx: string;
     txAt: Date;
 }
@@ -38,6 +40,8 @@ export interface LearnAndEarnPaymentCreation {
     userId: number;
     levelId: number;
     amount: number;
-    tx: string;
-    txAt: Date;
+    signature: string;
+    status: 'pending' | 'paid';
+    tx?: string;
+    txAt?: Date;
 }
