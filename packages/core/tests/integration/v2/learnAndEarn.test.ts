@@ -62,25 +62,25 @@ describe('Learn And Earn', () => {
         // create quiz
         quiz1 = await models.learnAndEarnQuiz.create({
             active: true,
-            answerId: 'answer1',
+            answer: 'answer1',
             lessonId: lesson1.id,
             order: 0,
         });
         quiz2 = await models.learnAndEarnQuiz.create({
             active: true,
-            answerId: 'answer2',
+            answer: 'answer2',
             lessonId: lesson1.id,
             order: 1,
         });
         quiz3 = await models.learnAndEarnQuiz.create({
             active: true,
-            answerId: 'answer1',
+            answer: 'answer1',
             lessonId: lesson2.id,
             order: 0,
         });
         quiz4 = await models.learnAndEarnQuiz.create({
             active: true,
-            answerId: 'answer2',
+            answer: 'answer2',
             lessonId: lesson2.id,
             order: 1,
         });
@@ -183,7 +183,7 @@ describe('Learn And Earn', () => {
             await learnAndEarnService.startLesson(users[0].id, lesson2.id);
             const answer = await learnAndEarnService.answer(
                 users[0].id,
-                [quiz3.answerId, quiz4.answerId],
+                [quiz3.answer, quiz4.answer],
                 lesson2.id
             );
 

@@ -9,7 +9,7 @@
  *          - order
  *          - active
  *          - lessonId
- *          - answerId
+ *          - answer
  *        properties:
  *          id:
  *            type: integer
@@ -17,8 +17,8 @@
  *            type: string
  *          lessonId:
  *            type: number
- *          answerId:
- *            type: string
+ *          answer:
+ *            type: number
  *          active:
  *            type: boolean
  */
@@ -26,13 +26,13 @@ export interface LearnAndEarnQuiz {
     id: number;
     order: number;
     lessonId: number;
-    answerId: string;
+    answer: number;
     active: boolean;
 }
 
 export interface LearnAndEarnQuizCreation {
     order: number;
     lessonId: number;
-    answerId: string;
+    answer: number;
     active: boolean;
 }

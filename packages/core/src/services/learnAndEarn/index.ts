@@ -1,8 +1,10 @@
+import { ethers } from 'ethers';
 import { literal, Op } from 'sequelize';
 
+import config from '../../config';
 import { models } from '../../database';
 import { BaseError } from '../../utils/baseError';
-import { ethers } from 'ethers';
+import { client as prismic } from '../../utils/prismic';
 
 export default class LearnAndEarnService {
     public async total(userId: number): Promise<{
@@ -105,13 +107,17 @@ export default class LearnAndEarnService {
         }
     }
 
-    public async answer(user: { userId: number, address: string }, answers: string[], lesson: number) {
+    public async answer(
+        user: { userId: number; address: string },
+        answers: number[],
+        lesson: number
+    ) {
         try {
             const quizzes = await models.learnAndEarnQuiz.findAll({
                 where: {
                     lessonId: lesson,
                 },
-                order: ['order']
+                order: ['order'],
             });
 
             if (!quizzes || !quizzes.length) {
@@ -119,8 +125,8 @@ export default class LearnAndEarnService {
             }
 
             const wrongAnswers = answers.reduce((acc, el, index) => {
-                const quiz = quizzes.find(quiz => quiz.order === index);
-                if (quiz?.answerId !== el) {
+                const quiz = quizzes.find((quiz) => quiz.order === index);
+                if (quiz?.answer !== el) {
                     acc.push(index);
                 }
                 return acc;
@@ -228,8 +234,15 @@ export default class LearnAndEarnService {
                     const level = await models.learnAndEarnLevel.findOne({
                         where: { id: lesson!.levelId },
                     });
-                    const signature = await this.signParams(user.address, level!.id, level!.totalReward);
-                    const amount = await this.calculateReward(user.userId, level!.id);
+                    const signature = await this.signParams(
+                        user.address,
+                        level!.id,
+                        level!.totalReward
+                    );
+                    const amount = await this.calculateReward(
+                        user.userId,
+                        level!.id
+                    );
                     await models.learnAndEarnPayment.create({
                         userId: user.userId,
                         levelId: level!.id,
@@ -237,7 +250,6 @@ export default class LearnAndEarnService {
                         status: 'pending',
                         signature,
                     });
-
 
                     // verify if the category was completed
                     const availableLevels = await this.countAvailableLevels(
@@ -531,6 +543,28 @@ export default class LearnAndEarnService {
         }
     }
 
+    public async webhook(documents: string[]) {
+        try {
+            const prismicDocument = await prismic.getByIDs(documents, {
+                lang: 'en-us',
+            });
+            if (!prismicDocument.results || !prismicDocument.results.length) {
+                throw new BaseError('DOCUMENTS_NOT_FOUND', 'no document found');
+            }
+            const lea = prismicDocument.results.find((doc) =>
+                doc.type.startsWith('pwa-lae-')
+            );
+            if (lea) {
+                this.getPrismicLearnAndEarn();
+            }
+        } catch (error) {
+            throw new BaseError(
+                error.name ? error.name : 'GET_DOCUMENT_FAILED',
+                error.message
+            );
+        }
+    }
+
     private async countAvailableLessons(
         levelId: number,
         userId: number
@@ -628,27 +662,29 @@ export default class LearnAndEarnService {
         beneficiaryAddress: string,
         programId: number,
         amountEarned: number
-     ): Promise<string> {
-        const signer = new ethers.Wallet('0x0123456789012345678901234567890123456789012345678901234567890123');
+    ): Promise<string> {
+        const signer = new ethers.Wallet(config.learnAndEarnPrivateKey);
 
         const message = ethers.utils.solidityKeccak256(
-           ["address", "uint256", "uint256"],
-           [beneficiaryAddress, programId, amountEarned]
+            ['address', 'uint256', 'uint256'],
+            [beneficiaryAddress, programId, amountEarned]
         );
         const arrayifyMessage = ethers.utils.arrayify(message);
         return signer.signMessage(arrayifyMessage);
-     }
+    }
 
-     private async calculateReward(userId: number, levelId: number): Promise<number> {
+    private async calculateReward(
+        userId: number,
+        levelId: number
+    ): Promise<number> {
         const level = await models.learnAndEarnLevel.findOne({
             attributes: ['totalReward'],
             where: {
                 id: levelId,
-            }
+            },
         });
         const points = await this.getTotalPoints(userId, levelId);
         let percentage = 0;
-
 
         if (points < 10) {
             percentage = 15;
@@ -657,13 +693,166 @@ export default class LearnAndEarnService {
         } else if (points >= 20 && points < 30) {
             percentage = 55;
         } else if (points >= 30 && points < 40) {
-            percentage = 75;            
+            percentage = 75;
         } else if (points >= 40 && points < 50) {
-            percentage = 85;            
+            percentage = 85;
         } else if (points >= 50) {
-            percentage = 100;            
+            percentage = 100;
         }
 
-        return ((percentage/ 100) * level!.totalReward);
-     }
+        return (percentage / 100) * level!.totalReward;
+    }
+
+    private async getPrismicLearnAndEarn() {
+        try {
+            const categoryIds: number[] = [],
+                levelIds: number[] = [],
+                lessonIds: number[] = [],
+                quizIds: number[] = [];
+            const response = await prismic.getAllByType('pwa-lae-category', {
+                lang: 'en-us',
+                fetchLinks: [
+                    'pwa-lae-level.reward',
+                    'pwa-lae-level.lessons',
+                    'pwa-lae-lesson.questions',
+                ],
+            });
+            for (
+                let categoryIndex = 0;
+                categoryIndex < response.length;
+                categoryIndex++
+            ) {
+                const prismicCategory = response[categoryIndex];
+
+                // INSERT CATEGORY
+                const category = await models.learnAndEarnCategory.findOrCreate(
+                    {
+                        where: {
+                            prismicId: prismicCategory.id,
+                            active: true,
+                        },
+                    }
+                );
+                categoryIds.push(category[0].id);
+
+                for (
+                    let levelIndex = 0;
+                    levelIndex < prismicCategory.data.levels.length;
+                    levelIndex++
+                ) {
+                    const prismicLevel =
+                        prismicCategory.data.levels[levelIndex].level;
+
+                    // INSERT LEVEL
+                    const level = await models.learnAndEarnLevel.findOrCreate({
+                        where: {
+                            prismicId: prismicLevel.id,
+                            totalReward: prismicLevel.data.reward,
+                            active: true,
+                            categoryId: category[0].id,
+                        },
+                    });
+                    levelIds.push(level[0].id);
+
+                    for (
+                        let lessonIndex = 0;
+                        lessonIndex < prismicLevel.data.lessons.length;
+                        lessonIndex++
+                    ) {
+                        const prismicLesson =
+                            prismicLevel.data.lessons[lessonIndex].lesson;
+
+                        // INSERT LESSON
+                        const lesson =
+                            await models.learnAndEarnLesson.findOrCreate({
+                                where: {
+                                    prismicId: prismicLesson.id,
+                                    active: true,
+                                    levelId: level[0].id,
+                                },
+                            });
+                        lessonIds.push(lesson[0].id);
+
+                        for (
+                            let quizIndex = 0;
+                            quizIndex < prismicLesson.data.questions.length;
+                            quizIndex++
+                        ) {
+                            const prismicQuiz =
+                                prismicLesson.data.questions[quizIndex];
+
+                            // INSERT QUIZ
+                            const answer: number = prismicQuiz.items.findIndex(
+                                (item) => !!item['is-correct']
+                            );
+                            const quiz =
+                                await models.learnAndEarnQuiz.findOrCreate({
+                                    where: {
+                                        order: quizIndex,
+                                        active: true,
+                                        lessonId: lesson[0].id,
+                                        answer,
+                                    },
+                                });
+                            quizIds.push(quiz[0].id);
+                        }
+                    }
+                }
+            }
+
+            // INACTIVATE REGISTRIES
+            await Promise.all([
+                models.learnAndEarnCategory.update(
+                    {
+                        active: false,
+                    },
+                    {
+                        where: {
+                            id: {
+                                [Op.notIn]: categoryIds,
+                            },
+                        },
+                    }
+                ),
+                models.learnAndEarnLevel.update(
+                    {
+                        active: false,
+                    },
+                    {
+                        where: {
+                            id: {
+                                [Op.notIn]: levelIds,
+                            },
+                        },
+                    }
+                ),
+                models.learnAndEarnLesson.update(
+                    {
+                        active: false,
+                    },
+                    {
+                        where: {
+                            id: {
+                                [Op.notIn]: lessonIds,
+                            },
+                        },
+                    }
+                ),
+                models.learnAndEarnQuiz.update(
+                    {
+                        active: false,
+                    },
+                    {
+                        where: {
+                            id: {
+                                [Op.notIn]: quizIds,
+                            },
+                        },
+                    }
+                ),
+            ]);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }

@@ -114,6 +114,25 @@ class LearnAndEarnController {
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    webhook = (req: Request, res: Response) => {
+        const { documents } = req.body;
+
+        if (!documents || !documents.length) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'INVALID_DOCUMENTS',
+                    message: 'invalid documents',
+                },
+            });
+            return;
+        }
+
+        this.learnAndEarnService
+            .webhook(documents)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export default LearnAndEarnController;

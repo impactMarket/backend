@@ -109,12 +109,7 @@ export default (app: Router): void => {
      *               answers:
      *                 type: array
      *                 items:
-     *                   type: object
-     *                   properties:
-     *                     answer:
-     *                       type: string
-     *                     quiz:
-     *                       type: string
+     *                   type: number
      *     responses:
      *       "200":
      *         description: OK
@@ -158,4 +153,6 @@ export default (app: Router): void => {
         learnAndEarnValidator.startLesson,
         learnAndEarnController.startLesson
     );
+
+    route.post('/webhook', authenticateToken, learnAndEarnController.webhook);
 };

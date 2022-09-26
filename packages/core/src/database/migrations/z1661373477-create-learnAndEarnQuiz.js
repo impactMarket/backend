@@ -27,8 +27,8 @@ module.exports = {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
             },
-            answerId: {
-                type: Sequelize.STRING(32),
+            answer: {
+                type: Sequelize.INTEGER,
                 allowNull: false,
             },
         });

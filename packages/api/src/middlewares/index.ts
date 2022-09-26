@@ -62,6 +62,7 @@ export function authenticateToken(
                 }
             } else {
                 res.sendStatus(403);
+                return;
             }
         }
         const user = _user as UserInRequest;

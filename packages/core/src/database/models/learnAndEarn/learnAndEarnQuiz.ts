@@ -13,7 +13,7 @@ export class LearnAndEarnQuizModel extends Model<
     public order!: number;
     public lessonId!: number;
     public active!: boolean;
-    public answerId!: string;
+    public answer!: number;
 }
 
 export function initializeLearnAndEarnQuiz(
@@ -44,8 +44,8 @@ export function initializeLearnAndEarnQuiz(
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
             },
-            answerId: {
-                type: DataTypes.STRING(32),
+            answer: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
         },
