@@ -32,6 +32,7 @@ describe('Learn And Earn', () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
         users = await UserFactory({ n: 1 });
+        replace(config, 'learnAndEarnPrivateKey', ethers.Wallet.createRandom().privateKey);
 
         // create category
         category = await models.learnAndEarnCategory.create({
@@ -180,6 +181,7 @@ describe('Learn And Earn', () => {
 
     describe('answers', () => {
         it('check answers', async () => {
+
             await learnAndEarnService.startLesson(users[0].id, lesson2.id);
             const answer = await learnAndEarnService.answer(
                 { userId: users[0].id, address: users[0].address },
