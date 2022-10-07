@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { ethers } from 'ethers';
 import { literal, Op } from 'sequelize';
 
@@ -545,17 +546,34 @@ export default class LearnAndEarnService {
 
     public async webhook(documents: string[]) {
         try {
-            const prismicDocument = await prismic.getByIDs(documents, {
+            const document = documents[0];
+            const prismicDocument = await prismic.getByID(document, {
                 lang: 'en-us',
             });
-            if (!prismicDocument.results || !prismicDocument.results.length) {
-                throw new BaseError('DOCUMENTS_NOT_FOUND', 'no document found');
+
+            const { type } = prismicDocument;
+
+            if (!type) {
+                throw new BaseError('DOCUMENT_NOT_FOUND', 'document not found');
             }
-            const lea = prismicDocument.results.find((doc) =>
-                doc.type.startsWith('pwa-lae-')
-            );
-            if (lea) {
-                this.getPrismicLearnAndEarn();
+
+            if (type.startsWith('pwa')) {
+                await this.getPrismicLearnAndEarn();
+
+                return this.triggerHook(config.vercelWebhooks.pwa);
+            }
+
+            if (
+                type.startsWith('website') ||
+                type === 'translations' ||
+                type === 'translations-site-temp'
+            ) {
+                return this.triggerHook(config.vercelWebhooks.website);
+            }
+
+            if (type.startsWith('wallet_')) {
+                // execute wallet deploy
+                return;
             }
         } catch (error) {
             throw new BaseError(
@@ -563,6 +581,11 @@ export default class LearnAndEarnService {
                 error.message
             );
         }
+    }
+
+    private async triggerHook(hook: string) {
+        const response = await axios.get(hook);
+        return response.data;
     }
 
     private async countAvailableLessons(

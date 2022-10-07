@@ -260,4 +260,9 @@ export default {
     imageHandlerUrl: validatedEnv.IMAGE_HANDLER_URL,
     signatureExpiration: validatedEnv.SIGNATURE_EXPIRATION,
     learnAndEarnPrivateKey: validatedEnv.LEARN_AND_EARN_PRIVATE_KEY,
+    vercelWebhooks: {
+        pwa: validatedEnv.VERCEL_WEBHOOK_PWA,
+        website: validatedEnv.VERCEL_WEBHOOK_WEBSITE,
+        wallet: validatedEnv.VERCEL_WEBHOOK_WALLET,
+    },
 };
