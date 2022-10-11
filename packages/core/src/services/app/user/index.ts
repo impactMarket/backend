@@ -294,7 +294,11 @@ export default class UserService {
 
     public async getReport(
         user: string,
-        query: { offset?: string; limit?: string }
+        query: {
+            offset?: string;
+            limit?: string;
+            community?: number;
+        }
     ) {
         const userRoles = await getUserRoles(user);
 
@@ -309,6 +313,32 @@ export default class UserService {
         }
 
         const communities = userRoles.ambassador.communities;
+        const communityId = query.community;
+        let addresses: string[] = [];
+
+        if (communityId) {
+            const community = await models.community.findOne({
+                attributes: ['contractAddress'],
+                where: {
+                    id: communityId,
+                },
+            });
+
+            if (
+                !community?.contractAddress ||
+                communities.indexOf(
+                    community?.contractAddress?.toLocaleLowerCase()
+                ) === -1
+            ) {
+                throw new BaseError(
+                    'NOT_AMBASSADOR',
+                    'user is not an ambassador of this community'
+                );
+            }
+            addresses.push(community.contractAddress);
+        } else {
+            addresses = communities;
+        }
 
         return models.anonymousReport.findAndCountAll({
             include: [
@@ -323,7 +353,7 @@ export default class UserService {
                     as: 'community',
                     where: {
                         contractAddress: {
-                            [Op.in]: communities.map((c) => getAddress(c)),
+                            [Op.in]: addresses.map((c) => getAddress(c)),
                         },
                     },
                 },
