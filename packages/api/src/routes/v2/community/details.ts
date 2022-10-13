@@ -9,7 +9,12 @@ import {
     verifySignature,
 } from '../../../middlewares';
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 8000000,  // 8MB
+    }
+});
 
 export default (route: Router): void => {
     const controller = new CommunityController();
