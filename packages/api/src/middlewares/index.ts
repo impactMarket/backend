@@ -148,18 +148,20 @@ export function verifySignature(
         return;
     }
 
-    const fullMessage = `${config.signatureMessage}_${message}`
+    const fullMessage = `${config.signatureMessage}_${message}`;
 
     const address = ethers.utils.verifyMessage(
         fullMessage,
-        signature as string,
+        signature as string
     );
 
     if (address.toLocaleLowerCase() === req.user?.address.toLocaleLowerCase()) {
         // validate signature timestamp
         const timestamp = message as string;
         const expirationDate = new Date();
-        expirationDate.setDate(expirationDate.getDate() - config.signatureExpiration);
+        expirationDate.setDate(
+            expirationDate.getDate() - config.signatureExpiration
+        );
         if (!timestamp || parseInt(timestamp) < expirationDate.getTime()) {
             res.status(403).json({
                 success: false,
@@ -179,9 +181,8 @@ export function verifySignature(
                 message: 'signature is invalid',
             },
         });
-        return;
     }
-};
+}
 
 const checkRoles = (roles: string[], path: string, reqMethod: string) => {
     let authorizate = false;

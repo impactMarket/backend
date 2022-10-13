@@ -1,15 +1,15 @@
 import { database } from '@impactmarket/core';
 import { Router } from 'express';
+import multer from 'multer';
 
 import { CommunityController } from '../../../controllers/v2/community/details';
 import {
     authenticateToken,
     optionalAuthentication,
+    verifySignature,
 } from '../../../middlewares';
 
-import multer from 'multer';
 const upload = multer({ storage: multer.memoryStorage() });
-
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -376,6 +376,7 @@ export default (route: Router): void => {
         '/beneficiaries',
         upload.single('file'),
         authenticateToken,
+        verifySignature,
         controller.addBeneficiaries
     );
 };

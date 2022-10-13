@@ -214,11 +214,11 @@ class CommunityController {
         this.detailsService
             .addBeneficiaries(file, req.user.address)
             .then((r) => {
-                if(r.success) {
-                    standardResponse(res, 200, true, r)
+                if (r.success) {
+                    standardResponse(res, 200, true, r);
                 } else {
                     res.status(400).sendFile(r.fileName!, {
-                        root: r.filePath
+                        root: r.filePath,
                     });
                 }
             })

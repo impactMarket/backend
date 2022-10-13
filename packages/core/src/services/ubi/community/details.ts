@@ -1,4 +1,8 @@
+import { getAddress } from '@ethersproject/address';
+import csv from 'csvtojson';
 import { ethers } from 'ethers';
+import fs from 'fs';
+import json2csv from 'json2csv';
 import { Op, WhereOptions, fn, col, literal, Transaction } from 'sequelize';
 
 import { models } from '../../../database';
@@ -28,12 +32,7 @@ import { Logger } from '../../../utils/logger';
 import { isAddress } from '../../../utils/util';
 import { IListBeneficiary, BeneficiaryFilterType } from '../../endpoints';
 import { CommunityContentStorage } from '../../storage';
-import csv from 'csvtojson';
-import { getAddress } from '@ethersproject/address';
-import json2csv from 'json2csv';
-import fs from 'fs'
 const writeFile = fs.promises.writeFile;
-
 
 export class CommunityDetailsService {
     private communityContentStorage = new CommunityContentStorage();
@@ -849,13 +848,15 @@ export class CommunityDetailsService {
             throw new BaseError('NOT_MANAGER', 'user not a manager');
         }
 
-        let failedAddress: any[] = [];
-        let addressesToAdd: string[] = [];
-        let usersToCreate: any[] = [];
+        const failedAddress: any[] = [];
+        const addressesToAdd: string[] = [];
+        const usersToCreate: any[] = [];
 
         // convert csv to json
-        const string = file.buffer.toString().replace(/;/g, ",");
-        const beneficiaries = await csv({ ignoreEmpty: true }).fromString(string);
+        const string = file.buffer.toString().replace(/;/g, ',');
+        const beneficiaries = await csv({ ignoreEmpty: true }).fromString(
+            string
+        );
 
         // check valid address
         for (let i = 0; i < beneficiaries.length; i++) {
@@ -863,9 +864,9 @@ export class CommunityDetailsService {
             try {
                 const address = getAddress(beneficiary.address);
                 const user = await models.appUser.findOne({
-                    where: { address }
+                    where: { address },
                 });
-    
+
                 if (!user) {
                     const validate = this.validateUserRegistry(beneficiary);
                     if (validate.valid) {
@@ -892,30 +893,38 @@ export class CommunityDetailsService {
                     error: 'invalid address',
                 });
             }
-        };
+        }
 
         // create accounts
         if (usersToCreate.length > 0) {
             const users = await models.appUser.bulkCreate(usersToCreate);
-            users.forEach(user => {
+            users.forEach((user) => {
                 addressesToAdd.push(user.address);
             });
         }
+
+        // check if it is already a beneficiary
+        const existingBeneficiaries = await this.verifyBeneficiaries(
+            addressesToAdd
+        );
+        existingBeneficiaries.forEach((address) => {
+            addressesToAdd.splice(addressesToAdd.indexOf(address), 1);
+        });
 
         // add beneficiaries
 
         if (failedAddress.length > 0) {
             // Write data into csv file named failed.csv
             var fields = ['address', 'error'];
-            const data = json2csv.parse(failedAddress, { fields })
+            const data = json2csv.parse(failedAddress, { fields });
             const filePath = './public/';
             const fileName = 'failed.csv';
             await writeFile(filePath + fileName, data);
             setTimeout(async () => {
                 // delete file after 30 seconds
-                await fs.promises.unlink(filePath + fileName)
+                await fs.promises.unlink(filePath + fileName);
             }, 30000);
-            
+
             return {
                 success: false,
                 filePath,
@@ -924,8 +933,22 @@ export class CommunityDetailsService {
         } else {
             return {
                 success: true,
-            }
+            };
         }
+    }
+
+    private async verifyBeneficiaries(addresses: string[]) {
+        const beneficiaries: string[] = [];
+        const promises = addresses.map((address) => getUserRoles(address));
+        const results = await Promise.all(promises);
+
+        results.forEach((result) => {
+            if (result.beneficiary) {
+                beneficiaries.push(getAddress(result.beneficiary.address));
+            }
+        });
+
+        return beneficiaries;
     }
 
     private getSearchInput(searchInput: string) {
@@ -953,7 +976,7 @@ export class CommunityDetailsService {
         if (!user.firstName || !user.lastName) {
             return {
                 valid: false,
-                error: 'invalid firstName/lastName'
+                error: 'invalid firstName/lastName',
             };
         }
 
@@ -962,7 +985,7 @@ export class CommunityDetailsService {
         if (!year) {
             return {
                 valid: false,
-                error: 'invalid yearOfBirth'
+                error: 'invalid yearOfBirth',
             };
         }
 
@@ -970,20 +993,23 @@ export class CommunityDetailsService {
         if (!user.phone || typeof user.phone !== 'string') {
             return {
                 valid: false,
-                error: 'invalid phone'
+                error: 'invalid phone',
             };
         }
 
         // validate gender
-        if (!user.gender || ['m', 'f', 'u'].indexOf(user.gender.toLocaleLowerCase()) === -1) {
+        if (
+            !user.gender ||
+            ['m', 'f', 'u'].indexOf(user.gender.toLocaleLowerCase()) === -1
+        ) {
             return {
                 valid: false,
-                error: 'invalid gender'
+                error: 'invalid gender',
             };
         }
 
         return {
-            valid: true
+            valid: true,
         };
     }
 }

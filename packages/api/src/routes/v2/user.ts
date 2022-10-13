@@ -1,7 +1,11 @@
 import { Router } from 'express';
 
 import UserController from '../../controllers/v2/user';
-import { authenticateToken, adminAuthentication, verifySignature } from '../../middlewares';
+import {
+    authenticateToken,
+    adminAuthentication,
+    verifySignature,
+} from '../../middlewares';
 import userValidators from '../../validators/user';
 
 export default (app: Router): void => {
