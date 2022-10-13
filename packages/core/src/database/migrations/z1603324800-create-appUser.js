@@ -41,6 +41,12 @@ module.exports = {
             pushNotificationToken: {
                 type: Sequelize.STRING(64),
             },
+            walletPNT: {
+                type: Sequelize.STRING(256),
+            },
+            appPNT: {
+                type: Sequelize.STRING(256),
+            },
             gender: {
                 type: Sequelize.STRING(2),
             },

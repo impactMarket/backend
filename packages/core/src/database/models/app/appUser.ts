@@ -16,6 +16,8 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public language!: string;
     public currency!: string;
     public pushNotificationToken!: string | null;
+    public walletPNT!: string | null;
+    public appPNT!: string | null;
     public gender!: string;
     public year!: number | null;
     public children!: number | null;
@@ -80,6 +82,12 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             },
             pushNotificationToken: {
                 type: DataTypes.STRING(64),
+            },
+            walletPNT: {
+                type: DataTypes.STRING(256),
+            },
+            appPNT: {
+                type: DataTypes.STRING(256),
             },
             gender: {
                 type: DataTypes.STRING(2),

@@ -45,6 +45,12 @@ export default (app: Router): void => {
      *               pushNotificationToken:
      *                 type: string
      *                 required: false
+     *               walletPNT:
+     *                 type: string
+     *                 required: false
+     *               appPNT:
+     *                 type: string
+     *                 required: false
      *               firstName:
      *                 type: string
      *                 required: false
@@ -122,6 +128,14 @@ export default (app: Router): void => {
      *                 type: string
      *                 required: false
      *               pushNotificationToken:
+     *                 type: string
+     *                 nullable: true
+     *                 required: false
+     *               walletPNT:
+     *                 type: string
+     *                 nullable: true
+     *                 required: false
+     *               appPNT:
      *                 type: string
      *                 nullable: true
      *                 required: false
