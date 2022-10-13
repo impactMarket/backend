@@ -62,14 +62,19 @@ export default class UserService {
             // including their phone number information, if it exists
             user = await models.appUser.create(userParams);
         } else {
-            if (userParams.pushNotificationToken) {
-                models.appUser.update(
-                    {
-                        pushNotificationToken: userParams.pushNotificationToken,
-                    },
-                    { where: { address: userParams.address } }
-                );
-            }
+            const pushNotification = {
+                pushNotificationToken: userParams.pushNotificationToken,
+                walletPNT: userParams.walletPNT,
+                appPNT: userParams.appPNT,
+            };
+
+            await models.appUser.update(
+                {
+                    ...pushNotification,
+                },
+                { where: { address: userParams.address } }
+            );
+
             // it's not null at this point
             user = (await models.appUser.findOne({
                 where: { address: userParams.address },

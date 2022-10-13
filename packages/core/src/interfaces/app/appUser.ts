@@ -15,6 +15,8 @@ import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
  *          - language
  *          - currency
  *          - pushNotificationToken
+ *          - walletPNT
+ *          - appPNT
  *          - gender
  *          - year
  *          - children
@@ -40,6 +42,12 @@ import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
  *          pushNotificationToken:
  *            type: string
  *            description: User push notifications token, used in the app
+ *          walletPNT:
+ *            type: string
+ *            description: User push notifications token, used in the wallet
+ *          appPNT:
+ *            type: string
+ *            description: User push notifications token, used in the web app
  *          gender:
  *            type: string
  *            enum: [u, m, f, o]
@@ -82,6 +90,8 @@ export interface AppUser {
     language: string;
     currency: string;
     pushNotificationToken: string | null;
+    walletPNT: string | null;
+    appPNT: string | null;
     gender: string;
     year: number | null;
     children: number | null;
@@ -114,6 +124,8 @@ export interface AppUserUpdate {
     language?: string;
     currency?: string;
     pushNotificationToken?: string | null;
+    walletPNT?: string | null;
+    appPNT?: string | null;
     gender?: string;
     year?: number | null;
     children?: number | null;
@@ -137,6 +149,8 @@ export interface AppUserCreationAttributes {
     avatarMediaId?: number;
     avatarMediaPath?: string;
     pushNotificationToken?: string;
+    walletPNT?: string;
+    appPNT?: string;
     active?: boolean;
     email?: string;
     bio?: string;
