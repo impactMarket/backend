@@ -102,7 +102,10 @@ function validateEnv() {
         COUNCIL_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         IMAGE_HANDLER_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         SIGNATURE_EXPIRATION: num({ default: 15 }),
-        SIGNATURE_MESSAGE: str({ devDefault: onlyOnTestEnv('xyz') }),
+        LEARN_AND_EARN_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        VERCEL_WEBHOOK_PWA: str({ devDefault: onlyOnTestEnv('xyz') }),
+        VERCEL_WEBHOOK_WEBSITE: str({ devDefault: onlyOnTestEnv('xyz') }),
+        VERCEL_WEBHOOK_WALLET: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 

@@ -19,11 +19,22 @@ import { initializeImMetadata } from './app/imMetadata';
 import { airgrabAssociation } from './associations/airgrab';
 import { appAssociation } from './associations/app';
 import { communityAssociation } from './associations/community';
+import { learnAndEarnAssociation } from './associations/learnAndEarn';
 import { storyAssociation } from './associations/story';
 import { userAssociation } from './associations/user';
 import { initializeGlobalDailyState } from './global/globalDailyState';
 import { initializeGlobalDemographics } from './global/globalDemographics';
 import { initializeGlobalGrowth } from './global/globalGrowth';
+import { initializeLearnAndEarnCategory } from './learnAndEarn/learnAndEarnCategory';
+import { initializeLearnAndEarnLesson } from './learnAndEarn/learnAndEarnLesson';
+import { initializeLearnAndEarnLevel } from './learnAndEarn/learnAndEarnLevel';
+import { initializeLearnAndEarnPayment } from './learnAndEarn/learnAndEarnPayment';
+import { initializeLearnAndEarnQuiz } from './learnAndEarn/learnAndEarnQuiz';
+import { initializeLearnAndEarnUserCategory } from './learnAndEarn/learnAndEarnUserCategory';
+import { initializeLearnAndEarnUserLesson } from './learnAndEarn/learnAndEarnUserLesson';
+import { initializeLearnAndEarnUserLevel } from './learnAndEarn/learnAndEarnUserLevel';
+import { initializeMerchantCommunity } from './merchant/merchantCommunity';
+import { initializeMerchantRegistry } from './merchant/merchantRegistry';
 import { initializeReachedAddress } from './reachedAddress';
 import { initializeStoryComment } from './story/storyComment';
 import { initializeStoryCommunity } from './story/storyCommunity';
@@ -111,10 +122,25 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAirgrabUser(sequelize);
     initializeAirgrabProof(sequelize);
 
+    // merchant
+    initializeMerchantRegistry(sequelize);
+    initializeMerchantCommunity(sequelize);
+
+    // L&E
+    initializeLearnAndEarnCategory(sequelize);
+    initializeLearnAndEarnLesson(sequelize);
+    initializeLearnAndEarnLevel(sequelize);
+    initializeLearnAndEarnQuiz(sequelize);
+    initializeLearnAndEarnUserCategory(sequelize);
+    initializeLearnAndEarnUserLesson(sequelize);
+    initializeLearnAndEarnUserLevel(sequelize);
+    initializeLearnAndEarnPayment(sequelize);
+
     // associations
     userAssociation(sequelize);
     communityAssociation(sequelize);
     storyAssociation(sequelize);
     appAssociation(sequelize);
     airgrabAssociation(sequelize);
+    learnAndEarnAssociation(sequelize);
 }

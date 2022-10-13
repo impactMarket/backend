@@ -643,7 +643,6 @@ export default class StoryServiceV2 {
                 include: [
                     {
                         attributes: [
-                            'address',
                             'firstName',
                             'lastName',
                             'avatarMediaPath',

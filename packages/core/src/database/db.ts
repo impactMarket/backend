@@ -18,6 +18,16 @@ import { ImMetadata } from './models/app/imMetadata';
 import { GlobalDailyState } from './models/global/globalDailyState';
 import { GlobalDemographics } from './models/global/globalDemographics';
 import { GlobalGrowthModel } from './models/global/globalGrowth';
+import { LearnAndEarnCategoryModel } from './models/learnAndEarn/learnAndEarnCategory';
+import { LearnAndEarnLessonModel } from './models/learnAndEarn/learnAndEarnLesson';
+import { LearnAndEarnLevelModel } from './models/learnAndEarn/learnAndEarnLevel';
+import { LearnAndEarnPaymentModel } from './models/learnAndEarn/learnAndEarnPayment';
+import { LearnAndEarnQuizModel } from './models/learnAndEarn/learnAndEarnQuiz';
+import { LearnAndEarnUserCategoryModel } from './models/learnAndEarn/learnAndEarnUserCategory';
+import { LearnAndEarnUserLessonModel } from './models/learnAndEarn/learnAndEarnUserLesson';
+import { LearnAndEarnUserLevelModel } from './models/learnAndEarn/learnAndEarnUserLevel';
+import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
+import { MerchantRegistryModel } from './models/merchant/merchantRegistry';
 import { ReachedAddress } from './models/reachedAddress';
 import { StoryCommentModel } from './models/story/storyComment';
 import { StoryCommunityModel } from './models/story/storyCommunity';
@@ -94,6 +104,18 @@ export interface DbModels {
     //
     airgrabUser: ModelCtor<AirgrabUserModel>;
     airgrabProof: ModelCtor<AirgrabProofModel>;
+    //
+    learnAndEarnCategory: ModelCtor<LearnAndEarnCategoryModel>;
+    learnAndEarnLesson: ModelCtor<LearnAndEarnLessonModel>;
+    learnAndEarnLevel: ModelCtor<LearnAndEarnLevelModel>;
+    learnAndEarnQuiz: ModelCtor<LearnAndEarnQuizModel>;
+    learnAndEarnUserCategory: ModelCtor<LearnAndEarnUserCategoryModel>;
+    learnAndEarnUserLesson: ModelCtor<LearnAndEarnUserLessonModel>;
+    learnAndEarnUserLevel: ModelCtor<LearnAndEarnUserLevelModel>;
+    learnAndEarnPayment: ModelCtor<LearnAndEarnPaymentModel>;
+    //
+    merchantRegistry: ModelCtor<MerchantRegistryModel>;
+    merchantCommunity: ModelCtor<MerchantCommunityModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;

@@ -89,6 +89,7 @@ export const getCommunityState = async (
     contributors: number;
     managers: number;
     baseInterval: number;
+    state: number;
 }> => {
     try {
         const query = gql`
@@ -105,6 +106,7 @@ export const getCommunityState = async (
                     managers
                     baseInterval
                     estimatedFunds
+                    state
                 }
             }
         `;

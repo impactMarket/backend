@@ -35,7 +35,7 @@ class CommunityController {
                 parseInt(offset, 10),
                 parseInt(limit, 10),
                 {
-                    state,
+                    state: state ? parseInt(state) : undefined,
                 },
                 search !== undefined && typeof search === 'string'
                     ? search
@@ -86,7 +86,7 @@ class CommunityController {
                 parseInt(offset, 10),
                 parseInt(limit, 10),
                 {
-                    state,
+                    state: state ? parseInt(state) : undefined,
                     suspect: suspect ? suspect === 'true' : undefined,
                     inactivity: inactivity ? inactivity === 'true' : undefined,
                     unidentified: unidentified
@@ -168,6 +168,13 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    getMerchant = (req: Request, res: Response) => {
+        this.detailsService
+            .getMerchant(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     getClaimLocation = (req: Request, res: Response) => {
         this.claimLocationService
             .getByCommunity(parseInt(req.params.id, 10))
@@ -222,6 +229,13 @@ class CommunityController {
                     });
                 }
             })
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    getCampaign = (req: Request, res: Response) => {
+        this.detailsService
+            .getCampaign(parseInt(req.params.id, 10))
+            .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }

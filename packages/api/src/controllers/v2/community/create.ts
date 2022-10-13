@@ -129,38 +129,20 @@ class CommunityController {
             return;
         }
         const { name, description, coverMediaPath } = req.body;
+        const { id } = req.params;
 
-        // verify if the current user is manager in this community
-        this.communityDetailsService
-            .getManagerByAddress(req.user.address)
-            .then(async (manager) => {
-                if (manager !== null) {
-                    this.communityService
-                        .edit(
-                            manager.communityId,
-                            {
-                                name,
-                                description,
-                                coverMediaPath,
-                            },
-                            req.user?.address,
-                            req.user?.userId
-                        )
-                        .then((community) =>
-                            standardResponse(res, 200, true, community)
-                        )
-                        .catch((e) =>
-                            standardResponse(res, 400, false, '', { error: e })
-                        );
-                } else {
-                    standardResponse(res, 403, false, '', {
-                        error: {
-                            name: 'NOT_MANAGER',
-                            message: 'Not manager!',
-                        },
-                    });
-                }
-            })
+        this.communityService
+            .edit(
+                req.user.address,
+                parseInt(id),
+                {
+                    name,
+                    description,
+                    coverMediaPath,
+                },
+                req.user?.userId
+            )
+            .then((community) => standardResponse(res, 200, true, community))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }

@@ -9,6 +9,7 @@ import { models } from '../../../database';
 import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { AppUser } from '../../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
+import { UbiCommunityCampaign } from '../../../interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
 import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
 import { ManagerSubgraph } from '../../../subgraph/interfaces/manager';
@@ -29,7 +30,7 @@ import {
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { Logger } from '../../../utils/logger';
-import { isAddress } from '../../../utils/util';
+import { isAddress, getSearchInput } from '../../../utils/util';
 import { IListBeneficiary, BeneficiaryFilterType } from '../../endpoints';
 import { CommunityContentStorage } from '../../storage';
 const writeFile = fs.promises.writeFile;
@@ -147,9 +148,29 @@ export class CommunityDetailsService {
             });
 
             return {
-                ...ambassador,
+                ...ambassador?.toJSON(),
                 active: true,
             };
+        }
+    }
+
+    public async getMerchant(communityId: number) {
+        try {
+            const merchant = await models.merchantRegistry.findAll({
+                include: [
+                    {
+                        attributes: [],
+                        model: models.merchantCommunity,
+                        as: 'merchantCommunity',
+                        where: {
+                            communityId,
+                        },
+                    },
+                ],
+            });
+            return merchant;
+        } catch (error) {
+            throw new BaseError('UNEXPECTED_ERROR', error);
         }
     }
 
@@ -242,7 +263,7 @@ export class CommunityDetailsService {
         offset: number,
         limit: number,
         filter: {
-            state?: string;
+            state?: number;
         },
         searchInput?: string,
         orderBy?: string,
@@ -254,7 +275,7 @@ export class CommunityDetailsService {
             firstName?: string | null;
             lastName?: string | null;
             isDeleted: boolean;
-            state?: string;
+            state?: number;
             added: number;
             removed: number;
             since: number;
@@ -286,6 +307,7 @@ export class CommunityDetailsService {
         let count: number = 0;
         let orderKey: string | null = null;
         let orderDirection: string | null = null;
+        let managerState: string | undefined = undefined;
 
         if (orderBy) {
             [orderKey, orderDirection] = orderBy.split(':');
@@ -296,12 +318,18 @@ export class CommunityDetailsService {
         }
 
         if (searchInput) {
-            const input = this.getSearchInput(searchInput);
+            const input = getSearchInput(searchInput);
             if (input.address) {
                 addresses.push(input.address);
-            } else if (input.appUserFilter) {
-                appUserFilter = input.appUserFilter;
+            } else if (input.name) {
+                appUserFilter = literal(
+                    `concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`
+                );
             }
+        }
+
+        if (filter.state !== undefined) {
+            managerState = `state: ${filter.state ? filter.state : 0}`;
         }
 
         if (community.status === 'pending') {
@@ -349,11 +377,7 @@ export class CommunityDetailsService {
                 }
                 managersSubgraph = await getCommunityManagers(
                     community.contractAddress!,
-                    filter.state === 'active'
-                        ? 'state: 0'
-                        : filter.state === 'removed'
-                        ? 'state: 1'
-                        : undefined,
+                    managerState,
                     addresses,
                     orderKey ? `orderBy: ${orderKey}` : undefined,
                     orderDirection
@@ -371,11 +395,7 @@ export class CommunityDetailsService {
                 // filter by address
                 managersSubgraph = await getCommunityManagers(
                     community.contractAddress!,
-                    filter.state === 'active'
-                        ? 'state: 0'
-                        : filter.state === 'removed'
-                        ? 'state: 1'
-                        : undefined,
+                    managerState,
                     addresses,
                     orderKey ? `orderBy: ${orderKey}` : undefined,
                     orderDirection
@@ -394,11 +414,7 @@ export class CommunityDetailsService {
             } else {
                 managersSubgraph = await getCommunityManagers(
                     community.contractAddress!,
-                    filter.state === 'active'
-                        ? 'state: 0'
-                        : filter.state === 'removed'
-                        ? 'state: 1'
-                        : undefined,
+                    managerState,
                     undefined,
                     orderKey ? `orderBy: ${orderKey}` : undefined,
                     orderDirection
@@ -409,7 +425,7 @@ export class CommunityDetailsService {
                 );
                 count = await countManagers(
                     community.contractAddress!,
-                    filter.state ? filter.state : 'all'
+                    filter.state
                 );
                 addresses = managersSubgraph.map((manager) =>
                     ethers.utils.getAddress(manager.address)
@@ -446,7 +462,7 @@ export class CommunityDetailsService {
                     since: manager.since,
                     until: manager.until,
                     isDeleted: !user || !!user!.deletedAt,
-                    state: manager.state === 0 ? 'active' : 'removed',
+                    state: manager.state,
                 };
             });
 
@@ -513,19 +529,20 @@ export class CommunityDetailsService {
         }
 
         if (searchInput) {
-            const input = this.getSearchInput(searchInput);
+            const input = getSearchInput(searchInput);
             if (input.address) {
                 addresses.push(input.address);
-            } else if (input.appUserFilter) {
-                appUserFilter = input.appUserFilter;
+            } else if (input.name) {
+                appUserFilter = literal(
+                    `concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`
+                );
             }
         }
 
         let beneficiariesSubgraph: BeneficiarySubgraph[] | null = null;
 
         if (filter.state !== undefined) {
-            beneficiaryState =
-                filter.state === 'active' ? 'state: 0' : 'state: 1';
+            beneficiaryState = `state: ${filter.state || 0}`;
         }
 
         let appUsers: AppUser[] = [];
@@ -598,7 +615,7 @@ export class CommunityDetailsService {
             );
             count = await countBeneficiaries(
                 contractAddress,
-                filter.state ? filter.state : 'all'
+                filter.state !== null ? (filter.state as number) : undefined
             );
             addresses = beneficiariesSubgraph.map((beneficiary) =>
                 ethers.utils.getAddress(beneficiary.address)
@@ -639,12 +656,7 @@ export class CommunityDetailsService {
                     blocked: beneficiary.state === 2,
                     suspect: user?.suspect,
                     isDeleted: !user || !!user!.deletedAt,
-                    state:
-                        beneficiary.state === 0
-                            ? 'active'
-                            : beneficiary.state === 1
-                            ? 'removed'
-                            : 'locked',
+                    state: beneficiary.state,
                 };
             }
         );
@@ -951,24 +963,15 @@ export class CommunityDetailsService {
         return beneficiaries;
     }
 
-    private getSearchInput(searchInput: string) {
-        if (isAddress(searchInput)) {
-            return {
-                address: ethers.utils.getAddress(searchInput),
-            };
-        } else if (
-            searchInput.toLowerCase().indexOf('drop') === -1 &&
-            searchInput.toLowerCase().indexOf('delete') === -1 &&
-            searchInput.toLowerCase().indexOf('update') === -1
-        ) {
-            return {
-                appUserFilter: literal(
-                    `concat("firstName", ' ', "lastName") ILIKE '%${searchInput}%'`
-                ),
-            };
-        } else {
-            throw new BaseError('INVALID_SEARCH', 'Not valid search!');
-        }
+    public async getCampaign(communityId: number) {
+        const result = await models.ubiCommunityCampaign.findOne({
+            where: {
+                communityId,
+            },
+        });
+        return result !== null
+            ? (result.toJSON() as UbiCommunityCampaign)
+            : null;
     }
 
     private validateUserRegistry(user: any) {

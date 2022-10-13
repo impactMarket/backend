@@ -3,6 +3,7 @@ import { Router } from 'express';
 import claimLocation from './claimLocation';
 import community from './community';
 import generic from './generic';
+import learnAndEarn from './learnAndEarn';
 import story from './story';
 import user from './user';
 
@@ -13,6 +14,7 @@ export default (): Router => {
     generic(app);
     story(app);
     claimLocation(app);
+    learnAndEarn(app);
 
     return app;
 };

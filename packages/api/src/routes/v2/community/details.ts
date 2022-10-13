@@ -80,9 +80,9 @@ export default (route: Router): void => {
      *         name: state
      *         schema:
      *           type: string
-     *           enum: [active, removed]
+     *           enum: [0, 1]
      *         required: false
-     *         description: manager state
+     *         description: manager state (0 - active, 1 - removed)
      *       - in: query
      *         name: offset
      *         schema:
@@ -178,6 +178,27 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
+     * /communities/{id}/merchant:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community merchant
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/:id/merchant', controller.getMerchant);
+
+    /**
+     * @swagger
+     *
      * /communities/beneficiaries:
      *   get:
      *     tags:
@@ -188,9 +209,9 @@ export default (route: Router): void => {
      *         name: state
      *         schema:
      *           type: string
-     *           enum: [active, removed]
+     *           enum: [0, 1, 2]
      *         required: false
-     *         description: beneficiary state
+     *         description: beneficiary state (0 - active, 1 - removed, 2 - locked)
      *       - in: query
      *         name: offset
      *         schema:
@@ -378,5 +399,34 @@ export default (route: Router): void => {
         authenticateToken,
         verifySignature,
         controller.addBeneficiaries
+    );
+
+    /**
+     * @swagger
+     *
+     * /communities/{id}/campaign:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community campaign
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunityCampaign'
+     */
+    route.get(
+        '/:id/campaign',
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
+        controller.getCampaign
     );
 };

@@ -14,6 +14,7 @@ import {
 } from '../../../subgraph/queries/community';
 import { BaseError } from '../../../utils/baseError';
 import { fetchData } from '../../../utils/dataFetching';
+import { getSearchInput } from '../../../utils/util';
 import { CommunityDetailsService } from './details';
 
 export class CommunityListService {
@@ -22,7 +23,7 @@ export class CommunityListService {
     public async list(query: {
         orderBy?: string;
         filter?: string;
-        name?: string;
+        search?: string;
         country?: string;
         excludeCountry?: string;
         extended?: string;
@@ -80,13 +81,21 @@ export class CommunityListService {
             };
         }
 
-        if (query.name) {
-            extendedWhere = {
-                ...extendedWhere,
-                name: {
-                    [Op.iLike]: `%${query.name}%`,
-                },
-            };
+        if (query.search) {
+            const input = getSearchInput(query.search);
+            if (input.address) {
+                extendedWhere = {
+                    ...extendedWhere,
+                    requestByAddress: input.address,
+                };
+            } else if (input.name) {
+                extendedWhere = {
+                    ...extendedWhere,
+                    name: {
+                        [Op.iLike]: `%${input.name}%`,
+                    },
+                };
+            }
         }
 
         if (query.country) {
@@ -117,12 +126,23 @@ export class CommunityListService {
 
         if (query.status === 'pending') {
             const communityProposals = await this._getOpenProposals();
-            extendedWhere = {
-                ...extendedWhere,
-                requestByAddress: {
-                    [Op.notIn]: communityProposals,
-                },
-            };
+
+            if (extendedWhere.requestByAddress) {
+                const address = extendedWhere.requestByAddress;
+                if (communityProposals.indexOf(address as string) !== -1) {
+                    return {
+                        count: 0,
+                        rows: [],
+                    };
+                }
+            } else {
+                extendedWhere = {
+                    ...extendedWhere,
+                    requestByAddress: {
+                        [Op.notIn]: communityProposals,
+                    },
+                };
+            }
         }
 
         if (query.ambassadorAddress) {
@@ -566,7 +586,7 @@ export class CommunityListService {
                             : config.defaultOffset
                     },
                     where: {
-                        state: 0
+                        state_not: 1
                     }`,
                 `id, ${orderBy}`
             );
