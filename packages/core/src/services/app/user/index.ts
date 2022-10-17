@@ -256,7 +256,7 @@ export default class UserService {
         }
     }
 
-    public async delete(address: string): Promise<boolean> {
+    public async delete(address: string) {
         const roles = await getUserRoles(address);
 
         if (roles.manager !== null && roles.manager.state === 0) {
@@ -281,7 +281,7 @@ export default class UserService {
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'User was not updated');
         }
-        return true;
+        return updated[1][0].toJSON();
     }
 
     public async report(
