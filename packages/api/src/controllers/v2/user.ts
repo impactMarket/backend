@@ -1,3 +1,4 @@
+import { getAddress } from '@ethersproject/address';
 import { services } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
@@ -20,6 +21,8 @@ class UserController {
             language,
             currency,
             pushNotificationToken,
+            walletPNT,
+            appPNT,
             firstName,
             lastName,
             age,
@@ -39,6 +42,8 @@ class UserController {
                     language,
                     currency,
                     pushNotificationToken,
+                    walletPNT,
+                    appPNT,
                     firstName,
                     lastName,
                     year: age ? new Date().getUTCFullYear() - age : undefined,
@@ -47,9 +52,7 @@ class UserController {
                     email,
                     gender,
                     bio,
-                    trust: {
-                        phone,
-                    },
+                    phone,
                 },
                 overwrite,
                 recover,
@@ -89,6 +92,25 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    public findBy = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        const { address } = req.params;
+
+        this.userService
+            .findUserBy(getAddress(address), req.user.address)
+            .then((community) => standardResponse(res, 200, true, community))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     public update = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
@@ -104,6 +126,8 @@ class UserController {
             language,
             currency,
             pushNotificationToken,
+            walletPNT,
+            appPNT,
             firstName,
             lastName,
             age,
@@ -112,6 +136,8 @@ class UserController {
             email,
             gender,
             bio,
+            country,
+            phone,
         } = req.body;
         this.userService
             .update({
@@ -119,14 +145,18 @@ class UserController {
                 language,
                 currency,
                 pushNotificationToken,
+                walletPNT,
+                appPNT,
                 firstName,
                 lastName,
-                year: age ? new Date().getUTCFullYear() - age : undefined,
+                year: age ? new Date().getUTCFullYear() - age : null,
                 children,
                 avatarMediaPath,
                 email,
                 gender,
                 bio,
+                country,
+                phone,
             })
             .then((user) =>
                 standardResponse(res, 200, true, {
@@ -179,6 +209,23 @@ class UserController {
         const { communityId, message, category } = req.body;
         this.userService
             .report(message, communityId, category)
+            .then((r) => standardResponse(res, 201, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    public getReport = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        this.userService
+            .getReport(req.user.address, req.query)
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -244,6 +291,76 @@ class UserController {
             .getPresignedUrlMedia(mime)
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    public getNotifications = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        this.userService
+            .getNotifications(req.query, req.user.userId)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
+
+    public readNotifications = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        const notifications = req.body.notifications;
+
+        this.userService
+            .readNotifications(req.user.userId, notifications)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
+
+    public getUnreadNotifications = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        this.userService
+            .getUnreadNotifications(req.user.userId)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
+    };
+
+    public sendPushNotifications = (req: Request, res: Response) => {
+        const { country, communities, title, body, data } = req.body;
+
+        this.userService
+            .sendPushNotifications(title, body, country, communities, data)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) =>
+                standardResponse(res, 400, false, '', { error: e.message })
+            );
     };
 }
 

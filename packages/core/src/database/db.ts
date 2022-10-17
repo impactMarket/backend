@@ -4,11 +4,11 @@ import { AirgrabProofModel } from './models/airgrab/airgrabProof';
 import { AirgrabUserModel } from './models/airgrab/airgrabUser';
 import { AppAnonymousReportModel } from './models/app/anonymousReport';
 import { AppClientCredentialModel } from './models/app/appClientCredential';
+import { AppLogModel } from './models/app/appLog';
 import { AppMediaContentModel } from './models/app/appMediaContent';
 import { AppMediaThumbnailModel } from './models/app/appMediaThumbnail';
 import { AppNotificationModel } from './models/app/appNotification';
 import { AppProposalModel } from './models/app/appProposal';
-import { AppLogModel } from './models/app/appLog';
 import { AppUserModel } from './models/app/appUser';
 import { AppUserThroughTrustModel } from './models/app/appUserThroughTrust';
 import { AppUserTrustModel } from './models/app/appUserTrust';
@@ -18,7 +18,18 @@ import { ImMetadata } from './models/app/imMetadata';
 import { GlobalDailyState } from './models/global/globalDailyState';
 import { GlobalDemographics } from './models/global/globalDemographics';
 import { GlobalGrowthModel } from './models/global/globalGrowth';
+import { LearnAndEarnCategoryModel } from './models/learnAndEarn/learnAndEarnCategory';
+import { LearnAndEarnLessonModel } from './models/learnAndEarn/learnAndEarnLesson';
+import { LearnAndEarnLevelModel } from './models/learnAndEarn/learnAndEarnLevel';
+import { LearnAndEarnPaymentModel } from './models/learnAndEarn/learnAndEarnPayment';
+import { LearnAndEarnQuizModel } from './models/learnAndEarn/learnAndEarnQuiz';
+import { LearnAndEarnUserCategoryModel } from './models/learnAndEarn/learnAndEarnUserCategory';
+import { LearnAndEarnUserLessonModel } from './models/learnAndEarn/learnAndEarnUserLesson';
+import { LearnAndEarnUserLevelModel } from './models/learnAndEarn/learnAndEarnUserLevel';
+import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
+import { MerchantRegistryModel } from './models/merchant/merchantRegistry';
 import { ReachedAddress } from './models/reachedAddress';
+import { StoryCommentModel } from './models/story/storyComment';
 import { StoryCommunityModel } from './models/story/storyCommunity';
 import { StoryContentModel } from './models/story/storyContent';
 import { StoryEngagementModel } from './models/story/storyEngagement';
@@ -89,9 +100,22 @@ export interface DbModels {
     storyEngagement: ModelCtor<StoryEngagementModel>;
     storyUserEngagement: ModelCtor<StoryUserEngagementModel>;
     storyUserReport: ModelCtor<StoryUserReportModel>;
+    storyComment: ModelCtor<StoryCommentModel>;
     //
     airgrabUser: ModelCtor<AirgrabUserModel>;
     airgrabProof: ModelCtor<AirgrabProofModel>;
+    //
+    learnAndEarnCategory: ModelCtor<LearnAndEarnCategoryModel>;
+    learnAndEarnLesson: ModelCtor<LearnAndEarnLessonModel>;
+    learnAndEarnLevel: ModelCtor<LearnAndEarnLevelModel>;
+    learnAndEarnQuiz: ModelCtor<LearnAndEarnQuizModel>;
+    learnAndEarnUserCategory: ModelCtor<LearnAndEarnUserCategoryModel>;
+    learnAndEarnUserLesson: ModelCtor<LearnAndEarnUserLessonModel>;
+    learnAndEarnUserLevel: ModelCtor<LearnAndEarnUserLevelModel>;
+    learnAndEarnPayment: ModelCtor<LearnAndEarnPaymentModel>;
+    //
+    merchantRegistry: ModelCtor<MerchantRegistryModel>;
+    merchantCommunity: ModelCtor<MerchantCommunityModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;

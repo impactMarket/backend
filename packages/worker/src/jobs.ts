@@ -8,16 +8,11 @@ import {
     calcuateCommunitiesMetrics,
     internalNotifyLowCommunityFunds,
     internalNotifyNewCommunities,
-    verifyCommunitySuspectActivity,
 } from './jobs/cron/community';
 import { calcuateGlobalMetrics } from './jobs/cron/global';
 import { cleanupNetworkRewards } from './jobs/cron/network';
-import { verifyStoriesLifecycle } from './jobs/cron/stories';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
-import {
-    verifyUserSuspectActivity,
-    verifyDeletedAccounts,
-} from './jobs/cron/user';
+import { verifyDeletedAccounts } from './jobs/cron/user';
 
 const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
 const providerFallback = new ethers.providers.JsonRpcProvider(
@@ -235,8 +230,10 @@ function startChainSubscriber(fallback?: boolean): ChainSubscribers {
  * They all follow the API timezone, which should be UTC, same as postgresql.
  */
 function cron() {
-    const globalDemographicsService = new services.global.GlobalDemographicsService();
-    const communityDemographicsService = new services.ubi.CommunityDemographicsService();
+    const globalDemographicsService =
+        new services.global.GlobalDemographicsService();
+    const communityDemographicsService =
+        new services.ubi.CommunityDemographicsService();
 
     // multiple times a day
 
@@ -398,7 +395,8 @@ function cron() {
         new CronJob(
             '0 0 * * *',
             () => {
-                communityDemographicsService.calculate()
+                communityDemographicsService
+                    .calculate()
                     .then(() => {
                         services.app.CronJobExecutedService.add(
                             'calculateCommunitiesDemographics'
@@ -407,7 +405,8 @@ function cron() {
                             'calculateCommunitiesDemographics successfully executed!'
                         );
 
-                        globalDemographicsService.calculate()
+                        globalDemographicsService
+                            .calculate()
                             .then(() => {
                                 services.app.CronJobExecutedService.add(
                                     'calculateDemographics'
@@ -417,7 +416,9 @@ function cron() {
                                 );
                             })
                             .catch((e) => {
-                                utils.Logger.error('calculateDemographics FAILED! ' + e);
+                                utils.Logger.error(
+                                    'calculateDemographics FAILED! ' + e
+                                );
                             });
                     })
                     .catch((e) => {
@@ -432,79 +433,6 @@ function cron() {
     } catch (e) {
         /** */
     }
-
-    // everyday at 1am
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '0 1 * * *',
-        () => {
-            utils.Logger.info('Verify stories...');
-            verifyStoriesLifecycle()
-                .then(() => {
-                    services.app.CronJobExecutedService.add(
-                        'verifyStoriesLifecycle'
-                    );
-                    utils.Logger.info(
-                        'verifyStoriesLifecycle successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    utils.Logger.error('verifyStoriesLifecycle FAILED! ' + e);
-                });
-        },
-        null,
-        true
-    );
-
-    // at 5:12 am.
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '12 5 * * *',
-        () => {
-            utils.Logger.info('Verify community suspicious activity...');
-            verifyCommunitySuspectActivity()
-                .then(() => {
-                    services.app.CronJobExecutedService.add(
-                        'verifyCommunitySuspectActivity'
-                    );
-                    utils.Logger.info(
-                        'verifyCommunitySuspectActivity successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    utils.Logger.error(
-                        'verifyCommunitySuspectActivity FAILED! ' + e
-                    );
-                });
-        },
-        null,
-        true
-    );
-
-    // at 2:12 am and 2:12 pm.
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '12 2,14 * * *',
-        () => {
-            utils.Logger.info('Verify user suspicious activity...');
-            verifyUserSuspectActivity()
-                .then(() => {
-                    services.app.CronJobExecutedService.add(
-                        'verifyUserSuspectActivity'
-                    );
-                    utils.Logger.info(
-                        'verifyUserSuspectActivity successfully executed!'
-                    );
-                })
-                .catch((e) => {
-                    utils.Logger.error(
-                        'verifyUserSuspectActivity FAILED! ' + e
-                    );
-                });
-        },
-        null,
-        true
-    );
 
     try {
         // everyday at 1am

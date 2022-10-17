@@ -23,6 +23,10 @@ module.exports = {
                 type: Sequelize.STRING(44),
                 allowNull: true,
             },
+            storyMedia: {
+                type: Sequelize.ARRAY(Sequelize.STRING(44)),
+                allowNull: true,
+            },
             message: {
                 type: Sequelize.STRING(256),
                 allowNull: true,

@@ -28,11 +28,13 @@ export class Community extends Model<
     public visibility!: 'public' | 'private';
     public coverImage!: string;
     public coverMediaId!: number | null; // TODO: will be required once next version is released
+    public coverMediaPath!: string | null;
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
-    public review!: 'pending' | 'in-progress' | 'halted' | 'closed';
+    public review!: 'pending' | 'claimed' | 'declined' | 'accepted';
     public started!: Date;
     public proposalId!: number | null;
     public ambassadorAddress!: string | null;
+    public placeId!: string | null;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -128,9 +130,9 @@ export function initializeCommunity(sequelize: Sequelize): void {
             review: {
                 type: DataTypes.ENUM(
                     'pending',
-                    'in-progress',
-                    'halted',
-                    'closed'
+                    'claimed',
+                    'declined',
+                    'accepted'
                 ),
                 defaultValue: 'pending',
                 allowNull: false,
@@ -144,6 +146,10 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 allowNull: true,
             },
             ambassadorAddress: {
+                type: DataTypes.STRING(44),
+                allowNull: true,
+            },
+            placeId: {
                 type: DataTypes.STRING(44),
                 allowNull: true,
             },

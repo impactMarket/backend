@@ -22,7 +22,9 @@ export default (app: Router): void => {
      *       - in: query
      *         name: mime
      *         schema:
-     *           type: string
+     *           type: array
+     *           items:
+     *            type: string
      *         required: true
      *         description: media mimetype
      *     responses:
@@ -55,10 +57,10 @@ export default (app: Router): void => {
      *               communityId:
      *                 type: integer
      *                 description: The community id
-     *               storyMediaPath:
-     *                 type: string
-     *                 nullable: true
-     *                 description: The media path of the story from presigned url
+     *               storyMedia:
+     *                 type: array
+     *                 items:
+     *                   type: string
      *               message:
      *                 type: string
      *                 nullable: true
@@ -95,6 +97,52 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.delete('/:id', authenticateToken, storyController.remove);
+
+    /**
+     * @swagger
+     *
+     * /stories/count:
+     *   get:
+     *     tags:
+     *       - "stories"
+     *     summary: Count grouped stories
+     *     parameters:
+     *       - in: query
+     *         name: groupBy
+     *         schema:
+     *           type: string
+     *           enum: [country]
+     *         required: true
+     *         description: count stories by a grouped value
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    route.get('/count/:query?', storyController.count);
+
+    /**
+     * @swagger
+     *
+     * /stories/{id}:
+     *   get:
+     *     tags:
+     *       - "stories"
+     *     summary: Get a story by ID
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get('/:id', optionalAuthentication, storyController.getById);
 
     /**
      * @swagger
@@ -142,6 +190,178 @@ export default (app: Router): void => {
      *     responses:
      *       "200":
      *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
      */
     route.get('/:query?', optionalAuthentication, storyController.list);
+
+    /**
+     * @swagger
+     *
+     * /stories/love/{id}:
+     *   put:
+     *     tags:
+     *       - "stories"
+     *     summary: Love a story
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id to love
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put('/love/:id', authenticateToken, storyController.love);
+
+    /**
+     * @swagger
+     *
+     * /stories/inapropriate/{id}:
+     *   put:
+     *     tags:
+     *       - "stories"
+     *     summary: Mark if consider story inapropriate
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id to report
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               typeId:
+     *                 type: integer
+     *                 description: type ID that describe why the story is inapropriate
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put(
+        '/inapropriate/:id',
+        authenticateToken,
+        storyController.inapropriate
+    );
+
+    /**
+     * @swagger
+     *
+     * /stories/{id}/comments:
+     *   get:
+     *     tags:
+     *       - "stories"
+     *     summary: Get the story comments
+     *     parameters:
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for comments pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for comments pagination
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get('/:id/comments/:query?', storyController.getComments);
+
+    /**
+     * @swagger
+     *
+     * /stories/{id}/comments:
+     *   post:
+     *     tags:
+     *       - "stories"
+     *     summary: Post a new story comment
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               comment:
+     *                 type: string
+     *                 description: Story comment
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/:id/comments',
+        authenticateToken,
+        storyValidator.addComment,
+        storyController.addComment
+    );
+
+    /**
+     * @swagger
+     *
+     * /stories/{id}/comments/{commentId}:
+     *   delete:
+     *     tags:
+     *       - "stories"
+     *     summary: Delete a story
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id
+     *       - in: path
+     *         name: commentId
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story comment id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.delete(
+        '/:id/comments/:commentId',
+        authenticateToken,
+        storyController.removeComment
+    );
 };

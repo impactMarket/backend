@@ -1,14 +1,17 @@
 import { celebrate, Joi } from 'celebrate';
 
+import { defaultSchema } from './defaultSchema';
 // v2
 
 const create = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         address: Joi.string().required(),
         phone: Joi.string().optional(),
         language: Joi.string().optional(),
         currency: Joi.string().optional(),
         pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
+        walletPNT: Joi.alternatives(Joi.string(), null).optional(),
+        appPNT: Joi.alternatives(Joi.string(), null).optional(),
         firstName: Joi.string().optional(),
         lastName: Joi.string().optional(),
         gender: Joi.string().optional(),
@@ -23,48 +26,68 @@ const create = celebrate({
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
         clientId: Joi.string().optional(),
+        country: Joi.string().optional(),
     }),
 });
 
 const update = celebrate({
-    body: Joi.object({
-        phone: Joi.string().optional(),
-        language: Joi.string().optional(),
-        currency: Joi.string().optional(),
+    body: defaultSchema.object({
+        phone: Joi.alternatives(Joi.string(), null).optional(),
+        language: Joi.alternatives(Joi.string(), null).optional(),
+        currency: Joi.alternatives(Joi.string(), null).optional(),
         pushNotificationToken: Joi.alternatives(Joi.string(), null).optional(),
+        walletPNT: Joi.alternatives(Joi.string(), null).optional(),
+        appPNT: Joi.alternatives(Joi.string(), null).optional(),
         firstName: Joi.alternatives(Joi.string(), null).optional(),
         lastName: Joi.alternatives(Joi.string(), null).optional(),
         gender: Joi.string().optional(),
         age: Joi.alternatives(Joi.number(), null).optional(),
         children: Joi.alternatives(Joi.number(), null).optional(),
         avatarMediaPath: Joi.alternatives(Joi.string(), null).optional(),
-        bio: Joi.string().optional(),
+        bio: Joi.alternatives(Joi.string(), null).optional(),
         email: Joi.alternatives(
             Joi.string().email({ tlds: { allow: false } }),
             null
         ).optional(),
+        country: Joi.string().optional(),
     }),
 });
 
 const report = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         communityId: Joi.any().required(),
         message: Joi.string().required(),
         category: Joi.string().required(),
     }),
 });
 
+const readNotifications = celebrate({
+    body: defaultSchema.object({
+        notifications: Joi.array().items(Joi.number()).required(),
+    }),
+});
+
+const sendPushNotifications = celebrate({
+    body: defaultSchema.object({
+        country: Joi.string().optional(),
+        communities: Joi.array().items(Joi.number().required()).optional(),
+        title: Joi.string().required(),
+        body: Joi.string().required(),
+        data: Joi.object().optional(),
+    }),
+});
+
 //
 
 const reportv1 = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         communityId: Joi.any().required(),
         message: Joi.string().required().allow(''), // TODO: temporary, fixed in mobile-app@1.0.7
     }),
 });
 
 const auth = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         address: Joi.string().required(),
         phone: Joi.string().optional(),
         language: Joi.string().optional(),
@@ -81,7 +104,7 @@ const auth = celebrate({
 });
 
 const welcome = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         address: Joi.string().optional(), // TODO: deprecated in mobile@1.1.5
         token: Joi.string().allow(''), // TODO: deprecated in mobile@1.1.5
         phone: Joi.string().optional(), // TODO: deprecated in mobile@1.1.5
@@ -90,56 +113,56 @@ const welcome = celebrate({
 });
 
 const updateUsername = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         address: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
         username: Joi.string().required().allow(''),
     }),
 });
 
 const updateCurrency = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         address: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
         currency: Joi.string().required(),
     }),
 });
 
 const updatePushNotificationsToken = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         address: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
         token: Joi.string().required(),
     }),
 });
 
 const updateLanguage = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         address: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
         language: Joi.string().required(),
     }),
 });
 
 const updateGender = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         address: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
         gender: Joi.string().required().allow(''),
     }),
 });
 
 const updateAge = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         address: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
         age: Joi.number().required().allow(null),
     }),
 });
 
 const updateChildren = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         address: Joi.string().optional(), // TODO: remove it once 1.0.7 is the minimal mobile version!
         children: Joi.number().required().allow(null),
     }),
 });
 
 const device = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         phone: Joi.string().required(),
         identifier: Joi.string().required(),
         device: Joi.string().required(),
@@ -148,7 +171,7 @@ const device = celebrate({
 });
 
 const edit = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         language: Joi.string().optional(),
         currency: Joi.string().optional(),
         username: Joi.string().optional(),
@@ -164,14 +187,14 @@ const edit = celebrate({
 });
 
 const subscribeNewsletter = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         subscribe: Joi.boolean().required(),
     }),
 });
 
 const saveSurvey = celebrate({
     body: Joi.array().items(
-        Joi.object({
+        defaultSchema.object({
             surveyId: Joi.number().required(),
             answer: Joi.string().required(),
             question: Joi.number().required(),
@@ -197,4 +220,6 @@ export default {
     edit,
     subscribeNewsletter,
     saveSurvey,
+    readNotifications,
+    sendPushNotifications,
 };

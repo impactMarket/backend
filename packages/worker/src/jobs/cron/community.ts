@@ -11,35 +11,6 @@ import BigNumber from 'bignumber.js';
 import { median, mean } from 'mathjs';
 import { col, fn, literal, Op, QueryTypes } from 'sequelize';
 
-export async function verifyCommunitySuspectActivity(): Promise<void> {
-    const query = `
-    WITH
-        communities AS (
-        SELECT "Community"."id",
-            count(*) filter ( where suspect is true ) AS "suspect",
-            count(*) as "total"
-        FROM "community" AS "Community"
-            INNER JOIN "beneficiary" AS "beneficiaries" ON "Community"."id" = "beneficiaries"."communityId" AND "beneficiaries"."active" = true
-            LEFT OUTER JOIN "app_user" AS "app_user" ON "beneficiaries"."address" = "app_user"."address"
-        WHERE "Community"."status" = 'valid' AND "Community"."visibility" = 'public'
-        GROUP BY "Community"."id"
-        having count(*) filter ( where suspect is true ) > 0
-    ),
-    suspect_level AS (
-        select ((communities.suspect::float / communities.total::float) * 100) as ps,
-                (60 * log10(((communities.suspect::float / communities.total::float) * 100) + 1)) as y,
-                id
-        from communities
-    )
-    INSERT INTO ubi_community_suspect ("communityId", percentage, suspect)
-    (select id as "communityId", (ROUND(ps * 100) / 100) as percentage, GREATEST(1, ROUND(LEAST(suspect_level.y, 100) / 10)) as suspect
-    from suspect_level)`;
-
-    await database.sequelize.query(query, {
-        type: QueryTypes.INSERT,
-    });
-}
-
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     type ICommunityToMetrics = Omit<
         interfaces.ubi.community.CommunityAttributes,
@@ -496,42 +467,51 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const calculateMetrics = async (communities: ICommunityToMetrics[]) => {
         const subGraphPromises: Promise<any>[] = [];
 
-        communities.forEach(community => {
-            subGraphPromises.push(subgraph.queries.beneficiary.getBeneficiaries(community.contractAddress!))
+        communities.forEach((community) => {
+            subGraphPromises.push(
+                subgraph.queries.beneficiary.getAllBeneficiaries(
+                    community.contractAddress!
+                )
+            );
         });
 
         let beneficiaries = await Promise.all(subGraphPromises);
         // organize subgraph return
-        beneficiaries = beneficiaries.reduce((acc: BeneficiarySubgraph[], el) => {
-            if(el && el.length) {
-                acc.push(...el);
-            }
-            return acc;
-        }, []);
+        beneficiaries = beneficiaries.reduce(
+            (acc: BeneficiarySubgraph[], el) => {
+                if (el && el.length) {
+                    acc.push(...el);
+                }
+                return acc;
+            },
+            []
+        );
 
         const dailyStatePromises: Promise<any>[] = [];
         const dailyMetricsPromises: Promise<any>[] = [];
-        communities.forEach(community => {
+        communities.forEach((community) => {
             //
             if (community.activity !== undefined) {
-                dailyStatePromises.push(database.models.ubiCommunityDailyState.create({
-                    transactions: parseInt(community.activity.txs, 10),
-                    reach: parseInt(community.activity.reach, 10),
-                    reachOut: parseInt(community.activity.reachOut, 10),
-                    volume: community.activity.volume,
-                    backers: parseInt(community.activity.backers, 10),
-                    monthlyBackers: parseInt(
-                        community.activity.monthlyBackers,
-                        10
-                    ),
-                    raised: community.activity.raised,
-                    claimed: community.activity.claimed,
-                    claims: parseInt(community.activity.claims, 10),
-                    fundingRate: parseFloat(community.activity.fundingRate),
-                    beneficiaries: community.activity.beneficiaries,
-                    communityId: community.id,
-                    date: yesterday,
-                }));
+                dailyStatePromises.push(
+                    database.models.ubiCommunityDailyState.create({
+                        transactions: parseInt(community.activity.txs, 10),
+                        reach: parseInt(community.activity.reach, 10),
+                        reachOut: parseInt(community.activity.reachOut, 10),
+                        volume: community.activity.volume,
+                        backers: parseInt(community.activity.backers, 10),
+                        monthlyBackers: parseInt(
+                            community.activity.monthlyBackers,
+                            10
+                        ),
+                        raised: community.activity.raised,
+                        claimed: community.activity.claimed,
+                        claims: parseInt(community.activity.claims, 10),
+                        fundingRate: parseFloat(community.activity.fundingRate),
+                        beneficiaries: community.activity.beneficiaries,
+                        communityId: community.id,
+                        date: yesterday,
+                    })
+                );
             }
 
             const beneficiaryList = beneficiaries.filter(
@@ -557,7 +537,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             const beneficiariesTimeToWait: number[] = [];
             const beneficiariesTimeWaited: number[] = [];
 
-            beneficiaryList.forEach(beneficiary => {
+            beneficiaryList.forEach((beneficiary) => {
                 if (
                     beneficiary.claims < 2 ||
                     beneficiary.lastClaimAt === null ||
@@ -614,8 +594,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             }
 
             let daysSinceStart = Math.round(
-                (new Date().getTime() -
-                    new Date(community.started).getTime()) /
+                (new Date().getTime() - new Date(community.started).getTime()) /
                     86400000
             ); // 86400000 1 days in ms
             if (daysSinceStart > 30) {
@@ -634,19 +613,20 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             // calculate estimatedDuration
             estimatedDuration = parseFloat(
                 new BigNumber(community.contract.maxClaim)
-                    .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                     .dividedBy(ubiRate)
                     .dividedBy(30)
                     .toFixed(2, 1)
             );
-            dailyMetricsPromises.push(database.models.ubiCommunityDailyMetrics.create({
-                communityId: community.id,
-                ssiDayAlone,
-                ssi,
-                ubiRate,
-                estimatedDuration,
-                date: yesterday,
-            }));
+            dailyMetricsPromises.push(
+                database.models.ubiCommunityDailyMetrics.create({
+                    communityId: community.id,
+                    ssiDayAlone,
+                    ssi,
+                    ubiRate,
+                    estimatedDuration,
+                    date: yesterday,
+                })
+            );
         });
 
         await Promise.all(dailyStatePromises);

@@ -1,9 +1,15 @@
+import { point, multiPolygon } from '@turf/helpers';
+import pointsWithinPolygon from '@turf/points-within-polygon';
+import { ethers } from 'ethers';
 import { Op } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
-import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
+import { getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
 import { BaseError } from '../../utils/baseError';
+import countryNeighbors from '../../utils/countryNeighbors.json';
+import countriesGeoJSON from '../../utils/geoCountries.json';
+import iso3Countries from '../../utils/iso3Countries.json';
 
 export default class ClaimLocationService {
     public static async add(
@@ -14,36 +20,71 @@ export default class ClaimLocationService {
         },
         address: string
     ): Promise<void> {
-        const beneficiary: BeneficiaryAttributes | null =
-            await models.beneficiary.findOne({
-                attributes: [],
-                include: [
-                    {
-                        attributes: ['id', 'publicId'],
-                        model: models.community,
-                        as: 'community',
-                    },
-                ],
-                where: { address },
+        try {
+            const countries = (countriesGeoJSON as any).features;
+            const community = await models.community.findOne({
+                attributes: ['country'],
+                where: { id: communityId },
+            });
+            const contries = [community!.country];
+            contries.push(...countryNeighbors[community!.country].neighbours);
+
+            let valid = false;
+            for (let i = 0; i < contries.length; i++) {
+                const countryCode = iso3Countries[contries[i]];
+                const coordinates = countries.find(
+                    (el) => el.properties.ISO_A3 === countryCode
+                );
+                const points = point([gps.longitude, gps.latitude]);
+                const countryCoordinate: [any] =
+                    coordinates.geometry.coordinates;
+                const searchWithin = multiPolygon(countryCoordinate);
+
+                const ptsWithin = pointsWithinPolygon(points, searchWithin);
+                if (ptsWithin.features.length) {
+                    valid = true;
+                    break;
+                }
+            }
+
+            if (!valid) {
+                throw new BaseError(
+                    'INVALID_LOCATION',
+                    'Claim location outside community country'
+                );
+            }
+
+            const beneficiary = await getBeneficiariesByAddress([address]);
+
+            if (!beneficiary || !beneficiary.length) {
+                throw new BaseError('NOT_BENEFICIARY', 'Not a beneficiary');
+            }
+
+            const beneficiaryCommunity = await models.community.findOne({
+                attributes: ['id', 'publicId'],
+                where: {
+                    contractAddress: ethers.utils.getAddress(
+                        beneficiary[0].community.id
+                    ),
+                },
             });
 
-        if (!beneficiary || !beneficiary.community) {
-            throw new BaseError('NOT_BENEFICIARY', 'Not a beneficiary');
-        }
-
-        if (
-            beneficiary.community.id === communityId ||
-            beneficiary.community.publicId === communityId
-        ) {
-            await models.ubiClaimLocation.create({
-                communityId: beneficiary.community.id,
-                gps,
-            });
-        } else {
-            throw new BaseError(
-                'NOT_ALLOWED',
-                'Beneficiary does not belong to this community'
-            );
+            if (
+                beneficiaryCommunity?.id === communityId ||
+                beneficiaryCommunity?.publicId === communityId
+            ) {
+                await models.ubiClaimLocation.create({
+                    communityId: beneficiaryCommunity.id,
+                    gps,
+                });
+            } else {
+                throw new BaseError(
+                    'NOT_ALLOWED',
+                    'Beneficiary does not belong to this community'
+                );
+            }
+        } catch (error) {
+            throw error;
         }
     }
 

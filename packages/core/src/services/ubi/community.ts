@@ -18,6 +18,7 @@ import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import { models, sequelize } from '../../database';
 import { Community } from '../../database/models/ubi/community';
+import { LogTypes } from '../../interfaces/app/appLog';
 import { AppUser } from '../../interfaces/app/appUser';
 import {
     CommunityAttributes,
@@ -32,15 +33,19 @@ import { UbiCommunityLabel } from '../../interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '../../interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '../../interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
+import { countBeneficiaries } from '../../subgraph/queries/beneficiary';
 import {
     getCommunityProposal,
     getClaimed,
     getCommunityState,
-    getCommunityManagers,
+    getCommunityStateByAddresses,
+    communityEntities,
 } from '../../subgraph/queries/community';
+import { getCommunityManagers } from '../../subgraph/queries/manager';
 import { BaseError } from '../../utils/baseError';
 import { fetchData } from '../../utils/dataFetching';
-import { notifyManagerAdded } from '../../utils/util';
+import { createThumbnailUrl, notifyManagerAdded } from '../../utils/util';
+import UserLogService from '../app/user/log';
 import {
     ICommunity,
     ICommunityLightDetails,
@@ -50,8 +55,6 @@ import {
 import { CommunityContentStorage, PromoterContentStorage } from '../storage';
 import CommunityContractService from './communityContract';
 import ManagerService from './managers';
-import UserLogService from '../app/user/log';
-import { LogTypes } from '../../interfaces/app/appLog';
 
 export default class CommunityService {
     public static community = models.community;
@@ -71,7 +74,6 @@ export default class CommunityService {
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static ubiBeneficiaryRegistry = models.ubiBeneficiaryRegistry;
-    public static beneficiary = models.beneficiary;
     public static ubiClaim = models.ubiClaim;
     public static sequelize = sequelize;
 
@@ -185,55 +187,6 @@ export default class CommunityService {
             return this.promoterContentStorage.getPresignedUrlPutObject(mime);
         }
         return this.communityContentStorage.getPresignedUrlPutObject(mime);
-    }
-
-    public static async edit(
-        id: number,
-        params: {
-            name: string;
-            description: string;
-            currency: string;
-            coverMediaPath: string;
-            coverMediaId: number;
-            email?: string;
-        },
-        userAddress?: string,
-        userId?: number
-    ): Promise<CommunityAttributes> {
-        // since cover can't be null, we first update and then remove
-        const {
-            name,
-            description,
-            currency,
-            coverMediaId,
-            coverMediaPath,
-            email,
-        } = params;
-        const update = await this.community.update(
-            {
-                name,
-                description,
-                currency,
-                email,
-                coverMediaId,
-                coverMediaPath,
-            },
-            { where: { id } }
-        );
-        if (update[0] === 0) {
-            throw new BaseError('UPDATE_FAILED', 'community was not updated!');
-        }
-
-        if (userId) {
-            this.userLogService.create(
-                userId,
-                LogTypes.EDITED_COMMUNITY,
-                params,
-                id
-            );
-        }
-
-        return this._findCommunityBy({ id }, userAddress);
     }
 
     public static async delete(id: number): Promise<boolean> {
@@ -472,54 +425,44 @@ export default class CommunityService {
                         ]);
                         break;
                     default: {
-                        // check if there was another order previously
-                        if (
-                            orderOption.length === 0 &&
-                            !orderOutOfFunds.active
-                        ) {
-                            beneficiariesState =
-                                await this._getBeneficiaryState(
-                                    {
-                                        status: query.status,
-                                        limit: query.limit,
-                                        offset: query.offset,
-                                    },
-                                    extendedWhere,
-                                    orderType
-                                );
-                            communitiesId = beneficiariesState!.map(
-                                (el) => el.id
-                            );
-                        } else {
-                            orderBeneficiary.push([
-                                literal('count("beneficiaries"."address")'),
-                                orderType ? orderType : 'DESC',
-                            ]);
-                        }
-
+                        beneficiariesState = await this._getBeneficiaryState(
+                            {
+                                status: query.status,
+                                limit: query.limit,
+                                offset: query.offset,
+                            },
+                            extendedWhere,
+                            orderType
+                        );
+                        communitiesId = beneficiariesState!.map((el) => el.id);
                         break;
                     }
                 }
             }
         } else {
-            beneficiariesState = await this._getBeneficiaryState(
-                {
-                    status: query.status,
-                    limit: query.limit,
-                    offset: query.offset,
-                },
-                extendedWhere
-            );
-            communitiesId = beneficiariesState!.map((el) => el.id);
+            if (query.status !== 'pending') {
+                beneficiariesState = await this._getBeneficiaryState(
+                    {
+                        status: query.status,
+                        limit: query.limit,
+                        offset: query.offset,
+                    },
+                    extendedWhere,
+                    'desc'
+                );
+                communitiesId = beneficiariesState!.map((el) => el.id);
+            }
         }
 
         let include: Includeable[];
         let attributes: any;
         let returnState = true;
+        let includeCover = false;
         const exclude = ['email'];
         if (query.fields) {
             const fields = fetchData(query.fields);
             if (!fields.state) returnState = false;
+            if (fields.cover) includeCover = true;
             include = this._generateInclude(fields);
             attributes = fields.root
                 ? fields.root.length > 0
@@ -528,9 +471,11 @@ export default class CommunityService {
                 : [];
         } else {
             include = this._oldInclude(query.extended);
+            includeCover = true;
             attributes = {
                 exclude,
             };
+            if (query.status === 'pending') returnState = false;
         }
 
         const communityCount = await this.community.count({
@@ -594,29 +539,8 @@ export default class CommunityService {
         if (returnState) {
             if (!beneficiariesState) {
                 beneficiariesState = (await models.community.findAll({
-                    attributes: [
-                        'id',
-                        'contractAddress',
-                        [
-                            fn(
-                                'count',
-                                fn('distinct', col('beneficiaries.address'))
-                            ),
-                            'beneficiaries',
-                        ],
-                    ],
+                    attributes: ['id', 'contractAddress'],
                     order: orderBeneficiary,
-                    include: [
-                        {
-                            attributes: [],
-                            model: models.beneficiary,
-                            as: 'beneficiaries',
-                            where: {
-                                active: true,
-                            },
-                            duplicating: false,
-                        },
-                    ],
                     where: {
                         id: {
                             [Op.in]: communitiesId,
@@ -715,6 +639,31 @@ export default class CommunityService {
                 ...(filteredCommunity?.toJSON() as CommunityAttributes),
             };
 
+            if (includeCover) {
+                if (community.coverMediaPath) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.community,
+                        community.coverMediaPath,
+                        config.thumbnails.community.cover
+                    );
+                    community.cover = {
+                        id: 0,
+                        width: 0,
+                        height: 0,
+                        url: `${config.cloudfrontUrl}/${community.coverMediaPath}`,
+                        thumbnails,
+                    };
+                } else if (community.cover) {
+                    const media = community.cover;
+
+                    community.cover.thumbnails = createThumbnailUrl(
+                        config.aws.bucket.community,
+                        media.url.split(config.cloudfrontUrl + '/')[1],
+                        config.thumbnails.community.cover
+                    );
+                }
+            }
+
             if (returnState) {
                 const beneficiariesModel = beneficiariesState?.find(
                     (el) => el.id === id
@@ -724,8 +673,26 @@ export default class CommunityService {
                 );
                 const raiseModel = inflowState?.find((el) => el.id === id);
                 const backerModel = backerState?.find((el) => el.id === id);
+                const contract = community.contract
+                    ? {
+                          contract: {
+                              ...community.contract,
+                              maxClaim: new BigNumber(
+                                  community.contract.maxClaim
+                              )
+                                  .multipliedBy(10 ** config.cUSDDecimal)
+                                  .toString() as any,
+                              claimAmount: new BigNumber(
+                                  community.contract.claimAmount
+                              )
+                                  .multipliedBy(10 ** config.cUSDDecimal)
+                                  .toString() as any,
+                          },
+                      }
+                    : {};
                 community = {
                     ...community,
+                    ...contract,
                     state: {
                         beneficiaries: beneficiariesModel
                             ? Number(beneficiariesModel.beneficiaries)
@@ -878,10 +845,20 @@ export default class CommunityService {
             },
             raw: true,
         })) as any;
+        const resultJson = result!.toJSON();
         return {
-            ...result!.toJSON(),
+            ...resultJson,
             state,
             reachedLastMonth,
+            contract: {
+                ...resultJson.contract,
+                maxClaim: new BigNumber(resultJson.contract!.maxClaim)
+                    .multipliedBy(10 ** config.cUSDDecimal)
+                    .toString() as any,
+                claimAmount: new BigNumber(resultJson.contract!.claimAmount)
+                    .multipliedBy(10 ** config.cUSDDecimal)
+                    .toString() as any,
+            },
         } as CommunityAttributes & {
             reachedLastMonth: {
                 reach: string;
@@ -916,30 +893,58 @@ export default class CommunityService {
         });
 
         if (community!.status === 'pending') {
-            const user = await this.appUser.findOne({
-                attributes: ['address', 'username', 'createdAt'],
-                include: [
-                    {
-                        model: this.appMediaContent,
-                        as: 'avatar',
-                        required: false,
-                        include: [
-                            {
-                                model: this.appMediaThumbnail,
-                                as: 'thumbnails',
-                                separate: true,
-                            },
-                        ],
-                    },
+            const user = (await this.appUser.findOne({
+                attributes: [
+                    'address',
+                    'username',
+                    'createdAt',
+                    'avatarMediaId',
+                    'avatarMediaPath',
                 ],
                 where: {
                     address: community!.requestByAddress,
                 },
-            });
+            }))!.toJSON() as AppUser;
+            if (user.avatarMediaPath) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.profile,
+                    user.avatarMediaPath,
+                    config.thumbnails.profile
+                );
+                user.avatar = {
+                    id: 0,
+                    width: 0,
+                    height: 0,
+                    url: `${config.cloudfrontUrl}/${user.avatarMediaPath}`,
+                    thumbnails,
+                };
+            } else if (user.avatarMediaId) {
+                const media = await models.appMediaContent.findOne({
+                    attributes: ['url', 'width', 'height'],
+                    where: {
+                        id: user.avatarMediaId,
+                    },
+                });
+
+                if (media) {
+                    const thumbnails = createThumbnailUrl(
+                        config.aws.bucket.profile,
+                        media.url.split(config.cloudfrontUrl + '/')[1],
+                        config.thumbnails.profile
+                    );
+                    user.avatar = {
+                        id: 0,
+                        width: media.width,
+                        height: media.height,
+                        url: media.url,
+                        thumbnails,
+                    };
+                }
+            }
             return [
                 {
-                    user: user as AppUser,
-                    address: user!.address,
+                    user,
+                    address: user.address,
                     isDeleted: false,
                     added: 0,
                     active: false,
@@ -1018,20 +1023,12 @@ export default class CommunityService {
                     model: this.ubiPromoterSocialMedia,
                     as: 'socialMedia',
                 },
-                {
-                    model: this.appMediaContent,
-                    as: 'logo',
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
-                },
             ],
         });
-        return result !== null ? (result.toJSON() as UbiPromoter) : null;
+
+        if (!result) return null;
+
+        return result.toJSON() as UbiPromoter;
     }
 
     public static async getSuspect(communityId: number) {
@@ -1056,9 +1053,18 @@ export default class CommunityService {
                 communityId,
             },
         });
-        return result !== null
-            ? (result.toJSON() as UbiCommunityContract)
-            : null;
+        if (!result) return null;
+
+        const resultJson = result.toJSON() as UbiCommunityContract;
+        return {
+            ...resultJson,
+            maxClaim: new BigNumber(resultJson.maxClaim)
+                .multipliedBy(10 ** config.cUSDDecimal)
+                .toString(),
+            claimAmount: new BigNumber(resultJson.claimAmount)
+                .multipliedBy(10 ** config.cUSDDecimal)
+                .toString(),
+        };
     }
 
     public static async getState(communityId: number) {
@@ -1126,14 +1132,14 @@ export default class CommunityService {
             })
         )[0];
 
-        const communityBeneficiaryActivity = (await this.beneficiary.findAll({
-            attributes: [[fn('COUNT', col('address')), 'count'], 'active'],
-            where: {
-                communityId,
-            },
-            group: ['active'],
-            raw: true,
-        })) as any;
+        const activeBeneficiaries = await countBeneficiaries(
+            community!.contractAddress!,
+            0
+        );
+        const removedBeneficiaries = await countBeneficiaries(
+            community!.contractAddress!,
+            1
+        );
 
         const communityManagerActivity = await this.manager.count({
             where: {
@@ -1141,11 +1147,6 @@ export default class CommunityService {
                 active: true,
             },
         });
-
-        const beneficiaries: { count: string; active: boolean } =
-            communityBeneficiaryActivity.find((el: any) => el.active);
-        const removedBeneficiaries: { count: string; active: boolean } =
-            communityBeneficiaryActivity.find((el: any) => !el.active);
 
         return {
             claims: communityClaimActivity
@@ -1157,9 +1158,11 @@ export default class CommunityService {
             raised: communityInflowActivity.amount
                 ? communityInflowActivity.amount
                 : '0',
-            beneficiaries: beneficiaries ? Number(beneficiaries.count) : 0,
+            beneficiaries: activeBeneficiaries
+                ? Number(activeBeneficiaries)
+                : 0,
             removedBeneficiaries: removedBeneficiaries
-                ? Number(removedBeneficiaries.count)
+                ? Number(removedBeneficiaries)
                 : 0,
             managers: communityManagerActivity,
             backers: communityBackers,
@@ -1449,12 +1452,10 @@ export default class CommunityService {
         let orderOption: Order | undefined;
 
         let beneficiariesState:
-            | [
-                  {
-                      id: number;
-                      beneficiaries: string;
-                  }
-              ]
+            | {
+                  id: number;
+                  beneficiaries: string;
+              }[]
             | undefined = undefined;
         let communitiesId: number[] = [];
 
@@ -1511,6 +1512,7 @@ export default class CommunityService {
         }
 
         let communitiesResult: Community[];
+        const contractAddresses: string[] = [];
 
         if (communitiesId.length > 0) {
             communitiesResult = await this.community.findAll({
@@ -1535,6 +1537,11 @@ export default class CommunityService {
                         [Op.in]: communitiesId,
                     },
                 },
+            });
+            communitiesResult!.forEach((el) => {
+                if (el.contractAddress) {
+                    contractAddresses.push(el.contractAddress);
+                }
             });
         } else {
             communitiesResult = await this.community.findAll({
@@ -1563,39 +1570,28 @@ export default class CommunityService {
                 order: orderOption,
             });
             communitiesId = communitiesResult!.map((el) => el.id);
+            communitiesResult!.forEach((el) => {
+                if (el.contractAddress) {
+                    contractAddresses.push(el.contractAddress);
+                }
+            });
         }
 
         if (!beneficiariesState) {
-            beneficiariesState = (await models.community.findAll({
-                attributes: [
-                    'id',
-                    [
-                        fn(
-                            'count',
-                            fn('distinct', col('beneficiaries.address'))
-                        ),
-                        'beneficiaries',
-                    ],
-                ],
-                include: [
-                    {
-                        attributes: [],
-                        model: models.beneficiary,
-                        as: 'beneficiaries',
-                        where: {
-                            active: true,
-                        },
-                        duplicating: false,
-                    },
-                ],
-                where: {
-                    id: {
-                        [Op.in]: communitiesId,
-                    },
-                },
-                group: ['Community.id'],
-                raw: true,
-            })) as any;
+            const resultSubgraph = await getCommunityStateByAddresses(
+                contractAddresses
+            );
+            beneficiariesState = resultSubgraph.map((el) => {
+                const community = communitiesResult.find(
+                    (community) =>
+                        community.contractAddress ===
+                        ethers.utils.getAddress(el.id)
+                );
+                return {
+                    id: community!.id,
+                    beneficiaries: el.beneficiaries.toString(),
+                };
+            });
         }
 
         const claimsState = (await models.ubiClaim.findAll({
@@ -1673,6 +1669,15 @@ export default class CommunityService {
             const backerModel = backerState?.find((el) => el.id === id);
             community = {
                 ...community,
+                contract: {
+                    ...community.contract!,
+                    maxClaim: new BigNumber(community.contract!.maxClaim)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
+                    claimAmount: new BigNumber(community.contract!.claimAmount)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
+                },
                 state: {
                     beneficiaries: beneficiariesModel
                         ? Number(beneficiariesModel.beneficiaries)
@@ -1773,7 +1778,21 @@ export default class CommunityService {
             },
             order: orderOption,
         });
-        return communitiesResult.map((c) => c.toJSON() as CommunityAttributes);
+        return communitiesResult.map((c) => {
+            const community = c.toJSON() as CommunityAttributes;
+            return {
+                ...community,
+                contract: {
+                    ...community.contract!,
+                    maxClaim: new BigNumber(community.contract!.maxClaim)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
+                    claimAmount: new BigNumber(community.contract!.claimAmount)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
+                },
+            };
+        });
     }
 
     /**
@@ -1951,7 +1970,15 @@ export default class CommunityService {
         return {
             ...community,
             state: communityState!,
-            contract: communityContract!,
+            contract: {
+                ...communityContract!,
+                maxClaim: new BigNumber(communityContract!.maxClaim)
+                    .multipliedBy(10 ** config.cUSDDecimal)
+                    .toString() as any,
+                claimAmount: new BigNumber(communityContract!.claimAmount)
+                    .multipliedBy(10 ** config.cUSDDecimal)
+                    .toString() as any,
+            },
             metrics: communityDailyMetrics[0]!,
         } as any;
     }
@@ -2060,27 +2087,51 @@ export default class CommunityService {
     ): Promise<CommunityAttributes> {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        const community = await this.community.findOne({
-            include: [
-                {
-                    model: this.appMediaContent,
-                    as: 'cover',
-                    include: [
-                        {
-                            model: this.appMediaThumbnail,
-                            as: 'thumbnails',
-                            separate: true,
-                        },
-                    ],
-                },
-            ],
+        const result = await this.community.findOne({
             where,
         });
-        if (community === null) {
+        if (result === null) {
             throw new BaseError(
                 'COMMUNITY_NOT_FOUND',
                 'Not found community ' + where
             );
+        }
+        const community = result.toJSON() as CommunityAttributes;
+        if (community.coverMediaPath) {
+            const thumbnails = createThumbnailUrl(
+                config.aws.bucket.community,
+                community.coverMediaPath,
+                config.thumbnails.community.cover
+            );
+            community.cover = {
+                id: 0,
+                width: 0,
+                height: 0,
+                url: `${config.cloudfrontUrl}/${community.coverMediaPath}`,
+                thumbnails,
+            };
+        } else if (community.coverMediaId) {
+            const media = await models.appMediaContent.findOne({
+                attributes: ['url', 'width', 'height'],
+                where: {
+                    id: community.coverMediaId,
+                },
+            });
+
+            if (media) {
+                const thumbnails = createThumbnailUrl(
+                    config.aws.bucket.community,
+                    media.url.split(config.cloudfrontUrl + '/')[1],
+                    config.thumbnails.community.cover
+                );
+                community.cover = {
+                    id: 0,
+                    width: media.width,
+                    height: media.height,
+                    url: media.url,
+                    thumbnails,
+                };
+            }
         }
         const suspect = await this.getSuspect(community.id);
         let contract = {
@@ -2129,10 +2180,10 @@ export default class CommunityService {
         }
 
         return {
-            ...(community.toJSON() as CommunityAttributes),
+            ...community,
             email: showEmail ? community.email : '',
             suspect: suspect !== null ? [suspect] : undefined,
-            contract,
+            contract: contract as any,
             state,
             metrics: metrics !== null ? [metrics] : undefined,
         };
@@ -2165,14 +2216,6 @@ export default class CommunityService {
                 model: this.appMediaContent,
                 as: 'cover',
                 duplicating: false,
-                include: [
-                    {
-                        attributes: ['url', 'width', 'height', 'pixelRatio'],
-                        model: this.appMediaThumbnail,
-                        as: 'thumbnails',
-                        separate: true,
-                    },
-                ],
             });
         }
 
@@ -2279,13 +2322,6 @@ export default class CommunityService {
                 model: this.appMediaContent,
                 as: 'cover',
                 duplicating: false,
-                include: [
-                    {
-                        model: this.appMediaThumbnail,
-                        as: 'thumbnails',
-                        separate: true,
-                    },
-                ],
             },
             {
                 attributes: { exclude: ['id', 'communityId'] },
@@ -2367,47 +2403,85 @@ export default class CommunityService {
         extendedWhere: WhereOptions<CommunityAttributes>,
         orderType?: string
     ): Promise<any> {
-        const result = (await models.community.findAll({
-            attributes: [
-                'id',
-                'contractAddress',
-                [
-                    fn('count', fn('distinct', col('beneficiaries.address'))),
-                    'beneficiaries',
-                ],
-            ],
-            where: {
-                status: query.status ? query.status : 'valid',
-                visibility: 'public',
-                ...extendedWhere,
-            },
-            include: [
-                {
-                    attributes: [],
-                    model: models.beneficiary,
-                    as: 'beneficiaries',
-                    where: {
-                        active: true,
-                    },
-                    duplicating: false,
-                    required: false,
+        let contractAddress: string[] = [];
+        let localResult: any[] = [];
+        let subgraphResult: any[] = [];
+        const limit = query.limit
+            ? parseInt(query.limit, 10)
+            : config.defaultLimit;
+        const offset = query.offset
+            ? parseInt(query.offset, 10)
+            : config.defaultOffset;
+
+        if (Object.keys(extendedWhere).length > 0) {
+            localResult = await models.community.findAll({
+                attributes: ['id', 'contractAddress'],
+                where: {
+                    status: query.status ? query.status : 'valid',
+                    visibility: 'public',
+                    ...extendedWhere,
                 },
-            ],
-            group: ['Community.id'],
-            order: [
-                [
-                    literal('count("beneficiaries"."address")'),
-                    orderType ? orderType : 'DESC',
-                ],
-            ],
-            raw: true,
-            offset: query.offset
-                ? parseInt(query.offset, 10)
-                : config.defaultOffset,
-            limit: query.limit
-                ? parseInt(query.limit, 10)
-                : config.defaultLimit,
-        })) as any;
-        return result;
+            });
+            contractAddress = localResult.map(
+                (community) => community.contractAddress!
+            );
+            if (!contractAddress || !contractAddress.length) {
+                return [];
+            }
+        }
+
+        if (contractAddress.length > 0) {
+            subgraphResult = await communityEntities(
+                `orderBy: beneficiaries,
+                        orderDirection: ${
+                            orderType ? orderType.toLocaleLowerCase() : 'desc'
+                        },
+                        first: ${limit > 1000 ? 1000 : limit},
+                        skip: ${offset},
+                        where: { id_in: [${contractAddress.map(
+                            (el) => `"${el.toLocaleLowerCase()}"`
+                        )}]}`,
+                `id, beneficiaries`
+            );
+        } else {
+            subgraphResult = await communityEntities(
+                `orderBy: beneficiaries,
+                    orderDirection: ${
+                        orderType ? orderType.toLocaleLowerCase() : 'desc'
+                    },
+                    first: ${limit > 1000 ? 1000 : limit},
+                    skip: ${offset},
+                    where: {
+                        state: 0
+                    }`,
+                `id, beneficiaries`
+            );
+            localResult = await models.community.findAll({
+                attributes: ['id', 'contractAddress'],
+                where: {
+                    contractAddress: {
+                        [Op.in]: subgraphResult.map((community) =>
+                            ethers.utils.getAddress(community.id)
+                        ),
+                    },
+                },
+            });
+        }
+        const results: any = [];
+        subgraphResult.forEach((community) => {
+            const result = localResult.find(
+                (el) =>
+                    el.contractAddress === ethers.utils.getAddress(community.id)
+            );
+            if (result) {
+                results.push({
+                    id: result?.id,
+                    contractAddress: result?.contractAddress,
+                    beneficiaries: community.beneficiaries,
+                });
+            }
+        });
+
+        return results;
     }
 }

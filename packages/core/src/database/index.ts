@@ -25,7 +25,18 @@ import { ImMetadata } from './models/app/imMetadata';
 import * as GlobalDailyState from './models/global/globalDailyState';
 import * as GlobalDemographics from './models/global/globalDemographics';
 import * as GlobalGrowth from './models/global/globalGrowth';
+import * as LearnAndEarnCategory from './models/learnAndEarn/learnAndEarnCategory';
+import * as LearnAndEarnLesson from './models/learnAndEarn/learnAndEarnLesson';
+import * as LearnAndEarnLevel from './models/learnAndEarn/learnAndEarnLevel';
+import * as LearnAndEarnPayment from './models/learnAndEarn/learnAndEarnPayment';
+import * as LearnAndEarnQuiz from './models/learnAndEarn/learnAndEarnQuiz';
+import * as LearnAndEarnUserCategory from './models/learnAndEarn/learnAndEarnUserCategory';
+import * as LearnAndEarnUserLesson from './models/learnAndEarn/learnAndEarnUserLesson';
+import * as LearnAndEarnUserLevel from './models/learnAndEarn/learnAndEarnUserLevel';
+import * as MerchantCommunity from './models/merchant/merchantCommunity';
+import * as MerchantRegistry from './models/merchant/merchantRegistry';
 import * as ReachedAddress from './models/reachedAddress';
+import * as StoryComment from './models/story/storyComment';
 import * as StoryCommunity from './models/story/storyCommunity';
 import * as StoryContent from './models/story/storyContent';
 import * as StoryEngagement from './models/story/storyEngagement';
@@ -164,10 +175,33 @@ const models: DbModels = {
         .StoryUserEngagementModel as ModelCtor<StoryUserEngagement.StoryUserEngagementModel>,
     storyUserReport: sequelize.models
         .StoryUserReportModel as ModelCtor<StoryUserReport.StoryUserReportModel>,
+    storyComment: sequelize.models
+        .StoryCommentModel as ModelCtor<StoryComment.StoryCommentModel>,
     airgrabUser: sequelize.models
         .AirgrabUserModel as ModelCtor<AirgrabUser.AirgrabUserModel>,
     airgrabProof: sequelize.models
         .AirgrabProofModel as ModelCtor<AirgrabProof.AirgrabProofModel>,
+    // L&E
+    learnAndEarnCategory: sequelize.models
+        .LearnAndEarnCategoryModel as ModelCtor<LearnAndEarnCategory.LearnAndEarnCategoryModel>,
+    learnAndEarnLesson: sequelize.models
+        .LearnAndEarnLessonModel as ModelCtor<LearnAndEarnLesson.LearnAndEarnLessonModel>,
+    learnAndEarnLevel: sequelize.models
+        .LearnAndEarnLevelModel as ModelCtor<LearnAndEarnLevel.LearnAndEarnLevelModel>,
+    learnAndEarnQuiz: sequelize.models
+        .LearnAndEarnQuizModel as ModelCtor<LearnAndEarnQuiz.LearnAndEarnQuizModel>,
+    learnAndEarnUserCategory: sequelize.models
+        .LearnAndEarnUserCategoryModel as ModelCtor<LearnAndEarnUserCategory.LearnAndEarnUserCategoryModel>,
+    learnAndEarnUserLesson: sequelize.models
+        .LearnAndEarnUserLessonModel as ModelCtor<LearnAndEarnUserLesson.LearnAndEarnUserLessonModel>,
+    learnAndEarnUserLevel: sequelize.models
+        .LearnAndEarnUserLevelModel as ModelCtor<LearnAndEarnUserLevel.LearnAndEarnUserLevelModel>,
+    learnAndEarnPayment: sequelize.models
+        .LearnAndEarnPaymentModel as ModelCtor<LearnAndEarnPayment.LearnAndEarnPaymentModel>,
+    merchantRegistry: sequelize.models
+        .MerchantRegistryModel as ModelCtor<MerchantRegistry.MerchantRegistryModel>,
+    merchantCommunity: sequelize.models
+        .MerchantCommunityModel as ModelCtor<MerchantCommunity.MerchantCommunityModel>,
 };
 
 let redisClient: redis.RedisClient | undefined;
@@ -182,6 +216,7 @@ if (process.env.NODE_ENV !== 'test') {
             : {}),
     });
 }
+const cacheOnlySuccess = (req, res) => res.statusCode === 200;
 const apiCacheOptions = {
     debug: !config.enabledCacheWithRedis,
     enabled: config.enabledCacheWithRedis,
@@ -231,4 +266,11 @@ export {
     UbiPromoter,
     UbiPromoterSocialMedia,
 };
-export { sequelize, Sequelize, models, redisClient, cacheWithRedis };
+export {
+    sequelize,
+    Sequelize,
+    models,
+    redisClient,
+    cacheWithRedis,
+    cacheOnlySuccess,
+};

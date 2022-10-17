@@ -32,11 +32,18 @@
  *            description: Date of creation
  */
 
+export enum NotificationType {
+    STORY_LIKED,
+    BENEFICIARY_ADDED,
+    MANAGER_ADDED,
+    COMMUNITY_CREATED,
+}
+
 export interface AppNotification {
     id: number;
     userId: number;
     type: number;
-    params: string;
+    params: object;
     read: boolean;
 
     //timestamp
@@ -46,8 +53,6 @@ export interface AppNotification {
 export interface AppNotificationCreation {
     userId: number;
     type: number;
-    params?: string;
+    params?: object;
     read?: boolean;
-
-    createdAt: Date;
 }

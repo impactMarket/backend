@@ -6,33 +6,41 @@ import { SinonStub, stub, restore } from 'sinon';
 import tk from 'timekeeper';
 
 import { models } from '../../src/database';
+import { LogTypes } from '../../src/interfaces/app/appLog';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import UserService from '../../src/services/app/user';
+import LogService from '../../src/services/app/user/log';
+import CommunityService from '../../src/services/ubi/community';
+import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
+import * as subgraph from '../../src/subgraph/queries/community';
+import * as userSubgraph from '../../src/subgraph/queries/user';
 import { BaseError } from '../../src/utils/baseError';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import { jumpToTomorrowMidnight } from '../config/utils';
+import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
 import ManagerFactory from '../factories/manager';
-import BeneficiaryFactory from '../factories/beneficiary';
 import UserFactory from '../factories/user';
-import CommunityService from '../../src/services/ubi/community';
-import LogService from '../../src/services/app/user/log';
-import { LogTypes } from '../../src/interfaces/app/appLog';
-import * as subgraph from '../../src/subgraph/queries/community';
-import * as userSubgraph from '../../src/subgraph/queries/user';
 
 describe('user service', () => {
     let sequelize: Sequelize;
     let returnCommunityStateSubgraph: SinonStub;
     let returnUserRoleSubgraph: SinonStub;
     const logService = new LogService();
+    let returnGetBeneficiaryByAddressSubgraph: SinonStub;
 
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
+        returnGetBeneficiaryByAddressSubgraph = stub(
+            beneficiarySubgraph,
+            'getBeneficiariesByAddress'
+        );
         returnCommunityStateSubgraph = stub(subgraph, 'getCommunityState');
+        returnGetBeneficiaryByAddressSubgraph.returns([]);
+
         returnCommunityStateSubgraph.returns([
             {
                 claims: 0,
@@ -64,20 +72,13 @@ describe('user service', () => {
             const phone = faker.phone.phoneNumber();
             const newUser = await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const findUser = await models.appUser.findOne({
                 where: { address: newUser.user.address },
             });
-            const findPhone = await sequelize.models.AppUserTrustModel.findOne({
-                where: { phone },
-            });
             // eslint-disable-next-line no-unused-expressions
             expect(findUser).to.not.be.null;
-            // eslint-disable-next-line no-unused-expressions
-            expect(findPhone).to.not.be.null;
         });
 
         it('authentication creates new user with all params', async () => {
@@ -98,22 +99,17 @@ describe('user service', () => {
                 children: 1,
                 avatarMediaId: 5,
                 pushNotificationToken: 'ckniwoaicoska',
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const findUser = await models.appUser.findOne({
                 where: { address: newUser.user.address },
             });
-            const findPhone = await sequelize.models.AppUserTrustModel.findOne({
-                where: { phone },
-            });
             // eslint-disable-next-line no-unused-expressions
             expect(findUser).to.not.be.null;
             // eslint-disable-next-line no-unused-expressions
-            expect(findPhone).to.not.be.null;
             expect(newUser.user).to.include({
                 address,
+                phone,
                 language: 'pt',
                 currency,
                 suspect: false,
@@ -133,28 +129,20 @@ describe('user service', () => {
             //
             await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const loadUser = await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const findUser = await models.appUser.findOne({
                 where: { address: loadUser.user.address },
             });
-            const findPhone = await sequelize.models.AppUserTrustModel.findOne({
-                where: { phone },
-            });
             // eslint-disable-next-line no-unused-expressions
             expect(findUser).to.not.be.null;
-            // eslint-disable-next-line no-unused-expressions
-            expect(findPhone).to.not.be.null;
             expect(loadUser.user).to.include({
                 address,
+                phone,
             });
         });
 
@@ -176,9 +164,7 @@ describe('user service', () => {
                 children: 1,
                 avatarMediaId: 5,
                 pushNotificationToken: 'ckniwoaicoska',
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const loadUser = await UserService.authenticate({
                 address,
@@ -191,22 +177,16 @@ describe('user service', () => {
                 children: 1,
                 avatarMediaId: 5,
                 pushNotificationToken: 'ckniwoaicoska',
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const findUser = await models.appUser.findOne({
                 where: { address: loadUser.user.address },
             });
-            const findPhone = await sequelize.models.AppUserTrustModel.findOne({
-                where: { phone },
-            });
             // eslint-disable-next-line no-unused-expressions
             expect(findUser).to.not.be.null;
-            // eslint-disable-next-line no-unused-expressions
-            expect(findPhone).to.not.be.null;
             expect(loadUser.user).to.include({
                 address,
+                phone,
                 language: 'pt',
                 currency,
                 suspect: false,
@@ -228,16 +208,12 @@ describe('user service', () => {
 
             await UserService.authenticate({
                 address: firstAddress,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             let error: any;
             await UserService.authenticate({
                 address: secondAddress,
-                trust: {
-                    phone,
-                },
+                phone,
             }).catch((err) => {
                 error = err;
             });
@@ -256,17 +232,13 @@ describe('user service', () => {
 
             await UserService.authenticate({
                 address: firstAddress,
-                trust: {
-                    phone,
-                },
+                phone,
             });
 
             const loadUser = await UserService.authenticate(
                 {
                     address: secondAddress,
-                    trust: {
-                        phone,
-                    },
+                    phone,
                 },
                 true
             );
@@ -296,18 +268,14 @@ describe('user service', () => {
             // create the first account
             await UserService.authenticate({
                 address: firstAddress,
-                trust: {
-                    phone,
-                },
+                phone,
             });
 
             // replace by a new account
             await UserService.authenticate(
                 {
                     address: secondAddress,
-                    trust: {
-                        phone,
-                    },
+                    phone,
                 },
                 true
             );
@@ -317,9 +285,7 @@ describe('user service', () => {
             // try to login with the first account again
             await UserService.authenticate({
                 address: firstAddress,
-                trust: {
-                    phone,
-                },
+                phone,
             }).catch((err) => {
                 error = err;
             });
@@ -333,9 +299,7 @@ describe('user service', () => {
             const phone = faker.phone.phoneNumber();
             const login = await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
 
             const oldLastLogin = login.user.lastLogin;
@@ -344,9 +308,7 @@ describe('user service', () => {
 
             await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
 
             const user = await models.appUser.findOne({
@@ -365,9 +327,7 @@ describe('user service', () => {
             const phone = faker.phone.phoneNumber();
             const newUser = await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const logged = await UserService.welcome(newUser.user.address);
             // eslint-disable-next-line no-unused-expressions
@@ -380,9 +340,7 @@ describe('user service', () => {
             const phone = faker.phone.phoneNumber();
             const newUser = await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
             const logged = await UserService.welcome(
                 newUser.user.address,
@@ -419,10 +377,10 @@ describe('user service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -485,9 +443,7 @@ describe('user service', () => {
             const phone = faker.phone.phoneNumber();
             await UserService.authenticate({
                 address,
-                trust: {
-                    phone,
-                },
+                phone,
             });
 
             const data = {
@@ -520,26 +476,22 @@ describe('user service', () => {
                 {
                     userId: users[0].id,
                     type: 1,
-                    params: 'param_test',
-                    createdAt: new Date(),
+                    params: { param: 'param_test' },
                 },
                 {
                     userId: users[0].id,
                     type: 2,
-                    params: 'param_test',
-                    createdAt: new Date(),
+                    params: { param: 'param_test' },
                 },
                 {
                     userId: users[1].id,
                     type: 1,
-                    params: 'param_test',
-                    createdAt: new Date(),
+                    params: { param: 'param_test' },
                 },
                 {
                     userId: users[2].id,
                     type: 1,
-                    params: 'param_test',
-                    createdAt: new Date(),
+                    params: { param: 'param_test' },
                 },
             ]);
         });
@@ -719,10 +671,10 @@ describe('user service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                 },
@@ -822,10 +774,10 @@ describe('user service', () => {
                     visibility: 'public',
                     contract: {
                         baseInterval: 60 * 60 * 24,
-                        claimAmount: '1000000000000000000',
+                        claimAmount: 1,
                         communityId: 0,
                         incrementInterval: 5 * 60,
-                        maxClaim: '450000000000000000000',
+                        maxClaim: 450,
                     },
                     hasAddress: true,
                     ambassadorAddress: users[3].address,
@@ -843,44 +795,6 @@ describe('user service', () => {
 
         afterEach(async () => {
             await truncate(sequelize, 'AppLogModel');
-        });
-
-        it('get user logs - edited community', async () => {
-            await CommunityService.edit(
-                communities[0].id,
-                {
-                    name: communities[0].name,
-                    description: communities[0].description,
-                    currency: communities[0].currency,
-                    coverMediaId: communities[0].coverMediaId,
-                    coverMediaPath: communities[0].coverMediaPath,
-                    email: communities[0].email,
-                },
-                users[0].address,
-                users[0].id
-            );
-
-            const logs = await logService.get(
-                users[3].address,
-                'edited_community',
-                communities[0].id.toString()
-            );
-
-            expect(logs[0]).to.include({
-                userId: users[0].id,
-                type: LogTypes.EDITED_COMMUNITY,
-            });
-            expect(logs[0].detail).to.include({
-                name: communities[0].name,
-                description: communities[0].description,
-                currency: communities[0].currency,
-                // coverMediaId: communities[0].coverMediaId,
-                email: communities[0].email,
-            });
-            expect(logs[0].user).to.include({
-                address: users[0].address,
-                username: users[0].username,
-            });
         });
 
         it('get user logs - edited profile', async () => {
@@ -908,33 +822,6 @@ describe('user service', () => {
                 address: users[1].address,
                 username: 'new name',
             });
-        });
-
-        it('should not list logs when is not an ambassador', async () => {
-            await CommunityService.edit(
-                communities[0].id,
-                {
-                    name: communities[0].name,
-                    description: communities[0].description,
-                    currency: communities[0].currency,
-                    coverMediaId: communities[0].coverMediaId,
-                    coverMediaPath: communities[0].coverMediaPath,
-                    email: communities[0].email,
-                },
-                users[0].address,
-                users[0].id
-            );
-
-            logService
-                .get(
-                    users[0].address,
-                    'edited_community',
-                    communities[0].id.toString()
-                )
-                .catch((e) => expect(e.name).to.be.equal('COMMUNITY_NOT_FOUND'))
-                .then(() => {
-                    throw new Error('expected to fail');
-                });
         });
     });
 });

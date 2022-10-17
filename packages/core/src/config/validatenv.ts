@@ -99,6 +99,13 @@ function validateEnv() {
         TREASURY_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_LAMBDA: bool({ default: false }),
         SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
+        COUNCIL_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
+        IMAGE_HANDLER_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
+        SIGNATURE_EXPIRATION: num({ default: 15 }),
+        LEARN_AND_EARN_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        VERCEL_WEBHOOK_PWA: str({ devDefault: onlyOnTestEnv('xyz') }),
+        VERCEL_WEBHOOK_WEBSITE: str({ devDefault: onlyOnTestEnv('xyz') }),
+        VERCEL_WEBHOOK_WALLET: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 

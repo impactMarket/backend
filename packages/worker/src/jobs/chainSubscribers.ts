@@ -5,6 +5,7 @@ import {
     contracts,
     database,
 } from '@impactmarket/core';
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 
 /* istanbul ignore next */
@@ -640,14 +641,20 @@ class ChainSubscribers {
                             parsedLog.args[5][isProposalToCommunity[index]]
                         ),
                     ];
+
+                    const maxClaim = calldatas[0][2].toString();
+                    const claimAmount = calldatas[0][1].toString();
                     //
                     const community = await database.models.community.findOne({
                         attributes: ['id'],
                         where: {
                             requestByAddress: calldatas[0][0][0],
-                            '$contract.claimAmount$':
-                                calldatas[0][1].toString(),
-                            '$contract.maxClaim$': calldatas[0][2].toString(),
+                            '$contract.claimAmount$': new BigNumber(claimAmount)
+                                .dividedBy(10 ** config.cUSDDecimal)
+                                .toNumber(),
+                            '$contract.maxClaim$': new BigNumber(maxClaim)
+                                .dividedBy(10 ** config.cUSDDecimal)
+                                .toNumber(),
                             '$contract.baseInterval$': parseInt(
                                 calldatas[0][4].toString(),
                                 10

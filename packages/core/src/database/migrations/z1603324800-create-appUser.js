@@ -41,6 +41,12 @@ module.exports = {
             pushNotificationToken: {
                 type: Sequelize.STRING(64),
             },
+            walletPNT: {
+                type: Sequelize.STRING(256),
+            },
+            appPNT: {
+                type: Sequelize.STRING(256),
+            },
             gender: {
                 type: Sequelize.STRING(2),
             },
@@ -73,9 +79,27 @@ module.exports = {
                 type: Sequelize.STRING(512),
                 allowNull: true,
             },
+            country: {
+                type: Sequelize.STRING(64),
+                allowNull: true,
+            },
+            phone: {
+                type: Sequelize.STRING(64),
+                allowNull: true,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
+            },
+            readBeneficiaryRules: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
+            readManagerRules: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
             },
             updatedAt: {
                 allowNull: false,

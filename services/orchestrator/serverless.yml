@@ -1,0 +1,31 @@
+service: orchestrator
+
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ${env:AWS_REGION}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - lambda:ListFunctions
+            - lambda:UpdateFunctionConfiguration
+            - lambda:ListTags
+          Resource:
+            - "*"
+
+functions:
+  herokuTrigger:
+    handler: handler.herokuTrigger
+    events:
+      - http: 
+          path: heroku
+          method: post
+          cors: true
+
+plugins:
+  - serverless-bundle

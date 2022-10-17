@@ -1,9 +1,10 @@
 import { gql } from 'apollo-boost';
+import { utils } from 'ethers';
 
-import { client } from '../config';
+import { clientDAO } from '../config';
 import { BeneficiarySubgraph } from '../interfaces/beneficiary';
 
-export const getBeneficiaries = async (
+export const getAllBeneficiaries = async (
     community: string
 ): Promise<BeneficiarySubgraph[]> => {
     try {
@@ -25,6 +26,7 @@ export const getBeneficiaries = async (
                             lastClaimAt_gte: ${aMonthAgo.getTime() / 1000}
                         }
                     ) {
+                        address
                         lastClaimAt
                         preLastClaimAt
                         claims
@@ -34,7 +36,7 @@ export const getBeneficiaries = async (
                     }
                 }
             `;
-            const queryResult = await client.query({
+            const queryResult = await clientDAO.query({
                 query,
                 fetchPolicy: 'no-cache',
             });
@@ -46,6 +48,208 @@ export const getBeneficiaries = async (
             }
         }
         return result;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getBeneficiariesByAddress = async (
+    addresses: string[],
+    state?: string,
+    inactive?: string,
+    community?: string,
+    orderBy?: string,
+    orderDirection?: string
+): Promise<BeneficiarySubgraph[]> => {
+    try {
+        const idsFormated = addresses.map(
+            (el) => `"${el.toLocaleLowerCase()}"`
+        );
+
+        const query = gql`
+            {
+                beneficiaryEntities(
+                    first: ${idsFormated.length}
+                    ${orderBy ? orderBy : ''}
+                    ${orderDirection ? orderDirection : ''}
+                    where: {
+                        address_in: [${idsFormated}]
+                        ${state ? state : ''}
+                        ${inactive ? inactive : ''}
+                        ${
+                            community
+                                ? `community: "${community.toLocaleLowerCase()}"`
+                                : ''
+                        }
+                    }
+                ) {
+                    address
+                    claimed
+                    since
+                    state
+                    community {
+                        id
+                    }
+                }
+            }
+        `;
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+        return queryResult.data.beneficiaryEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getBeneficiaries = async (
+    community: string,
+    limit: number,
+    offset: number,
+    lastClaimAt?: string,
+    state?: string,
+    orderBy?: string,
+    orderDirection?: string
+): Promise<BeneficiarySubgraph[]> => {
+    try {
+        const query = gql`
+            {
+                beneficiaryEntities(
+                    first: ${limit}
+                    skip: ${offset}
+                    ${orderBy ? orderBy : ''}
+                    ${orderDirection ? orderDirection : ''}
+                    where: {
+                        community:"${community.toLowerCase()}"
+                        ${lastClaimAt ? lastClaimAt : ''}
+                        ${state ? state : ''}
+                    }
+                ) {
+                    address
+                    claimed
+                    since
+                    state
+                    community {
+                        id
+                    }
+                }
+            }
+        `;
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+        return queryResult.data.beneficiaryEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getBeneficiaryCommunity = async (
+    beneficiaryAddress: string
+): Promise<string> => {
+    try {
+        const query = gql`
+                {
+                    beneficiaryEntity(
+                        id: "${beneficiaryAddress.toLowerCase()}"
+                        status: 0
+                    ) {
+                        community {
+                            id
+                        }
+                    }
+                }
+            `;
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return utils.getAddress(
+            queryResult.data.beneficiaryEntity.community.id
+        );
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const countBeneficiaries = async (
+    community: string,
+    state?: number
+): Promise<number> => {
+    try {
+        const query = gql`
+                {
+                    communityEntity(
+                        id: "${community.toLowerCase()}"
+                    ) {
+                        beneficiaries
+                        removedBeneficiaries
+                    }
+                }
+            `;
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        switch (state) {
+            case 0:
+                return queryResult.data.communityEntity?.beneficiaries;
+            case 1:
+                return queryResult.data.communityEntity?.removedBeneficiaries;
+            case 2:
+                return queryResult.data.communityEntity?.lockedBeneficiaries;
+            default:
+                return (
+                    queryResult.data.communityEntity?.beneficiaries +
+                    queryResult.data.communityEntity?.removedBeneficiaries +
+                    (queryResult.data.communityEntity?.lockedBeneficiaries
+                        ? queryResult.data.communityEntity?.lockedBeneficiaries
+                        : 0) // TODO: remove "if" when TheGraph updates
+                );
+        }
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const countBeneficiariesByCommunities = async (
+    community: string[],
+    state: string
+): Promise<number> => {
+    try {
+        const idsFormated = community.map(
+            (el) => `"${el.toLocaleLowerCase()}"`
+        );
+
+        const query = gql`
+                {
+                    communityEntities(
+                        address_in: [${idsFormated}]
+                    ) {
+                        beneficiaries
+                        removedBeneficiaries
+                    }
+                }
+            `;
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        if (state === 'active') {
+            return queryResult.data.communityEntities?.beneficiaries;
+        } else if (state === 'removed') {
+            return queryResult.data.communityEntities?.removedBeneficiaries;
+        } else {
+            return (
+                queryResult.data.communityEntities?.beneficiaries +
+                queryResult.data.communityEntities?.removedBeneficiaries
+            );
+        }
     } catch (error) {
         throw new Error(error);
     }

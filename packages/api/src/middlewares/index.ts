@@ -1,4 +1,5 @@
 import { config, database } from '@impactmarket/core';
+import { ethers } from 'ethers';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
@@ -45,8 +46,8 @@ export function authenticateToken(
             if (credential && credential.roles) {
                 let path = req.path.split('/')[1];
                 if (!path) {
-                    let baseUrl = req.baseUrl.split('/');
-                    path = baseUrl[baseUrl.length-1]
+                    const baseUrl = req.baseUrl.split('/');
+                    path = baseUrl[baseUrl.length - 1];
                 }
                 const authorization = checkRoles(
                     credential.roles,
@@ -61,6 +62,7 @@ export function authenticateToken(
                 }
             } else {
                 res.sendStatus(403);
+                return;
             }
         }
         const user = _user as UserInRequest;
@@ -129,6 +131,66 @@ export const rateLimiter = rateLimit({
           }),
 });
 
+export function verifySignature(
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction
+): void {
+    const { signature, message } = req.headers;
+
+    if (!signature || !message) {
+        res.status(401).json({
+            success: false,
+            error: {
+                name: 'INVALID_SINATURE',
+                message: 'signature is invalid',
+            },
+        });
+        return;
+    }
+
+    const address = ethers.utils.verifyMessage(
+        message as string,
+        signature as string,
+    );
+
+    if (address.toLocaleLowerCase() === req.user?.address.toLocaleLowerCase()) {
+        // validate signature timestamp
+        const timestamp = (message as string).match(/(\d+$)/);
+        if (!timestamp || !timestamp[0]) {
+            res.status(403).json({
+                success: false,
+                error: {
+                    name: 'EXPIRED_SIGNATURE',
+                    message: 'signature is expired',
+                },
+            });
+            return;
+        }
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() - config.signatureExpiration);
+        if (parseInt(timestamp[0]) < expirationDate.getTime()) {
+            res.status(403).json({
+                success: false,
+                error: {
+                    name: 'EXPIRED_SIGNATURE',
+                    message: 'signature is expired',
+                },
+            });
+            return;
+        }
+        next();
+    } else {
+        res.status(403).json({
+            success: false,
+            error: {
+                name: 'INVALID_SINATURE',
+                message: 'signature is invalid',
+            },
+        });
+    }
+}
+
 const checkRoles = (roles: string[], path: string, reqMethod: string) => {
     let authorizate = false;
     for (let i = 0; i < roles.length; i++) {
@@ -138,7 +200,10 @@ const checkRoles = (roles: string[], path: string, reqMethod: string) => {
                 method === '*' ||
                 (reqMethod === 'GET' && method === 'read') ||
                 (reqMethod === 'DELETE' && method === 'delete') ||
-                ((reqMethod === 'POST' || reqMethod === 'PUT' || reqMethod === 'PATCH') && method === 'write')
+                ((reqMethod === 'POST' ||
+                    reqMethod === 'PUT' ||
+                    reqMethod === 'PATCH') &&
+                    method === 'write')
             ) {
                 authorizate = true;
                 break;

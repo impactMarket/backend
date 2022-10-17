@@ -52,9 +52,7 @@ class UserController {
                 children,
                 avatarMediaId,
                 avatarMediaPath,
-                trust: {
-                    phone,
-                },
+                phone,
             },
             overwrite,
             recover
@@ -149,14 +147,15 @@ class UserController {
                 mediaId,
                 avatarMediaPath
             )
-                .then((r) => standardResponse(res, 201, r, ''))
+                .then((r) => standardResponse(res, 201, true, r))
                 .catch((e) =>
                     standardResponse(res, 400, false, '', { error: e })
                 );
+        } else {
+            standardResponse(res, 400, false, '', {
+                error: new Error('Not found'),
+            });
         }
-        standardResponse(res, 400, false, '', {
-            error: new Error('Not found'),
-        });
     };
 
     public updateUsername = (req: RequestWithUser, res: Response) => {

@@ -1,7 +1,11 @@
 import { Router } from 'express';
 
 import UserController from '../../controllers/v2/user';
-import { authenticateToken } from '../../middlewares';
+import {
+    authenticateToken,
+    adminAuthentication,
+    verifySignature,
+} from '../../middlewares';
 import userValidators from '../../validators/user';
 
 export default (app: Router): void => {
@@ -41,6 +45,12 @@ export default (app: Router): void => {
      *               pushNotificationToken:
      *                 type: string
      *                 required: false
+     *               walletPNT:
+     *                 type: string
+     *                 required: false
+     *               appPNT:
+     *                 type: string
+     *                 required: false
      *               firstName:
      *                 type: string
      *                 required: false
@@ -64,6 +74,9 @@ export default (app: Router): void => {
      *                 type: string
      *                 required: false
      *               bio:
+     *                 type: string
+     *                 required: false
+     *               country:
      *                 type: string
      *                 required: false
      *     responses:
@@ -118,6 +131,14 @@ export default (app: Router): void => {
      *                 type: string
      *                 nullable: true
      *                 required: false
+     *               walletPNT:
+     *                 type: string
+     *                 nullable: true
+     *                 required: false
+     *               appPNT:
+     *                 type: string
+     *                 nullable: true
+     *                 required: false
      *               firstName:
      *                 type: string
      *                 required: false
@@ -145,6 +166,12 @@ export default (app: Router): void => {
      *               bio:
      *                 type: string
      *                 required: false
+     *               country:
+     *                 type: string
+     *                 required: false
+     *               phone:
+     *                 type: string
+     *                 required: false
      *     responses:
      *       "200":
      *         description: "Success"
@@ -157,6 +184,7 @@ export default (app: Router): void => {
     route.put(
         '/',
         authenticateToken,
+        verifySignature,
         userValidators.update,
         userController.update
     );
@@ -255,6 +283,36 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
+     * /users/report:
+     *   get:
+     *     tags:
+     *       - "users"
+     *     summary: "List anonymous report"
+     *     parameters:
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for report pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for report pagination
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get('/report/:query?', authenticateToken, userController.getReport);
+
+    /**
+     * @swagger
+     *
      * /users/logs:
      *   get:
      *     tags:
@@ -312,5 +370,155 @@ export default (app: Router): void => {
         '/presigned/:query?',
         authenticateToken,
         userController.getPresignedUrlMedia
+    );
+
+    /**
+     * @swagger
+     *
+     * /users/notifications/unread:
+     *   get:
+     *     tags:
+     *       - "users"
+     *     summary: Get the number of unread notifications from a user
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    type: integer
+     *                    description: number of unread notifications
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/notifications/unread',
+        authenticateToken,
+        userController.getUnreadNotifications
+    );
+
+    /**
+     * @swagger
+     *
+     * /users/notifications:
+     *   get:
+     *     tags:
+     *       - "users"
+     *     summary: Get all notifications from a user
+     *     parameters:
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for community pagination (default 0)
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for community pagination (default 10)
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    $ref: '#/components/schemas/AppNotification'
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/notifications/:query?',
+        authenticateToken,
+        userController.getNotifications
+    );
+
+    /**
+     * @swagger
+     *
+     * /users/notifications/read:
+     *   put:
+     *     tags:
+     *       - "users"
+     *     summary: Mark all notifications as read
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               notifications:
+     *                 type: array
+     *                 items:
+     *                   type: integer
+     *     responses:
+     *       "200":
+     *          description: OK
+     *          content:
+     *            application/json:
+     *              schema:
+     *                type: object
+     *                properties:
+     *                  success:
+     *                    type: boolean
+     *                  data:
+     *                    type: boolean
+     *                    description: if true the notification was updated
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.put(
+        '/notifications/read',
+        authenticateToken,
+        userValidators.readNotifications,
+        userController.readNotifications
+    );
+
+    /**
+     * @swagger
+     *
+     * /users/{address}:
+     *   get:
+     *     tags:
+     *       - "users"
+     *     summary: "Get user by address"
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: user address
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get('/:address', authenticateToken, userController.findBy);
+
+    route.post(
+        '/push-notifications',
+        adminAuthentication,
+        userValidators.sendPushNotifications,
+        userController.sendPushNotifications
     );
 };

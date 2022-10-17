@@ -104,7 +104,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /circulating-spply:
+     * /circulating-supply:
      *   get:
      *     tags:
      *       - "generic"
@@ -115,8 +115,33 @@ export default (app: Router): void => {
      */
     app.get(
         '/circulating-supply',
-        database.cacheWithRedis('10 minutes'),
+        database.cacheWithRedis('10 minutes', database.cacheOnlySuccess),
         genericController.circulatingSupply
+    );
+
+    /**
+     * @swagger
+     *
+     * /total-supply:
+     *   get:
+     *     tags:
+     *       - "generic"
+     *     summary: Gets total PACT supply.
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
+     *                 data:
+     *                   type: number
+     */
+    app.get('/total-supply', (_req: Request, res: Response) =>
+        res.send('10000000000')
     );
 
     /**

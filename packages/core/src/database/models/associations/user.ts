@@ -122,6 +122,6 @@ export function userAssociation(sequelize: Sequelize) {
     sequelize.models.AppLogModel.belongsTo(sequelize.models.AppUserModel, {
         foreignKey: 'userId',
         targetKey: 'id',
-        as: 'user'
+        as: 'user',
     });
 }

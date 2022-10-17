@@ -64,8 +64,12 @@ export interface IManagerDetailsManager {
 
 export interface IListBeneficiary {
     address: string;
-    username: string | null;
-    timestamp: number;
+    username?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    avatarMediaPath?: string | null;
+    timestamp?: number;
+    since?: number;
     claimed: string;
     blocked: boolean;
     // to users not yet registered, the values below do not exist
@@ -121,6 +125,7 @@ export interface IAddStory {
     communityId?: number;
     storyMediaId?: number;
     storyMediaPath?: string;
+    storyMedia?: string[];
     message?: string;
 }
 
@@ -256,6 +261,11 @@ export interface ICommunityStories {
     stories: ICommunityStory[];
 }
 
+export enum BeneficiaryActivity {
+    ADDED,
+    REMOVED,
+}
+
 export type IBeneficiaryActivities = {
     id: number;
     type: string;
@@ -268,6 +278,7 @@ export type IBeneficiaryActivities = {
 };
 
 export type BeneficiaryFilterType = {
+    state?: number;
     active?: boolean;
     suspect?: boolean;
     inactivity?: boolean;

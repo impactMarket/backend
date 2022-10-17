@@ -210,7 +210,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/list/light/:order?',
-        database.cacheWithRedis('10 minutes'),
+        database.cacheWithRedis('10 minutes', database.cacheOnlySuccess),
         communityController.listLight
     );
     /**
@@ -236,7 +236,7 @@ export default (app: Router): void => {
 
     route.get(
         '/:id/historical-ssi',
-        database.cacheWithRedis('1 day'),
+        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
         communityController.getHistoricalSSI
     );
 
@@ -623,7 +623,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/count/:query?',
-        database.cacheWithRedis('5 minutes'),
+        database.cacheWithRedis('5 minutes', database.cacheOnlySuccess),
         controller.count
     );
 
@@ -656,7 +656,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/past-ssi',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getPastSSI
     );
 
@@ -681,7 +681,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/dashboard',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getDashboard
     );
 
@@ -710,7 +710,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/demographics',
-        database.cacheWithRedis('1 day'),
+        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
         controller.getDemographics
     );
 
@@ -746,7 +746,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/claim-location',
-        database.cacheWithRedis('1 day'),
+        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
         controller.getClaimLocation
     );
 
@@ -831,7 +831,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/suspect',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getSuspect
     );
 
@@ -910,7 +910,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/metrics',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getMetrics
     );
 
@@ -939,7 +939,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/:id/campaign',
-        database.cacheWithRedis('1 hour'),
+        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getCampaign
     );
 
@@ -967,63 +967,6 @@ export default (app: Router): void => {
      *               $ref: '#/components/schemas/UbiCommunity'
      */
     route.get('/:id', optionalAuthentication, controller.findById);
-
-    /**
-     * @swagger
-     *
-     * /community:
-     *   put:
-     *     tags:
-     *       - "community"
-     *     summary: Edit existing community
-     *     requestBody:
-     *      required: true
-     *      content:
-     *        application/json:
-     *          schema:
-     *            type: object
-     *            properties:
-     *              name:
-     *                type: string
-     *                required: true
-     *              description:
-     *                type: string
-     *                required: true
-     *              language:
-     *                type: string
-     *                required: false
-     *              currency:
-     *                type: string
-     *                required: true
-     *              city:
-     *                type: string
-     *                required: false
-     *              country:
-     *                type: string
-     *                required: false
-     *              email:
-     *                type: string
-     *                required: false
-     *              coverMediaId:
-     *                type: integer
-     *                required: true
-     *     responses:
-     *       "200":
-     *         description: OK
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/Community'
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.put(
-        '/',
-        authenticateToken,
-        communityValidators.edit,
-        controller.edit
-    );
 
     /**
      * @swagger

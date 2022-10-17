@@ -218,7 +218,9 @@ async function calculateUbiPulse(
                 raw: true,
             })
         )[0] as any;
-        return result.avgComulativeUbi;
+        return new BigNumber(result.avgComulativeUbi)
+            .multipliedBy(10 ** config.cUSDDecimal)
+            .toString(); // convert to 18 decimals before return
     };
 
     const backersAndFunding = await uniqueBackersAndFundingLast30Days(

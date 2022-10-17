@@ -256,4 +256,13 @@ export default {
 
     enabledCacheWithRedis: validatedEnv.ENABLED_CACHE_WITH_REDIS,
     subgraphUrl: validatedEnv.SUBGRAPH_URL,
+    councilSubgraphUrl: validatedEnv.COUNCIL_SUBGRAPH_URL,
+    imageHandlerUrl: validatedEnv.IMAGE_HANDLER_URL,
+    signatureExpiration: validatedEnv.SIGNATURE_EXPIRATION,
+    learnAndEarnPrivateKey: validatedEnv.LEARN_AND_EARN_PRIVATE_KEY,
+    vercelWebhooks: {
+        pwa: validatedEnv.VERCEL_WEBHOOK_PWA,
+        website: validatedEnv.VERCEL_WEBHOOK_WEBSITE,
+        wallet: validatedEnv.VERCEL_WEBHOOK_WALLET,
+    },
 };

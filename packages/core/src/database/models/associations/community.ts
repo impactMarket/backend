@@ -90,15 +90,6 @@ export function communityAssociation(sequelize: Sequelize) {
             as: 'socialMedia',
         }
     );
-    sequelize.models.UbiPromoterModel.hasOne(
-        sequelize.models.AppMediaContentModel,
-        {
-            foreignKey: 'id',
-            sourceKey: 'logoMediaId',
-            as: 'logo',
-            constraints: false,
-        }
-    );
     sequelize.models.Community.hasOne(sequelize.models.AppProposalModel, {
         foreignKey: 'id',
         sourceKey: 'proposalId',
@@ -114,8 +105,25 @@ export function communityAssociation(sequelize: Sequelize) {
         sourceKey: 'ambassadorAddress',
         as: 'ambassador',
     });
-    sequelize.models.UbiCommunityDemographicsModel.belongsTo(sequelize.models.Community, {
-        foreignKey: 'communityId',
-        as: 'community',
-    });
+    sequelize.models.UbiCommunityDemographicsModel.belongsTo(
+        sequelize.models.Community,
+        {
+            foreignKey: 'communityId',
+            as: 'community',
+        }
+    );
+    sequelize.models.AppAnonymousReportModel.belongsTo(
+        sequelize.models.Community,
+        {
+            foreignKey: 'communityId',
+            as: 'community',
+        }
+    );
+    sequelize.models.MerchantRegistryModel.hasMany(
+        sequelize.models.MerchantCommunityModel,
+        {
+            foreignKey: 'merchantId',
+            as: 'merchantCommunity',
+        }
+    );
 }

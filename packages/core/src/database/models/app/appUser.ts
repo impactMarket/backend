@@ -16,6 +16,8 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public language!: string;
     public currency!: string;
     public pushNotificationToken!: string | null;
+    public walletPNT!: string | null;
+    public appPNT!: string | null;
     public gender!: string;
     public year!: number | null;
     public children!: number | null;
@@ -24,6 +26,10 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public active!: boolean;
     public email!: string;
     public bio!: string;
+    public country!: string;
+    public phone!: string;
+    public readBeneficiaryRules!: boolean;
+    public readManagerRules!: boolean;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -77,6 +83,12 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             pushNotificationToken: {
                 type: DataTypes.STRING(64),
             },
+            walletPNT: {
+                type: DataTypes.STRING(256),
+            },
+            appPNT: {
+                type: DataTypes.STRING(256),
+            },
             gender: {
                 type: DataTypes.STRING(2),
                 defaultValue: 'u',
@@ -93,6 +105,12 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             bio: {
                 type: DataTypes.STRING(64),
             },
+            country: {
+                type: DataTypes.STRING(64),
+            },
+            phone: {
+                type: DataTypes.STRING(64),
+            },
             lastLogin: {
                 type: DataTypes.DATE,
                 defaultValue: Sequelize.fn('now'),
@@ -106,6 +124,16 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             active: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: true,
+                allowNull: false,
+            },
+            readBeneficiaryRules: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
+                allowNull: false,
+            },
+            readManagerRules: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
                 allowNull: false,
             },
             createdAt: {

@@ -2,7 +2,7 @@ import { gql } from 'apollo-boost';
 import { ethers } from 'ethers';
 
 import config from '../../config';
-import { client } from '../config';
+import { clientDAO, clientCouncil } from '../config';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
@@ -13,25 +13,26 @@ export const getCommunityProposal = async (): Promise<string[]> => {
 
         const query = gql`
             {
-                communityProposalEntities(
-                    where: {
-                        status: 0
-                        endBlock_gt: ${blockNumber}
-                    }
+                proposalEntities(
+                where: {
+                    status: 0
+                    endBlock_gt: ${blockNumber}
+                    signatures_contains:["addCommunity(address[],address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)"]
+                }
                 ) {
-                    calldata
+                    calldatas
                 }
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientCouncil.query({
             query,
             fetchPolicy: 'no-cache',
         });
 
-        if (queryResult.data?.communityProposalEntities?.length) {
-            return queryResult.data.communityProposalEntities.map(
-                (proposal) => proposal.calldata
+        if (queryResult.data?.proposalEntities?.length) {
+            return queryResult.data.proposalEntities.map(
+                (proposal) => proposal.calldatas[0]
             );
         }
 
@@ -66,47 +67,12 @@ export const getClaimed = async (
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
 
         return queryResult.data.communityEntities;
-    } catch (error) {
-        throw new Error(error);
-    }
-};
-
-export const getCommunityManagers = async (
-    communityAddress: string
-): Promise<
-    {
-        address: string;
-        state: number;
-        added: number;
-        removed: number;
-        since: number;
-    }[]
-> => {
-    try {
-        const query = gql`
-            {
-                managerEntities(where: {community: "${communityAddress.toLowerCase()}"}) {
-                    address
-                    state
-                    added
-                    removed
-                    since
-                }
-            }
-        `;
-
-        const queryResult = await client.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
-
-        return queryResult.data?.managerEntities;
     } catch (error) {
         throw new Error(error);
     }
@@ -122,6 +88,8 @@ export const getCommunityState = async (
     contributed: string;
     contributors: number;
     managers: number;
+    baseInterval: number;
+    state: number;
 }> => {
     try {
         const query = gql`
@@ -136,11 +104,14 @@ export const getCommunityState = async (
                     contributed
                     contributors
                     managers
+                    baseInterval
+                    estimatedFunds
+                    state
                 }
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
@@ -169,11 +140,14 @@ export const getCommunityUBIParams = async (
                     maxClaim
                     baseInterval
                     incrementInterval
+                    decreaseStep
+                    minTranche
+                    maxTranche
                 }
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
@@ -196,12 +170,138 @@ export const communityEntities = async (where: string, fields: string) => {
             }
         `;
 
-        const queryResult = await client.query({
+        const queryResult = await clientDAO.query({
             query,
             fetchPolicy: 'no-cache',
         });
 
         return queryResult.data?.communityEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getBiggestCommunities = async (
+    limit: number,
+    offset: number,
+    orderDirection?: string
+): Promise<
+    {
+        beneficiaries: number;
+        id: string;
+    }[]
+> => {
+    try {
+        const query = gql`
+            {
+                communityEntities(
+                    first: ${limit}
+                    skip: ${offset}
+                    orderBy: beneficiaries
+                    orderDirection: ${orderDirection ? orderDirection : 'desc'}
+                ) {
+                    id
+                    beneficiaries
+                }
+            }
+        `;
+
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data.communityEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getCommunityAmbassador = async (community: string) => {
+    try {
+        const query = gql`
+            {
+                ambassadorEntities(
+                    where:{
+                        communities_contains: ["${community.toLocaleLowerCase()}"]
+                    }
+                ) {
+                    id
+                    since
+                    status
+                    until
+                }
+            }
+        `;
+
+        const queryResult = await clientCouncil.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data?.ambassadorEntities[0];
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
+    try {
+        const query = gql`
+            {
+                ambassadorEntities(
+                    where:{
+                        id: "${ambassadorAddress.toLocaleLowerCase()}"
+                        status: 0
+                    }
+                ) {
+                    id
+                    communities
+                }
+            }
+        `;
+
+        const queryResult = await clientCouncil.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data?.ambassadorEntities[0];
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getCommunityStateByAddresses = async (
+    addresses: string[]
+): Promise<
+    {
+        beneficiaries: number;
+        id: string;
+    }[]
+> => {
+    const idsFormated = addresses.map((el) => `"${el.toLocaleLowerCase()}"`);
+
+    try {
+        const query = gql`
+            {
+                communityEntities(
+                    where: {
+                        id_in:[${idsFormated}]
+                    }
+                ) {
+                    id
+                    beneficiaries
+                }
+            }
+        `;
+
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        return queryResult.data.communityEntities;
     } catch (error) {
         throw new Error(error);
     }

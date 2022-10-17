@@ -1,10 +1,13 @@
+import { getAddress } from '@ethersproject/address';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { Expo, ExpoPushMessage, ExpoPushTicket } from 'expo-server-sdk';
 
 import config from '../config';
 import { Community } from '../database/models/ubi/community';
+import { AppMediaThumbnail } from '../interfaces/app/appMediaThumbnail';
 import UserService from '../services/app/user';
+import { BaseError } from './baseError';
 import { Logger } from './logger';
 
 BigNumber.config({ EXPONENTIAL_AT: [-7, 30] });
@@ -181,16 +184,17 @@ export async function sendPushNotification(
     userAddress: string,
     title: string,
     body: string,
-    data: any
+    data: any,
+    pushNotificationToken?: string | null
 ): Promise<boolean> {
-    const user = await UserService.get(userAddress);
-    if (
-        user !== null &&
-        user.pushNotificationToken !== null &&
-        user.pushNotificationToken.length > 0
-    ) {
+    if (!pushNotificationToken) {
+        const user = await UserService.get(userAddress);
+        if (!user) return false;
+        pushNotificationToken = user.pushNotificationToken;
+    }
+    if (pushNotificationToken !== null && pushNotificationToken.length > 0) {
         const message = {
-            to: user.pushNotificationToken,
+            to: pushNotificationToken,
             sound: 'default',
             title,
             body,
@@ -236,3 +240,58 @@ export function isAddress(s: string): boolean {
     const matchResult = s.match(/^0x[a-fA-F0-9]{40}$/i);
     return matchResult ? matchResult.length > 0 : false;
 }
+
+export function createThumbnailUrl(
+    bucket: string,
+    key: string,
+    thumbnailSizes: { width: number; height: number }[]
+): AppMediaThumbnail[] {
+    const avatar: AppMediaThumbnail[] = [];
+    for (let i = 0; i < config.thumbnails.pixelRatio.length; i++) {
+        const pr = config.thumbnails.pixelRatio[i];
+        for (let i = 0; i < thumbnailSizes.length; i++) {
+            const size = thumbnailSizes[i];
+            const body = {
+                bucket,
+                key,
+                edits: {
+                    resize: {
+                        width: size.width * pr,
+                        height: size.height * pr,
+                        fit: 'inside',
+                    },
+                },
+            };
+
+            const url = `${config.imageHandlerUrl}/${Buffer.from(
+                JSON.stringify(body)
+            ).toString('base64')}`;
+            avatar.push({
+                url,
+                width: size.width,
+                height: size.height,
+                pixelRatio: pr,
+            } as any);
+        }
+    }
+
+    return avatar;
+}
+
+export const getSearchInput = (searchInput: string) => {
+    if (isAddress(searchInput)) {
+        return {
+            address: getAddress(searchInput.toLocaleLowerCase()),
+        };
+    } else if (
+        searchInput.toLowerCase().indexOf('drop') === -1 &&
+        searchInput.toLowerCase().indexOf('delete') === -1 &&
+        searchInput.toLowerCase().indexOf('update') === -1
+    ) {
+        return {
+            name: searchInput,
+        };
+    } else {
+        throw new BaseError('INVALID_SEARCH', 'Not valid search!');
+    }
+};

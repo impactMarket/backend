@@ -4,7 +4,8 @@ import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { stub, assert, SinonStub } from 'sinon';
 
-import * as subgraph from '../../../../core/src/subgraph/queries/community';
+import * as beneficiarySubgraph from '../../../../core/src/subgraph/queries/beneficiary';
+import * as managerSubgraph from '../../../../core/src/subgraph/queries/manager';
 import { verifyDeletedAccounts } from '../../../src/jobs/cron/user';
 
 describe('[jobs - cron] verifyDeletedAccounts', () => {
@@ -14,6 +15,8 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     let dbGlobalDemographicsStub: SinonStub;
     const communityDemographicsService =
         new services.ubi.CommunityDemographicsService();
+    let returnGetBeneficiaryByAddressSubgraph: SinonStub;
+    let returnGetBeneficiarySubgraph: SinonStub;
 
     before(async () => {
         sequelize = tests.config.setup.sequelizeSetup();
@@ -53,10 +56,10 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },
@@ -123,6 +126,15 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             communityId: communities[0].id,
         });
         await storyService.love(users[0].address, story.id);
+
+        returnGetBeneficiaryByAddressSubgraph = stub(
+            beneficiarySubgraph,
+            'getBeneficiariesByAddress'
+        );
+        returnGetBeneficiarySubgraph = stub(
+            beneficiarySubgraph,
+            'getBeneficiaries'
+        );
     });
 
     after(async () => {
@@ -187,13 +199,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         });
 
-        const phone = users[1].trust ? users[1].trust[0].phone : null;
-        const findPhone = await database.models.appUserTrust.findOne({
-            where: {
-                phone,
-            },
-        });
-
         const beneficiary = await database.models.beneficiary.findOne({
             where: {
                 address: users[1].address,
@@ -227,8 +232,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         // eslint-disable-next-line no-unused-expressions
         expect(user).to.be.null;
-        // eslint-disable-next-line no-unused-expressions
-        expect(findPhone).to.be.null;
         expect(beneficiary).to.include({
             active: true,
         });
@@ -276,12 +279,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         });
 
-        const phone = users[0].trust ? users[0].trust[0].phone : null;
-        const findPhone = await database.models.appUserTrust.findOne({
-            where: {
-                phone,
-            },
-        });
         const findStoryContent = await database.models.storyContent.findOne({
             where: {
                 byAddress: users[0].address,
@@ -296,8 +293,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
         // eslint-disable-next-line no-unused-expressions
         expect(user).to.be.null;
-        // eslint-disable-next-line no-unused-expressions
-        expect(findPhone).to.be.null;
         expect(manager).to.include({
             active: true,
         });
@@ -308,6 +303,20 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     });
 
     it('search beneficiary by address after delete user', async () => {
+        returnGetBeneficiaryByAddressSubgraph.returns([
+            {
+                address: users[1].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0,
+                since: 0,
+                claimed: 0,
+                state: 0,
+            },
+        ]);
         const beneficiary = await services.ubi.BeneficiaryService.search(
             users[0].address,
             users[1].address
@@ -319,6 +328,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         });
     });
     it('search beneficiary by username after delete user', async () => {
+        returnGetBeneficiaryByAddressSubgraph.returns([]);
         const beneficiary = await services.ubi.BeneficiaryService.search(
             users[0].address,
             users[1].username!
@@ -327,6 +337,44 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
     });
 
     it('list beneficiaries after delete user', async () => {
+        returnGetBeneficiarySubgraph.returns([
+            {
+                address: users[1].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0,
+                since: 0,
+                claimed: 0,
+                state: 0,
+            },
+            {
+                address: users[2].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0,
+                since: 0,
+                claimed: 0,
+                state: 0,
+            },
+            {
+                address: users[3].address.toLowerCase(),
+                claims: 0,
+                community: {
+                    id: communities[0].contractAddress,
+                },
+                lastClaimAt: 0,
+                preLastClaimAt: 0,
+                since: 0,
+                claimed: 0,
+                state: 0,
+            },
+        ]);
         const beneficiary = await services.ubi.BeneficiaryService.list(
             users[0].address,
             0,
@@ -361,7 +409,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
 
     it('get managers after delete user', async () => {
         const returnGetCommunityManagersSubgraph = stub(
-            subgraph,
+            managerSubgraph,
             'getCommunityManagers'
         );
         returnGetCommunityManagersSubgraph.returns(
@@ -372,6 +420,7 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                     added: 0,
                     removed: 0,
                     since: 0,
+                    until: 0,
                 },
             ])
         );
@@ -419,10 +468,10 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },

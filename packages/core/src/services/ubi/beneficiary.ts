@@ -1,9 +1,10 @@
+import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
-import { Op, WhereAttributeHash, literal, QueryTypes } from 'sequelize';
-import { Literal, Where } from 'sequelize/types/lib/utils';
+import { Op, WhereAttributeHash, literal } from 'sequelize';
+import { Where } from 'sequelize/types/lib/utils';
 
 import config from '../../config';
-import { models, sequelize } from '../../database';
+import { models } from '../../database';
 import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { AppUser } from '../../interfaces/app/appUser';
 import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
@@ -16,6 +17,12 @@ import {
     UbiBeneficiarySurveyCreation,
 } from '../../interfaces/ubi/ubiBeneficiarySurvey';
 import { UbiBeneficiaryTransactionCreation } from '../../interfaces/ubi/ubiBeneficiaryTransaction';
+import {
+    getBeneficiaries,
+    getBeneficiariesByAddress,
+} from '../../subgraph/queries/beneficiary';
+import { getCommunityState } from '../../subgraph/queries/community';
+import { getUserActivity } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
 import { Logger } from '../../utils/logger';
 import { isAddress } from '../../utils/util';
@@ -23,6 +30,7 @@ import {
     IBeneficiaryActivities,
     IListBeneficiary,
     BeneficiaryFilterType,
+    BeneficiaryActivity,
 } from '../endpoints';
 import CommunityService from './community';
 
@@ -105,58 +113,39 @@ export default class BeneficiaryService {
         );
     }
 
-    public static async findByAddress(
-        address: string,
-        active?: boolean
-    ): Promise<BeneficiaryAttributes | null> {
-        const beneficiary = await models.beneficiary.findOne({
-            where: { address, active },
-        });
-        if (beneficiary) {
-            return beneficiary.toJSON() as BeneficiaryAttributes;
-        }
-        return null;
-    }
-
     public static async getTotalBeneficiaries(address: string): Promise<{
         suspicious: number;
         inactive: number;
     }> {
-        const manager = await models.manager.findOne({
-            attributes: ['communityId'],
+        const manager: ManagerAttributes | null = await models.manager.findOne({
+            attributes: [],
+            include: [
+                {
+                    attributes: ['contractAddress'],
+                    model: models.community,
+                    as: 'community',
+                },
+            ],
             where: {
                 address,
             },
         });
 
-        if (!manager || !manager.communityId) {
+        if (
+            !manager ||
+            !manager.community ||
+            !manager.community.contractAddress
+        ) {
             throw new BaseError('NOT_MANAGER', 'Not a manager ' + address);
         }
 
-        const suspicious = await models.beneficiary.count({
-            include: [
-                {
-                    attributes: ['suspect'],
-                    model: models.appUser,
-                    as: 'user',
-                },
-            ],
-            where: {
-                communityId: manager.communityId,
-                '$"user"."suspect"$': true,
-            } as any,
-        });
-
-        const inactive = await models.beneficiary.count({
-            where: {
-                communityId: manager.communityId,
-                active: false,
-            },
-        });
+        const communityState = await getCommunityState(
+            manager.community.contractAddress
+        );
 
         return {
-            suspicious,
-            inactive,
+            suspicious: 0,
+            inactive: communityState.removedBeneficiaries,
         };
     }
 
@@ -165,11 +154,8 @@ export default class BeneficiaryService {
         searchInput: string,
         filter?: BeneficiaryFilterType
     ): Promise<IListBeneficiary[]> {
-        let whereSearchCondition: Where | WhereAttributeHash<AppUser> = {};
-        let whereBeneficiary:
-            | Where
-            | WhereAttributeHash<BeneficiaryAttributes> = {};
-        let required: boolean;
+        let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null =
+            null;
 
         if (!isAddress(managerAddress)) {
             throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
@@ -181,32 +167,6 @@ export default class BeneficiaryService {
         ) {
             throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
         }
-        if (isAddress(searchInput)) {
-            whereBeneficiary = {
-                address: ethers.utils.getAddress(searchInput),
-            };
-            required = false;
-        } else if (
-            searchInput.toLowerCase().indexOf('drop') === -1 &&
-            searchInput.toLowerCase().indexOf('delete') === -1 &&
-            searchInput.toLowerCase().indexOf('update') === -1
-        ) {
-            whereSearchCondition = {
-                username: { [Op.iLike]: `%${searchInput.slice(0, 16)}%` },
-            };
-            required = true;
-        } else {
-            throw new BaseError('INVALID_SEARCH', 'Not valid search!');
-        }
-
-        // const order: OrderItem[] = [
-        //     [
-        //         [{ model: models.user, as: 'user' }, 'suspect', 'DESC'],
-        //         ['txAt', 'DESC'],
-        //     ],
-        // ];
-
-        const order: Literal = literal('"user".suspect DESC, "txAt" DESC');
 
         const manager = await models.manager.findOne({
             attributes: ['communityId'],
@@ -216,49 +176,82 @@ export default class BeneficiaryService {
             return [];
         }
         const communityId = (manager.toJSON() as ManagerAttributes).communityId;
-
-        if (filter) {
-            const beneficiaryFilter = await this.getBeneficiaryFilter(
-                filter,
-                communityId
-            );
-            whereBeneficiary = {
-                ...beneficiaryFilter,
-                ...whereBeneficiary,
-            };
-        }
-
-        const x = await models.beneficiary.findAll({
+        const community = await models.community.findOne({
+            attributes: ['contractAddress'],
             where: {
-                ...whereBeneficiary,
-                communityId,
+                id: communityId,
             },
-            include: [
-                {
-                    model: models.appUser,
-                    as: 'user',
-                    where: whereSearchCondition,
-                    required,
-                },
-            ],
-            order,
         });
 
-        if (x === null) {
-            return [];
-        }
-        const result: IListBeneficiary[] = x.map((r) => {
-            const b = r.toJSON() as BeneficiaryAttributes;
-            return {
-                address: b.address,
-                username: b.user ? b.user!.username : null,
-                timestamp: b.txAt.getTime(),
-                claimed: b.claimed,
-                blocked: b.blocked,
-                suspect: b.user && b.user.suspect,
-                isDeleted: !b.user || !!b.user!.deletedAt,
+        const addresses: string[] = [];
+
+        if (isAddress(searchInput)) {
+            addresses.push(ethers.utils.getAddress(searchInput));
+        } else if (
+            searchInput.toLowerCase().indexOf('drop') === -1 &&
+            searchInput.toLowerCase().indexOf('delete') === -1 &&
+            searchInput.toLowerCase().indexOf('update') === -1
+        ) {
+            whereSearchCondition = {
+                username: { [Op.iLike]: `%${searchInput.slice(0, 16)}%` },
             };
+        } else {
+            throw new BaseError('INVALID_SEARCH', 'Not valid search!');
+        }
+
+        const userFilter = filter ? await this.getUserFilter(filter) : {};
+        whereSearchCondition = {
+            ...whereSearchCondition,
+            ...userFilter,
+        };
+
+        const beneficiaryFilter = await this.getBeneficiaryFilter(
+            filter ? filter : {},
+            communityId
+        );
+
+        const appUsers = await models.appUser.findAll({
+            where: {
+                ...whereSearchCondition,
+                ...(addresses.length > 0
+                    ? {
+                          address: {
+                              [Op.in]: addresses,
+                          },
+                      }
+                    : {}),
+            },
         });
+
+        if (appUsers && appUsers.length > 0) {
+            appUsers.forEach((user) => addresses.push(user.address));
+        }
+
+        const beneficiaries = await getBeneficiariesByAddress(
+            addresses,
+            beneficiaryFilter.state,
+            beneficiaryFilter.inactive,
+            community!.contractAddress!
+        );
+
+        const result: IListBeneficiary[] = beneficiaries.map(
+            (beneficiary: any) => {
+                const user = appUsers.find(
+                    (user) => beneficiary.address === user.address.toLowerCase()
+                );
+                return {
+                    address: ethers.utils.getAddress(beneficiary.address),
+                    username: user?.username ? user.username : null,
+                    timestamp: beneficiary.since * 1000,
+                    claimed: new BigNumber(beneficiary.claimed)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
+                    blocked: beneficiary.state === 2,
+                    suspect: user?.suspect,
+                    isDeleted: !user || !!user.deletedAt,
+                };
+            }
+        );
         return result;
     }
 
@@ -268,21 +261,15 @@ export default class BeneficiaryService {
         limit: number,
         filter: BeneficiaryFilterType
     ): Promise<IListBeneficiary[]> {
+        let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null =
+            null;
+
         if (!isAddress(managerAddress)) {
             throw new BaseError(
                 'NOT_MANAGER',
                 'Not a manager ' + managerAddress
             );
         }
-
-        // const order: OrderItem[] = [
-        //     [
-        //         [{ model: models.user, as: 'user' }, 'suspect', 'DESC'],
-        //         ['txAt', 'DESC'],
-        //     ],
-        // ];
-
-        const order: Literal = literal('"user".suspect DESC, "txAt" DESC');
 
         const manager = await models.manager.findOne({
             attributes: ['communityId'],
@@ -292,102 +279,92 @@ export default class BeneficiaryService {
             return [];
         }
         const communityId = (manager.toJSON() as ManagerAttributes).communityId;
-
-        const where = await this.getBeneficiaryFilter(filter, communityId);
-
-        const x = await models.beneficiary.findAll({
+        const community = await models.community.findOne({
+            attributes: ['contractAddress'],
             where: {
-                communityId,
-                ...where,
+                id: communityId,
             },
-            include: [
-                {
-                    model: models.appUser,
-                    as: 'user',
-                    required: false,
-                },
-            ],
-            order,
-            offset,
+        });
+
+        whereSearchCondition = await this.getUserFilter(filter!);
+
+        const beneficiaryFilter = await this.getBeneficiaryFilter(
+            filter!,
+            communityId
+        );
+
+        const beneficiaries = await getBeneficiaries(
+            community!.contractAddress!,
             limit,
+            offset,
+            beneficiaryFilter.inactive,
+            beneficiaryFilter.state
+        );
+
+        const addresses = beneficiaries.map((beneficiary) =>
+            ethers.utils.getAddress(beneficiary.address)
+        );
+
+        const appUsers = await models.appUser.findAll({
+            where: {
+                address: {
+                    [Op.in]: addresses,
+                },
+                ...whereSearchCondition,
+            },
         });
-        if (x === null) {
-            return [];
+
+        const result: IListBeneficiary[] = [];
+        if (Object.keys(whereSearchCondition).length > 0) {
+            appUsers.forEach((user: any) => {
+                const beneficiary = beneficiaries.find(
+                    (beneficiary) =>
+                        beneficiary.address === user.address.toLowerCase()
+                );
+                if (beneficiary) {
+                    result.push({
+                        address: user.address,
+                        username: user?.username ? user.username : null,
+                        timestamp: beneficiary.since
+                            ? beneficiary.since * 1000
+                            : 0,
+                        claimed: new BigNumber(beneficiary.claimed)
+                            .multipliedBy(10 ** config.cUSDDecimal)
+                            .toString() as any,
+                        blocked: beneficiary.state === 2,
+                        suspect: user?.suspect,
+                        isDeleted: !!user.deletedAt,
+                    } as any);
+                }
+            });
+        } else {
+            beneficiaries.forEach((beneficiary: any) => {
+                const user = appUsers.find(
+                    (user) => beneficiary.address === user.address.toLowerCase()
+                );
+                result.push({
+                    address: ethers.utils.getAddress(beneficiary.address),
+                    username: user?.username ? user.username : null,
+                    timestamp: beneficiary.since * 1000,
+                    claimed: new BigNumber(beneficiary.claimed)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString() as any,
+                    blocked: beneficiary.state === 2,
+                    suspect: user?.suspect,
+                    isDeleted: !user || !!user.deletedAt,
+                } as any);
+            });
         }
-        const result: IListBeneficiary[] = x.map((r) => {
-            const b = r.toJSON() as BeneficiaryAttributes;
-            return {
-                address: b.address,
-                username: b.user ? b.user!.username : null,
-                timestamp: b.txAt.getTime(),
-                claimed: b.claimed,
-                blocked: b.blocked,
-                suspect: b.user && b.user.suspect,
-                isDeleted: !b.user || !!b.user!.deletedAt,
-            };
-        });
         return result;
     }
 
-    public static async getBeneficiaryFilter(
-        filter: BeneficiaryFilterType,
-        communityId: number
-    ) {
+    public static async getUserFilter(filter: BeneficiaryFilterType) {
         let where = {};
 
-        if (filter.active !== undefined) {
+        if (filter.unidentified !== undefined) {
             where = {
                 ...where,
-                active: filter.active,
-            };
-        }
-
-        if (filter.suspect) {
-            where = {
-                ...where,
-                '$"user"."suspect"$': filter.suspect,
-            };
-        }
-
-        if (filter.unidentified) {
-            where = {
-                ...where,
-                '$"user"."username"$': null,
-            };
-        }
-
-        if (filter.blocked) {
-            where = {
-                ...where,
-                blocked: filter.blocked,
-            };
-        }
-
-        if (filter.inactivity) {
-            const communityContract = await models.community.findOne({
-                attributes: [],
-                include: [
-                    {
-                        attributes: ['baseInterval'],
-                        model: models.ubiCommunityContract,
-                        as: 'contract',
-                    },
-                ],
-                where: {
-                    id: communityId,
-                },
-            });
-
-            const seconds =
-                (communityContract as any).contract.baseInterval *
-                config.claimInactivityThreshold;
-            const lastClaimAt = new Date();
-            lastClaimAt.setSeconds(lastClaimAt.getSeconds() - seconds);
-            where = {
-                ...where,
-                lastClaimAt: {
-                    [Op.lte]: lastClaimAt,
-                },
+                username: filter.unidentified ? null : { [Op.not]: null },
             };
         }
 
@@ -397,10 +374,46 @@ export default class BeneficiaryService {
 
             where = {
                 ...where,
-                '$"user"."lastLogin"$': {
+                lastLogin: {
                     [Op.lt]: date,
                 },
             };
+        }
+
+        return where;
+    }
+
+    public static async getBeneficiaryFilter(
+        filter: BeneficiaryFilterType,
+        communityId: number
+    ) {
+        const where = {
+            state: '',
+            inactive: '',
+        };
+
+        if (filter.active !== undefined) {
+            where.state = `state: ${filter.active ? 0 : 1}`;
+        } else if (filter.blocked) {
+            where.state = 'state: 2';
+        }
+
+        if (filter.inactivity) {
+            const communityContract = await models.ubiCommunityContract.findOne(
+                {
+                    attributes: ['baseInterval'],
+                    where: {
+                        communityId,
+                    },
+                }
+            );
+
+            const seconds =
+                communityContract!.baseInterval *
+                config.claimInactivityThreshold;
+            const lastClaimAt = new Date();
+            lastClaimAt.setSeconds(lastClaimAt.getSeconds() - seconds);
+            where.inactive += `lastClaimAt_lte: ${lastClaimAt}`;
         }
 
         return where;
@@ -520,8 +533,8 @@ export default class BeneficiaryService {
     private static async getClaimActivity(
         beneficiaryAddress: string,
         communityId: number,
-        offset: number,
-        limit: number
+        offset?: number,
+        limit?: number
     ): Promise<IBeneficiaryActivities[]> {
         const claims = await models.ubiClaim.findAll({
             where: {
@@ -544,41 +557,53 @@ export default class BeneficiaryService {
     private static async getRegistryActivity(
         beneficiaryAddress: string,
         communityId: number,
-        offset: number,
-        limit: number
+        offset?: number,
+        limit?: number
     ): Promise<IBeneficiaryActivities[]> {
-        const registry = await models.ubiBeneficiaryRegistry.findAll({
+        const community = await models.community.findOne({
+            attributes: ['contractAddress'],
             where: {
-                address: beneficiaryAddress,
-                communityId,
+                id: communityId,
             },
-            include: [
-                {
-                    attributes: ['username'],
-                    model: models.appUser,
-                    as: 'user',
-                },
-            ],
-            order: [['txAt', 'DESC']],
-            limit,
-            offset,
         });
-        return registry.map((el) => ({
-            id: el.id,
-            type: 'registry',
-            tx: el.tx,
-            txAt: el.txAt,
-            withAddress: el.from,
-            username: el['user'] ? el['user']['username'] : null,
-            activity: el.activity,
-        }));
+        const registry = await getUserActivity(
+            beneficiaryAddress,
+            community!.contractAddress!,
+            offset,
+            limit
+        );
+        const users = await models.appUser.findAll({
+            attributes: ['username', 'address'],
+            where: {
+                address: {
+                    [Op.in]: registry.map((el) =>
+                        ethers.utils.getAddress(el.by)
+                    ),
+                },
+            },
+        });
+
+        return registry.map((el) => {
+            const user = users.find(
+                (user) => user.address === ethers.utils.getAddress(el.by)
+            );
+            return {
+                id: el.id as any,
+                type: 'registry',
+                tx: el.id,
+                txAt: new Date(el.timestamp * 1000),
+                withAddress: el.by,
+                username: user ? user.username! : undefined,
+                activity: BeneficiaryActivity[el.activity],
+            };
+        });
     }
 
     private static async getTransactionActivity(
         beneficiaryAddress: string,
         communityId: number,
-        offset: number,
-        limit: number
+        offset?: number,
+        limit?: number
     ): Promise<IBeneficiaryActivities[]> {
         const transactions = await models.ubiBeneficiaryTransaction.findAll({
             where: {
@@ -615,37 +640,31 @@ export default class BeneficiaryService {
         offset: number,
         limit: number
     ): Promise<IBeneficiaryActivities[]> {
-        const query = `SELECT "registry".id, 'registry' AS type, tx, "txAt" AS date, "registry"."from" AS "withAddress", activity, null AS "isFromBeneficiary", null AS amount, "user"."username"
-            FROM ubi_beneficiary_registry AS "registry" LEFT JOIN "app_user" AS "user" ON "registry"."from" = "user"."address"
-            WHERE "registry"."address" = :beneficiaryAddress AND "registry"."communityId" = :communityId
-            UNION ALL
-            SELECT "transaction".id, 'transaction' AS type, tx, "transaction"."txAt" AS date, "withAddress", null as activity, "isFromBeneficiary", amount, "user"."username"
-            FROM ubi_beneficiary_transaction AS "transaction" LEFT JOIN "app_user" AS "user" ON "transaction"."withAddress" = "user"."address"
-            WHERE "transaction"."beneficiary" = :beneficiaryAddress 
-            UNION ALL
-            SELECT id, 'claim' AS type, tx, "txAt" AS date, null AS "withAddress", null as activity, null AS "isFromBeneficiary", amount, null AS "username"
-            FROM ubi_claim as "claim"
-            WHERE "claim"."address" = :beneficiaryAddress AND "claim"."communityId" = :communityId
-            ORDER BY DATE DESC
-            OFFSET :offset
-            LIMIT :limit`;
+        const registry = await this.getRegistryActivity(
+            beneficiaryAddress,
+            communityId
+        );
+        const transaction = await this.getTransactionActivity(
+            beneficiaryAddress,
+            communityId
+        );
+        const claim = await this.getClaimActivity(
+            beneficiaryAddress,
+            communityId
+        );
 
-        return sequelize.query<IBeneficiaryActivities>(query, {
-            type: QueryTypes.SELECT,
-            replacements: {
-                beneficiaryAddress,
-                communityId,
-                offset,
-                limit,
-            },
-        });
+        const activitiesOrdered = [...registry, ...transaction, ...claim].sort(
+            (a, b) => b.txAt.getTime() - a.txAt.getTime()
+        );
+
+        return activitiesOrdered.slice(offset, offset + limit);
     }
 
     public static async readRules(address: string): Promise<boolean> {
         try {
-            const updated = await models.beneficiary.update(
+            const updated = await models.appUser.update(
                 {
-                    readRules: true,
+                    readBeneficiaryRules: true,
                 },
                 {
                     where: { address },

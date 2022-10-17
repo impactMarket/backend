@@ -101,6 +101,10 @@ module.exports = {
                 type: Sequelize.STRING(44),
                 allowNull: true,
             },
+            placeId: {
+                type: Sequelize.STRING(44),
+                allowNull: true,
+            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,

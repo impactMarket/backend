@@ -1,18 +1,24 @@
-import { Op, QueryTypes } from 'sequelize';
+import { getAddress } from '@ethersproject/address';
+import { ethers } from 'ethers';
+import { Op } from 'sequelize';
 
+import config from '../../../config';
 import { models, sequelize } from '../../../database';
 import { AppUserModel } from '../../../database/models/app/appUser';
 import { LogTypes } from '../../../interfaces/app/appLog';
+import { AppNotification } from '../../../interfaces/app/appNotification';
 import {
-    AppUser,
     AppUserCreationAttributes,
     AppUserUpdate,
+    AppUser,
 } from '../../../interfaces/app/appUser';
 import { ProfileContentStorage } from '../../../services/storage';
+import { getAllBeneficiaries } from '../../../subgraph/queries/beneficiary';
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
 import { Logger } from '../../../utils/logger';
+import { sendPushNotification } from '../../../utils/util';
 import UserLogService from './log';
 
 export default class UserService {
@@ -23,7 +29,7 @@ export default class UserService {
         userParams: AppUserCreationAttributes,
         overwrite: boolean = false,
         recover: boolean = false,
-        clientId?: string,
+        clientId?: string
     ) {
         const exists = await this._exists(userParams.address);
 
@@ -32,9 +38,9 @@ export default class UserService {
         } else {
             // a user might be connecting with the same phone number
             // as an existing user
-            const existsPhone = userParams.trust?.phone
+            const existsPhone = userParams.phone
                 ? await this._existsAccountByPhone(
-                      userParams.trust.phone,
+                      userParams.phone,
                       userParams.address
                   )
                 : false;
@@ -54,62 +60,46 @@ export default class UserService {
         if (!exists) {
             // create new user
             // including their phone number information, if it exists
-            user = await models.appUser.create(
-                userParams,
-                userParams.trust?.phone
-                    ? {
-                          include: [
-                              {
-                                  model: models.appUserTrust,
-                                  as: 'trust',
-                              },
-                          ],
-                      }
-                    : {}
-            );
+            user = await models.appUser.create(userParams);
         } else {
-            if (userParams.pushNotificationToken) {
-                models.appUser.update(
-                    {
-                        pushNotificationToken: userParams.pushNotificationToken,
-                    },
-                    { where: { address: userParams.address } }
-                );
-            }
+            const pushNotification = {
+                pushNotificationToken: userParams.pushNotificationToken,
+                walletPNT: userParams.walletPNT,
+                appPNT: userParams.appPNT,
+            };
+
+            await models.appUser.update(
+                {
+                    ...pushNotification,
+                },
+                { where: { address: userParams.address } }
+            );
+
             // it's not null at this point
             user = (await models.appUser.findOne({
                 where: { address: userParams.address },
-                include: [
-                    {
-                        model: models.appUserTrust,
-                        as: 'trust',
-                        required: false,
-                    },
-                ],
             }))!;
             // if the account doesn't have a phone number
             // but it's being provided now, add it
             // otherwise, verify if account phone number and
             // provided phone number are the same
             const jsonUser = user.toJSON();
-            if (
-                jsonUser.trust?.length === 0 &&
-                userParams.trust &&
-                userParams.trust.phone &&
-                userParams.trust.phone.length > 0
-            ) {
-                const trust = await models.appUserTrust.create(
-                    userParams.trust
+            if (!jsonUser.phone && userParams.phone) {
+                await models.appUser.update(
+                    {
+                        phone: userParams.phone,
+                    },
+                    {
+                        where: {
+                            id: jsonUser.id,
+                        },
+                    }
                 );
-                await models.appUserThroughTrust.create({
-                    userAddress: user.address,
-                    appUserTrustId: trust.id,
-                });
+                user.phone = userParams.phone;
             } else if (
-                jsonUser.trust &&
-                jsonUser.trust.length > 0 &&
-                userParams.trust?.phone &&
-                userParams.trust.phone !== jsonUser.trust![0].phone
+                jsonUser.phone &&
+                userParams.phone &&
+                userParams.phone !== jsonUser.phone
             ) {
                 throw new BaseError(
                     'DIFFERENT_PHONE',
@@ -136,11 +126,15 @@ export default class UserService {
             const credential = await models.appClientCredential.findOne({
                 where: {
                     clientId,
-                    status: 'active'
-                }
+                    status: 'active',
+                },
             });
             if (credential) {
-                token = generateAccessToken(userParams.address, user.id, clientId);
+                token = generateAccessToken(
+                    userParams.address,
+                    user.id,
+                    clientId
+                );
             } else {
                 throw new BaseError(
                     'INVALID_CREDENTIAL',
@@ -152,9 +146,7 @@ export default class UserService {
             token = generateAccessToken(userParams.address, user.id);
         }
 
-        // do not return trust key
         const jsonUser = user.toJSON();
-        delete jsonUser['trust'];
         return {
             ...jsonUser,
             ...(await this._userRoles(user.address)),
@@ -177,7 +169,54 @@ export default class UserService {
         };
     }
 
-    public async update(user: AppUserUpdate): Promise<AppUser> {
+    public async findUserBy(address: string, userAddress: string) {
+        const userRoles = await this._userRoles(userAddress);
+
+        if (
+            !userRoles.ambassador &&
+            !userRoles.manager &&
+            !userRoles.councilMember
+        ) {
+            throw new BaseError(
+                'UNAUTHORIZED',
+                'user must be ambassador, manager or council member'
+            );
+        }
+
+        const user = await models.appUser.findOne({
+            where: {
+                address,
+            },
+        });
+
+        const roles = await this._userRoles(address);
+
+        if (!user && roles.roles.length === 0) {
+            throw new BaseError('USER_NOT_FOUND', 'user not found');
+        }
+
+        return {
+            address,
+            ...user?.toJSON(),
+            ...roles,
+            ...(await this._userRules(address)),
+        };
+    }
+
+    public async update(user: AppUserUpdate) {
+        if (user.phone) {
+            const existsPhone = await this._existsAccountByPhone(
+                user.phone,
+                user.address
+            );
+
+            if (existsPhone)
+                throw new BaseError(
+                    'PHONE_CONFLICT',
+                    'phone associated with another account'
+                );
+        }
+
         const updated = await models.appUser.update(user, {
             returning: true,
             where: { address: user.address },
@@ -192,13 +231,17 @@ export default class UserService {
             user
         );
 
-        return updated[1][0].toJSON();
+        return {
+            ...updated[1][0].toJSON(),
+            ...(await this._userRoles(user.address)),
+            ...(await this._userRules(user.address)),
+        };
     }
 
     public async patch(address: string, action: string) {
         if (action === 'beneficiary-rules') {
-            await models.beneficiary.update(
-                { readRules: true },
+            await models.appUser.update(
+                { readBeneficiaryRules: true },
                 {
                     where: { address },
                 }
@@ -213,7 +256,7 @@ export default class UserService {
         }
     }
 
-    public async delete(address: string): Promise<boolean> {
+    public async delete(address: string) {
         const roles = await getUserRoles(address);
 
         if (roles.manager !== null && roles.manager.state === 0) {
@@ -238,7 +281,7 @@ export default class UserService {
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'User was not updated');
         }
-        return true;
+        return updated[1][0].toJSON();
     }
 
     public async report(
@@ -252,6 +295,51 @@ export default class UserService {
             category,
         });
         return true;
+    }
+
+    public async getReport(
+        user: string,
+        query: { offset?: string; limit?: string }
+    ) {
+        const userRoles = await getUserRoles(user);
+
+        if (
+            !userRoles.ambassador ||
+            userRoles.ambassador.communities.length === 0
+        ) {
+            throw new BaseError(
+                'COMMUNITY_NOT_FOUND',
+                'no community found for this ambassador'
+            );
+        }
+
+        const communities = userRoles.ambassador.communities;
+
+        return models.anonymousReport.findAndCountAll({
+            include: [
+                {
+                    attributes: [
+                        'id',
+                        'contractAddress',
+                        'name',
+                        'coverMediaPath',
+                    ],
+                    model: models.community,
+                    as: 'community',
+                    where: {
+                        contractAddress: {
+                            [Op.in]: communities.map((c) => getAddress(c)),
+                        },
+                    },
+                },
+            ],
+            offset: query.offset
+                ? parseInt(query.offset, 10)
+                : config.defaultOffset,
+            limit: query.limit
+                ? parseInt(query.limit, 10)
+                : config.defaultLimit,
+        });
     }
 
     public async getPresignedUrlMedia(mime: string): Promise<{
@@ -276,19 +364,154 @@ export default class UserService {
         }
     }
 
+    public async getNotifications(
+        query: {
+            offset?: string;
+            limit?: string;
+        },
+        userId: number
+    ): Promise<{
+        count: number;
+        rows: AppNotification[];
+    }> {
+        const notifications = await models.appNotification.findAndCountAll({
+            where: {
+                userId,
+            },
+            offset: query.offset
+                ? parseInt(query.offset, 10)
+                : config.defaultOffset,
+            limit: query.limit
+                ? parseInt(query.limit, 10)
+                : config.defaultLimit,
+            order: [['createdAt', 'DESC']],
+        });
+        return {
+            count: notifications.count,
+            rows: notifications.rows as AppNotification[],
+        };
+    }
+
+    public async readNotifications(
+        userId: number,
+        notifications?: number[]
+    ): Promise<boolean> {
+        const updated = await models.appNotification.update(
+            {
+                read: true,
+            },
+            {
+                returning: true,
+                where: {
+                    userId,
+                    id: {
+                        [Op.in]: notifications,
+                    },
+                },
+            }
+        );
+        if (updated[0] === 0) {
+            throw new BaseError(
+                'UPDATE_FAILED',
+                'notifications were not updated!'
+            );
+        }
+        return true;
+    }
+
+    public async getUnreadNotifications(userId: number): Promise<number> {
+        return models.appNotification.count({
+            where: {
+                userId,
+                read: false,
+            },
+        });
+    }
+
+    public async sendPushNotifications(
+        title: string,
+        body: string,
+        country?: string,
+        communitiesIds?: number[],
+        data?: any
+    ) {
+        if (country) {
+            const users = await models.appUser.findAll({
+                attributes: ['pushNotificationToken'],
+                where: {
+                    country,
+                    pushNotificationToken: {
+                        [Op.not]: null,
+                    },
+                },
+            });
+            users.forEach((user) => {
+                sendPushNotification(
+                    user.address,
+                    title,
+                    body,
+                    data,
+                    user.pushNotificationToken
+                );
+            });
+        } else if (communitiesIds && communitiesIds.length) {
+            const communities = await models.community.findAll({
+                attributes: ['contractAddress'],
+                where: {
+                    id: {
+                        [Op.in]: communitiesIds,
+                    },
+                    contractAddress: {
+                        [Op.not]: null,
+                    },
+                },
+            });
+            const beneficiaryAddress: string[] = [];
+
+            // get beneficiaries
+            for (let index = 0; index < communities.length; index++) {
+                const community = communities[index];
+                const beneficiaries = await getAllBeneficiaries(
+                    community.contractAddress!
+                );
+                beneficiaries.forEach((beneficiary) => {
+                    beneficiaryAddress.push(
+                        ethers.utils.getAddress(beneficiary.address)
+                    );
+                });
+            }
+            // get users
+            const users = await models.appUser.findAll({
+                attributes: ['pushNotificationToken'],
+                where: {
+                    address: {
+                        [Op.in]: beneficiaryAddress,
+                    },
+                    pushNotificationToken: {
+                        [Op.not]: null,
+                    },
+                },
+            });
+
+            users.forEach((user) => {
+                sendPushNotification(
+                    user.address,
+                    title,
+                    body,
+                    data,
+                    user.pushNotificationToken
+                );
+            });
+        } else {
+            throw new BaseError('INVALID_OPTION', 'invalid option');
+        }
+    }
+
     private async _overwriteUser(user: AppUserCreationAttributes) {
         try {
             const usersToInactive = await models.appUser.findAll({
-                include: [
-                    {
-                        model: models.appUserTrust,
-                        as: 'trust',
-                        where: {
-                            phone: user.trust?.phone,
-                        },
-                    },
-                ],
                 where: {
+                    phone: user.phone,
                     address: {
                         [Op.not]: user.address,
                     },
@@ -347,24 +570,17 @@ export default class UserService {
         phone: string,
         address: string
     ): Promise<boolean> {
-        const query = `
-            SELECT address
-            FROM app_user_trust
-            LEFT JOIN app_user_through_trust ON "appUserTrustId" = id
-            LEFT JOIN "app_user" as "user" ON "user".address = "userAddress"
-            WHERE phone = :phone and address != :address
-            AND "user".active = TRUE`;
-
-        const exists = await sequelize.query(query, {
-            type: QueryTypes.SELECT,
-            replacements: {
-                address,
+        const user = await models.appUser.findOne({
+            where: {
                 phone,
+                address: {
+                    [Op.not]: address,
+                },
+                active: true,
             },
         });
-        console.log(exists);
 
-        return exists.length > 0;
+        return !!user;
     }
 
     private async _updateLastLogin(id: number): Promise<void> {
@@ -388,13 +604,33 @@ export default class UserService {
     }
 
     private async _userRoles(address: string) {
-        return await getUserRoles(address);
+        const userRoles = await getUserRoles(address);
+        const roles: string[] = [];
+        const keys = Object.keys(userRoles);
+        keys.forEach((key) => {
+            if (userRoles[key]) {
+                roles.push(key);
+            }
+        });
+
+        const pendingCommunity = await models.community.findOne({
+            where: {
+                status: 'pending',
+                requestByAddress: address,
+            },
+        });
+        if (pendingCommunity) roles.push('pendingManager');
+
+        return {
+            ...userRoles,
+            roles,
+        };
     }
 
     private async _userRules(address: string) {
         const [beneficiaryRules, managerRules] = await Promise.all([
-            models.beneficiary.findOne({
-                attributes: ['readRules'],
+            models.appUser.findOne({
+                attributes: ['readBeneficiaryRules'],
                 where: { address },
             }),
             models.manager.findOne({
@@ -404,7 +640,7 @@ export default class UserService {
         ]);
 
         return {
-            beneficiaryRules: beneficiaryRules?.readRules,
+            beneficiaryRules: beneficiaryRules?.readBeneficiaryRules,
             managerRules: managerRules?.readRules,
         };
     }

@@ -1,10 +1,13 @@
-import { Includeable, Op } from 'sequelize';
+import { ethers } from 'ethers';
+import { col, fn, Op } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
 import { StoryContentModel } from '../../database/models/story/storyContent';
+import { NotificationType } from '../../interfaces/app/appNotification';
 import { StoryCommunityCreationEager } from '../../interfaces/story/storyCommunity';
 import { StoryContent } from '../../interfaces/story/storyContent';
+import { getUserRoles } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
 import {
     IAddStory,
@@ -17,8 +20,21 @@ import { StoryContentStorage } from '../storage';
 export default class StoryServiceV2 {
     private storyContentStorage = new StoryContentStorage();
 
-    public getPresignedUrlMedia(mime: string) {
-        return this.storyContentStorage.getPresignedUrlPutObject(mime);
+    public getPresignedUrlMedia(query: { mime?: string[] | string }) {
+        if (!query.mime) {
+            throw new BaseError('INVALID_QUERY', 'missing mime');
+        }
+
+        if (typeof query.mime === 'string') {
+            return this.storyContentStorage.getPresignedUrlPutObject(
+                query.mime as string
+            );
+        } else {
+            const promises = (query.mime as string[]).map(async (el) =>
+                this.storyContentStorage.getPresignedUrlPutObject(el)
+            );
+            return Promise.all(promises);
+        }
     }
 
     public async add(
@@ -28,6 +44,7 @@ export default class StoryServiceV2 {
         let storyContentToAdd: {
             storyMediaPath?: string;
             message?: string;
+            storyMedia?: string[];
         } = {};
         if (story.storyMediaPath) {
             storyContentToAdd = {
@@ -43,30 +60,48 @@ export default class StoryServiceV2 {
                 message: story.message,
             };
         }
-        if (story.communityId !== undefined) {
-            const community = await models.community.findOne({
-                attributes: ['id'],
-                where: {
-                    id: story.communityId,
-                    visibility: 'public',
-                },
-            });
+        const userRole = await getUserRoles(fromAddress);
 
-            if (!community) {
-                throw new BaseError(
-                    'PRIVATE_COMMUNITY',
-                    'story cannot be added in private communities'
-                );
-            }
-
-            storyCommunityToAdd = {
-                storyCommunity: [
-                    {
-                        communityId: story.communityId,
-                    },
-                ],
-            };
+        if (!userRole.beneficiary && !userRole.manager) {
+            throw new BaseError(
+                'INVALID_ROLE',
+                'user not a manager/beneficiary'
+            );
         }
+
+        const communityAddress = userRole.beneficiary
+            ? userRole.beneficiary.community
+            : userRole.manager!.community;
+
+        const community = await models.community.findOne({
+            attributes: ['id'],
+            where: {
+                contractAddress: ethers.utils.getAddress(communityAddress),
+                visibility: 'public',
+            },
+        });
+
+        if (!community) {
+            throw new BaseError(
+                'PRIVATE_COMMUNITY',
+                'story cannot be added in private communities'
+            );
+        }
+
+        if (story.storyMediaPath) {
+            storyContentToAdd.storyMedia = [story.storyMediaPath];
+        } else if (story.storyMedia && story.storyMedia.length > 0) {
+            storyContentToAdd.storyMedia = story.storyMedia;
+            storyContentToAdd.storyMediaPath = story.storyMedia[0];
+        }
+
+        storyCommunityToAdd = {
+            storyCommunity: [
+                {
+                    communityId: community.id,
+                },
+            ],
+        };
         const created = await models.storyContent.create(
             {
                 ...storyContentToAdd,
@@ -106,18 +141,190 @@ export default class StoryServiceV2 {
         return result;
     }
 
+    public async getById(
+        storyId: number,
+        userAddress?: string
+    ): Promise<ICommunitiesListStories> {
+        const story = await models.storyContent.findOne({
+            subQuery: false,
+            attributes: [
+                'id',
+                'message',
+                'byAddress',
+                'storyMediaPath',
+                'storyMedia',
+                'postedAt',
+                [
+                    fn('count', fn('distinct', col('storyComment.id'))),
+                    'totalComments',
+                ],
+            ],
+            include: [
+                {
+                    model: models.storyCommunity,
+                    as: 'storyCommunity',
+                    required: true,
+                    include: [
+                        {
+                            model: models.community,
+                            as: 'community',
+                            attributes: [
+                                'id',
+                                'name',
+                                'coverMediaPath',
+                                'city',
+                                'country',
+                            ],
+                        },
+                    ],
+                },
+                ...(userAddress
+                    ? [
+                          {
+                              model: models.storyUserEngagement,
+                              as: 'storyUserEngagement',
+                              required: false,
+                              duplicating: false,
+                              where: {
+                                  address: userAddress,
+                              },
+                          },
+                          {
+                              model: models.storyEngagement,
+                              as: 'storyEngagement',
+                          },
+                          {
+                              model: models.storyUserReport,
+                              as: 'storyUserReport',
+                              required: false,
+                              duplicating: false,
+                              where: {
+                                  address: userAddress,
+                              },
+                          },
+                      ]
+                    : [
+                          {
+                              model: models.storyEngagement,
+                              as: 'storyEngagement',
+                          },
+                      ]),
+                {
+                    attributes: [],
+                    model: models.storyComment,
+                    as: 'storyComment',
+                    required: false,
+                },
+            ],
+            where: {
+                id: storyId,
+            },
+            group: [
+                'StoryContentModel.id',
+                'storyCommunity.id',
+                'storyCommunity->community.id',
+                'storyEngagement.id',
+                ...(userAddress
+                    ? ['storyUserEngagement.id', 'storyUserReport.id']
+                    : []),
+            ],
+        });
+
+        if (!story) {
+            throw new BaseError('STORY_NOT_FOUND', 'story not found');
+        }
+
+        const content = story.toJSON() as StoryContent & {
+            totalComments: number;
+        };
+        return {
+            // we can use ! because it's included on the query
+            id: content.id,
+            storyMediaPath: content.storyMediaPath,
+            message: content.message,
+            isDeletable: userAddress
+                ? content.byAddress.toLowerCase() === userAddress.toLowerCase()
+                : false,
+            createdAt: content.postedAt,
+            community: content.storyCommunity!.community,
+            engagement: {
+                loves: content.storyEngagement?.loves || 0,
+                userLoved: !!content.storyUserEngagement?.length,
+                userReported: content.storyUserReport
+                    ? content.storyUserReport.length !== 0
+                    : false,
+                comments: content.totalComments,
+            },
+            storyMedia: content.storyMedia,
+        } as any;
+    }
+
     public async listByUser(
         onlyFromAddress: string,
         query: { offset?: string; limit?: string }
     ): Promise<{ count: number; content: ICommunityStories }> {
         const r = await models.storyContent.findAndCountAll({
+            subQuery: false,
+            attributes: [
+                'id',
+                'message',
+                'byAddress',
+                'storyMediaPath',
+                'storyMedia',
+                'postedAt',
+                [
+                    fn('count', fn('distinct', col('storyComment.id'))),
+                    'totalComments',
+                ],
+            ],
             include: [
                 {
                     model: models.storyEngagement,
                     as: 'storyEngagement',
                     duplicating: false,
                 },
-                ...this._filterSubInclude(onlyFromAddress),
+                {
+                    model: models.storyUserEngagement,
+                    as: 'storyUserEngagement',
+                    required: false,
+                    duplicating: false,
+                    where: {
+                        address: onlyFromAddress,
+                    },
+                },
+                {
+                    model: models.storyUserReport,
+                    as: 'storyUserReport',
+                    required: false,
+                    duplicating: false,
+                    where: {
+                        address: onlyFromAddress,
+                    },
+                },
+                {
+                    model: models.storyCommunity,
+                    as: 'storyCommunity',
+                    required: true,
+                    include: [
+                        {
+                            model: models.community,
+                            as: 'community',
+                            attributes: [
+                                'id',
+                                'name',
+                                'coverMediaPath',
+                                'city',
+                                'country',
+                            ],
+                        },
+                    ],
+                },
+                {
+                    attributes: [],
+                    model: models.storyComment,
+                    as: 'storyComment',
+                    required: false,
+                },
             ],
             where: { byAddress: onlyFromAddress, isPublic: true },
             order: [['postedAt', 'DESC']],
@@ -127,57 +334,71 @@ export default class StoryServiceV2 {
             limit: query.limit
                 ? parseInt(query.limit, 10)
                 : config.defaultLimit,
+            group: [
+                'StoryContentModel.id',
+                'storyCommunity.id',
+                'storyCommunity->community.id',
+                'storyEngagement.id',
+                'storyUserEngagement.id',
+                'storyUserReport.id',
+            ],
         });
-
-        return {
-            count: r.count,
-            content: {
-                id: 0,
-                // this information is on the user side already
-                name: '',
-                city: '',
-                country: '',
-                cover: {
-                    id: 0,
-                    url: '',
-                    height: 0,
-                    width: 0,
+        const communitiesStories = r.rows.map((c) => {
+            const content = c.toJSON() as StoryContent & {
+                totalComments: number;
+            };
+            return {
+                id: content.id,
+                storyMediaPath: content.storyMediaPath,
+                message: content.message,
+                isDeletable:
+                    content.byAddress.toLowerCase() ===
+                    onlyFromAddress.toLowerCase(),
+                createdAt: content.postedAt,
+                community: content.storyCommunity!.community,
+                engagement: {
+                    loves: content.storyEngagement?.loves || 0,
+                    userReported: !!content.storyUserReport?.length,
+                    userLoved: !!content.storyUserEngagement?.length,
+                    comments: content.totalComments,
                 },
-                //
-                stories: r.rows.map((c) => {
-                    const content = c.toJSON() as StoryContent;
-                    return {
-                        id: content.id,
-                        media: content.media,
-                        message: content.message,
-                        byAddress: content.byAddress,
-                        loves: content.storyEngagement
-                            ? content.storyEngagement.loves
-                            : 0,
-                        userLoved: content.storyUserEngagement
-                            ? content.storyUserEngagement.length !== 0
-                            : false,
-                        userReported: content.storyUserReport
-                            ? content.storyUserReport.length !== 0
-                            : false,
-                    };
-                }),
-            },
+                storyMedia: content.storyMedia,
+            };
+        });
+        return {
+            count: r.count.length,
+            content: communitiesStories as any,
         };
     }
 
-    public async list(query: {
-        offset?: string;
-        limit?: string;
-        communityId?: string[] | string;
-        country?: string[] | string;
-    }): Promise<{ count: number; content: ICommunitiesListStories[] }> {
+    public async list(
+        query: {
+            offset?: string;
+            limit?: string;
+            communityId?: string[] | string;
+            country?: string[] | string;
+        },
+        userAddress?: string
+    ): Promise<{ count: number; content: ICommunitiesListStories[] }> {
         let r: {
             rows: StoryContentModel[];
-            count: number;
+            count: number[];
         };
         try {
             r = await models.storyContent.findAndCountAll({
+                subQuery: false,
+                attributes: [
+                    'id',
+                    'message',
+                    'byAddress',
+                    'storyMediaPath',
+                    'storyMedia',
+                    'postedAt',
+                    [
+                        fn('count', fn('distinct', col('storyComment.id'))),
+                        'totalComments',
+                    ],
+                ],
                 include: [
                     {
                         model: models.storyCommunity,
@@ -187,7 +408,13 @@ export default class StoryServiceV2 {
                             {
                                 model: models.community,
                                 as: 'community',
-                                attributes: ['id', 'name', 'coverMediaPath'],
+                                attributes: [
+                                    'id',
+                                    'name',
+                                    'coverMediaPath',
+                                    'city',
+                                    'country',
+                                ],
                                 ...(query.country
                                     ? {
                                           where: {
@@ -221,14 +448,50 @@ export default class StoryServiceV2 {
                               }
                             : {}),
                     },
+                    ...(userAddress
+                        ? [
+                              {
+                                  model: models.storyUserEngagement,
+                                  as: 'storyUserEngagement',
+                                  required: false,
+                                  duplicating: false,
+                                  where: {
+                                      address: userAddress,
+                                  },
+                              },
+                              {
+                                  model: models.storyEngagement,
+                                  as: 'storyEngagement',
+                              },
+                              {
+                                  model: models.storyUserReport,
+                                  as: 'storyUserReport',
+                                  required: false,
+                                  duplicating: false,
+                                  where: {
+                                      address: userAddress,
+                                  },
+                              },
+                          ]
+                        : [
+                              {
+                                  model: models.storyEngagement,
+                                  as: 'storyEngagement',
+                              },
+                          ]),
                     {
-                        model: models.storyEngagement,
-                        as: 'storyEngagement',
+                        attributes: [],
+                        model: models.storyComment,
+                        as: 'storyComment',
+                        required: false,
                     },
                 ],
                 where: {
                     isPublic: true,
-                },
+                    ...(userAddress
+                        ? { '$"storyUserReport"."contentId"$': null }
+                        : {}),
+                } as any,
                 order: [['postedAt', 'DESC']],
                 offset: query.offset
                     ? parseInt(query.offset, 10)
@@ -236,6 +499,15 @@ export default class StoryServiceV2 {
                 limit: query.limit
                     ? parseInt(query.limit, 10)
                     : config.defaultLimit,
+                group: [
+                    'StoryContentModel.id',
+                    'storyCommunity.id',
+                    'storyCommunity->community.id',
+                    'storyEngagement.id',
+                    ...(userAddress
+                        ? ['storyUserEngagement.id', 'storyUserReport.id']
+                        : []),
+                ],
             });
         } catch (e) {
             return {
@@ -244,21 +516,30 @@ export default class StoryServiceV2 {
             };
         }
         const communitiesStories = r.rows.map((c) => {
-            const content = c.toJSON() as StoryContent;
+            const content = c.toJSON() as StoryContent & {
+                totalComments: number;
+            };
             return {
                 // we can use ! because it's included on the query
                 id: content.id,
                 storyMediaPath: content.storyMediaPath,
                 message: content.message,
+                isDeletable: userAddress
+                    ? content.byAddress.toLowerCase() ===
+                      userAddress.toLowerCase()
+                    : false,
                 createdAt: content.postedAt,
                 community: content.storyCommunity!.community,
                 engagement: {
                     loves: content.storyEngagement?.loves || 0,
+                    userLoved: !!content.storyUserEngagement?.length,
+                    comments: content.totalComments,
                 },
+                storyMedia: content.storyMedia,
             };
         });
         return {
-            count: r.count,
+            count: r.count.length,
             content: communitiesStories as any,
         };
     }
@@ -275,6 +556,8 @@ export default class StoryServiceV2 {
                 where: { contentId, address: userAddress },
             });
         } else {
+            this.addNotification(userAddress, contentId);
+
             await models.storyUserEngagement.create({
                 contentId,
                 address: userAddress,
@@ -282,7 +565,11 @@ export default class StoryServiceV2 {
         }
     }
 
-    public async inapropriate(userAddress: string, contentId: number) {
+    public async inapropriate(
+        userAddress: string,
+        contentId: number,
+        typeId?: number
+    ) {
         const exists = await models.storyUserReport.findOne({
             where: {
                 contentId,
@@ -296,101 +583,150 @@ export default class StoryServiceV2 {
         } else {
             await models.storyUserReport.create({
                 contentId,
+                typeId,
                 address: userAddress,
             });
         }
     }
 
-    public async deleteOlderStories() {
-        // TODO: update
-        // const tenDaysAgo = new Date();
-        // tenDaysAgo.setDate(tenDaysAgo.getDate() - 30);
-        // //
-        // const mostRecentStoryByCommunity = await models.storyContent.findAll({
-        //     attributes: ['id'],
-        //     include: [
-        //         {
-        //             model: this.storyCommunity,
-        //             as: 'storyCommunity',
-        //             attributes: [],
-        //         },
-        //     ],
-        //     where: {
-        //         postedAt: {
-        //             // TODO: use query builder instead
-        //             [Op.eq]: literal(
-        //                 `(select max("postedAt") from story_content sc, story_community sm where sc.id=sm."contentId" and sm."communityId"="storyCommunity"."communityId" and sc."isPublic"=true)`
-        //             ),
-        //         } as { [Op.eq]: Literal },
-        //     },
-        //     order: [['postedAt', 'DESC']],
-        // });
-        // if (mostRecentStoryByCommunity.length === 0) {
-        //     return;
-        // }
-        // const storiesToDelete = await models.storyContent.findAll({
-        //     attributes: ['id', 'mediaMediaId'],
-        //     where: {
-        //         postedAt: {
-        //             [Op.lte]: tenDaysAgo,
-        //         },
-        //         id: {
-        //             [Op.notIn]: mostRecentStoryByCommunity.map((sbc) => sbc.id),
-        //         },
-        //     },
-        // });
-        // if (storiesToDelete.length === 0) {
-        //     return;
-        // }
-        // await models.storyContent.destroy({
-        //     where: {
-        //         id: {
-        //             [Op.in]: storiesToDelete.map((s) => s.id),
-        //         },
-        //     },
-        // });
-        // await this.storyContentStorage.deleteBulkContent(
-        //     storiesToDelete
-        //         .filter((s) => s.mediaMediaId !== null)
-        //         .map((s) => s.mediaMediaId!) // not null here
-        // );
+    public async count(groupBy: string): Promise<any[]> {
+        let groupName = '';
+        switch (groupBy) {
+            case 'country':
+                groupName = 'community.country';
+                break;
+        }
+
+        if (groupName.length === 0) {
+            throw new BaseError('INVALID_GROUP', 'invalid group');
+        }
+
+        const result = (await models.storyCommunity.findAll({
+            attributes: [groupName, [fn('count', col(groupName)), 'count']],
+            include: [
+                {
+                    attributes: [],
+                    model: models.community,
+                    as: 'community',
+                },
+            ],
+            group: [groupName],
+            raw: true,
+        })) as any;
+
+        return result;
     }
 
-    private _filterSubInclude(userAddress?: string) {
-        let subInclude: Includeable[];
-        if (userAddress) {
-            subInclude = [
-                {
-                    model: models.storyEngagement,
-                    as: 'storyEngagement',
-                },
-                {
-                    model: models.storyUserEngagement,
-                    as: 'storyUserEngagement',
-                    required: false,
-                    duplicating: false,
-                    where: {
-                        address: userAddress,
-                    },
-                },
-                {
-                    model: models.storyUserReport,
-                    as: 'storyUserReport',
-                    required: false,
-                    duplicating: false,
-                    where: {
-                        address: userAddress,
-                    },
-                },
-            ];
-        } else {
-            subInclude = [
-                {
-                    model: models.storyEngagement,
-                    as: 'storyEngagement',
-                },
-            ];
+    public async addComment(
+        userId: number,
+        contentId: number,
+        comment: string
+    ) {
+        try {
+            await models.storyComment.create({
+                contentId,
+                comment,
+                userId,
+            });
+            return true;
+        } catch (error) {
+            throw new BaseError('ERROR', 'comment was not added');
         }
-        return subInclude;
+    }
+
+    public async getComments(
+        contentId: number,
+        query: { offset?: string; limit?: string }
+    ) {
+        try {
+            const comments = await models.storyComment.findAndCountAll({
+                include: [
+                    {
+                        attributes: [
+                            'firstName',
+                            'lastName',
+                            'avatarMediaPath',
+                        ],
+                        model: models.appUser,
+                        as: 'user',
+                    },
+                ],
+                where: { contentId },
+                order: [['createdAt', 'desc']],
+                offset: query.offset
+                    ? parseInt(query.offset, 10)
+                    : config.defaultOffset,
+                limit: query.limit
+                    ? parseInt(query.limit, 10)
+                    : config.defaultLimit,
+            });
+            return comments;
+        } catch (error) {
+            throw new BaseError('ERROR', 'error to get comments');
+        }
+    }
+
+    public async removeComment(
+        user: {
+            userId: number;
+            address: string;
+        },
+        contentId: number,
+        commentId: number
+    ) {
+        try {
+            const comment = await models.storyComment.findOne({
+                where: { id: commentId },
+            });
+
+            if (!comment) {
+                throw new BaseError('NOT_FOUND', 'comment not found');
+            }
+
+            if (comment.userId !== user.userId) {
+                const story = await models.storyContent.findOne({
+                    where: { id: contentId },
+                });
+
+                if (user.address !== story!.byAddress) {
+                    throw new BaseError(
+                        'NOT_ALLOWED',
+                        'user is not the comment or story creator'
+                    );
+                }
+            }
+
+            await models.storyComment.destroy({
+                where: {
+                    id: commentId,
+                    userId: user.userId,
+                },
+            });
+            return true;
+        } catch (error) {
+            throw new BaseError('ERROR', 'comment was not deleted');
+        }
+    }
+
+    private async addNotification(userAddress: string, contentId: number) {
+        const story = (await models.storyContent.findOne({
+            attributes: [],
+            where: { id: contentId },
+            include: [
+                {
+                    model: models.appUser,
+                    as: 'user',
+                    attributes: ['id'],
+                },
+            ],
+        }))! as StoryContent;
+
+        await models.appNotification.findOrCreate({
+            where: {
+                userId: story.user!.id,
+                type: NotificationType.STORY_LIKED,
+                params: { userAddress, contentId },
+            },
+        });
     }
 }

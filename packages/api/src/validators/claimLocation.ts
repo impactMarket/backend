@@ -1,7 +1,9 @@
 import { celebrate, Joi } from 'celebrate';
 
+import { defaultSchema } from './defaultSchema';
+
 const add = celebrate({
-    body: Joi.object({
+    body: defaultSchema.object({
         communityId: Joi.any().required(), // TODO: should be a number. To replace soon
         gps: {
             latitude: Joi.number().required(),

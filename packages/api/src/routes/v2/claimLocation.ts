@@ -1,11 +1,12 @@
 import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
-import claimLocationController from '../../controllers/claimLocation';
+import { ClaimLocationController } from '../../controllers/v2/claimLocation';
 import { authenticateToken } from '../../middlewares';
 import claimLocationValidators from '../../validators/claimLocation';
 
 export default (app: Router): void => {
+    const controller = new ClaimLocationController();
     const route = Router();
     app.use('/claims-location', route);
 
@@ -25,8 +26,8 @@ export default (app: Router): void => {
      */
     route.get(
         '/',
-        database.cacheWithRedis('1 day'),
-        claimLocationController.getAll
+        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
+        controller.getAll
     );
 
     /**
@@ -70,6 +71,6 @@ export default (app: Router): void => {
         '/',
         authenticateToken,
         claimLocationValidators.add,
-        claimLocationController.add
+        controller.add
     );
 };

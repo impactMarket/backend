@@ -14,14 +14,20 @@ module.exports = {
                 allowNull: false,
             },
             claimAmount: {
-                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
-                type: Sequelize.DECIMAL(22), // max 9,999 - plus 18 decimals
+                type: Sequelize.FLOAT,
                 allowNull: false,
             },
             maxClaim: {
-                // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
-                type: Sequelize.DECIMAL(24), // max 999,999 - plus 18 decimals
+                type: Sequelize.FLOAT,
                 allowNull: false,
+            },
+            maxTranche: {
+                type: Sequelize.FLOAT,
+                allowNull: true,
+            },
+            minTranche: {
+                type: Sequelize.FLOAT,
+                allowNull: true,
             },
             baseInterval: {
                 type: Sequelize.INTEGER,
@@ -32,7 +38,7 @@ module.exports = {
                 allowNull: false,
             },
             decreaseStep: {
-                type: Sequelize.DECIMAL(22), // max 9,999 - plus 18 decimals
+                type: Sequelize.FLOAT,
                 allowNull: false,
                 defaultValue: 0,
             },

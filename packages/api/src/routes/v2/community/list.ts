@@ -19,21 +19,41 @@ export default (route: Router): void => {
      *         name: orderBy
      *         schema:
      *           type: string
-     *           enum: [nearest, out_of_funds, newest, bigger]
+     *           enum: [nearest, out_of_funds, newest, updated, bigger]
      *         required: false
      *         description: communities list order (bigger by default)
      *       - in: query
-     *         name: name
+     *         name: search
      *         schema:
      *           type: string
      *         required: false
-     *         description: communities name to search
+     *         description: search by name or requestByAddress
      *       - in: query
      *         name: country
      *         schema:
      *           type: string
      *         required: false
-     *         description: communities country (identifier, like PT for Portugal) to search, separated by ; (PT;FR)
+     *         description: communities country (identifier, like PT for Portugal) to search, separated by comma (PT;FR)
+     *       - in: query
+     *         name: excludeCountry
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: countries to ignore, separated by comma (PT;FR)
+     *       - in: query
+     *         name: status
+     *         schema:
+     *           type: string
+     *           enum: [pending, valid, removed]
+     *         required: false
+     *         description: community review
+     *       - in: query
+     *         name: review
+     *         schema:
+     *           type: string
+     *           enum: [claimed, declined, pending, accepted]
+     *         required: false
+     *         description: community review
      *       - in: query
      *         name: filter
      *         schema:
@@ -71,9 +91,21 @@ export default (route: Router): void => {
      *           type: number
      *         required: false
      *         description: longitude used for nearest location
+     *       - in: query
+     *         name: ambassadorAddress
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: filter communities by ambassadors
+     *       - in: query
+     *         name: fields
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: especify fields to return
      *     responses:
      *       "200":
      *         description: OK
      */
-    route.get('/:query?', optionalAuthentication, controller.list);
+    route.get('/:query?', controller.list);
 };

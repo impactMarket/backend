@@ -54,10 +54,10 @@ describe('story service', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },
@@ -68,10 +68,10 @@ describe('story service', () => {
                 visibility: 'private',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },
@@ -80,10 +80,10 @@ describe('story service', () => {
             ...communities[0],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '1000000000000000000',
+                claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: '450000000000000000000',
+                maxClaim: 450,
             },
         };
         await BeneficiaryFactory(users.slice(0, 3), community1.id);
@@ -91,10 +91,10 @@ describe('story service', () => {
             ...communities[0],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '1000000000000000000',
+                claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: '450000000000000000000',
+                maxClaim: 450,
             },
         };
         await BeneficiaryFactory(users.slice(3, 6), community2.id);
@@ -106,131 +106,6 @@ describe('story service', () => {
         await truncate(sequelize);
         await storyContentStorageDeleteBulk.restore();
         await storyContentDestroy.restore();
-    });
-
-    describe('delete', () => {
-        afterEach(async () => {
-            await truncate(sequelize, 'StoryContentModel');
-            await storyContentStorageDeleteBulk.resetHistory();
-            await storyContentDestroy.resetHistory();
-        });
-        it('no stories to delete', async () => {
-            const storyService = new StoryService();
-            await storyService.deleteOlderStories();
-            assert.callCount(storyContentStorageDeleteBulk, 0);
-        });
-        it('not enough stories to delete (all communities)', async () => {
-            await StoryFactory([
-                {
-                    address: users[0].address,
-                    communityId: community1.id,
-                    postedAt: new Date(),
-                },
-            ]);
-            //
-            const storyService = new StoryService();
-            await storyService.deleteOlderStories();
-            assert.callCount(storyContentStorageDeleteBulk, 0);
-            assert.callCount(storyContentDestroy, 0);
-        });
-        it('not enough stories to delete (too recent)', async () => {
-            await StoryFactory([
-                {
-                    address: users[0].address,
-                    communityId: community1.id,
-                    postedAt: new Date(),
-                },
-                {
-                    address: users[1].address,
-                    communityId: community1.id,
-                    postedAt: new Date(),
-                },
-                {
-                    address: users[3].address,
-                    communityId: community2.id,
-                    postedAt: new Date(),
-                },
-            ]);
-            //
-            const storyService = new StoryService();
-            await storyService.deleteOlderStories();
-            assert.callCount(storyContentStorageDeleteBulk, 0);
-            assert.callCount(storyContentDestroy, 0);
-        });
-        it('not enough stories to delete (some communities)', async () => {
-            const tenDaysAgo = new Date();
-            tenDaysAgo.setDate(tenDaysAgo.getDate() - 32);
-            await StoryFactory([
-                {
-                    address: users[0].address,
-                    communityId: community1.id,
-                    postedAt: tenDaysAgo,
-                    media: true,
-                },
-                {
-                    address: users[1].address,
-                    communityId: community1.id,
-                    postedAt: tenDaysAgo,
-                },
-                {
-                    address: users[1].address,
-                    communityId: community1.id,
-                    postedAt: new Date(),
-                },
-                {
-                    address: users[3].address,
-                    communityId: community2.id,
-                    postedAt: new Date(),
-                },
-            ]);
-            //
-            const storyService = new StoryService();
-            await storyService.deleteOlderStories();
-            assert.callCount(storyContentStorageDeleteBulk, 1);
-            assert.callCount(storyContentDestroy, 1);
-        });
-        it('delete older stories', async () => {
-            const tenDaysAgo = new Date();
-            tenDaysAgo.setDate(tenDaysAgo.getDate() - 32);
-            const stories = await StoryFactory([
-                {
-                    address: users[0].address,
-                    communityId: community1.id,
-                    postedAt: tenDaysAgo,
-                    media: true,
-                },
-                {
-                    address: users[1].address,
-                    communityId: community1.id,
-                    postedAt: new Date(),
-                },
-                {
-                    address: users[3].address,
-                    communityId: community2.id,
-                    postedAt: tenDaysAgo,
-                },
-                {
-                    address: users[4].address,
-                    communityId: community2.id,
-                    postedAt: new Date(),
-                },
-            ]);
-            //
-            const storyService = new StoryService();
-            await storyService.deleteOlderStories();
-            assert.callCount(storyContentStorageDeleteBulk, 1);
-            assert.callCount(storyContentDestroy, 1);
-            assert.calledWith(storyContentDestroy, {
-                where: {
-                    id: {
-                        [Op.in]: [stories[0].id, stories[2].id],
-                    },
-                },
-            });
-            assert.calledWith(storyContentStorageDeleteBulk, [
-                stories[0].mediaMediaId!, // not null
-            ]);
-        });
     });
 
     describe('add', () => {

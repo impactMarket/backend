@@ -33,9 +33,7 @@ const data = async (props?: ICreateProps) => {
         gender: props?.gender ? props?.gender : 'u',
         pushNotificationToken: '',
         suspect: props?.suspect ? props.suspect : false,
-        trust: {
-            phone: props?.phone ? props.phone : faker.phone.phoneNumber(),
-        },
+        phone: props?.phone ? props.phone : faker.phone.phoneNumber(),
         active: props?.active,
         year: props?.year,
     };
@@ -54,15 +52,7 @@ const UserFactory = async (
     const result: AppUser[] = [];
     for (let index = 0; index < options.n; index++) {
         const newUser = (await AppUserModel.create(
-            await data(options.props ? options.props[index] : undefined),
-            {
-                include: [
-                    {
-                        model: AppUserTrustModel,
-                        as: 'trust',
-                    },
-                ],
-            } as any
+            await data(options.props ? options.props[index] : undefined)
         )) as AppUserModel; // use any :facepalm:
         result.push(newUser.toJSON() as AppUser);
     }

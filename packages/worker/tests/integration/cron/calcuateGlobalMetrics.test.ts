@@ -20,7 +20,10 @@ describe('#calcuateGlobalMetrics()', () => {
     before(async () => {
         sequelize = tests.config.setup.sequelizeSetup();
         await sequelize.sync();
-        returnSubgraph = stub(subgraph.queries.beneficiary, 'getBeneficiaries');
+        returnSubgraph = stub(
+            subgraph.queries.beneficiary,
+            'getAllBeneficiaries'
+        );
     });
 
     afterEach(async () => {
@@ -56,10 +59,10 @@ describe('#calcuateGlobalMetrics()', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },
@@ -68,10 +71,10 @@ describe('#calcuateGlobalMetrics()', () => {
             ...communities[0],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '1000000000000000000',
+                claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: '450000000000000000000',
+                maxClaim: 450,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -373,10 +376,10 @@ describe('#calcuateGlobalMetrics()', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },
@@ -387,10 +390,10 @@ describe('#calcuateGlobalMetrics()', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '750000000000000000',
+                    claimAmount: 0.75,
                     communityId: 0,
                     incrementInterval: 10 * 60,
-                    maxClaim: '300000000000000000000',
+                    maxClaim: 300,
                 },
                 hasAddress: true,
             },
@@ -399,10 +402,10 @@ describe('#calcuateGlobalMetrics()', () => {
             ...communities[0],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '1000000000000000000',
+                claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: '450000000000000000000',
+                maxClaim: 450,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -411,10 +414,10 @@ describe('#calcuateGlobalMetrics()', () => {
             ...communities[1],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '750000000000000000',
+                claimAmount: 0.75,
                 communityId: 0,
                 incrementInterval: 10 * 60,
-                maxClaim: '300000000000000000000',
+                maxClaim: 300,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -1332,10 +1335,10 @@ describe('#calcuateGlobalMetrics()', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },
@@ -1346,10 +1349,10 @@ describe('#calcuateGlobalMetrics()', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '750000000000000000',
+                    claimAmount: 0.75,
                     communityId: 0,
                     incrementInterval: 10 * 60,
-                    maxClaim: '300000000000000000000',
+                    maxClaim: 300,
                 },
                 hasAddress: true,
             },
@@ -1360,10 +1363,10 @@ describe('#calcuateGlobalMetrics()', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '1000000000000000000',
+                    claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: '450000000000000000000',
+                    maxClaim: 450,
                 },
                 hasAddress: true,
             },
@@ -1374,10 +1377,10 @@ describe('#calcuateGlobalMetrics()', () => {
                 visibility: 'public',
                 contract: {
                     baseInterval: 60 * 60 * 24,
-                    claimAmount: '750000000000000000',
+                    claimAmount: 0.75,
                     communityId: 0,
                     incrementInterval: 10 * 60,
-                    maxClaim: '300000000000000000000',
+                    maxClaim: 300,
                 },
                 hasAddress: true,
             },
@@ -1386,10 +1389,10 @@ describe('#calcuateGlobalMetrics()', () => {
             ...communities[0],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '1000000000000000000',
+                claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: '450000000000000000000',
+                maxClaim: 450,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -1398,10 +1401,10 @@ describe('#calcuateGlobalMetrics()', () => {
             ...communities[1],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '750000000000000000',
+                claimAmount: 0.75,
                 communityId: 0,
                 incrementInterval: 10 * 60,
-                maxClaim: '300000000000000000000',
+                maxClaim: 300,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -1410,10 +1413,10 @@ describe('#calcuateGlobalMetrics()', () => {
             ...communities[2],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '1000000000000000000',
+                claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: '450000000000000000000',
+                maxClaim: 450,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -1422,10 +1425,10 @@ describe('#calcuateGlobalMetrics()', () => {
             ...communities[3],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '750000000000000000',
+                claimAmount: 0.75,
                 communityId: 0,
                 incrementInterval: 10 * 60,
-                maxClaim: '300000000000000000000',
+                maxClaim: 300,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             },
@@ -2783,10 +2786,10 @@ describe('#calcuateGlobalMetrics()', () => {
             ...communities[0],
             contract: {
                 baseInterval: 60 * 60 * 24,
-                claimAmount: '1000000000000000000',
+                claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: '450000000000000000000',
+                maxClaim: 450,
             },
         };
 
