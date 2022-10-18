@@ -301,6 +301,12 @@ export default (app: Router): void => {
      *           type: integer
      *         required: false
      *         description: limit used for report pagination
+     *       - in: query
+     *         name: community
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: community ID
      *     responses:
      *       "200":
      *         description: "Success"

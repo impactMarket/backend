@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { Op, WhereOptions, fn, col, literal, Transaction } from 'sequelize';
 
-import { models } from '../../../database';
+import { Community, models } from '../../../database';
 import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { AppUser } from '../../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
@@ -481,7 +481,8 @@ export class CommunityDetailsService {
     }
 
     public async listBeneficiaries(
-        managerAddress: string,
+        userAddress: string,
+        communityId: number,
         offset: number,
         limit: number,
         filter: BeneficiaryFilterType,
@@ -491,22 +492,43 @@ export class CommunityDetailsService {
         count: number;
         rows: IListBeneficiary[];
     }> {
-        const roles = await getUserRoles(managerAddress);
-        if (!roles.manager) {
-            throw new BaseError('MANAGER_NOT_FOUND', 'Manager not found');
-        }
-        const contractAddress = ethers.utils.getAddress(
-            roles.manager.community
-        );
+        const roles = await getUserRoles(userAddress);
         const community = await models.community.findOne({
-            attributes: ['id'],
+            attributes: ['contractAddress'],
             where: {
-                contractAddress,
+                id: communityId,
             },
         });
-
-        if (!community) {
+        if (!community || !community.contractAddress) {
             throw new BaseError('COMMUNITY_NOT_FOUND', 'Community not found');
+        }
+
+        if (roles.ambassador) {
+            if (
+                roles.ambassador.communities.indexOf(
+                    community.contractAddress.toLocaleLowerCase()
+                ) === -1
+            ) {
+                throw new BaseError(
+                    'NOT_ALLOWED',
+                    'User should be an ambassador or manager'
+                );
+            }
+        } else if (roles.manager) {
+            const contractAddress = ethers.utils.getAddress(
+                roles.manager.community
+            );
+            if (community.contractAddress !== contractAddress) {
+                throw new BaseError(
+                    'NOT_ALLOWED',
+                    'User should be an ambassador or manager'
+                );
+            }
+        } else {
+            throw new BaseError(
+                'NOT_ALLOWED',
+                'User should be an ambassador or manager'
+            );
         }
 
         let orderKey: string | null = null;
@@ -563,7 +585,7 @@ export class CommunityDetailsService {
                 addresses,
                 beneficiaryState,
                 undefined,
-                contractAddress,
+                community.contractAddress,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined
             );
@@ -580,7 +602,7 @@ export class CommunityDetailsService {
                 addresses,
                 beneficiaryState,
                 undefined,
-                contractAddress,
+                community.contractAddress,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined
             );
@@ -600,7 +622,7 @@ export class CommunityDetailsService {
             });
         } else {
             beneficiariesSubgraph = await getBeneficiaries(
-                contractAddress,
+                community.contractAddress,
                 limit,
                 offset,
                 undefined,
@@ -609,7 +631,7 @@ export class CommunityDetailsService {
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined
             );
             count = await countBeneficiaries(
-                contractAddress,
+                community.contractAddress,
                 filter.state !== null ? (filter.state as number) : undefined
             );
             addresses = beneficiariesSubgraph.map((beneficiary) =>

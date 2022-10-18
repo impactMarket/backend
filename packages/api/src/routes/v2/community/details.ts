@@ -195,12 +195,18 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /communities/beneficiaries:
+     * /communities/{id}/beneficiaries:
      *   get:
      *     tags:
      *       - "communities"
-     *     summary: Find or list beneficiaries in manager's community
+     *     summary: Find or list beneficiaries
      *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *       - in: query
      *         name: state
      *         schema:
@@ -244,7 +250,7 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/IListBeneficiary'
      */
     route.get(
-        '/beneficiaries/:query?',
+        '/:id/beneficiaries/:query?',
         authenticateToken,
         controller.getBeneficiaries
     );
