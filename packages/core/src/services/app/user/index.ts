@@ -638,7 +638,7 @@ export default class UserService {
         const roles: string[] = [];
         const keys = Object.keys(userRoles);
         keys.forEach((key) => {
-            if (userRoles[key]) {
+            if (userRoles[key] && userRoles[key].state === 0) {
                 roles.push(key);
             }
         });
