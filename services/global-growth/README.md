@@ -22,5 +22,5 @@ sls invoke local -f function-name
 Deploy lambda
 ```
 cd services/proposals
-sls deploy --stage STAGE
+sls deploy --stage STAGE --aws-profile PROFILE
 ```

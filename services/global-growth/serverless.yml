@@ -14,6 +14,9 @@ custom:
     forceInclude:
       - pg
       - pg-hstore
+  webpack:
+    includeModules: true
+    packager: yarn
 
 provider:
   name: aws
@@ -28,4 +31,4 @@ functions:
       - schedule: cron(0 0 * * ? *)
 
 plugins:
-  - serverless-bundle
+  - serverless-webpack
