@@ -61,6 +61,8 @@ import * as UbiCommunityLabel from './models/ubi/ubiCommunityLabel';
 import * as UbiCommunitySuspect from './models/ubi/ubiCommunitySuspect';
 import * as UbiPromoter from './models/ubi/ubiPromoter';
 import * as UbiPromoterSocialMedia from './models/ubi/ubiPromoterSocialMedia';
+import * as WalletAirdropProof from './models/walletAirdrop/walletAirdropProof';
+import * as WalletAirdropUser from './models/walletAirdrop/walletAirdropUser';
 
 let logging:
     | boolean
@@ -181,6 +183,11 @@ const models: DbModels = {
         .AirgrabUserModel as ModelCtor<AirgrabUser.AirgrabUserModel>,
     airgrabProof: sequelize.models
         .AirgrabProofModel as ModelCtor<AirgrabProof.AirgrabProofModel>,
+    // Wallet Airdrop
+    walletAirdropUser: sequelize.models
+        .WalletAirdropUserModel as ModelCtor<WalletAirdropUser.WalletAirdropUserModel>,
+    walletAirdropProof: sequelize.models
+        .WalletAirdropProofModel as ModelCtor<WalletAirdropProof.WalletAirdropProofModel>,
     // L&E
     learnAndEarnCategory: sequelize.models
         .LearnAndEarnCategoryModel as ModelCtor<LearnAndEarnCategory.LearnAndEarnCategoryModel>,

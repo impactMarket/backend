@@ -22,6 +22,7 @@ import { communityAssociation } from './associations/community';
 import { learnAndEarnAssociation } from './associations/learnAndEarn';
 import { storyAssociation } from './associations/story';
 import { userAssociation } from './associations/user';
+import { walletAidropAssociation } from './associations/walletAirdrop';
 import { initializeGlobalDailyState } from './global/globalDailyState';
 import { initializeGlobalDemographics } from './global/globalDemographics';
 import { initializeGlobalGrowth } from './global/globalGrowth';
@@ -62,6 +63,8 @@ import { initializeUbiCommunityPromoter } from './ubi/ubiCommunityPromoter';
 import { initializeUbiCommunitySuspect } from './ubi/ubiCommunitySuspect';
 import { initializeUbiPromoter } from './ubi/ubiPromoter';
 import { initializeUbiPromoterSocialMedia } from './ubi/ubiPromoterSocialMedia';
+import { initializeWalletAirdropProof } from './walletAirdrop/walletAirdropProof';
+import { initializeWalletAirdropUser } from './walletAirdrop/walletAirdropUser';
 
 export default function initModels(sequelize: Sequelize): void {
     // app
@@ -122,6 +125,10 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAirgrabUser(sequelize);
     initializeAirgrabProof(sequelize);
 
+    // wallet airdrop
+    initializeWalletAirdropUser(sequelize);
+    initializeWalletAirdropProof(sequelize);
+
     // merchant
     initializeMerchantRegistry(sequelize);
     initializeMerchantCommunity(sequelize);
@@ -142,5 +149,6 @@ export default function initModels(sequelize: Sequelize): void {
     storyAssociation(sequelize);
     appAssociation(sequelize);
     airgrabAssociation(sequelize);
+    walletAidropAssociation(sequelize);
     learnAndEarnAssociation(sequelize);
 }
