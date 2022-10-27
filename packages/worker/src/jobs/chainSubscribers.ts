@@ -91,6 +91,7 @@ class ChainSubscribers {
                 ethers.utils.id('ProposalCanceled(uint256)'),
                 ethers.utils.id('ProposalQueued(uint256,uint256)'),
                 ethers.utils.id('ProposalExecuted(uint256)'),
+                ethers.utils.id('ClaimAmountUpdated(uint256,uint256)'),
             ],
         ];
         this.recover();
@@ -449,6 +450,19 @@ class ChainSubscribers {
                     decreaseStep: parsedLog.args[7].toString(),
                     baseInterval: parsedLog.args[8].toNumber(),
                     incrementInterval: parsedLog.args[9].toNumber(),
+                }
+            );
+            result = parsedLog;
+        }  else if (parsedLog.name === 'ClaimAmountUpdated') {
+            const newClaimAmount = parsedLog.args[1];
+            await database.models.ubiCommunityContract.update(
+                {
+                    claimAmount: newClaimAmount,
+                },
+                {
+                    where: {
+                        communityId: this.communitiesId.get(log.address)!,
+                    },
                 }
             );
             result = parsedLog;
