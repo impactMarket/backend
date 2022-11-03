@@ -611,12 +611,12 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             );
 
             // calculate estimatedDuration
-            estimatedDuration = parseFloat(
+            estimatedDuration = ubiRate ? parseFloat(
                 new BigNumber(community.contract.maxClaim)
                     .dividedBy(ubiRate)
                     .dividedBy(30)
                     .toFixed(2, 1)
-            );
+            ) : 0;
             dailyMetricsPromises.push(
                 database.models.ubiCommunityDailyMetrics.create({
                     communityId: community.id,
