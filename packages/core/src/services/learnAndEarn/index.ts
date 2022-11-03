@@ -235,11 +235,11 @@ export default class LearnAndEarnService {
                     const level = await models.learnAndEarnLevel.findOne({
                         where: { id: lesson!.levelId },
                     });
-                    const signature = await this.signParams(
-                        user.address,
-                        level!.id,
-                        level!.totalReward
-                    );
+                    // const signature = await this.signParams(
+                    //     user.address,
+                    //     level!.id,
+                    //     level!.totalReward
+                    // );
                     const amount = await this.calculateReward(
                         user.userId,
                         level!.id
@@ -249,7 +249,7 @@ export default class LearnAndEarnService {
                         levelId: level!.id,
                         amount,
                         status: 'pending',
-                        signature,
+                        signature: '',
                     });
 
                     // verify if the category was completed
