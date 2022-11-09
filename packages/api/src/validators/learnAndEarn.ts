@@ -17,6 +17,16 @@ class LearnAndEarnValidator {
             lesson: Joi.number().required(),
         }),
     });
+
+    listLevels = celebrate({
+        query: {
+            status: Joi.string()
+                .optional()
+                .valid('available', 'started', 'completed'),
+            category: Joi.string().optional(),
+            level: Joi.string().optional(),
+        },
+    });
 }
 
 export default LearnAndEarnValidator;

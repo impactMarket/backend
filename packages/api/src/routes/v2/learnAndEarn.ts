@@ -41,20 +41,20 @@ export default (app: Router): void => {
      *         schema:
      *           type: string
      *           enum: [available, started, completed]
-     *         required: true
+     *         required: false
      *         description: Lesson status
      *       - in: query
      *         name: category
      *         schema:
      *           type: string
-     *         required: true
-     *         description: Lesson category
+     *         required: false
+     *         description: Lesson category (Prismic ID)
      *       - in: query
      *         name: level
      *         schema:
      *           type: string
-     *         required: true
-     *         description: Lesson level
+     *         required: false
+     *         description: Lesson level (Prismic ID)
      *     responses:
      *       "200":
      *         description: OK
@@ -62,7 +62,12 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/levels', authenticateToken, learnAndEarnController.listLevels);
+    route.get(
+        '/levels',
+        authenticateToken,
+        learnAndEarnValidator.listLevels,
+        learnAndEarnController.listLevels
+    );
 
     /**
      * @swagger
