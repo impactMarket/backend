@@ -174,10 +174,10 @@ export default (app: express.Application): void => {
                 success: false,
                 error: {
                     name: 'INVALID_PAYLOAD',
-                    message: 'body has invalid payloads',
-                    details:
-                        error.details.get('body') &&
-                        error.details.get('body').details,
+                    message: 'invalid payloads',
+                    details: error.details.get('query')
+                        ? error.details.get('query').details
+                        : error.details.get('body').details,
                 },
             });
         }

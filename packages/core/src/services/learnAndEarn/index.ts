@@ -390,9 +390,9 @@ export default class LearnAndEarnService {
 
     public async listLevels(
         userId: number,
-        status: string,
         offset: number,
         limit: number,
+        status?: string,
         category?: string,
         level?: string
     ): Promise<{
@@ -408,11 +408,13 @@ export default class LearnAndEarnService {
         try {
             const where: any = {
                 [Op.and]: [
-                    literal(
-                        status === 'completed'
-                            ? `"userLevel".status = '${status}'`
-                            : `"userLevel".status = 'started' or "userLevel".status is null`
-                    ),
+                    status
+                        ? literal(
+                              status === 'available'
+                                  ? `("userLevel".status = 'started' or "userLevel".status is null)`
+                                  : `"userLevel".status = '${status}'`
+                          )
+                        : '',
                     level ? { prismicId: level } : {},
                     { active: true },
                 ],
@@ -462,8 +464,10 @@ export default class LearnAndEarnService {
                     '"LearnAndEarnLevelModel".prismicId',
                     '"LearnAndEarnLevelModel"."totalReward"',
                     'category."prismicId',
+                    'category.id',
                     '"userLevel".status',
                 ],
+                order: [literal('"category".id')],
                 limit,
                 offset,
                 raw: true,
@@ -548,7 +552,7 @@ export default class LearnAndEarnService {
         try {
             const document = documents[0];
             const prismicDocument = await prismic.getByID(document, {
-                lang: 'en-us',
+                lang: '*',
             });
 
             const { type } = prismicDocument;
@@ -746,7 +750,6 @@ export default class LearnAndEarnService {
                 categoryIndex++
             ) {
                 const prismicCategory = response[categoryIndex];
-
                 // INSERT CATEGORY
                 const category = await models.learnAndEarnCategory.findOrCreate(
                     {
@@ -766,58 +769,69 @@ export default class LearnAndEarnService {
                     const prismicLevel =
                         prismicCategory.data.levels[levelIndex].level;
 
-                    // INSERT LEVEL
-                    const level = await models.learnAndEarnLevel.findOrCreate({
-                        where: {
-                            prismicId: prismicLevel.id,
-                            totalReward: prismicLevel.data.reward,
-                            active: true,
-                            categoryId: category[0].id,
-                        },
-                    });
-                    levelIds.push(level[0].id);
-
-                    for (
-                        let lessonIndex = 0;
-                        lessonIndex < prismicLevel.data.lessons.length;
-                        lessonIndex++
-                    ) {
-                        const prismicLesson =
-                            prismicLevel.data.lessons[lessonIndex].lesson;
-
-                        // INSERT LESSON
-                        const lesson =
-                            await models.learnAndEarnLesson.findOrCreate({
+                    if (prismicLevel.id) {
+                        // INSERT LEVEL
+                        const level =
+                            await models.learnAndEarnLevel.findOrCreate({
                                 where: {
-                                    prismicId: prismicLesson.id,
+                                    prismicId: prismicLevel.id,
+                                    totalReward: prismicLevel.data.reward,
                                     active: true,
-                                    levelId: level[0].id,
+                                    categoryId: category[0].id,
                                 },
                             });
-                        lessonIds.push(lesson[0].id);
+                        levelIds.push(level[0].id);
 
                         for (
-                            let quizIndex = 0;
-                            quizIndex < prismicLesson.data.questions.length;
-                            quizIndex++
+                            let lessonIndex = 0;
+                            lessonIndex < prismicLevel.data.lessons.length;
+                            lessonIndex++
                         ) {
-                            const prismicQuiz =
-                                prismicLesson.data.questions[quizIndex];
+                            const prismicLesson =
+                                prismicLevel.data.lessons[lessonIndex].lesson;
 
-                            // INSERT QUIZ
-                            const answer: number = prismicQuiz.items.findIndex(
-                                (item) => !!item['is-correct']
-                            );
-                            const quiz =
-                                await models.learnAndEarnQuiz.findOrCreate({
-                                    where: {
-                                        order: quizIndex,
-                                        active: true,
-                                        lessonId: lesson[0].id,
-                                        answer,
-                                    },
-                                });
-                            quizIds.push(quiz[0].id);
+                            if (prismicLesson.id) {
+                                // INSERT LESSON
+                                const lesson =
+                                    await models.learnAndEarnLesson.findOrCreate(
+                                        {
+                                            where: {
+                                                prismicId: prismicLesson.id,
+                                                active: true,
+                                                levelId: level[0].id,
+                                            },
+                                        }
+                                    );
+                                lessonIds.push(lesson[0].id);
+
+                                for (
+                                    let quizIndex = 0;
+                                    quizIndex <
+                                    prismicLesson.data.questions.length;
+                                    quizIndex++
+                                ) {
+                                    const prismicQuiz =
+                                        prismicLesson.data.questions[quizIndex];
+
+                                    // INSERT QUIZ
+                                    const answer: number =
+                                        prismicQuiz.items.findIndex(
+                                            (item) => !!item['is-correct']
+                                        );
+                                    const quiz =
+                                        await models.learnAndEarnQuiz.findOrCreate(
+                                            {
+                                                where: {
+                                                    order: quizIndex,
+                                                    active: true,
+                                                    lessonId: lesson[0].id,
+                                                    answer,
+                                                },
+                                            }
+                                        );
+                                    quizIds.push(quiz[0].id);
+                                }
+                            }
                         }
                     }
                 }
