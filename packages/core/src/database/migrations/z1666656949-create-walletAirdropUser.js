@@ -15,10 +15,6 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
-      amount: {
-        type: Sequelize.STRING(32),
-        allowNull: false,
-      }
     });
   },
   down: (queryInterface, Sequelize) => {

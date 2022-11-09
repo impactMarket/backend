@@ -6,7 +6,6 @@ export interface WalletAirdropUser {
     id: number;
     address: string;
     index: number;
-    amount: string;
 
     proof?: WalletAirdropProof[];
 }
@@ -14,7 +13,6 @@ export interface WalletAirdropUser {
 export interface WalletAirdropUserCreationAttributes {
     address: string;
     index: number;
-    amount: string;
 
     proof?: WalletAirdropProof[];
 }
@@ -26,7 +24,6 @@ export class WalletAirdropUserModel extends Model<
     public id!: number;
     public address!: string;
     public index!: number;
-    public amount!: string;
 }
 
 export function initializeWalletAirdropUser(
@@ -45,10 +42,6 @@ export function initializeWalletAirdropUser(
             },
             index: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
-            },
-            amount: {
-                type: DataTypes.STRING(32),
                 allowNull: false,
             },
         },
