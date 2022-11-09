@@ -151,7 +151,7 @@ export function verifySignature(
 
     const address = ethers.utils.verifyMessage(
         message as string,
-        signature as string,
+        signature as string
     );
 
     if (address.toLocaleLowerCase() === req.user?.address.toLocaleLowerCase()) {
@@ -168,7 +168,9 @@ export function verifySignature(
             return;
         }
         const expirationDate = new Date();
-        expirationDate.setDate(expirationDate.getDate() - config.signatureExpiration);
+        expirationDate.setDate(
+            expirationDate.getDate() - config.signatureExpiration
+        );
         if (parseInt(timestamp[0]) < expirationDate.getTime()) {
             res.status(403).json({
                 success: false,
