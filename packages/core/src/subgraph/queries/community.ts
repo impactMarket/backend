@@ -1,3 +1,4 @@
+import { getAddress } from '@ethersproject/address';
 import { gql } from 'apollo-boost';
 import { ethers } from 'ethers';
 
@@ -302,6 +303,70 @@ export const getCommunityStateByAddresses = async (
         });
 
         return queryResult.data.communityEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getCommunityDailyState = async (
+    where: string
+): Promise<
+    {
+        claims: number;
+        claimed: number;
+        beneficiaries: number;
+        contributed: number;
+        contributors: number;
+        contractAddress: string;
+        volume: string;
+        transactions: number;
+        reach: number;
+    }[]
+> => {
+    try {
+        const query = gql`
+            {
+                communityDailyEntities(
+                    first: 1000
+                    where: {
+                        ${where}
+                    }
+                ) {
+                    claims
+                    claimed
+                    beneficiaries
+                    community {
+                        id
+                    }
+                    contributed
+    		        contributors
+                    transactions
+                    reach
+                    volume
+                }
+            }
+        `;
+
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        if (queryResult.data?.communityDailyEntities?.length) {
+            return queryResult.data.communityDailyEntities.map((daily) => ({
+                claims: daily.claims,
+                claimed: Number(daily.claimed),
+                beneficiaries: daily.beneficiaries,
+                contributed: Number(daily.contributed),
+                contributors: daily.contributors,
+                contractAddress: getAddress(daily.community.id),
+                transactions: daily.transactions,
+                reach: daily.reach,
+                volume: daily.volume,
+            }));
+        }
+
+        return [];
     } catch (error) {
         throw new Error(error);
     }
