@@ -1,5 +1,3 @@
-import './tracer'; // must come before importing any instrumented module.
-
 import { utils } from '@impactmarket/core';
 import * as Sentry from '@sentry/node';
 // import bodyParser from 'body-parser';
