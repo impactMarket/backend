@@ -197,6 +197,42 @@ class CommunityController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    addBeneficiaries = (req: RequestWithUser, res: Response) => {
+        const file = req['file'];
+
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        if (!file) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'INVALID_FILE',
+                    message: 'file is invalid',
+                },
+            });
+            return;
+        }
+        this.detailsService
+            .addBeneficiaries(file, req.user.address)
+            .then((r) => {
+                if (r.success) {
+                    standardResponse(res, 200, true, r);
+                } else {
+                    res.status(400).sendFile(r.fileName!, {
+                        root: r.filePath,
+                    });
+                }
+            })
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     getCampaign = (req: Request, res: Response) => {
         this.detailsService
             .getCampaign(parseInt(req.params.id, 10))
