@@ -492,7 +492,7 @@ describe('user service v2', () => {
                 address,
             });
             const deleted = await userService.delete(address);
-            expect(deleted).to.be.true;
+            expect(deleted).to.exist;
         });
         it('try delete a manager account', async () => {
             returnUserRoleSubgraph.returns({

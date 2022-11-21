@@ -62,14 +62,19 @@ export default class UserService {
             // including their phone number information, if it exists
             user = await models.appUser.create(userParams);
         } else {
-            if (userParams.pushNotificationToken) {
-                models.appUser.update(
-                    {
-                        pushNotificationToken: userParams.pushNotificationToken,
-                    },
-                    { where: { address: userParams.address } }
-                );
-            }
+            const pushNotification = {
+                pushNotificationToken: userParams.pushNotificationToken,
+                walletPNT: userParams.walletPNT,
+                appPNT: userParams.appPNT,
+            };
+
+            await models.appUser.update(
+                {
+                    ...pushNotification,
+                },
+                { where: { address: userParams.address } }
+            );
+
             // it's not null at this point
             user = (await models.appUser.findOne({
                 where: { address: userParams.address },
@@ -251,7 +256,7 @@ export default class UserService {
         }
     }
 
-    public async delete(address: string): Promise<boolean> {
+    public async delete(address: string) {
         const roles = await getUserRoles(address);
 
         if (roles.manager !== null && roles.manager.state === 0) {
@@ -276,7 +281,7 @@ export default class UserService {
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'User was not updated');
         }
-        return true;
+        return updated[1][0].toJSON();
     }
 
     public async report(
@@ -294,7 +299,11 @@ export default class UserService {
 
     public async getReport(
         user: string,
-        query: { offset?: string; limit?: string }
+        query: {
+            offset?: string;
+            limit?: string;
+            community?: number;
+        }
     ) {
         const userRoles = await getUserRoles(user);
 
@@ -309,6 +318,32 @@ export default class UserService {
         }
 
         const communities = userRoles.ambassador.communities;
+        const communityId = query.community;
+        let addresses: string[] = [];
+
+        if (communityId) {
+            const community = await models.community.findOne({
+                attributes: ['contractAddress'],
+                where: {
+                    id: communityId,
+                },
+            });
+
+            if (
+                !community?.contractAddress ||
+                communities.indexOf(
+                    community?.contractAddress?.toLocaleLowerCase()
+                ) === -1
+            ) {
+                throw new BaseError(
+                    'NOT_AMBASSADOR',
+                    'user is not an ambassador of this community'
+                );
+            }
+            addresses.push(community.contractAddress);
+        } else {
+            addresses = communities;
+        }
 
         return models.anonymousReport.findAndCountAll({
             include: [
@@ -323,7 +358,7 @@ export default class UserService {
                     as: 'community',
                     where: {
                         contractAddress: {
-                            [Op.in]: communities.map((c) => getAddress(c)),
+                            [Op.in]: addresses.map((c) => getAddress(c)),
                         },
                     },
                 },
@@ -603,7 +638,7 @@ export default class UserService {
         const roles: string[] = [];
         const keys = Object.keys(userRoles);
         keys.forEach((key) => {
-            if (userRoles[key]) {
+            if (userRoles[key] && userRoles[key].state === 0) {
                 roles.push(key);
             }
         });

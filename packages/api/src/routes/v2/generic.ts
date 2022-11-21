@@ -34,4 +34,25 @@ export default (app: Router): void => {
      *                         type: number
      */
     app.get('/exchange-rates', genericController.exchangeRates);
+
+    /**
+     * @swagger
+     *
+     * /wallet-airdrop/{address}:
+     *   get:
+     *     tags:
+     *       - "generic"
+     *     summary: Get wallet airdrop.
+     *     parameters:
+     *       - in: path
+     *         name: address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: user address
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    app.get('/wallet-airdrop/:address', genericController.getWalletAirdrop);
 };

@@ -83,6 +83,7 @@ class CommunityController {
         this.detailsService
             .listBeneficiaries(
                 req.user.address,
+                parseInt(req.params.id),
                 parseInt(offset, 10),
                 parseInt(limit, 10),
                 {
