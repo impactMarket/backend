@@ -197,14 +197,15 @@ export default class GlobalDailyStateService {
             raw: true,
         });
 
-        const ubiDaily = await getUbiDailyEntity(today);
+        const dayId = (((today.getTime() / 1000) | 0) / 86400) | 0;
+        const ubiDaily = await getUbiDailyEntity(`id: ${dayId}`);
 
         // TODO: subtract removed
 
         return {
             totalClaimed: claimed[0].totalClaimed,
             totalRaised: raised[0].totalRaised,
-            totalBeneficiaries: ubiDaily?.beneficiaries || 0,
+            totalBeneficiaries: ubiDaily[0].beneficiaries || 0,
         };
     }
 }

@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
 
+import { queries } from '../subgraph';
 import { models, Sequelize } from '../database';
 import { ReachedAddressCreationAttributes } from '../database/models/reachedAddress';
 
@@ -17,32 +18,19 @@ export default class ReachedAddressService {
         // a month ago, from todayMidnightTime
         const aMonthAgo = new Date();
         aMonthAgo.setDate(aMonthAgo.getDate() - 30);
-        const rReachLast30Days = await this.reachedAddress.count({
-            // attributes: [[fn('count', col('address')), 'total']],
-            where: {
-                lastInteraction: {
-                    [Op.lt]: today,
-                    [Op.gte]: aMonthAgo,
-                },
-            },
-        });
-        const rReachOutLast30Days = await this.reachedAddress.count({
-            // attributes: [[fn('count', col('address')), 'total']],
-            where: {
-                lastInteraction: {
-                    [Op.lt]: today,
-                    [Op.gte]: aMonthAgo,
-                },
-                address: {
-                    [Op.notIn]: Sequelize.literal(
-                        '(select distinct address from beneficiary)'
-                    ),
-                },
-            },
-        });
+        const startDayId = (((today.getTime() / 1000) | 0) / 86400) | 0;
+        const endDayId = (((aMonthAgo.getTime() / 1000) | 0) / 86400) | 0;
+        const ubiDaily = await queries.ubi.getUbiDailyEntity(
+            `id_gte: ${endDayId}, id_lt: ${startDayId}`
+        );
+        const result = ubiDaily.reduce((acc, el) => {
+            acc += el.reach;
+            return acc;
+        }, 0);
+
         return {
-            reach: rReachLast30Days,
-            reachOut: rReachOutLast30Days,
+            reach: result,
+            reachOut: 0,
         };
     }
 

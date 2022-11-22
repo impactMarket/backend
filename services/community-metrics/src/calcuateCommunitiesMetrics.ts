@@ -76,11 +76,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         await subgraph.queries.community.getCommunityDailyState(
             `dayId: ${yesterdayId}`
         );
-    const communityFoundingRate =
-        await subgraph.queries.community.communityEntities(
-            `where: { startDayId_gte: ${aMonthAgoId}, state: 0 }, first: 1000`,
-            `id`
-        );
 
     // community monthly
     const promises = communitiesState.map(async (community) => {
@@ -93,15 +88,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 community.contractAddress!
             );
 
-        //founding rate
-        const foundingRate = communityFoundingRate.find(
-            (el) => el.id === community.contractAddress?.toLocaleLowerCase()
-        );
         return {
             address: community.contractAddress,
             dailyState,
             allBeneficiaries,
-            foundingRate,
         };
     });
     const month = await Promise.all(promises);
@@ -112,7 +102,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             (community) =>
                 community.address === communitiesState[index].contractAddress
         );
-        const communityMonthlyActivity = communityMonth!.dailyState.reduce(
+        const communityMonthlyActivity = communityMonth?.dailyState.reduce(
             (acc, el) => {
                 acc.contributors += el.contributors;
                 acc.claimed += el.claimed;
@@ -121,23 +111,19 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             },
             { contributors: 0, claimed: 0, contributed: 0 }
         );
-        const communityNumbers = {
-            count: communityMonth?.allBeneficiaries.length || 0,
-            sum: communityMonthlyActivity.claimed,
-        };
         const cca = communityDailyEntity.find(
             (c) => c.contractAddress === communitiesState[index].contractAddress
         );
         communities.push({
             ...communitiesState[index],
-            beneficiariesClaiming: communityNumbers
-                ? {
-                      count: communityNumbers.count,
-                      claimed: new BigNumber(communityNumbers.sum)
-                          .multipliedBy(10 ** 18)
-                          .toString(),
-                  }
-                : { count: 0, claimed: '0' },
+            beneficiariesClaiming: {
+                count: communityMonth?.allBeneficiaries.length || 0,
+                claimed: communityMonthlyActivity?.claimed 
+                    ? new BigNumber(communityMonthlyActivity.claimed)
+                        .multipliedBy(10 ** 18)
+                        .toString()
+                    : '0'
+            },
             activity: {
                 ...(cca
                     ? {
@@ -169,16 +155,16 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                           reachOut: '0',
                       }),
                 ...{
-                    monthlyBackers: communityMonthlyActivity.contributors
+                    monthlyBackers: communityMonthlyActivity?.contributors
                         ? communityMonthlyActivity.contributors.toString()
                         : '0',
                 },
-                fundingRate: communityMonth?.foundingRate
-                    ? new BigNumber(communityMonthlyActivity.contributed)
-                          .minus(communityMonthlyActivity.claimed)
-                          .dividedBy(communityMonthlyActivity.contributed)
-                          .multipliedBy(100)
-                          .toFixed(2, 1)
+                fundingRate: communityMonth?.dailyState[0]?.fundingRate
+                    ? new BigNumber(
+                        communityMonth.dailyState[0].fundingRate
+                    )
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString()
                     : '0',
             },
         });
@@ -194,27 +180,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
             //
             if (community.activity !== undefined) {
-                console.log(
-                    'ubiCommunityDailyState => ',
-                    JSON.stringify({
-                        transactions: parseInt(community.activity.txs, 10),
-                        reach: parseInt(community.activity.reach, 10),
-                        reachOut: parseInt(community.activity.reachOut, 10),
-                        volume: community.activity.volume,
-                        backers: parseInt(community.activity.backers, 10),
-                        monthlyBackers: parseInt(
-                            community.activity.monthlyBackers,
-                            10
-                        ),
-                        raised: community.activity.raised,
-                        claimed: community.activity.claimed,
-                        claims: parseInt(community.activity.claims, 10),
-                        fundingRate: parseFloat(community.activity.fundingRate),
-                        beneficiaries: community.activity.beneficiaries,
-                        communityId: community.id,
-                        date: yesterday,
-                    })
-                );
                 dailyStatePromises.push(
                     database.models.ubiCommunityDailyState.create({
                         transactions: parseInt(community.activity.txs, 10),
@@ -307,17 +272,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     .dividedBy(ubiRate)
                     .dividedBy(30)
                     .toFixed(2, 1)
-            );
-            console.log(
-                'ubiCommunityDailyMetrics => ',
-                JSON.stringify({
-                    communityId: community.id,
-                    ssiDayAlone: 0,
-                    ssi: 0,
-                    ubiRate,
-                    estimatedDuration,
-                    date: yesterday,
-                })
             );
             dailyMetricsPromises.push(
                 database.models.ubiCommunityDailyMetrics.create({

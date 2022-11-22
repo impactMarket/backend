@@ -453,7 +453,7 @@ class ChainSubscribers {
                 }
             );
             result = parsedLog;
-        }  else if (parsedLog.name === 'ClaimAmountUpdated') {
+        } else if (parsedLog.name === 'ClaimAmountUpdated') {
             const newClaimAmount = parsedLog.args[1];
             await database.models.ubiCommunityContract.update(
                 {

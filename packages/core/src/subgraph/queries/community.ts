@@ -321,6 +321,7 @@ export const getCommunityDailyState = async (
         volume: string;
         transactions: number;
         reach: number;
+        fundingRate: string;
     }[]
 > => {
     try {
@@ -343,6 +344,7 @@ export const getCommunityDailyState = async (
                     transactions
                     reach
                     volume
+                    fundingRate
                 }
             }
         `;
@@ -363,6 +365,7 @@ export const getCommunityDailyState = async (
                 transactions: daily.transactions,
                 reach: daily.reach,
                 volume: daily.volume,
+                fundingRate: daily.fundingRate,
             }));
         }
 
