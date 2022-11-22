@@ -130,7 +130,7 @@ describe('Learn And Earn', () => {
                 users[0].id,
                 config.defaultOffset,
                 config.defaultLimit,
-                'available',
+                'available'
             );
 
             expect(levels.count).to.be.eq(1);
@@ -147,7 +147,7 @@ describe('Learn And Earn', () => {
                 users[0].id,
                 config.defaultOffset,
                 config.defaultLimit,
-                'completed',
+                'completed'
             );
 
             expect(levels.count).to.be.eq(0);

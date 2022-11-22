@@ -1,11 +1,15 @@
 import { assert } from 'chai';
 import { Sequelize } from 'sequelize';
+import { stub, SinonStub } from 'sinon';
 
 import ReachedAddressService from '../../src/services/reachedAddress';
+import * as ubiSubgraph from '../../src/subgraph/queries/ubi';
 import { sequelizeSetup } from '../config/sequelizeSetup';
 
 describe('reachedAddress', () => {
     let sequelize: Sequelize;
+    let returnGetUbiDailyEntitySubgraph: SinonStub;
+
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
@@ -14,6 +18,11 @@ describe('reachedAddress', () => {
         yesterday.setDate(yesterday.getDate() - 1);
         const twoMonthsAgo = new Date();
         twoMonthsAgo.setDate(twoMonthsAgo.getDate() - 60);
+
+        returnGetUbiDailyEntitySubgraph = stub(
+            ubiSubgraph,
+            'getUbiDailyEntity'
+        );
 
         await sequelize.models.ReachedAddress.bulkCreate([
             {
@@ -139,26 +148,14 @@ describe('reachedAddress', () => {
     });
 
     it('#getAllReachedLast30Days()', async () => {
-        const reachedAddressService = new ReachedAddressService();
-        const s = await reachedAddressService.getAllReachedLast30Days();
-        assert.deepEqual(s, { reach: 3, reachOut: 2 });
-    });
-
-    it('#getAllReachedEver()', async () => {
-        const reachedAddressService = new ReachedAddressService();
-        const s = await reachedAddressService.getAllReachedEver();
-        assert.deepEqual(s, { reach: 5, reachOut: 3 });
-    });
-
-    it('#updateReachedList()', async () => {
-        //this test will change data and it assumes that the ones before
-        // didn't change anything. It is not good practice.
-        const reachedAddressService = new ReachedAddressService();
-        await reachedAddressService.updateReachedList([
-            '0x002D33893983E187814Be1bdBe9852299829C554',
-            '0x404724c5d216A93a8c31eE848f4012dCDa1D7333',
+        returnGetUbiDailyEntitySubgraph.returns([
+            {
+                // yesterday
+                reach: 3,
+            },
         ]);
+        const reachedAddressService = new ReachedAddressService();
         const s = await reachedAddressService.getAllReachedLast30Days();
-        assert.deepEqual(s, { reach: 2, reachOut: 1 });
+        assert.deepEqual(s, { reach: 3, reachOut: 0 });
     });
 });

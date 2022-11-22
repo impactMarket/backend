@@ -118,11 +118,11 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             ...communitiesState[index],
             beneficiariesClaiming: {
                 count: communityMonth?.allBeneficiaries.length || 0,
-                claimed: communityMonthlyActivity?.claimed 
+                claimed: communityMonthlyActivity?.claimed
                     ? new BigNumber(communityMonthlyActivity.claimed)
-                        .multipliedBy(10 ** 18)
-                        .toString()
-                    : '0'
+                          .multipliedBy(10 ** 18)
+                          .toString()
+                    : '0',
             },
             activity: {
                 ...(cca
@@ -160,11 +160,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                         : '0',
                 },
                 fundingRate: communityMonth?.dailyState[0]?.fundingRate
-                    ? new BigNumber(
-                        communityMonth.dailyState[0].fundingRate
-                    )
-                        .multipliedBy(10 ** config.cUSDDecimal)
-                        .toString()
+                    ? new BigNumber(communityMonth.dailyState[0].fundingRate)
+                          .multipliedBy(10 ** config.cUSDDecimal)
+                          .toString()
                     : '0',
             },
         });

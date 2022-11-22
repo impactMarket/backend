@@ -190,7 +190,9 @@ async function calculateInflowOutflow(
     const ubiDaily = await subgraph.queries.ubi.getUbiDailyEntity(
         `id: ${dayId}`
     );
-    const raised = new BigNumber(ubiDaily[0].contributed).multipliedBy(10 ** config.cUSDDecimal).toString();
+    const raised = new BigNumber(ubiDaily[0].contributed)
+        .multipliedBy(10 ** config.cUSDDecimal)
+        .toString();
 
     totalRaised = new BigNumber(lastGlobalMetrics.totalRaised)
         .plus(raised)
@@ -201,7 +203,7 @@ async function calculateInflowOutflow(
     totalBeneficiaries =
         lastGlobalMetrics.totalBeneficiaries +
         parseInt(communitiesYesterday.totalBeneficiaries, 10);
-    totalBackers = lastGlobalMetrics.totalBackers + ubiDaily[0].contributors
+    totalBackers = lastGlobalMetrics.totalBackers + ubiDaily[0].contributors;
 
     return {
         totalRaised,
@@ -318,8 +320,11 @@ async function calculateUbiPulse(
             },
             0
         );
-        console.log('comulativeUBI ====> ', comulativeUbi)
-        console.log('comulativeUBI lenght ====> ', communityFoundingRate.length)
+        console.log('comulativeUBI ====> ', comulativeUbi);
+        console.log(
+            'comulativeUBI lenght ====> ',
+            communityFoundingRate.length
+        );
         return new BigNumber(comulativeUbi / communityFoundingRate.length)
             .multipliedBy(10 ** config.cUSDDecimal)
             .toString(); // convert to 18 decimals before return

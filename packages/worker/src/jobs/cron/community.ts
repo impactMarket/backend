@@ -1,8 +1,4 @@
-import {
-    services,
-    config,
-    database,
-} from '@impactmarket/core';
+import { services, config, database } from '@impactmarket/core';
 import { WebClient } from '@slack/web-api';
 import BigNumber from 'bignumber.js';
 import { Op } from 'sequelize';
