@@ -128,9 +128,9 @@ describe('Learn And Earn', () => {
         it('list levels available', async () => {
             const levels = await learnAndEarnService.listLevels(
                 users[0].id,
-                'available',
                 config.defaultOffset,
-                config.defaultLimit
+                config.defaultLimit,
+                'available',
             );
 
             expect(levels.count).to.be.eq(1);
@@ -145,9 +145,9 @@ describe('Learn And Earn', () => {
         it('list levels completed', async () => {
             const levels = await learnAndEarnService.listLevels(
                 users[0].id,
-                'completed',
                 config.defaultOffset,
-                config.defaultLimit
+                config.defaultLimit,
+                'completed',
             );
 
             expect(levels.count).to.be.eq(0);

@@ -54,6 +54,8 @@ import { UbiCommunityLabelModel } from './models/ubi/ubiCommunityLabel';
 import { UbiCommunitySuspectModel } from './models/ubi/ubiCommunitySuspect';
 import { UbiPromoterModel } from './models/ubi/ubiPromoter';
 import { UbiPromoterSocialMediaModel } from './models/ubi/ubiPromoterSocialMedia';
+import { WalletAirdropProofModel } from './models/walletAirdrop/walletAirdropProof';
+import { WalletAirdropUserModel } from './models/walletAirdrop/walletAirdropUser';
 
 export interface DbModels {
     appUser: ModelCtor<AppUserModel>;
@@ -104,6 +106,9 @@ export interface DbModels {
     //
     airgrabUser: ModelCtor<AirgrabUserModel>;
     airgrabProof: ModelCtor<AirgrabProofModel>;
+    //
+    walletAirdropUser: ModelCtor<WalletAirdropUserModel>;
+    walletAirdropProof: ModelCtor<WalletAirdropProofModel>;
     //
     learnAndEarnCategory: ModelCtor<LearnAndEarnCategoryModel>;
     learnAndEarnLesson: ModelCtor<LearnAndEarnLessonModel>;
