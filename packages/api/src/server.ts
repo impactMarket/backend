@@ -1,5 +1,3 @@
-import './tracer'; // must come before importing any instrumented module.
-
 import { utils } from '@impactmarket/core';
 import * as Sentry from '@sentry/node';
 // import bodyParser from 'body-parser';
@@ -174,10 +172,10 @@ export default (app: express.Application): void => {
                 success: false,
                 error: {
                     name: 'INVALID_PAYLOAD',
-                    message: 'body has invalid payloads',
-                    details:
-                        error.details.get('body') &&
-                        error.details.get('body').details,
+                    message: 'invalid payloads',
+                    details: error.details.get('query')
+                        ? error.details.get('query').details
+                        : error.details.get('body').details,
                 },
             });
         }

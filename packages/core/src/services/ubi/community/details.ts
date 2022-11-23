@@ -1,7 +1,11 @@
+import { getAddress } from '@ethersproject/address';
+import csv from 'csvtojson';
 import { ethers } from 'ethers';
+import fs from 'fs';
+import json2csv from 'json2csv';
 import { Op, WhereOptions, fn, col, literal, Transaction } from 'sequelize';
 
-import { models } from '../../../database';
+import { Community, models } from '../../../database';
 import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { AppUser } from '../../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
@@ -29,6 +33,7 @@ import { Logger } from '../../../utils/logger';
 import { isAddress, getSearchInput } from '../../../utils/util';
 import { IListBeneficiary, BeneficiaryFilterType } from '../../endpoints';
 import { CommunityContentStorage } from '../../storage';
+const writeFile = fs.promises.writeFile;
 
 export class CommunityDetailsService {
     private communityContentStorage = new CommunityContentStorage();
@@ -481,7 +486,8 @@ export class CommunityDetailsService {
     }
 
     public async listBeneficiaries(
-        managerAddress: string,
+        userAddress: string,
+        communityId: number,
         offset: number,
         limit: number,
         filter: BeneficiaryFilterType,
@@ -491,22 +497,43 @@ export class CommunityDetailsService {
         count: number;
         rows: IListBeneficiary[];
     }> {
-        const roles = await getUserRoles(managerAddress);
-        if (!roles.manager) {
-            throw new BaseError('MANAGER_NOT_FOUND', 'Manager not found');
-        }
-        const contractAddress = ethers.utils.getAddress(
-            roles.manager.community
-        );
+        const roles = await getUserRoles(userAddress);
         const community = await models.community.findOne({
-            attributes: ['id'],
+            attributes: ['contractAddress'],
             where: {
-                contractAddress,
+                id: communityId,
             },
         });
-
-        if (!community) {
+        if (!community || !community.contractAddress) {
             throw new BaseError('COMMUNITY_NOT_FOUND', 'Community not found');
+        }
+
+        if (roles.ambassador) {
+            if (
+                roles.ambassador.communities.indexOf(
+                    community.contractAddress.toLocaleLowerCase()
+                ) === -1
+            ) {
+                throw new BaseError(
+                    'NOT_ALLOWED',
+                    'User should be an ambassador or manager'
+                );
+            }
+        } else if (roles.manager) {
+            const contractAddress = ethers.utils.getAddress(
+                roles.manager.community
+            );
+            if (community.contractAddress !== contractAddress) {
+                throw new BaseError(
+                    'NOT_ALLOWED',
+                    'User should be an ambassador or manager'
+                );
+            }
+        } else {
+            throw new BaseError(
+                'NOT_ALLOWED',
+                'User should be an ambassador or manager'
+            );
         }
 
         let orderKey: string | null = null;
@@ -563,7 +590,7 @@ export class CommunityDetailsService {
                 addresses,
                 beneficiaryState,
                 undefined,
-                contractAddress,
+                community.contractAddress,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined
             );
@@ -580,7 +607,7 @@ export class CommunityDetailsService {
                 addresses,
                 beneficiaryState,
                 undefined,
-                contractAddress,
+                community.contractAddress,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined
             );
@@ -600,7 +627,7 @@ export class CommunityDetailsService {
             });
         } else {
             beneficiariesSubgraph = await getBeneficiaries(
-                contractAddress,
+                community.contractAddress,
                 limit,
                 offset,
                 undefined,
@@ -609,7 +636,7 @@ export class CommunityDetailsService {
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined
             );
             count = await countBeneficiaries(
-                contractAddress,
+                community.contractAddress,
                 filter.state !== null ? (filter.state as number) : undefined
             );
             addresses = beneficiariesSubgraph.map((beneficiary) =>
@@ -847,6 +874,117 @@ export class CommunityDetailsService {
         return result.toJSON();
     }
 
+    public async addBeneficiaries(file: Express.Multer.File, address: string) {
+        const role = await getUserRoles(address);
+        const contractAddress = role.manager?.community;
+
+        if (!contractAddress) {
+            throw new BaseError('NOT_MANAGER', 'user not a manager');
+        }
+
+        const failedAddress: any[] = [];
+        const addressesToAdd: string[] = [];
+        const usersToCreate: any[] = [];
+
+        // convert csv to json
+        const string = file.buffer.toString().replace(/;/g, ',');
+        const beneficiaries = await csv({ ignoreEmpty: true }).fromString(
+            string
+        );
+
+        // check valid address
+        for (let i = 0; i < beneficiaries.length; i++) {
+            const beneficiary = beneficiaries[i];
+            try {
+                const address = getAddress(beneficiary.address);
+                const user = await models.appUser.findOne({
+                    where: { address },
+                });
+
+                if (!user) {
+                    const validate = this.validateUserRegistry(beneficiary);
+                    if (validate.valid) {
+                        usersToCreate.push({
+                            address,
+                            phone: beneficiary.phone,
+                            firstName: beneficiary.firstName,
+                            lastName: beneficiary.lastName,
+                            age: beneficiary.yearOfBirth,
+                            gender: beneficiary.gender,
+                        });
+                    } else {
+                        failedAddress.push({
+                            address: beneficiary.address,
+                            error: validate.error,
+                        });
+                    }
+                } else {
+                    addressesToAdd.push(address);
+                }
+            } catch (error) {
+                failedAddress.push({
+                    address: beneficiary.address,
+                    error: 'invalid address',
+                });
+            }
+        }
+
+        // create accounts
+        if (usersToCreate.length > 0) {
+            const users = await models.appUser.bulkCreate(usersToCreate);
+            users.forEach((user) => {
+                addressesToAdd.push(user.address);
+            });
+        }
+
+        // check if it is already a beneficiary
+        const existingBeneficiaries = await this.verifyBeneficiaries(
+            addressesToAdd
+        );
+        existingBeneficiaries.forEach((address) => {
+            addressesToAdd.splice(addressesToAdd.indexOf(address), 1);
+        });
+
+        // add beneficiaries
+
+        if (failedAddress.length > 0) {
+            // Write data into csv file named failed.csv
+            var fields = ['address', 'error'];
+            const data = json2csv.parse(failedAddress, { fields });
+            const filePath = './public/';
+            const fileName = 'failed.csv';
+            await writeFile(filePath + fileName, data);
+            setTimeout(async () => {
+                // delete file after 30 seconds
+                await fs.promises.unlink(filePath + fileName);
+            }, 30000);
+
+            return {
+                success: false,
+                filePath,
+                fileName,
+            };
+        } else {
+            return {
+                success: true,
+            };
+        }
+    }
+
+    private async verifyBeneficiaries(addresses: string[]) {
+        const beneficiaries: string[] = [];
+        const promises = addresses.map((address) => getUserRoles(address));
+        const results = await Promise.all(promises);
+
+        results.forEach((result) => {
+            if (result.beneficiary) {
+                beneficiaries.push(getAddress(result.beneficiary.address));
+            }
+        });
+
+        return beneficiaries;
+    }
+
     public async getCampaign(communityId: number) {
         const result = await models.ubiCommunityCampaign.findOne({
             where: {
@@ -856,5 +994,47 @@ export class CommunityDetailsService {
         return result !== null
             ? (result.toJSON() as UbiCommunityCampaign)
             : null;
+    }
+
+    private validateUserRegistry(user: any) {
+        // validate firstName and lastName
+        if (!user.firstName || !user.lastName) {
+            return {
+                valid: false,
+                error: 'invalid firstName/lastName',
+            };
+        }
+
+        // validate yearOfBirth
+        const year = parseInt(user.yearOfBirth);
+        if (!year) {
+            return {
+                valid: false,
+                error: 'invalid yearOfBirth',
+            };
+        }
+
+        // validate phone
+        if (!user.phone || typeof user.phone !== 'string') {
+            return {
+                valid: false,
+                error: 'invalid phone',
+            };
+        }
+
+        // validate gender
+        if (
+            !user.gender ||
+            ['m', 'f', 'u'].indexOf(user.gender.toLocaleLowerCase()) === -1
+        ) {
+            return {
+                valid: false,
+                error: 'invalid gender',
+            };
+        }
+
+        return {
+            valid: true,
+        };
     }
 }

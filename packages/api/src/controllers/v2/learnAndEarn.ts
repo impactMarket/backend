@@ -37,9 +37,6 @@ class LearnAndEarnController {
 
         let { category, status, level, limit, offset } = req.query;
 
-        if (!status || typeof status !== 'string') {
-            status = 'available';
-        }
         if (offset === undefined || typeof offset !== 'string') {
             offset = config.defaultOffset.toString();
         }
@@ -50,9 +47,9 @@ class LearnAndEarnController {
         this.learnAndEarnService
             .listLevels(
                 req.user.userId,
-                status,
                 parseInt(offset, 10),
                 parseInt(limit, 10),
+                status as string,
                 category as string,
                 level as string
             )

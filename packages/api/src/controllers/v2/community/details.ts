@@ -83,6 +83,7 @@ class CommunityController {
         this.detailsService
             .listBeneficiaries(
                 req.user.address,
+                parseInt(req.params.id),
                 parseInt(offset, 10),
                 parseInt(limit, 10),
                 {
@@ -193,6 +194,42 @@ class CommunityController {
         this.detailsService
             .getPromoter(parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    addBeneficiaries = (req: RequestWithUser, res: Response) => {
+        const file = req['file'];
+
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        if (!file) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'INVALID_FILE',
+                    message: 'file is invalid',
+                },
+            });
+            return;
+        }
+        this.detailsService
+            .addBeneficiaries(file, req.user.address)
+            .then((r) => {
+                if (r.success) {
+                    standardResponse(res, 200, true, r);
+                } else {
+                    res.status(400).sendFile(r.fileName!, {
+                        root: r.filePath,
+                    });
+                }
+            })
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 

@@ -3,7 +3,7 @@ import { gql } from 'apollo-boost';
 import { clientDAO, clientCouncil } from '../config';
 
 export type UserRoles = {
-    beneficiary: { community: string; state: number } | null;
+    beneficiary: { community: string; state: number; address: string } | null;
     manager: { community: string; state: number } | null;
     councilMember: { state: number } | null;
     ambassador: { communities: string[]; state: number } | null;
@@ -16,6 +16,7 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                 beneficiaryEntity(
                     id: "${address.toLowerCase()}"
                 ) {
+                    address
                     community {
                         id
                     }
@@ -64,6 +65,7 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                   community:
                       queryDAOResult.data?.beneficiaryEntity?.community?.id,
                   state: queryDAOResult.data?.beneficiaryEntity?.state,
+                  address: queryDAOResult.data?.beneficiaryEntity?.address,
               };
 
         const manager = !queryDAOResult.data.managerEntity

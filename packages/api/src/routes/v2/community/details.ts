@@ -1,11 +1,20 @@
 import { database } from '@impactmarket/core';
 import { Router } from 'express';
+import multer from 'multer';
 
 import { CommunityController } from '../../../controllers/v2/community/details';
 import {
     authenticateToken,
     optionalAuthentication,
+    verifySignature,
 } from '../../../middlewares';
+
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 8000000,  // 8MB
+    }
+});
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -195,12 +204,18 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /communities/beneficiaries:
+     * /communities/{id}/beneficiaries:
      *   get:
      *     tags:
      *       - "communities"
-     *     summary: Find or list beneficiaries in manager's community
+     *     summary: Find or list beneficiaries
      *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: community id
      *       - in: query
      *         name: state
      *         schema:
@@ -244,7 +259,7 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/IListBeneficiary'
      */
     route.get(
-        '/beneficiaries/:query?',
+        '/:id/beneficiaries/:query?',
         authenticateToken,
         controller.getBeneficiaries
     );
@@ -362,6 +377,40 @@ export default (route: Router): void => {
      *               $ref: '#/components/schemas/UbiPromoter'
      */
     route.get('/:id/promoter', controller.getPromoter);
+
+    /**
+     * @swagger
+     *
+     * /communities/beneficiaries:
+     *   post:
+     *     tags:
+     *       - "communities"
+     *     summary: Add beneficiaries
+     *     requestBody:
+     *      required: true
+     *      content:
+     *        multipart/form-data:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              file:
+     *                type: string
+     *                format: binary
+     *                required: true
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/beneficiaries',
+        upload.single('file'),
+        authenticateToken,
+        verifySignature,
+        controller.addBeneficiaries
+    );
 
     /**
      * @swagger
