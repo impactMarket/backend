@@ -471,7 +471,7 @@ async function calculateMetricsGrowth(
             present.tTransactions
         ),
         reach: utils.util.calculateGrowth(past.tReach, present.tReach),
-        reachOut: utils.util.calculateGrowth(past.tReachOut, present.tReachOut),
+        reachOut: 0,
     };
     await globalGrowthService.add(growthToAdd);
 }

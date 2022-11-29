@@ -2,6 +2,7 @@ import { interfaces, config, database, subgraph } from '@impactmarket/core';
 import { CommunityAttributes } from '@impactmarket/core/src/interfaces/ubi/community';
 import BigNumber from 'bignumber.js';
 import { Op } from 'sequelize';
+import { getAddress } from '@ethersproject/address';
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     type ICommunityToMetrics = Omit<
@@ -69,9 +70,10 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const yesterdayId = (yesterday.getTime() / 1000 / 86400) | 0;
 
     const calculateMetrics = async (communities: CommunityAttributes[]) => {
+        const idsFormated = communities.map((el) => `"${el.contractAddress!.toLowerCase()}"`);
         const communityDailyEntity =
             await subgraph.queries.community.getCommunityDailyState(
-                `dayId: ${yesterdayId}, community_in: ${communities}`
+                `dayId: ${yesterdayId}, community_in: [${idsFormated}]`
             );
         const communityEntity =
             await subgraph.queries.community.getCommunityStateByAddresses(communities.map(el => el.contractAddress!));
@@ -88,26 +90,25 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 );
 
             return {
-                address: community,
+                address: community.contractAddress,
                 dailyState,
                 allBeneficiaries,
             };
         });
 
-        const month = await Promise.all(promises);
+        const result = await Promise.all(promises);
         const dailyStatePromises: Promise<any>[] = [];
         const dailyMetricsPromises: Promise<any>[] = [];
         communities.forEach((community) => {
-            const communityMonth = month.find(
-                (el) => el.address === community
+            const communityMonth = result.find(
+                (el) => el.address === community.contractAddress
             );
             const communityYesterday = communityDailyEntity.find(
-                (el) => el.community === community.contractAddress!
+                (el) => getAddress(el.contractAddress) === community.contractAddress
             );
             const communityContract = communityEntity.find(
-                (el) => el.id === community.contractAddress!
+                (el) => getAddress(el.id) === community.contractAddress
             );
-
             dailyStatePromises.push(
                 database.models.ubiCommunityDailyState.create({
                     transactions: communityYesterday?.transactions || 0,
@@ -149,27 +150,25 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             }
 
             // calculate ubiRate
-            const communityMonthlyActivity = communityMonth?.dailyState.reduce(
+            const communityMonthReduced = communityMonth?.dailyState.reduce(
                 (acc, el) => {
                     acc.claimed += el.claimed;
                     return acc;
                 },
                 { claimed: 0 }
             );
-            ubiRate = parseFloat(
-                new BigNumber(communityMonthlyActivity?.claimed
-                                    ? new BigNumber(communityMonthlyActivity.claimed)
-                                          .multipliedBy(10 ** 18)
-                                          .toString()
-                                    : '0')
-                    .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
-                    .dividedBy(communityMonth?.allBeneficiaries.length || 0)
-                    .dividedBy(daysSinceStart)
-                    .toFixed(2, 1)
-            );
+            ubiRate = communityMonthReduced?.claimed && communityMonth?.allBeneficiaries.length
+                ? parseFloat(
+                    new BigNumber(communityMonthReduced.claimed)
+                        // .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
+                        .dividedBy(communityMonth.allBeneficiaries.length)
+                        .dividedBy(daysSinceStart)
+                        .toFixed(2, 1)
+                )
+                : 0;
 
             // calculate estimatedDuration
-            estimatedDuration = communityContract?.maxClaim
+            estimatedDuration = communityContract?.maxClaim && ubiRate
                 ? parseFloat(
                     new BigNumber(communityContract?.maxClaim)
                         .dividedBy(ubiRate)
