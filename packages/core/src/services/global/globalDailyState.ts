@@ -204,10 +204,10 @@ export default class GlobalDailyStateService {
                     totalBackers: totalUbi.contributors,
                     totalBeneficiaries: totalUbi.beneficiaries,
                     givingRate,
-                    ubiRate: globalDaily!.ubiRate,
+                    ubiRate: globalDaily?.ubiRate || 0,
                     spendingRate: 0,
-                    avgComulativeUbi: globalDaily!.avgComulativeUbi,
-                    avgUbiDuration: globalDaily!.avgUbiDuration,
+                    avgComulativeUbi: globalDaily?.avgComulativeUbi || '0',
+                    avgUbiDuration: globalDaily?.avgUbiDuration  || 0,
                     fundingRate: Number(ubi.fundingRate),
                     totalVolume: new BigNumber(totalUbi.volume)
                         .multipliedBy(10 ** config.cUSDDecimal)
