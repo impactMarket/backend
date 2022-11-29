@@ -6,8 +6,10 @@ export const getUbiDailyEntity = async (
     where: string
 ): Promise<
     {
+        id: string;
         beneficiaries: number;
         claimed: string;
+        claims: number;
         volume: string;
         transactions: number;
         contributed: string;
@@ -24,9 +26,13 @@ export const getUbiDailyEntity = async (
                     where: {
                         ${where}
                     }
+                    orderBy: id
+                    orderDirection: desc
                 ) {
+                    id
                     beneficiaries
                     claimed
+                    claims
                     volume
                     transactions
                     contributed

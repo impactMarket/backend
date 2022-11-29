@@ -320,11 +320,6 @@ async function calculateUbiPulse(
             },
             0
         );
-        console.log('comulativeUBI ====> ', comulativeUbi);
-        console.log(
-            'comulativeUBI lenght ====> ',
-            communityFoundingRate.length
-        );
         return new BigNumber(comulativeUbi / communityFoundingRate.length)
             .multipliedBy(10 ** config.cUSDDecimal)
             .toString(); // convert to 18 decimals before return

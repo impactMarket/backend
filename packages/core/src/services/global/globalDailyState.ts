@@ -40,16 +40,14 @@ export default class GlobalDailyStateService {
                 status: 'valid',
             },
         });
-        const lastGlobal = (await this.globalDailyState.findOne({
-            order: [['date', 'DESC']],
-        }))!; // only empty at the beginning
+        const totalUbi = (await getUbiDailyEntity(
+            `id: 0`
+        ))[0];
         return {
-            claimed: new BigNumber(lastGlobal.totalDistributed)
-                .div(10 ** config.cUSDDecimal)
-                .toString(),
+            claimed: totalUbi.claimed,
             countries,
-            beneficiaries: lastGlobal.totalBeneficiaries,
-            backers: lastGlobal.totalBackers,
+            beneficiaries: totalUbi.beneficiaries,
+            backers: totalUbi.contributors,
             communities,
         };
     }
@@ -117,22 +115,100 @@ export default class GlobalDailyStateService {
         };
     }
 
-    public getLast30Days(): Promise<GlobalDailyState[]> {
-        const todayMidnightTime = new Date();
-        todayMidnightTime.setHours(0, 0, 0, 0);
-        // 30 days ago, from todayMidnightTime
-        const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
-        // it was null just once at the system's begin.
-        return this.globalDailyState.findAll({
-            where: {
-                date: {
-                    [Op.lt]: todayMidnightTime,
-                    [Op.gte]: aMonthAgo,
+    public async getLast30Days(): Promise<(GlobalDailyStateCreationAttributes & { monthReach: number })[]> {
+        try {
+            const todayMidnightTime = new Date();
+            todayMidnightTime.setHours(0, 0, 0, 0);
+            // // 30 days ago, from todayMidnightTime
+            const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+            // it was null just once at the system's begin.
+            const globalDailyState = await this.globalDailyState.findAll({
+                attributes: ['ubiRate', 'avgComulativeUbi', 'avgUbiDuration', 'date'],
+                where: {
+                    date: {
+                        [Op.lt]: todayMidnightTime,
+                        [Op.gte]: aMonthAgo,
+                    },
                 },
-            },
-            order: [['date', 'DESC']],
-            raw: true,
-        });
+                order: [['date', 'DESC']],
+                raw: true,
+            });
+            const todayId = (((todayMidnightTime.getTime() / 1000) | 0) / 86400) | 0;
+            const aMonthAgoId = (((aMonthAgo.getTime() / 1000) | 0) / 86400) | 0;
+            const ubiDaily = await getUbiDailyEntity(
+                `id_gte: ${aMonthAgoId}, id_lt: ${todayId}`
+            );
+            const totalUbi = (await getUbiDailyEntity(
+                `id: 0`
+            ))[0];
+
+            const result = ubiDaily.reduce(
+                (acc, el) => {
+                    acc.backers += el.contributors;
+                    acc.funding += Number(el.contributed);
+                    acc.reach += el.reach;
+                    return acc;
+                },
+                { backers: 0, funding: 0, reach: 0 }
+            );
+            const givingRate = parseFloat(
+                new BigNumber(result.funding)
+                    .dividedBy(result.backers)
+                    .dividedBy(30)
+                    .decimalPlaces(2, 1)
+                    .toString()
+            );
+
+            return ubiDaily.map(ubi => {
+                const globalDaily = globalDailyState.find(el => {
+                    return Number(ubi.id) === new Date(el.date).getTime() / 1000 / 86400
+                });
+                const date = new Date(Number(ubi.id) * 86400 * 1000);
+                return {
+                    date: date.toISOString().split('T')[0] as any,
+                    monthReach: result.reach,
+                    avgMedianSSI: 0,
+                    claimed: new BigNumber(ubi.claimed)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString(),
+                    claims: ubi.claims,
+                    beneficiaries: ubi.beneficiaries,
+                    raised: new BigNumber(ubi.contributed)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString(),
+                    backers: ubi.contributors,
+                    volume: new BigNumber(ubi.volume)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString(),
+                    transactions: ubi.transactions,
+                    reach: ubi.reach,
+                    reachOut: 0,
+                    totalRaised: new BigNumber(totalUbi.contributed)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString(),
+                    totalDistributed: new BigNumber(totalUbi.claimed)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString(),
+                    totalBackers: totalUbi.contributors,
+                    totalBeneficiaries: totalUbi.beneficiaries,
+                    givingRate,
+                    ubiRate: globalDaily!.ubiRate,
+                    spendingRate: 0,
+                    avgComulativeUbi: globalDaily!.avgComulativeUbi,
+                    avgUbiDuration: globalDaily!.avgUbiDuration,
+                    fundingRate: Number(ubi.fundingRate),
+                    totalVolume: new BigNumber(totalUbi.volume)
+                        .multipliedBy(10 ** config.cUSDDecimal)
+                        .toString(),
+                    totalTransactions: totalUbi.transactions.toString() as any,
+                    totalReach: totalUbi.reach.toString() as any,
+                    totalReachOut: '0' as any,
+                }
+            })
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
     }
 
     public async last90DaysAvgSSI(): Promise<
@@ -166,45 +242,18 @@ export default class GlobalDailyStateService {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
 
-        const communitiesId = (
-            await models.community.findAll({
-                attributes: ['id'],
-                where: { status: 'valid', visibility: 'public' },
-            })
-        ).map((c) => c.id);
-
-        const claimed: any = await models.ubiClaim.findAll({
-            attributes: [
-                [fn('coalesce', fn('sum', col('amount')), '0'), 'totalClaimed'],
-            ],
-            where: {
-                txAt: { [Op.gte]: today },
-                communityId: { [Op.in]: communitiesId },
-            },
-            raw: true,
-        });
-
-        const raised: any = await models.inflow.findAll({
-            attributes: [
-                [fn('coalesce', fn('sum', col('amount')), '0'), 'totalRaised'],
-            ],
-            where: {
-                txAt: { [Op.gte]: today },
-                from: {
-                    [Op.not]: config.contractAddresses.treasury,
-                },
-            },
-            raw: true,
-        });
-
         const dayId = (((today.getTime() / 1000) | 0) / 86400) | 0;
         const ubiDaily = await getUbiDailyEntity(`id: ${dayId}`);
 
         // TODO: subtract removed
 
         return {
-            totalClaimed: claimed[0].totalClaimed,
-            totalRaised: raised[0].totalRaised,
+            totalClaimed: new BigNumber(ubiDaily[0].claimed)
+                .multipliedBy(10 ** config.cUSDDecimal)
+                .toString(),
+            totalRaised: new BigNumber(ubiDaily[0].contributed)
+                .multipliedBy(10 ** config.cUSDDecimal)
+                .toString(),
             totalBeneficiaries: ubiDaily[0].beneficiaries || 0,
         };
     }
