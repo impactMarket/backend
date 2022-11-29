@@ -1,4 +1,5 @@
 import { interfaces, config, database, subgraph } from '@impactmarket/core';
+import { CommunityAttributes } from '@impactmarket/core/src/interfaces/ubi/community';
 import BigNumber from 'bignumber.js';
 import { Op } from 'sequelize';
 
@@ -50,12 +51,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
     const communitiesStatePre = await database.models.community.findAll({
         attributes: ['id', 'started', 'contractAddress'],
-        include: [
-            {
-                model: database.models.ubiCommunityContract,
-                as: 'contract',
-            },
-        ],
         where: {
             ...whereCommunity,
             visibility: 'public',
@@ -72,181 +67,79 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
     // community activity: claims and claimed between yesterday and today
     const yesterdayId = (yesterday.getTime() / 1000 / 86400) | 0;
-    const communityDailyEntity =
-        await subgraph.queries.community.getCommunityDailyState(
-            `dayId: ${yesterdayId}`
-        );
 
-    // community monthly
-    const promises = communitiesState.map(async (community) => {
-        const dailyState =
+    const calculateMetrics = async (communities: CommunityAttributes[]) => {
+        const communityDailyEntity =
             await subgraph.queries.community.getCommunityDailyState(
-                `dayId_gte: ${aMonthAgoId}, community: "${community.contractAddress?.toLocaleLowerCase()}"`
+                `dayId: ${yesterdayId}, community_in: ${communities}`
             );
-        const allBeneficiaries =
-            await subgraph.queries.beneficiary.getAllBeneficiaries(
-                community.contractAddress!
-            );
+        const communityEntity =
+            await subgraph.queries.community.getCommunityStateByAddresses(communities.map(el => el.contractAddress!));
 
-        return {
-            address: community.contractAddress,
-            dailyState,
-            allBeneficiaries,
-        };
-    });
-    const month = await Promise.all(promises);
+        // community monthly
+        const promises = communities.map(async (community) => {
+            const dailyState =
+                await subgraph.queries.community.getCommunityDailyState(
+                    `dayId_gte: ${aMonthAgoId}, community: "${community.contractAddress!.toLowerCase()}"`
+                );
+            const allBeneficiaries =
+                await subgraph.queries.beneficiary.getAllBeneficiaries(
+                    community.contractAddress!
+                );
 
-    const communities: ICommunityToMetrics[] = [];
-    for (let index = 0; index < communitiesState.length; index++) {
-        const communityMonth = month.find(
-            (community) =>
-                community.address === communitiesState[index].contractAddress
-        );
-        const communityMonthlyActivity = communityMonth?.dailyState.reduce(
-            (acc, el) => {
-                acc.contributors += el.contributors;
-                acc.claimed += el.claimed;
-                acc.contributed += el.contributed;
-                return acc;
-            },
-            { contributors: 0, claimed: 0, contributed: 0 }
-        );
-        const cca = communityDailyEntity.find(
-            (c) => c.contractAddress === communitiesState[index].contractAddress
-        );
-        communities.push({
-            ...communitiesState[index],
-            beneficiariesClaiming: {
-                count: communityMonth?.allBeneficiaries.length || 0,
-                claimed: communityMonthlyActivity?.claimed
-                    ? new BigNumber(communityMonthlyActivity.claimed)
-                          .multipliedBy(10 ** 18)
-                          .toString()
-                    : '0',
-            },
-            activity: {
-                ...(cca
-                    ? {
-                          claimed: new BigNumber(cca.claimed)
-                              .multipliedBy(10 ** 18)
-                              .toString(),
-                          claims: cca.claims.toString(),
-                          beneficiaries: cca.beneficiaries,
-                          raised: new BigNumber(cca.contributed)
-                              .multipliedBy(10 ** 18)
-                              .toString(),
-                          backers: cca.contributors.toString(),
-                          volume: new BigNumber(cca.volume)
-                              .multipliedBy(10 ** 18)
-                              .toString(),
-                          txs: cca.transactions.toString(),
-                          reach: cca.reach.toString(),
-                          reachOut: '0',
-                      }
-                    : {
-                          claimed: '0',
-                          claims: '0',
-                          beneficiaries: 0,
-                          raised: '0',
-                          backers: '0',
-                          volume: '0',
-                          txs: '0',
-                          reach: '0',
-                          reachOut: '0',
-                      }),
-                ...{
-                    monthlyBackers: communityMonthlyActivity?.contributors
-                        ? communityMonthlyActivity.contributors.toString()
-                        : '0',
-                },
-                fundingRate: communityMonth?.dailyState[0]?.fundingRate
-                    ? new BigNumber(communityMonth.dailyState[0].fundingRate)
-                          .multipliedBy(10 ** config.cUSDDecimal)
-                          .toString()
-                    : '0',
-            },
+            return {
+                address: community,
+                dailyState,
+                allBeneficiaries,
+            };
         });
-    }
 
-    const calculateMetrics = async (communities: ICommunityToMetrics[]) => {
+        const month = await Promise.all(promises);
         const dailyStatePromises: Promise<any>[] = [];
         const dailyMetricsPromises: Promise<any>[] = [];
         communities.forEach((community) => {
             const communityMonth = month.find(
-                (el) => el.address === community.contractAddress
+                (el) => el.address === community
+            );
+            const communityYesterday = communityDailyEntity.find(
+                (el) => el.community === community.contractAddress!
+            );
+            const communityContract = communityEntity.find(
+                (el) => el.id === community.contractAddress!
             );
 
-            //
-            if (community.activity !== undefined) {
-                dailyStatePromises.push(
-                    database.models.ubiCommunityDailyState.create({
-                        transactions: parseInt(community.activity.txs, 10),
-                        reach: parseInt(community.activity.reach, 10),
-                        reachOut: parseInt(community.activity.reachOut, 10),
-                        volume: community.activity.volume,
-                        backers: parseInt(community.activity.backers, 10),
-                        monthlyBackers: parseInt(
-                            community.activity.monthlyBackers,
-                            10
-                        ),
-                        raised: community.activity.raised,
-                        claimed: community.activity.claimed,
-                        claims: parseInt(community.activity.claims, 10),
-                        fundingRate: parseFloat(community.activity.fundingRate),
-                        beneficiaries: community.activity.beneficiaries,
-                        communityId: community.id,
-                        date: yesterday,
-                    })
-                );
-            }
+            dailyStatePromises.push(
+                database.models.ubiCommunityDailyState.create({
+                    transactions: communityYesterday?.transactions || 0,
+                    reach: communityYesterday?.reach || 0,
+                    reachOut: 0,
+                    volume: communityYesterday?.volume || '0', // TODO: convert to BigNumber
+                    backers: communityYesterday?.contributors || 0,
+                    monthlyBackers: 0,
+                    raised: communityYesterday?.contributed 
+                        ? new BigNumber(communityYesterday.contributed)
+                            .multipliedBy(10 ** 18)
+                            .toString()
+                        : '0', // TODO: convert to BigNumber
+                    claimed: communityYesterday?.claimed
+                        ? new BigNumber(communityYesterday.claimed)
+                            .multipliedBy(10 ** 18)
+                            .toString()
+                        : '0',
+                    claims: communityYesterday?.claims || 0,
+                    fundingRate: communityYesterday?.fundingRate
+                        ? new BigNumber(communityYesterday.fundingRate)
+                            .multipliedBy(10 ** 18)
+                            .toNumber()
+                        : 0,
+                    beneficiaries: communityYesterday?.beneficiaries || 0,
+                    communityId: community.id,
+                    date: yesterday,
+                })
+            );
 
-            // if no activity, do not calculate
-            if (
-                community.contract === undefined ||
-                communityMonth?.allBeneficiaries === undefined ||
-                communityMonth?.allBeneficiaries.length === 0 ||
-                community.beneficiariesClaiming.claimed === '0'
-            ) {
-                return;
-            }
             let ubiRate: number = 0;
             let estimatedDuration: number = 0;
-
-            const beneficiariesTimeToWait: number[] = [];
-            const beneficiariesTimeWaited: number[] = [];
-
-            communityMonth.allBeneficiaries.forEach((beneficiary) => {
-                if (
-                    beneficiary.claims < 2 ||
-                    beneficiary.lastClaimAt === null ||
-                    beneficiary.preLastClaimAt === null
-                ) {
-                    return;
-                }
-                // the first time you don't wait a single second, the second time, only base interval
-                if (community.contract === undefined) {
-                    return;
-                }
-                const timeToWait =
-                    community.contract.baseInterval +
-                    (beneficiary.claims - 2) *
-                        community.contract.incrementInterval;
-                const timeWaited =
-                    Math.floor(
-                        beneficiary.lastClaimAt - beneficiary.preLastClaimAt
-                    ) - timeToWait;
-                //
-                beneficiariesTimeToWait.push(timeToWait);
-                beneficiariesTimeWaited.push(timeWaited);
-            });
-
-            if (
-                beneficiariesTimeToWait.length < 2 ||
-                beneficiariesTimeWaited.length < 2
-            ) {
-                return;
-            }
-
             let daysSinceStart = Math.round(
                 (new Date().getTime() - new Date(community.started).getTime()) /
                     86400000
@@ -256,21 +149,34 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             }
 
             // calculate ubiRate
+            const communityMonthlyActivity = communityMonth?.dailyState.reduce(
+                (acc, el) => {
+                    acc.claimed += el.claimed;
+                    return acc;
+                },
+                { claimed: 0 }
+            );
             ubiRate = parseFloat(
-                new BigNumber(community.beneficiariesClaiming.claimed)
+                new BigNumber(communityMonthlyActivity?.claimed
+                                    ? new BigNumber(communityMonthlyActivity.claimed)
+                                          .multipliedBy(10 ** 18)
+                                          .toString()
+                                    : '0')
                     .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
-                    .dividedBy(community.beneficiariesClaiming.count)
+                    .dividedBy(communityMonth?.allBeneficiaries.length || 0)
                     .dividedBy(daysSinceStart)
                     .toFixed(2, 1)
             );
 
             // calculate estimatedDuration
-            estimatedDuration = parseFloat(
-                new BigNumber(community.contract.maxClaim)
-                    .dividedBy(ubiRate)
-                    .dividedBy(30)
-                    .toFixed(2, 1)
-            );
+            estimatedDuration = communityContract?.maxClaim
+                ? parseFloat(
+                    new BigNumber(communityContract?.maxClaim)
+                        .dividedBy(ubiRate)
+                        .dividedBy(30)
+                        .toFixed(2, 1)
+                )
+                : 0;
             dailyMetricsPromises.push(
                 database.models.ubiCommunityDailyMetrics.create({
                     communityId: community.id,
@@ -291,8 +197,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const batch = 20;
     // for each community
     for (let i = 0; ; i = i + batch) {
-        await calculateMetrics(communities.slice(i, i + batch));
-        if (i + batch > communities.length) {
+        await calculateMetrics(communitiesState.slice(i, i + batch));
+        if (i + batch > communitiesState.length) {
             break;
         }
     }

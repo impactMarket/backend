@@ -278,6 +278,7 @@ export const getCommunityStateByAddresses = async (
 ): Promise<
     {
         beneficiaries: number;
+        maxClaim: string;
         id: string;
     }[]
 > => {
@@ -293,6 +294,7 @@ export const getCommunityStateByAddresses = async (
                 ) {
                     id
                     beneficiaries
+                    maxClaim
                 }
             }
         `;
@@ -322,6 +324,7 @@ export const getCommunityDailyState = async (
         transactions: number;
         reach: number;
         fundingRate: string;
+        community: string;
     }[]
 > => {
     try {
@@ -366,6 +369,7 @@ export const getCommunityDailyState = async (
                 reach: daily.reach,
                 volume: daily.volume,
                 fundingRate: daily.fundingRate,
+                community: daily.community.id,
             }));
         }
 
