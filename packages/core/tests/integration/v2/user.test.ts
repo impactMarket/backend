@@ -665,7 +665,7 @@ describe('user service v2', () => {
             returnUserRoleSubgraph.returns({
                 ambassador: {
                     communities: [
-                        communities[0].contractAddress?.toLocaleLowerCase(),
+                        communities[0].contractAddress?.toLowerCase(),
                     ],
                 },
             });

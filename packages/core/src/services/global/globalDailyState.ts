@@ -40,9 +40,7 @@ export default class GlobalDailyStateService {
                 status: 'valid',
             },
         });
-        const totalUbi = (await getUbiDailyEntity(
-            `id: 0`
-        ))[0];
+        const totalUbi = (await getUbiDailyEntity(`id: 0`))[0];
         return {
             claimed: totalUbi.claimed,
             countries,
@@ -117,15 +115,24 @@ export default class GlobalDailyStateService {
         };
     }
 
-    public async getLast30Days(): Promise<(GlobalDailyStateCreationAttributes & { monthReach: number })[]> {
+    public async getLast30Days(): Promise<
+        (GlobalDailyStateCreationAttributes & { monthReach: number })[]
+    > {
         try {
             const todayMidnightTime = new Date();
             todayMidnightTime.setHours(0, 0, 0, 0);
             // // 30 days ago, from todayMidnightTime
-            const aMonthAgo = new Date(todayMidnightTime.getTime() - 2592000000); // 30 * 24 * 60 * 60 * 1000
+            const aMonthAgo = new Date(
+                todayMidnightTime.getTime() - 2592000000
+            ); // 30 * 24 * 60 * 60 * 1000
             // it was null just once at the system's begin.
             const globalDailyState = await this.globalDailyState.findAll({
-                attributes: ['ubiRate', 'avgComulativeUbi', 'avgUbiDuration', 'date'],
+                attributes: [
+                    'ubiRate',
+                    'avgComulativeUbi',
+                    'avgUbiDuration',
+                    'date',
+                ],
                 where: {
                     date: {
                         [Op.lt]: todayMidnightTime,
@@ -135,14 +142,14 @@ export default class GlobalDailyStateService {
                 order: [['date', 'DESC']],
                 raw: true,
             });
-            const todayId = (((todayMidnightTime.getTime() / 1000) | 0) / 86400) | 0;
-            const aMonthAgoId = (((aMonthAgo.getTime() / 1000) | 0) / 86400) | 0;
+            const todayId =
+                (((todayMidnightTime.getTime() / 1000) | 0) / 86400) | 0;
+            const aMonthAgoId =
+                (((aMonthAgo.getTime() / 1000) | 0) / 86400) | 0;
             const ubiDaily = await getUbiDailyEntity(
                 `id_gte: ${aMonthAgoId}, id_lt: ${todayId}`
             );
-            const totalUbi = (await getUbiDailyEntity(
-                `id: 0`
-            ))[0];
+            const totalUbi = (await getUbiDailyEntity(`id: 0`))[0];
 
             const result = ubiDaily.reduce(
                 (acc, el) => {
@@ -161,9 +168,12 @@ export default class GlobalDailyStateService {
                     .toString()
             );
 
-            return ubiDaily.map(ubi => {
-                const globalDaily = globalDailyState.find(el => {
-                    return Number(ubi.id) === new Date(el.date).getTime() / 1000 / 86400
+            return ubiDaily.map((ubi) => {
+                const globalDaily = globalDailyState.find((el) => {
+                    return (
+                        Number(ubi.id) ===
+                        new Date(el.date).getTime() / 1000 / 86400
+                    );
                 });
                 const date = new Date(Number(ubi.id) * 86400 * 1000);
                 return {
@@ -205,8 +215,8 @@ export default class GlobalDailyStateService {
                     totalTransactions: totalUbi.transactions.toString() as any,
                     totalReach: totalUbi.reach.toString() as any,
                     totalReachOut: '0' as any,
-                }
-            })
+                };
+            });
         } catch (error) {
             console.log(error);
             throw error;

@@ -332,7 +332,7 @@ export default class UserService {
             if (
                 !community?.contractAddress ||
                 communities.indexOf(
-                    community?.contractAddress?.toLocaleLowerCase()
+                    community?.contractAddress?.toLowerCase()
                 ) === -1
             ) {
                 throw new BaseError(

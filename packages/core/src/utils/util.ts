@@ -281,7 +281,7 @@ export function createThumbnailUrl(
 export const getSearchInput = (searchInput: string) => {
     if (isAddress(searchInput)) {
         return {
-            address: getAddress(searchInput.toLocaleLowerCase()),
+            address: getAddress(searchInput.toLowerCase()),
         };
     } else if (
         searchInput.toLowerCase().indexOf('drop') === -1 &&

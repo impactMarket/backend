@@ -13,9 +13,7 @@ export const getCommunityManagers = async (
     offset?: number
 ): Promise<ManagerSubgraph[]> => {
     try {
-        const idsFormated = addresses?.map(
-            (el) => `"${el.toLocaleLowerCase()}"`
-        );
+        const idsFormated = addresses?.map((el) => `"${el.toLowerCase()}"`);
         const query = gql`
             {
                 managerEntities(

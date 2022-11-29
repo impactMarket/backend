@@ -552,7 +552,7 @@ export class CommunityListService {
             result = await communityEntities(
                 `orderBy: ${orderBy},
                         orderDirection: ${
-                            orderType ? orderType.toLocaleLowerCase() : 'desc'
+                            orderType ? orderType.toLowerCase() : 'desc'
                         },
                         first: ${
                             query.limit
@@ -565,7 +565,7 @@ export class CommunityListService {
                                 : config.defaultOffset
                         },
                         where: { id_in: [${contractAddress.map(
-                            (el) => `"${el.toLocaleLowerCase()}"`
+                            (el) => `"${el.toLowerCase()}"`
                         )}]}`,
                 `id, ${orderBy}`
             );
@@ -573,7 +573,7 @@ export class CommunityListService {
             result = await communityEntities(
                 `orderBy: ${orderBy},
                     orderDirection: ${
-                        orderType ? orderType.toLocaleLowerCase() : 'desc'
+                        orderType ? orderType.toLowerCase() : 'desc'
                     },
                     first: ${
                         query.limit

@@ -52,7 +52,7 @@ export const getClaimed = async (
     }[]
 > => {
     try {
-        const idsFormated = ids.map((el) => `"${el.toLocaleLowerCase()}"`);
+        const idsFormated = ids.map((el) => `"${el.toLowerCase()}"`);
 
         const query = gql`
             {
@@ -224,7 +224,7 @@ export const getCommunityAmbassador = async (community: string) => {
             {
                 ambassadorEntities(
                     where:{
-                        communities_contains: ["${community.toLocaleLowerCase()}"]
+                        communities_contains: ["${community.toLowerCase()}"]
                     }
                 ) {
                     id
@@ -252,7 +252,7 @@ export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
             {
                 ambassadorEntities(
                     where:{
-                        id: "${ambassadorAddress.toLocaleLowerCase()}"
+                        id: "${ambassadorAddress.toLowerCase()}"
                         status: 0
                     }
                 ) {
@@ -282,7 +282,7 @@ export const getCommunityStateByAddresses = async (
         id: string;
     }[]
 > => {
-    const idsFormated = addresses.map((el) => `"${el.toLocaleLowerCase()}"`);
+    const idsFormated = addresses.map((el) => `"${el.toLowerCase()}"`);
 
     try {
         const query = gql`
@@ -324,7 +324,6 @@ export const getCommunityDailyState = async (
         transactions: number;
         reach: number;
         fundingRate: string;
-        community: string;
     }[]
 > => {
     try {
@@ -369,7 +368,6 @@ export const getCommunityDailyState = async (
                 reach: daily.reach,
                 volume: daily.volume,
                 fundingRate: daily.fundingRate,
-                community: daily.community.id,
             }));
         }
 
