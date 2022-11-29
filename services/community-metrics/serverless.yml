@@ -1,0 +1,34 @@
+service: community-metrics
+
+frameworkVersion: '3'
+useDotenv: true
+
+custom:
+  bundle:
+    packagerOptions:
+      scripts:
+        - rm -rf node_modules/sharp && npm install --arch=x64 --platform=linux sharp
+    packager: yarn
+    ignorePackages:
+      - pg-native
+    forceInclude:
+      - pg
+      - pg-hstore
+  webpack:
+    includeModules: true
+    packager: yarn
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ${env:AWS_REGION}
+
+functions:
+  calcuateCommunitiesMetrics:
+    handler: handler.calculate
+    events:
+      # Invoke Lambda function every day at midnight
+      - schedule: cron(0 0 * * ? *)
+
+plugins:
+  - serverless-webpack

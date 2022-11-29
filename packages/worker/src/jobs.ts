@@ -5,12 +5,9 @@ import schedule from 'node-schedule';
 
 import { ChainSubscribers } from './jobs/chainSubscribers';
 import {
-    calcuateCommunitiesMetrics,
     internalNotifyLowCommunityFunds,
     internalNotifyNewCommunities,
 } from './jobs/cron/community';
-import { calcuateGlobalMetrics } from './jobs/cron/global';
-import { cleanupNetworkRewards } from './jobs/cron/network';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
 import { verifyDeletedAccounts } from './jobs/cron/user';
 
@@ -338,57 +335,6 @@ function cron() {
             );
         } catch (_) {}
     }
-
-    // once a day
-
-    // everyday at midnight
-    // eslint-disable-next-line no-new
-    new CronJob(
-        '0 0 * * *',
-        () => {
-            utils.Logger.info('Calculating community metrics...');
-            cleanupNetworkRewards()
-                .then(() => {
-                    services.app.CronJobExecutedService.add(
-                        'cleanupNetworkRewards'
-                    );
-                    calcuateCommunitiesMetrics()
-                        .then(() => {
-                            services.app.CronJobExecutedService.add(
-                                'calcuateCommunitiesMetrics'
-                            );
-                            utils.Logger.info('Calculating global metrics...');
-                            calcuateGlobalMetrics()
-                                .then(() => {
-                                    services.app.CronJobExecutedService.add(
-                                        'calcuateGlobalMetrics'
-                                    );
-                                    utils.Logger.info(
-                                        'calcuateGlobalMetrics successfully executed!'
-                                    );
-                                })
-                                .catch((e) => {
-                                    utils.Logger.error(
-                                        'calcuateGlobalMetrics FAILED! ' + e
-                                    );
-                                });
-                            utils.Logger.info(
-                                'calcuateCommunitiesMetrics successfully executed!'
-                            );
-                        })
-                        .catch((e) => {
-                            utils.Logger.error(
-                                'calcuateCommunitiesMetrics FAILED! ' + e
-                            );
-                        });
-                })
-                .catch((e) => {
-                    utils.Logger.error('cleanupNetworkRewards FAILED! ' + e);
-                });
-        },
-        null,
-        true
-    );
 
     try {
         // eslint-disable-next-line no-new

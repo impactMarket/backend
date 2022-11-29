@@ -12,8 +12,8 @@ import {
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 8000000,  // 8MB
-    }
+        fileSize: 8000000, // 8MB
+    },
 });
 
 export default (route: Router): void => {

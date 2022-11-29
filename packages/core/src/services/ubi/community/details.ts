@@ -312,7 +312,7 @@ export class CommunityDetailsService {
         if (orderBy) {
             [orderKey, orderDirection] = orderBy.split(':');
             orderDirection =
-                orderDirection?.toLocaleLowerCase() === 'desc'
+                orderDirection?.toLowerCase() === 'desc'
                     ? orderDirection
                     : 'asc';
         }
@@ -511,7 +511,7 @@ export class CommunityDetailsService {
         if (roles.ambassador) {
             if (
                 roles.ambassador.communities.indexOf(
-                    community.contractAddress.toLocaleLowerCase()
+                    community.contractAddress.toLowerCase()
                 ) === -1
             ) {
                 throw new BaseError(
@@ -545,7 +545,7 @@ export class CommunityDetailsService {
         if (orderBy) {
             [orderKey, orderDirection] = orderBy.split(':');
             orderDirection =
-                orderDirection?.toLocaleLowerCase() === 'desc'
+                orderDirection?.toLowerCase() === 'desc'
                     ? orderDirection
                     : 'asc';
         }
@@ -1025,7 +1025,7 @@ export class CommunityDetailsService {
         // validate gender
         if (
             !user.gender ||
-            ['m', 'f', 'u'].indexOf(user.gender.toLocaleLowerCase()) === -1
+            ['m', 'f', 'u'].indexOf(user.gender.toLowerCase()) === -1
         ) {
             return {
                 valid: false,

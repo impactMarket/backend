@@ -62,9 +62,7 @@ export const getBeneficiariesByAddress = async (
     orderDirection?: string
 ): Promise<BeneficiarySubgraph[]> => {
     try {
-        const idsFormated = addresses.map(
-            (el) => `"${el.toLocaleLowerCase()}"`
-        );
+        const idsFormated = addresses.map((el) => `"${el.toLowerCase()}"`);
 
         const query = gql`
             {
@@ -78,7 +76,7 @@ export const getBeneficiariesByAddress = async (
                         ${inactive ? inactive : ''}
                         ${
                             community
-                                ? `community: "${community.toLocaleLowerCase()}"`
+                                ? `community: "${community.toLowerCase()}"`
                                 : ''
                         }
                     }
@@ -221,9 +219,7 @@ export const countBeneficiariesByCommunities = async (
     state: string
 ): Promise<number> => {
     try {
-        const idsFormated = community.map(
-            (el) => `"${el.toLocaleLowerCase()}"`
-        );
+        const idsFormated = community.map((el) => `"${el.toLowerCase()}"`);
 
         const query = gql`
                 {

@@ -271,7 +271,7 @@ export class CommunityCreateService {
         if (
             roles.ambassador &&
             roles.ambassador.communities.indexOf(
-                community.contractAddress.toLocaleLowerCase()
+                community.contractAddress.toLowerCase()
             ) === -1
         ) {
             throw new BaseError(

@@ -154,7 +154,7 @@ export function verifySignature(
         signature as string
     );
 
-    if (address.toLocaleLowerCase() === req.user?.address.toLocaleLowerCase()) {
+    if (address.toLowerCase() === req.user?.address.toLowerCase()) {
         // validate signature timestamp
         const timestamp = (message as string).match(/(\d+$)/);
         if (!timestamp || !timestamp[0]) {

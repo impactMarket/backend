@@ -1,3 +1,4 @@
+import { getAddress } from '@ethersproject/address';
 import { gql } from 'apollo-boost';
 import { ethers } from 'ethers';
 
@@ -51,7 +52,7 @@ export const getClaimed = async (
     }[]
 > => {
     try {
-        const idsFormated = ids.map((el) => `"${el.toLocaleLowerCase()}"`);
+        const idsFormated = ids.map((el) => `"${el.toLowerCase()}"`);
 
         const query = gql`
             {
@@ -223,7 +224,7 @@ export const getCommunityAmbassador = async (community: string) => {
             {
                 ambassadorEntities(
                     where:{
-                        communities_contains: ["${community.toLocaleLowerCase()}"]
+                        communities_contains: ["${community.toLowerCase()}"]
                     }
                 ) {
                     id
@@ -251,7 +252,7 @@ export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
             {
                 ambassadorEntities(
                     where:{
-                        id: "${ambassadorAddress.toLocaleLowerCase()}"
+                        id: "${ambassadorAddress.toLowerCase()}"
                         status: 0
                     }
                 ) {
@@ -277,10 +278,11 @@ export const getCommunityStateByAddresses = async (
 ): Promise<
     {
         beneficiaries: number;
+        maxClaim: string;
         id: string;
     }[]
 > => {
-    const idsFormated = addresses.map((el) => `"${el.toLocaleLowerCase()}"`);
+    const idsFormated = addresses.map((el) => `"${el.toLowerCase()}"`);
 
     try {
         const query = gql`
@@ -292,6 +294,7 @@ export const getCommunityStateByAddresses = async (
                 ) {
                     id
                     beneficiaries
+                    maxClaim
                 }
             }
         `;
@@ -302,6 +305,73 @@ export const getCommunityStateByAddresses = async (
         });
 
         return queryResult.data.communityEntities;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getCommunityDailyState = async (
+    where: string
+): Promise<
+    {
+        claims: number;
+        claimed: number;
+        beneficiaries: number;
+        contributed: number;
+        contributors: number;
+        contractAddress: string;
+        volume: string;
+        transactions: number;
+        reach: number;
+        fundingRate: string;
+    }[]
+> => {
+    try {
+        const query = gql`
+            {
+                communityDailyEntities(
+                    first: 1000
+                    where: {
+                        ${where}
+                    }
+                ) {
+                    claims
+                    claimed
+                    beneficiaries
+                    community {
+                        id
+                    }
+                    contributed
+    		        contributors
+                    transactions
+                    reach
+                    volume
+                    fundingRate
+                }
+            }
+        `;
+
+        const queryResult = await clientDAO.query({
+            query,
+            fetchPolicy: 'no-cache',
+        });
+
+        if (queryResult.data?.communityDailyEntities?.length) {
+            return queryResult.data.communityDailyEntities.map((daily) => ({
+                claims: daily.claims,
+                claimed: Number(daily.claimed),
+                beneficiaries: daily.beneficiaries,
+                contributed: Number(daily.contributed),
+                contributors: daily.contributors,
+                contractAddress: getAddress(daily.community.id),
+                transactions: daily.transactions,
+                reach: daily.reach,
+                volume: daily.volume,
+                fundingRate: daily.fundingRate,
+            }));
+        }
+
+        return [];
     } catch (error) {
         throw new Error(error);
     }

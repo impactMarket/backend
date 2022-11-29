@@ -12,15 +12,14 @@ const globalDemographicsService =
 const globalStatus = (req: Request, res: Response) => {
     const waitForResult = new Promise(async (resolve, reject) => {
         try {
+            const monthly = await globalDailyStateService.getLast30Days();
             resolve({
-                monthly: await globalDailyStateService.getLast30Days(),
+                monthly,
                 lastQuarterAvgSSI:
                     await globalDailyStateService.last90DaysAvgSSI(),
                 today: await globalDailyStateService.notYetCountedToday(),
-                totalBackers:
-                    await services.ubi.InflowService.countEvergreenBackers(),
-                reachedLastMonth:
-                    await reachedAddressService.getAllReachedLast30Days(),
+                totalBackers: monthly[0].totalBackers,
+                reachedLastMonth: monthly[0].monthReach,
                 growth: await globalGrowth.getLast(),
             });
         } catch (e) {

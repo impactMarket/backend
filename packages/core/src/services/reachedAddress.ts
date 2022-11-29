@@ -2,6 +2,7 @@ import { Op } from 'sequelize';
 
 import { models, Sequelize } from '../database';
 import { ReachedAddressCreationAttributes } from '../database/models/reachedAddress';
+import { queries } from '../subgraph';
 
 export default class ReachedAddressService {
     public reachedAddress = models.reachedAddress;
@@ -17,74 +18,19 @@ export default class ReachedAddressService {
         // a month ago, from todayMidnightTime
         const aMonthAgo = new Date();
         aMonthAgo.setDate(aMonthAgo.getDate() - 30);
-        const rReachLast30Days = await this.reachedAddress.count({
-            // attributes: [[fn('count', col('address')), 'total']],
-            where: {
-                lastInteraction: {
-                    [Op.lt]: today,
-                    [Op.gte]: aMonthAgo,
-                },
-            },
-        });
-        const rReachOutLast30Days = await this.reachedAddress.count({
-            // attributes: [[fn('count', col('address')), 'total']],
-            where: {
-                lastInteraction: {
-                    [Op.lt]: today,
-                    [Op.gte]: aMonthAgo,
-                },
-                address: {
-                    [Op.notIn]: Sequelize.literal(
-                        '(select distinct address from beneficiary)'
-                    ),
-                },
-            },
-        });
+        const startDayId = (((today.getTime() / 1000) | 0) / 86400) | 0;
+        const endDayId = (((aMonthAgo.getTime() / 1000) | 0) / 86400) | 0;
+        const ubiDaily = await queries.ubi.getUbiDailyEntity(
+            `id_gte: ${endDayId}, id_lt: ${startDayId}`
+        );
+        const result = ubiDaily.reduce((acc, el) => {
+            acc += el.reach;
+            return acc;
+        }, 0);
+
         return {
-            reach: rReachLast30Days,
-            reachOut: rReachOutLast30Days,
+            reach: result,
+            reachOut: 0,
         };
-    }
-
-    public async getAllReachedEver(): Promise<{
-        reach: number;
-        reachOut: number;
-    }> {
-        const rReach = await this.reachedAddress.count({
-            where: {},
-        });
-        const rReachOut = await this.reachedAddress.count({
-            // attributes: [[fn('count', col('address')), 'total']],
-            where: {
-                address: {
-                    [Op.notIn]: Sequelize.literal(
-                        '(select distinct address from beneficiary)'
-                    ),
-                },
-            },
-        });
-        return {
-            reach: rReach,
-            reachOut: rReachOut,
-        };
-    }
-
-    /**
-     * Insert all new reached addresses and update last interaction to existing ones.
-     * @param reached list of addresses reached on privious day to when global status was calculated
-     */
-    public async updateReachedList(reached: string[]): Promise<void> {
-        const bulkReachedAdd: ReachedAddressCreationAttributes[] = [];
-
-        for (let r = 0; r < reached.length; r++) {
-            bulkReachedAdd.push({
-                address: reached[r],
-                lastInteraction: new Date(),
-            });
-        }
-
-        await this.reachedAddress.bulkCreate(bulkReachedAdd, {
-            updateOnDuplicate: ['lastInteraction'],
-        });
     }
 }

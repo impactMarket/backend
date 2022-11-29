@@ -3,18 +3,42 @@ import { gql } from 'apollo-boost';
 import { clientDAO } from '../config';
 
 export const getUbiDailyEntity = async (
-    date: Date
-): Promise<{ beneficiaries: number }> => {
+    where: string
+): Promise<
+    {
+        id: string;
+        beneficiaries: number;
+        claimed: string;
+        claims: number;
+        volume: string;
+        transactions: number;
+        contributed: string;
+        contributors: number;
+        reach: number;
+        fundingRate: string;
+    }[]
+> => {
     try {
-        const dayId = (((date.getTime() / 1000) | 0) / 86400) | 0;
         const query = gql`
             {
                 ubidailyEntities(
+                    first: 1000
                     where: {
-                        id: ${dayId}
+                        ${where}
                     }
+                    orderBy: id
+                    orderDirection: desc
                 ) {
+                    id
                     beneficiaries
+                    claimed
+                    claims
+                    volume
+                    transactions
+                    contributed
+                    contributors
+                    reach
+                    fundingRate
                 }
             }
         `;
@@ -24,7 +48,9 @@ export const getUbiDailyEntity = async (
             fetchPolicy: 'no-cache',
         });
 
-        return queryResult.data?.ubidailyEntities[0];
+        return queryResult.data?.ubidailyEntities?.length
+            ? queryResult.data.ubidailyEntities
+            : [];
     } catch (error) {
         throw new Error(error);
     }

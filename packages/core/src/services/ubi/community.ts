@@ -563,8 +563,7 @@ export default class CommunityService {
                 const claimed = await getClaimed(contractAddress);
                 claimsState = claimed.map((claim) => {
                     const community = beneficiariesState!.find(
-                        (el) =>
-                            el.contractAddress?.toLocaleLowerCase() === claim.id
+                        (el) => el.contractAddress?.toLowerCase() === claim.id
                     )!;
                     return {
                         communityId: Number(community?.id),
@@ -2434,12 +2433,12 @@ export default class CommunityService {
             subgraphResult = await communityEntities(
                 `orderBy: beneficiaries,
                         orderDirection: ${
-                            orderType ? orderType.toLocaleLowerCase() : 'desc'
+                            orderType ? orderType.toLowerCase() : 'desc'
                         },
                         first: ${limit > 1000 ? 1000 : limit},
                         skip: ${offset},
                         where: { id_in: [${contractAddress.map(
-                            (el) => `"${el.toLocaleLowerCase()}"`
+                            (el) => `"${el.toLowerCase()}"`
                         )}]}`,
                 `id, beneficiaries`
             );
@@ -2447,7 +2446,7 @@ export default class CommunityService {
             subgraphResult = await communityEntities(
                 `orderBy: beneficiaries,
                     orderDirection: ${
-                        orderType ? orderType.toLocaleLowerCase() : 'desc'
+                        orderType ? orderType.toLowerCase() : 'desc'
                     },
                     first: ${limit > 1000 ? 1000 : limit},
                     skip: ${offset},
