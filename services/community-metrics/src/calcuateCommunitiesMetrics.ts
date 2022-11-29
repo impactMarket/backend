@@ -119,14 +119,18 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     transactions: communityYesterday?.transactions || 0,
                     reach: communityYesterday?.reach || 0,
                     reachOut: 0,
-                    volume: communityYesterday?.volume || '0', // TODO: convert to BigNumber
+                    volume: communityYesterday?.volume
+                        ? new BigNumber(communityYesterday.volume)
+                            .multipliedBy(10 ** 18)
+                            .toString()
+                        : '0',
                     backers: communityYesterday?.contributors || 0,
                     monthlyBackers: 0,
                     raised: communityYesterday?.contributed
                         ? new BigNumber(communityYesterday.contributed)
                               .multipliedBy(10 ** 18)
                               .toString()
-                        : '0', // TODO: convert to BigNumber
+                        : '0',
                     claimed: communityYesterday?.claimed
                         ? new BigNumber(communityYesterday.claimed)
                               .multipliedBy(10 ** 18)
