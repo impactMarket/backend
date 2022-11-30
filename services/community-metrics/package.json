@@ -20,10 +20,11 @@
         "eslint": "7.3.1",
         "eslint-config-prettier": "6.11.0",
         "eslint-config-universe": "4.0.0",
+        "serverless": "3.25.1",
         "serverless-plugin-tracing": "2.0.0",
-        "serverless-webpack": "5.2.0",
+        "serverless-webpack": "5.11.0",
         "ts-loader": "9.4.1",
-        "webpack": "5.0.0",
+        "webpack": "5.75.0",
         "webpack-node-externals": "3.0.0"
     }
 }
