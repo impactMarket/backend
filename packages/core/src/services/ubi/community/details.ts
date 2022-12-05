@@ -62,8 +62,8 @@ export class CommunityDetailsService {
         return {
             ...state,
             communityId,
-            ubiRate: community.metrics ? community.metrics[0].ubiRate : 0,
-            estimatedDuration: community.metrics ? community.metrics[0].estimatedDuration : 0,
+            ubiRate: community.metrics?.length ? community.metrics[0].ubiRate : 0,
+            estimatedDuration: community.metrics?.length ? community.metrics[0].estimatedDuration : 0,
         };
     }
 
