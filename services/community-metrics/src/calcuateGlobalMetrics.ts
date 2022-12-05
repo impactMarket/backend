@@ -112,33 +112,37 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         );
 
     // register new global daily state
-    await globalDailyStateService.add({
-        date: yesterdayDateOnly,
-        avgMedianSSI: Math.round(avgMedianSSI * 100) / 100,
-        claimed: communitiesYesterday.totalClaimed,
-        claims: parseInt(communitiesYesterday.totalClaims, 10),
-        beneficiaries: parseInt(communitiesYesterday.totalBeneficiaries, 10),
-        raised: communitiesYesterday.totalRaised,
-        backers: backersAndFunding.backers,
-        volume,
-        transactions,
-        reach,
-        reachOut,
-        totalRaised,
-        totalDistributed,
-        totalBackers,
-        totalBeneficiaries,
-        givingRate,
-        ubiRate: Math.round(ubiRate * 100) / 100,
-        fundingRate: parseFloat(fundingRate),
-        spendingRate,
-        avgComulativeUbi,
-        avgUbiDuration: Math.round(avgUbiDuration * 100) / 100,
-        totalVolume,
-        totalTransactions: BigInt(totalTransactions),
-        totalReach: BigInt(allReachEver),
-        totalReachOut: BigInt(0),
-    });
+    try {
+        await globalDailyStateService.add({
+            date: yesterdayDateOnly,
+            avgMedianSSI: Math.round(avgMedianSSI * 100) / 100,
+            claimed: communitiesYesterday.totalClaimed,
+            claims: parseInt(communitiesYesterday.totalClaims, 10),
+            beneficiaries: parseInt(communitiesYesterday.totalBeneficiaries, 10),
+            raised: communitiesYesterday.totalRaised,
+            backers: backersAndFunding.backers,
+            volume,
+            transactions,
+            reach,
+            reachOut,
+            totalRaised,
+            totalDistributed,
+            totalBackers,
+            totalBeneficiaries,
+            givingRate,
+            ubiRate: Math.round(ubiRate * 100) / 100,
+            fundingRate: parseFloat(fundingRate),
+            spendingRate,
+            avgComulativeUbi,
+            avgUbiDuration: Math.round(avgUbiDuration * 100) / 100,
+            totalVolume,
+            totalTransactions: BigInt(totalTransactions),
+            totalReach: BigInt(allReachEver),
+            totalReachOut: BigInt(0),
+        });
+    } catch (error) {
+        console.error('Calculate Global Metrics Failed: ', error)
+    }
 
     if ((await globalDailyStateService.count()) > 60) {
         // calculate global growth
@@ -435,43 +439,47 @@ async function calculateChartsData(
 async function calculateMetricsGrowth(
     globalDailyStateService: services.global.GlobalDailyStateService
 ) {
-    const globalGrowthService = new services.global.GlobalGrowthService();
+    try {
+        const globalGrowthService = new services.global.GlobalGrowthService();
 
-    const todayMidnightTime = new Date();
-    todayMidnightTime.setUTCHours(0, 0, 0, 0);
-    const yesterdayDateOnly = new Date();
-    yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
-    yesterdayDateOnly.setDate(todayMidnightTime.getDate() - 1);
-    const aMonthAgo = new Date();
-    aMonthAgo.setUTCHours(0, 0, 0, 0);
-    aMonthAgo.setDate(yesterdayDateOnly.getDate() - 30);
+        const todayMidnightTime = new Date();
+        todayMidnightTime.setUTCHours(0, 0, 0, 0);
+        const yesterdayDateOnly = new Date();
+        yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
+        yesterdayDateOnly.setDate(todayMidnightTime.getDate() - 1);
+        const aMonthAgo = new Date();
+        aMonthAgo.setUTCHours(0, 0, 0, 0);
+        aMonthAgo.setDate(yesterdayDateOnly.getDate() - 30);
 
-    const present = await globalDailyStateService.sumLast30Days(
-        yesterdayDateOnly
-    );
-    const past = await globalDailyStateService.sumLast30Days(aMonthAgo);
+        const present = await globalDailyStateService.sumLast30Days(
+            yesterdayDateOnly
+        );
+        const past = await globalDailyStateService.sumLast30Days(aMonthAgo);
 
-    const growthToAdd = {
-        date: yesterdayDateOnly,
-        claimed: utils.util.calculateGrowth(past.tClaimed, present.tClaimed),
-        claims: utils.util.calculateGrowth(past.tClaims, present.tClaims),
-        beneficiaries: utils.util.calculateGrowth(
-            past.tBeneficiaries,
-            present.tBeneficiaries
-        ),
-        raised: utils.util.calculateGrowth(past.tRaised, present.tRaised),
-        backers: utils.util.calculateGrowth(past.tBackers, present.tBackers),
-        fundingRate: utils.util.calculateGrowth(
-            past.fundingRate,
-            present.fundingRate
-        ),
-        volume: utils.util.calculateGrowth(past.tVolume, present.tVolume),
-        transactions: utils.util.calculateGrowth(
-            past.tTransactions,
-            present.tTransactions
-        ),
-        reach: utils.util.calculateGrowth(past.tReach, present.tReach),
-        reachOut: 0,
-    };
-    await globalGrowthService.add(growthToAdd);
+        const growthToAdd = {
+            date: yesterdayDateOnly,
+            claimed: utils.util.calculateGrowth(past.tClaimed, present.tClaimed),
+            claims: utils.util.calculateGrowth(past.tClaims, present.tClaims),
+            beneficiaries: utils.util.calculateGrowth(
+                past.tBeneficiaries,
+                present.tBeneficiaries
+            ),
+            raised: utils.util.calculateGrowth(past.tRaised, present.tRaised),
+            backers: utils.util.calculateGrowth(past.tBackers, present.tBackers),
+            fundingRate: utils.util.calculateGrowth(
+                past.fundingRate,
+                present.fundingRate
+            ),
+            volume: utils.util.calculateGrowth(past.tVolume, present.tVolume),
+            transactions: utils.util.calculateGrowth(
+                past.tTransactions,
+                present.tTransactions
+            ),
+            reach: utils.util.calculateGrowth(past.tReach, present.tReach),
+            reachOut: 0,
+        };
+        await globalGrowthService.add(growthToAdd);
+    } catch (error) {
+        console.error('Calculate Metrics Growth Failed: ', error)
+    }
 }
