@@ -19,7 +19,10 @@ const globalStatus = (req: Request, res: Response) => {
                     await globalDailyStateService.last90DaysAvgSSI(),
                 today: await globalDailyStateService.notYetCountedToday(),
                 totalBackers: monthly[0].totalBackers,
-                reachedLastMonth: monthly[0].monthReach,
+                reachedLastMonth: {
+                    reach: monthly[0].monthReach,
+                    reachOut: 0,
+                },
                 growth: await globalGrowth.getLast(),
             });
         } catch (e) {
