@@ -204,8 +204,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
         await Promise.all(dailyMetricsPromises);
     };
 
-    const pending: Promise<void>[] = [];
-    const batch = 20;
+    const batch = config.cronJobBatchSize;
     // for each community
     for (let i = 0; ; i = i + batch) {
         await calculateMetrics(communitiesState.slice(i, i + batch));

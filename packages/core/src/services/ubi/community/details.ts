@@ -39,12 +39,21 @@ export class CommunityDetailsService {
     private communityContentStorage = new CommunityContentStorage();
 
     public async getState(communityId: number) {
-        const community = await models.community.findOne({
+        const community = (await models.community.findOne({
             attributes: ['contractAddress'],
+            include: [
+                {
+                    attributes: ['ubiRate', 'estimatedDuration'],
+                    model: models.ubiCommunityDailyMetrics,
+                    as: 'metrics',
+                    order: [['date', 'desc']],
+                    limit: 1
+                }
+            ],
             where: {
                 id: communityId,
             },
-        });
+        })) as CommunityAttributes;
         if (!community || !community.contractAddress) {
             return null;
         }
@@ -53,6 +62,8 @@ export class CommunityDetailsService {
         return {
             ...state,
             communityId,
+            ubiRate: community.metrics ? community.metrics[0].ubiRate : 0,
+            estimatedDuration: community.metrics ? community.metrics[0].estimatedDuration : 0,
         };
     }
 

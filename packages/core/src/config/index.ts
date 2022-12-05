@@ -265,4 +265,5 @@ export default {
         website: validatedEnv.VERCEL_WEBHOOK_WEBSITE,
         wallet: validatedEnv.VERCEL_WEBHOOK_WALLET,
     },
+    cronJobBatchSize: validatedEnv.CRON_JOB_BATCH_SIZE,
 };

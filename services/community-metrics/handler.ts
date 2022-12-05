@@ -14,5 +14,3 @@ export const calculate = async (event, context) => {
         throw error;
     }
 };
-
-calculate({}, {});

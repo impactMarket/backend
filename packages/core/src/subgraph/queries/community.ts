@@ -108,6 +108,9 @@ export const getCommunityState = async (
                     baseInterval
                     estimatedFunds
                     state
+                    claimAmount
+                    originalClaimAmount
+                    maxClaim 
                 }
             }
         `;

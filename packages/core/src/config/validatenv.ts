@@ -106,6 +106,7 @@ function validateEnv() {
         VERCEL_WEBHOOK_PWA: str({ devDefault: onlyOnTestEnv('xyz') }),
         VERCEL_WEBHOOK_WEBSITE: str({ devDefault: onlyOnTestEnv('xyz') }),
         VERCEL_WEBHOOK_WALLET: str({ devDefault: onlyOnTestEnv('xyz') }),
+        CRON_JOB_BATCH_SIZE: num({ default: 20 }),
     });
 }
 
