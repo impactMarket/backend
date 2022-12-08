@@ -112,7 +112,8 @@ class CommunityController {
             this.detailsService
                 .findByContractAddress(
                     getAddress(idOrAddress),
-                    req.user?.address
+                    req.user?.address,
+                    req.query,
                 )
                 .then((community) =>
                     standardResponse(res, 200, !!community, community)
@@ -122,7 +123,7 @@ class CommunityController {
                 );
         } else {
             this.detailsService
-                .findById(parseInt(idOrAddress, 10), req.user?.address)
+                .findById(parseInt(idOrAddress, 10), req.user?.address, req.query)
                 .then((community) =>
                     standardResponse(res, 200, true, community)
                 )

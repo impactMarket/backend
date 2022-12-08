@@ -453,7 +453,7 @@ export class CommunityListService {
         } | null)[];
         if (returnState) {
             const promises = communitiesId.map((id) =>
-                this.communityDetailsService.getState(id!)
+                this.communityDetailsService.getBaseState(id!)
             );
             states = await Promise.all(promises);
         }

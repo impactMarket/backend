@@ -38,7 +38,25 @@ const writeFile = fs.promises.writeFile;
 export class CommunityDetailsService {
     private communityContentStorage = new CommunityContentStorage();
 
-    public async getState(communityId: number) {
+    public async getBaseState(communityId: number) {
+        const community = await models.community.findOne({
+            attributes: ['contractAddress'],
+            where: {
+                id: communityId,
+            },
+        });
+        if (!community || !community.contractAddress) {
+            return null;
+        }
+
+        const state = await getCommunityState(community.contractAddress);
+        return {
+            ...state,
+            communityId,
+        };
+    }
+
+    public async getUbiState(communityId: number) {
         const community = (await models.community.findOne({
             attributes: ['contractAddress'],
             include: [
@@ -58,13 +76,10 @@ export class CommunityDetailsService {
             return null;
         }
 
-        const state = await getCommunityState(community.contractAddress);
         return {
-            ...state,
-            communityId,
             ubiRate: community.metrics?.length ? community.metrics[0].ubiRate : 0,
             estimatedDuration: community.metrics?.length ? community.metrics[0].estimatedDuration : 0,
-        };
+        }
     }
 
     public async getContract(communityId: number) {
@@ -702,21 +717,28 @@ export class CommunityDetailsService {
 
     public async findById(
         id: number,
-        userAddress?: string
+        userAddress?: string,
+        query?: {
+            state?: string | string[]
+        },
     ): Promise<CommunityAttributes> {
-        return this._findCommunityBy({ id }, userAddress);
+        return this._findCommunityBy({ id }, userAddress, query?.state);
     }
 
     public async findByContractAddress(
         contractAddress: string,
-        userAddress?: string
+        userAddress?: string,
+        query?: {
+            state?: string | string[]
+        },
     ): Promise<CommunityAttributes> {
-        return this._findCommunityBy({ contractAddress }, userAddress);
+        return this._findCommunityBy({ contractAddress }, userAddress, query?.state);
     }
 
     private async _findCommunityBy(
         where: WhereOptions<CommunityAttributes>,
-        userAddress?: string
+        userAddress?: string,
+        returnState?: string | string[],
     ): Promise<CommunityAttributes> {
         const community = await models.community.findOne({
             where,
@@ -747,7 +769,16 @@ export class CommunityDetailsService {
             }
         }
 
-        const state = (await this.getState(community.id)) as any;
+        const state = {
+            ...(!!returnState && (returnState === 'base' || returnState.indexOf('base')  !== -1)
+                ? await this.getBaseState(community.id)
+                : null
+            ),
+            ...(!!returnState && (returnState === 'ubi' || returnState.indexOf('ubi')  !== -1)
+                ? await this.getUbiState(community.id)
+                : null
+            )
+        } as any;
 
         return {
             ...community.toJSON(),
