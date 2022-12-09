@@ -6,6 +6,7 @@ import generic from './generic';
 import learnAndEarn from './learnAndEarn';
 import story from './story';
 import user from './user';
+import global from './global';
 
 export default (): Router => {
     const app = Router();
@@ -15,6 +16,7 @@ export default (): Router => {
     story(app);
     claimLocation(app);
     learnAndEarn(app);
+    global(app);
 
     return app;
 };
