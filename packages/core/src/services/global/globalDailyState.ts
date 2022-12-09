@@ -132,6 +132,7 @@ export default class GlobalDailyStateService {
                     'avgComulativeUbi',
                     'avgUbiDuration',
                     'date',
+                    'backers',
                 ],
                 where: {
                     date: {
@@ -188,7 +189,7 @@ export default class GlobalDailyStateService {
                     raised: new BigNumber(ubi.contributed)
                         .multipliedBy(10 ** config.cUSDDecimal)
                         .toString(),
-                    backers: ubi.contributors,
+                    backers: globalDaily?.backers || 0,
                     volume: new BigNumber(ubi.volume)
                         .multipliedBy(10 ** config.cUSDDecimal)
                         .toString(),
