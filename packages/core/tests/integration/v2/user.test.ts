@@ -649,7 +649,10 @@ describe('user service v2', () => {
                 userId: user.id,
             });
             const notifications = await userService.getUnreadNotifications(
-                user.id
+                user.id,
+                {
+                    isWebApp: 'true',
+                }
             );
 
             expect(notifications).to.be.eq(1);
