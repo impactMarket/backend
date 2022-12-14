@@ -186,45 +186,4 @@ describe('communityAdmin', () => {
             }
         );
     });
-
-    it('migrate community', async () => {
-        const newCommunityAddress = await CommunityAdminContract.connect(
-            provider.getSigner(0)
-        ).addCommunity(
-            [accounts[1]],
-            '2000000000000000000',
-            '1500000000000000000000',
-            '10000000000000000',
-            86400,
-            300,
-            '10000000000000000',
-            '1000000000000000000'
-        );
-        const txResult = await newCommunityAddress.wait();
-        await tests.config.utils.waitForStubCall(communityUpdated, 1);
-        assert.callCount(communityUpdated, 1);
-        communityUpdated.reset();
-
-        const previousCommunityAddress = txResult.events[0].args[0];
-        const migratedCommunity = await CommunityAdminContract.connect(
-            provider.getSigner(0)
-        ).migrateCommunity([accounts[1]], previousCommunityAddress);
-        const migratedCommunityTxResult = await migratedCommunity.wait();
-        const contractAddress = migratedCommunityTxResult.events[0].args[1];
-
-        await tests.config.utils.waitForStubCall(communityUpdated, 1);
-        assert.callCount(communityUpdated, 1);
-        assert.calledWith(
-            communityUpdated.getCall(0),
-            {
-                contractAddress,
-            },
-            {
-                where: {
-                    contractAddress: previousCommunityAddress,
-                },
-                returning: true,
-            }
-        );
-    });
 });
