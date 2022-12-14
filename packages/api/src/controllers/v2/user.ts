@@ -345,7 +345,7 @@ class UserController {
         }
 
         this.userService
-            .getUnreadNotifications(req.user.userId)
+            .getUnreadNotifications(req.user.userId, req.query)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) =>
                 standardResponse(res, 400, false, '', { error: e.message })

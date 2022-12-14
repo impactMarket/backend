@@ -45,6 +45,8 @@ export interface AppNotification {
     type: number;
     params: object;
     read: boolean;
+    isWallet: boolean;
+    isWebApp: boolean;
 
     //timestamp
     createdAt: Date;
@@ -55,4 +57,6 @@ export interface AppNotificationCreation {
     type: number;
     params?: object;
     read?: boolean;
+    isWallet?: boolean;
+    isWebApp?: boolean;
 }

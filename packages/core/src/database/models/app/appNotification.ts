@@ -14,6 +14,8 @@ export class AppNotificationModel extends Model<
     public type!: number;
     public params!: object;
     public read!: boolean;
+    public isWallet!: boolean;
+    public isWebApp!: boolean;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -48,6 +50,14 @@ export function initializeAppNotification(sequelize: Sequelize): void {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,
+            },
+            isWallet: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+            },
+            isWebApp: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
             },
             createdAt: {
                 type: DataTypes.DATE,
