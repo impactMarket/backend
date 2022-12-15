@@ -54,10 +54,12 @@ export function initializeAppNotification(sequelize: Sequelize): void {
             isWallet: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
+                defaultValue: false,
             },
             isWebApp: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
+                defaultValue: true,
             },
             createdAt: {
                 type: DataTypes.DATE,

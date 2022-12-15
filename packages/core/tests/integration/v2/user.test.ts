@@ -605,7 +605,9 @@ describe('user service v2', () => {
             });
 
             const notifications = await userService.getNotifications(
-                {},
+                {
+                    isWebApp: 'true',
+                },
                 user.id
             );
             expect(notifications).to.be.not.null;
@@ -622,7 +624,9 @@ describe('user service v2', () => {
                 userId: user.id,
             });
             const notifications = await userService.getNotifications(
-                {},
+                {
+                    isWebApp: 'true',
+                },
                 user.id
             );
 
