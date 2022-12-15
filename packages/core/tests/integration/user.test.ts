@@ -698,25 +698,6 @@ describe('user service', () => {
                 });
         });
 
-        it('beneficiary should be able to delete account', async () => {
-            await UserService.delete(users[1].address);
-
-            const findUser = await models.appUser.findAll();
-
-            findUser.forEach((user: AppUser) => {
-                if (
-                    user.address === users[1].address ||
-                    user.address === users[0].address
-                ) {
-                    // eslint-disable-next-line no-unused-expressions
-                    expect(user.deletedAt).to.be.not.null;
-                } else {
-                    // eslint-disable-next-line no-unused-expressions
-                    expect(user.deletedAt).to.be.null;
-                }
-            });
-        });
-
         it('should return error when trying to login with an account in the deletion process', async () => {
             UserService.authenticate({
                 address: users[0].address,
