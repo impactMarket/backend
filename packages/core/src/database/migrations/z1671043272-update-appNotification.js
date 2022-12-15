@@ -9,13 +9,13 @@ module.exports = {
         await queryInterface.addColumn('app_notification', 'isWallet', {
             type: Sequelize.BOOLEAN,
             allowNull: false,
-            default: false,
+            defaultValue: false,
         });
 
         await queryInterface.addColumn('app_notification', 'isWebApp', {
             type: Sequelize.BOOLEAN,
             allowNull: false,
-            default: true,
+            defaultValue: true,
         });
     },
 
