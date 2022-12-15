@@ -267,31 +267,6 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /communities/{id-or-address}:
-     *   get:
-     *     tags:
-     *       - "communities"
-     *     summary: Get community by id or contract address
-     *     parameters:
-     *       - in: path
-     *         name: id-or-address
-     *         schema:
-     *           type: string
-     *         required: true
-     *         description: community id or contract address
-     *     responses:
-     *       "200":
-     *         description: OK
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/UbiCommunity'
-     */
-    route.get('/:idOrAddress/:query?', optionalAuthentication, controller.findBy);
-
-    /**
-     * @swagger
-     *
      * /communities/{id}/claims-location:
      *   get:
      *     tags:
@@ -440,4 +415,36 @@ export default (route: Router): void => {
         database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
         controller.getCampaign
     );
+
+    /**
+     * @swagger
+     *
+     * /communities/{id-or-address}:
+     *   get:
+     *     tags:
+     *       - "communities"
+     *     summary: Get community by id or contract address
+     *     parameters:
+     *       - in: path
+     *         name: id-or-address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: community id or contract address
+     *       - in: query
+     *         name: state
+     *         schema:
+     *           type: string
+     *           enum: [base, ubi]
+     *         required: false
+     *         description: community state
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UbiCommunity'
+     */
+    route.get('/:idOrAddress/:query?', optionalAuthentication, controller.findBy);
 };
