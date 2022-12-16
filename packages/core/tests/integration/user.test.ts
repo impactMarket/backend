@@ -690,46 +690,12 @@ describe('user service', () => {
                 });
         });
 
-        it('manager should be able to be delete account', async () => {
-            await ManagerFactory([users[2], users[3]], communities[0].id);
-
-            await UserService.delete(users[0].address);
-
-            const user = await models.appUser.findOne({
-                where: {
-                    address: users[0].address,
-                },
-            });
-
-            // eslint-disable-next-line no-unused-expressions
-            expect(user?.deletedAt).to.be.not.null;
-        });
-
         it('should not delete with only two managers (not in deletion process)', async () => {
             UserService.delete(users[2].address)
                 .catch((err) => expect(err).to.equal('Not enough managers'))
                 .then(() => {
                     throw new Error('expected to fail');
                 });
-        });
-
-        it('beneficiary should be able to delete account', async () => {
-            await UserService.delete(users[1].address);
-
-            const findUser = await models.appUser.findAll();
-
-            findUser.forEach((user: AppUser) => {
-                if (
-                    user.address === users[1].address ||
-                    user.address === users[0].address
-                ) {
-                    // eslint-disable-next-line no-unused-expressions
-                    expect(user.deletedAt).to.be.not.null;
-                } else {
-                    // eslint-disable-next-line no-unused-expressions
-                    expect(user.deletedAt).to.be.null;
-                }
-            });
         });
 
         it('should return error when trying to login with an account in the deletion process', async () => {

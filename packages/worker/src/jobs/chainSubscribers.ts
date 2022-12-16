@@ -63,35 +63,35 @@ class ChainSubscribers {
                     'CommunityAdded(address,address[],uint256,uint256,uint256,uint256,uint256,uint256,uint256)'
                 ),
                 ethers.utils.id('CommunityRemoved(address)'),
-                ethers.utils.id('CommunityMigrated(address[],address,address)'),
-                ethers.utils.id('ManagerAdded(address)'),
-                ethers.utils.id('ManagerAdded(address,address)'),
-                ethers.utils.id('ManagerRemoved(address)'),
-                ethers.utils.id('ManagerRemoved(address,address)'),
-                ethers.utils.id('ManagerAddedToBlockList(address)'),
-                ethers.utils.id('ManagerRemovedFromBlockList(address)'),
-                ethers.utils.id('BeneficiaryAdded(address)'),
-                ethers.utils.id('BeneficiaryAdded(address,address)'),
-                // ethers.utils.id('BeneficiaryLocked(address)'),
-                ethers.utils.id('BeneficiaryRemoved(address)'),
-                ethers.utils.id('BeneficiaryRemoved(address,address)'),
-                ethers.utils.id('BeneficiaryClaim(address,uint256)'),
-                ethers.utils.id(
-                    'CommunityEdited(uint256,uint256,uint256,uint256)'
-                ),
-                ethers.utils.id('CommunityLocked(address)'),
-                ethers.utils.id('CommunityUnlocked(address)'),
-                ethers.utils.id(
-                    'BeneficiaryParamsUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)'
-                ),
-                ethers.utils.id('Transfer(address,address,uint256)'),
-                ethers.utils.id(
-                    'ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)'
-                ),
-                ethers.utils.id('ProposalCanceled(uint256)'),
-                ethers.utils.id('ProposalQueued(uint256,uint256)'),
-                ethers.utils.id('ProposalExecuted(uint256)'),
-                ethers.utils.id('ClaimAmountUpdated(uint256,uint256)'),
+                // ethers.utils.id('CommunityMigrated(address[],address,address)'),
+                // ethers.utils.id('ManagerAdded(address)'),
+                // ethers.utils.id('ManagerAdded(address,address)'),
+                // ethers.utils.id('ManagerRemoved(address)'),
+                // ethers.utils.id('ManagerRemoved(address,address)'),
+                // ethers.utils.id('ManagerAddedToBlockList(address)'),
+                // ethers.utils.id('ManagerRemovedFromBlockList(address)'),
+                // ethers.utils.id('BeneficiaryAdded(address)'),
+                // ethers.utils.id('BeneficiaryAdded(address,address)'),
+                // // ethers.utils.id('BeneficiaryLocked(address)'),
+                // ethers.utils.id('BeneficiaryRemoved(address)'),
+                // ethers.utils.id('BeneficiaryRemoved(address,address)'),
+                // ethers.utils.id('BeneficiaryClaim(address,uint256)'),
+                // ethers.utils.id(
+                //     'CommunityEdited(uint256,uint256,uint256,uint256)'
+                // ),
+                // ethers.utils.id('CommunityLocked(address)'),
+                // ethers.utils.id('CommunityUnlocked(address)'),
+                // ethers.utils.id(
+                //     'BeneficiaryParamsUpdated(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)'
+                // ),
+                // ethers.utils.id('Transfer(address,address,uint256)'),
+                // ethers.utils.id(
+                //     'ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)'
+                // ),
+                // ethers.utils.id('ProposalCanceled(uint256)'),
+                // ethers.utils.id('ProposalQueued(uint256,uint256)'),
+                // ethers.utils.id('ProposalExecuted(uint256)'),
+                // ethers.utils.id('ClaimAmountUpdated(uint256,uint256)'),
             ],
         ];
         this.recover();
