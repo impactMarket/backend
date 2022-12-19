@@ -104,14 +104,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             txAt: new Date(),
         });
 
-        await services.ubi.ClaimService.add({
-            address: users[1].address,
-            communityId: communities[0].id,
-            amount: '15',
-            tx,
-            txAt: new Date('2021-01-02'),
-        });
-
         await services.ubi.InflowService.add(
             users[1].address,
             communities[0].publicId,
