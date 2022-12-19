@@ -1,8 +1,8 @@
 import { config, services, database } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
-import { RequestWithUser } from '../middlewares/core';
-import { standardResponse, controllerLogAndFail } from '../utils/api';
+import { RequestWithUser } from '../../middlewares/core';
+import { standardResponse, controllerLogAndFail } from '../../utils/api';
 
 class CommunityController {
     findRequestChangeUbiParams = (req: Request, res: Response) => {

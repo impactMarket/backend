@@ -1,8 +1,8 @@
 import { utils, services, database, config } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
-import { RequestWithUser } from '../middlewares/core';
-import { standardResponse } from '../utils/api';
+import { RequestWithUser } from '../../middlewares/core';
+import { standardResponse } from '../../utils/api';
 
 class UserController {
     public report = (req: Request, res: Response) => {

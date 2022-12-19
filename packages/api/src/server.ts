@@ -7,7 +7,7 @@ import morgan from 'morgan';
 
 import config from './config';
 import { rateLimiter } from './middlewares';
-import routes from './routes';
+import v1routes from './routes/v1';
 import v2routes from './routes/v2';
 import swaggerSetup from './swagger';
 
@@ -78,7 +78,7 @@ export default (app: express.Application): void => {
     }
 
     // Load API routes
-    app.use(config.api.prefix, routes());
+    app.use(config.api.prefix, v1routes());
     app.use(config.api.v2prefix, v2routes());
 
     // The error handler must be before any other error middleware and after all controllers

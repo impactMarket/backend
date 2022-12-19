@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import UserController from '../controllers/user';
-import { authenticateToken } from '../middlewares';
-import userValidators from '../validators/user';
+import UserController from '../../controllers/v1/user';
+import { authenticateToken } from '../../middlewares';
+import userValidators from '../../validators/user';
 
 export default (app: Router): void => {
     const route = Router();
