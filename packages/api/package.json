@@ -1,13 +1,14 @@
 {
     "name": "@impactmarket/api",
-    "main": "dist/app.js",
+    "main": "./dist/app.js",
     "version": "1.0.0",
     "license": "MIT",
     "engines": {
         "node": ">=16.0.0 <17.0.0"
     },
     "scripts": {
-        "start": "nodemon --config nodemon.json src/app.ts",
+        "dev": "nodemon --config nodemon.json src/app.ts",
+        "start": "RUN_LOCAL_BUILD=true node dist/app.js",
         "test": "NODE_ENV=test mocha",
         "build": "tsc -p .",
         "build:watch": "tsc -p . --watch"
