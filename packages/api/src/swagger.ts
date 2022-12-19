@@ -48,6 +48,11 @@ export default function swaggerSetup(app: express.Application): void {
                         name: 'communities',
                         description: 'UBI communities',
                     },
+                    {
+                        name: 'learn-and-earn',
+                        description:
+                            'All endpoints regarding impactMarket Learn & Earn product.',
+                    },
                 ],
                 servers: swaggerServers,
                 schemes: [urlSchema],

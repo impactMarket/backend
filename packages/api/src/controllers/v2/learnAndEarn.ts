@@ -1,5 +1,6 @@
 import { config, services } from '@impactmarket/core';
 import { Request, Response } from 'express';
+import { RegisterClaimRewardsRequestType } from 'validators/learnAndEarn';
 
 import { RequestWithUser } from '../../middlewares/core';
 import { standardResponse } from '../../utils/api';
@@ -53,6 +54,28 @@ class LearnAndEarnController {
                 category as string,
                 level as string
             )
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    registerClaimRewards = (
+        req: RequestWithUser<never, any, RegisterClaimRewardsRequestType>,
+        res: Response
+    ) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        const rewardsClaims = req.body;
+
+        this.learnAndEarnService
+            .registerClaimRewards(req.user.userId, rewardsClaims)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

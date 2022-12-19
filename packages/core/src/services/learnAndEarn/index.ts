@@ -17,10 +17,11 @@ export default class LearnAndEarnService {
             completed: number;
             total: number;
         };
-        reward: {
-            received: number;
-            total: number;
-        };
+        claimRewards: {
+            levelId: number;
+            amount: number;
+            signature: string;
+        }[];
     }> {
         try {
             // get levels
@@ -32,7 +33,6 @@ export default class LearnAndEarnService {
                         ),
                         'completed',
                     ],
-                    [literal(`sum("totalReward")`), 'totalReward'],
                     [literal(`count(*)`), 'total'],
                 ],
                 include: [
@@ -81,26 +81,29 @@ export default class LearnAndEarnService {
             })) as any;
 
             // get earned
-            const payments = await models.learnAndEarnPayment.findOne({
-                attributes: [[literal(`sum(amount)`), 'amount']],
+            const claimRewards = await models.learnAndEarnPayment.findAll({
+                attributes: ['levelId', 'amount', 'signature'],
                 where: {
                     userId,
+                    status: 'pending',
                 },
-                raw: true,
             });
 
             return {
                 lesson: {
-                    completed: parseInt(lessons[0].completed),
-                    total: parseInt(lessons[0].total),
+                    completed: parseInt(lessons[0].completed, 10),
+                    total: parseInt(lessons[0].total, 10),
                 },
                 level: {
-                    completed: parseInt(levels[0].completed),
-                    total: parseInt(levels[0].total),
+                    completed: parseInt(levels[0].completed, 10),
+                    total: parseInt(levels[0].total, 10),
                 },
-                reward: {
-                    received: payments?.amount || 0,
-                    total: parseInt(levels[0].totalReward),
+                claimRewards: {
+                    ...claimRewards.map((e) => ({
+                        levelId: e.levelId,
+                        amount: e.amount,
+                        signature: e.signature,
+                    })),
                 },
             };
         } catch (error) {
@@ -235,11 +238,11 @@ export default class LearnAndEarnService {
                     const level = await models.learnAndEarnLevel.findOne({
                         where: { id: lesson!.levelId },
                     });
-                    // const signature = await this.signParams(
-                    //     user.address,
-                    //     level!.id,
-                    //     level!.totalReward
-                    // );
+                    const signature = await this.signParams(
+                        user.address,
+                        level!.id,
+                        level!.totalReward
+                    );
                     const amount = await this.calculateReward(
                         user.userId,
                         level!.id
@@ -249,7 +252,7 @@ export default class LearnAndEarnService {
                         levelId: level!.id,
                         amount,
                         status: 'pending',
-                        signature: '',
+                        signature,
                     });
 
                     // verify if the category was completed
@@ -386,6 +389,16 @@ export default class LearnAndEarnService {
                 error.message || 'failed to start a lesson'
             );
         }
+    }
+
+    public async registerClaimRewards(
+        userId: number,
+        rewardsClaims: {
+            level: number;
+            transactionHash: string;
+        }[]
+    ) {
+        // TODO: wait for transaction and register the rewards
     }
 
     public async listLevels(
@@ -687,17 +700,17 @@ export default class LearnAndEarnService {
 
     private async signParams(
         beneficiaryAddress: string,
-        programId: number,
+        levelId: number,
         amountEarned: number
     ): Promise<string> {
         const signer = new ethers.Wallet(config.learnAndEarnPrivateKey);
 
         const message = ethers.utils.solidityKeccak256(
             ['address', 'uint256', 'uint256'],
-            [beneficiaryAddress, programId, amountEarned]
+            [beneficiaryAddress, levelId, amountEarned]
         );
         const arrayifyMessage = ethers.utils.arrayify(message);
-        return signer.signMessage(arrayifyMessage);
+        return await signer.signMessage(arrayifyMessage);
     }
 
     private async calculateReward(
