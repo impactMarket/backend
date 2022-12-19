@@ -86,15 +86,14 @@ const dbConfig: Options = {
     },
     dialectModule: pg,
     pool: {
-        max: 30,
+        max: config.maxDatabasePoolConnections,
         min: 0,
         acquire: 60000,
-        idle: 5000,
+        idle: 15000,
     },
     protocol: 'postgres',
     native: !config.aws.lambda, // if lambda = true, then native = false
     logging,
-    // query: { raw: true }, // I wish, eager loading gets fixed
 };
 const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);
