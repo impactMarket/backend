@@ -47,7 +47,6 @@ import { UbiRequestChangeParamsModel } from './models/ubi/requestChangeParams';
 import { UbiBeneficiaryRegistryModel } from './models/ubi/ubiBeneficiaryRegistry';
 import { UbiBeneficiarySurveyModel } from './models/ubi/ubiBeneficiarySurvey';
 import { UbiBeneficiaryTransactionModel } from './models/ubi/ubiBeneficiaryTransaction';
-import { UbiClaimModel } from './models/ubi/ubiClaim';
 import { ClaimLocationModel } from './models/ubi/ubiClaimLocation';
 import { UbiCommunityCampaignModel } from './models/ubi/ubiCommunityCampaign';
 import { UbiCommunityLabelModel } from './models/ubi/ubiCommunityLabel';
@@ -85,7 +84,6 @@ export interface DbModels {
     ubiCommunityLabels: ModelCtor<UbiCommunityLabelModel>;
     ubiCommunityCampaign: ModelCtor<UbiCommunityCampaignModel>;
     ubiRequestChangeParams: ModelCtor<UbiRequestChangeParamsModel>;
-    ubiClaim: ModelCtor<UbiClaimModel>;
     ubiClaimLocation: ModelCtor<ClaimLocationModel>;
     beneficiary: ModelCtor<Beneficiary>;
     ubiBeneficiaryRegistry: ModelCtor<UbiBeneficiaryRegistryModel>;

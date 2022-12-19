@@ -55,7 +55,6 @@ import { initializeUbiRequestChangeParams } from './ubi/requestChangeParams';
 import { initializeUbiBeneficiaryRegistry } from './ubi/ubiBeneficiaryRegistry';
 import { initializeUbiBeneficiarySurvey } from './ubi/ubiBeneficiarySurvey';
 import { initializeUbiBeneficiaryTransaction } from './ubi/ubiBeneficiaryTransaction';
-import { initializeUbiClaim } from './ubi/ubiClaim';
 import { initializeUbiClaimLocation } from './ubi/ubiClaimLocation';
 import { initializeUbiCommunityCampaign } from './ubi/ubiCommunityCampaign';
 import { initializeUbiCommunityLabel } from './ubi/ubiCommunityLabel';
@@ -97,7 +96,6 @@ export default function initModels(sequelize: Sequelize): void {
     initializeBeneficiary(sequelize);
     initializeUbiBeneficiaryRegistry(sequelize);
     initializeUbiBeneficiaryTransaction(sequelize);
-    initializeUbiClaim(sequelize);
     initializeInflow(sequelize);
     initializeUbiCommunityPromoter(sequelize);
     initializeUbiPromoter(sequelize);

@@ -436,12 +436,6 @@ const getHistoricalSSI = (req: Request, res: Response) => {
         .catch((e) => controllerLogAndFail(e, 400, res));
 };
 
-const listLight = (req: Request, res: Response) => {
-    services.ubi.CommunityService.listLight(req.params.order, req.query)
-        .then((r) => res.send(r))
-        .catch((e) => controllerLogAndFail(e, 400, res));
-};
-
 const listFull = (req: Request, res: Response) => {
     services.ubi.CommunityService.listFull(req.params.order)
         .then((r) => res.send(r))
@@ -497,7 +491,6 @@ const pending = (req: Request, res: Response) => {
 
 export default {
     getHistoricalSSI,
-    listLight,
     listFull,
     searchManager,
     listManagers,

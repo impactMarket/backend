@@ -4,7 +4,6 @@ import * as requestChangeParams from './requestChangeParams';
 import * as ubiBeneficiaryRegistry from './ubiBeneficiaryRegistry';
 import * as ubiBeneficiarySurvey from './ubiBeneficiarySurvey';
 import * as ubiBeneficiaryTransaction from './ubiBeneficiaryTransaction';
-import * as ubiClaim from './ubiClaim';
 import * as ubiClaimLocation from './ubiClaimLocation';
 import * as ubiCommunityCampaign from './ubiCommunityCampaign';
 import * as ubiCommunityContract from './ubiCommunityContract';
@@ -25,7 +24,6 @@ export {
     ubiBeneficiaryRegistry,
     ubiBeneficiarySurvey,
     ubiBeneficiaryTransaction,
-    ubiClaim,
     ubiClaimLocation,
     ubiCommunityCampaign,
     ubiCommunityContract,

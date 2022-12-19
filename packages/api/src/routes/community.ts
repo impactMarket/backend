@@ -208,14 +208,6 @@ export default (app: Router): void => {
     /**
      * @deprecated use /list
      */
-    route.get(
-        '/list/light/:order?',
-        database.cacheWithRedis('10 minutes', database.cacheOnlySuccess),
-        communityController.listLight
-    );
-    /**
-     * @deprecated use /list
-     */
     route.get('/list/full/:order?', communityController.listFull);
     /**
      * @deprecated Deprecated in mobile-app@1.1.0

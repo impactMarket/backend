@@ -7,7 +7,6 @@ import config from '../../config';
 import { models } from '../../database';
 import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { AppUser } from '../../interfaces/app/appUser';
-import { BeneficiaryAttributes } from '../../interfaces/ubi/beneficiary';
 import {
     UbiBeneficiaryRegistryCreation,
     UbiBeneficiaryRegistryType,
@@ -531,27 +530,12 @@ export default class BeneficiaryService {
     }
 
     private static async getClaimActivity(
-        beneficiaryAddress: string,
-        communityId: number,
-        offset?: number,
-        limit?: number
+        _beneficiaryAddress: string,
+        _communityId: number,
+        _offset?: number,
+        _limit?: number
     ): Promise<IBeneficiaryActivities[]> {
-        const claims = await models.ubiClaim.findAll({
-            where: {
-                address: beneficiaryAddress,
-                communityId,
-            },
-            order: [['txAt', 'DESC']],
-            limit,
-            offset,
-        });
-        return claims.map((claim) => ({
-            id: claim.id,
-            type: 'claim',
-            tx: claim.tx,
-            txAt: claim.txAt,
-            amount: claim.amount,
-        }));
+        return [];
     }
 
     private static async getRegistryActivity(

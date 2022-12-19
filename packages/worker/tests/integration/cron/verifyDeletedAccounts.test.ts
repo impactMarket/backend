@@ -218,12 +218,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 },
             }))!.toJSON();
 
-        const claims = (await database.models.ubiClaim.findOne({
-            where: {
-                address: users[1].address,
-            },
-        }))!.toJSON();
-
         const inflow = (await database.models.inflow.findOne({
             where: {
                 from: users[1].address,
@@ -241,9 +235,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         expect(transactions).to.include({
             amount: '25',
             isFromBeneficiary: true,
-        });
-        expect(claims).to.include({
-            amount: '15',
         });
         expect(inflow).to.include({
             amount: '30',

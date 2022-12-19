@@ -54,7 +54,6 @@ import * as UbiRequestChangeParams from './models/ubi/requestChangeParams';
 import * as UbiBeneficiaryRegistry from './models/ubi/ubiBeneficiaryRegistry';
 import * as UbiBeneficiarySurvey from './models/ubi/ubiBeneficiarySurvey';
 import * as UbiBeneficiaryTransaction from './models/ubi/ubiBeneficiaryTransaction';
-import * as UbiClaim from './models/ubi/ubiClaim';
 import * as ClaimLocation from './models/ubi/ubiClaimLocation';
 import * as UbiCommunityCampaign from './models/ubi/ubiCommunityCampaign';
 import * as UbiCommunityLabel from './models/ubi/ubiCommunityLabel';
@@ -129,8 +128,6 @@ const models: DbModels = {
         .UbiCommunityCampaignModel as ModelCtor<UbiCommunityCampaign.UbiCommunityCampaignModel>,
     ubiRequestChangeParams: sequelize.models
         .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParams.UbiRequestChangeParamsModel>,
-    ubiClaim: sequelize.models
-        .UbiClaimModel as ModelCtor<UbiClaim.UbiClaimModel>,
     ubiClaimLocation: sequelize.models
         .ClaimLocationModel as ModelCtor<ClaimLocation.ClaimLocationModel>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
@@ -264,7 +261,6 @@ export {
     UbiBeneficiaryRegistry,
     UbiBeneficiarySurvey,
     UbiBeneficiaryTransaction,
-    UbiClaim,
     ClaimLocation,
     UbiCommunityCampaign,
     UbiCommunityLabel,

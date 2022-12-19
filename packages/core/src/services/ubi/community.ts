@@ -9,7 +9,6 @@ import {
     OrderItem,
     WhereOptions,
     Includeable,
-    Order,
 } from 'sequelize';
 import { Literal } from 'sequelize/types/lib/utils';
 
@@ -18,7 +17,6 @@ import CommunityContractABI from '../../contracts/CommunityABI.json';
 import ImpactMarketContractABI from '../../contracts/ImpactMarketABI.json';
 import { models, sequelize } from '../../database';
 import { Community } from '../../database/models/ubi/community';
-import { LogTypes } from '../../interfaces/app/appLog';
 import { AppUser } from '../../interfaces/app/appUser';
 import {
     CommunityAttributes,
@@ -33,12 +31,10 @@ import { UbiCommunityLabel } from '../../interfaces/ubi/ubiCommunityLabel';
 import { UbiCommunityState } from '../../interfaces/ubi/ubiCommunityState';
 import { UbiCommunitySuspect } from '../../interfaces/ubi/ubiCommunitySuspect';
 import { UbiPromoter } from '../../interfaces/ubi/ubiPromoter';
-import { countBeneficiaries } from '../../subgraph/queries/beneficiary';
 import {
     getCommunityProposal,
     getClaimed,
     getCommunityState,
-    getCommunityStateByAddresses,
     communityEntities,
 } from '../../subgraph/queries/community';
 import { getCommunityManagers } from '../../subgraph/queries/manager';
@@ -48,7 +44,6 @@ import { createThumbnailUrl, notifyManagerAdded } from '../../utils/util';
 import UserLogService from '../app/user/log';
 import {
     ICommunity,
-    ICommunityLightDetails,
     ICommunityPendingDetails,
     IManagerDetailsManager,
 } from '../endpoints';
@@ -74,7 +69,6 @@ export default class CommunityService {
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static ubiBeneficiaryRegistry = models.ubiBeneficiaryRegistry;
-    public static ubiClaim = models.ubiClaim;
     public static sequelize = sequelize;
 
     private static communityContentStorage = new CommunityContentStorage();
@@ -1091,84 +1085,6 @@ export default class CommunityService {
         };
     }
 
-    public static async getStatePrivate(communityId: number) {
-        const community = await this.community.findOne({
-            attributes: ['contractAddress', 'publicId'],
-            where: {
-                id: communityId,
-            },
-        });
-
-        const communityBackers = await models.inflow.count({
-            distinct: true,
-            col: 'from',
-            where: {
-                contractAddress: community?.contractAddress,
-            },
-        });
-
-        const communityClaimActivity = (
-            await this.ubiClaim.findAll({
-                attributes: [
-                    [fn('coalesce', fn('sum', col('amount')), '0'), 'claimed'],
-                    [fn('coalesce', fn('count', col('amount')), '0'), 'claims'],
-                ],
-                where: {
-                    communityId,
-                },
-                raw: true,
-            })
-        )[0];
-
-        const communityInflowActivity = (
-            await models.inflow.findAll({
-                attributes: [
-                    [fn('sum', fn('coalesce', col('amount'), 0)), 'amount'],
-                ],
-                where: {
-                    contractAddress: community?.contractAddress,
-                },
-            })
-        )[0];
-
-        const activeBeneficiaries = await countBeneficiaries(
-            community!.contractAddress!,
-            0
-        );
-        const removedBeneficiaries = await countBeneficiaries(
-            community!.contractAddress!,
-            1
-        );
-
-        const communityManagerActivity = await this.manager.count({
-            where: {
-                communityId,
-                active: true,
-            },
-        });
-
-        return {
-            claims: communityClaimActivity
-                ? Number((communityClaimActivity as any).claims)
-                : 0,
-            claimed: communityClaimActivity
-                ? (communityClaimActivity as any).claimed
-                : '0',
-            raised: communityInflowActivity.amount
-                ? communityInflowActivity.amount
-                : '0',
-            beneficiaries: activeBeneficiaries
-                ? Number(activeBeneficiaries)
-                : 0,
-            removedBeneficiaries: removedBeneficiaries
-                ? Number(removedBeneficiaries)
-                : 0,
-            managers: communityManagerActivity,
-            backers: communityBackers,
-            communityId,
-        };
-    }
-
     public static async getCampaign(communityId: number) {
         const result = await this.ubiCommunityCampaign.findOne({
             where: {
@@ -1436,273 +1352,6 @@ export default class CommunityService {
             return true;
         }
         return false;
-    }
-
-    /**
-     * @deprecated
-     */
-    public static async listLight(
-        order: string | undefined,
-        query: any
-    ): Promise<ICommunityLightDetails[]> {
-        let offset: number | undefined;
-        let limit: number | undefined;
-        let useOrder = '';
-        let orderOption: Order | undefined;
-
-        let beneficiariesState:
-            | {
-                  id: number;
-                  beneficiaries: string;
-              }[]
-            | undefined = undefined;
-        let communitiesId: number[] = [];
-
-        if (query.offset !== undefined && query.limit !== undefined) {
-            offset = parseInt(query.offset, 10);
-            limit = parseInt(query.limit, 10);
-            if (typeof offset !== 'number' || typeof limit !== 'number') {
-                throw new BaseError('NaN', 'not a number');
-            }
-        } else {
-            offset = config.defaultOffset;
-            limit = config.defaultLimit;
-        }
-
-        if (order === undefined && query.order !== undefined) {
-            useOrder = query.order;
-        } else if (order !== undefined) {
-            useOrder = order;
-        }
-        switch (useOrder) {
-            case 'nearest': {
-                const lat = parseInt(query.lat, 10);
-                const lng = parseInt(query.lng, 10);
-                if (typeof lat !== 'number' || typeof lng !== 'number') {
-                    throw new BaseError('NaN', 'not a number');
-                }
-                orderOption = [
-                    [
-                        literal(
-                            '(6371*acos(cos(radians(' +
-                                lat +
-                                "))*cos(radians(cast(gps->>'latitude' as float)))*cos(radians(cast(gps->>'longitude' as float))-radians(" +
-                                lng +
-                                '))+sin(radians(' +
-                                lat +
-                                "))*sin(radians(cast(gps->>'latitude' as float)))))"
-                        ),
-                        'ASC',
-                    ],
-                ];
-                break;
-            }
-            default:
-                beneficiariesState = await this._getBeneficiaryState(
-                    {
-                        status: query.status,
-                        limit: limit?.toString(),
-                        offset: offset?.toString(),
-                    },
-                    {}
-                );
-                communitiesId = beneficiariesState!.map((el) => el.id);
-                break;
-        }
-
-        let communitiesResult: Community[];
-        const contractAddresses: string[] = [];
-
-        if (communitiesId.length > 0) {
-            communitiesResult = await this.community.findAll({
-                include: [
-                    {
-                        model: this.ubiCommunityContract,
-                        as: 'contract',
-                    },
-                    {
-                        model: this.appMediaContent,
-                        as: 'cover',
-                        include: [
-                            {
-                                model: this.appMediaThumbnail,
-                                as: 'thumbnails',
-                            },
-                        ],
-                    },
-                ],
-                where: {
-                    id: {
-                        [Op.in]: communitiesId,
-                    },
-                },
-            });
-            communitiesResult!.forEach((el) => {
-                if (el.contractAddress) {
-                    contractAddresses.push(el.contractAddress);
-                }
-            });
-        } else {
-            communitiesResult = await this.community.findAll({
-                include: [
-                    {
-                        model: this.ubiCommunityContract,
-                        as: 'contract',
-                    },
-                    {
-                        model: this.appMediaContent,
-                        as: 'cover',
-                        include: [
-                            {
-                                model: this.appMediaThumbnail,
-                                as: 'thumbnails',
-                            },
-                        ],
-                    },
-                ],
-                where: {
-                    status: 'valid',
-                    visibility: 'public',
-                },
-                limit,
-                offset,
-                order: orderOption,
-            });
-            communitiesId = communitiesResult!.map((el) => el.id);
-            communitiesResult!.forEach((el) => {
-                if (el.contractAddress) {
-                    contractAddresses.push(el.contractAddress);
-                }
-            });
-        }
-
-        if (!beneficiariesState) {
-            const resultSubgraph = await getCommunityStateByAddresses(
-                contractAddresses
-            );
-            beneficiariesState = resultSubgraph.map((el) => {
-                const community = communitiesResult.find(
-                    (community) =>
-                        community.contractAddress ===
-                        ethers.utils.getAddress(el.id)
-                );
-                return {
-                    id: community!.id,
-                    beneficiaries: el.beneficiaries.toString(),
-                };
-            });
-        }
-
-        const claimsState = (await models.ubiClaim.findAll({
-            attributes: [
-                'communityId',
-                [fn('coalesce', fn('sum', col('amount')), '0'), 'claimed'],
-            ],
-            where: {
-                communityId: {
-                    [Op.in]: communitiesId,
-                },
-            },
-            group: ['communityId'],
-            raw: true,
-        })) as any;
-
-        const inflowState = (await models.community.findAll({
-            attributes: [
-                'id',
-                [fn('coalesce', fn('sum', col('amount')), '0'), 'raised'],
-            ],
-            include: [
-                {
-                    attributes: [],
-                    model: models.inflow,
-                    as: 'inflow',
-                },
-            ],
-            where: {
-                id: {
-                    [Op.in]: communitiesId,
-                },
-            },
-            group: ['Community.id'],
-            raw: true,
-        })) as any;
-
-        const backerState = (await models.community.findAll({
-            attributes: [
-                'id',
-                [fn('count', fn('distinct', col('inflow.from'))), 'backers'],
-            ],
-            include: [
-                {
-                    attributes: [],
-                    model: models.inflow,
-                    as: 'inflow',
-                },
-            ],
-            where: {
-                id: {
-                    [Op.in]: communitiesId,
-                },
-            },
-            group: ['Community.id'],
-            raw: true,
-        })) as any;
-
-        //formate response
-        const communities: CommunityAttributes[] = [];
-        communitiesId.forEach((id) => {
-            let community: CommunityAttributes;
-            const filteredCommunity = communitiesResult.find(
-                (el) => el.id === id
-            );
-            community = {
-                ...(filteredCommunity?.toJSON() as CommunityAttributes),
-            };
-
-            const beneficiariesModel = beneficiariesState?.find(
-                (el) => el.id === id
-            );
-            const claimModel = claimsState?.find((el) => el.communityId === id);
-            const raiseModel = inflowState?.find((el) => el.id === id);
-            const backerModel = backerState?.find((el) => el.id === id);
-            community = {
-                ...community,
-                contract: {
-                    ...community.contract!,
-                    maxClaim: new BigNumber(community.contract!.maxClaim)
-                        .multipliedBy(10 ** config.cUSDDecimal)
-                        .toString() as any,
-                    claimAmount: new BigNumber(community.contract!.claimAmount)
-                        .multipliedBy(10 ** config.cUSDDecimal)
-                        .toString() as any,
-                },
-                state: {
-                    beneficiaries: beneficiariesModel
-                        ? Number(beneficiariesModel.beneficiaries)
-                        : 0,
-                    claimed: claimModel ? claimModel.claimed : '0',
-                    raised: raiseModel ? raiseModel.raised : '0',
-                    backers: backerModel ? Number(backerModel.backers) : 0,
-                },
-            };
-            communities.push(community);
-        });
-
-        const results: ICommunityLightDetails[] = communities.map((c) => ({
-            id: c.id,
-            publicId: c.publicId,
-            contractAddress: c.contractAddress!,
-            name: c.name,
-            city: c.city,
-            country: c.country,
-            coverImage: c.coverImage,
-            cover: c.cover!,
-            contract: c.contract!,
-            state: c.state!,
-        }));
-
-        return results;
     }
 
     /**
@@ -2154,14 +1803,11 @@ export default class CommunityService {
             contributors: 1,
             managers: 1,
         };
+        const metrics = await this.getMetrics(community.id);
         if (community.visibility === 'public') {
             contract = (await this.getContract(community.id))!;
             state = (await this.getState(community.id))!;
-        } else if (community.visibility === 'private') {
-            contract = (await this.getContract(community.id))!;
-            state = (await this.getStatePrivate(community.id))! as any;
         }
-        const metrics = await this.getMetrics(community.id);
 
         let showEmail = false;
         if (userAddress) {
