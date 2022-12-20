@@ -398,6 +398,8 @@ export default class UserService {
         query: {
             offset?: string;
             limit?: string;
+            isWallet?: string;
+            isWebApp?: string;
         },
         userId: number
     ): Promise<{
@@ -407,6 +409,8 @@ export default class UserService {
         const notifications = await models.appNotification.findAndCountAll({
             where: {
                 userId,
+                isWebApp: query.isWebApp === 'true',
+                isWallet: query.isWallet === 'true',
             },
             offset: query.offset
                 ? parseInt(query.offset, 10)
@@ -449,11 +453,19 @@ export default class UserService {
         return true;
     }
 
-    public async getUnreadNotifications(userId: number): Promise<number> {
+    public async getUnreadNotifications(
+        userId: number,
+        query: {
+            isWallet?: string;
+            isWebApp?: string;
+        }
+    ): Promise<number> {
         return models.appNotification.count({
             where: {
                 userId,
                 read: false,
+                isWebApp: query.isWebApp === 'true',
+                isWallet: query.isWallet === 'true',
             },
         });
     }

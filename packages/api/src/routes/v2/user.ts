@@ -386,6 +386,17 @@ export default (app: Router): void => {
      *     tags:
      *       - "users"
      *     summary: Get the number of unread notifications from a user
+     *     parameters:
+     *       - in: query
+     *         name: isWebApp
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *       - in: query
+     *         name: isWallet
+     *         schema:
+     *           type: boolean
+     *         required: false
      *     responses:
      *       "200":
      *          description: OK
@@ -404,7 +415,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.get(
-        '/notifications/unread',
+        '/notifications/unread/:query?',
         authenticateToken,
         userController.getUnreadNotifications
     );
@@ -430,6 +441,16 @@ export default (app: Router): void => {
      *           type: integer
      *         required: false
      *         description: limit used for community pagination (default 10)
+     *       - in: query
+     *         name: isWebApp
+     *         schema:
+     *           type: boolean
+     *         required: false
+     *       - in: query
+     *         name: isWallet
+     *         schema:
+     *           type: boolean
+     *         required: false
      *     responses:
      *       "200":
      *          description: OK
