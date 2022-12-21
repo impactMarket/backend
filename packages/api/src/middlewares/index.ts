@@ -1,4 +1,5 @@
 import { config, database } from '@impactmarket/core';
+import { redisClient } from '@impactmarket/core/src/database';
 import { ethers } from 'ethers';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
@@ -118,17 +119,23 @@ export function adminAuthentication(
 export const rateLimiter = rateLimit({
     max: config.maxRequestPerUser,
     message: `You have exceeded the ${config.maxRequestPerUser} requests in 15 minutes limit!`,
-    headers: true,
-    ...(process.env.NODE_ENV === 'test'
-        ? {
-              windowMs: 900000, // 15 minutes in milliseconds
-          }
-        : {
-              store: new redisStore({
-                  client: database.redisClient,
-                  expiry: 900, // 15 minutes in seconds
-              }),
-          }),
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    // windowMs: 900000, // 15 minutes in milliseconds
+    // store: new redisStore({
+    //     sendCommand: (...args: string[]) => redisClient!.sendCommand(args),
+    // }),
+    // ...(process.env.NODE_ENV === 'test'
+    //     ? {
+    //           //   windowMs: 900000, // 15 minutes in milliseconds
+    //       }
+    //     : {
+    //           // Redis store configuration
+    //           //   store: new redisStore({
+    //           //       sendCommand: (...args: string[]) =>
+    //           //           redisClient!.sendCommand(args),
+    //           //   }),
+    //       }),
 });
 
 export function verifySignature(

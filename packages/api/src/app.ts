@@ -1,5 +1,6 @@
 import 'module-alias/register';
 import { utils, config, database } from '@impactmarket/core';
+import { redisClient } from '@impactmarket/core/src/database';
 import * as Sentry from '@sentry/node';
 import { Integrations } from '@sentry/tracing';
 import express from 'express';
@@ -59,6 +60,7 @@ export async function startServer() {
     await database.sequelize.authenticate();
     if (process.env.NODE_ENV !== 'test') {
         await database.sequelize.sync();
+        await redisClient!.connect();
     }
     utils.Logger.info('🗺️  Database loaded and connected');
 

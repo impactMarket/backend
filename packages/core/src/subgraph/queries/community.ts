@@ -1,8 +1,10 @@
 import { getAddress } from '@ethersproject/address';
 import { gql } from 'apollo-boost';
+import axios from 'axios';
 import { ethers } from 'ethers';
 
 import config from '../../config';
+import { redisClient } from '../../database';
 import { clientDAO, clientCouncil } from '../config';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
@@ -222,31 +224,40 @@ export const getBiggestCommunities = async (
 };
 
 export const getCommunityAmbassador = async (community: string) => {
-    try {
-        const query = gql`
-            {
-                ambassadorEntities(
-                    where:{
-                        communities_contains: ["${community.toLowerCase()}"]
-                    }
-                ) {
-                    id
-                    since
-                    status
-                    until
+    const headers = {
+        'content-type': 'application/json',
+    };
+    const graphqlQuery = {
+        operationName: 'fetchCommunityAmbassador',
+        query: `query fetchCommunityAmbassador {
+            ambassadorEntities(
+                where:{
+                    communities_contains: ["${community.toLowerCase()}"]
                 }
+            ) {
+                id
+                since
+                status
+                until
             }
-        `;
+        }`,
+        variables: {},
+    };
 
-        const queryResult = await clientCouncil.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
-
-        return queryResult.data?.ambassadorEntities[0];
-    } catch (error) {
-        throw new Error(error);
+    const cacheResults = await redisClient!.get(graphqlQuery.query);
+    if (cacheResults) {
+        return JSON.parse(cacheResults);
     }
+
+    const response = await axios({
+        data: graphqlQuery,
+        headers,
+        method: 'post',
+        url: config.councilSubgraphUrl,
+    });
+    redisClient!.set(graphqlQuery.query, response.data?.ambassadorEntities[0]);
+
+    return response.data?.ambassadorEntities[0];
 };
 
 export const getAmbassadorByAddress = async (ambassadorAddress: string) => {

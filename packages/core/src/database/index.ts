@@ -1,6 +1,6 @@
 import apicache from 'apicache';
 import pg from 'pg';
-import redis from 'redis';
+import { createClient, RedisClientType } from 'redis';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
 
 import config from '../config';
@@ -207,9 +207,10 @@ const models: DbModels = {
         .MerchantCommunityModel as ModelCtor<MerchantCommunity.MerchantCommunityModel>,
 };
 
-let redisClient: redis.RedisClient | undefined;
+let redisClient: RedisClientType | undefined;
 if (process.env.NODE_ENV !== 'test') {
-    redisClient = redis.createClient(config.redis, {
+    redisClient = createClient({
+        url: config.redis,
         ...(config.hasRedisTls
             ? {
                   tls: {
@@ -218,6 +219,7 @@ if (process.env.NODE_ENV !== 'test') {
               }
             : {}),
     });
+    // redis connect is on api loading
 }
 const cacheOnlySuccess = (req, res) => res.statusCode === 200;
 const apiCacheOptions = {
