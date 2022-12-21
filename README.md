@@ -2,25 +2,16 @@
     <img src="logo.png">
 </div>
 
-> Decentralized Poverty Alleviation Protocol. impactMarket enables any vulnerable community to implement poverty alleviation mechanisms, like Unconditional Basic Income.
+> impactMarket enables access to inclusive financial solutions, including Unconditional Basic Income programs to support and empower vulnerable communities. Donate now and join our mission of promoting financial inclusion.
 
-Welcome to the backend monorepo of impactMarket.
-
-## Installation
+## Getting started
 
 Use the package manager [yarn](https://yarnpkg.com/) to install dependencies.
 
-```bash
-yarn
-```
-
-## Usage
-
-Before moving any further, fill the `.env`. Write the correct postgres url. Use `npx sequelize db:migrate` to generate the tables.
-
-Start with `yarn start` for dev environment with hot-reload.
-
-If you prefer a production version instead, build with `yarn build` and then start with `yarn serve`.
+1. Install dependencies (`yarn` at root folder)
+2. `docker compose up` (you will need docker)
+3. From the root foldr, run sequelize migrations with `NODE_ENV=test API_ENVIRONMENT=development ./release-tasks.sh` (Using `NODE_ENV=test` avoid running updates the first time, potentially causing breaks)
+4. `yarn dev`
 
 ## License
 

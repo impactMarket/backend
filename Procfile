@@ -1,3 +1,3 @@
 release: ./release-tasks.sh
-web: yarn serve
+web: yarn start
 worker: yarn worker
