@@ -22,7 +22,6 @@ import { UbiBeneficiaryRegistryType } from '../../src/interfaces/ubi/ubiBenefici
 import UserService from '../../src/services/app/user';
 import { IListBeneficiary } from '../../src/services/endpoints';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
-import ClaimsService from '../../src/services/ubi/claim';
 import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 import * as subgraph from '../../src/subgraph/queries/community';
 import * as userSubgraph from '../../src/subgraph/queries/user';
@@ -559,7 +558,7 @@ describe('beneficiary service', () => {
         });
     });
 
-    describe('beneficiary activity', () => {
+    describe.skip('beneficiary activity', () => {
         before(async () => {
             const randomWallet = ethers.Wallet.createRandom();
 
@@ -589,13 +588,13 @@ describe('beneficiary service', () => {
 
             tk.travel(jumpToTomorrowMidnight());
 
-            await ClaimsService.add({
-                address: users[16].address,
-                communityId: communities[0].id,
-                amount: '15',
-                tx,
-                txAt: new Date(),
-            });
+            // await ClaimsService.add({
+            //     address: users[16].address,
+            //     communityId: communities[0].id,
+            //     amount: '15',
+            //     tx,
+            //     txAt: new Date(),
+            // });
 
             tk.travel(jumpToTomorrowMidnight());
 

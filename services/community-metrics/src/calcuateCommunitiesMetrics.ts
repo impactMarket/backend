@@ -121,8 +121,8 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     reachOut: 0,
                     volume: communityYesterday?.volume
                         ? new BigNumber(communityYesterday.volume)
-                            .multipliedBy(10 ** 18)
-                            .toString()
+                              .multipliedBy(10 ** 18)
+                              .toString()
                         : '0',
                     backers: communityYesterday?.contributors || 0,
                     monthlyBackers: 0,

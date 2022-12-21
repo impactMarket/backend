@@ -446,5 +446,9 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunity'
      */
-    route.get('/:idOrAddress/:query?', optionalAuthentication, controller.findBy);
+    route.get(
+        '/:idOrAddress/:query?',
+        optionalAuthentication,
+        controller.findBy
+    );
 };

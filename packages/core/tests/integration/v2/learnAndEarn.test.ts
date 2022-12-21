@@ -117,10 +117,10 @@ describe('Learn And Earn', () => {
                 completed: 0,
                 total: 1,
             });
-            expect(total.reward).to.include({
-                received: 0,
-                total: 500,
-            });
+            // expect(total.reward).to.include({
+            //     received: 0,
+            //     total: 500,
+            // });
         });
     });
 

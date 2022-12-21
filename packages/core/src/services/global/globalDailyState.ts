@@ -208,7 +208,7 @@ export default class GlobalDailyStateService {
                     ubiRate: globalDaily?.ubiRate || 0,
                     spendingRate: 0,
                     avgComulativeUbi: globalDaily?.avgComulativeUbi || '0',
-                    avgUbiDuration: globalDaily?.avgUbiDuration  || 0,
+                    avgUbiDuration: globalDaily?.avgUbiDuration || 0,
                     fundingRate: Number(Number(ubi.fundingRate).toFixed(2)),
                     totalVolume: new BigNumber(totalUbi.volume)
                         .multipliedBy(10 ** config.cUSDDecimal)
