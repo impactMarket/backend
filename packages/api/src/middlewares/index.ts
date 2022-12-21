@@ -122,20 +122,10 @@ export const rateLimiter = rateLimit({
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     // windowMs: 900000, // 15 minutes in milliseconds
-    // store: new redisStore({
-    //     sendCommand: (...args: string[]) => redisClient!.sendCommand(args),
-    // }),
-    // ...(process.env.NODE_ENV === 'test'
-    //     ? {
-    //           //   windowMs: 900000, // 15 minutes in milliseconds
-    //       }
-    //     : {
-    //           // Redis store configuration
-    //           //   store: new redisStore({
-    //           //       sendCommand: (...args: string[]) =>
-    //           //           redisClient!.sendCommand(args),
-    //           //   }),
-    //       }),
+    store: new redisStore({
+        // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
+        sendCommand: (...args: string[]) => redisClient.call(...args),
+    }),
 });
 
 export function verifySignature(
@@ -178,7 +168,7 @@ export function verifySignature(
         expirationDate.setDate(
             expirationDate.getDate() - config.signatureExpiration
         );
-        if (parseInt(timestamp[0]) < expirationDate.getTime()) {
+        if (parseInt(timestamp[0], 10) < expirationDate.getTime()) {
             res.status(403).json({
                 success: false,
                 error: {

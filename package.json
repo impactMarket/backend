@@ -24,8 +24,8 @@
         "lerna": "^4.0.0"
     },
     "scripts": {
-        "start": "lerna exec --scope @impactmarket/api yarn dev",
-        "serve": "node packages/api/dist/app.js",
+        "dev": "lerna exec --scope @impactmarket/api yarn dev",
+        "start": "node packages/api/dist/app.js",
         "worker": "node packages/worker/dist/src/index.js",
         "worker-dev": "lerna exec --scope @impactmarket/worker yarn worker-dev",
         "build": "lerna exec --scope @impactmarket/api --scope @impactmarket/core --scope @impactmarket/worker yarn build",

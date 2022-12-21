@@ -7,6 +7,12 @@ import config from '../../config';
 import { redisClient } from '../../database';
 import { clientDAO, clientCouncil } from '../config';
 
+const intervalsInSeconds = {
+    oneHour: 3600,
+    twelveHours: 43200,
+    oneDay: 86400,
+};
+
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
         const provider = new ethers.providers.JsonRpcProvider(
@@ -244,7 +250,7 @@ export const getCommunityAmbassador = async (community: string) => {
         variables: {},
     };
 
-    const cacheResults = await redisClient!.get(graphqlQuery.query);
+    const cacheResults = await redisClient.get(graphqlQuery.query);
     if (cacheResults) {
         return JSON.parse(cacheResults);
     }
@@ -255,7 +261,12 @@ export const getCommunityAmbassador = async (community: string) => {
         method: 'post',
         url: config.councilSubgraphUrl,
     });
-    redisClient!.set(graphqlQuery.query, response.data?.ambassadorEntities[0]);
+    redisClient.set(
+        graphqlQuery.query,
+        response.data?.ambassadorEntities[0],
+        'EX',
+        intervalsInSeconds.twelveHours
+    );
 
     return response.data?.ambassadorEntities[0];
 };
