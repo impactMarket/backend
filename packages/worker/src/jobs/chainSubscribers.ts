@@ -342,16 +342,18 @@ class ChainSubscribers {
                 );
             } catch (e) {}
             result = parsedLog;
-        } else if (parsedLog.name === 'BeneficiaryClaim') {
-            await services.ubi.ClaimService.add({
-                address: parsedLog.args[0],
-                communityId: this.communitiesId.get(log.address)!,
-                amount: parsedLog.args[1],
-                tx: log.transactionHash,
-                txAt: await utils.util.getBlockTime(log.blockHash),
-            });
-            result = parsedLog;
-        } else if (parsedLog.name === 'ManagerAdded') {
+        }
+        //else if (parsedLog.name === 'BeneficiaryClaim') {
+        // await services.ubi.ClaimService.add({
+        //     address: parsedLog.args[0],
+        //     communityId: this.communitiesId.get(log.address)!,
+        //     amount: parsedLog.args[1],
+        //     tx: log.transactionHash,
+        //     txAt: await utils.util.getBlockTime(log.blockHash),
+        // });
+        // result = parsedLog;
+        // }
+        else if (parsedLog.name === 'ManagerAdded') {
             // new managers in existing community
             const managerAddress =
                 parsedLog.args.length > 1
