@@ -1,5 +1,4 @@
 import { config, database } from '@impactmarket/core';
-import { redisClient } from '@impactmarket/core/src/database';
 import { ethers } from 'ethers';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
@@ -7,6 +6,8 @@ import jwt from 'jsonwebtoken';
 import redisStore from 'rate-limit-redis';
 
 import { RequestWithUser, UserInRequest } from './core';
+
+const { redisClient } = database;
 
 export function authenticateToken(
     req: RequestWithUser,
