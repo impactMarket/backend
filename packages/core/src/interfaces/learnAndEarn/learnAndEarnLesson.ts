@@ -16,6 +16,8 @@
  *            type: string
  *          levelId:
  *            type: number
+ *          language:
+ *            type: string
  *          active:
  *            type: boolean
  */
@@ -23,11 +25,13 @@ export interface LearnAndEarnLesson {
     id: number;
     prismicId: string;
     levelId: number;
+    languages: string[];
     active: boolean;
 }
 
 export interface LearnAndEarnLessonCreation {
     prismicId: string;
     levelId: number;
+    languages: string[];
     active: boolean;
 }

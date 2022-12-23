@@ -1,3 +1,4 @@
+import { PrismicDocument } from '@prismicio/types';
 import axios from 'axios';
 import { Op } from 'sequelize';
 
@@ -17,6 +18,7 @@ async function getPrismicLearnAndEarn() {
             levelIds: number[] = [],
             lessonIds: number[] = [],
             quizIds: number[] = [];
+
         const response = await prismic.getAllByType('pwa-lae-category', {
             lang: 'en-us',
             fetchLinks: [
@@ -32,53 +34,97 @@ async function getPrismicLearnAndEarn() {
         ) {
             const prismicCategory = response[categoryIndex];
             // INSERT CATEGORY
-            const category = await models.learnAndEarnCategory.findOrCreate({
+            const [category] = await models.learnAndEarnCategory.findOrCreate({
                 where: {
                     prismicId: prismicCategory.id,
                     active: true,
                 },
             });
-            categoryIds.push(category[0].id);
+            categoryIds.push(category.id);
+            await category.update({
+                languages: prismicCategory.alternate_languages.map(
+                    ({ lang }) => {
+                        const index_ = lang.indexOf('-');
+                        return lang.substring(
+                            0,
+                            index_ !== -1 ? index_ : lang.length
+                        );
+                    }
+                ),
+            });
 
             for (
                 let levelIndex = 0;
                 levelIndex < prismicCategory.data.levels.length;
                 levelIndex++
             ) {
-                const prismicLevel =
-                    prismicCategory.data.levels[levelIndex].level;
+                const prismicLevel = prismicCategory.data.levels[levelIndex]
+                    .level as PrismicDocument<
+                    Record<string, any>,
+                    string,
+                    string
+                >;
 
                 if (prismicLevel.id) {
                     // INSERT LEVEL
-                    const level = await models.learnAndEarnLevel.findOrCreate({
-                        where: {
-                            prismicId: prismicLevel.id,
-                            totalReward: prismicLevel.data.reward,
-                            active: true,
-                            categoryId: category[0].id,
-                        },
+                    const [level] = await models.learnAndEarnLevel.findOrCreate(
+                        {
+                            where: {
+                                prismicId: prismicLevel.id,
+                                totalReward: prismicLevel.data.reward,
+                                active: true,
+                                categoryId: category.id,
+                            },
+                        }
+                    );
+                    levelIds.push(level.id);
+                    await level.update({
+                        languages: prismicLevel.alternate_languages.map(
+                            ({ lang }) => {
+                                const index_ = lang.indexOf('-');
+                                return lang.substring(
+                                    0,
+                                    index_ !== -1 ? index_ : lang.length
+                                );
+                            }
+                        ),
                     });
-                    levelIds.push(level[0].id);
 
                     for (
                         let lessonIndex = 0;
                         lessonIndex < prismicLevel.data.lessons.length;
                         lessonIndex++
                     ) {
-                        const prismicLesson =
-                            prismicLevel.data.lessons[lessonIndex].lesson;
+                        const prismicLesson = prismicLevel.data.lessons[
+                            lessonIndex
+                        ].lesson as PrismicDocument<
+                            Record<string, any>,
+                            string,
+                            string
+                        >;
 
                         if (prismicLesson.id) {
                             // INSERT LESSON
-                            const lesson =
+                            const [lesson] =
                                 await models.learnAndEarnLesson.findOrCreate({
                                     where: {
                                         prismicId: prismicLesson.id,
                                         active: true,
-                                        levelId: level[0].id,
+                                        levelId: level.id,
                                     },
                                 });
-                            lessonIds.push(lesson[0].id);
+                            lessonIds.push(lesson.id);
+                            await level.update({
+                                languages: prismicLevel.alternate_languages.map(
+                                    ({ lang }) => {
+                                        const index_ = lang.indexOf('-');
+                                        return lang.substring(
+                                            0,
+                                            index_ !== -1 ? index_ : lang.length
+                                        );
+                                    }
+                                ),
+                            });
 
                             for (
                                 let quizIndex = 0;
@@ -93,16 +139,16 @@ async function getPrismicLearnAndEarn() {
                                     prismicQuiz.items.findIndex(
                                         (item) => !!item['is-correct']
                                     );
-                                const quiz =
+                                const [quiz] =
                                     await models.learnAndEarnQuiz.findOrCreate({
                                         where: {
                                             order: quizIndex,
                                             active: true,
-                                            lessonId: lesson[0].id,
+                                            lessonId: lesson.id,
                                             answer,
                                         },
                                     });
-                                quizIds.push(quiz[0].id);
+                                quizIds.push(quiz.id);
                             }
                         }
                     }

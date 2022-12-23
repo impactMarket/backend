@@ -15,6 +15,8 @@
  *            type: string
  *          categoryId:
  *            type: number
+ *          languages:
+ *            type: string
  *          active:
  *            type: boolean
  */
@@ -22,6 +24,7 @@ export interface LearnAndEarnLevel {
     id: number;
     prismicId: string;
     categoryId: number;
+    languages: string[];
     active: boolean;
     totalReward: number;
 }
@@ -29,6 +32,7 @@ export interface LearnAndEarnLevel {
 export interface LearnAndEarnLevelCreation {
     prismicId: string;
     categoryId: number;
+    languages: string[];
     active: boolean;
     totalReward: number;
 }
