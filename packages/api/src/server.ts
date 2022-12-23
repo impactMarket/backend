@@ -1,25 +1,28 @@
 import { utils } from '@impactmarket/core';
 import * as Sentry from '@sentry/node';
+// import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Request, Response } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import path from 'path';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 import config from './config';
 import { rateLimiter } from './middlewares';
 import v1routes from './routes/v1';
 import v2routes from './routes/v2';
-import swaggerSetup from './swagger';
 
 export default (app: express.Application): void => {
     /**
-     * health check endpoints
-     * https://testfully.io/blog/api-health-check-monitoring
+     * Health Check endpoints
+     * @TODO Explain why they are here
      */
-    app.get('/status', (_, res) => {
+    app.get('/status', (req, res) => {
         res.status(200).end();
     });
-    app.head('/status', (_, res) => {
+    app.head('/status', (req, res) => {
         res.status(200).end();
     });
 
@@ -28,8 +31,7 @@ export default (app: express.Application): void => {
     app.use(Sentry.Handlers.requestHandler());
     // TracingHandler creates a trace for every incoming request
     app.use(Sentry.Handlers.tracingHandler());
-    app.use((_, res, next) => {
-        // format routes to aggregate reports
+    app.use((req, res, next) => {
         const transaction = (res as any).__sentry_transaction;
         transaction.name = transaction.name
             .replace(
@@ -43,19 +45,96 @@ export default (app: express.Application): void => {
         next();
     });
 
-    swaggerSetup(app);
+    let swaggerServers: {
+        url: string;
+    }[] = [];
+    let urlSchema = 'http';
+    if (process.env.NODE_ENV === 'development') {
+        swaggerServers = [
+            {
+                url: 'http://localhost:5000/api/v2',
+            },
+        ];
+    } else {
+        swaggerServers = [
+            {
+                url: `https://impactmarket-api-${process.env.API_ENVIRONMENT}.herokuapp.com/api/v2`,
+            },
+        ];
+        urlSchema = 'https';
+    }
+    if (swaggerServers.length > 0 && process.env.NODE_ENV !== 'test') {
+        const options = {
+            swaggerDefinition: {
+                openapi: '3.0.1',
+                info: {
+                    description: 'Swagger UI for impactMarket API',
+                    version: '1.0.0',
+                    title: 'impactMarket',
+                    license: {
+                        name: 'Apache 2.0',
+                        url: 'http://www.apache.org/licenses/LICENSE-2.0.html',
+                    },
+                },
+                tags: [
+                    {
+                        name: 'users',
+                        description: 'Everything about your users',
+                    },
+                    {
+                        name: 'stories',
+                        description: 'Manage stories',
+                    },
+                    {
+                        name: 'communities',
+                        description: 'UBI communities',
+                    },
+                ],
+                servers: swaggerServers,
+                schemes: [urlSchema],
+                components: {
+                    securitySchemes: {
+                        api_auth: {
+                            type: 'http',
+                            scheme: 'bearer',
+                            bearerFormat: 'JWT',
+                            scopes: {
+                                write: 'modify',
+                                read: 'read',
+                            },
+                        },
+                    },
+                },
+            },
+            apis: [
+                path.join(__dirname, '../src/routes/v2/**/*.ts'),
+                path.join(__dirname, '../../core/src/services/**/*.ts'),
+                path.join(__dirname, '../../core/src/interfaces/ubi/*.ts'),
+                path.join(__dirname, '../../core/src/interfaces/app/*.ts'),
+                path.join(__dirname, '../../core/src/interfaces/story/*.ts'),
+            ],
+        };
+        const swaggerSpec = swaggerJsdoc(options);
+
+        console.log(swaggerSpec);
+
+        app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+        if (process.env.NODE_ENV === 'development') {
+            // redundant in production (heroku logs it already), but useful for development
+            app.use(morgan('combined'));
+        }
+    }
 
     // Useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
     // It shows the real origin IP in the heroku or Cloudwatch logs
     app.enable('trust proxy');
 
     app.use(helmet());
-
     // The magic package that prevents frontend developers going nuts
     // Alternate description:
     // Enable Cross Origin Resource Sharing to all origins by default
     app.use(cors());
-    app.use((_, res, next) => {
+    app.use((req, res, next) => {
         res.header('Access-Control-Allow-Origin', '*');
         res.header(
             'Access-Control-Allow-Headers',
@@ -66,15 +145,10 @@ export default (app: express.Application): void => {
 
     // Middleware that transforms the raw string of req.body into json
     app.use(express.json());
+    // app.use(express.urlencoded({ extended: true }));
 
-    // per environment configs
     if (process.env.API_ENVIRONMENT === 'production') {
-        // important to have rete limiting in production
         app.use(rateLimiter);
-    }
-    if (process.env.NODE_ENV === 'development') {
-        // redundant in production (heroku logs it already), but useful for development
-        app.use(morgan('combined'));
     }
 
     // Load API routes
@@ -84,7 +158,6 @@ export default (app: express.Application): void => {
     // The error handler must be before any other error middleware and after all controllers
     app.use(Sentry.Handlers.errorHandler());
 
-    // TODO: do we need this?
     app.use((error, req, res, next) => {
         utils.Logger.error(
             req.originalUrl + ' -> ' + error &&
@@ -109,13 +182,10 @@ export default (app: express.Application): void => {
         next();
     });
 
-    // when a route does not exist
-    app.use((_, res) =>
-        res.status(404).send({
-            success: false,
-            error: 'This route does not exist! Visit the swagger docs at /api-docs',
-        })
-    );
+    /// catch 404
+    app.use((req, res, next) => {
+        res.status(404).send({ success: false, error: 'what???' });
+    });
 
     /// error handlers
     app.use((err: any, req: Request, res: Response) => {
