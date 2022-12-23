@@ -62,7 +62,7 @@ export async function startServer() {
     }
     utils.Logger.info('🗺️  Database loaded and connected');
 
-    serverLoader(app);
+    await serverLoader(app);
     utils.Logger.info('📡 Express server loaded');
 
     return app.listen(config.port, () => {
