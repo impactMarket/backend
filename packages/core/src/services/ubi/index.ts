@@ -1,5 +1,4 @@
 import BeneficiaryService from './beneficiary';
-import ClaimService from './claim';
 import ClaimLocationService from './claimLocation';
 import ClaimLocationServiceV2 from './claimLocation/index';
 import CommunityService from './community';
@@ -14,9 +13,9 @@ import ManagerService from './managers';
 
 export {
     BeneficiaryService,
-    ClaimService,
     ClaimLocationService,
     ClaimLocationServiceV2,
+    // TODO: can we remove this? Is it being used?
     CommunityService,
     CommunityContractService,
     CommunityDailyMetricsService,

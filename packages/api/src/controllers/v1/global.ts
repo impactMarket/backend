@@ -1,7 +1,7 @@
 import { services } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
-import { standardResponse } from '../utils/api';
+import { standardResponse } from '../../utils/api';
 
 const reachedAddressService = new services.ReachedAddressService();
 const globalGrowth = new services.global.GlobalGrowthService();

@@ -2,6 +2,27 @@ import { celebrate, Joi } from 'celebrate';
 
 import { defaultSchema } from './defaultSchema';
 
+// I wish this comes true https://github.com/hapijs/joi/issues/2864#issuecomment-1322736004
+
+// This should match Joi validations
+export type AnswerRequestType = {
+    lesson: number;
+    answers: number[];
+};
+export type StartLessonRequestType = {
+    lesson: number;
+};
+export type ListLevelsRequestType = {
+    status: string;
+    category: string;
+    level: string;
+    limit?: string;
+    offset?: string;
+};
+export type RegisterClaimRewardsRequestType = {
+    transactionHash: string;
+};
+
 class LearnAndEarnValidator {
     answer = celebrate({
         body: defaultSchema.object({
@@ -9,6 +30,7 @@ class LearnAndEarnValidator {
                 .array()
                 .items(Joi.number().required())
                 .required(),
+            lesson: Joi.number().required(),
         }),
     });
 
@@ -26,6 +48,12 @@ class LearnAndEarnValidator {
             category: Joi.string().optional(),
             level: Joi.string().optional(),
         },
+    });
+
+    registerClaimRewards = celebrate({
+        body: defaultSchema.object({
+            transactionHash: Joi.string().required(),
+        }),
     });
 }
 

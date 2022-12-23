@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "baseUrl": "./src",
-        "sourceMap": true,
+        "sourceMap": false,
         "target": "es2017",
         "module": "commonjs",
         "strict": true,
@@ -15,7 +15,7 @@
         "esModuleInterop": true,
         "outDir": "./dist",
         "noImplicitAny": false,
-        "useUnknownInCatchVariables": false,
+        "useUnknownInCatchVariables": false
     },
     "include": ["src"],
     "exclude": ["node_modules"]

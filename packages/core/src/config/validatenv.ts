@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import { bool, cleanEnv, num, port, str } from 'envalid';
 
+// TODO: api uses instead of the package validation.
+// This need to be refactoed
 if (process.env.NODE_ENV === 'development') {
     const envFound = dotenv.config();
     if (!envFound) {
@@ -10,6 +12,14 @@ if (process.env.NODE_ENV === 'development') {
     }
 } else if (process.env.NODE_ENV === 'test') {
     const envFound = dotenv.config({ path: '.env.test' });
+    if (!envFound) {
+        // This error should crash whole process
+
+        throw new Error("⚠️  Couldn't find .env file  ⚠️");
+    }
+} else if (process.env.RUN_LOCAL_BUILD === 'true') {
+    // to run local build
+    const envFound = dotenv.config();
     if (!envFound) {
         // This error should crash whole process
 
@@ -107,6 +117,7 @@ function validateEnv() {
         VERCEL_WEBHOOK_WEBSITE: str({ devDefault: onlyOnTestEnv('xyz') }),
         VERCEL_WEBHOOK_WALLET: str({ devDefault: onlyOnTestEnv('xyz') }),
         CRON_JOB_BATCH_SIZE: num({ default: 20 }),
+        MAX_DATABASE_POOL_CONNECTIONS: num({ default: 20 }),
     });
 }
 

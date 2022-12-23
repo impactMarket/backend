@@ -123,3 +123,7 @@ orbitdb/
 path-for-js-ipfs-repo/
 
 .DS_Store
+
+.env.development
+postgres_data/
+redis_data/

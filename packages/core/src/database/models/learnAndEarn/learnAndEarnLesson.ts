@@ -12,6 +12,7 @@ export class LearnAndEarnLessonModel extends Model<
     public id!: number;
     public prismicId!: string;
     public levelId!: number;
+    public languages?: string[];
     public active!: boolean;
 }
 
@@ -38,6 +39,10 @@ export function initializeLearnAndEarnLesson(
                 },
                 onDelete: 'CASCADE',
                 allowNull: false,
+            },
+            languages: {
+                type: DataTypes.ARRAY(DataTypes.STRING(3)),
+                allowNull: true,
             },
             active: {
                 type: DataTypes.BOOLEAN,

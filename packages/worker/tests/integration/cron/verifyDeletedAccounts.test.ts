@@ -104,14 +104,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             txAt: new Date(),
         });
 
-        await services.ubi.ClaimService.add({
-            address: users[1].address,
-            communityId: communities[0].id,
-            amount: '15',
-            tx,
-            txAt: new Date('2021-01-02'),
-        });
-
         await services.ubi.InflowService.add(
             users[1].address,
             communities[0].publicId,
@@ -218,12 +210,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
                 },
             }))!.toJSON();
 
-        const claims = (await database.models.ubiClaim.findOne({
-            where: {
-                address: users[1].address,
-            },
-        }))!.toJSON();
-
         const inflow = (await database.models.inflow.findOne({
             where: {
                 from: users[1].address,
@@ -241,9 +227,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         expect(transactions).to.include({
             amount: '25',
             isFromBeneficiary: true,
-        });
-        expect(claims).to.include({
-            amount: '15',
         });
         expect(inflow).to.include({
             amount: '30',

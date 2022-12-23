@@ -1,13 +1,13 @@
 import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
-import communityController from '../controllers/community';
+import communityController from '../../controllers/v1/community';
 import {
     adminAuthentication,
     authenticateToken,
     optionalAuthentication,
-} from '../middlewares';
-import communityValidators from '../validators/community';
+} from '../../middlewares';
+import communityValidators from '../../validators/community';
 
 /**
  * @swagger
@@ -205,14 +205,6 @@ export default (app: Router): void => {
     );
 
     // end admin endpoints
-    /**
-     * @deprecated use /list
-     */
-    route.get(
-        '/list/light/:order?',
-        database.cacheWithRedis('10 minutes', database.cacheOnlySuccess),
-        communityController.listLight
-    );
     /**
      * @deprecated use /list
      */

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import LearnAndEarnController from '../../controllers/v2/learnAndEarn';
-import { authenticateToken, optionalAuthentication } from '../../middlewares';
+import { authenticateToken } from '../../middlewares';
 import LearnAndEarnValidator from '../../validators/learnAndEarn';
 
 export default (app: Router): void => {
@@ -9,23 +9,6 @@ export default (app: Router): void => {
     const learnAndEarnValidator = new LearnAndEarnValidator();
     const route = Router();
     app.use('/learn-and-earn', route);
-
-    /**
-     * @swagger
-     *
-     * /learn-and-earn/total:
-     *   get:
-     *     tags:
-     *       - "learn-and-earn"
-     *     summary: "Get total metrics"
-     *     responses:
-     *       "200":
-     *         description: OK
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.get('/total', authenticateToken, learnAndEarnController.total);
 
     /**
      * @swagger
@@ -69,14 +52,21 @@ export default (app: Router): void => {
         learnAndEarnController.listLevels
     );
 
+    route.put(
+        '/levels',
+        authenticateToken,
+        learnAndEarnValidator.registerClaimRewards,
+        learnAndEarnController.registerClaimRewards
+    );
+
     /**
      * @swagger
      *
-     * /learn-and-earn/levels/{id}/lessons:
+     * /learn-and-earn/levels/{id}:
      *   get:
      *     tags:
      *       - "learn-and-earn"
-     *     summary: "List lessons"
+     *     summary: "List lessons on a level"
      *     parameters:
      *       - in: path
      *         name: id
@@ -92,7 +82,7 @@ export default (app: Router): void => {
      *       - "write:modify":
      */
     route.get(
-        '/levels/:id/lessons',
+        '/levels/:id',
         authenticateToken,
         learnAndEarnController.listLessons
     );
@@ -100,8 +90,8 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /learn-and-earn/lessons/{id}/answers:
-     *   post:
+     * /learn-and-earn/lessons/{id}:
+     *   put:
      *     tags:
      *       - "learn-and-earn"
      *     summary: "Verify answers"
@@ -111,6 +101,8 @@ export default (app: Router): void => {
      *           schema:
      *             type: object
      *             properties:
+     *               lesson:
+     *                 type: string
      *               answers:
      *                 type: array
      *                 items:
@@ -122,8 +114,8 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.post(
-        '/lessons/:id/answers',
+    route.put(
+        '/lessons',
         authenticateToken,
         learnAndEarnValidator.answer,
         learnAndEarnController.answer
@@ -159,5 +151,25 @@ export default (app: Router): void => {
         learnAndEarnController.startLesson
     );
 
+    /**
+     * trigger update
+     */
     route.post('/webhook', authenticateToken, learnAndEarnController.webhook);
+
+    /**
+     * @swagger
+     *
+     * /learn-and-earn/:
+     *   get:
+     *     tags:
+     *       - "learn-and-earn"
+     *     summary: "Get user metrics"
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get('/', authenticateToken, learnAndEarnController.total);
 };

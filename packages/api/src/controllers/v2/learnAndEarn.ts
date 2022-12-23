@@ -1,5 +1,11 @@
 import { config, services } from '@impactmarket/core';
 import { Request, Response } from 'express';
+import {
+    AnswerRequestType,
+    ListLevelsRequestType,
+    RegisterClaimRewardsRequestType,
+    StartLessonRequestType,
+} from 'validators/learnAndEarn';
 
 import { RequestWithUser } from '../../middlewares/core';
 import { standardResponse } from '../../utils/api';
@@ -24,7 +30,10 @@ class LearnAndEarnController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    listLevels = (req: RequestWithUser, res: Response) => {
+    listLevels = (
+        req: RequestWithUser<never, never, never, ListLevelsRequestType>,
+        res: Response
+    ) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
@@ -49,15 +58,37 @@ class LearnAndEarnController {
                 req.user.userId,
                 parseInt(offset, 10),
                 parseInt(limit, 10),
-                status as string,
-                category as string,
-                level as string
+                status,
+                category,
+                level
             )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    listLessons = (req: RequestWithUser, res: Response) => {
+    registerClaimRewards = (
+        req: RequestWithUser<never, never, RegisterClaimRewardsRequestType>,
+        res: Response
+    ) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        const { transactionHash } = req.body;
+
+        this.learnAndEarnService
+            .registerClaimRewards(req.user.userId, transactionHash)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    listLessons = (req: RequestWithUser<{ id: string }>, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
@@ -69,12 +100,15 @@ class LearnAndEarnController {
         }
 
         this.learnAndEarnService
-            .listLessons(req.user.userId, parseInt(req.params.id))
+            .listLessons(req.user.userId, parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    answer = (req: RequestWithUser, res: Response) => {
+    answer = (
+        req: RequestWithUser<never, never, AnswerRequestType>,
+        res: Response
+    ) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
@@ -85,15 +119,18 @@ class LearnAndEarnController {
             return;
         }
 
-        const { answers } = req.body;
+        const { answers, lesson } = req.body;
 
         this.learnAndEarnService
-            .answer(req.user, answers, parseInt(req.params.id))
+            .answer(req.user, answers, lesson)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    startLesson = (req: RequestWithUser, res: Response) => {
+    startLesson = (
+        req: RequestWithUser<never, never, StartLessonRequestType>,
+        res: Response
+    ) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {

@@ -3,10 +3,10 @@ import { Router } from 'express';
 import claimLocation from './claimLocation';
 import community from './community';
 import generic from './generic';
+import global from './global';
 import learnAndEarn from './learnAndEarn';
 import story from './story';
 import user from './user';
-import global from './global';
 
 export default (): Router => {
     const app = Router();

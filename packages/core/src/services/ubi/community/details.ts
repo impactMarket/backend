@@ -65,8 +65,8 @@ export class CommunityDetailsService {
                     model: models.ubiCommunityDailyMetrics,
                     as: 'metrics',
                     order: [['date', 'desc']],
-                    limit: 1
-                }
+                    limit: 1,
+                },
             ],
             where: {
                 id: communityId,
@@ -77,9 +77,13 @@ export class CommunityDetailsService {
         }
 
         return {
-            ubiRate: community.metrics?.length ? community.metrics[0].ubiRate : 0,
-            estimatedDuration: community.metrics?.length ? community.metrics[0].estimatedDuration : 0,
-        }
+            ubiRate: community.metrics?.length
+                ? community.metrics[0].ubiRate
+                : 0,
+            estimatedDuration: community.metrics?.length
+                ? community.metrics[0].estimatedDuration
+                : 0,
+        };
     }
 
     public async getContract(communityId: number) {
@@ -146,6 +150,8 @@ export class CommunityDetailsService {
             return null;
         }
 
+        let address = '';
+        let active = true;
         if (community.status === 'valid') {
             const subgraphAmbassador = await getCommunityAmbassador(
                 community.contractAddress!
@@ -153,31 +159,23 @@ export class CommunityDetailsService {
             if (!subgraphAmbassador) {
                 return null;
             }
-            const address = ethers.utils.getAddress(subgraphAmbassador.id);
-            const ambassador = await models.appUser.findOne({
-                attributes: ambassadorAttributes,
-                where: {
-                    address: { [Op.iLike]: address },
-                },
-            });
-            return {
-                ...ambassador?.toJSON(),
-                address,
-                active: subgraphAmbassador.status === 0,
-            };
+            address = getAddress(subgraphAmbassador.id);
+            active = subgraphAmbassador.status === 0;
         } else {
-            const ambassador = await models.appUser.findOne({
-                attributes: ambassadorAttributes,
-                where: {
-                    address: { [Op.iLike]: community.ambassadorAddress! },
-                },
-            });
-
-            return {
-                ...ambassador?.toJSON(),
-                active: true,
-            };
+            address = getAddress(community.ambassadorAddress!);
+            active = true;
         }
+
+        const ambassador = await models.appUser.findOne({
+            attributes: ambassadorAttributes,
+            where: { address },
+        });
+
+        return {
+            ...ambassador?.toJSON(),
+            address,
+            active,
+        };
     }
 
     public async getMerchant(communityId: number) {
@@ -719,8 +717,8 @@ export class CommunityDetailsService {
         id: number,
         userAddress?: string,
         query?: {
-            state?: string | string[]
-        },
+            state?: string | string[];
+        }
     ): Promise<CommunityAttributes> {
         return this._findCommunityBy({ id }, userAddress, query?.state);
     }
@@ -729,16 +727,20 @@ export class CommunityDetailsService {
         contractAddress: string,
         userAddress?: string,
         query?: {
-            state?: string | string[]
-        },
+            state?: string | string[];
+        }
     ): Promise<CommunityAttributes> {
-        return this._findCommunityBy({ contractAddress }, userAddress, query?.state);
+        return this._findCommunityBy(
+            { contractAddress },
+            userAddress,
+            query?.state
+        );
     }
 
     private async _findCommunityBy(
         where: WhereOptions<CommunityAttributes>,
         userAddress?: string,
-        returnState?: string | string[],
+        returnState?: string | string[]
     ): Promise<CommunityAttributes> {
         const community = await models.community.findOne({
             where,
@@ -770,14 +772,14 @@ export class CommunityDetailsService {
         }
 
         const state = {
-            ...(!!returnState && (returnState === 'base' || returnState.indexOf('base')  !== -1)
+            ...(!!returnState &&
+            (returnState === 'base' || returnState.indexOf('base') !== -1)
                 ? await this.getBaseState(community.id)
-                : null
-            ),
-            ...(!!returnState && (returnState === 'ubi' || returnState.indexOf('ubi')  !== -1)
+                : null),
+            ...(!!returnState &&
+            (returnState === 'ubi' || returnState.indexOf('ubi') !== -1)
                 ? await this.getUbiState(community.id)
-                : null
-            )
+                : null),
         } as any;
 
         return {

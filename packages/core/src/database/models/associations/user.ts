@@ -1,12 +1,6 @@
 import { Sequelize } from 'sequelize';
 
 export function userAssociation(sequelize: Sequelize) {
-    sequelize.models.Beneficiary.hasMany(sequelize.models.UbiClaimModel, {
-        sourceKey: 'address',
-        foreignKey: 'address',
-        as: 'claim',
-    });
-
     // used to query from the beneficiary with incude
     sequelize.models.Beneficiary.belongsTo(sequelize.models.AppUserModel, {
         foreignKey: 'address',

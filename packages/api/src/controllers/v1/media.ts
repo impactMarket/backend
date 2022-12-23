@@ -1,7 +1,7 @@
 import { services, interfaces } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
-import { standardResponse } from '../utils/api';
+import { standardResponse } from '../../utils/api';
 
 export class MediaController {
     mediaService = new services.media.MediaService();

@@ -1,9 +1,9 @@
 import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
-import StoryController from '../controllers/story';
-import { authenticateToken, optionalAuthentication } from '../middlewares';
-import StoryValidator from '../validators/story';
+import StoryController from '../../controllers/v1/story';
+import { authenticateToken, optionalAuthentication } from '../../middlewares';
+import StoryValidator from '../../validators/story';
 
 export default (app: Router): void => {
     const storyController = new StoryController();

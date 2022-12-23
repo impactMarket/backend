@@ -1,8 +1,8 @@
 import { services } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
-import { RequestWithUser } from '../middlewares/core';
-import { standardResponse } from '../utils/api';
+import { RequestWithUser } from '../../middlewares/core';
+import { standardResponse } from '../../utils/api';
 
 const getAll = (req: Request, res: Response) => {
     services.ubi.ClaimLocationService.getAll()

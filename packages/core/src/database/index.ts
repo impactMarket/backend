@@ -1,6 +1,6 @@
 import apicache from 'apicache';
+import Redis from 'ioredis';
 import pg from 'pg';
-import redis from 'redis';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
 
 import config from '../config';
@@ -54,7 +54,6 @@ import * as UbiRequestChangeParams from './models/ubi/requestChangeParams';
 import * as UbiBeneficiaryRegistry from './models/ubi/ubiBeneficiaryRegistry';
 import * as UbiBeneficiarySurvey from './models/ubi/ubiBeneficiarySurvey';
 import * as UbiBeneficiaryTransaction from './models/ubi/ubiBeneficiaryTransaction';
-import * as UbiClaim from './models/ubi/ubiClaim';
 import * as ClaimLocation from './models/ubi/ubiClaimLocation';
 import * as UbiCommunityCampaign from './models/ubi/ubiCommunityCampaign';
 import * as UbiCommunityLabel from './models/ubi/ubiCommunityLabel';
@@ -86,15 +85,14 @@ const dbConfig: Options = {
     },
     dialectModule: pg,
     pool: {
-        max: 30,
+        max: config.maxDatabasePoolConnections,
         min: 0,
         acquire: 60000,
-        idle: 5000,
+        idle: 15000,
     },
     protocol: 'postgres',
     native: !config.aws.lambda, // if lambda = true, then native = false
     logging,
-    // query: { raw: true }, // I wish, eager loading gets fixed
 };
 const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);
@@ -130,8 +128,6 @@ const models: DbModels = {
         .UbiCommunityCampaignModel as ModelCtor<UbiCommunityCampaign.UbiCommunityCampaignModel>,
     ubiRequestChangeParams: sequelize.models
         .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParams.UbiRequestChangeParamsModel>,
-    ubiClaim: sequelize.models
-        .UbiClaimModel as ModelCtor<UbiClaim.UbiClaimModel>,
     ubiClaimLocation: sequelize.models
         .ClaimLocationModel as ModelCtor<ClaimLocation.ClaimLocationModel>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
@@ -211,18 +207,7 @@ const models: DbModels = {
         .MerchantCommunityModel as ModelCtor<MerchantCommunity.MerchantCommunityModel>,
 };
 
-let redisClient: redis.RedisClient | undefined;
-if (process.env.NODE_ENV !== 'test') {
-    redisClient = redis.createClient(config.redis, {
-        ...(config.hasRedisTls
-            ? {
-                  tls: {
-                      rejectUnauthorized: false,
-                  },
-              }
-            : {}),
-    });
-}
+const redisClient = new Redis(config.redis);
 const cacheOnlySuccess = (req, res) => res.statusCode === 200;
 const apiCacheOptions = {
     debug: !config.enabledCacheWithRedis,
@@ -265,7 +250,6 @@ export {
     UbiBeneficiaryRegistry,
     UbiBeneficiarySurvey,
     UbiBeneficiaryTransaction,
-    UbiClaim,
     ClaimLocation,
     UbiCommunityCampaign,
     UbiCommunityLabel,

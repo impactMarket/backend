@@ -1,8 +1,8 @@
 import { config, database, services } from '@impactmarket/core';
 import { Router, Request, Response } from 'express';
 
-import genericController from '../controllers/generic';
-import { standardResponse } from '../utils/api';
+import genericController from '../../controllers/v1/generic';
+import { standardResponse } from '../../utils/api';
 
 export default (app: Router): void => {
     /**

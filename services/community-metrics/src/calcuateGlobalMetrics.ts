@@ -118,7 +118,10 @@ export async function calcuateGlobalMetrics(): Promise<void> {
             avgMedianSSI: Math.round(avgMedianSSI * 100) / 100,
             claimed: communitiesYesterday.totalClaimed,
             claims: parseInt(communitiesYesterday.totalClaims, 10),
-            beneficiaries: parseInt(communitiesYesterday.totalBeneficiaries, 10),
+            beneficiaries: parseInt(
+                communitiesYesterday.totalBeneficiaries,
+                10
+            ),
             raised: communitiesYesterday.totalRaised,
             backers: backersAndFunding.backers,
             volume,
@@ -141,7 +144,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
             totalReachOut: BigInt(0),
         });
     } catch (error) {
-        console.error('Calculate Global Metrics Failed: ', error)
+        console.error('Calculate Global Metrics Failed: ', error);
     }
 
     if ((await globalDailyStateService.count()) > 60) {
@@ -458,14 +461,20 @@ async function calculateMetricsGrowth(
 
         const growthToAdd = {
             date: yesterdayDateOnly,
-            claimed: utils.util.calculateGrowth(past.tClaimed, present.tClaimed),
+            claimed: utils.util.calculateGrowth(
+                past.tClaimed,
+                present.tClaimed
+            ),
             claims: utils.util.calculateGrowth(past.tClaims, present.tClaims),
             beneficiaries: utils.util.calculateGrowth(
                 past.tBeneficiaries,
                 present.tBeneficiaries
             ),
             raised: utils.util.calculateGrowth(past.tRaised, present.tRaised),
-            backers: utils.util.calculateGrowth(past.tBackers, present.tBackers),
+            backers: utils.util.calculateGrowth(
+                past.tBackers,
+                present.tBackers
+            ),
             fundingRate: utils.util.calculateGrowth(
                 past.fundingRate,
                 present.fundingRate
@@ -480,6 +489,6 @@ async function calculateMetricsGrowth(
         };
         await globalGrowthService.add(growthToAdd);
     } catch (error) {
-        console.error('Calculate Metrics Growth Failed: ', error)
+        console.error('Calculate Metrics Growth Failed: ', error);
     }
 }
