@@ -40,5 +40,4 @@ workflows:
   version: 2
   test:
     jobs:
-      - coverage
       - lint
