@@ -25,13 +25,13 @@ export interface LearnAndEarnLesson {
     id: number;
     prismicId: string;
     levelId: number;
-    languages: string[];
+    languages?: string[];
     active: boolean;
 }
 
 export interface LearnAndEarnLessonCreation {
     prismicId: string;
     levelId: number;
-    languages: string[];
+    languages?: string[];
     active: boolean;
 }

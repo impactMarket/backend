@@ -11,7 +11,7 @@ export class LearnAndEarnCategoryModel extends Model<
 > {
     public id!: number;
     public prismicId!: string;
-    public languages!: string[];
+    public languages?: string[];
     public active!: boolean;
 }
 
@@ -32,7 +32,7 @@ export function initializeLearnAndEarnCategory(
             },
             languages: {
                 type: DataTypes.ARRAY(DataTypes.STRING(3)),
-                allowNull: false,
+                allowNull: true,
             },
             active: {
                 type: DataTypes.BOOLEAN,

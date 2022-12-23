@@ -21,12 +21,12 @@
 export interface LearnAndEarnCategory {
     id: number;
     prismicId: string;
-    languages: string[];
+    languages?: string[];
     active: boolean;
 }
 
 export interface LearnAndEarnCategoryCreation {
     prismicId: string;
-    languages: string[];
+    languages?: string[];
     active: boolean;
 }
