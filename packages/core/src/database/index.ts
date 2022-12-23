@@ -76,12 +76,10 @@ const dbConfig: Options = {
     dialect: 'postgres',
     dialectOptions: {
         connectTimeout: 60000,
-        ssl: config.aws.lambda
-            ? {
-                  require: true,
-                  rejectUnauthorized: false,
-              }
-            : {},
+        ssl: {
+            require: true,
+            rejectUnauthorized: false,
+        },
     },
     dialectModule: pg,
     pool: {
