@@ -7,7 +7,7 @@ jobs:
   coverage:
     docker:
       - image: circleci/node:16.13.0
-      - image: circleci/postgres:14.6-alpine
+      - image: circleci/postgres:14-alpine
         environment:
           POSTGRES_USER: citest
           POSTGRES_DB: impactmarkettest
