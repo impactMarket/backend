@@ -10,7 +10,13 @@ import { LearnAndEarnLessonModel } from '../../../src/database/models/learnAndEa
 import { LearnAndEarnLevelModel } from '../../../src/database/models/learnAndEarn/learnAndEarnLevel';
 import { LearnAndEarnQuizModel } from '../../../src/database/models/learnAndEarn/learnAndEarnQuiz';
 import { AppUser } from '../../../src/interfaces/app/appUser';
-import LearnAndEarnService from '../../../src/services/learnAndEarn';
+import { answer } from '../../../src/services/learnAndEarn/answer';
+import {
+    listLessons,
+    listLevels,
+} from '../../../src/services/learnAndEarn/list';
+import { startLesson } from '../../../src/services/learnAndEarn/start';
+import { total } from '../../../src/services/learnAndEarn/userData';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import UserFactory from '../../factories/user';
 
@@ -21,12 +27,10 @@ describe('Learn And Earn', () => {
         level: LearnAndEarnLevelModel,
         lesson1: LearnAndEarnLessonModel,
         lesson2: LearnAndEarnLessonModel,
-        quiz1: LearnAndEarnQuizModel,
-        quiz2: LearnAndEarnQuizModel,
+        // quiz1: LearnAndEarnQuizModel,
+        // quiz2: LearnAndEarnQuizModel,
         quiz3: LearnAndEarnQuizModel,
         quiz4: LearnAndEarnQuizModel;
-
-    const learnAndEarnService = new LearnAndEarnService();
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -71,18 +75,18 @@ describe('Learn And Earn', () => {
         });
 
         // create quiz
-        quiz1 = await models.learnAndEarnQuiz.create({
-            active: true,
-            answer: 0,
-            lessonId: lesson1.id,
-            order: 0,
-        });
-        quiz2 = await models.learnAndEarnQuiz.create({
-            active: true,
-            answer: 1,
-            lessonId: lesson1.id,
-            order: 1,
-        });
+        // quiz1 = await models.learnAndEarnQuiz.create({
+        //     active: true,
+        //     answer: 0,
+        //     lessonId: lesson1.id,
+        //     order: 0,
+        // });
+        // quiz2 = await models.learnAndEarnQuiz.create({
+        //     active: true,
+        //     answer: 1,
+        //     lessonId: lesson1.id,
+        //     order: 1,
+        // });
         quiz3 = await models.learnAndEarnQuiz.create({
             active: true,
             answer: 0,
@@ -113,13 +117,13 @@ describe('Learn And Earn', () => {
 
     describe('total', () => {
         it('get total', async () => {
-            const total = await learnAndEarnService.total(users[0].id);
+            const total_ = await total(users[0].id);
 
-            expect(total.lesson).to.include({
+            expect(total_.lesson).to.include({
                 completed: 0,
                 total: 2,
             });
-            expect(total.level).to.include({
+            expect(total_.level).to.include({
                 completed: 0,
                 total: 1,
             });
@@ -132,7 +136,7 @@ describe('Learn And Earn', () => {
 
     describe('levels', () => {
         it('list levels available', async () => {
-            const levels = await learnAndEarnService.listLevels(
+            const levels = await listLevels(
                 users[0].id,
                 config.defaultOffset,
                 config.defaultLimit,
@@ -149,7 +153,7 @@ describe('Learn And Earn', () => {
         });
 
         it('list levels completed', async () => {
-            const levels = await learnAndEarnService.listLevels(
+            const levels = await listLevels(
                 users[0].id,
                 config.defaultOffset,
                 config.defaultLimit,
@@ -162,10 +166,7 @@ describe('Learn And Earn', () => {
 
     describe('lessons', () => {
         it('list lessons', async () => {
-            const { lessons } = await learnAndEarnService.listLessons(
-                users[0].id,
-                level.id
-            );
+            const { lessons } = await listLessons(users[0].id, level.id);
 
             expect(lessons[0]).to.include({
                 prismicId: 'lesson1',
@@ -175,10 +176,7 @@ describe('Learn And Earn', () => {
         });
 
         it('start a lesson', async () => {
-            const start = await learnAndEarnService.startLesson(
-                users[0].id,
-                lesson1.id
-            );
+            const start = await startLesson(users[0].id, lesson1.id);
 
             expect(start.lesson).to.include({
                 userId: users[0].id,
@@ -191,14 +189,14 @@ describe('Learn And Earn', () => {
 
     describe('answers', () => {
         it('check answers', async () => {
-            await learnAndEarnService.startLesson(users[0].id, lesson2.id);
-            const answer = await learnAndEarnService.answer(
+            await startLesson(users[0].id, lesson2.id);
+            const answer_ = await answer(
                 { userId: users[0].id, address: users[0].address },
                 [quiz3.answer, quiz4.answer],
                 lesson2.id
             );
 
-            expect(answer).to.include({
+            expect(answer_).to.include({
                 attempts: 1,
                 success: true,
                 points: 10,

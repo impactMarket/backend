@@ -1,8 +1,11 @@
-import { ethers } from 'ethers';
+import { arrayify } from '@ethersproject/bytes';
+import { keccak256 } from '@ethersproject/solidity';
+import { Wallet } from '@ethersproject/wallet';
 import { literal } from 'sequelize';
 
 import config from '../../config';
-import { models } from '../../database';
+import { models, sequelize } from '../../database';
+import { LearnAndEarnUserLesson } from '../../interfaces/learnAndEarn/learnAndEarnUserLesson';
 import { BaseError } from '../../utils/baseError';
 
 async function countAvailableLessons(
@@ -103,13 +106,13 @@ async function signParams(
     levelId: number,
     amountEarned: number
 ): Promise<string> {
-    const signer = new ethers.Wallet(config.learnAndEarnPrivateKey);
+    const signer = new Wallet(config.learnAndEarnPrivateKey);
 
-    const message = ethers.utils.solidityKeccak256(
+    const message = keccak256(
         ['address', 'uint256', 'uint256'],
         [beneficiaryAddress, levelId, amountEarned]
     );
-    const arrayifyMessage = ethers.utils.arrayify(message);
+    const arrayifyMessage = arrayify(message);
     return await signer.signMessage(arrayifyMessage);
 }
 
@@ -146,12 +149,13 @@ async function calculateReward(
 export async function answer(
     user: { userId: number; address: string },
     answers: number[],
-    lesson: number
+    lessonId: number
 ) {
+    const t = await sequelize.transaction();
     try {
         const quizzes = await models.learnAndEarnQuiz.findAll({
             where: {
-                lessonId: lesson,
+                lessonId,
             },
             order: ['order'],
         });
@@ -160,100 +164,161 @@ export async function answer(
             throw new BaseError('QUIZ_NOT_FOUND', 'quiz not found');
         }
 
-        const wrongAnswers = answers.reduce((acc, el, index) => {
+        const wrongAnswers = answers.reduce<number[]>((acc, el, index) => {
             const quiz = quizzes.find((quiz) => quiz.order === index);
             if (quiz?.answer !== el) {
                 acc.push(index);
             }
             return acc;
-        }, [] as number[]);
+        }, []);
 
         if (wrongAnswers && wrongAnswers.length > 0) {
             // set attempts
-            const userLesson = await models.learnAndEarnUserLesson.update(
-                {
-                    attempts: literal('attempts + 1'),
-                },
-                {
+            let userLesson: LearnAndEarnUserLesson;
+            const t = await sequelize.transaction();
+
+            const [createdUserLesson, created] =
+                await models.learnAndEarnUserLesson.findOrCreate({
                     where: {
+                        attempts: 1,
                         userId: user.userId,
                         lessonId: quizzes[0].lessonId,
                         status: 'started',
                     },
-                    returning: true,
-                }
-            );
+                    transaction: t,
+                });
+
+            if (created) {
+                userLesson = createdUserLesson;
+            } else {
+                userLesson = await models.learnAndEarnUserLesson.increment(
+                    'attempts',
+                    {
+                        by: 1,
+                        where: {
+                            userId: user.userId,
+                            lessonId: quizzes[0].lessonId,
+                            status: 'started',
+                        },
+                        transaction: t,
+                    }
+                );
+            }
+
+            await t.commit();
 
             // return wrong answers
             return {
                 success: false,
                 wrongAnswers,
-                attempts: userLesson[1][0].attempts,
+                attempts: userLesson.attempts,
             };
-        } else {
-            // completed lesson, calculate points
-            const userLesson = await models.learnAndEarnUserLesson.findOne({
+        }
+
+        // completed lesson, calculate points
+        const userLesson = await models.learnAndEarnUserLesson.findOne({
+            where: {
+                lessonId: quizzes[0].lessonId,
+                status: 'started',
+            },
+        });
+
+        if (!userLesson) {
+            throw new BaseError(
+                'LESSON_ALREADY_COMPLETED',
+                'lesson already completed'
+            );
+        }
+
+        const attempts = (userLesson?.attempts || 0) + 1;
+        let points = 0;
+        switch (attempts) {
+            case 1:
+                points = 10;
+                break;
+            case 2:
+                points = 8;
+                break;
+            case 3:
+                points = 5;
+                break;
+            default:
+                points = 0;
+                break;
+        }
+
+        await models.learnAndEarnUserLesson.update(
+            {
+                attempts,
+                points,
+                status: 'completed',
+                completionDate: new Date(),
+            },
+            {
                 where: {
+                    userId: user.userId,
                     lessonId: quizzes[0].lessonId,
-                    status: 'started',
                 },
-            });
-
-            if (!userLesson) {
-                throw new BaseError(
-                    'LESSON_ALREADY_COMPLETED',
-                    'lesson already completed'
-                );
+                transaction: t,
             }
+        );
 
-            const attempts = userLesson?.attempts! + 1;
-            let points = 0;
-            switch (attempts) {
-                case 1:
-                    points = 10;
-                    break;
-                case 2:
-                    points = 8;
-                    break;
-                case 3:
-                    points = 5;
-                    break;
-                default:
-                    points = 0;
-                    break;
-            }
+        const lesson = await models.learnAndEarnLesson.findOne({
+            where: { id: quizzes[0].lessonId },
+        });
+        const totalPoints = await getTotalPoints(user.userId, lesson!.levelId);
+        // verify if all the lessons was completed
+        const availableLessons = await countAvailableLessons(
+            lesson!.levelId,
+            user.userId
+        );
 
-            await models.learnAndEarnUserLesson.update(
+        if (availableLessons === 0) {
+            // if so, complete the level and make the payment
+            await models.learnAndEarnUserLevel.update(
                 {
-                    attempts,
-                    points,
                     status: 'completed',
                     completionDate: new Date(),
                 },
                 {
                     where: {
                         userId: user.userId,
-                        lessonId: quizzes[0].lessonId,
+                        levelId: lesson!.levelId,
                     },
+                    transaction: t,
                 }
             );
 
-            const lesson = await models.learnAndEarnLesson.findOne({
-                where: { id: quizzes[0].lessonId },
+            // create signature
+            const level = await models.learnAndEarnLevel.findOne({
+                where: { id: lesson!.levelId },
             });
-            const totalPoints = await getTotalPoints(
-                user.userId,
-                lesson!.levelId
+            const signature = await signParams(
+                user.address,
+                level!.id,
+                level!.totalReward
             );
-            // verify if all the lessons was completed
-            const availableLessons = await countAvailableLessons(
-                lesson!.levelId,
+            const amount = await calculateReward(user.userId, level!.id);
+            await models.learnAndEarnPayment.create(
+                {
+                    userId: user.userId,
+                    levelId: level!.id,
+                    amount,
+                    status: 'pending',
+                    signature,
+                },
+                { transaction: t }
+            );
+
+            // verify if the category was completed
+            const availableLevels = await countAvailableLevels(
+                level!.categoryId,
                 user.userId
             );
 
-            if (availableLessons === 0) {
-                // if so, complete the level and make the payment
-                await models.learnAndEarnUserLevel.update(
+            if (availableLevels === 0) {
+                // if so, complete category
+                await models.learnAndEarnUserCategory.update(
                     {
                         status: 'completed',
                         completionDate: new Date(),
@@ -261,86 +326,51 @@ export async function answer(
                     {
                         where: {
                             userId: user.userId,
-                            levelId: lesson!.levelId,
+                            categoryId: level!.categoryId,
                         },
+                        transaction: t,
                     }
                 );
-
-                // create signature
-                const level = await models.learnAndEarnLevel.findOne({
-                    where: { id: lesson!.levelId },
+                const category = await models.learnAndEarnCategory.findOne({
+                    attributes: ['prismicId'],
+                    where: {
+                        id: level!.categoryId,
+                    },
                 });
-                const signature = await signParams(
-                    user.address,
-                    level!.id,
-                    level!.totalReward
-                );
-                const amount = await calculateReward(user.userId, level!.id);
-                await models.learnAndEarnPayment.create({
-                    userId: user.userId,
-                    levelId: level!.id,
-                    amount,
-                    status: 'pending',
-                    signature,
-                });
+                await t.commit();
 
-                // verify if the category was completed
-                const availableLevels = await countAvailableLevels(
-                    level!.categoryId,
-                    user.userId
-                );
-
-                if (availableLevels === 0) {
-                    // if so, complete category
-                    await models.learnAndEarnUserCategory.update(
-                        {
-                            status: 'completed',
-                            completionDate: new Date(),
-                        },
-                        {
-                            where: {
-                                userId: user.userId,
-                                categoryId: level!.categoryId,
-                            },
-                        }
-                    );
-                    const category = await models.learnAndEarnCategory.findOne({
-                        attributes: ['prismicId'],
-                        where: {
-                            id: level!.categoryId,
-                        },
-                    });
-
-                    return {
-                        success: true,
-                        attempts,
-                        points,
-                        totalPoints,
-                        availableLessons,
-                        levelCompleted: level!.prismicId,
-                        categoryCompleted: category!.prismicId,
-                    };
-                } else {
-                    return {
-                        success: true,
-                        attempts,
-                        points,
-                        totalPoints,
-                        availableLessons,
-                        levelCompleted: level!.prismicId,
-                    };
-                }
-            } else {
                 return {
                     success: true,
                     attempts,
                     points,
                     totalPoints,
                     availableLessons,
+                    levelCompleted: level!.prismicId,
+                    categoryCompleted: category!.prismicId,
+                };
+            } else {
+                await t.commit();
+                return {
+                    success: true,
+                    attempts,
+                    points,
+                    totalPoints,
+                    availableLessons,
+                    levelCompleted: level!.prismicId,
                 };
             }
+        } else {
+            await t.commit();
+            return {
+                success: true,
+                attempts,
+                points,
+                totalPoints,
+                availableLessons,
+            };
         }
     } catch (error) {
+        await t.rollback();
         throw new BaseError(
             error.name || 'VERIFY_ANSWER_FAILED',
             error.message || 'failed to verify answers'
