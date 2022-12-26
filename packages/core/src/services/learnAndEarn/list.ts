@@ -1,4 +1,5 @@
 import { literal, Op, WhereOptions } from 'sequelize';
+import { formatObjectToNumber } from 'utils';
 
 import { models } from '../../database';
 import { LearnAndEarnLesson } from '../../interfaces/learnAndEarn/learnAndEarnLesson';
@@ -138,16 +139,15 @@ export async function listLevels(
                     totalLessons,
                     status,
                     category,
-                }) => {
-                    return {
+                }) =>
+                    formatObjectToNumber({
                         id,
                         prismicId,
                         totalReward,
                         totalLessons,
                         status: status || 'available',
                         category: category?.prismicId,
-                    };
-                }
+                    })
             ),
         };
     } catch (error) {

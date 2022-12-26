@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
-import { replace, stub, SinonStub, restore } from 'sinon';
+import { replace, restore } from 'sinon';
 
 import config from '../../../src/config';
-import { models, sequelize as database } from '../../../src/database';
+import { models } from '../../../src/database';
 import { LearnAndEarnCategoryModel } from '../../../src/database/models/learnAndEarn/learnAndEarnCategory';
 import { LearnAndEarnLessonModel } from '../../../src/database/models/learnAndEarn/learnAndEarnLesson';
 import { LearnAndEarnLevelModel } from '../../../src/database/models/learnAndEarn/learnAndEarnLevel';
@@ -38,10 +38,12 @@ describe('Learn And Earn', () => {
             ethers.Wallet.createRandom().privateKey
         );
 
+        // add category, level and lessons with pt language as user's default
+        // language is pt
         // create category
         category = await models.learnAndEarnCategory.create({
             prismicId: 'category1',
-            languages: ['en'],
+            languages: ['pt'],
             active: true,
         });
 
@@ -49,7 +51,7 @@ describe('Learn And Earn', () => {
         level = await models.learnAndEarnLevel.create({
             active: true,
             categoryId: category.id,
-            languages: ['en'],
+            languages: ['pt'],
             prismicId: 'level1',
             totalReward: 500,
         });
@@ -58,13 +60,13 @@ describe('Learn And Earn', () => {
         lesson1 = await models.learnAndEarnLesson.create({
             active: true,
             levelId: level.id,
-            languages: ['en'],
+            languages: ['pt'],
             prismicId: 'lesson1',
         });
         lesson2 = await models.learnAndEarnLesson.create({
             active: true,
             levelId: level.id,
-            languages: ['en'],
+            languages: ['pt'],
             prismicId: 'lesson2',
         });
 
@@ -160,7 +162,7 @@ describe('Learn And Earn', () => {
 
     describe('lessons', () => {
         it('list lessons', async () => {
-            const lessons = await learnAndEarnService.listLessons(
+            const { lessons } = await learnAndEarnService.listLessons(
                 users[0].id,
                 level.id
             );

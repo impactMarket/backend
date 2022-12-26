@@ -1,4 +1,5 @@
 import { literal, Op } from 'sequelize';
+import { formatObjectToNumber } from 'utils';
 
 import { models } from '../../database';
 import { BaseError } from '../../utils/baseError';
@@ -51,8 +52,8 @@ export async function total(userId: number): Promise<{
             },
             raw: true,
         })) as unknown as {
-            completed: number;
-            total: number;
+            completed: string;
+            total: string;
         }[];
 
         // get lessons
@@ -83,8 +84,8 @@ export async function total(userId: number): Promise<{
             },
             raw: true,
         })) as unknown as {
-            completed: number;
-            total: number;
+            completed: string;
+            total: string;
         }[];
 
         // get earned
@@ -96,8 +97,9 @@ export async function total(userId: number): Promise<{
             },
         });
 
-        const level = levels[0];
-        const lesson = lessons[0];
+        type Steps = { completed: number; total: number };
+        const level = formatObjectToNumber<Steps>(levels[0]);
+        const lesson = formatObjectToNumber<Steps>(lessons[0]);
 
         return {
             lesson,
