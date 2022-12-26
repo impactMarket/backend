@@ -8,7 +8,7 @@ module.exports = {
         }
 
         await queryInterface.addColumn('learn_and_earn_level', 'languages', {
-            type: Sequelize.ARRAY(Sequelize.STRING(3)),
+            type: Sequelize.ARRAY(Sequelize.STRING(4)),
             allowNull: true,
         });
     },
