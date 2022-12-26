@@ -1,13 +1,4 @@
-import { config } from '@impactmarket/core';
-import { answer } from '@impactmarket/core/src/services/learnAndEarn/answer';
-import { registerClaimRewards } from '@impactmarket/core/src/services/learnAndEarn/claimRewards';
-import {
-    listLessons,
-    listLevels,
-} from '@impactmarket/core/src/services/learnAndEarn/list';
-import { startLesson } from '@impactmarket/core/src/services/learnAndEarn/start';
-import { webhook } from '@impactmarket/core/src/services/learnAndEarn/syncRemote';
-import { total } from '@impactmarket/core/src/services/learnAndEarn/userData';
+import { config, services } from '@impactmarket/core';
 import { Request, Response } from 'express';
 import {
     AnswerRequestType,
@@ -31,7 +22,8 @@ class LearnAndEarnController {
             return;
         }
 
-        total(req.user.userId)
+        services.learnAndEarn
+            .total(req.user.userId)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -59,14 +51,15 @@ class LearnAndEarnController {
             limit = config.defaultLimit.toString();
         }
 
-        listLevels(
-            req.user.userId,
-            parseInt(offset, 10),
-            parseInt(limit, 10),
-            status,
-            category,
-            level
-        )
+        services.learnAndEarn
+            .listLevels(
+                req.user.userId,
+                parseInt(offset, 10),
+                parseInt(limit, 10),
+                status,
+                category,
+                level
+            )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -87,7 +80,8 @@ class LearnAndEarnController {
 
         const { transactionHash } = req.body;
 
-        registerClaimRewards(req.user.userId, transactionHash)
+        services.learnAndEarn
+            .registerClaimRewards(req.user.userId, transactionHash)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -103,7 +97,8 @@ class LearnAndEarnController {
             return;
         }
 
-        listLessons(req.user.userId, parseInt(req.params.id, 10))
+        services.learnAndEarn
+            .listLessons(req.user.userId, parseInt(req.params.id, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -124,7 +119,8 @@ class LearnAndEarnController {
 
         const { answers, lesson } = req.body;
 
-        answer(req.user, answers, lesson)
+        services.learnAndEarn
+            .answer(req.user, answers, lesson)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -145,7 +141,8 @@ class LearnAndEarnController {
 
         const { lesson } = req.body;
 
-        startLesson(req.user.userId, lesson)
+        services.learnAndEarn
+            .startLesson(req.user.userId, lesson)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -162,7 +159,8 @@ class LearnAndEarnController {
         //     });
         //     return;
         // }
-        webhook([])
+        services.learnAndEarn
+            .webhook([])
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
