@@ -41,6 +41,7 @@ describe('Learn And Earn', () => {
         // create category
         category = await models.learnAndEarnCategory.create({
             prismicId: 'category1',
+            languages: ['en'],
             active: true,
         });
 
@@ -48,6 +49,7 @@ describe('Learn And Earn', () => {
         level = await models.learnAndEarnLevel.create({
             active: true,
             categoryId: category.id,
+            languages: ['en'],
             prismicId: 'level1',
             totalReward: 500,
         });
@@ -56,11 +58,13 @@ describe('Learn And Earn', () => {
         lesson1 = await models.learnAndEarnLesson.create({
             active: true,
             levelId: level.id,
+            languages: ['en'],
             prismicId: 'lesson1',
         });
         lesson2 = await models.learnAndEarnLesson.create({
             active: true,
             levelId: level.id,
+            languages: ['en'],
             prismicId: 'lesson2',
         });
 

@@ -68,7 +68,10 @@ let logging:
     | ((sql: string, timing?: number | undefined) => void)
     | undefined;
 if (process.env.NODE_ENV === 'development') {
-    logging = (msg) => console.log(msg);
+    logging = (msg, timing) =>
+        console.log(
+            `\n\x1b[46mQUERY:\x1b[0m ${msg} \x1b[7mTIME:\x1b[0m\x1b[100m ${timing}ms\x1b[0m`
+        );
 } else {
     logging = (msg) => Logger.verbose(msg);
 }
@@ -91,6 +94,7 @@ const dbConfig: Options = {
     protocol: 'postgres',
     native: !config.aws.lambda, // if lambda = true, then native = false
     logging,
+    benchmark: process.env.NODE_ENV === 'development',
 };
 const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);
@@ -205,7 +209,11 @@ const models: DbModels = {
         .MerchantCommunityModel as ModelCtor<MerchantCommunity.MerchantCommunityModel>,
 };
 
-const redisClient = new Redis(config.redis);
+let redisClient: Redis = undefined as any;
+
+if (process.env.NODE_ENV !== 'test') {
+    redisClient = new Redis(config.redis);
+}
 const cacheOnlySuccess = (req, res) => res.statusCode === 200;
 const apiCacheOptions = {
     debug: !config.enabledCacheWithRedis,

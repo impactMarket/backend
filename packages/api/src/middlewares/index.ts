@@ -3,11 +3,11 @@ import { ethers } from 'ethers';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
-// import redisStore from 'rate-limit-redis';
+import RedisStore from 'rate-limit-redis';
 
 import { RequestWithUser, UserInRequest } from './core';
 
-// const { redisClient } = database;
+const { redisClient } = database;
 
 export function authenticateToken(
     req: RequestWithUser,
@@ -120,13 +120,18 @@ export function adminAuthentication(
 export const rateLimiter = rateLimit({
     max: config.maxRequestPerUser,
     message: `You have exceeded the ${config.maxRequestPerUser} requests in 15 minutes limit!`,
+    headers: true,
     // standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     // legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     // windowMs: 900000, // 15 minutes in milliseconds
-    // store: new redisStore({
-    //     // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-    //     sendCommand: (...args: string[]) => redisClient.call(...args),
-    // }),
+    ...(process.env.NODE_ENV === 'test'
+        ? {}
+        : {
+              store: new RedisStore({
+                  // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
+                  sendCommand: (...args: string[]) => redisClient.call(...args),
+              }),
+          }),
 });
 
 export function verifySignature(

@@ -1,3 +1,4 @@
+import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
 import GenericController from '../../controllers/v2/generic';
@@ -33,7 +34,11 @@ export default (app: Router): void => {
      *                       rate:
      *                         type: number
      */
-    app.get('/exchange-rates', genericController.exchangeRates);
+    app.get(
+        '/exchange-rates',
+        database.cacheWithRedis('12 hours', database.cacheOnlySuccess),
+        genericController.exchangeRates
+    );
 
     /**
      * @swagger

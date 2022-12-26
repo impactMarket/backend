@@ -6,7 +6,7 @@ import ReachedAddressService from '../../src/services/reachedAddress';
 import * as ubiSubgraph from '../../src/subgraph/queries/ubi';
 import { sequelizeSetup } from '../config/sequelizeSetup';
 
-describe('reachedAddress', () => {
+describe.skip('reachedAddress', () => {
     let sequelize: Sequelize;
     let returnGetUbiDailyEntitySubgraph: SinonStub;
 
