@@ -1,6 +1,7 @@
-import { literal } from 'sequelize';
+import { literal, Op } from 'sequelize';
 
 import { models } from '../../database';
+import { formatObjectToNumber } from '../../utils';
 import { BaseError } from '../../utils/baseError';
 
 export async function total(userId: number): Promise<{
@@ -20,6 +21,10 @@ export async function total(userId: number): Promise<{
 }> {
     try {
         // get levels
+        const user = await models.appUser.findOne({
+            attributes: ['language'],
+            where: { id: userId },
+        });
         const levels = (await models.learnAndEarnLevel.findAll({
             attributes: [
                 [
@@ -43,9 +48,13 @@ export async function total(userId: number): Promise<{
             ],
             where: {
                 active: true,
+                languages: { [Op.contains]: [user!.language] },
             },
             raw: true,
-        })) as any;
+        })) as unknown as {
+            completed: string;
+            total: string;
+        }[];
 
         // get lessons
         const lessons = (await models.learnAndEarnLesson.findAll({
@@ -71,9 +80,13 @@ export async function total(userId: number): Promise<{
             ],
             where: {
                 active: true,
+                languages: { [Op.contains]: [user!.language] },
             },
             raw: true,
-        })) as any;
+        })) as unknown as {
+            completed: string;
+            total: string;
+        }[];
 
         // get earned
         const claimRewards = await models.learnAndEarnPayment.findAll({
@@ -84,20 +97,18 @@ export async function total(userId: number): Promise<{
             },
         });
 
+        type Steps = { completed: number; total: number };
+        const level = formatObjectToNumber<Steps>(levels[0]);
+        const lesson = formatObjectToNumber<Steps>(lessons[0]);
+
         return {
-            lesson: {
-                completed: parseInt(lessons[0].completed, 10),
-                total: parseInt(lessons[0].total, 10),
-            },
-            level: {
-                completed: parseInt(levels[0].completed, 10),
-                total: parseInt(levels[0].total, 10),
-            },
+            lesson,
+            level,
             claimRewards: {
-                ...claimRewards.map((e) => ({
-                    levelId: e.levelId,
-                    amount: e.amount,
-                    signature: e.signature,
+                ...claimRewards.map(({ levelId, amount, signature }) => ({
+                    levelId,
+                    amount,
+                    signature,
                 })),
             },
         };

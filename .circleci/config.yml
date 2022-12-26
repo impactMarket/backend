@@ -7,7 +7,7 @@ jobs:
   coverage:
     docker:
       - image: circleci/node:16.13.0
-      - image: circleci/postgres:14.6-alpine
+      - image: cimg/postgres:14.6
         environment:
           POSTGRES_USER: citest
           POSTGRES_DB: impactmarkettest
@@ -40,4 +40,5 @@ workflows:
   version: 2
   test:
     jobs:
+      - coverage
       - lint

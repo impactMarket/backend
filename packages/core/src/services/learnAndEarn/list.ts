@@ -1,6 +1,9 @@
-import { literal, Op } from 'sequelize';
+import { literal, Op, WhereOptions } from 'sequelize';
 
 import { models } from '../../database';
+import { LearnAndEarnLesson } from '../../interfaces/learnAndEarn/learnAndEarnLesson';
+import { LearnAndEarnLevel } from '../../interfaces/learnAndEarn/learnAndEarnLevel';
+import { formatObjectToNumber } from '../../utils';
 import { BaseError } from '../../utils/baseError';
 
 export async function listLevels(
@@ -21,20 +24,35 @@ export async function listLevels(
     }[];
 }> {
     try {
-        const where: any = {
+        let whereCategory = {};
+        if (category) {
+            whereCategory = {
+                where: {
+                    prismicId: category,
+                },
+            };
+        }
+
+        const user = await models.appUser.findOne({
+            attributes: ['language'],
+            where: { id: userId },
+        });
+        const where: WhereOptions<LearnAndEarnLevel> = {
             [Op.and]: [
+                // TODO: sanitize this
                 status
                     ? literal(
                           status === 'available'
                               ? `("userLevel".status = 'started' or "userLevel".status is null)`
                               : `"userLevel".status = '${status}'`
                       )
-                    : '',
+                    : {},
                 level ? { prismicId: level } : {},
+                { languages: { [Op.contains]: [user!.language] } },
                 { active: true },
             ],
         };
-        const userLevels = await models.learnAndEarnLevel.findAll({
+        const userLevels = (await models.learnAndEarnLevel.findAll({
             attributes: [
                 'id',
                 'prismicId',
@@ -64,13 +82,7 @@ export async function listLevels(
                     model: models.learnAndEarnCategory,
                     as: 'category',
                     duplicating: false,
-                    ...(category
-                        ? {
-                              where: {
-                                  prismicId: category,
-                              },
-                          }
-                        : {}),
+                    ...whereCategory,
                 },
             ],
             where,
@@ -86,8 +98,16 @@ export async function listLevels(
             limit,
             offset,
             raw: true,
-        });
-
+        })) as unknown as {
+            id: number;
+            prismicId: string;
+            totalReward: number;
+            status: string;
+            totalLessons: number;
+            category?: {
+                prismicId: string;
+            };
+        }[];
         const count = await models.learnAndEarnLevel.count({
             attributes: [],
             include: [
@@ -104,40 +124,48 @@ export async function listLevels(
                     attributes: [],
                     model: models.learnAndEarnCategory,
                     as: 'category',
-                    ...(category
-                        ? {
-                              where: {
-                                  prismicId: category,
-                              },
-                          }
-                        : {}),
+                    ...whereCategory,
                 },
             ],
             where,
         });
-
         return {
             count,
-            rows: userLevels.map((el: any) => ({
-                id: el.id,
-                prismicId: el.prismicId,
-                totalReward: parseInt(el.totalReward),
-                totalLessons: parseInt(el.totalLessons),
-                status: (el.status = el.status || 'available'),
-                category: el['category.prismicId'],
-            })),
+            rows: userLevels.map(
+                ({
+                    id,
+                    prismicId,
+                    totalReward,
+                    totalLessons,
+                    status,
+                    category,
+                }) =>
+                    formatObjectToNumber({
+                        id,
+                        prismicId,
+                        totalReward,
+                        totalLessons,
+                        status: status || 'available',
+                        category: category?.prismicId,
+                    })
+            ),
         };
     } catch (error) {
+        console.log({ error });
         throw new BaseError('LIST_LEVELS_FAILED', 'list levels failed');
     }
 }
 
 export async function listLessons(userId: number, levelId: number) {
     try {
+        const user = await models.appUser.findOne({
+            attributes: ['language'],
+            where: { id: userId },
+        });
         const lessons = await models.learnAndEarnLesson.findAll({
             include: [
                 {
-                    attributes: ['status'],
+                    attributes: ['status', 'points', 'attempts'],
                     model: models.learnAndEarnUserLesson,
                     as: 'userLesson',
                     required: false,
@@ -148,16 +176,35 @@ export async function listLessons(userId: number, levelId: number) {
             ],
             where: {
                 levelId,
+                languages: { [Op.contains]: [user!.language] },
                 active: true,
             },
         });
 
-        return lessons.map((lesson: any) => ({
-            id: lesson.id,
-            prismicId: lesson.prismicId,
-            levelId: lesson.levelId,
-            status: lesson.userLesson[0]?.status || 'available',
-        }));
+        let totalPoints = 0;
+        const mappedLessons = lessons.map(
+            ({ id, prismicId, levelId, userLesson }: LearnAndEarnLesson) => {
+                const { status, points, attempts } =
+                    userLesson!.length > 0
+                        ? userLesson![0].toJSON()
+                        : { status: 'available', points: 0, attempts: 0 };
+
+                totalPoints += points || 0;
+                return {
+                    id,
+                    prismicId,
+                    levelId,
+                    status,
+                    points,
+                    attempts,
+                };
+            }
+        );
+
+        return {
+            totalPoints,
+            lessons: mappedLessons,
+        };
     } catch (error) {
         throw new BaseError('LIST_LESSONS_FAILED', 'list lessons failed');
     }

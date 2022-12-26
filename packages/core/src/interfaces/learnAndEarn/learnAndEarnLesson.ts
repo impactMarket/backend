@@ -1,3 +1,5 @@
+import { LearnAndEarnUserLessonModel } from '../../database/models/learnAndEarn/learnAndEarnUserLesson';
+
 /**
  * @swagger
  *  components:
@@ -27,6 +29,9 @@ export interface LearnAndEarnLesson {
     levelId: number;
     languages?: string[];
     active: boolean;
+
+    // used on query with associations
+    userLesson?: LearnAndEarnUserLessonModel[];
 }
 
 export interface LearnAndEarnLessonCreation {

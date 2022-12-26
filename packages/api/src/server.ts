@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/node';
 import cors from 'cors';
 import express, { Request, Response } from 'express';
 import helmet from 'helmet';
-import morgan from 'morgan';
+import morgan, { compile } from 'morgan';
 import path from 'path';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
@@ -16,8 +16,8 @@ import v2routes from './routes/v2';
 
 export default (app: express.Application): void => {
     /**
-     * Health Check endpoints
-     * @TODO Explain why they are here
+     * health check endpoints
+     * https://testfully.io/blog/api-health-check-monitoring
      */
     app.get('/status', (req, res) => {
         res.status(200).end();
@@ -119,10 +119,6 @@ export default (app: express.Application): void => {
         console.log(swaggerSpec);
 
         app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-        if (process.env.NODE_ENV === 'development') {
-            // redundant in production (heroku logs it already), but useful for development
-            app.use(morgan('combined'));
-        }
     }
 
     // Useful if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
@@ -147,8 +143,22 @@ export default (app: express.Application): void => {
     app.use(express.json());
     // app.use(express.urlencoded({ extended: true }));
 
+    // per environment configs
     if (process.env.API_ENVIRONMENT === 'production') {
+        // important to have rate limiting in production
         app.use(rateLimiter);
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+        // redundant in production (heroku logs it already), but useful for development
+        app.use(
+            morgan((tokens: morgan.TokenIndexer<any>, req, res) => {
+                const fn = compile(
+                    '\n\x1b[42m:method\x1b[0m :url \x1b[32m:status\x1b[0m :response-time ms'
+                );
+                return fn(tokens, req, res);
+            })
+        );
     }
 
     // Load API routes
@@ -158,6 +168,7 @@ export default (app: express.Application): void => {
     // The error handler must be before any other error middleware and after all controllers
     app.use(Sentry.Handlers.errorHandler());
 
+    // TODO: is this needed?
     app.use((error, req, res, next) => {
         utils.Logger.error(
             req.originalUrl + ' -> ' + error &&
@@ -182,12 +193,15 @@ export default (app: express.Application): void => {
         next();
     });
 
-    /// catch 404
-    app.use((req, res, next) => {
-        res.status(404).send({ success: false, error: 'what???' });
-    });
+    // when a route does not exist
+    app.use((_, res) =>
+        res.status(404).send({
+            success: false,
+            error: 'This route does not exist! Please, visit the swagger docs at /api-docs',
+        })
+    );
 
-    /// error handlers
+    // TODO: is this needed?
     app.use((err: any, req: Request, res: Response) => {
         if (err.name === 'UnauthorizedError') {
             res.status(err.status)

@@ -90,7 +90,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /learn-and-earn/lessons/{id}:
+     * /learn-and-earn/lessons:
      *   put:
      *     tags:
      *       - "learn-and-earn"

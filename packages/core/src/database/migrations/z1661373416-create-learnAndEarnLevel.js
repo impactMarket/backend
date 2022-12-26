@@ -28,6 +28,10 @@ module.exports = {
                 defaultValue: 0,
                 allowNull: false,
             },
+            languages: {
+                type: Sequelize.ARRAY(Sequelize.STRING(4)),
+                allowNull: true,
+            },
             active: {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
