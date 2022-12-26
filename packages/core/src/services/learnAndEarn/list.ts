@@ -1,9 +1,9 @@
 import { literal, Op, WhereOptions } from 'sequelize';
-import { formatObjectToNumber } from 'utils';
 
 import { models } from '../../database';
 import { LearnAndEarnLesson } from '../../interfaces/learnAndEarn/learnAndEarnLesson';
 import { LearnAndEarnLevel } from '../../interfaces/learnAndEarn/learnAndEarnLevel';
+import { formatObjectToNumber } from '../../utils';
 import { BaseError } from '../../utils/baseError';
 
 export async function listLevels(

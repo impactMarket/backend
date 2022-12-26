@@ -1,7 +1,7 @@
 import { literal, Op } from 'sequelize';
-import { formatObjectToNumber } from 'utils';
 
 import { models } from '../../database';
+import { formatObjectToNumber } from '../../utils';
 import { BaseError } from '../../utils/baseError';
 
 export async function total(userId: number): Promise<{
