@@ -1,16 +1,14 @@
 import { PrismicDocument } from '@prismicio/types';
-import axios from 'axios';
 import { Op } from 'sequelize';
 
-import config from '../../config';
 import { models } from '../../database';
 import { BaseError } from '../../utils/baseError';
 import { client as prismic } from '../../utils/prismic';
 
-async function triggerHook(hook: string) {
-    const response = await axios.get(hook);
-    return response.data;
-}
+// async function triggerHook(hook: string) {
+//     const response = await axios.get(hook);
+//     return response.data;
+// }
 
 async function getPrismicLearnAndEarn() {
     try {
@@ -40,17 +38,18 @@ async function getPrismicLearnAndEarn() {
                     active: true,
                 },
             });
+
             categoryIds.push(category.id);
             await category.update({
-                languages: prismicCategory.alternate_languages.map(
-                    ({ lang }) => {
+                languages: prismicCategory.alternate_languages
+                    .map(({ lang }) => {
                         const index_ = lang.indexOf('-');
                         return lang.substring(
                             0,
                             index_ !== -1 ? index_ : lang.length
                         );
-                    }
-                ),
+                    })
+                    .concat(['en']),
             });
 
             for (
@@ -78,16 +77,19 @@ async function getPrismicLearnAndEarn() {
                         }
                     );
                     levelIds.push(level.id);
+                    const findLevelLanguages = await prismic.getByID(
+                        prismicLevel.id
+                    );
                     await level.update({
-                        languages: prismicLevel.alternate_languages.map(
-                            ({ lang }) => {
+                        languages: findLevelLanguages.alternate_languages
+                            .map(({ lang }) => {
                                 const index_ = lang.indexOf('-');
                                 return lang.substring(
                                     0,
                                     index_ !== -1 ? index_ : lang.length
                                 );
-                            }
-                        ),
+                            })
+                            .concat(['en']),
                     });
 
                     for (
@@ -114,16 +116,22 @@ async function getPrismicLearnAndEarn() {
                                     },
                                 });
                             lessonIds.push(lesson.id);
-                            await level.update({
-                                languages: prismicLevel.alternate_languages.map(
-                                    ({ lang }) => {
-                                        const index_ = lang.indexOf('-');
-                                        return lang.substring(
-                                            0,
-                                            index_ !== -1 ? index_ : lang.length
-                                        );
-                                    }
-                                ),
+                            const findLessonLanguages = await prismic.getByID(
+                                prismicLesson.id
+                            );
+                            await lesson.update({
+                                languages:
+                                    findLessonLanguages.alternate_languages
+                                        .map(({ lang }) => {
+                                            const index_ = lang.indexOf('-');
+                                            return lang.substring(
+                                                0,
+                                                index_ !== -1
+                                                    ? index_
+                                                    : lang.length
+                                            );
+                                        })
+                                        .concat(['en']),
                             });
 
                             for (
@@ -208,41 +216,42 @@ async function getPrismicLearnAndEarn() {
             ),
         ]);
     } catch (error) {
-        console.log(error);
+        console.log('e', error);
     }
 }
 
 export async function webhook(documents: string[]) {
     try {
-        const document = documents[0];
-        const prismicDocument = await prismic.getByID(document, {
-            lang: '*',
-        });
+        await getPrismicLearnAndEarn();
+        // const document = documents[0];
+        // const prismicDocument = await prismic.getByID(document, {
+        //     lang: '*',
+        // });
 
-        const { type } = prismicDocument;
+        // const { type } = prismicDocument;
 
-        if (!type) {
-            throw new BaseError('DOCUMENT_NOT_FOUND', 'document not found');
-        }
+        // if (!type) {
+        //     throw new BaseError('DOCUMENT_NOT_FOUND', 'document not found');
+        // }
 
-        if (type.startsWith('pwa')) {
-            await getPrismicLearnAndEarn();
+        // if (type.startsWith('pwa')) {
+        //     await getPrismicLearnAndEarn();
 
-            return triggerHook(config.vercelWebhooks.pwa);
-        }
+        //     // return triggerHook(config.vercelWebhooks.pwa);
+        // }
 
-        if (
-            type.startsWith('website') ||
-            type === 'translations' ||
-            type === 'translations-site-temp'
-        ) {
-            return triggerHook(config.vercelWebhooks.website);
-        }
+        // if (
+        //     type.startsWith('website') ||
+        //     type === 'translations' ||
+        //     type === 'translations-site-temp'
+        // ) {
+        //     return triggerHook(config.vercelWebhooks.website);
+        // }
 
-        if (type.startsWith('wallet_')) {
-            // execute wallet deploy
-            return;
-        }
+        // if (type.startsWith('wallet_')) {
+        //     // execute wallet deploy
+        //     return;
+        // }
     } catch (error) {
         throw new BaseError(
             error.name ? error.name : 'GET_DOCUMENT_FAILED',
