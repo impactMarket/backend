@@ -8,7 +8,7 @@
     "author": "impact-market",
     "license": "Apache-2.0",
     "engines": {
-        "node": ">=16.0.0 <17.0.0"
+        "node": "18.x"
     },
     "dependencies": {
         "@impactmarket/core": "1.0.0",
@@ -27,7 +27,7 @@
         "eslint-config-prettier": "6.11.0",
         "eslint-config-universe": "4.0.0",
         "serverless": "3.0.0",
-        "serverless-bundle": "4.3.1",
+        "serverless-bundle": "fancywriter/serverless-bundle#c53aa061ed83f683dbb665f9734fc1dca624788a",
         "serverless-plugin-typescript": "2.1.0",
         "typescript": "4.5.2"
     }

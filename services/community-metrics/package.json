@@ -9,7 +9,7 @@
     "author": "impact-market",
     "license": "Apache-2.0",
     "engines": {
-        "node": ">=16.0.0 <17.0.0"
+        "node": "18.x"
     },
     "dependencies": {
         "@impactmarket/core": "1.0.0"
