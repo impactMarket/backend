@@ -11,7 +11,7 @@ import swaggerUi from 'swagger-ui-express';
 
 import config from './config';
 import { rateLimiter } from './middlewares';
-import v1routes from './routes/v1';
+// import v1routes from './routes/v1';
 import v2routes from './routes/v2';
 
 export default (app: express.Application): void => {
