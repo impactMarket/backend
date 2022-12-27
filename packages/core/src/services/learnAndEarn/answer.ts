@@ -182,7 +182,7 @@ export async function answer(
                     where: {
                         attempts: 1,
                         userId: user.userId,
-                        lessonId: quizzes[0].lessonId,
+                        lessonId,
                         status: 'started',
                     },
                     transaction: t,
@@ -197,7 +197,7 @@ export async function answer(
                         by: 1,
                         where: {
                             userId: user.userId,
-                            lessonId: quizzes[0].lessonId,
+                            lessonId,
                             status: 'started',
                         },
                         transaction: t,
@@ -218,12 +218,11 @@ export async function answer(
         // completed lesson, calculate points
         const userLesson = await models.learnAndEarnUserLesson.findOne({
             where: {
-                lessonId: quizzes[0].lessonId,
-                status: 'started',
+                lessonId,
             },
         });
 
-        if (!userLesson) {
+        if (userLesson && userLesson.status === 'completed') {
             throw new BaseError(
                 'LESSON_ALREADY_COMPLETED',
                 'lesson already completed'
@@ -257,7 +256,7 @@ export async function answer(
             {
                 where: {
                     userId: user.userId,
-                    lessonId: quizzes[0].lessonId,
+                    lessonId,
                 },
                 transaction: t,
             }
