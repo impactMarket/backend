@@ -162,7 +162,7 @@ export default (app: express.Application): void => {
     }
 
     // Load API routes
-    app.use(config.api.prefix, v1routes());
+    // app.use(config.api.prefix, v1routes());
     app.use(config.api.v2prefix, v2routes());
 
     // The error handler must be before any other error middleware and after all controllers
