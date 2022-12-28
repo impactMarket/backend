@@ -1,6 +1,7 @@
 import { arrayify } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/solidity';
 import { Wallet } from '@ethersproject/wallet';
+import BigNumber from 'bignumber.js';
 import { literal } from 'sequelize';
 
 import config from '../../config';
@@ -110,7 +111,14 @@ async function signParams(
 
     const message = keccak256(
         ['address', 'uint256', 'uint256'],
-        [beneficiaryAddress, levelId, amountEarned]
+        [
+            beneficiaryAddress,
+            levelId,
+            // for the contract, the value needs to be in wei
+            new BigNumber(amountEarned)
+                .times(new BigNumber(10).pow(18))
+                .toString(),
+        ]
     );
     const arrayifyMessage = arrayify(message);
     return await signer.signMessage(arrayifyMessage);
