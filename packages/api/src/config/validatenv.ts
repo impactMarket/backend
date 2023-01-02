@@ -99,6 +99,19 @@ function validateEnv() {
         TREASURY_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_LAMBDA: bool({ default: false }),
         SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
+        // attestation service (ASv2)
+        ATTESTATION_ISSUER_PRIVATE_KEY: str({
+            devDefault: onlyOnTestEnv('xyz'),
+        }),
+        ATTESTATION_DEK_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        ATTESTATION_ODIS_PROXY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        // twilio
+        TWILIO_ACCOUNT_SID: str({ devDefault: onlyOnTestEnv('xyz') }),
+        TWILIO_AUTH_TOKEN: str({ devDefault: onlyOnTestEnv('xyz') }),
+        TWILIO_FROM_NUMBER: str({ devDefault: onlyOnTestEnv('xyz') }),
+        // chain
+        CHAIN_IS_MAINNET: bool({ devDefault: true }),
+        CHAIN_JSON_RPC_URL_CELO: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 

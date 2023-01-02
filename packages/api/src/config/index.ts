@@ -257,4 +257,32 @@ export default {
 
     enabledCacheWithRedis: validatedEnv.ENABLED_CACHE_WITH_REDIS,
     subgraphUrl: validatedEnv.SUBGRAPH_URL,
+
+    /**
+     * Variables for Attestation Service (ASv2) from Celo
+     * @see https://github.com/celo-org/identity
+     */
+    attestations: {
+        issuerPrivateKey: validatedEnv.ATTESTATION_ISSUER_PRIVATE_KEY,
+        dekPrivateKey: validatedEnv.ATTESTATION_DEK_PRIVATE_KEY,
+        odisProxy: validatedEnv.ATTESTATION_ODIS_PROXY,
+    },
+
+    /**
+     * Variables for Twilio
+     * @see https://www.twilio.com/docs/sms/quickstart/node
+     */
+    twilio: {
+        accountSid: validatedEnv.TWILIO_ACCOUNT_SID,
+        authToken: validatedEnv.TWILIO_AUTH_TOKEN,
+        fromNumber: validatedEnv.TWILIO_FROM_NUMBER,
+    },
+
+    /**
+     * Variables for chain
+     */
+    chain: {
+        isMainnet: validatedEnv.CHAIN_IS_MAINNET,
+        jsonRPCUrlCelo: validatedEnv.CHAIN_JSON_RPC_URL_CELO,
+    },
 };
