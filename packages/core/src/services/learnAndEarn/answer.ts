@@ -182,44 +182,23 @@ export async function answer(
 
         if (wrongAnswers && wrongAnswers.length > 0) {
             // set attempts
-            let userLesson: LearnAndEarnUserLesson;
-            const t = await sequelize.transaction();
-
-            const [createdUserLesson, created] =
-                await models.learnAndEarnUserLesson.findOrCreate({
+            const userLesson = await models.learnAndEarnUserLesson.increment(
+                'attempts',
+                {
+                    by: 1,
                     where: {
-                        attempts: 1,
                         userId: user.userId,
                         lessonId,
                         status: 'started',
                     },
-                    transaction: t,
-                });
-
-            if (created) {
-                userLesson = createdUserLesson;
-            } else {
-                userLesson = await models.learnAndEarnUserLesson.increment(
-                    'attempts',
-                    {
-                        by: 1,
-                        where: {
-                            userId: user.userId,
-                            lessonId,
-                            status: 'started',
-                        },
-                        transaction: t,
-                    }
-                );
-            }
-
-            await t.commit();
+                },
+            );
 
             // return wrong answers
             return {
                 success: false,
                 wrongAnswers,
-                attempts: userLesson.attempts,
+                attempts: userLesson[0][0][0].attempts,
             };
         }
 
@@ -227,6 +206,7 @@ export async function answer(
         const userLesson = await models.learnAndEarnUserLesson.findOne({
             where: {
                 lessonId,
+                userId: user.userId,
             },
         });
 
