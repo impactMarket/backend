@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import attestation from './attestation';
 import claimLocation from './claimLocation';
 import community from './community';
 import generic from './generic';
@@ -17,6 +18,7 @@ export default (): Router => {
     claimLocation(app);
     learnAndEarn(app);
     global(app);
+    attestation(app);
 
     return app;
 };

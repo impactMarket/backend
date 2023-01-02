@@ -27,6 +27,8 @@
         "nodemon": "2.0.15"
     },
     "dependencies": {
+        "@celo/base": "3.0.1",
+        "@celo/identity": "3.0.1",
         "@impactmarket/core": "1.0.0",
         "@sentry/node": "6.17.8",
         "@sentry/tracing": "6.17.8",
@@ -49,6 +51,7 @@
         "swagger-jsdoc": "6.1.0",
         "swagger-ui-express": "4.3.0",
         "ts-node": "10.4.0",
+        "twilio": "3.84.0",
         "typescript": "4.5.2"
     }
 }

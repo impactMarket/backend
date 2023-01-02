@@ -19,6 +19,7 @@ import * as AppProposal from './models/app/appProposal';
 import * as AppUser from './models/app/appUser';
 import * as AppUserThroughTrust from './models/app/appUserThroughTrust';
 import * as AppUserTrust from './models/app/appUserTrust';
+import { AppUserValidationCodeModel } from './models/app/appUserValidationCode';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
 import * as ExchangeRates from './models/app/exchangeRates';
 import { ImMetadata } from './models/app/imMetadata';
@@ -109,6 +110,8 @@ const models: DbModels = {
     appClientCredential: sequelize.models
         .AppClientCredentialModel as ModelCtor<AppClientCredential.AppClientCredentialModel>,
     appLog: sequelize.models.AppLogModel as ModelCtor<AppLog.AppLogModel>,
+    appUserValidationCode: sequelize.models
+        .AppUserValidationCodeModel as ModelCtor<AppUserValidationCodeModel>,
     community: sequelize.models.Community as ModelCtor<Community>,
     ubiCommunitySuspect: sequelize.models
         .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspect.UbiCommunitySuspectModel>,

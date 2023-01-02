@@ -12,6 +12,7 @@ import { AppProposalModel } from './models/app/appProposal';
 import { AppUserModel } from './models/app/appUser';
 import { AppUserThroughTrustModel } from './models/app/appUserThroughTrust';
 import { AppUserTrustModel } from './models/app/appUserTrust';
+import { AppUserValidationCodeModel } from './models/app/appUserValidationCode';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
 import { ExchangeRates } from './models/app/exchangeRates';
 import { ImMetadata } from './models/app/imMetadata';
@@ -71,6 +72,7 @@ export interface DbModels {
     appMediaContent: ModelCtor<AppMediaContentModel>;
     appMediaThumbnail: ModelCtor<AppMediaThumbnailModel>;
     appNotification: ModelCtor<AppNotificationModel>;
+    appUserValidationCode: ModelCtor<AppUserValidationCodeModel>;
     ubiBeneficiarySurvey: ModelCtor<UbiBeneficiarySurveyModel>;
     //
     community: ModelCtor<Community>;
