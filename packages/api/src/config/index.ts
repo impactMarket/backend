@@ -63,7 +63,7 @@ export default {
      */
     impactMarketContractBlockNumber: validatedEnv.IMPACT_MARKET_CONTRACT_BLOCK,
 
-    /** contract addresses */
+    /** contract addresses used to calculate the circulating supply */
     contractAddresses: {
         pact: validatedEnv.PACT_CONTRACT_ADDRESS,
         airgrab: validatedEnv.AIRGRAB_CONTRACT_ADDRESS,
