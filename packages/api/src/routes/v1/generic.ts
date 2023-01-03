@@ -1,4 +1,4 @@
-import { config, database, services } from '@impactmarket/core';
+import { config, services } from '@impactmarket/core';
 import { Router, Request, Response } from 'express';
 
 import genericController from '../../controllers/v1/generic';
@@ -99,24 +99,6 @@ export default (app: Router): void => {
      */
     app.get('/time', (req: Request, res: Response) =>
         standardResponse(res, 200, true, new Date().getTime())
-    );
-
-    /**
-     * @swagger
-     *
-     * /circulating-supply:
-     *   get:
-     *     tags:
-     *       - "generic"
-     *     summary: Gets PACT circulating supply.
-     *     responses:
-     *       "200":
-     *         description: OK
-     */
-    app.get(
-        '/circulating-supply',
-        database.cacheWithRedis('10 minutes', database.cacheOnlySuccess),
-        genericController.circulatingSupply
     );
 
     /**
