@@ -1,6 +1,7 @@
 import { getAddress } from '@ethersproject/address';
 import { gql } from 'apollo-boost';
 import axios from 'axios';
+import axiosRetry from 'axios-retry';
 import { ethers } from 'ethers';
 
 import config from '../../config';
@@ -8,10 +9,39 @@ import { redisClient } from '../../database';
 import { clientDAO, clientCouncil } from '../config';
 
 const intervalsInSeconds = {
+    halfHour: 1800,
     oneHour: 3600,
+    sixHours: 21600,
     twelveHours: 43200,
     oneDay: 86400,
 };
+
+function axiosInit() {
+    const axiosSubgraph = axios.create({
+        baseURL: config.subgraphUrl,
+        headers: {
+            'content-type': 'application/json',
+        },
+        timeout: 4000,
+    });
+    const axiosCouncilSubgraph = axios.create({
+        baseURL: config.councilSubgraphUrl,
+        headers: {
+            'content-type': 'application/json',
+        },
+        timeout: 4000,
+    });
+    axiosRetry(axiosSubgraph, {
+        retries: 3,
+        retryDelay: axiosRetry.exponentialDelay,
+    });
+    axiosRetry(axiosCouncilSubgraph, {
+        retries: 3,
+        retryDelay: axiosRetry.exponentialDelay,
+    });
+
+    return { axiosSubgraph, axiosCouncilSubgraph };
+}
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
@@ -197,42 +227,55 @@ export const getBiggestCommunities = async (
     limit: number,
     offset: number,
     orderDirection?: string
-): Promise<
-    {
-        beneficiaries: number;
-        id: string;
-    }[]
-> => {
-    try {
-        const query = gql`
-            {
-                communityEntities(
-                    first: ${limit}
-                    skip: ${offset}
-                    orderBy: beneficiaries
-                    orderDirection: ${orderDirection ? orderDirection : 'desc'}
-                ) {
-                    id
-                    beneficiaries
-                }
+) => {
+    const { axiosSubgraph } = axiosInit();
+    const graphqlQuery = {
+        operationName: 'fetchCommunities',
+        query: `query fetchCommunities {
+            communityEntities(
+                first: ${limit}
+                skip: ${offset}
+                orderBy: beneficiaries
+                orderDirection: ${orderDirection ? orderDirection : 'desc'}
+            ) {
+                id
+                beneficiaries
             }
-        `;
+        }`,
+    };
+    const cacheResults = await redisClient.get(graphqlQuery.query);
 
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
-
-        return queryResult.data.communityEntities;
-    } catch (error) {
-        throw new Error(error);
+    if (cacheResults) {
+        return JSON.parse(cacheResults);
     }
+
+    const response = await axiosSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    communityEntities: {
+                        beneficiaries: number;
+                        id: string;
+                    }[];
+                };
+            };
+        }
+    >('', graphqlQuery);
+    const communities = response.data?.data.communityEntities;
+
+    redisClient.set(
+        graphqlQuery.query,
+        JSON.stringify(communities),
+        'EX',
+        intervalsInSeconds.halfHour
+    );
+
+    return communities;
 };
 
 export const getCommunityAmbassador = async (community: string) => {
-    const headers = {
-        'content-type': 'application/json',
-    };
+    const { axiosCouncilSubgraph } = axiosInit();
     const graphqlQuery = {
         operationName: 'fetchCommunityAmbassador',
         query: `query fetchCommunityAmbassador {
@@ -249,26 +292,23 @@ export const getCommunityAmbassador = async (community: string) => {
         }`,
         variables: {},
     };
-
     const cacheResults = await redisClient.get(graphqlQuery.query);
+
     if (cacheResults) {
         return JSON.parse(cacheResults);
     }
 
-    const response = await axios({
-        data: graphqlQuery,
-        headers,
-        method: 'post',
-        url: config.councilSubgraphUrl,
-    });
+    const response = await axiosCouncilSubgraph.post('', graphqlQuery);
+    const ambassador = response.data?.data.ambassadorEntities[0];
+
     redisClient.set(
         graphqlQuery.query,
-        response.data?.ambassadorEntities[0],
+        JSON.stringify(ambassador),
         'EX',
-        intervalsInSeconds.twelveHours
+        intervalsInSeconds.sixHours
     );
 
-    return response.data?.ambassadorEntities[0];
+    return ambassador;
 };
 
 export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
