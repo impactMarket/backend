@@ -26,6 +26,7 @@ export interface LearnAndEarnLevel {
     categoryId: number;
     languages?: string[];
     active: boolean;
+    production?: boolean;
     totalReward: number;
 }
 
@@ -34,5 +35,6 @@ export interface LearnAndEarnLevelCreation {
     categoryId: number;
     languages?: string[];
     active: boolean;
+    production?: boolean;
     totalReward: number;
 }

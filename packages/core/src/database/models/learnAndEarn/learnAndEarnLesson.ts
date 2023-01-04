@@ -14,6 +14,7 @@ export class LearnAndEarnLessonModel extends Model<
     public levelId!: number;
     public languages?: string[];
     public active!: boolean;
+    public production!: boolean;
 }
 
 export function initializeLearnAndEarnLesson(
@@ -47,6 +48,11 @@ export function initializeLearnAndEarnLesson(
             active: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
+            },
+            production: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
             },
         },
         {

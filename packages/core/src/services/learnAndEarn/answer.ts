@@ -191,7 +191,7 @@ export async function answer(
                         lessonId,
                         status: 'started',
                     },
-                },
+                }
             );
 
             // return wrong answers

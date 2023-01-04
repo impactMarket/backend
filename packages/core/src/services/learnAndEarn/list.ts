@@ -50,6 +50,7 @@ export async function listLevels(
                 level ? { prismicId: level } : {},
                 { languages: { [Op.contains]: [user!.language] } },
                 { active: true },
+                { production: process.env.API_ENVIRONMENT === 'production' },
             ],
         };
         const userLevels = (await models.learnAndEarnLevel.findAll({
@@ -177,6 +178,7 @@ export async function listLessons(userId: number, levelId: number) {
             where: {
                 levelId,
                 languages: { [Op.contains]: [user!.language] },
+                production: process.env.API_ENVIRONMENT === 'production',
                 active: true,
             },
         });
