@@ -73,7 +73,7 @@ async function getPrismicLearnAndEarn() {
                             where: {
                                 prismicId: prismicLevel.id,
                                 totalReward: prismicLevel.data.reward,
-                                production: prismicLevel.data.active || false,
+                                isLive: prismicLevel.data.active || false,
                                 active: true,
                                 categoryId: category.id,
                             },
@@ -116,7 +116,7 @@ async function getPrismicLearnAndEarn() {
                                         prismicId: prismicLesson.id,
                                         active: true,
                                         levelId: level.id,
-                                        production:
+                                        isLive:
                                             prismicLesson.data.active || false,
                                     },
                                 });

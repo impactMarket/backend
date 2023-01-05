@@ -36,7 +36,7 @@ module.exports = {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
             },
-            production: {
+            isLive: {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,

@@ -29,7 +29,7 @@ export interface LearnAndEarnLesson {
     levelId: number;
     languages?: string[];
     active: boolean;
-    production?: boolean;
+    isLive?: boolean;
 
     // used on query with associations
     userLesson?: LearnAndEarnUserLessonModel[];
@@ -40,5 +40,5 @@ export interface LearnAndEarnLessonCreation {
     levelId: number;
     languages?: string[];
     active: boolean;
-    production?: boolean;
+    isLive?: boolean;
 }

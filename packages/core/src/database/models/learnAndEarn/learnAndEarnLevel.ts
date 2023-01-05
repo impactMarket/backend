@@ -14,7 +14,7 @@ export class LearnAndEarnLevelModel extends Model<
     public categoryId!: number;
     public languages?: string[];
     public active!: boolean;
-    public production!: boolean;
+    public isLive!: boolean;
     public totalReward!: number;
 }
 
@@ -55,7 +55,7 @@ export function initializeLearnAndEarnLevel(
                 allowNull: false,
                 defaultValue: 0,
             },
-            production: {
+            isLive: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,

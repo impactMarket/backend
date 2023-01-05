@@ -7,7 +7,7 @@ module.exports = {
             return;
         }
 
-        await queryInterface.addColumn('learn_and_earn_level', 'production', {
+        await queryInterface.addColumn('learn_and_earn_level', 'isLive', {
             type: Sequelize.BOOLEAN,
             allowNull: false,
             defaultValue: false,
