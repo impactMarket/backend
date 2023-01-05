@@ -1,7 +1,7 @@
 import { PrismicDocument } from '@prismicio/types';
 import { Op } from 'sequelize';
 
-import { models } from '../../database';
+import { models, sequelize } from '../../database';
 import { BaseError } from '../../utils/baseError';
 import { client as prismic } from '../../utils/prismic';
 
@@ -11,27 +11,29 @@ import { client as prismic } from '../../utils/prismic';
 // }
 
 async function getPrismicLearnAndEarn() {
-    try {
-        const categoryIds: number[] = [],
-            levelIds: number[] = [],
-            lessonIds: number[] = [],
-            quizIds: number[] = [];
+    const categoryIds: number[] = [],
+        levelIds: number[] = [],
+        lessonIds: number[] = [],
+        quizIds: number[] = [];
 
-        const response = await prismic.getAllByType('pwa-lae-category', {
-            lang: 'en-us',
-            fetchLinks: [
-                'pwa-lae-level.reward',
-                'pwa-lae-level.active',
-                'pwa-lae-level.lessons',
-                'pwa-lae-lesson.questions',
-                'pwa-lae-lesson.active',
-            ],
-        });
-        for (
-            let categoryIndex = 0;
-            categoryIndex < response.length;
-            categoryIndex++
-        ) {
+    const response = await prismic.getAllByType('pwa-lae-category', {
+        lang: 'en-us',
+        fetchLinks: [
+            'pwa-lae-level.reward',
+            'pwa-lae-level.active',
+            'pwa-lae-level.lessons',
+            'pwa-lae-lesson.questions',
+            'pwa-lae-lesson.active',
+        ],
+    });
+    for (
+        let categoryIndex = 0;
+        categoryIndex < response.length;
+        categoryIndex++
+    ) {
+        const t = await sequelize.transaction();
+
+        try {
             const prismicCategory = response[categoryIndex];
             // INSERT CATEGORY
             const [category] = await models.learnAndEarnCategory.findOrCreate({
@@ -39,20 +41,29 @@ async function getPrismicLearnAndEarn() {
                     prismicId: prismicCategory.id,
                     active: true,
                 },
+                transaction: t,
             });
 
             categoryIds.push(category.id);
-            await category.update({
-                languages: prismicCategory.alternate_languages
-                    .map(({ lang }) => {
-                        const index_ = lang.indexOf('-');
-                        return lang.substring(
-                            0,
-                            index_ !== -1 ? index_ : lang.length
-                        );
-                    })
-                    .concat(['en']),
-            });
+            await models.learnAndEarnCategory.update(
+                {
+                    languages: prismicCategory.alternate_languages
+                        .map(({ lang }) => {
+                            const index_ = lang.indexOf('-');
+                            return lang.substring(
+                                0,
+                                index_ !== -1 ? index_ : lang.length
+                            );
+                        })
+                        .concat(['en']),
+                },
+                {
+                    transaction: t,
+                    where: {
+                        id: category.id,
+                    },
+                }
+            );
 
             for (
                 let levelIndex = 0;
@@ -77,23 +88,32 @@ async function getPrismicLearnAndEarn() {
                                 active: true,
                                 categoryId: category.id,
                             },
+                            transaction: t,
                         }
                     );
                     levelIds.push(level.id);
                     const findLevelLanguages = await prismic.getByID(
                         prismicLevel.id
                     );
-                    await level.update({
-                        languages: findLevelLanguages.alternate_languages
-                            .map(({ lang }) => {
-                                const index_ = lang.indexOf('-');
-                                return lang.substring(
-                                    0,
-                                    index_ !== -1 ? index_ : lang.length
-                                );
-                            })
-                            .concat(['en']),
-                    });
+                    await models.learnAndEarnLevel.update(
+                        {
+                            languages: findLevelLanguages.alternate_languages
+                                .map(({ lang }) => {
+                                    const index_ = lang.indexOf('-');
+                                    return lang.substring(
+                                        0,
+                                        index_ !== -1 ? index_ : lang.length
+                                    );
+                                })
+                                .concat(['en']),
+                        },
+                        {
+                            transaction: t,
+                            where: {
+                                id: level.id,
+                            },
+                        }
+                    );
 
                     for (
                         let lessonIndex = 0;
@@ -119,25 +139,35 @@ async function getPrismicLearnAndEarn() {
                                         isLive:
                                             prismicLesson.data.active || false,
                                     },
+                                    transaction: t,
                                 });
                             lessonIds.push(lesson.id);
                             const findLessonLanguages = await prismic.getByID(
                                 prismicLesson.id
                             );
-                            await lesson.update({
-                                languages:
-                                    findLessonLanguages.alternate_languages
-                                        .map(({ lang }) => {
-                                            const index_ = lang.indexOf('-');
-                                            return lang.substring(
-                                                0,
-                                                index_ !== -1
-                                                    ? index_
-                                                    : lang.length
-                                            );
-                                        })
-                                        .concat(['en']),
-                            });
+                            await models.learnAndEarnLesson.update(
+                                {
+                                    languages:
+                                        findLessonLanguages.alternate_languages
+                                            .map(({ lang }) => {
+                                                const index_ =
+                                                    lang.indexOf('-');
+                                                return lang.substring(
+                                                    0,
+                                                    index_ !== -1
+                                                        ? index_
+                                                        : lang.length
+                                                );
+                                            })
+                                            .concat(['en']),
+                                },
+                                {
+                                    transaction: t,
+                                    where: {
+                                        id: lesson.id,
+                                    },
+                                }
+                            );
 
                             for (
                                 let quizIndex = 0;
@@ -160,6 +190,7 @@ async function getPrismicLearnAndEarn() {
                                             lessonId: lesson.id,
                                             answer,
                                         },
+                                        transaction: t,
                                     });
                                 quizIds.push(quiz.id);
                             }
@@ -167,9 +198,16 @@ async function getPrismicLearnAndEarn() {
                     }
                 }
             }
+            await t.commit();
+        } catch (error) {
+            await t.rollback();
+            console.log('e', error);
         }
+    }
 
-        // INACTIVATE REGISTRIES
+    // INACTIVATE REGISTRIES
+    const t = await sequelize.transaction();
+    try {
         await Promise.all([
             models.learnAndEarnCategory.update(
                 {
@@ -181,6 +219,7 @@ async function getPrismicLearnAndEarn() {
                             [Op.notIn]: categoryIds,
                         },
                     },
+                    transaction: t,
                 }
             ),
             models.learnAndEarnLevel.update(
@@ -193,6 +232,7 @@ async function getPrismicLearnAndEarn() {
                             [Op.notIn]: levelIds,
                         },
                     },
+                    transaction: t,
                 }
             ),
             models.learnAndEarnLesson.update(
@@ -205,6 +245,7 @@ async function getPrismicLearnAndEarn() {
                             [Op.notIn]: lessonIds,
                         },
                     },
+                    transaction: t,
                 }
             ),
             models.learnAndEarnQuiz.update(
@@ -217,10 +258,13 @@ async function getPrismicLearnAndEarn() {
                             [Op.notIn]: quizIds,
                         },
                     },
+                    transaction: t,
                 }
             ),
         ]);
+        await t.commit();
     } catch (error) {
+        await t.rollback();
         console.log('e', error);
     }
 }
