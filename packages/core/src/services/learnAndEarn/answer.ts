@@ -1,5 +1,6 @@
+import { defaultAbiCoder } from '@ethersproject/abi';
 import { arrayify } from '@ethersproject/bytes';
-import { keccak256 } from '@ethersproject/solidity';
+import { keccak256 } from '@ethersproject/keccak256';
 import { Wallet } from '@ethersproject/wallet';
 import BigNumber from 'bignumber.js';
 import { literal } from 'sequelize';
@@ -107,21 +108,21 @@ async function signParams(
     levelId: number,
     amountEarned: number
 ): Promise<string> {
-    const signer = new Wallet(config.learnAndEarnPrivateKey);
-
-    const message = keccak256(
+    const wallet = new Wallet(config.learnAndEarnPrivateKey);
+    const encoded = defaultAbiCoder.encode(
         ['address', 'uint256', 'uint256'],
         [
             beneficiaryAddress,
             levelId,
             // for the contract, the value needs to be in wei
             new BigNumber(amountEarned)
-                .times(new BigNumber(10).pow(18))
+                .multipliedBy(new BigNumber(10).pow(18))
                 .toString(),
         ]
     );
-    const arrayifyMessage = arrayify(message);
-    return await signer.signMessage(arrayifyMessage);
+    const hash = keccak256(encoded);
+
+    return wallet.signMessage(arrayify(hash));
 }
 
 async function calculateReward(
@@ -292,16 +293,12 @@ export async function answer(
             const level = await models.learnAndEarnLevel.findOne({
                 where: { id: lesson!.levelId },
             });
-            const signature = await signParams(
-                user.address,
-                level!.id,
-                level!.totalReward
-            );
             const amount = await calculateReward(
                 user.userId,
                 level!.id,
                 points
             );
+            const signature = await signParams(user.address, level!.id, amount);
             await models.learnAndEarnPayment.create(
                 {
                     userId: user.userId,
