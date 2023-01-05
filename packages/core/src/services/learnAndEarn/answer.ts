@@ -126,7 +126,8 @@ async function signParams(
 
 async function calculateReward(
     userId: number,
-    levelId: number
+    levelId: number,
+    points: number
 ): Promise<number> {
     const level = await models.learnAndEarnLevel.findOne({
         attributes: ['totalReward'],
@@ -134,21 +135,31 @@ async function calculateReward(
             id: levelId,
         },
     });
-    const points = await getTotalPoints(userId, levelId);
+    const previousPoints = await getTotalPoints(userId, levelId);
+    const totalLessons = await models.learnAndEarnLesson.count({
+        where: {
+            levelId,
+            active: true,
+        },
+    });
+    const totalPointsEarned = previousPoints + points;
+    const totalPointsAvailable = totalLessons * 10;
     let percentage = 0;
 
-    if (points < 10) {
-        percentage = 15;
-    } else if (points >= 10 && points < 20) {
-        percentage = 35;
-    } else if (points >= 20 && points < 30) {
-        percentage = 55;
-    } else if (points >= 30 && points < 40) {
-        percentage = 75;
-    } else if (points >= 40 && points < 50) {
-        percentage = 85;
-    } else if (points >= 50) {
+    const tierLength = totalPointsAvailable / 5;
+
+    if (totalPointsEarned >= totalPointsAvailable) {
         percentage = 100;
+    } else if (totalPointsEarned >= totalPointsAvailable - tierLength) {
+        percentage = 85;
+    } else if (totalPointsEarned >= totalPointsAvailable - tierLength * 2) {
+        percentage = 75;
+    } else if (totalPointsEarned >= totalPointsAvailable - tierLength * 3) {
+        percentage = 55;
+    } else if (totalPointsEarned >= totalPointsAvailable - tierLength * 4) {
+        percentage = 35;
+    } else if (totalPointsEarned > 0) {
+        percentage = 15;
     }
 
     return (percentage / 100) * level!.totalReward;
@@ -164,6 +175,7 @@ export async function answer(
         const quizzes = await models.learnAndEarnQuiz.findAll({
             where: {
                 lessonId,
+                active: true,
             },
             order: ['order'],
         });
@@ -191,7 +203,7 @@ export async function answer(
                         lessonId,
                         status: 'started',
                     },
-                },
+                }
             );
 
             // return wrong answers
@@ -285,7 +297,11 @@ export async function answer(
                 level!.id,
                 level!.totalReward
             );
-            const amount = await calculateReward(user.userId, level!.id);
+            const amount = await calculateReward(
+                user.userId,
+                level!.id,
+                points
+            );
             await models.learnAndEarnPayment.create(
                 {
                     userId: user.userId,
@@ -330,7 +346,7 @@ export async function answer(
                     success: true,
                     attempts,
                     points,
-                    totalPoints,
+                    totalPoints: points + totalPoints,
                     availableLessons,
                     levelCompleted: level!.prismicId,
                     categoryCompleted: category!.prismicId,
@@ -341,7 +357,7 @@ export async function answer(
                     success: true,
                     attempts,
                     points,
-                    totalPoints,
+                    totalPoints: points + totalPoints,
                     availableLessons,
                     levelCompleted: level!.prismicId,
                 };
@@ -352,7 +368,7 @@ export async function answer(
                 success: true,
                 attempts,
                 points,
-                totalPoints,
+                totalPoints: points + totalPoints,
                 availableLessons,
             };
         }
