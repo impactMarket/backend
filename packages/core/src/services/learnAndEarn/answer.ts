@@ -178,6 +178,7 @@ export async function answer(
                 completionDate: {
                     [Op.gte]: new Date().setHours(0, 0, 0, 0),
                 },
+                userId: user.userId,
             },
         });
 

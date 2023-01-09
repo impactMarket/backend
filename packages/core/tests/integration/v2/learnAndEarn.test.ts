@@ -39,7 +39,7 @@ describe('Learn And Earn', () => {
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
-        users = await UserFactory({ n: 1 });
+        users = await UserFactory({ n: 2 });
         replace(
             config,
             'learnAndEarnPrivateKey',
@@ -149,7 +149,7 @@ describe('Learn And Earn', () => {
 
             expect(total_.lesson).to.include({
                 completed: 0,
-                total: 2,
+                total: 4,
             });
             expect(total_.level).to.include({
                 completed: 0,
@@ -176,7 +176,7 @@ describe('Learn And Earn', () => {
                 prismicId: 'level1',
                 totalReward: 500,
                 status: 'available',
-                totalLessons: 2,
+                totalLessons: 4,
             });
         });
 
@@ -232,16 +232,16 @@ describe('Learn And Earn', () => {
         });
 
         it('should return error when trying to conclude two lesson in a same day', async () => {
-            await startLesson(users[0].id, lesson3.id);
+            await startLesson(users[1].id, lesson3.id);
             const answer_ = await answer(
-                { userId: users[0].id, address: users[0].address },
+                { userId: users[1].id, address: users[1].address },
                 [quiz5.answer],
                 lesson3.id
             );
 
-            await startLesson(users[0].id, lesson4.id);
+            await startLesson(users[1].id, lesson4.id);
             answer(
-                { userId: users[0].id, address: users[0].address },
+                { userId: users[1].id, address: users[1].address },
                 [quiz6.answer],
                 lesson4.id
             )
