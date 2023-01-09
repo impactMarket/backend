@@ -27,10 +27,14 @@ describe('Learn And Earn', () => {
         level: LearnAndEarnLevelModel,
         lesson1: LearnAndEarnLessonModel,
         lesson2: LearnAndEarnLessonModel,
+        lesson3: LearnAndEarnLessonModel,
+        lesson4: LearnAndEarnLessonModel,
         // quiz1: LearnAndEarnQuizModel,
         // quiz2: LearnAndEarnQuizModel,
         quiz3: LearnAndEarnQuizModel,
-        quiz4: LearnAndEarnQuizModel;
+        quiz4: LearnAndEarnQuizModel,
+        quiz5: LearnAndEarnQuizModel,
+        quiz6: LearnAndEarnQuizModel;
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -73,6 +77,18 @@ describe('Learn And Earn', () => {
             languages: ['pt'],
             prismicId: 'lesson2',
         });
+        lesson3 = await models.learnAndEarnLesson.create({
+            active: true,
+            levelId: level.id,
+            languages: ['pt'],
+            prismicId: 'lesson3',
+        });
+        lesson4 = await models.learnAndEarnLesson.create({
+            active: true,
+            levelId: level.id,
+            languages: ['pt'],
+            prismicId: 'lesson4',
+        });
 
         // create quiz
         // quiz1 = await models.learnAndEarnQuiz.create({
@@ -97,6 +113,18 @@ describe('Learn And Earn', () => {
             active: true,
             answer: 1,
             lessonId: lesson2.id,
+            order: 1,
+        });
+        quiz5 = await models.learnAndEarnQuiz.create({
+            active: true,
+            answer: 1,
+            lessonId: lesson3.id,
+            order: 1,
+        });
+        quiz6 = await models.learnAndEarnQuiz.create({
+            active: true,
+            answer: 1,
+            lessonId: lesson4.id,
             order: 1,
         });
     });
@@ -201,6 +229,28 @@ describe('Learn And Earn', () => {
                 success: true,
                 points: 10,
             });
+        });
+
+        it('should return error when trying to conclude two lesson in a same day', async () => {
+            await startLesson(users[0].id, lesson3.id);
+            const answer_ = await answer(
+                { userId: users[0].id, address: users[0].address },
+                [quiz5.answer],
+                lesson3.id
+            );
+
+            await startLesson(users[0].id, lesson4.id);
+            answer(
+                { userId: users[0].id, address: users[0].address },
+                [quiz6.answer],
+                lesson4.id
+            )
+                .catch((e) => expect(e.name).to.be.equal('LESSON_DAILY_LIMIT'))
+                .then(() => {
+                    throw new Error(
+                        "'fails to answer a second question, expected to fail"
+                    );
+                });
         });
     });
 });

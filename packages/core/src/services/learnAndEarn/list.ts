@@ -165,7 +165,12 @@ export async function listLessons(userId: number, levelId: number) {
         const lessons = await models.learnAndEarnLesson.findAll({
             include: [
                 {
-                    attributes: ['status', 'points', 'attempts'],
+                    attributes: [
+                        'status',
+                        'points',
+                        'attempts',
+                        'completionDate',
+                    ],
                     model: models.learnAndEarnUserLesson,
                     as: 'userLesson',
                     required: false,
@@ -182,12 +187,28 @@ export async function listLessons(userId: number, levelId: number) {
         });
 
         let totalPoints = 0;
+        let completedToday = false;
+
         const mappedLessons = lessons.map(
             ({ id, prismicId, levelId, userLesson }: LearnAndEarnLesson) => {
-                const { status, points, attempts } =
+                const { status, points, attempts, completionDate } =
                     userLesson!.length > 0
                         ? userLesson![0].toJSON()
-                        : { status: 'available', points: 0, attempts: 0 };
+                        : {
+                              status: 'available',
+                              points: 0,
+                              attempts: 0,
+                              completionDate: null,
+                          };
+
+                if (
+                    !!completionDate &&
+                    new Date().setHours(0, 0, 0, 0) ==
+                        new Date(completionDate).setHours(0, 0, 0, 0)
+                ) {
+                    // Already completed a lesson today
+                    completedToday = true;
+                }
 
                 totalPoints += points || 0;
                 return {
@@ -197,12 +218,14 @@ export async function listLessons(userId: number, levelId: number) {
                     status,
                     points,
                     attempts,
+                    completionDate,
                 };
             }
         );
 
         return {
             totalPoints,
+            completedToday,
             lessons: mappedLessons,
         };
     } catch (error) {
