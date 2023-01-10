@@ -3,11 +3,10 @@ import { arrayify } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/keccak256';
 import { Wallet } from '@ethersproject/wallet';
 import BigNumber from 'bignumber.js';
-import { literal } from 'sequelize';
+import { literal, Op } from 'sequelize';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
-import { LearnAndEarnUserLesson } from '../../interfaces/learnAndEarn/learnAndEarnUserLesson';
 import { BaseError } from '../../utils/baseError';
 
 async function countAvailableLessons(
@@ -173,6 +172,23 @@ export async function answer(
 ) {
     const t = await sequelize.transaction();
     try {
+        // check if already completed a lesson today
+        const completedToday = await models.learnAndEarnUserLesson.count({
+            where: {
+                completionDate: {
+                    [Op.gte]: new Date().setHours(0, 0, 0, 0),
+                },
+                userId: user.userId,
+            },
+        });
+
+        if (completedToday > 0) {
+            throw new BaseError(
+                'LESSON_DAILY_LIMIT',
+                'a lesson has already been completed today'
+            );
+        }
+
         const quizzes = await models.learnAndEarnQuiz.findAll({
             where: {
                 lessonId,
