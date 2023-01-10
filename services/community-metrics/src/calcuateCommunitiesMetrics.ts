@@ -174,7 +174,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                               // .dividedBy(10 ** config.cUSDDecimal) // set 18 decimals from onchain values
                               .dividedBy(communityMonth.allBeneficiaries.length)
                               .dividedBy(daysSinceStart)
-                              .toFixed(2, 1)
+                              .toFixed(4, 1)
                       )
                     : 0;
 
@@ -185,7 +185,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                           new BigNumber(communityContract?.maxClaim)
                               .dividedBy(ubiRate)
                               .dividedBy(30)
-                              .toFixed(2, 1)
+                              .toFixed(4, 1)
                       )
                     : 0;
             dailyMetricsPromises.push(
