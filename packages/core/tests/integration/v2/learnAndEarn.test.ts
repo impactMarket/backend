@@ -119,13 +119,13 @@ describe('Learn And Earn', () => {
             active: true,
             answer: 1,
             lessonId: lesson3.id,
-            order: 1,
+            order: 0,
         });
         quiz6 = await models.learnAndEarnQuiz.create({
             active: true,
             answer: 1,
             lessonId: lesson4.id,
-            order: 1,
+            order: 0,
         });
     });
 
