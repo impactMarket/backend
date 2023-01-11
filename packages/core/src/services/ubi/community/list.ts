@@ -35,6 +35,7 @@ export class CommunityListService {
         status?: 'valid' | 'pending';
         review?: 'pending' | 'claimed' | 'declined' | 'accepted' | 'accepted';
         ambassadorAddress?: string;
+        state?: string | string[];
     }): Promise<{ count: number; rows: CommunityAttributes[] }> {
         let extendedWhere: WhereOptions<CommunityAttributes> = {};
         const orderOption: OrderItem[] = [];
@@ -441,7 +442,7 @@ export class CommunityListService {
         // remove empty elements
         communitiesId = communitiesId.filter(Number);
 
-        let states: ({
+        const states: ({
             communityId: number;
             claims: number;
             claimed: string;
@@ -450,12 +451,38 @@ export class CommunityListService {
             contributed: string;
             contributors: number;
             managers: number;
-        } | null)[];
+        } | null)[] = [];
+        // TODO: review validation
         if (returnState) {
-            const promises = communitiesId.map((id) =>
-                this.communityDetailsService.getBaseState(id!)
-            );
-            states = await Promise.all(promises);
+            const batch = config.cronJobBatchSize;
+            for (let i = 0; ; i = i + batch) {
+                const communities = communitiesId.slice(i, i + batch);
+                const promises = communities.map(async (id) => {
+                    let baseState: any = {},
+                        ubiState: any = {};
+                    baseState = await this.communityDetailsService.getBaseState(
+                        id!
+                    );
+                    if (
+                        !!query.state &&
+                        (query.state === 'ubi' || query.state.indexOf('ubi') !== -1)
+                    ) {
+                        ubiState = await this.communityDetailsService.getUbiState(
+                            id!
+                        );
+                    }
+
+                    return {
+                        ...baseState,
+                        ...ubiState,
+                    } as any;
+                });
+                const result = await Promise.all(promises);
+                states.push(...result);
+                if (i + batch > communitiesId.length) {
+                    break;
+                }
+            }
         }
 
         //formate response

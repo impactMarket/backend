@@ -83,6 +83,7 @@ export class CommunityDetailsService {
             estimatedDuration: community.metrics?.length
                 ? community.metrics[0].estimatedDuration
                 : 0,
+            communityId,
         };
     }
 
