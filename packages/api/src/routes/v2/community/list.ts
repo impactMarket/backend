@@ -103,6 +103,13 @@ export default (route: Router): void => {
      *           type: string
      *         required: false
      *         description: especify fields to return
+     *       - in: query
+     *         name: state
+     *         schema:
+     *           type: string
+     *           enum: [base, ubi]
+     *         required: false
+     *         description: community state
      *     responses:
      *       "200":
      *         description: OK
