@@ -193,7 +193,14 @@ export async function listLessons(userId: number, levelId: number) {
         });
 
         let totalPoints = 0;
-        let completedToday = false;
+        const completedToday = await models.learnAndEarnUserLesson.count({
+            where: {
+                completionDate: {
+                    [Op.gte]: new Date().setHours(0, 0, 0, 0),
+                },
+                userId: userId,
+            },
+        });
 
         const mappedLessons = lessons.map(
             ({ id, prismicId, levelId, userLesson }: LearnAndEarnLesson) => {
@@ -206,15 +213,6 @@ export async function listLessons(userId: number, levelId: number) {
                               attempts: 0,
                               completionDate: null,
                           };
-
-                if (
-                    !!completionDate &&
-                    new Date().setHours(0, 0, 0, 0) ==
-                        new Date(completionDate).setHours(0, 0, 0, 0)
-                ) {
-                    // Already completed a lesson today
-                    completedToday = true;
-                }
 
                 totalPoints += points || 0;
                 return {
@@ -231,7 +229,7 @@ export async function listLessons(userId: number, levelId: number) {
 
         return {
             totalPoints,
-            completedToday,
+            completedToday: completedToday > 0,
             lessons: mappedLessons,
         };
     } catch (error) {
