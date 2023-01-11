@@ -79,6 +79,9 @@ export async function listLevels(
                     model: models.learnAndEarnLesson,
                     as: 'lesson',
                     duplicating: false,
+                    where: {
+                        active: true,
+                    }
                 },
                 {
                     attributes: ['prismicId'],
