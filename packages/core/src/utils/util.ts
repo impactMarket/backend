@@ -28,7 +28,7 @@ export function calculateGrowth(
             .multipliedBy(100)
             .toNumber();
     } else if (typeof past === 'number' && typeof now === 'number') {
-        r = ((now - past) / past) * 100;
+        r = ((now - past) / Math.abs(past)) * 100;
     }
     if (r !== undefined) {
         return Math.round(r * 10) / 10;
