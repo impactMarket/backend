@@ -29,7 +29,14 @@ export async function registerClaimRewards(
         sequelize
             .transaction(async (t) => {
                 for (let index = 0; index < events.length; index++) {
-                    const event = events[index]!;
+                    const event = events[index];
+
+                    if (event === null) {
+                        continue;
+                    }
+                    if (event.name !== 'RewardClaimed') {
+                        continue;
+                    }
 
                     await models.learnAndEarnPayment.update(
                         { status: 'paid' },
