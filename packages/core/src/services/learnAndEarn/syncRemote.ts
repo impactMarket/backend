@@ -20,10 +20,10 @@ async function getPrismicLearnAndEarn() {
         lang: 'en-us',
         fetchLinks: [
             'pwa-lae-level.reward',
-            'pwa-lae-level.active',
+            'pwa-lae-level.is_live',
             'pwa-lae-level.lessons',
             'pwa-lae-lesson.questions',
-            'pwa-lae-lesson.active',
+            'pwa-lae-lesson.is_live',
         ],
     });
     for (
@@ -84,7 +84,7 @@ async function getPrismicLearnAndEarn() {
                             where: {
                                 prismicId: prismicLevel.id,
                                 totalReward: prismicLevel.data.reward,
-                                isLive: prismicLevel.data.active || false,
+                                isLive: prismicLevel.data.is_live || false,
                                 active: true,
                                 categoryId: category.id,
                             },
@@ -137,7 +137,7 @@ async function getPrismicLearnAndEarn() {
                                         active: true,
                                         levelId: level.id,
                                         isLive:
-                                            prismicLesson.data.active || false,
+                                            prismicLesson.data.is_live || false,
                                     },
                                     transaction: t,
                                 });
