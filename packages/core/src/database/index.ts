@@ -45,7 +45,6 @@ import { Community } from './models/ubi/community';
 import * as UbiCommunityContract from './models/ubi/communityContract';
 import * as UbiCommunityDailyMetrics from './models/ubi/communityDailyMetrics';
 import * as UbiCommunityDemographics from './models/ubi/communityDemographics';
-import * as Inflow from './models/ubi/inflow';
 import * as Manager from './models/ubi/manager';
 import * as UbiBeneficiaryRegistry from './models/ubi/ubiBeneficiaryRegistry';
 import * as UbiBeneficiarySurvey from './models/ubi/ubiBeneficiarySurvey';
@@ -146,7 +145,6 @@ const models: DbModels = {
         .GlobalGrowthModel as ModelCtor<GlobalGrowth.GlobalGrowthModel>,
     // userDevice: sequelize.models
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
-    inflow: sequelize.models.Inflow as ModelCtor<Inflow.Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager.Manager>,
 
     appMediaContent: sequelize.models
@@ -235,7 +233,6 @@ export {
     UbiCommunityContract,
     UbiCommunityDailyMetrics,
     UbiCommunityDemographics,
-    Inflow,
     Manager,
     UbiBeneficiaryRegistry,
     UbiBeneficiarySurvey,

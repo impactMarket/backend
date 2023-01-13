@@ -287,22 +287,6 @@ export default class CommunityService {
                   claimed: string;
               }[]
             | undefined = undefined;
-        let inflowState:
-            | [
-                  {
-                      id: number;
-                      raised: string;
-                  }
-              ]
-            | undefined = undefined;
-        let backerState:
-            | [
-                  {
-                      id: number;
-                      backers: string;
-                  }
-              ]
-            | undefined = undefined;
         let communitiesId: number[] = [];
 
         if (query.filter === 'featured') {
@@ -564,58 +548,6 @@ export default class CommunityService {
                     };
                 });
             }
-
-            if (!inflowState) {
-                inflowState = (await models.community.findAll({
-                    attributes: [
-                        'id',
-                        [
-                            fn('coalesce', fn('sum', col('amount')), '0'),
-                            'raised',
-                        ],
-                    ],
-                    include: [
-                        {
-                            attributes: [],
-                            model: models.inflow,
-                            as: 'inflow',
-                        },
-                    ],
-                    where: {
-                        id: {
-                            [Op.in]: communitiesId,
-                        },
-                    },
-                    group: ['Community.id'],
-                    raw: true,
-                })) as any;
-            }
-
-            if (!backerState) {
-                backerState = (await models.community.findAll({
-                    attributes: [
-                        'id',
-                        [
-                            fn('count', fn('distinct', col('inflow.from'))),
-                            'backers',
-                        ],
-                    ],
-                    include: [
-                        {
-                            attributes: [],
-                            model: models.inflow,
-                            as: 'inflow',
-                        },
-                    ],
-                    where: {
-                        id: {
-                            [Op.in]: communitiesId,
-                        },
-                    },
-                    group: ['Community.id'],
-                    raw: true,
-                })) as any;
-            }
         }
 
         //formate response
@@ -661,8 +593,6 @@ export default class CommunityService {
                 const claimModel = claimsState?.find(
                     (el) => el.communityId === id
                 );
-                const raiseModel = inflowState?.find((el) => el.id === id);
-                const backerModel = backerState?.find((el) => el.id === id);
                 const contract = community.contract
                     ? {
                           contract: {
@@ -688,8 +618,8 @@ export default class CommunityService {
                             ? Number(beneficiariesModel.beneficiaries)
                             : 0,
                         claimed: claimModel ? claimModel.claimed : '0',
-                        raised: raiseModel ? raiseModel.raised : '0',
-                        backers: backerModel ? Number(backerModel.backers) : 0,
+                        raised: '0',
+                        backers: 0,
                     },
                 };
             }
@@ -1900,53 +1830,8 @@ export default class CommunityService {
         orderType?: string,
         communitiesId?: number[]
     ): Promise<[{ id: number }]> {
-        const sql = `SELECT "Beneficiary".id
-        FROM (
-            SELECT "Community"."id", count(distinct("beneficiaries"."address")) AS "beneficiaries"
-            FROM "community" AS "Community"
-                INNER JOIN "beneficiary" AS "beneficiaries" ON "Community"."id" = "beneficiaries"."communityId" AND "beneficiaries"."active" = true
-            WHERE ${
-                !!communitiesId && communitiesId.length > 0
-                    ? `"Community"."id" IN (${communitiesId.join()})`
-                    : `"Community"."status" = 'valid' AND "Community"."visibility" = 'public'`
-            }
-            GROUP BY "Community"."id"
-        ) AS "Beneficiary" INNER JOIN (
-            SELECT "Community"."id", sum("claims"."amount") AS "claimed"
-            FROM "community" AS "Community"
-                INNER JOIN "ubi_claim" AS "claims" ON "Community"."id" = "claims"."communityId"
-            WHERE "Community"."status" = 'valid' AND "Community"."visibility" = 'public'
-            GROUP BY "Community"."id"
-        ) AS "Claims" on "Claims".id = "Beneficiary".id INNER JOIN (
-            SELECT "Community"."id", sum("inflow"."amount") AS "raised"
-            FROM "community" AS "Community"
-                INNER JOIN "inflow" AS "inflow" ON "Community"."contractAddress" = "inflow"."contractAddress"
-            WHERE "Community"."status" = 'valid' AND "Community"."visibility" = 'public'
-            GROUP BY "Community"."id"
-        ) AS "Inflow" ON "Beneficiary".id = "Inflow".id INNER JOIN (
-            SELECT "communityId", "ubiRate"
-            FROM ubi_community_daily_metrics
-            WHERE date = (
-                SELECT date from ubi_community_daily_metrics order by date DESC limit 1
-            )
-        ) AS "Metrics" ON "Metrics"."communityId" = "Beneficiary".id
-        WHERE "Beneficiary".beneficiaries != 0
-        ORDER BY ("Inflow".raised - "Claims".claimed) / "Metrics"."ubiRate" / "Beneficiary".beneficiaries ${
-            orderType ? orderType : 'ASC'
-        }
-        LIMIT ${
-            query.limit ? parseInt(query.limit, 10) : config.defaultLimit
-        } OFFSET ${
-            query.offset ? parseInt(query.offset, 10) : config.defaultOffset
-        }`;
-
-        const result = (
-            await this.sequelize.query(sql, {
-                raw: true,
-            })
-        )[0] as [{ id: number }];
-
-        return result;
+        // TODO: update to use subgraph
+        return undefined as any;
     }
 
     private static async _getBeneficiaryState(

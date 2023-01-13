@@ -154,10 +154,6 @@ import communityValidators from '../../validators/community';
  *            id:
  *              type: integer
  *              description: Activity id
- *            type:
- *              type: string
- *              enum: [claim, inflow, transaction, registry]
- *              description: Activity type
  *            tx:
  *              type: string
  *              description: Transaction Hash

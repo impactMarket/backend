@@ -191,14 +191,6 @@ export interface IGlobalOutflowStatus {
     beneficiaries: any;
 }
 
-/**
- * @deprecated
- */
-export interface IGlobalInflowStatus {
-    raises: any;
-    rate: any;
-}
-
 export enum AgendaAction {
     notification = 'notification',
 }

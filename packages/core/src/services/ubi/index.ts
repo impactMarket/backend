@@ -8,7 +8,6 @@ import { CommunityListService } from './community/list';
 import CommunityContractService from './communityContract';
 import CommunityDailyMetricsService from './communityDailyMetrics';
 import CommunityDemographicsService from './communityDemographics';
-import InflowService from './inflow';
 import ManagerService from './managers';
 
 export {
@@ -19,7 +18,6 @@ export {
     CommunityService,
     CommunityContractService,
     CommunityDailyMetricsService,
-    InflowService,
     ManagerService,
     CommunityDemographicsService,
     CommunityDetailsService,

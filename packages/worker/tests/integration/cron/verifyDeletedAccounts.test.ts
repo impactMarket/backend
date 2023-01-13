@@ -93,14 +93,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             new Date()
         );
 
-        await services.ubi.InflowService.add(
-            users[1].address,
-            communities[0].publicId,
-            '30',
-            tx,
-            new Date()
-        );
-
         const storyService = new services.StoryService();
         const story = await storyService.add(users[0].address, {
             byAddress: users[0].address,
@@ -192,12 +184,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         }))!.toJSON();
 
-        const inflow = (await database.models.inflow.findOne({
-            where: {
-                from: users[1].address,
-            },
-        }))!.toJSON();
-
         // eslint-disable-next-line no-unused-expressions
         expect(user).to.be.null;
         expect(beneficiary).to.include({
@@ -205,9 +191,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         });
         expect(registry).to.include({
             activity: 0,
-        });
-        expect(inflow).to.include({
-            amount: '30',
         });
     });
 
