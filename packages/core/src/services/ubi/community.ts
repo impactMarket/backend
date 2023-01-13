@@ -23,7 +23,6 @@ import {
     IBaseCommunityAttributes,
     ICommunityCreationAttributes,
 } from '../../interfaces/ubi/community';
-import { UbiRequestChangeParams } from '../../interfaces/ubi/requestChangeParams';
 import { UbiCommunityCampaign } from '../../interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '../../interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from '../../interfaces/ubi/ubiCommunityDailyMetrics';
@@ -59,7 +58,6 @@ export default class CommunityService {
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
     public static ubiCommunityDemographics = models.ubiCommunityDemographics;
     // public static claimLocation = models.claimLocation;
-    public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static ubiCommunitySuspect = models.ubiCommunitySuspect;
     public static ubiPromoter = models.ubiPromoter;
     public static ubiPromoterSocialMedia = models.ubiPromoterSocialMedia;
@@ -724,19 +722,6 @@ export default class CommunityService {
         });
 
         return requestByAddress;
-    }
-
-    public static async findResquestChangeUbiParams(
-        id: number
-    ): Promise<UbiRequestChangeParams | null> {
-        const community = (await this.community.findOne({
-            attributes: ['publicId'],
-            where: { id },
-            raw: true,
-        }))!;
-        return this.ubiRequestChangeParams.findOne({
-            where: { communityId: community.publicId },
-        });
     }
 
     public static async findById(
@@ -1913,7 +1898,6 @@ export default class CommunityService {
         const yesterdayDateOnly = new Date();
         yesterdayDateOnly.setUTCHours(0, 0, 0, 0);
         yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
-        const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
 
         // TODO: deprecated in mobile@1.1.6
         if (extended) {

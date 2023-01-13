@@ -44,7 +44,6 @@ import { UbiCommunityDailyMetricsModel } from './models/ubi/communityDailyMetric
 import { UbiCommunityDemographicsModel } from './models/ubi/communityDemographics';
 import { Inflow } from './models/ubi/inflow';
 import { Manager } from './models/ubi/manager';
-import { UbiRequestChangeParamsModel } from './models/ubi/requestChangeParams';
 import { UbiBeneficiaryRegistryModel } from './models/ubi/ubiBeneficiaryRegistry';
 import { UbiBeneficiarySurveyModel } from './models/ubi/ubiBeneficiarySurvey';
 import { UbiBeneficiaryTransactionModel } from './models/ubi/ubiBeneficiaryTransaction';
@@ -84,7 +83,6 @@ export interface DbModels {
     ubiPromoterSocialMedia: ModelCtor<UbiPromoterSocialMediaModel>;
     ubiCommunityLabels: ModelCtor<UbiCommunityLabelModel>;
     ubiCommunityCampaign: ModelCtor<UbiCommunityCampaignModel>;
-    ubiRequestChangeParams: ModelCtor<UbiRequestChangeParamsModel>;
     ubiClaimLocation: ModelCtor<ClaimLocationModel>;
     beneficiary: ModelCtor<Beneficiary>;
     ubiBeneficiaryRegistry: ModelCtor<UbiBeneficiaryRegistryModel>;

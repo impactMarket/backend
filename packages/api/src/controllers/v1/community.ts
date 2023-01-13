@@ -5,14 +5,6 @@ import { RequestWithUser } from '../../middlewares/core';
 import { standardResponse, controllerLogAndFail } from '../../utils/api';
 
 class CommunityController {
-    findRequestChangeUbiParams = (req: Request, res: Response) => {
-        services.ubi.CommunityService.findResquestChangeUbiParams(
-            parseInt(req.params.id, 10)
-        )
-            .then((community) => standardResponse(res, 200, true, community))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
-    };
-
     findByContractAddress = (req: RequestWithUser, res: Response) => {
         services.ubi.CommunityService.findByContractAddress(
             req.params.address,

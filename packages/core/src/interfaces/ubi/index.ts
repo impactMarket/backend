@@ -1,6 +1,5 @@
 import * as beneficiary from './beneficiary';
 import * as community from './community';
-import * as requestChangeParams from './requestChangeParams';
 import * as ubiBeneficiaryRegistry from './ubiBeneficiaryRegistry';
 import * as ubiBeneficiarySurvey from './ubiBeneficiarySurvey';
 import * as ubiBeneficiaryTransaction from './ubiBeneficiaryTransaction';
@@ -19,7 +18,6 @@ import * as ubiPromoterSocialMedia from './ubiPromoterSocialMedia';
 export {
     beneficiary,
     community,
-    requestChangeParams,
     ubiBeneficiaryRegistry,
     ubiBeneficiarySurvey,
     ubiBeneficiaryTransaction,

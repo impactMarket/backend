@@ -8,7 +8,6 @@ import { ICommunityContractParams } from '../../types';
 
 export default class CommunityContractService {
     public static ubiCommunityContract = models.ubiCommunityContract;
-    public static ubiRequestChangeParams = models.ubiRequestChangeParams;
     public static community = models.community;
     public static sequelize = sequelize;
 
@@ -34,20 +33,10 @@ export default class CommunityContractService {
     ): Promise<boolean> {
         const params = this.formatContractParams(contractParams);
 
-        const community = (await this.community.findOne({
-            attributes: ['publicId'],
-            where: { id: communityId },
-        }))!;
         try {
             await sequelize.transaction(async (t) => {
                 await this.ubiCommunityContract.update(params, {
                     where: { communityId },
-                    transaction: t,
-                });
-
-                // TODO: migrate
-                await this.ubiRequestChangeParams.destroy({
-                    where: { communityId: community.publicId },
                     transaction: t,
                 });
             });

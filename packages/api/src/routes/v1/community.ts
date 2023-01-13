@@ -610,8 +610,6 @@ export default (app: Router): void => {
      */
     route.get('/count/:query?', controller.count);
 
-    route.get('/:id/ubi', controller.findRequestChangeUbiParams);
-
     /**
      * @swagger
      *
