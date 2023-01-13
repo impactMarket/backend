@@ -38,7 +38,6 @@ import { initializeLearnAndEarnUserLesson } from './learnAndEarn/learnAndEarnUse
 import { initializeLearnAndEarnUserLevel } from './learnAndEarn/learnAndEarnUserLevel';
 import { initializeMerchantCommunity } from './merchant/merchantCommunity';
 import { initializeMerchantRegistry } from './merchant/merchantRegistry';
-import { initializeReachedAddress } from './reachedAddress';
 import { initializeStoryComment } from './story/storyComment';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryContent } from './story/storyContent';
@@ -99,9 +98,6 @@ export default function initModels(sequelize: Sequelize): void {
     initializeUbiPromoterSocialMedia(sequelize);
     initializeUbiCommunityLabel(sequelize);
     initializeUbiCommunityCampaign(sequelize);
-
-    // others
-    initializeReachedAddress(sequelize);
 
     // global
     initializeGlobalDailyState(sequelize);

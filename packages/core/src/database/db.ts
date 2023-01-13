@@ -30,7 +30,6 @@ import { LearnAndEarnUserLessonModel } from './models/learnAndEarn/learnAndEarnU
 import { LearnAndEarnUserLevelModel } from './models/learnAndEarn/learnAndEarnUserLevel';
 import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
 import { MerchantRegistryModel } from './models/merchant/merchantRegistry';
-import { ReachedAddress } from './models/reachedAddress';
 import { StoryCommentModel } from './models/story/storyComment';
 import { StoryCommunityModel } from './models/story/storyCommunity';
 import { StoryContentModel } from './models/story/storyContent';
@@ -66,7 +65,6 @@ export interface DbModels {
     cronJobExecuted: ModelCtor<CronJobExecuted>;
     exchangeRates: ModelCtor<ExchangeRates>;
     imMetadata: ModelCtor<ImMetadata>;
-    reachedAddress: ModelCtor<ReachedAddress>;
     appMediaContent: ModelCtor<AppMediaContentModel>;
     appMediaThumbnail: ModelCtor<AppMediaThumbnailModel>;
     appNotification: ModelCtor<AppNotificationModel>;

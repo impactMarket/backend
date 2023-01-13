@@ -34,7 +34,6 @@ import * as LearnAndEarnUserLesson from './models/learnAndEarn/learnAndEarnUserL
 import * as LearnAndEarnUserLevel from './models/learnAndEarn/learnAndEarnUserLevel';
 import * as MerchantCommunity from './models/merchant/merchantCommunity';
 import * as MerchantRegistry from './models/merchant/merchantRegistry';
-import * as ReachedAddress from './models/reachedAddress';
 import * as StoryComment from './models/story/storyComment';
 import * as StoryCommunity from './models/story/storyCommunity';
 import * as StoryContent from './models/story/storyContent';
@@ -149,8 +148,6 @@ const models: DbModels = {
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     inflow: sequelize.models.Inflow as ModelCtor<Inflow.Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager.Manager>,
-    reachedAddress: sequelize.models
-        .ReachedAddress as ModelCtor<ReachedAddress.ReachedAddress>,
 
     appMediaContent: sequelize.models
         .AppMediaContentModel as ModelCtor<AppMediaContent.AppMediaContentModel>,
@@ -228,7 +225,6 @@ export {
     GlobalDailyState,
     GlobalDemographics,
     GlobalGrowth,
-    ReachedAddress,
     StoryCommunity,
     StoryContent,
     StoryEngagement,

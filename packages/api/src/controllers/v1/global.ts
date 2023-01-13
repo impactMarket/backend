@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 
 import { standardResponse } from '../../utils/api';
 
-const reachedAddressService = new services.ReachedAddressService();
 const globalGrowth = new services.global.GlobalGrowthService();
 const globalDailyStateService = new services.global.GlobalDailyStateService();
 const globalDemographicsService =
