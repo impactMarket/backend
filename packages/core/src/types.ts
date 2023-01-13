@@ -191,10 +191,6 @@ export interface IGlobalOutflowStatus {
     beneficiaries: any;
 }
 
-export enum AgendaAction {
-    notification = 'notification',
-}
-
 /**
  * @deprecated
  */

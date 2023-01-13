@@ -1,4 +1,3 @@
-import AgendaService from './agenda';
 import CashoutProviderService from './cashoutProvider';
 import CronJobExecutedService from './cronJobExecuted';
 import ImMetadataService from './imMetadata';
@@ -7,7 +6,6 @@ import UserServiceV2 from './user/index';
 import UserLogService from './user/log';
 
 export {
-    AgendaService,
     CronJobExecutedService,
     ImMetadataService,
     UserService,

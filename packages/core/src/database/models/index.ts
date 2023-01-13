@@ -2,7 +2,6 @@ import { Sequelize } from 'sequelize';
 
 import { initializeAirgrabProof } from './airgrab/airgrabProof';
 import { initializeAirgrabUser } from './airgrab/airgrabUser';
-import { initializeAgenda } from './app/agenda';
 import { initializeAppAnonymousReport } from './app/anonymousReport';
 import { initializeAppClientCredential } from './app/appClientCredential';
 import { initializeAppLog } from './app/appLog';
@@ -66,7 +65,6 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAppUser(sequelize);
     initializeAppUserTrust(sequelize);
     initializeAppUserThroughTrust(sequelize);
-    initializeAgenda(sequelize);
     initializeExchangeRates(sequelize);
     initializeImMetadata(sequelize);
     initializeAppAnonymousReport(sequelize);
