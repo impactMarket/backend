@@ -178,19 +178,10 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         });
 
-        const registry = (await database.models.ubiBeneficiaryRegistry.findOne({
-            where: {
-                address: users[1].address,
-            },
-        }))!.toJSON();
-
         // eslint-disable-next-line no-unused-expressions
         expect(user).to.be.null;
         expect(beneficiary).to.include({
             active: true,
-        });
-        expect(registry).to.include({
-            activity: 0,
         });
     });
 

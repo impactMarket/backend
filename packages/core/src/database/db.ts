@@ -42,7 +42,6 @@ import { UbiCommunityContractModel } from './models/ubi/communityContract';
 import { UbiCommunityDailyMetricsModel } from './models/ubi/communityDailyMetrics';
 import { UbiCommunityDemographicsModel } from './models/ubi/communityDemographics';
 import { Manager } from './models/ubi/manager';
-import { UbiBeneficiaryRegistryModel } from './models/ubi/ubiBeneficiaryRegistry';
 import { UbiBeneficiarySurveyModel } from './models/ubi/ubiBeneficiarySurvey';
 import { ClaimLocationModel } from './models/ubi/ubiClaimLocation';
 import { UbiCommunityCampaignModel } from './models/ubi/ubiCommunityCampaign';
@@ -81,7 +80,6 @@ export interface DbModels {
     ubiCommunityCampaign: ModelCtor<UbiCommunityCampaignModel>;
     ubiClaimLocation: ModelCtor<ClaimLocationModel>;
     beneficiary: ModelCtor<Beneficiary>;
-    ubiBeneficiaryRegistry: ModelCtor<UbiBeneficiaryRegistryModel>;
     manager: ModelCtor<Manager>;
     //
     globalDailyState: ModelCtor<GlobalDailyState>;

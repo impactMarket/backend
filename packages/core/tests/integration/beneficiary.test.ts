@@ -17,7 +17,6 @@ import { ManagerAttributes } from '../../src/database/models/ubi/manager';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { BeneficiaryAttributes } from '../../src/interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
-import { UbiBeneficiaryRegistryType } from '../../src/interfaces/ubi/ubiBeneficiaryRegistry';
 import UserService from '../../src/services/app/user';
 import { IListBeneficiary } from '../../src/services/endpoints';
 import BeneficiaryService from '../../src/services/ubi/beneficiary';
@@ -40,7 +39,6 @@ describe('beneficiary service', () => {
     let communities: CommunityAttributes[];
     let beneficiaries: BeneficiaryAttributes[];
 
-    let spyBeneficiaryRegistryAdd: SinonSpy;
     let spyBeneficiaryAdd: SinonSpy;
     let spyBeneficiaryUpdate: SinonSpy;
     let returnCommunityStateSubgraph: SinonStub;
@@ -91,11 +89,6 @@ describe('beneficiary service', () => {
             users.slice(0, 8),
             communities[0].id
         );
-
-        spyBeneficiaryRegistryAdd = spy(
-            models.ubiBeneficiaryRegistry,
-            'create'
-        );
         spyBeneficiaryAdd = spy(models.beneficiary, 'create');
         spyBeneficiaryUpdate = spy(models.beneficiary, 'update');
         replace(database, 'query', sequelize.query);
@@ -128,18 +121,15 @@ describe('beneficiary service', () => {
     after(async () => {
         // this two has to come first!
         await truncate(sequelize, 'Manager');
-        await truncate(sequelize, 'UbiBeneficiaryRegistryModel');
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize);
         //
         spyBeneficiaryAdd.restore();
-        spyBeneficiaryRegistryAdd.restore();
         restore();
     });
 
     it('add to public community', async () => {
         spyBeneficiaryAdd.resetHistory();
-        spyBeneficiaryRegistryAdd.resetHistory();
         // add
         const tx = randomTx();
         const txAt = new Date();
@@ -159,21 +149,10 @@ describe('beneficiary service', () => {
             tx,
             txAt,
         });
-        //
-        assert.callCount(spyBeneficiaryRegistryAdd, 1);
-        assert.calledWith(spyBeneficiaryRegistryAdd.getCall(0), {
-            address: users[15].address,
-            from: users[0].address,
-            communityId: communities[0].id,
-            activity: UbiBeneficiaryRegistryType.add,
-            tx,
-            txAt,
-        });
     });
 
     it('remove from public community', async () => {
         spyBeneficiaryUpdate.resetHistory();
-        spyBeneficiaryRegistryAdd.resetHistory();
         // add
         await BeneficiaryService.add(
             users[15].address,
@@ -206,16 +185,6 @@ describe('beneficiary service', () => {
                 },
             }
         );
-        //
-        assert.callCount(spyBeneficiaryRegistryAdd, 1);
-        assert.calledWith(spyBeneficiaryRegistryAdd.getCall(0), {
-            address: users[15].address,
-            from: users[0].address,
-            communityId: communities[0].id,
-            activity: UbiBeneficiaryRegistryType.remove,
-            tx,
-            txAt,
-        });
     });
 
     describe('filter on listing beneficiaries', () => {

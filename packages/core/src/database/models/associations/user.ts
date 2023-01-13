@@ -8,16 +8,6 @@ export function userAssociation(sequelize: Sequelize) {
         targetKey: 'address',
     });
 
-    // used to query from the ubiBeneficiaryRegistry with incude
-    sequelize.models.UbiBeneficiaryRegistryModel.belongsTo(
-        sequelize.models.AppUserModel,
-        {
-            foreignKey: 'from',
-            as: 'user',
-            targetKey: 'address',
-        }
-    );
-
     // used to query from the community with incude
     sequelize.models.AppUserModel.hasOne(
         sequelize.models.AppMediaContentModel,
@@ -82,16 +72,6 @@ export function userAssociation(sequelize: Sequelize) {
         targetKey: 'id',
         as: 'community',
     });
-
-    // Managers are linked to BeneficiaryRegistry through from
-    sequelize.models.Manager.hasMany(
-        sequelize.models.UbiBeneficiaryRegistryModel,
-        {
-            foreignKey: 'from',
-            sourceKey: 'address',
-            as: 'added',
-        }
-    );
 
     sequelize.models.AppLogModel.belongsTo(sequelize.models.AppUserModel, {
         foreignKey: 'userId',

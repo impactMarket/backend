@@ -8,10 +8,6 @@ import { models } from '../../database';
 import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { AppUser } from '../../interfaces/app/appUser';
 import {
-    UbiBeneficiaryRegistryCreation,
-    UbiBeneficiaryRegistryType,
-} from '../../interfaces/ubi/ubiBeneficiaryRegistry';
-import {
     UbiBeneficiarySurvey,
     UbiBeneficiarySurveyCreation,
 } from '../../interfaces/ubi/ubiBeneficiarySurvey';
@@ -48,14 +44,6 @@ export default class BeneficiaryService {
         };
         try {
             await models.beneficiary.create(beneficiaryData);
-            await this._addRegistry({
-                address,
-                from,
-                communityId,
-                activity: UbiBeneficiaryRegistryType.add,
-                tx,
-                txAt,
-            });
             const maxClaim: any = literal(`"maxClaim" - "decreaseStep"`);
             await models.ubiCommunityContract.update(
                 {
@@ -90,14 +78,6 @@ export default class BeneficiaryService {
             { active: false },
             { where: { address, communityId } }
         );
-        await this._addRegistry({
-            address,
-            from,
-            communityId,
-            activity: UbiBeneficiaryRegistryType.remove,
-            tx,
-            txAt,
-        });
         const maxClaim: any = literal(`"maxClaim" + "decreaseStep"`);
         await models.ubiCommunityContract.update(
             {
@@ -415,18 +395,6 @@ export default class BeneficiaryService {
         }
 
         return where;
-    }
-
-    private static async _addRegistry(
-        registry: UbiBeneficiaryRegistryCreation
-    ): Promise<void> {
-        try {
-            await models.ubiBeneficiaryRegistry.create(registry);
-        } catch (e) {
-            if (e.name !== 'SequelizeUniqueConstraintError') {
-                Logger.error(e);
-            }
-        }
     }
 
     public static async getBeneficiaryActivity(

@@ -65,7 +65,6 @@ export default class CommunityService {
     public static ubiCommunityCampaign = models.ubiCommunityCampaign;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
-    public static ubiBeneficiaryRegistry = models.ubiBeneficiaryRegistry;
     public static sequelize = sequelize;
 
     private static communityContentStorage = new CommunityContentStorage();

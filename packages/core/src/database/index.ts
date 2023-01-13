@@ -46,7 +46,6 @@ import * as UbiCommunityContract from './models/ubi/communityContract';
 import * as UbiCommunityDailyMetrics from './models/ubi/communityDailyMetrics';
 import * as UbiCommunityDemographics from './models/ubi/communityDemographics';
 import * as Manager from './models/ubi/manager';
-import * as UbiBeneficiaryRegistry from './models/ubi/ubiBeneficiaryRegistry';
 import * as UbiBeneficiarySurvey from './models/ubi/ubiBeneficiarySurvey';
 import * as ClaimLocation from './models/ubi/ubiClaimLocation';
 import * as UbiCommunityCampaign from './models/ubi/ubiCommunityCampaign';
@@ -127,8 +126,6 @@ const models: DbModels = {
     ubiClaimLocation: sequelize.models
         .ClaimLocationModel as ModelCtor<ClaimLocation.ClaimLocationModel>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
-    ubiBeneficiaryRegistry: sequelize.models
-        .UbiBeneficiaryRegistryModel as ModelCtor<UbiBeneficiaryRegistry.UbiBeneficiaryRegistryModel>,
     ubiBeneficiarySurvey: sequelize.models
         .UbiBeneficiarySurveyModel as ModelCtor<UbiBeneficiarySurvey.UbiBeneficiarySurveyModel>,
     anonymousReport: sequelize.models
@@ -234,7 +231,6 @@ export {
     UbiCommunityDailyMetrics,
     UbiCommunityDemographics,
     Manager,
-    UbiBeneficiaryRegistry,
     UbiBeneficiarySurvey,
     ClaimLocation,
     UbiCommunityCampaign,
