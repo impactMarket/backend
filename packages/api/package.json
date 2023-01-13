@@ -8,7 +8,7 @@
     },
     "scripts": {
         "dev": "nodemon --config nodemon.json src/app.ts",
-        "start": "RUN_LOCAL_BUILD=true node dist/app.js",
+        "start": "RUN_LOCAL_BUILD=true node --require './appsignal.cjs' dist/app.js",
         "test": "NODE_ENV=test mocha",
         "build": "tsc -p .",
         "build:watch": "tsc -p . --watch"
@@ -27,6 +27,7 @@
         "nodemon": "2.0.15"
     },
     "dependencies": {
+        "@appsignal/nodejs": "3.0.2",
         "@celo/base": "3.0.1",
         "@celo/identity": "3.0.1",
         "@impactmarket/core": "1.0.0",
