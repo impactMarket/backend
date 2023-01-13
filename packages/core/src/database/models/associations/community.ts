@@ -26,15 +26,6 @@ export function communityAssociation(sequelize: Sequelize) {
         constraints: false,
     });
     // used to query from the community with incude
-    // TODO: used only once, should be removed
-    sequelize.models.Community.hasMany(
-        sequelize.models.UbiCommunityDailyStateModel,
-        {
-            foreignKey: 'communityId',
-            as: 'dailyState',
-        }
-    );
-    // used to query from the community with incude
     // used only at calcuateCommunitiesMetrics
     sequelize.models.Community.hasMany(
         sequelize.models.UbiCommunityDailyMetricsModel,

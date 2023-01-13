@@ -72,15 +72,6 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         lastGlobalMetrics = last[0];
     }
 
-    // inflow / outflow
-    const {
-        totalRaised,
-        totalDistributed,
-        totalBackers,
-        totalBeneficiaries,
-        communitiesYesterday,
-    } = await calculateInflowOutflow(yesterdayDateOnly, lastGlobalMetrics);
-
     // ubi pulse
     const {
         givingRate,
@@ -88,7 +79,6 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         avgComulativeUbi,
         avgUbiDuration,
         backersAndFunding,
-        communitiesAvgYesterday,
     } = await calculateUbiPulse(todayMidnightTime, yesterdayDateOnly);
 
     // economic activity
@@ -116,22 +106,19 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         await globalDailyStateService.add({
             date: yesterdayDateOnly,
             avgMedianSSI: Math.round(avgMedianSSI * 100) / 100,
-            claimed: communitiesYesterday.totalClaimed,
-            claims: parseInt(communitiesYesterday.totalClaims, 10),
-            beneficiaries: parseInt(
-                communitiesYesterday.totalBeneficiaries,
-                10
-            ),
-            raised: communitiesYesterday.totalRaised,
+            claimed: '0',
+            claims: 0,
+            beneficiaries: 0,
+            raised: '0',
             backers: backersAndFunding.backers,
             volume,
             transactions,
             reach,
             reachOut,
-            totalRaised,
-            totalDistributed,
-            totalBackers,
-            totalBeneficiaries,
+            totalRaised: '0',
+            totalDistributed: '0',
+            totalBackers: 0,
+            totalBeneficiaries: 0,
             givingRate,
             ubiRate: Math.round(ubiRate * 100) / 100,
             fundingRate: parseFloat(fundingRate),
@@ -151,77 +138,6 @@ export async function calcuateGlobalMetrics(): Promise<void> {
         // calculate global growth
         await calculateMetricsGrowth(globalDailyStateService);
     }
-}
-
-async function calculateInflowOutflow(
-    yesterdayDateOnly: Date,
-    lastGlobalMetrics: database.GlobalDailyState.GlobalDailyStateCreationAttributes
-) {
-    let totalRaised = '0';
-    let totalDistributed = '0';
-    let totalBeneficiaries = 0;
-    let totalBackers = 0;
-    const communitiesYesterday: {
-        totalClaimed: string;
-        totalClaims: string;
-        totalBeneficiaries: string;
-    } = (
-        await database.models.ubiCommunityDailyState.findAll({
-            attributes: [
-                [fn('sum', col('claimed')), 'totalClaimed'],
-                [fn('sum', col('claims')), 'totalClaims'],
-                [fn('sum', col('beneficiaries')), 'totalBeneficiaries'],
-            ],
-            where: {
-                date: yesterdayDateOnly.toISOString().split('T')[0],
-                communityId: {
-                    [Op.in]: (
-                        await database.models.community.findAll({
-                            attributes: ['id'],
-                            where: {
-                                visibility: 'public',
-                                status: {
-                                    [Op.or]: ['valid', 'removed'],
-                                },
-                            },
-                            raw: true,
-                        })
-                    ).map((c) => c.id),
-                },
-            },
-            raw: true,
-        })
-    )[0] as any;
-
-    const dayId = (((yesterdayDateOnly.getTime() / 1000) | 0) / 86400) | 0;
-    const ubiDaily = await subgraph.queries.ubi.getUbiDailyEntity(
-        `id: ${dayId}`
-    );
-    const raised = new BigNumber(ubiDaily[0].contributed)
-        .multipliedBy(10 ** config.cUSDDecimal)
-        .toString();
-
-    totalRaised = new BigNumber(lastGlobalMetrics.totalRaised)
-        .plus(raised)
-        .toString();
-    totalDistributed = new BigNumber(lastGlobalMetrics.totalDistributed)
-        .plus(communitiesYesterday.totalClaimed)
-        .toString();
-    totalBeneficiaries =
-        lastGlobalMetrics.totalBeneficiaries +
-        parseInt(communitiesYesterday.totalBeneficiaries, 10);
-    totalBackers = lastGlobalMetrics.totalBackers + ubiDaily[0].contributors;
-
-    return {
-        totalRaised,
-        totalDistributed,
-        totalBeneficiaries,
-        totalBackers,
-        communitiesYesterday: {
-            ...communitiesYesterday,
-            totalRaised: raised,
-        },
-    };
 }
 
 async function calculateUbiPulse(
@@ -363,7 +279,6 @@ async function calculateEconomicActivity(
     yesterdayDateOnly: Date,
     lastGlobalMetrics: database.GlobalDailyState.GlobalDailyStateCreationAttributes
 ) {
-    const reachedAddressService = new services.ReachedAddressService();
     let totalVolume = '0';
     let totalTransactions = '0';
 

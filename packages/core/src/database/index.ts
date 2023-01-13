@@ -45,7 +45,6 @@ import { Beneficiary } from './models/ubi/beneficiary';
 import { Community } from './models/ubi/community';
 import * as UbiCommunityContract from './models/ubi/communityContract';
 import * as UbiCommunityDailyMetrics from './models/ubi/communityDailyMetrics';
-import * as UbiCommunityDailyState from './models/ubi/communityDailyState';
 import * as UbiCommunityDemographics from './models/ubi/communityDemographics';
 import * as Inflow from './models/ubi/inflow';
 import * as Manager from './models/ubi/manager';
@@ -117,8 +116,6 @@ const models: DbModels = {
         .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspect.UbiCommunitySuspectModel>,
     ubiCommunityContract: sequelize.models
         .UbiCommunityContractModel as ModelCtor<UbiCommunityContract.UbiCommunityContractModel>,
-    ubiCommunityDailyState: sequelize.models
-        .UbiCommunityDailyStateModel as ModelCtor<UbiCommunityDailyState.UbiCommunityDailyStateModel>,
     ubiCommunityDailyMetrics: sequelize.models
         .UbiCommunityDailyMetricsModel as ModelCtor<UbiCommunityDailyMetrics.UbiCommunityDailyMetricsModel>,
     ubiCommunityDemographics: sequelize.models
@@ -247,7 +244,6 @@ export {
     Community,
     UbiCommunityContract,
     UbiCommunityDailyMetrics,
-    UbiCommunityDailyState,
     UbiCommunityDemographics,
     Inflow,
     Manager,

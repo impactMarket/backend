@@ -41,7 +41,6 @@ import { Beneficiary } from './models/ubi/beneficiary';
 import { Community } from './models/ubi/community';
 import { UbiCommunityContractModel } from './models/ubi/communityContract';
 import { UbiCommunityDailyMetricsModel } from './models/ubi/communityDailyMetrics';
-import { UbiCommunityDailyStateModel } from './models/ubi/communityDailyState';
 import { UbiCommunityDemographicsModel } from './models/ubi/communityDemographics';
 import { Inflow } from './models/ubi/inflow';
 import { Manager } from './models/ubi/manager';
@@ -79,7 +78,6 @@ export interface DbModels {
     community: ModelCtor<Community>;
     ubiCommunitySuspect: ModelCtor<UbiCommunitySuspectModel>;
     ubiCommunityContract: ModelCtor<UbiCommunityContractModel>;
-    ubiCommunityDailyState: ModelCtor<UbiCommunityDailyStateModel>;
     ubiCommunityDailyMetrics: ModelCtor<UbiCommunityDailyMetricsModel>;
     ubiCommunityDemographics: ModelCtor<UbiCommunityDemographicsModel>;
     ubiPromoter: ModelCtor<UbiPromoterModel>;

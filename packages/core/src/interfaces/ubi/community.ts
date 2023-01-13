@@ -6,7 +6,6 @@ import { BeneficiaryAttributes } from './beneficiary';
 import { UbiClaimLocation } from './ubiClaimLocation';
 import { UbiCommunityContract } from './ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from './ubiCommunityDailyMetrics';
-import { UbiCommunityDailyState } from './ubiCommunityDailyState';
 import { UbiCommunityDemographics } from './ubiCommunityDemographics';
 import { UbiCommunityState } from './ubiCommunityState';
 import { UbiCommunitySuspect } from './ubiCommunitySuspect';
@@ -49,7 +48,6 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *          - beneficiaries
  *          - claimLocation
  *          - demographics
- *          - dailyState
  *          - createdAt
  *          - updatedAt
  *          - deletedAt
@@ -124,8 +122,6 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *            $ref: '#/components/schemas/UbiClaimLocation'
  *          demographics:
  *            $ref: '#/components/schemas/UbiCommunityDemographics'
- *          dailyState:
- *            $ref: '#/components/schemas/UbiCommunityDailyState'
  *          createdAt:
  *            type: string
  *          updatedAt:
@@ -178,7 +174,6 @@ export interface CommunityAttributes {
     // promoter?: UbiPromoter;
     claimLocation?: UbiClaimLocation[]; // TODO: to be removed
     demographics?: UbiCommunityDemographics[]; // TODO: to be removed
-    dailyState?: UbiCommunityDailyState[]; // TODO: to be removed
 }
 
 export interface ICommunityCreationAttributes extends IBaseCommunityAttributes {

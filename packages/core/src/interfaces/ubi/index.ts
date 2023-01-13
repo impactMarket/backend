@@ -8,7 +8,6 @@ import * as ubiClaimLocation from './ubiClaimLocation';
 import * as ubiCommunityCampaign from './ubiCommunityCampaign';
 import * as ubiCommunityContract from './ubiCommunityContract';
 import * as ubiCommunityDailyMetrics from './ubiCommunityDailyMetrics';
-import * as ubiCommunityDailyState from './ubiCommunityDailyState';
 import * as ubiCommunityDemographics from './ubiCommunityDemographics';
 import * as ubiCommunityLabel from './ubiCommunityLabel';
 import * as ubiCommunityPromoter from './ubiCommunityPromoter';
@@ -28,7 +27,6 @@ export {
     ubiCommunityCampaign,
     ubiCommunityContract,
     ubiCommunityDailyMetrics,
-    ubiCommunityDailyState,
     ubiCommunityDemographics,
     ubiCommunityLabel,
     ubiCommunityPromoter,

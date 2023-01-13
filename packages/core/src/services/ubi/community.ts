@@ -57,7 +57,6 @@ export default class CommunityService {
     public static appUser = models.appUser;
     public static ubiCommunityContract = models.ubiCommunityContract;
     public static ubiCommunityDailyMetrics = models.ubiCommunityDailyMetrics;
-    public static ubiCommunityDailyState = models.ubiCommunityDailyState;
     public static ubiCommunityDemographics = models.ubiCommunityDemographics;
     // public static claimLocation = models.claimLocation;
     public static ubiRequestChangeParams = models.ubiRequestChangeParams;
@@ -770,15 +769,6 @@ export default class CommunityService {
                     as: 'metrics',
                     order: [['date', 'DESC']],
                     limit: 30,
-                },
-                {
-                    model: this.ubiCommunityDailyState,
-                    as: 'dailyState',
-                    order: [['date', 'DESC']],
-                    limit: 30,
-                    where: {
-                        date: { [Op.lt]: new Date() },
-                    },
                 },
             ],
             where: {
@@ -1967,16 +1957,6 @@ export default class CommunityService {
                 model: this.appMediaContent,
                 as: 'cover',
                 duplicating: false,
-            },
-            {
-                attributes: { exclude: ['id', 'communityId'] },
-                model: this.ubiCommunityDailyState,
-                as: 'dailyState',
-                duplicating: false,
-                where: {
-                    date: yesterdayDate,
-                },
-                required: false,
             },
             ...extendedInclude,
         ] as Includeable[];
