@@ -765,59 +765,10 @@ export default class CommunityService {
         const aMonthAgo = new Date();
         aMonthAgo.setDate(aMonthAgo.getDate() - 30);
         aMonthAgo.setHours(0, 0, 0, 0);
-        const reachedLastMonth: {
-            reach: string;
-            reachOut: string;
-        } = (await this.community.findOne({
-            attributes: [
-                [
-                    fn(
-                        'count',
-                        fn(
-                            'distinct',
-                            col('"beneficiaries->transactions"."withAddress"')
-                        )
-                    ),
-                    'reach',
-                ],
-                [
-                    literal(
-                        'count(distinct "beneficiaries->transactions"."withAddress") filter (where "beneficiaries->transactions"."withAddress" not in (select distinct address from beneficiary where active = true))'
-                    ),
-                    'reachOut',
-                ],
-            ],
-            include: [
-                {
-                    model: models.beneficiary,
-                    as: 'beneficiaries',
-                    attributes: [],
-                    required: false,
-                    include: [
-                        {
-                            model: models.ubiBeneficiaryTransaction,
-                            as: 'transactions',
-                            where: literal(
-                                `date("beneficiaries->transactions"."txAt") = '${
-                                    aMonthAgo.toISOString().split('T')[0]
-                                }'`
-                            ),
-                            attributes: [],
-                            required: false,
-                        },
-                    ],
-                },
-            ],
-            where: {
-                id,
-            },
-            raw: true,
-        })) as any;
         const resultJson = result!.toJSON();
         return {
             ...resultJson,
             state,
-            reachedLastMonth,
             contract: {
                 ...resultJson.contract,
                 maxClaim: new BigNumber(resultJson.contract!.maxClaim)
@@ -827,12 +778,7 @@ export default class CommunityService {
                     .multipliedBy(10 ** config.cUSDDecimal)
                     .toString() as any,
             },
-        } as CommunityAttributes & {
-            reachedLastMonth: {
-                reach: string;
-                reachOut: string;
-            };
-        };
+        } as CommunityAttributes;
     }
 
     public static async getDemographics(id: string) {

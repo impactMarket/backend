@@ -50,7 +50,6 @@ import * as Inflow from './models/ubi/inflow';
 import * as Manager from './models/ubi/manager';
 import * as UbiBeneficiaryRegistry from './models/ubi/ubiBeneficiaryRegistry';
 import * as UbiBeneficiarySurvey from './models/ubi/ubiBeneficiarySurvey';
-import * as UbiBeneficiaryTransaction from './models/ubi/ubiBeneficiaryTransaction';
 import * as ClaimLocation from './models/ubi/ubiClaimLocation';
 import * as UbiCommunityCampaign from './models/ubi/ubiCommunityCampaign';
 import * as UbiCommunityLabel from './models/ubi/ubiCommunityLabel';
@@ -136,8 +135,6 @@ const models: DbModels = {
         .UbiBeneficiarySurveyModel as ModelCtor<UbiBeneficiarySurvey.UbiBeneficiarySurveyModel>,
     anonymousReport: sequelize.models
         .AppAnonymousReportModel as ModelCtor<AppAnonymousReport.AppAnonymousReportModel>,
-    ubiBeneficiaryTransaction: sequelize.models
-        .UbiBeneficiaryTransactionModel as ModelCtor<UbiBeneficiaryTransaction.UbiBeneficiaryTransactionModel>,
     cronJobExecuted: sequelize.models
         .CronJobExecuted as ModelCtor<CronJobExecuted>,
     exchangeRates: sequelize.models
@@ -246,7 +243,6 @@ export {
     Manager,
     UbiBeneficiaryRegistry,
     UbiBeneficiarySurvey,
-    UbiBeneficiaryTransaction,
     ClaimLocation,
     UbiCommunityCampaign,
     UbiCommunityLabel,

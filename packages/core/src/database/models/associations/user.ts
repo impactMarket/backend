@@ -8,26 +8,6 @@ export function userAssociation(sequelize: Sequelize) {
         targetKey: 'address',
     });
 
-    // used to query from the beneficiarytransaction with incude
-    sequelize.models.Beneficiary.hasMany(
-        sequelize.models.UbiBeneficiaryTransactionModel,
-        {
-            foreignKey: 'beneficiary',
-            sourceKey: 'address',
-            as: 'transactions',
-        }
-    );
-
-    // used to query from the beneficiarytransaction with incude
-    sequelize.models.UbiBeneficiaryTransactionModel.belongsTo(
-        sequelize.models.AppUserModel,
-        {
-            foreignKey: 'withAddress',
-            as: 'user',
-            targetKey: 'address',
-        }
-    );
-
     // used to query from the ubiBeneficiaryRegistry with incude
     sequelize.models.UbiBeneficiaryRegistryModel.belongsTo(
         sequelize.models.AppUserModel,

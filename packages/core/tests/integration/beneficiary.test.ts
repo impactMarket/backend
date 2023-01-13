@@ -1,6 +1,5 @@
 import { use, expect } from 'chai';
 import chaiSubset from 'chai-subset';
-import { ethers } from 'ethers';
 import { Sequelize, Op } from 'sequelize';
 import {
     assert,
@@ -39,7 +38,6 @@ describe('beneficiary service', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let communities: CommunityAttributes[];
-    let managers: ManagerAttributes[];
     let beneficiaries: BeneficiaryAttributes[];
 
     let spyBeneficiaryRegistryAdd: SinonSpy;
@@ -89,7 +87,6 @@ describe('beneficiary service', () => {
                 hasAddress: true,
             },
         ]);
-        managers = await ManagerFactory([users[0]], communities[0].id);
         beneficiaries = await BeneficiaryFactory(
             users.slice(0, 8),
             communities[0].id
@@ -560,10 +557,7 @@ describe('beneficiary service', () => {
 
     describe.skip('beneficiary activity', () => {
         before(async () => {
-            const randomWallet = ethers.Wallet.createRandom();
-
             const tx = randomTx();
-            const tx2 = randomTx();
 
             await BeneficiaryService.add(
                 users[16].address,
@@ -587,36 +581,6 @@ describe('beneficiary service', () => {
             ]);
 
             tk.travel(jumpToTomorrowMidnight());
-
-            // await ClaimsService.add({
-            //     address: users[16].address,
-            //     communityId: communities[0].id,
-            //     amount: '15',
-            //     tx,
-            //     txAt: new Date(),
-            // });
-
-            tk.travel(jumpToTomorrowMidnight());
-
-            await BeneficiaryService.addTransaction({
-                beneficiary: users[16].address,
-                withAddress: await randomWallet.getAddress(),
-                amount: '25',
-                isFromBeneficiary: true,
-                tx,
-                txAt: new Date(),
-            });
-
-            tk.travel(jumpToTomorrowMidnight());
-
-            await BeneficiaryService.addTransaction({
-                beneficiary: users[16].address,
-                withAddress: await randomWallet.getAddress(),
-                amount: '50',
-                isFromBeneficiary: false,
-                tx: tx2,
-                txAt: new Date(),
-            });
         });
 
         it('get all activities', async () => {

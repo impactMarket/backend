@@ -2,7 +2,6 @@ import * as beneficiary from './beneficiary';
 import * as community from './community';
 import * as ubiBeneficiaryRegistry from './ubiBeneficiaryRegistry';
 import * as ubiBeneficiarySurvey from './ubiBeneficiarySurvey';
-import * as ubiBeneficiaryTransaction from './ubiBeneficiaryTransaction';
 import * as ubiClaimLocation from './ubiClaimLocation';
 import * as ubiCommunityCampaign from './ubiCommunityCampaign';
 import * as ubiCommunityContract from './ubiCommunityContract';
@@ -20,7 +19,6 @@ export {
     community,
     ubiBeneficiaryRegistry,
     ubiBeneficiarySurvey,
-    ubiBeneficiaryTransaction,
     ubiClaimLocation,
     ubiCommunityCampaign,
     ubiCommunityContract,

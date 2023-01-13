@@ -1,6 +1,5 @@
 import { database, interfaces, tests, services } from '@impactmarket/core';
 import { expect } from 'chai';
-import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { stub, assert, SinonStub } from 'sinon';
 
@@ -66,7 +65,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         ]);
         await tests.factories.ManagerFactory([users[0]], communities[0].id);
 
-        const randomWallet = ethers.Wallet.createRandom();
         const tx = tests.config.utils.randomTx();
         const tx2 = tests.config.utils.randomTx();
         const tx3 = tests.config.utils.randomTx();
@@ -94,15 +92,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             tx3,
             new Date()
         );
-
-        await services.ubi.BeneficiaryService.addTransaction({
-            beneficiary: users[1].address,
-            withAddress: await randomWallet.getAddress(),
-            amount: '25',
-            isFromBeneficiary: true,
-            tx,
-            txAt: new Date(),
-        });
 
         await services.ubi.InflowService.add(
             users[1].address,
@@ -203,13 +192,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
             },
         }))!.toJSON();
 
-        const transactions =
-            (await database.models.ubiBeneficiaryTransaction.findOne({
-                where: {
-                    beneficiary: users[1].address,
-                },
-            }))!.toJSON();
-
         const inflow = (await database.models.inflow.findOne({
             where: {
                 from: users[1].address,
@@ -223,10 +205,6 @@ describe('[jobs - cron] verifyDeletedAccounts', () => {
         });
         expect(registry).to.include({
             activity: 0,
-        });
-        expect(transactions).to.include({
-            amount: '25',
-            isFromBeneficiary: true,
         });
         expect(inflow).to.include({
             amount: '30',

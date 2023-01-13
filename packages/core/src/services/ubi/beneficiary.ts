@@ -15,7 +15,6 @@ import {
     UbiBeneficiarySurvey,
     UbiBeneficiarySurveyCreation,
 } from '../../interfaces/ubi/ubiBeneficiarySurvey';
-import { UbiBeneficiaryTransactionCreation } from '../../interfaces/ubi/ubiBeneficiaryTransaction';
 import {
     getBeneficiaries,
     getBeneficiariesByAddress,
@@ -418,22 +417,6 @@ export default class BeneficiaryService {
         return where;
     }
 
-    public static async addTransaction(
-        beneficiaryTx: UbiBeneficiaryTransactionCreation
-    ): Promise<void> {
-        try {
-            await models.ubiBeneficiaryTransaction.create(beneficiaryTx);
-        } catch (e) {
-            if (e.name !== 'SequelizeUniqueConstraintError') {
-                Logger.error(
-                    'Error inserting new UbiBeneficiaryTransaction. Data = ' +
-                        JSON.stringify(beneficiaryTx)
-                );
-                Logger.error(e);
-            }
-        }
-    }
-
     private static async _addRegistry(
         registry: UbiBeneficiaryRegistryCreation
     ): Promise<void> {
@@ -441,10 +424,6 @@ export default class BeneficiaryService {
             await models.ubiBeneficiaryRegistry.create(registry);
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
-                Logger.error(
-                    'Error inserting new UbiBeneficiaryTransaction. Data = ' +
-                        JSON.stringify(registry)
-                );
                 Logger.error(e);
             }
         }
@@ -502,22 +481,8 @@ export default class BeneficiaryService {
                         offset,
                         limit
                     );
-                case 'REGISTRY':
-                    return this.getRegistryActivity(
-                        beneficiaryAddress,
-                        communityId,
-                        offset,
-                        limit
-                    );
-                case 'TRANSACTION':
-                    return this.getTransactionActivity(
-                        beneficiaryAddress,
-                        communityId,
-                        offset,
-                        limit
-                    );
                 default:
-                    return this.getAllActivity(
+                    return this.getRegistryActivity(
                         beneficiaryAddress,
                         communityId,
                         offset,
@@ -581,67 +546,6 @@ export default class BeneficiaryService {
                 activity: BeneficiaryActivity[el.activity],
             };
         });
-    }
-
-    private static async getTransactionActivity(
-        beneficiaryAddress: string,
-        communityId: number,
-        offset?: number,
-        limit?: number
-    ): Promise<IBeneficiaryActivities[]> {
-        const transactions = await models.ubiBeneficiaryTransaction.findAll({
-            where: {
-                beneficiary: beneficiaryAddress,
-            },
-            include: [
-                {
-                    attributes: ['username'],
-                    model: models.appUser,
-                    as: 'user',
-                },
-            ],
-            order: [['txAt', 'DESC']],
-            limit,
-            offset,
-        });
-        return transactions.map((transaction) => ({
-            id: transaction.id,
-            type: 'transaction',
-            tx: transaction.tx,
-            txAt: transaction.txAt,
-            withAddress: transaction.withAddress,
-            username: transaction['user']
-                ? transaction['user']['username']
-                : null,
-            amount: transaction.amount,
-            isFromBeneficiary: transaction.isFromBeneficiary,
-        }));
-    }
-
-    private static async getAllActivity(
-        beneficiaryAddress: string,
-        communityId: number,
-        offset: number,
-        limit: number
-    ): Promise<IBeneficiaryActivities[]> {
-        const registry = await this.getRegistryActivity(
-            beneficiaryAddress,
-            communityId
-        );
-        const transaction = await this.getTransactionActivity(
-            beneficiaryAddress,
-            communityId
-        );
-        const claim = await this.getClaimActivity(
-            beneficiaryAddress,
-            communityId
-        );
-
-        const activitiesOrdered = [...registry, ...transaction, ...claim].sort(
-            (a, b) => b.txAt.getTime() - a.txAt.getTime()
-        );
-
-        return activitiesOrdered.slice(offset, offset + limit);
     }
 
     public static async readRules(address: string): Promise<boolean> {
