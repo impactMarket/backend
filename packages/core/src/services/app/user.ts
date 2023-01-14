@@ -29,7 +29,6 @@ export default class UserService {
     public static sequelize = sequelize;
     public static appUser = models.appUser;
     public static manager = models.manager;
-    public static appUserThroughTrust = models.appUserThroughTrust;
     public static appMediaContent = models.appMediaContent;
     public static appMediaThumbnail = models.appMediaThumbnail;
     public static appNotification = models.appNotification;
@@ -500,10 +499,7 @@ export default class UserService {
             isBeneficiary: beneficiary !== null, // TODO: deprecated
             isManager: manager !== null || managerInPendingCommunity, // TODO: deprecated
             blocked: beneficiary !== null && beneficiary.state === 2, // TODO: deprecated
-            verifiedPN:
-                user.trust && user.trust.length !== 0
-                    ? user.trust[0].verifiedPhoneNumber
-                    : undefined, // TODO: deprecated in mobile-app@1.1.5
+            verifiedPN: undefined, // TODO: deprecated in mobile-app@1.1.5
             suspect: user.suspect, // TODO: deprecated
             communityId, // TODO: deprecated
             user: {

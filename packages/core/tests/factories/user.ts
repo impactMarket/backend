@@ -2,7 +2,6 @@ import { ethers } from 'ethers';
 import faker from 'faker';
 
 import { AppUserModel } from '../../src/database/models/app/appUser';
-import { AppUserTrustModel } from '../../src/database/models/app/appUserTrust';
 import {
     AppUser,
     AppUserCreationAttributes,

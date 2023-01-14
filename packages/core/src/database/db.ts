@@ -10,8 +10,6 @@ import { AppMediaThumbnailModel } from './models/app/appMediaThumbnail';
 import { AppNotificationModel } from './models/app/appNotification';
 import { AppProposalModel } from './models/app/appProposal';
 import { AppUserModel } from './models/app/appUser';
-import { AppUserThroughTrustModel } from './models/app/appUserThroughTrust';
-import { AppUserTrustModel } from './models/app/appUserTrust';
 import { AppUserValidationCodeModel } from './models/app/appUserValidationCode';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
 import { ExchangeRates } from './models/app/exchangeRates';
@@ -54,10 +52,8 @@ import { WalletAirdropUserModel } from './models/walletAirdrop/walletAirdropUser
 
 export interface DbModels {
     appUser: ModelCtor<AppUserModel>;
-    appUserTrust: ModelCtor<AppUserTrustModel>;
     appProposal: ModelCtor<AppProposalModel>;
     appLog: ModelCtor<AppLogModel>;
-    appUserThroughTrust: ModelCtor<AppUserThroughTrustModel>;
     appClientCredential: ModelCtor<AppClientCredentialModel>;
     anonymousReport: ModelCtor<AppAnonymousReportModel>;
     cronJobExecuted: ModelCtor<CronJobExecuted>;

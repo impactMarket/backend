@@ -10,8 +10,6 @@ import { initializeAppMediaThumbnail } from './app/appMediaThumbnail';
 import { initializeAppNotification } from './app/appNotification';
 import { initializeAppProposal } from './app/appProposal';
 import { initializeAppUser } from './app/appUser';
-import { initializeAppUserThroughTrust } from './app/appUserThroughTrust';
-import { initializeAppUserTrust } from './app/appUserTrust';
 import { initializeAppUserValidationCode } from './app/appUserValidationCode';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
 import { initializeExchangeRates } from './app/exchangeRates';
@@ -63,8 +61,6 @@ import { initializeWalletAirdropUser } from './walletAirdrop/walletAirdropUser';
 export default function initModels(sequelize: Sequelize): void {
     // app
     initializeAppUser(sequelize);
-    initializeAppUserTrust(sequelize);
-    initializeAppUserThroughTrust(sequelize);
     initializeExchangeRates(sequelize);
     initializeImMetadata(sequelize);
     initializeAppAnonymousReport(sequelize);

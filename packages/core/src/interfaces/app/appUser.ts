@@ -1,7 +1,6 @@
 import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { BeneficiaryAttributes } from '../ubi/beneficiary';
 import { AppMediaContent } from './appMediaContent';
-import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
 
 /**
  * @swagger
@@ -111,7 +110,6 @@ export interface AppUser {
     deletedAt: Date | null;
 
     avatar?: AppMediaContent;
-    trust?: AppUserTrust[];
     beneficiary?: BeneficiaryAttributes[];
     manager?: ManagerAttributes[];
 }
@@ -158,6 +156,4 @@ export interface AppUserCreationAttributes {
     phone?: string;
     readBeneficiaryRules?: boolean;
     readManagerRules?: boolean;
-
-    trust?: AppUserTrustCreation;
 }

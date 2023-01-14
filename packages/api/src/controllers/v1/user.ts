@@ -295,7 +295,6 @@ class UserController {
     public authenticate = (req: Request, res: Response) => {
         const {
             address,
-            phone,
             language,
             currency,
             pushNotificationToken,
@@ -311,9 +310,6 @@ class UserController {
             username,
             year,
             children,
-            trust: {
-                phone,
-            },
         })
             .then((user) => res.send(user))
             .catch((e) => res.status(403).send(e));

@@ -26,39 +26,6 @@ export function userAssociation(sequelize: Sequelize) {
         targetKey: 'address',
     });
 
-    // used to query from the user with incude
-    sequelize.models.AppUserModel.belongsToMany(
-        sequelize.models.AppUserTrustModel,
-        {
-            through: sequelize.models.AppUserThroughTrustModel,
-            foreignKey: 'userAddress',
-            sourceKey: 'address',
-            as: 'trust',
-        }
-    );
-
-    // used to query from the AppUserTrust with incude
-    // TODO: maybe remove
-    sequelize.models.AppUserTrustModel.belongsToMany(
-        sequelize.models.AppUserModel,
-        {
-            through: sequelize.models.AppUserThroughTrustModel,
-            foreignKey: 'appUserTrustId',
-            sourceKey: 'id',
-            as: 'throughTrust',
-        }
-    );
-
-    // self association to find repeated values on those keys
-    sequelize.models.AppUserTrustModel.hasMany(
-        sequelize.models.AppUserTrustModel,
-        {
-            foreignKey: 'phone',
-            sourceKey: 'phone',
-            as: 'selfTrust',
-        }
-    );
-
     // beneficiaries are linked to manager through communityId
     sequelize.models.Beneficiary.belongsTo(sequelize.models.Community, {
         foreignKey: 'communityId',

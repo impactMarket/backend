@@ -14,8 +14,6 @@ import * as AppMediaThumbnail from './models/app/appMediaThumbnail';
 import * as AppNotification from './models/app/appNotification';
 import * as AppProposal from './models/app/appProposal';
 import * as AppUser from './models/app/appUser';
-import * as AppUserThroughTrust from './models/app/appUserThroughTrust';
-import * as AppUserTrust from './models/app/appUserTrust';
 import { AppUserValidationCodeModel } from './models/app/appUserValidationCode';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
 import * as ExchangeRates from './models/app/exchangeRates';
@@ -95,12 +93,8 @@ const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);
 const models: DbModels = {
     appUser: sequelize.models.AppUserModel as ModelCtor<AppUser.AppUserModel>,
-    appUserTrust: sequelize.models
-        .AppUserTrustModel as ModelCtor<AppUserTrust.AppUserTrustModel>,
     appProposal: sequelize.models
         .AppProposalModel as ModelCtor<AppProposal.AppProposalModel>,
-    appUserThroughTrust: sequelize.models
-        .AppUserThroughTrustModel as ModelCtor<AppUserThroughTrust.AppUserThroughTrustModel>,
     appClientCredential: sequelize.models
         .AppClientCredentialModel as ModelCtor<AppClientCredential.AppClientCredentialModel>,
     appLog: sequelize.models.AppLogModel as ModelCtor<AppLog.AppLogModel>,
@@ -212,8 +206,6 @@ export {
     AppNotification,
     AppProposal,
     AppUser,
-    AppUserThroughTrust,
-    AppUserTrust,
     CronJobExecuted,
     ExchangeRates,
     ImMetadata,
