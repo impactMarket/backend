@@ -1,11 +1,12 @@
 import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
-import Sinon, { assert, replace, spy, match } from 'sinon';
+import Sinon, { assert, spy, match, SinonStub, stub } from 'sinon';
 
 import { models } from '../../src/database';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import StoryService from '../../src/services/story';
+import * as userSubgraph from '../../src/subgraph/queries/user';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
@@ -17,6 +18,7 @@ describe('story service', () => {
     let communities: CommunityAttributes[];
     let storyContentDestroy: Sinon.SinonSpy<any, Promise<number>>;
     let storyContentAdd: Sinon.SinonSpy;
+    let returnUserRoleSubgraph: SinonStub;
     let community1: any;
     let community2: any;
     before(async () => {
@@ -25,6 +27,7 @@ describe('story service', () => {
 
         storyContentDestroy = spy(models.storyContent, 'destroy');
         storyContentAdd = spy(models.storyContent, 'create');
+        returnUserRoleSubgraph = stub(userSubgraph, 'getUserRoles');
 
         users = await UserFactory({ n: 6 });
         communities = await CommunityFactory([
@@ -86,6 +89,7 @@ describe('story service', () => {
         await truncate(sequelize, 'StoryContentModel');
         await truncate(sequelize);
         await storyContentDestroy.restore();
+        returnUserRoleSubgraph.restore();
     });
 
     describe('add', () => {
@@ -96,6 +100,13 @@ describe('story service', () => {
 
         it('add story', async () => {
             storyContentAdd.resetHistory();
+            returnUserRoleSubgraph.returns({
+                beneficiary: {
+                    community: community1.contractAddress,
+                    state: 0,
+                },
+                manager: null,
+            });
             const storyService = new StoryService();
             await storyService.add(users[0].address, {
                 byAddress: users[0].address,

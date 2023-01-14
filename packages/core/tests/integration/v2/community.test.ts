@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiSubset from 'chai-subset';
 import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { replace, stub, SinonStub, restore } from 'sinon';
@@ -14,6 +15,8 @@ import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
 import UserFactory from '../../factories/user';
+
+use(chaiSubset);
 
 describe('community service v2', () => {
     let sequelize: Sequelize;
@@ -1511,7 +1514,6 @@ describe('community service v2', () => {
                     'publicId',
                     'contractAddress',
                     'contract',
-                    'cover',
                 ]);
                 expect(result.rows[0].contract).to.have.deep.keys([
                     'claimAmount',
