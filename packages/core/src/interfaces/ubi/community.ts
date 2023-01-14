@@ -1,5 +1,4 @@
 import { ICommunityContractParams } from '../../types';
-import { AppMediaContent } from '../app/appMediaContent';
 import { AppProposal } from '../app/appProposal';
 import { StoryCommunity } from '../story/storyCommunity';
 import { BeneficiaryAttributes } from './beneficiary';
@@ -104,8 +103,6 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *            type: integer
  *          metrics:
  *            $ref: '#/components/schemas/UbiCommunityDailyMetrics'
- *          cover:
- *            $ref: '#/components/schemas/AppMediaContent'
  *          proposal:
  *            $ref: '#/components/schemas/AppProposal'
  *          contract:
@@ -164,7 +161,6 @@ export interface CommunityAttributes {
     deletedAt: Date | null;
 
     metrics?: UbiCommunityDailyMetrics[]; // TODO: to be removed
-    cover?: AppMediaContent;
     proposal?: AppProposal;
     contract?: UbiCommunityContract; // TODO: to be removed
     state?: UbiCommunityState; // TODO: to be removed

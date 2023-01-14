@@ -8,17 +8,6 @@ export function userAssociation(sequelize: Sequelize) {
         targetKey: 'address',
     });
 
-    // used to query from the community with incude
-    sequelize.models.AppUserModel.hasOne(
-        sequelize.models.AppMediaContentModel,
-        {
-            foreignKey: 'id',
-            sourceKey: 'avatarMediaId',
-            as: 'avatar',
-            constraints: false,
-        }
-    );
-
     // used to query from the manager with incude
     sequelize.models.Manager.belongsTo(sequelize.models.AppUserModel, {
         foreignKey: 'address',

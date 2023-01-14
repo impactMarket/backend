@@ -1,54 +1,6 @@
-import { services, config, database } from '@impactmarket/core';
+import { config, database } from '@impactmarket/core';
 import { WebClient } from '@slack/web-api';
-import BigNumber from 'bignumber.js';
 import { Op } from 'sequelize';
-
-export async function internalNotifyLowCommunityFunds(): Promise<void> {
-    const web = new WebClient(config.slackApi);
-
-    const communitiesOrdered = await services.ubi.CommunityService.list({
-        orderBy: 'out_of_funds',
-        offset: '0',
-        limit: '10',
-    });
-
-    let result = '';
-
-    const communities = communitiesOrdered.rows;
-
-    for (let index = 0; index < communities.length; index++) {
-        const community = communities[index];
-        if (
-            community.state &&
-            community.state.backers > 0 &&
-            community.state.claimed !== '0' &&
-            community.state.beneficiaries > 1
-        ) {
-            const onContract = parseFloat(
-                new BigNumber(community.state.raised)
-                    .minus(community.state.claimed)
-                    .div(10 ** 18)
-                    .toString()
-            );
-
-            if (onContract < 150) {
-                result += `\n\n($${Math.round(onContract)}) -> ${
-                    community.name
-                } | <http://${
-                    community.contractAddress
-                }|Copy address to clipboard> [${community.contractAddress}]`;
-            }
-        }
-    }
-
-    if (result.length > 0) {
-        await web.chat.postMessage({
-            channel: 'communities-funds',
-            text: result,
-            mrkdwn: true,
-        });
-    }
-}
 
 export async function internalNotifyNewCommunities(): Promise<void> {
     const web = new WebClient(config.slackApi);

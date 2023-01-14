@@ -5,8 +5,6 @@ import { AirgrabUserModel } from './models/airgrab/airgrabUser';
 import { AppAnonymousReportModel } from './models/app/anonymousReport';
 import { AppClientCredentialModel } from './models/app/appClientCredential';
 import { AppLogModel } from './models/app/appLog';
-import { AppMediaContentModel } from './models/app/appMediaContent';
-import { AppMediaThumbnailModel } from './models/app/appMediaThumbnail';
 import { AppNotificationModel } from './models/app/appNotification';
 import { AppProposalModel } from './models/app/appProposal';
 import { AppUserModel } from './models/app/appUser';
@@ -59,8 +57,6 @@ export interface DbModels {
     cronJobExecuted: ModelCtor<CronJobExecuted>;
     exchangeRates: ModelCtor<ExchangeRates>;
     imMetadata: ModelCtor<ImMetadata>;
-    appMediaContent: ModelCtor<AppMediaContentModel>;
-    appMediaThumbnail: ModelCtor<AppMediaThumbnailModel>;
     appNotification: ModelCtor<AppNotificationModel>;
     appUserValidationCode: ModelCtor<AppUserValidationCodeModel>;
     ubiBeneficiarySurvey: ModelCtor<UbiBeneficiarySurveyModel>;

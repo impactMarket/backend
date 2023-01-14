@@ -1,26 +1,20 @@
 import { expect } from 'chai';
-import { Op, Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import Sinon, { assert, replace, spy, match } from 'sinon';
 
 import { models } from '../../src/database';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
-import { StoryContentStorage } from '../../src/services/storage';
 import StoryService from '../../src/services/story';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
-import StoryFactory from '../factories/story';
 import UserFactory from '../factories/user';
 
 describe('story service', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let communities: CommunityAttributes[];
-    let storyContentStorageDeleteBulk: Sinon.SinonSpy<
-        [number[]],
-        Promise<void>
-    >;
     let storyContentDestroy: Sinon.SinonSpy<any, Promise<number>>;
     let storyContentAdd: Sinon.SinonSpy;
     let community1: any;
@@ -29,19 +23,6 @@ describe('story service', () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        replace(
-            StoryContentStorage.prototype,
-            'deleteBulkContent',
-            async (mediaId: number[]) => {
-                await models.appMediaContent.destroy({
-                    where: { id: mediaId },
-                });
-            }
-        );
-        storyContentStorageDeleteBulk = spy(
-            StoryContentStorage.prototype,
-            'deleteBulkContent'
-        );
         storyContentDestroy = spy(models.storyContent, 'destroy');
         storyContentAdd = spy(models.storyContent, 'create');
 
@@ -104,7 +85,6 @@ describe('story service', () => {
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize, 'StoryContentModel');
         await truncate(sequelize);
-        await storyContentStorageDeleteBulk.restore();
         await storyContentDestroy.restore();
     });
 

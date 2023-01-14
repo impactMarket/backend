@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import { col, fn, GroupedCountResultItem, Op, Order } from 'sequelize';
 
+import { IAddStory, ICommunityStory, ICommunityStoryGet } from './types';
 import config from '../../config';
 import { models } from '../../database';
 import { StoryContentModel } from '../../database/models/story/storyContent';
@@ -10,12 +11,6 @@ import { StoryContent } from '../../interfaces/story/storyContent';
 import { getUserRoles } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
 import { cleanStoryCache } from '../../utils/cache';
-import {
-    IAddStory,
-    ICommunitiesListStories,
-    ICommunityStories,
-    ICommunityStory,
-} from '../endpoints';
 import { StoryContentStorage } from '../storage';
 
 export default class StoryServiceV2 {
@@ -122,7 +117,7 @@ export default class StoryServiceV2 {
 
         // if success, clean cache
         cleanStoryCache();
-        
+
         const newStory = created.toJSON() as StoryContent;
         return { ...newStory, loves: 0, userLoved: false, userReported: false };
     }
@@ -149,15 +144,13 @@ export default class StoryServiceV2 {
     public async getById(
         storyId: number,
         userAddress?: string
-    ): Promise<ICommunitiesListStories> {
+    ): Promise<ICommunityStoryGet> {
         const story = await models.storyContent.findOne({
             subQuery: false,
             attributes: [
                 'id',
                 'message',
-                'byAddress',
                 'storyMediaPath',
-                'storyMedia',
                 'postedAt',
                 [
                     fn('count', fn('distinct', col('storyComment.id'))),
@@ -260,22 +253,19 @@ export default class StoryServiceV2 {
                     : false,
                 comments: content.totalComments,
             },
-            storyMedia: content.storyMedia,
-        } as any;
+        };
     }
 
     public async listByUser(
         onlyFromAddress: string,
         query: { offset?: string; limit?: string }
-    ): Promise<{ count: number; content: ICommunityStories }> {
+    ): Promise<{ count: number; content: ICommunityStoryGet[] }> {
         const r = await models.storyContent.findAndCountAll({
             subQuery: false,
             attributes: [
                 'id',
                 'message',
-                'byAddress',
                 'storyMediaPath',
-                'storyMedia',
                 'postedAt',
                 [
                     fn('count', fn('distinct', col('storyComment.id'))),
@@ -367,12 +357,11 @@ export default class StoryServiceV2 {
                     userLoved: !!content.storyUserEngagement?.length,
                     comments: content.totalComments,
                 },
-                storyMedia: content.storyMedia,
             };
         });
         return {
             count: r.count.length,
-            content: communitiesStories as any,
+            content: communitiesStories,
         };
     }
 
@@ -386,7 +375,7 @@ export default class StoryServiceV2 {
             period?: string;
         },
         userAddress?: string
-    ): Promise<{ count: number; content: ICommunitiesListStories[] }> {
+    ): Promise<{ count: number; content: ICommunityStoryGet[] }> {
         let r: {
             rows: StoryContentModel[];
             count: GroupedCountResultItem[];
@@ -394,30 +383,32 @@ export default class StoryServiceV2 {
         try {
             let order: Order;
             if (query.orderBy) {
-                let [orderBy, orderDirection] = query.orderBy.split(':');
+                const [orderBy, orderDirection] = query.orderBy.split(':');
                 switch (orderBy) {
                     case 'mostLoved':
-                        order = [[
-                            {
-                                model: models.storyEngagement,
-                                as: 'storyEngagement',
-                            } as any,
-                            'loves',
-                            orderDirection
-                        ]]
+                        order = [
+                            [
+                                {
+                                    model: models.storyEngagement,
+                                    as: 'storyEngagement',
+                                } as any,
+                                'loves',
+                                orderDirection,
+                            ],
+                        ];
                         break;
                     default:
-                        order = [['postedAt', 'DESC']]
+                        order = [['postedAt', 'DESC']];
                         break;
                 }
             } else {
-                order = [['postedAt', 'DESC']]
+                order = [['postedAt', 'DESC']];
             }
 
             let period: Date | null = null;
             if (query.period) {
                 period = new Date();
-                period.setDate(period.getDate() - parseInt(query.period));
+                period.setDate(period.getDate() - parseInt(query.period, 10));
             }
 
             r = await models.storyContent.findAndCountAll({
@@ -425,9 +416,7 @@ export default class StoryServiceV2 {
                 attributes: [
                     'id',
                     'message',
-                    'byAddress',
                     'storyMediaPath',
-                    'storyMedia',
                     'postedAt',
                     [
                         fn('count', fn('distinct', col('storyComment.id'))),
@@ -527,9 +516,11 @@ export default class StoryServiceV2 {
                         ? { '$"storyUserReport"."contentId"$': null }
                         : {}),
                     ...(period
-                        ? { postedAt: {
-                            [Op.gte]: period
-                        }}
+                        ? {
+                              postedAt: {
+                                  [Op.gte]: period,
+                              },
+                          }
                         : {}),
                 } as any,
                 order,
@@ -575,12 +566,11 @@ export default class StoryServiceV2 {
                     userLoved: !!content.storyUserEngagement?.length,
                     comments: content.totalComments,
                 },
-                storyMedia: content.storyMedia,
             };
         });
         return {
             count: r.count.length,
-            content: communitiesStories as any,
+            content: communitiesStories,
         };
     }
 

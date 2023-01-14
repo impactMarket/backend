@@ -1,6 +1,5 @@
 import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { BeneficiaryAttributes } from '../ubi/beneficiary';
-import { AppMediaContent } from './appMediaContent';
 
 /**
  * @swagger
@@ -75,8 +74,6 @@ import { AppMediaContent } from './appMediaContent';
  *          updatedAt:
  *            type: date
  *            description: Manager date of last update
- *          avatar:
- *            $ref: '#/components/schemas/AppMediaContent'
  */
 export interface AppUser {
     id: number;
@@ -109,7 +106,6 @@ export interface AppUser {
     updatedAt: Date;
     deletedAt: Date | null;
 
-    avatar?: AppMediaContent;
     beneficiary?: BeneficiaryAttributes[];
     manager?: ManagerAttributes[];
 }

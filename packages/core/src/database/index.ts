@@ -9,8 +9,6 @@ import * as AirgrabUser from './models/airgrab/airgrabUser';
 import * as AppAnonymousReport from './models/app/anonymousReport';
 import * as AppClientCredential from './models/app/appClientCredential';
 import * as AppLog from './models/app/appLog';
-import * as AppMediaContent from './models/app/appMediaContent';
-import * as AppMediaThumbnail from './models/app/appMediaThumbnail';
 import * as AppNotification from './models/app/appNotification';
 import * as AppProposal from './models/app/appProposal';
 import * as AppUser from './models/app/appUser';
@@ -138,10 +136,6 @@ const models: DbModels = {
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
     manager: sequelize.models.Manager as ModelCtor<Manager.Manager>,
 
-    appMediaContent: sequelize.models
-        .AppMediaContentModel as ModelCtor<AppMediaContent.AppMediaContentModel>,
-    appMediaThumbnail: sequelize.models
-        .AppMediaThumbnailModel as ModelCtor<AppMediaThumbnail.AppMediaThumbnailModel>,
     appNotification: sequelize.models
         .AppNotificationModel as ModelCtor<AppNotification.AppNotificationModel>,
     // stories
@@ -201,8 +195,6 @@ export {
     AirgrabProof,
     AirgrabUser,
     AppAnonymousReport,
-    AppMediaContent,
-    AppMediaThumbnail,
     AppNotification,
     AppProposal,
     AppUser,

@@ -19,13 +19,6 @@ export function communityAssociation(sequelize: Sequelize) {
         }
     );
     // used to query from the community with incude
-    sequelize.models.Community.hasOne(sequelize.models.AppMediaContentModel, {
-        foreignKey: 'id',
-        sourceKey: 'coverMediaId',
-        as: 'cover',
-        constraints: false,
-    });
-    // used to query from the community with incude
     // used only at calcuateCommunitiesMetrics
     sequelize.models.Community.hasMany(
         sequelize.models.UbiCommunityDailyMetricsModel,
