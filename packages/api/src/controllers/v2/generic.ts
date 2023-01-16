@@ -1,19 +1,23 @@
 import { getAddress } from '@ethersproject/address';
-import { services, database } from '@impactmarket/core';
+import { database } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
 import { standardResponse } from '../../utils/api';
 
 class GenericController {
-    private exchangeRatesService: services.app.ExchangeRatesService;
-    constructor() {
-        this.exchangeRatesService = new services.app.ExchangeRatesService();
-    }
-
     exchangeRates = (req: Request, res: Response) => {
-        this.exchangeRatesService
-            .get()
-            .then((r) => standardResponse(res, 200, true, r))
+        database.models.exchangeRates
+            .findAll({
+                attributes: ['currency', 'rate'],
+            })
+            .then((rates) =>
+                standardResponse(
+                    res,
+                    200,
+                    true,
+                    rates.map((rate) => rate.toJSON())
+                )
+            )
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 

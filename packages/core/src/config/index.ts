@@ -254,7 +254,6 @@ export default {
     defaultLimit: validatedEnv.DEFAULT_LIMIT,
     defaultOffset: validatedEnv.DEFAULT_OFFSET,
 
-    enabledCacheWithRedis: validatedEnv.ENABLED_CACHE_WITH_REDIS,
     subgraphUrl: validatedEnv.SUBGRAPH_URL,
     councilSubgraphUrl: validatedEnv.COUNCIL_SUBGRAPH_URL,
     imageHandlerUrl: validatedEnv.IMAGE_HANDLER_URL,

@@ -1,4 +1,4 @@
-import { config, services } from '@impactmarket/core';
+import { config } from '@impactmarket/core';
 import { Router, Request, Response } from 'express';
 
 import genericController from '../../controllers/v1/generic';
@@ -70,10 +70,7 @@ export default (app: Router): void => {
      *                         type: number
      */
     app.get('/exchange-rate', (req: Request, res: Response) => {
-        new services.app.ExchangeRatesService()
-            .get()
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+        res.sendStatus(200);
     });
 
     /**

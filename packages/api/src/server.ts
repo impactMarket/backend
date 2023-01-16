@@ -1,8 +1,9 @@
-import { utils } from '@impactmarket/core';
-import * as Sentry from '@sentry/node';
+// import { utils } from '@impactmarket/core';
+// import * as Sentry from '@sentry/node';
 // import bodyParser from 'body-parser';
 import cors from 'cors';
-import express, { Request, Response } from 'express';
+// import express, { Request, Response } from 'express';
+import express from 'express';
 import helmet from 'helmet';
 import morgan, { compile } from 'morgan';
 import path from 'path';
@@ -16,35 +17,24 @@ import v1routes from './routes/v1';
 import v2routes from './routes/v2';
 
 export default (app: express.Application): void => {
-    /**
-     * health check endpoints
-     * https://testfully.io/blog/api-health-check-monitoring
-     */
-    app.get('/status', (req, res) => {
-        res.status(200).end();
-    });
-    app.head('/status', (req, res) => {
-        res.status(200).end();
-    });
-
-    // RequestHandler creates a separate execution context using domains, so that every
-    // transaction/span/breadcrumb is attached to its own Hub instance
-    app.use(Sentry.Handlers.requestHandler());
-    // TracingHandler creates a trace for every incoming request
-    app.use(Sentry.Handlers.tracingHandler());
-    app.use((req, res, next) => {
-        const transaction = (res as any).__sentry_transaction;
-        transaction.name = transaction.name
-            .replace(
-                /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[4][0-9A-Fa-f]{3}-[89AB][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}/g,
-                '<uuid>'
-            )
-            .replace(/0x[a-fA-F0-9]{40}/g, '<address>')
-            .replace(/true|false/g, '<boolean>')
-            .replace(/\d/g, '<digit>');
-        (res as any).__sentry_transaction = transaction;
-        next();
-    });
+    // // RequestHandler creates a separate execution context using domains, so that every
+    // // transaction/span/breadcrumb is attached to its own Hub instance
+    // app.use(Sentry.Handlers.requestHandler());
+    // // TracingHandler creates a trace for every incoming request
+    // app.use(Sentry.Handlers.tracingHandler());
+    // app.use((req, res, next) => {
+    //     const transaction = (res as any).__sentry_transaction;
+    //     transaction.name = transaction.name
+    //         .replace(
+    //             /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[4][0-9A-Fa-f]{3}-[89AB][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}/g,
+    //             '<uuid>'
+    //         )
+    //         .replace(/0x[a-fA-F0-9]{40}/g, '<address>')
+    //         .replace(/true|false/g, '<boolean>')
+    //         .replace(/\d/g, '<digit>');
+    //     (res as any).__sentry_transaction = transaction;
+    //     next();
+    // });
 
     let swaggerServers: {
         url: string;
@@ -150,7 +140,9 @@ export default (app: express.Application): void => {
         app.use(rateLimiter);
     }
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' || process.env.RUN_LOCAL_BUILD) {
+        // status monitor . Use http://localhost:port/status to see it
+        app.use(require('express-status-monitor')());
         // redundant in production (heroku logs it already), but useful for development
         app.use(
             morgan((tokens: morgan.TokenIndexer<any>, req, res) => {
@@ -168,33 +160,33 @@ export default (app: express.Application): void => {
     // default
     app.use(config.api.v2prefix, v2routes());
 
-    // The error handler must be before any other error middleware and after all controllers
-    app.use(Sentry.Handlers.errorHandler());
+    // // The error handler must be before any other error middleware and after all controllers
+    // app.use(Sentry.Handlers.errorHandler());
 
-    // TODO: is this needed?
-    app.use((error, req, res, next) => {
-        utils.Logger.error(
-            req.originalUrl + ' -> ' + error &&
-                error.details &&
-                error.details.get('body') &&
-                error.details.get('body').details &&
-                error.details.get('body').details.length > 0 &&
-                error.details.get('body').details[0].message
-        );
-        if (error && error.toString().indexOf('Validation failed') !== -1) {
-            return res.status(400).json({
-                success: false,
-                error: {
-                    name: 'INVALID_PAYLOAD',
-                    message: 'invalid payloads',
-                    details: error.details.get('query')
-                        ? error.details.get('query').details
-                        : error.details.get('body').details,
-                },
-            });
-        }
-        next();
-    });
+    // // TODO: is this needed?
+    // app.use((error, req, res, next) => {
+    //     utils.Logger.error(
+    //         req.originalUrl + ' -> ' + error &&
+    //             error.details &&
+    //             error.details.get('body') &&
+    //             error.details.get('body').details &&
+    //             error.details.get('body').details.length > 0 &&
+    //             error.details.get('body').details[0].message
+    //     );
+    //     if (error && error.toString().indexOf('Validation failed') !== -1) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: {
+    //                 name: 'INVALID_PAYLOAD',
+    //                 message: 'invalid payloads',
+    //                 details: error.details.get('query')
+    //                     ? error.details.get('query').details
+    //                     : error.details.get('body').details,
+    //             },
+    //         });
+    //     }
+    //     next();
+    // });
 
     // when a route does not exist
     app.use((_, res) =>
@@ -204,18 +196,18 @@ export default (app: express.Application): void => {
         })
     );
 
-    // TODO: is this needed?
-    app.use((err: any, req: Request, res: Response) => {
-        if (err.name === 'UnauthorizedError') {
-            res.status(err.status)
-                .send({ success: false, message: err.message })
-                .end();
-        }
-        res.status(err.status || 500).json({
-            success: false,
-            errors: {
-                message: err.message,
-            },
-        });
-    });
+    // // TODO: is this needed?
+    // app.use((err: any, req: Request, res: Response) => {
+    //     if (err.name === 'UnauthorizedError') {
+    //         res.status(err.status)
+    //             .send({ success: false, message: err.message })
+    //             .end();
+    //     }
+    //     res.status(err.status || 500).json({
+    //         success: false,
+    //         errors: {
+    //             message: err.message,
+    //         },
+    //     });
+    // });
 };

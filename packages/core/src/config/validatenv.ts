@@ -98,7 +98,6 @@ function validateEnv() {
         LOGIN_INACTIVITY_THRESHOLD: num({ default: 10 }),
         DEFAULT_LIMIT: num({ default: 10 }),
         DEFAULT_OFFSET: num({ default: 0 }),
-        ENABLED_CACHE_WITH_REDIS: bool({ default: true }),
         PACT_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AIRGRAB_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         DONATION_MINER_CONTRACT_ADDRESS: str({

@@ -1,7 +1,8 @@
-import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
 import GenericController from '../../controllers/v2/generic';
+import { cache } from '../../middlewares/cache-redis';
+import { cacheIntervals } from '../../utils/api';
 
 export default (app: Router): void => {
     const genericController = new GenericController();
@@ -36,7 +37,7 @@ export default (app: Router): void => {
      */
     app.get(
         '/exchange-rates',
-        database.cacheWithRedis('12 hours', database.cacheOnlySuccess),
+        cache(cacheIntervals.twelveHours),
         genericController.exchangeRates
     );
 

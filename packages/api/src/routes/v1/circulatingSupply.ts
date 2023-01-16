@@ -1,7 +1,8 @@
-import { database } from '@impactmarket/core';
 import { Router, Request, Response } from 'express';
 
 import { circulatingSupply } from '../../controllers/v1/circulatingSupply';
+import { cache } from '../../middlewares/cache-redis';
+import { cacheIntervals } from '../../utils/api';
 
 export default (app: Router): void => {
     /**
@@ -18,7 +19,7 @@ export default (app: Router): void => {
      */
     app.get(
         '/circulating-supply',
-        database.cacheWithRedis('50 minutes', database.cacheOnlySuccess),
+        cache(cacheIntervals.oneDay),
         circulatingSupply
     );
 

@@ -1,8 +1,9 @@
-import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
 import { ClaimLocationController } from '../../controllers/v2/claimLocation';
 import { authenticateToken } from '../../middlewares';
+import { cache } from '../../middlewares/cache-redis';
+import { cacheIntervals } from '../../utils/api';
 import claimLocationValidators from '../../validators/claimLocation';
 
 export default (app: Router): void => {
@@ -24,11 +25,7 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      */
-    route.get(
-        '/',
-        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
-        controller.getAll
-    );
+    route.get('/', cache(cacheIntervals.oneDay), controller.getAll);
 
     /**
      * @swagger

@@ -1,4 +1,3 @@
-import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
 import claimLocationController from '../../controllers/v1/claimLocation';
@@ -9,11 +8,7 @@ export default (app: Router): void => {
     const route = Router();
     app.use('/claim-location', route);
 
-    route.get(
-        '/',
-        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
-        claimLocationController.getAll
-    );
+    route.get('/', claimLocationController.getAll);
 
     route.post(
         '/',
