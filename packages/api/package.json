@@ -37,8 +37,6 @@
         "@celo/base": "3.0.1",
         "@celo/identity": "3.0.1",
         "@impactmarket/core": "1.0.0",
-        "@sentry/node": "6.17.8",
-        "@sentry/tracing": "6.17.8",
         "@slack/events-api": "3.0.1",
         "bignumber.js": "9.0.0",
         "body-parser": "1.19.0",
