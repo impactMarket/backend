@@ -11,10 +11,12 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { parseEther } from '@ethersproject/units';
 import { Wallet } from '@ethersproject/wallet';
 import { database } from '@impactmarket/core';
+import { randomBytes } from 'crypto';
 import { Op } from 'sequelize';
-import twilio from 'twilio';
+import { sendEmail } from 'services/email';
 
 import config from '../../config';
+import { sendSMS } from '../sms';
 import erc20ABI from './erc20ABI.json';
 import odisABI from './odisABI.json';
 
@@ -26,6 +28,11 @@ interface IERC20Contract extends Contract {
         spender: string,
         value: BigNumber
     ): Promise<TransactionResponse>;
+}
+
+enum AttestationType {
+    PHONE_NUMBER = 0,
+    EMAIL = 1,
 }
 
 /**
@@ -83,25 +90,26 @@ const topUpOdis = async (issuer: Wallet) => {
 
 /**
  * Validate code and return obfuscated identifier
- * @param phoneNumber phone number to verify
- * @param type validation type (no usage yet)
+ * @param plainTextIdentifier indentifier to verify in plain text
+ * @param type validation type
  * @param code code to verify
  * @param userId user id doing the verification
  * @returns the obfuscated identifier
  */
 export const verify = async (
-    phoneNumber: string,
-    _type: number,
+    plainTextIdentifier: string,
+    type: AttestationType,
     code: string,
     userId: number
 ) => {
     // check if code exists and is valid
+    // TODO: create startup process to delete expired codes
     const validCode = await database.models.appUserValidationCode.findOne({
         attributes: ['id'],
         where: {
-            code: code.toString(),
+            code,
             userId,
-            expiresAt: { [Op.lte]: Date.now() },
+            expiresAt: { [Op.lt]: Date.now() },
         },
     });
 
@@ -123,65 +131,78 @@ export const verify = async (
             ? OdisContextName.MAINNET
             : OdisContextName.ALFAJORES
     );
-    const { remainingQuota } = await OdisUtils.Quota.getPnpQuotaStatus(
+
+    // TODO: improve this to prevent calling it every time
+    OdisUtils.Quota.getPnpQuotaStatus(
         issuer.address,
         authSigner,
         serviceContext
-    );
+    ).then(({ remainingQuota }) => {
+        if (remainingQuota < 2) {
+            topUpOdis(issuer);
+            // TODO: check balance and send email to admin
+        }
+    });
 
-    if (remainingQuota < 1) {
-        await topUpOdis(issuer);
-    }
+    const { PHONE_NUMBER, EMAIL } = OdisUtils.Identifier.IdentifierPrefix;
 
-    const { obfuscatedIdentifier } =
-        await OdisUtils.Identifier.getObfuscatedIdentifier(
-            phoneNumber,
-            OdisUtils.Identifier.IdentifierPrefix.PHONE_NUMBER,
+    const [{ obfuscatedIdentifier }] = await Promise.all([
+        OdisUtils.Identifier.getObfuscatedIdentifier(
+            plainTextIdentifier,
+            type === AttestationType.PHONE_NUMBER ? PHONE_NUMBER : EMAIL,
             issuer.address,
             authSigner,
             serviceContext
-        );
-
-    // remove code from db
-    await database.models.appUserValidationCode.destroy({
-        where: { id: validCode.id },
-    });
+        ),
+        database.models.appUserValidationCode.destroy({
+            where: { id: validCode.id },
+        }),
+    ]);
 
     return obfuscatedIdentifier;
 };
 
 /**
- * Send verification code to phone number
- * @param phoneNumber phone number to send code to
+ * Send verification code to identifier
+ * @param plainTextIdentifier identifier to send code to in plain text
  * @param type validation type
  * @param userId user id doing the verification
  * @returns void
  */
 export const send = async (
-    phoneNumber: string,
-    type: number,
+    plainTextIdentifier: string,
+    type: AttestationType,
     userId: number
 ) => {
-    const { accountSid, authToken, fromNumber } = config.twilio;
-    const client = twilio(accountSid, authToken);
-    // random 4 digit code
-    const code = Math.floor(Math.random() * (9999 - 1000) + 1000);
+    let code = '';
+
+    if (type === AttestationType.PHONE_NUMBER) {
+        code = Math.floor(Math.random() * (9999 - 1000) + 1000).toString();
+
+        // TODO: add message per language
+        const body = 'Your verification code is: ' + code + '. - impactMarket';
+        sendSMS(plainTextIdentifier, body);
+    } else if (type === AttestationType.EMAIL) {
+        code = randomBytes(20).toString('hex');
+
+        // TODO: add message per language
+        const body = 'Your verification code is: ' + code + '. - impactMarket';
+        sendEmail({
+            to: plainTextIdentifier,
+            from: config.internalEmailNotifying,
+            subject: 'impactMarket - Verification Code',
+            text: body,
+        });
+    }
+
+    // TODO: save identifier to db
     // save code to db
     await database.models.appUserValidationCode.create({
-        code: code.toString(),
+        code,
         userId,
         type,
         expiresAt: new Date(Date.now() + 1000 * 60 * 25),
     });
-
-    // TODO: add message per language
-    client.messages
-        .create({
-            body: 'Your Libera verification code is: ' + code,
-            from: fromNumber,
-            to: phoneNumber,
-        })
-        .catch(console.log);
 
     return true;
 };
