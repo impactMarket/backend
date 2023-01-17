@@ -39,6 +39,9 @@ async function getPrismicLearnAndEarn() {
             const [category] = await models.learnAndEarnCategory.findOrCreate({
                 where: {
                     prismicId: prismicCategory.id,
+                },
+                defaults: {
+                    prismicId: prismicCategory.id,
                     active: true,
                 },
                 transaction: t,
@@ -47,6 +50,7 @@ async function getPrismicLearnAndEarn() {
             categoryIds.push(category.id);
             await models.learnAndEarnCategory.update(
                 {
+                    active: true,
                     languages: prismicCategory.alternate_languages
                         .map(({ lang }) => {
                             const index_ = lang.indexOf('-');
@@ -83,10 +87,13 @@ async function getPrismicLearnAndEarn() {
                         {
                             where: {
                                 prismicId: prismicLevel.id,
-                                totalReward: prismicLevel.data.reward,
-                                isLive: prismicLevel.data.is_live || false,
-                                active: true,
                                 categoryId: category.id,
+                            },
+                            defaults: {
+                                prismicId: prismicLevel.id,
+                                categoryId: category.id,
+                                active: true,
+                                totalReward: prismicLevel.data.reward,
                             },
                             transaction: t,
                         }
@@ -97,6 +104,9 @@ async function getPrismicLearnAndEarn() {
                     );
                     await models.learnAndEarnLevel.update(
                         {
+                            totalReward: prismicLevel.data.reward,
+                            isLive: prismicLevel.data.is_live || false,
+                            active: true,
                             languages: findLevelLanguages.alternate_languages
                                 .map(({ lang }) => {
                                     const index_ = lang.indexOf('-');
@@ -134,10 +144,12 @@ async function getPrismicLearnAndEarn() {
                                 await models.learnAndEarnLesson.findOrCreate({
                                     where: {
                                         prismicId: prismicLesson.id,
-                                        active: true,
                                         levelId: level.id,
-                                        isLive:
-                                            prismicLesson.data.is_live || false,
+                                    },
+                                    defaults: {
+                                        prismicId: prismicLesson.id,
+                                        levelId: level.id,
+                                        active: true,
                                     },
                                     transaction: t,
                                 });
@@ -147,6 +159,9 @@ async function getPrismicLearnAndEarn() {
                             );
                             await models.learnAndEarnLesson.update(
                                 {
+                                    active: true,
+                                    isLive:
+                                        prismicLesson.data.is_live || false,
                                     languages:
                                         findLessonLanguages.alternate_languages
                                             .map(({ lang }) => {
@@ -186,13 +201,27 @@ async function getPrismicLearnAndEarn() {
                                     await models.learnAndEarnQuiz.findOrCreate({
                                         where: {
                                             order: quizIndex,
-                                            active: true,
+                                            lessonId: lesson.id,
+                                        },
+                                        defaults: {
                                             lessonId: lesson.id,
                                             answer,
+                                            order: quizIndex,
+                                            active: true,
                                         },
                                         transaction: t,
                                     });
                                 quizIds.push(quiz.id);
+                                await models.learnAndEarnQuiz.update({
+                                    active: true,
+                                    answer,
+                                }, {
+                                    where: {
+                                        order: quizIndex,
+                                        lessonId: lesson.id,
+                                    },
+                                    transaction: t,
+                                })
                             }
                         }
                     }
