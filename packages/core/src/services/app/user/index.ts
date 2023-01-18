@@ -191,7 +191,7 @@ export default class UserService {
 
         const roles = await this._userRoles(address);
 
-        if (!user && roles.roles.length === 0) {
+        if (!user && roles.roles[0] === 'donor') {
             throw new BaseError('USER_NOT_FOUND', 'user not found');
         }
 
@@ -662,6 +662,7 @@ export default class UserService {
             },
         });
         if (pendingCommunity) roles.push('pendingManager');
+        if (roles.length === 0) roles.push('donor');
 
         return {
             ...userRoles,
