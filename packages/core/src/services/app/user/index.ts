@@ -662,6 +662,7 @@ export default class UserService {
             },
         });
         if (pendingCommunity) roles.push('pendingManager');
+        if (roles.length === 0) roles.push('donor');
 
         return {
             ...userRoles,
