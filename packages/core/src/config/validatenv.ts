@@ -113,6 +113,7 @@ function validateEnv() {
         IMAGE_HANDLER_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         SIGNATURE_EXPIRATION: num({ default: 15 }),
         LEARN_AND_EARN_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        INTERVAL_BETWEEN_LESSONS: num({ default: 7 }),
         VERCEL_WEBHOOK_PWA: str({ devDefault: onlyOnTestEnv('xyz') }),
         VERCEL_WEBHOOK_WEBSITE: str({ devDefault: onlyOnTestEnv('xyz') }),
         VERCEL_WEBHOOK_WALLET: str({ devDefault: onlyOnTestEnv('xyz') }),

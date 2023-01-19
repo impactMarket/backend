@@ -172,20 +172,23 @@ export async function answer(
 ) {
     const t = await sequelize.transaction();
     try {
+        const daysAgo = new Date();
+        daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
+
         // check if already completed a lesson today
-        const completedToday = await models.learnAndEarnUserLesson.count({
+        const concludedLessons = await models.learnAndEarnUserLesson.count({
             where: {
                 completionDate: {
-                    [Op.gte]: new Date().setHours(0, 0, 0, 0),
+                    [Op.gte]: daysAgo.setHours(0, 0, 0, 0),
                 },
                 userId: user.userId,
             },
         });
 
-        if (completedToday > 0) {
+        if (concludedLessons > 0) {
             throw new BaseError(
-                'LESSON_DAILY_LIMIT',
-                'a lesson has already been completed today'
+                'LESSONS_COMPLETION_LIMIT',
+                'user has reached the limit of completed lessons'
             );
         }
 
