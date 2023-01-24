@@ -53,6 +53,7 @@
         "@turf/points-within-polygon": "6.5.0",
         "apicache": "1.6.3",
         "apollo-boost": "0.4.9",
+        "apollo-link-http": "1.5.17",
         "aws-sdk": "2.1034.0",
         "axios": "0.24.0",
         "axios-retry": "3.3.1",
