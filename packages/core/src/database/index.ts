@@ -93,7 +93,6 @@ const dbConfig: Options = {
         idle: 15000,
     },
     protocol: 'postgres',
-    native: !config.aws.lambda, // if lambda = true, then native = false
     logging,
     benchmark: process.env.NODE_ENV === 'development',
 };
