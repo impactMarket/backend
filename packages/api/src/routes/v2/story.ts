@@ -187,6 +187,18 @@ export default (app: Router): void => {
      *            type: string
      *         required: false
      *         description: countries used to filter the stories
+     *       - in: query
+     *         name: orderBy
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: field to order and the order direction (mostLoved:desc)
+     *       - in: query
+     *         name: period
+     *         schema:
+     *           type: number
+     *         required: false
+     *         description: last days
      *     responses:
      *       "200":
      *         description: OK
