@@ -333,7 +333,7 @@ describe('user service v2', () => {
             returnUserRoleSubgraph.returns({
                 beneficiary: null,
                 manager: {
-                    community: 1,
+                    community: communities[0].contractAddress,
                     state: 0,
                 },
             });
@@ -379,7 +379,7 @@ describe('user service v2', () => {
                 .returns({
                     beneficiary: null,
                     manager: {
-                        community: 1,
+                        community: communities[0].contractAddress,
                         state: 0,
                     },
                 })
@@ -498,7 +498,7 @@ describe('user service v2', () => {
             returnUserRoleSubgraph.returns({
                 beneficiary: null,
                 manager: {
-                    community: 1,
+                    community: communities[0].contractAddress,
                     state: 0,
                 },
             });
