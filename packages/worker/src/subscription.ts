@@ -267,8 +267,9 @@ export const userActivitySubscription = async () => {
 };
 
 const getUserRoles = async (address: string, timestamp: number) => {
-    const ENTITIES_QUERY = gql`
-        {
+    const ENTITIES_QUERY = {
+        operationName: 'getUserRoles',
+        query: `query getUserRoles {
             managerEntities(
                 where: {
                     address: "${address}"
@@ -291,23 +292,42 @@ const getUserRoles = async (address: string, timestamp: number) => {
                 address
                 since
             }
-        }
-    `;
+        }`,
+    };
 
-    const queryDAOResult = await subgraph.config.clientDAO.query({
-        query: ENTITIES_QUERY,
-        fetchPolicy: 'no-cache',
-    });
+    const queryDAOResult = await subgraph.config.axiosSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    beneficiaryEntities: {
+                        id: string,
+                        state: number,
+                        address: string,
+                        since: number,
+                    }[],
+                    managerEntities: {
+                        id: string,
+                        state: number,
+                        address: string,
+                        since: number,
+                    }[]
+                };
+            };
+        }
+    >('', ENTITIES_QUERY);
+
+    const response = queryDAOResult.data?.data;
 
     if (
-        queryDAOResult.data?.beneficiaryEntities &&
-        queryDAOResult.data.beneficiaryEntities.length > 0
+        response.beneficiaryEntities &&
+        response.beneficiaryEntities.length > 0
     ) {
         return interfaces.app.appNotification.NotificationType
             .BENEFICIARY_ADDED;
     } else if (
-        queryDAOResult.data.managerEntities &&
-        queryDAOResult.data.managerEntities.length > 0
+        response.managerEntities &&
+        response.managerEntities.length > 0
     ) {
         return interfaces.app.appNotification.NotificationType.MANAGER_ADDED;
     } else {
