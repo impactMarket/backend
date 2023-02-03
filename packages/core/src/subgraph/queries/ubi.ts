@@ -1,6 +1,6 @@
-import { gql } from 'apollo-boost';
-
-import { clientDAO } from '../config';
+import { axiosSubgraph } from '../config';
+import { redisClient } from '../../database';
+import { intervalsInSeconds } from '../../types';
 
 export const getUbiDailyEntity = async (
     where: string
@@ -19,8 +19,9 @@ export const getUbiDailyEntity = async (
     }[]
 > => {
     try {
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'ubidailyEntities',
+            query: `query ubidailyEntities {
                 ubidailyEntities(
                     first: 1000
                     where: {
@@ -40,17 +41,46 @@ export const getUbiDailyEntity = async (
                     reach
                     fundingRate
                 }
+            }`,
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        ubidailyEntities: {
+                            id: string,
+                            beneficiaries: number,
+                            claimed: string,
+                            claims: number,
+                            volume: string,
+                            transactions: number,
+                            contributed: string,
+                            contributors: number,
+                            reach: number,
+                            fundingRate: string,
+                        }[];
+                    };
+                };
             }
-        `;
+        >('', graphqlQuery);
 
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+        const ubidailyEntities = response.data?.data.ubidailyEntities;
 
-        return queryResult.data?.ubidailyEntities?.length
-            ? queryResult.data.ubidailyEntities
-            : [];
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(ubidailyEntities),
+            'EX',
+            intervalsInSeconds.oneHour
+        );
+
+        return ubidailyEntities;
     } catch (error) {
         throw new Error(error);
     }

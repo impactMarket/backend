@@ -327,7 +327,7 @@ export default class BeneficiaryService {
                         timestamp: beneficiary.since
                             ? beneficiary.since * 1000
                             : 0,
-                        claimed: new BigNumber(beneficiary.claimed)
+                        claimed: new BigNumber(beneficiary.claimed!)
                             .multipliedBy(10 ** config.cUSDDecimal)
                             .toString() as any,
                         blocked: beneficiary.state === 2,

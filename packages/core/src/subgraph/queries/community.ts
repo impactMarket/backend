@@ -1,47 +1,10 @@
 import { getAddress } from '@ethersproject/address';
-import { gql } from 'apollo-boost';
-import axios from 'axios';
-import axiosRetry from 'axios-retry';
 import { ethers } from 'ethers';
 
 import config from '../../config';
 import { redisClient } from '../../database';
-import { clientDAO, clientCouncil } from '../config';
-
-const intervalsInSeconds = {
-    halfHour: 1800,
-    oneHour: 3600,
-    sixHours: 21600,
-    twelveHours: 43200,
-    oneDay: 86400,
-};
-
-function axiosInit() {
-    const axiosSubgraph = axios.create({
-        baseURL: config.subgraphUrl,
-        headers: {
-            'content-type': 'application/json',
-        },
-        timeout: 4000,
-    });
-    const axiosCouncilSubgraph = axios.create({
-        baseURL: config.councilSubgraphUrl,
-        headers: {
-            'content-type': 'application/json',
-        },
-        timeout: 4000,
-    });
-    axiosRetry(axiosSubgraph, {
-        retries: 3,
-        retryDelay: axiosRetry.exponentialDelay,
-    });
-    axiosRetry(axiosCouncilSubgraph, {
-        retries: 3,
-        retryDelay: axiosRetry.exponentialDelay,
-    });
-
-    return { axiosSubgraph, axiosCouncilSubgraph };
-}
+import { axiosCouncilSubgraph, axiosSubgraph } from '../config';
+import { intervalsInSeconds } from '../../types';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
@@ -50,32 +13,51 @@ export const getCommunityProposal = async (): Promise<string[]> => {
         );
         const blockNumber = await provider.getBlockNumber();
 
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'proposalEntities',
+            query: `query proposalEntities {
                 proposalEntities(
-                where: {
-                    status: 0
-                    endBlock_gt: ${blockNumber}
-                    signatures_contains:["addCommunity(address[],address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)"]
-                }
+                    where: {
+                        status: 0
+                        endBlock_gt: ${blockNumber}
+                        signatures_contains:["addCommunity(address[],address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)"]
+                    }
                 ) {
                     calldatas
                 }
-            }
-        `;
+            }`,
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
 
-        const queryResult = await clientCouncil.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
-
-        if (queryResult.data?.proposalEntities?.length) {
-            return queryResult.data.proposalEntities.map(
-                (proposal) => proposal.calldatas[0]
-            );
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
         }
 
-        return [];
+        const response = await axiosCouncilSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        proposalEntities: {
+                            calldatas: string[]
+                        }[];
+                    };
+                };
+            }
+        >('', graphqlQuery);
+
+        const proposalEntities = response.data?.data.proposalEntities;
+
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(proposalEntities),
+            'EX',
+            intervalsInSeconds.oneHour
+        );
+
+        return proposalEntities.map(
+            (proposal) => proposal.calldatas[0]
+        );
     } catch (error) {
         throw new Error(error);
     }
@@ -91,9 +73,9 @@ export const getClaimed = async (
 > => {
     try {
         const idsFormated = ids.map((el) => `"${el.toLowerCase()}"`);
-
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'communityEntities',
+            query: `query communityEntities {
                 communityEntities(
                     first: ${idsFormated.length}
                     where: {
@@ -103,15 +85,38 @@ export const getClaimed = async (
                     id
                     claimed
                 }
+            }`,
+            variables: {},
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+    
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        communityEntities: {
+                            id: string,
+                            claimed: string,
+                        }[];
+                    };
+                };
             }
-        `;
+        >('', graphqlQuery);
+        const communityEntities = response.data?.data.communityEntities;
 
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(communityEntities),
+            'EX',
+            intervalsInSeconds.halfHour
+        );
 
-        return queryResult.data.communityEntities;
+        return communityEntities;
     } catch (error) {
         throw new Error(error);
     }
@@ -131,8 +136,9 @@ export const getCommunityState = async (
     state: number;
 }> => {
     try {
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'communityEntity',
+            query: `query communityEntity {
                 communityEntity(
                     id: "${communityAddress.toLowerCase()}"
                 ) {
@@ -150,15 +156,49 @@ export const getCommunityState = async (
                     originalClaimAmount
                     maxClaim 
                 }
-            }
-        `;
+            }`,
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
 
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
 
-        return queryResult.data?.communityEntity;
+        const response = await axiosSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    communityEntity: {
+                        claims: number,
+                        claimed: string,
+                        beneficiaries: number,
+                        removedBeneficiaries: number,
+                        contributed: string,
+                        contributors: number,
+                        managers: number,
+                        baseInterval: number,
+                        estimatedFunds: string,
+                        state: number,
+                        claimAmount: string,
+                        originalClaimAmount: string,
+                        maxClaim : string,
+                    };
+                };
+            };
+        }
+    >('', graphqlQuery);
+
+    const communityEntity = response.data?.data.communityEntity;
+
+    redisClient.set(
+        graphqlQuery.query,
+        JSON.stringify(communityEntity),
+        'EX',
+        intervalsInSeconds.halfHour
+    );
+
+    return communityEntity;
     } catch (error) {
         throw new Error(error);
     }
@@ -171,10 +211,14 @@ export const getCommunityUBIParams = async (
     maxClaim: string;
     baseInterval: number;
     incrementInterval: number;
+    decreaseStep: string;
+    minTranche: string;
+    maxTranche: string;
 }> => {
     try {
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'communityEntity',
+            query: `query communityEntity {
                 communityEntity(
                     id: "${communityAddress.toLowerCase()}"
                 ) {
@@ -186,15 +230,43 @@ export const getCommunityUBIParams = async (
                     minTranche
                     maxTranche
                 }
+            }`,
+            variables: {},
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+    
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        communityEntity: {
+                            claimAmount: string,
+                            maxClaim: string,
+                            baseInterval: number,
+                            incrementInterval: number,
+                            decreaseStep: string,
+                            minTranche: string,
+                            maxTranche: string,
+                        };
+                    };
+                };
             }
-        `;
+        >('', graphqlQuery);
+        const communityEntity = response.data?.data.communityEntity;
 
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(communityEntity),
+            'EX',
+            intervalsInSeconds.halfHour
+        );
 
-        return queryResult.data?.communityEntity;
+        return communityEntity;
     } catch (error) {
         throw new Error(error);
     }
@@ -202,22 +274,34 @@ export const getCommunityUBIParams = async (
 
 export const communityEntities = async (where: string, fields: string) => {
     try {
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'communityEntities',
+            query: `query communityEntities {
                 communityEntities(
                     ${where}
                 ) {
                     ${fields}
                 }
-            }
-        `;
+            }`,
+            variables: {},
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+    
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
 
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+        const response = await axiosSubgraph.post('', graphqlQuery);
+        const communityEntities = response.data?.data.communityEntities;
 
-        return queryResult.data?.communityEntities;
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(communityEntities),
+            'EX',
+            intervalsInSeconds.halfHour
+        );
+
+        return communityEntities;
     } catch (error) {
         throw new Error(error);
     }
@@ -228,7 +312,6 @@ export const getBiggestCommunities = async (
     offset: number,
     orderDirection?: string
 ) => {
-    const { axiosSubgraph } = axiosInit();
     const graphqlQuery = {
         operationName: 'fetchCommunities',
         query: `query fetchCommunities {
@@ -275,7 +358,6 @@ export const getBiggestCommunities = async (
 };
 
 export const getCommunityAmbassador = async (community: string) => {
-    const { axiosCouncilSubgraph } = axiosInit();
     const graphqlQuery = {
         operationName: 'fetchCommunityAmbassador',
         query: `query fetchCommunityAmbassador {
@@ -313,8 +395,9 @@ export const getCommunityAmbassador = async (community: string) => {
 
 export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
     try {
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'ambassadorEntities',
+            query: `query ambassadorEntities {
                 ambassadorEntities(
                     where:{
                         id: "${ambassadorAddress.toLowerCase()}"
@@ -324,15 +407,38 @@ export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
                     id
                     communities
                 }
+            }`,
+            variables: {},
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+    
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosCouncilSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        ambassadorEntities: {
+                            id: string,
+                            communities: string[]
+                        }[];
+                    };
+                };
             }
-        `;
+        >('', graphqlQuery);
+        const ambassadorEntities = response.data?.data.ambassadorEntities[0];
 
-        const queryResult = await clientCouncil.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(ambassadorEntities),
+            'EX',
+            intervalsInSeconds.sixHours
+        );
 
-        return queryResult.data?.ambassadorEntities[0];
+        return ambassadorEntities;
     } catch (error) {
         throw new Error(error);
     }
@@ -350,8 +456,9 @@ export const getCommunityStateByAddresses = async (
     const idsFormated = addresses.map((el) => `"${el.toLowerCase()}"`);
 
     try {
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'communityEntities',
+            query: `query communityEntities {
                 communityEntities(
                     where: {
                         id_in:[${idsFormated}]
@@ -361,15 +468,39 @@ export const getCommunityStateByAddresses = async (
                     beneficiaries
                     maxClaim
                 }
+            }`,
+            variables: {},
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+    
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        communityEntities: {
+                            id: string,
+                            beneficiaries: number,
+                            maxClaim: string,
+                        }[];
+                    };
+                };
             }
-        `;
+        >('', graphqlQuery);
+        const communityEntities = response.data?.data.communityEntities;
 
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(communityEntities),
+            'EX',
+            intervalsInSeconds.sixHours
+        );
 
-        return queryResult.data.communityEntities;
+        return communityEntities;
     } catch (error) {
         throw new Error(error);
     }
@@ -392,8 +523,9 @@ export const getCommunityDailyState = async (
     }[]
 > => {
     try {
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'communityDailyEntities',
+            query: `query communityDailyEntities {
                 communityDailyEntities(
                     first: 1000
                     where: {
@@ -413,30 +545,47 @@ export const getCommunityDailyState = async (
                     volume
                     fundingRate
                 }
+            }`,
+            variables: {},
+        };
+        
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        communityDailyEntities: {
+                            claims: number,
+                            claimed: string,
+                            beneficiaries: number,
+                            community: {
+                                id: string,
+                            },
+                            contributed: string,
+                            contributors: number,
+                            transactions: number,
+                            reach: number,
+                            volume: string,
+                            fundingRate: string,
+                        }[];
+                    };
+                };
             }
-        `;
+        >('', graphqlQuery);
+        const communityDailyEntities = response.data?.data.communityDailyEntities;
 
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
-
-        if (queryResult.data?.communityDailyEntities?.length) {
-            return queryResult.data.communityDailyEntities.map((daily) => ({
-                claims: daily.claims,
-                claimed: Number(daily.claimed),
-                beneficiaries: daily.beneficiaries,
-                contributed: Number(daily.contributed),
-                contributors: daily.contributors,
-                contractAddress: getAddress(daily.community.id),
-                transactions: daily.transactions,
-                reach: daily.reach,
-                volume: daily.volume,
-                fundingRate: daily.fundingRate,
-            }));
-        }
-
-        return [];
+        return communityDailyEntities.map((daily) => ({
+            claims: daily.claims,
+            claimed: Number(daily.claimed),
+            beneficiaries: daily.beneficiaries,
+            contributed: Number(daily.contributed),
+            contributors: daily.contributors,
+            contractAddress: getAddress(daily.community.id),
+            transactions: daily.transactions,
+            reach: daily.reach,
+            volume: daily.volume,
+            fundingRate: daily.fundingRate,
+        }));
     } catch (error) {
         throw new Error(error);
     }

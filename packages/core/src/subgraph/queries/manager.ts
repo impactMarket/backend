@@ -1,7 +1,7 @@
-import { gql } from 'apollo-boost';
-
-import { clientDAO } from '../config';
+import { axiosSubgraph } from '../config';
 import { ManagerSubgraph } from '../interfaces/manager';
+import { redisClient } from '../../database';
+import { intervalsInSeconds } from '../../types';
 
 export const getCommunityManagers = async (
     communityAddress: string,
@@ -14,8 +14,9 @@ export const getCommunityManagers = async (
 ): Promise<ManagerSubgraph[]> => {
     try {
         const idsFormated = addresses?.map((el) => `"${el.toLowerCase()}"`);
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'managerEntities',
+            query: `query managerEntities {
                 managerEntities(
                     ${limit ? `first: ${limit}` : ''}
                     ${offset ? `skip: ${offset}` : ''}
@@ -38,15 +39,42 @@ export const getCommunityManagers = async (
                     since
                     until
                 }
+            }`,
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        managerEntities: {
+                            address: string,
+                            state: number,
+                            added: number,
+                            removed: number,
+                            since: number,
+                            until: number,
+                        }[];
+                    };
+                };
             }
-        `;
+        >('', graphqlQuery);
 
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+        const managerEntities = response.data?.data.managerEntities;
 
-        return queryResult.data?.managerEntities;
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(managerEntities),
+            'EX',
+            intervalsInSeconds.oneHour
+        );
+
+        return managerEntities;
     } catch (error) {
         throw new Error(error);
     }
@@ -57,29 +85,54 @@ export const countManagers = async (
     state?: number
 ): Promise<number> => {
     try {
-        const query = gql`
-                {
-                    communityEntity(
-                        id: "${community.toLowerCase()}"
-                    ) {
-                        managers
-                        removedManagers
-                    }
+        const graphqlQuery = {
+            operationName: 'communityEntity',
+            query: `query communityEntity {
+                communityEntity(
+                    id: "${community.toLowerCase()}"
+                ) {
+                    managers
+                    removedManagers
                 }
-            `;
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+            }`,
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        communityEntity: {
+                            managers: number,
+                            removedManagers: number,
+                        };
+                    };
+                };
+            }
+        >('', graphqlQuery);
+
+        const communityEntity = response.data?.data.communityEntity;
+
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(communityEntity),
+            'EX',
+            intervalsInSeconds.oneHour
+        );
 
         if (state === 0) {
-            return queryResult.data.communityEntity.managers;
+            return communityEntity.managers;
         } else if (state === 1) {
-            return queryResult.data.communityEntity.removedManagers;
+            return communityEntity.removedManagers;
         } else {
             return (
-                queryResult.data.communityEntity.managers +
-                queryResult.data.communityEntity.removedManagers
+                communityEntity.managers +
+                communityEntity.removedManagers
             );
         }
     } catch (error) {

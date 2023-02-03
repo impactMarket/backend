@@ -1,6 +1,6 @@
-import { gql } from 'apollo-boost';
-
-import { clientDAO, clientCouncil } from '../config';
+import { axiosCouncilSubgraph, axiosSubgraph } from '../config';
+import { redisClient } from '../../database';
+import { intervalsInSeconds } from '../../types';
 
 export type UserRoles = {
     beneficiary: { community: string; state: number; address: string } | null;
@@ -9,10 +9,36 @@ export type UserRoles = {
     ambassador: { communities: string[]; state: number } | null;
 };
 
+type  DAOResponse = {
+    beneficiaryEntity: {
+        address: string,
+        community: {
+            id: string,
+        },
+        state: number,
+    },
+    managerEntity: {
+        community: {
+            id: string,
+        },
+        state: number,
+    },
+};
+type CouncilMemberResponse = {
+    impactMarketCouncilMemberEntity: {
+        status: number,
+    },
+    ambassadorEntity: {
+        status: number,
+        communities: string[]
+    }
+};
+
 export const getUserRoles = async (address: string): Promise<UserRoles> => {
     try {
-        const queryDAO = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'beneficiaryEntity',
+            query: `query beneficiaryEntity {
                 beneficiaryEntity(
                     id: "${address.toLowerCase()}"
                 ) {
@@ -30,11 +56,11 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                     }
                     state
                 }
-            }
-        `;
-
-        const queryCouncil = gql`
-            {
+            }`,
+        };
+        const councilGraphqlQuery = {
+            operationName: 'impactMarketCouncilMemberEntity',
+            query: `query impactMarketCouncilMemberEntity {
                 impactMarketCouncilMemberEntity(
                     id: "${address.toLowerCase()}"
                 ) {
@@ -46,49 +72,88 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                     status
                     communities
                 }
-            }
-        `;
+            }`,
+        };
 
-        const queryDAOResult = await clientDAO.query({
-            query: queryDAO,
-            fetchPolicy: 'no-cache',
-        });
+        const cacheDAO = await redisClient.get(graphqlQuery.query);
+        const cacheCouncil = await redisClient.get(councilGraphqlQuery.query);
 
-        const queryCouncilResult = await clientCouncil.query({
-            query: queryCouncil,
-            fetchPolicy: 'no-cache',
-        });
+        let responseDAO: DAOResponse | null = null,
+            responseCouncilMember: CouncilMemberResponse | null = null;
 
-        const beneficiary = !queryDAOResult.data.beneficiaryEntity
+        if (cacheDAO) {
+            responseDAO = JSON.parse(cacheDAO)
+        } else {
+            const response = await axiosSubgraph.post<
+                any,
+                {
+                    data: {
+                        data: DAOResponse;
+                    };
+                }
+            >('', graphqlQuery);
+
+            responseDAO = response.data?.data;
+
+            redisClient.set(
+                graphqlQuery.query,
+                JSON.stringify(responseDAO),
+                'EX',
+                intervalsInSeconds.oneHour
+            );
+        }
+
+        if (cacheCouncil) {
+            responseCouncilMember = JSON.parse(cacheCouncil);
+        } else {
+            const response = await axiosCouncilSubgraph.post<
+                any,
+                {
+                    data: {
+                        data: CouncilMemberResponse;
+                    };
+                }
+            >('', councilGraphqlQuery);
+
+            responseCouncilMember = response.data?.data;
+
+            redisClient.set(
+                councilGraphqlQuery.query,
+                JSON.stringify(responseCouncilMember),
+                'EX',
+                intervalsInSeconds.oneHour
+            );
+        }
+
+        const beneficiary = !responseDAO?.beneficiaryEntity
             ? null
             : {
-                  community:
-                      queryDAOResult.data?.beneficiaryEntity?.community?.id,
-                  state: queryDAOResult.data?.beneficiaryEntity?.state,
-                  address: queryDAOResult.data?.beneficiaryEntity?.address,
+                community:
+                    responseDAO?.beneficiaryEntity?.community?.id,
+                state: responseDAO?.beneficiaryEntity?.state,
+                address: responseDAO?.beneficiaryEntity?.address,
+            };
+
+        const manager = !responseDAO?.managerEntity
+            ? null
+            : {
+                  community: responseDAO.managerEntity?.community?.id,
+                  state: responseDAO.managerEntity?.state,
               };
 
-        const manager = !queryDAOResult.data.managerEntity
+        const councilMember = !responseCouncilMember?.impactMarketCouncilMemberEntity
             ? null
             : {
-                  community: queryDAOResult.data.managerEntity?.community?.id,
-                  state: queryDAOResult.data.managerEntity?.state,
-              };
-
-        const councilMember = !queryCouncilResult.data
-            .impactMarketCouncilMemberEntity
-            ? null
-            : {
-                  state: queryCouncilResult.data.impactMarketCouncilMemberEntity
+                  state: responseCouncilMember.impactMarketCouncilMemberEntity
                       .status,
               };
 
-        const ambassador = !queryCouncilResult.data.ambassadorEntity
+        const ambassador = !responseCouncilMember?.ambassadorEntity
             ? null
             : {
                   communities:
-                      queryCouncilResult.data.ambassadorEntity?.communities,
-                  state: queryCouncilResult.data.ambassadorEntity?.status,
+                      responseCouncilMember.ambassadorEntity?.communities,
+                  state: responseCouncilMember.ambassadorEntity?.status,
               };
         return {
             beneficiary,
@@ -114,13 +179,14 @@ export const getUserActivity = async (
         community: {
             id: string;
         };
-        activity: number;
+        activity: string;
         timestamp: number;
     }[]
 > => {
     try {
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'userActivityEntities',
+            query: `query userActivityEntities {
                 userActivityEntities(
                     first: ${limit ? limit : 1000}
                     skip: ${offset ? offset : 0}
@@ -140,15 +206,44 @@ export const getUserActivity = async (
                     activity
                     timestamp
                 }
+            }`,
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosCouncilSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        userActivityEntities: {
+                            id: string,
+                            by: string,
+                            user: string,
+                            community: {
+                                id: string,
+                            },
+                            activity: string,
+                            timestamp: number,
+                        }[];
+                    };
+                };
             }
-        `;
+        >('', graphqlQuery);
 
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'cache-first',
-        });
+        const userActivityEntities = response.data?.data.userActivityEntities;
 
-        return queryResult.data.userActivityEntities;
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(userActivityEntities),
+            'EX',
+            intervalsInSeconds.halfHour
+        );
+
+        return userActivityEntities;
     } catch (error) {
         throw new Error(error);
     }
