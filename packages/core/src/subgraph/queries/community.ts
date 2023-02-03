@@ -497,7 +497,7 @@ export const getCommunityStateByAddresses = async (
             graphqlQuery.query,
             JSON.stringify(communityEntities),
             'EX',
-            intervalsInSeconds.sixHours
+            intervalsInSeconds.oneHour
         );
 
         return communityEntities;
