@@ -7,6 +7,7 @@ import {
     verifySignature,
 } from '../../middlewares';
 import userValidators from '../../validators/user';
+import timeout from 'connect-timeout';
 
 export default (app: Router): void => {
     const route = Router();
@@ -104,7 +105,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/', authenticateToken, userController.get);
+    route.get('/', authenticateToken, timeout('1s'), userController.get);
 
     /**
      * @swagger
@@ -314,7 +315,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/report/:query?', authenticateToken, userController.getReport);
+    route.get('/report/:query?', authenticateToken, timeout('1s'), userController.getReport);
 
     /**
      * @swagger
@@ -346,7 +347,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/logs', authenticateToken, userController.getLogs);
+    route.get('/logs', authenticateToken, timeout('1s'), userController.getLogs);
 
     /**
      * @swagger
@@ -375,6 +376,7 @@ export default (app: Router): void => {
     route.get(
         '/presigned/:query?',
         authenticateToken,
+        timeout('1s'),
         userController.getPresignedUrlMedia
     );
 
@@ -417,6 +419,7 @@ export default (app: Router): void => {
     route.get(
         '/notifications/unread/:query?',
         authenticateToken,
+        timeout('1s'),
         userController.getUnreadNotifications
     );
 
@@ -470,6 +473,7 @@ export default (app: Router): void => {
     route.get(
         '/notifications/:query?',
         authenticateToken,
+        timeout('1s'),
         userController.getNotifications
     );
 
@@ -540,7 +544,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/:address', authenticateToken, userController.findBy);
+    route.get('/:address', authenticateToken, timeout('1s'), userController.findBy);
 
     route.post(
         '/push-notifications',
