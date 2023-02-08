@@ -57,10 +57,8 @@ export default class CashoutProviderService {
                 const dist = distance(userLocation, merchantLocation);
                 // less than 100 kilometers
                 if (dist < 100) {
-                    return {
-                        ...merchant,
-                        distance: dist,
-                    };
+                    merchant['distance'] = dist;
+                    return true;
                 }
             });
 

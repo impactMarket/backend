@@ -3,7 +3,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export interface ExchangeRegistry {
     id: number;
     name: string;
-    countries: [string];
+    countries: string[];
     global: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -12,7 +12,7 @@ export interface ExchangeRegistry {
 export interface ExchangeRegistryCreationAttributes {
     name: string;
     global: boolean;
-    countries: [string];
+    countries: string[];
 }
 
 export class ExchangeRegistryModel extends Model<
@@ -21,7 +21,7 @@ export class ExchangeRegistryModel extends Model<
 > {
     public id!: number;
     public name!: string;
-    public countries!: [string];
+    public countries!: string[];
     public global!: boolean;
 
     // timestamps!
