@@ -24,6 +24,7 @@ import { learnAndEarnAssociation } from './associations/learnAndEarn';
 import { storyAssociation } from './associations/story';
 import { userAssociation } from './associations/user';
 import { walletAidropAssociation } from './associations/walletAirdrop';
+import { initializeExchangeRegistry } from './exchange/exchangeRegistry';
 import { initializeGlobalDailyState } from './global/globalDailyState';
 import { initializeGlobalDemographics } from './global/globalDemographics';
 import { initializeGlobalGrowth } from './global/globalGrowth';
@@ -142,6 +143,9 @@ export default function initModels(sequelize: Sequelize): void {
     initializeLearnAndEarnUserLesson(sequelize);
     initializeLearnAndEarnUserLevel(sequelize);
     initializeLearnAndEarnPayment(sequelize);
+
+    // Exchange
+    initializeExchangeRegistry(sequelize);
 
     // associations
     userAssociation(sequelize);

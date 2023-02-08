@@ -61,4 +61,40 @@ export default (app: Router): void => {
      *         description: OK
      */
     app.get('/wallet-airdrop/:address', genericController.getWalletAirdrop);
+
+    /**
+     * @swagger
+     *
+     * /cashout-providers:
+     *   get:
+     *     tags:
+     *       - "generic"
+     *     summary: Get cachout providers.
+     *     parameters:
+     *       - in: query
+     *         name: country
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: filter by country
+     *       - in: query
+     *         name: lat
+     *         schema:
+     *           type: number
+     *         required: false
+     *         description: latitude used for nearest location
+     *       - in: query
+     *         name: lng
+     *         schema:
+     *           type: number
+     *         required: false
+     *         description: longitude used for nearest location
+     *     responses:
+     *       "200":
+     *         description: OK
+     */
+    app.get(
+        '/cashout-providers/:query?',
+        genericController.getCashoutProviders
+    );
 };

@@ -2,8 +2,6 @@ import Redis from 'ioredis';
 import pg from 'pg';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
 
-import config from '../config';
-import { Logger } from '../utils/logger';
 import { DbModels } from './db';
 import initModels from './models';
 import * as AirgrabProof from './models/airgrab/airgrabProof';
@@ -22,6 +20,7 @@ import { AppUserValidationCodeModel } from './models/app/appUserValidationCode';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
 import * as ExchangeRates from './models/app/exchangeRates';
 import { ImMetadata } from './models/app/imMetadata';
+import * as ExchangeRegistry from './models/exchange/exchangeRegistry';
 import * as GlobalDailyState from './models/global/globalDailyState';
 import * as GlobalDemographics from './models/global/globalDemographics';
 import * as GlobalGrowth from './models/global/globalGrowth';
@@ -62,6 +61,8 @@ import * as UbiPromoter from './models/ubi/ubiPromoter';
 import * as UbiPromoterSocialMedia from './models/ubi/ubiPromoterSocialMedia';
 import * as WalletAirdropProof from './models/walletAirdrop/walletAirdropProof';
 import * as WalletAirdropUser from './models/walletAirdrop/walletAirdropUser';
+import config from '../config';
+import { Logger } from '../utils/logger';
 
 let logging:
     | boolean
@@ -209,6 +210,8 @@ const models: DbModels = {
         .MerchantRegistryModel as ModelCtor<MerchantRegistry.MerchantRegistryModel>,
     merchantCommunity: sequelize.models
         .MerchantCommunityModel as ModelCtor<MerchantCommunity.MerchantCommunityModel>,
+    exchangeRegistry: sequelize.models
+        .ExchangeRegistryModel as ModelCtor<ExchangeRegistry.ExchangeRegistryModel>,
 };
 
 let redisClient: Redis = undefined as any;

@@ -16,6 +16,7 @@ import { AppUserValidationCodeModel } from './models/app/appUserValidationCode';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
 import { ExchangeRates } from './models/app/exchangeRates';
 import { ImMetadata } from './models/app/imMetadata';
+import { ExchangeRegistryModel } from './models/exchange/exchangeRegistry';
 import { GlobalDailyState } from './models/global/globalDailyState';
 import { GlobalDemographics } from './models/global/globalDemographics';
 import { GlobalGrowthModel } from './models/global/globalGrowth';
@@ -121,6 +122,8 @@ export interface DbModels {
     //
     merchantRegistry: ModelCtor<MerchantRegistryModel>;
     merchantCommunity: ModelCtor<MerchantCommunityModel>;
+    //
+    exchangeRegistry: ModelCtor<ExchangeRegistryModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;
