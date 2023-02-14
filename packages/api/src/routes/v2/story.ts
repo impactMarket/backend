@@ -2,6 +2,8 @@ import { Router } from 'express';
 
 import StoryController from '../../controllers/v2/story';
 import { authenticateToken, optionalAuthentication } from '../../middlewares';
+import { cache } from '../../middlewares/cache-redis';
+import { cacheIntervals } from '../../utils/api';
 import StoryValidator from '../../validators/story';
 
 export default (app: Router): void => {
@@ -118,31 +120,11 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/count/:query?', storyController.count);
-
-    /**
-     * @swagger
-     *
-     * /stories/{id}:
-     *   get:
-     *     tags:
-     *       - "stories"
-     *     summary: Get a story by ID
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         schema:
-     *           type: integer
-     *         required: true
-     *         description: Story id
-     *     responses:
-     *       "200":
-     *         description: OK
-     *     security:
-     *     - api_auth:
-     *       - "write:modify":
-     */
-    route.get('/:id', optionalAuthentication, storyController.getById);
+    route.get(
+        '/count/:query?',
+        cache(cacheIntervals.oneHour),
+        storyController.count
+    );
 
     /**
      * @swagger
@@ -187,6 +169,18 @@ export default (app: Router): void => {
      *            type: string
      *         required: false
      *         description: countries used to filter the stories
+     *       - in: query
+     *         name: orderBy
+     *         schema:
+     *           type: string
+     *         required: false
+     *         description: field to order and the order direction (mostLoved:desc)
+     *       - in: query
+     *         name: period
+     *         schema:
+     *           type: number
+     *         required: false
+     *         description: last days
      *     responses:
      *       "200":
      *         description: OK
@@ -194,7 +188,36 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/:query?', optionalAuthentication, storyController.list);
+    route.get(
+        '/:query?',
+        optionalAuthentication,
+        cache(cacheIntervals.fiveMinutes),
+        storyController.list
+    );
+
+    /**
+     * @swagger
+     *
+     * /stories/{id}:
+     *   get:
+     *     tags:
+     *       - "stories"
+     *     summary: Get a story by ID
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         schema:
+     *           type: integer
+     *         required: true
+     *         description: Story id
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get('/:id', optionalAuthentication, storyController.getById);
 
     /**
      * @swagger

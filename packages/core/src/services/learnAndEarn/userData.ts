@@ -49,6 +49,9 @@ export async function total(userId: number): Promise<{
             where: {
                 active: true,
                 languages: { [Op.contains]: [user!.language] },
+                ...(process.env.API_ENVIRONMENT === 'production'
+                ? { isLive: true }
+                : {})
             },
             raw: true,
         })) as unknown as {
@@ -81,6 +84,9 @@ export async function total(userId: number): Promise<{
             where: {
                 active: true,
                 languages: { [Op.contains]: [user!.language] },
+                ...(process.env.API_ENVIRONMENT === 'production'
+                    ? { isLive: true }
+                    : {})
             },
             raw: true,
         })) as unknown as {

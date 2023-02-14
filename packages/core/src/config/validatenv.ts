@@ -75,8 +75,6 @@ function validateEnv() {
             devDefault: 'test',
         }),
         CLOUDFRONT_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
-        SENTRY_KEY: str({ default: '' }),
-        SENTRY_TRACE_SAMPLES_RATE: num({ default: 0 }),
         ADMIN_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         HASH_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         REDIS_URL: str({ devDefault: 'redis://localhost:6379' }),
@@ -98,7 +96,6 @@ function validateEnv() {
         LOGIN_INACTIVITY_THRESHOLD: num({ default: 10 }),
         DEFAULT_LIMIT: num({ default: 10 }),
         DEFAULT_OFFSET: num({ default: 0 }),
-        ENABLED_CACHE_WITH_REDIS: bool({ default: true }),
         PACT_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AIRGRAB_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         DONATION_MINER_CONTRACT_ADDRESS: str({

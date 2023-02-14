@@ -91,11 +91,6 @@ export default {
     currenciesApiKey: validatedEnv.CURRENCIES_API_KEY,
 
     /**
-     * Sentry key.
-     */
-    sentryKey: validatedEnv.SENTRY_KEY,
-
-    /**
      * Master internal key.
      */
     masterKey: validatedEnv.MASTER_KEY,
@@ -141,11 +136,6 @@ export default {
      * Cloudfront URL to be useed
      */
     cloudfrontUrl: validatedEnv.CLOUDFRONT_URL,
-
-    /**
-     * tracesSampleRate used in sentry.
-     */
-    tracesSampleRate: validatedEnv.SENTRY_TRACE_SAMPLES_RATE,
 
     /**
      * Key used to hash
@@ -223,8 +213,6 @@ export default {
 
     redis: validatedEnv.REDIS_URL,
 
-    bullJobsConcurrency: validatedEnv.SENTRY_TRACE_SAMPLES_RATE,
-
     impactMarketStoryCoverId: validatedEnv.IMPACTMARKET_STORY_COVER_ID,
 
     positionStackApiBaseUrl: validatedEnv.POSITION_STACK_API_BASE_URL,
@@ -254,7 +242,6 @@ export default {
     defaultLimit: validatedEnv.DEFAULT_LIMIT,
     defaultOffset: validatedEnv.DEFAULT_OFFSET,
 
-    enabledCacheWithRedis: validatedEnv.ENABLED_CACHE_WITH_REDIS,
     subgraphUrl: validatedEnv.SUBGRAPH_URL,
     councilSubgraphUrl: validatedEnv.COUNCIL_SUBGRAPH_URL,
     imageHandlerUrl: validatedEnv.IMAGE_HANDLER_URL,

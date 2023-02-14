@@ -649,11 +649,32 @@ export default class UserService {
         const userRoles = await getUserRoles(address);
         const roles: string[] = [];
         const keys = Object.keys(userRoles);
-        keys.forEach((key) => {
+
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
             if (userRoles[key] && userRoles[key].state === 0) {
-                roles.push(key);
+                if (key === 'manager' || key === 'beneficiary') {
+                    // validate community locally
+                    const community = await models.community.findOne({
+                        attributes: ['id'],
+                        where: {
+                            contractAddress: getAddress(userRoles[key]!.community),
+                            status: 'valid',
+                        }
+                    });
+
+                    if (community) {
+                        roles.push(key);
+                    } else {
+                        delete userRoles[key]
+                    }
+
+                } else {
+                    roles.push(key);
+                }
             }
-        });
+            
+        }
 
         const pendingCommunity = await models.community.findOne({
             where: {

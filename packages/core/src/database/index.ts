@@ -1,4 +1,3 @@
-import apicache from 'apicache';
 import Redis from 'ioredis';
 import pg from 'pg';
 import { Sequelize, Options, ModelCtor } from 'sequelize';
@@ -217,13 +216,7 @@ let redisClient: Redis = undefined as any;
 if (process.env.NODE_ENV !== 'test') {
     redisClient = new Redis(config.redis);
 }
-const cacheOnlySuccess = (req, res) => res.statusCode === 200;
-const apiCacheOptions = {
-    debug: !config.enabledCacheWithRedis,
-    enabled: config.enabledCacheWithRedis,
-    redisClient,
-};
-const cacheWithRedis = apicache.options(apiCacheOptions).middleware;
+
 export {
     AirgrabProof,
     AirgrabUser,
@@ -266,11 +259,4 @@ export {
     UbiPromoter,
     UbiPromoterSocialMedia,
 };
-export {
-    sequelize,
-    Sequelize,
-    models,
-    redisClient,
-    cacheWithRedis,
-    cacheOnlySuccess,
-};
+export { sequelize, Sequelize, models, redisClient };

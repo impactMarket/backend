@@ -1,4 +1,3 @@
-import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
 import StoryController from '../../controllers/v1/story';
@@ -178,11 +177,7 @@ export default (app: Router): void => {
      *                 count:
      *                   type: integer
      */
-    route.get(
-        '/list/:query?',
-        database.cacheWithRedis('10 minutes', database.cacheOnlySuccess),
-        storyController.listByOrder
-    );
+    route.get('/list/:query?', storyController.listByOrder);
 
     /**
      * @swagger

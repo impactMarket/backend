@@ -1,7 +1,6 @@
 import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/list';
-import { optionalAuthentication } from '../../../middlewares';
 
 export default (route: Router): void => {
     const controller = new CommunityController();

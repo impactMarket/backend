@@ -1,4 +1,3 @@
-import { database } from '@impactmarket/core';
 import { Router } from 'express';
 
 import communityController from '../../controllers/v1/community';
@@ -226,11 +225,7 @@ export default (app: Router): void => {
         communityController.listManagers
     );
 
-    route.get(
-        '/:id/historical-ssi',
-        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
-        communityController.getHistoricalSSI
-    );
+    route.get('/:id/historical-ssi', communityController.getHistoricalSSI);
 
     // --------------------------------------------------------------- new
 
@@ -613,11 +608,7 @@ export default (app: Router): void => {
      *                   count:
      *                     type: string
      */
-    route.get(
-        '/count/:query?',
-        database.cacheWithRedis('5 minutes', database.cacheOnlySuccess),
-        controller.count
-    );
+    route.get('/count/:query?', controller.count);
 
     route.get('/:id/ubi', controller.findRequestChangeUbiParams);
 
@@ -646,11 +637,7 @@ export default (app: Router): void => {
      *               items:
      *                 type: integer
      */
-    route.get(
-        '/:id/past-ssi',
-        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
-        controller.getPastSSI
-    );
+    route.get('/:id/past-ssi', controller.getPastSSI);
 
     /**
      * @swagger
@@ -671,11 +658,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get(
-        '/:id/dashboard',
-        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
-        controller.getDashboard
-    );
+    route.get('/:id/dashboard', controller.getDashboard);
 
     /**
      * @swagger
@@ -700,11 +683,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityDemographics'
      */
-    route.get(
-        '/:id/demographics',
-        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
-        controller.getDemographics
-    );
+    route.get('/:id/demographics', controller.getDemographics);
 
     /**
      * @swagger
@@ -736,11 +715,7 @@ export default (app: Router): void => {
      *                   longitude:
      *                     type: integer
      */
-    route.get(
-        '/:id/claim-location',
-        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
-        controller.getClaimLocation
-    );
+    route.get('/:id/claim-location', controller.getClaimLocation);
 
     /**
      * @swagger
@@ -821,11 +796,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunitySuspect'
      */
-    route.get(
-        '/:id/suspect',
-        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
-        controller.getSuspect
-    );
+    route.get('/:id/suspect', controller.getSuspect);
 
     /**
      * @swagger
@@ -900,11 +871,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityDailyMetrics'
      */
-    route.get(
-        '/:id/metrics',
-        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
-        controller.getMetrics
-    );
+    route.get('/:id/metrics', controller.getMetrics);
 
     /**
      * @swagger
@@ -929,11 +896,7 @@ export default (app: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityCampaign'
      */
-    route.get(
-        '/:id/campaign',
-        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
-        controller.getCampaign
-    );
+    route.get('/:id/campaign', controller.getCampaign);
 
     /**
      * @swagger
