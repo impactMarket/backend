@@ -699,7 +699,7 @@ export class CommunityDetailsService {
                     lastName: user?.lastName,
                     avatarMediaPath: user?.avatarMediaPath,
                     since: beneficiary.since || 0,
-                    claimed: beneficiary.claimed,
+                    claimed: beneficiary.claimed!,
                     blocked: beneficiary.state === 2,
                     suspect: user?.suspect,
                     isDeleted: !user || !!user!.deletedAt,

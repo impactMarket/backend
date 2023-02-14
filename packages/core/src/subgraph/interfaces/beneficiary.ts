@@ -1,12 +1,12 @@
 export interface BeneficiarySubgraph {
     address: string;
-    claims: number;
+    claims?: number;
     community: {
         id: string;
     };
-    lastClaimAt: number;
-    preLastClaimAt: number;
+    lastClaimAt?: number;
+    preLastClaimAt?: number;
     since?: number;
-    claimed: string;
-    state: number;
+    claimed?: string;
+    state?: number;
 }

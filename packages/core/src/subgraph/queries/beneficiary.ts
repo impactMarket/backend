@@ -1,8 +1,9 @@
-import { gql } from 'apollo-boost';
 import { utils } from 'ethers';
 
-import { clientDAO } from '../config';
+import { axiosSubgraph,  } from '../config';
+import { redisClient } from '../../database';
 import { BeneficiarySubgraph } from '../interfaces/beneficiary';
+import { intervalsInSeconds } from '../../types';
 
 export const getAllBeneficiaries = async (
     community: string
@@ -15,8 +16,9 @@ export const getAllBeneficiaries = async (
         const result: BeneficiarySubgraph[] = [];
 
         for (let i = 0; ; i += first) {
-            const query = gql`
-                {
+            const graphqlQuery = {
+                operationName: 'beneficiaryEntities',
+                query: `query beneficiaryEntities {
                     beneficiaryEntities(
                         first: ${first}
                         skip: ${i}
@@ -34,16 +36,45 @@ export const getAllBeneficiaries = async (
                             id
                         }
                     }
+                }`,
+            };
+            const cacheResults = await redisClient.get(graphqlQuery.query);
+    
+            if (cacheResults) {
+                return JSON.parse(cacheResults);
+            }
+    
+            const response = await axiosSubgraph.post<
+                any,
+                {
+                    data: {
+                        data: {
+                            beneficiaryEntities: {
+                                address: string,
+                                lastClaimAt: number,
+                                preLastClaimAt: number,
+                                claims: number,
+                                community: {
+                                    id: string,
+                                }
+                            }[];
+                        };
+                    };
                 }
-            `;
-            const queryResult = await clientDAO.query({
-                query,
-                fetchPolicy: 'no-cache',
-            });
+            >('', graphqlQuery);
+    
+            const beneficiaryEntities = response.data?.data.beneficiaryEntities;
+    
+            redisClient.set(
+                graphqlQuery.query,
+                JSON.stringify(beneficiaryEntities),
+                'EX',
+                intervalsInSeconds.oneHour
+            );
 
-            result.push(...queryResult.data.beneficiaryEntities);
+            result.push(...beneficiaryEntities);
 
-            if (queryResult.data.beneficiaryEntities.length < first) {
+            if (beneficiaryEntities.length < first) {
                 break;
             }
         }
@@ -63,9 +94,9 @@ export const getBeneficiariesByAddress = async (
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const idsFormated = addresses.map((el) => `"${el.toLowerCase()}"`);
-
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'beneficiaryEntities',
+            query: `query beneficiaryEntities {
                 beneficiaryEntities(
                     first: ${idsFormated.length}
                     ${orderBy ? orderBy : ''}
@@ -89,13 +120,43 @@ export const getBeneficiariesByAddress = async (
                         id
                     }
                 }
+            }`,
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        beneficiaryEntities: {
+                            address: string,
+                            claimed: string,
+                            since: number,
+                            state: number,
+                            community: {
+                                id: string,
+                            }
+                        }[];
+                    };
+                };
             }
-        `;
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
-        return queryResult.data.beneficiaryEntities;
+        >('', graphqlQuery);
+
+        const beneficiaryEntities = response.data?.data.beneficiaryEntities;
+
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(beneficiaryEntities),
+            'EX',
+            intervalsInSeconds.halfHour
+        );
+
+        return beneficiaryEntities;
     } catch (error) {
         throw new Error(error);
     }
@@ -111,8 +172,9 @@ export const getBeneficiaries = async (
     orderDirection?: string
 ): Promise<BeneficiarySubgraph[]> => {
     try {
-        const query = gql`
-            {
+        const graphqlQuery = {
+            operationName: 'beneficiaryEntities',
+            query: `query beneficiaryEntities {
                 beneficiaryEntities(
                     first: ${limit}
                     skip: ${offset}
@@ -132,13 +194,43 @@ export const getBeneficiaries = async (
                         id
                     }
                 }
+            }`,
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        beneficiaryEntities: {
+                            address: string,
+                            claimed: string,
+                            since: number,
+                            state: number,
+                            community: {
+                                id: string,
+                            }
+                        }[];
+                    };
+                };
             }
-        `;
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
-        return queryResult.data.beneficiaryEntities;
+        >('', graphqlQuery);
+
+        const beneficiaryEntities = response.data?.data.beneficiaryEntities;
+
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(beneficiaryEntities),
+            'EX',
+            intervalsInSeconds.halfHour
+        );
+
+        return beneficiaryEntities;
     } catch (error) {
         throw new Error(error);
     }
@@ -148,25 +240,51 @@ export const getBeneficiaryCommunity = async (
     beneficiaryAddress: string
 ): Promise<string> => {
     try {
-        const query = gql`
-                {
-                    beneficiaryEntity(
-                        id: "${beneficiaryAddress.toLowerCase()}"
-                        status: 0
-                    ) {
-                        community {
-                            id
-                        }
+        const graphqlQuery = {
+            operationName: 'beneficiaryEntity',
+            query: `query beneficiaryEntity {
+                beneficiaryEntity(
+                    id: "${beneficiaryAddress.toLowerCase()}"
+                    status: 0
+                ) {
+                    community {
+                        id
                     }
                 }
-            `;
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+            }`,
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        beneficiaryEntity: {
+                            community: {
+                                id: string,
+                            }
+                        };
+                    };
+                };
+            }
+        >('', graphqlQuery);
+
+        const beneficiaryEntity = response.data?.data.beneficiaryEntity;
+
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(beneficiaryEntity),
+            'EX',
+            intervalsInSeconds.oneHour
+        );
 
         return utils.getAddress(
-            queryResult.data.beneficiaryEntity.community.id
+            beneficiaryEntity.community.id
         );
     } catch (error) {
         throw new Error(error);
@@ -178,73 +296,61 @@ export const countBeneficiaries = async (
     state?: number
 ): Promise<number> => {
     try {
-        const query = gql`
-                {
-                    communityEntity(
-                        id: "${community.toLowerCase()}"
-                    ) {
-                        beneficiaries
-                        removedBeneficiaries
-                    }
+        const graphqlQuery = {
+            operationName: 'communityEntity',
+            query: `query communityEntity {
+                communityEntity(
+                    id: "${community.toLowerCase()}"
+                ) {
+                    beneficiaries
+                    removedBeneficiaries
+                    lockedBeneficiaries
                 }
-            `;
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
+            }`,
+        };
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        communityEntity: {
+                            beneficiaries: number,
+                            removedBeneficiaries: number,
+                            lockedBeneficiaries: number,
+                        };
+                    };
+                };
+            }
+        >('', graphqlQuery);
+
+        const communityEntity = response.data?.data.communityEntity;
+
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(communityEntity),
+            'EX',
+            intervalsInSeconds.halfHour
+        );
 
         switch (state) {
             case 0:
-                return queryResult.data.communityEntity?.beneficiaries;
+                return communityEntity?.beneficiaries;
             case 1:
-                return queryResult.data.communityEntity?.removedBeneficiaries;
+                return communityEntity?.removedBeneficiaries;
             case 2:
-                return queryResult.data.communityEntity?.lockedBeneficiaries;
+                return communityEntity?.lockedBeneficiaries;
             default:
                 return (
-                    queryResult.data.communityEntity?.beneficiaries +
-                    queryResult.data.communityEntity?.removedBeneficiaries +
-                    (queryResult.data.communityEntity?.lockedBeneficiaries
-                        ? queryResult.data.communityEntity?.lockedBeneficiaries
-                        : 0) // TODO: remove "if" when TheGraph updates
+                    communityEntity?.beneficiaries +
+                    communityEntity?.removedBeneficiaries +
+                    communityEntity?.lockedBeneficiaries
                 );
-        }
-    } catch (error) {
-        throw new Error(error);
-    }
-};
-
-export const countBeneficiariesByCommunities = async (
-    community: string[],
-    state: string
-): Promise<number> => {
-    try {
-        const idsFormated = community.map((el) => `"${el.toLowerCase()}"`);
-
-        const query = gql`
-                {
-                    communityEntities(
-                        address_in: [${idsFormated}]
-                    ) {
-                        beneficiaries
-                        removedBeneficiaries
-                    }
-                }
-            `;
-        const queryResult = await clientDAO.query({
-            query,
-            fetchPolicy: 'no-cache',
-        });
-
-        if (state === 'active') {
-            return queryResult.data.communityEntities?.beneficiaries;
-        } else if (state === 'removed') {
-            return queryResult.data.communityEntities?.removedBeneficiaries;
-        } else {
-            return (
-                queryResult.data.communityEntities?.beneficiaries +
-                queryResult.data.communityEntities?.removedBeneficiaries
-            );
         }
     } catch (error) {
         throw new Error(error);

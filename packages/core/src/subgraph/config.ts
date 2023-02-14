@@ -1,21 +1,28 @@
-import { ApolloClient, InMemoryCache } from 'apollo-boost';
-import { HttpLink } from 'apollo-link-http';
-import { fetch } from 'cross-fetch';
-
+import axios from 'axios';
+import axiosRetry from 'axios-retry'
 import config from '../config';
 
-export const clientDAO = new ApolloClient({
-    link: new HttpLink({
-        uri: config.subgraphUrl,
-        fetch,
-    }),
-    cache: new InMemoryCache(),
+const axiosSubgraph = axios.create({
+    baseURL: config.subgraphUrl,
+    headers: {
+        'content-type': 'application/json',
+    },
+    timeout: 4000,
+});
+const axiosCouncilSubgraph = axios.create({
+    baseURL: config.councilSubgraphUrl,
+    headers: {
+        'content-type': 'application/json',
+    },
+    timeout: 4000,
+});
+axiosRetry(axiosSubgraph, {
+    retries: 3,
+    retryDelay: axiosRetry.exponentialDelay,
+});
+axiosRetry(axiosCouncilSubgraph, {
+    retries: 3,
+    retryDelay: axiosRetry.exponentialDelay,
 });
 
-export const clientCouncil = new ApolloClient({
-    link: new HttpLink({
-        uri: config.councilSubgraphUrl,
-        fetch,
-    }),
-    cache: new InMemoryCache(),
-});
+export { axiosSubgraph, axiosCouncilSubgraph };
