@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { col, fn, Op } from 'sequelize';
+import { col, fn, Op, Order } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
@@ -377,6 +377,8 @@ export default class StoryServiceV2 {
             limit?: string;
             communityId?: string[] | string;
             country?: string[] | string;
+            orderBy?: string;
+            period?: string;
         },
         userAddress?: string
     ): Promise<{ count: number; content: ICommunitiesListStories[] }> {
@@ -385,6 +387,34 @@ export default class StoryServiceV2 {
             count: number[];
         };
         try {
+            let order: Order;
+            if (query.orderBy) {
+                let [orderBy, orderDirection] = query.orderBy.split(':');
+                switch (orderBy) {
+                    case 'mostLoved':
+                        order = [[
+                            {
+                                model: models.storyEngagement,
+                                as: 'storyEngagement',
+                            } as any,
+                            'loves',
+                            orderDirection
+                        ]]
+                        break;
+                    default:
+                        order = [['postedAt', 'DESC']]
+                        break;
+                }
+            } else {
+                order = [['postedAt', 'DESC']]
+            }
+
+            let period: Date | null = null;
+            if (query.period) {
+                period = new Date();
+                period.setDate(period.getDate() - parseInt(query.period));
+            }
+
             r = await models.storyContent.findAndCountAll({
                 subQuery: false,
                 attributes: [
@@ -491,8 +521,13 @@ export default class StoryServiceV2 {
                     ...(userAddress
                         ? { '$"storyUserReport"."contentId"$': null }
                         : {}),
+                    ...(period
+                        ? { postedAt: {
+                            [Op.gte]: period
+                        }}
+                        : {}),
                 } as any,
-                order: [['postedAt', 'DESC']],
+                order,
                 offset: query.offset
                     ? parseInt(query.offset, 10)
                     : config.defaultOffset,

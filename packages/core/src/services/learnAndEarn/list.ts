@@ -5,6 +5,7 @@ import { LearnAndEarnLesson } from '../../interfaces/learnAndEarn/learnAndEarnLe
 import { LearnAndEarnLevel } from '../../interfaces/learnAndEarn/learnAndEarnLevel';
 import { formatObjectToNumber } from '../../utils';
 import { BaseError } from '../../utils/baseError';
+import config from '../../config';
 
 export async function listLevels(
     userId: number,
@@ -196,10 +197,12 @@ export async function listLessons(userId: number, levelId: number) {
         });
 
         let totalPoints = 0;
+        const daysAgo = new Date();
+        daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
         const completedToday = await models.learnAndEarnUserLesson.count({
             where: {
                 completionDate: {
-                    [Op.gte]: new Date().setHours(0, 0, 0, 0),
+                    [Op.gte]: daysAgo.setHours(0, 0, 0, 0),
                 },
                 userId: userId,
             },
