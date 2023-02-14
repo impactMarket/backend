@@ -1,4 +1,3 @@
-import { database } from '@impactmarket/core';
 import { Router } from 'express';
 import multer from 'multer';
 
@@ -8,6 +7,8 @@ import {
     optionalAuthentication,
     verifySignature,
 } from '../../../middlewares';
+import { cache } from '../../../middlewares/cache-redis';
+import { cacheIntervals } from '../../../utils/api';
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -296,7 +297,7 @@ export default (route: Router): void => {
      */
     route.get(
         '/:id/claims-location',
-        database.cacheWithRedis('1 day', database.cacheOnlySuccess),
+        cache(cacheIntervals.oneDay),
         controller.getClaimLocation
     );
 
@@ -412,7 +413,7 @@ export default (route: Router): void => {
      */
     route.get(
         '/:id/campaign',
-        database.cacheWithRedis('1 hour', database.cacheOnlySuccess),
+        cache(cacheIntervals.oneHour),
         controller.getCampaign
     );
 

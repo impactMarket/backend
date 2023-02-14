@@ -51,7 +51,6 @@
         "@sendgrid/mail": "7.6.0",
         "@turf/distance": "6.5.0",
         "@turf/points-within-polygon": "6.5.0",
-        "apicache": "1.6.3",
         "apollo-boost": "0.4.9",
         "apollo-link-http": "1.5.17",
         "aws-sdk": "2.1034.0",
