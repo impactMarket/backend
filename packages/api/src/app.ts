@@ -24,7 +24,7 @@ export async function startServer() {
     await serverLoader(app);
     utils.Logger.info('📡 Express server loaded');
 
-    subscriber();
+    subscriber.start();
     utils.Logger.info('⏱️ Chain Subscriber starting');
 
     return app.listen(config.port, () => {

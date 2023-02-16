@@ -4,7 +4,7 @@ import {
     config,
     contracts,
     services,
-} from '../../../index';
+} from '../../../';
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
@@ -80,7 +80,7 @@ describe('communityAdmin', () => {
             CommunityAdminContract.address
         );
 
-        subscribers = new ChainSubscribers(provider);
+        subscribers = new ChainSubscribers(provider as any);
     });
 
     after(() => {

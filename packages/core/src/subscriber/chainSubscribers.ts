@@ -8,11 +8,11 @@ import {
 import { ethers } from 'ethers';
 
 class ChainSubscribers {
-    provider: ethers.providers.JsonRpcProvider;
+    provider: ethers.providers.WebSocketProvider;
     ifaceCommunityAdmin: ethers.utils.Interface;
     filterTopics: string[][];
 
-    constructor(provider: ethers.providers.JsonRpcProvider) {
+    constructor(provider: ethers.providers.WebSocketProvider) {
         this.provider = provider;
         this.ifaceCommunityAdmin = new ethers.utils.Interface(
             contracts.CommunityAdminABI

@@ -4,11 +4,6 @@ import schedule from 'node-schedule';
 
 import { ChainSubscribers } from './chainSubscribers';
 
-const provider = new ethers.providers.WebSocketProvider(config.jsonRpcUrl);
-const providerFallback = new ethers.providers.WebSocketProvider(
-    config.jsonRpcUrlFallback
-);
-
 let subscribers: ChainSubscribers;
 let usingFallbackUrl = false;
 let waitingForResponseAfterCrash = false;
@@ -19,7 +14,14 @@ let intervalWhenCrash: NodeJS.Timeout | undefined = undefined;
 let intervalWhenTxRegWarn: NodeJS.Timeout | undefined = undefined;
 let waitingForResponseAfterTxRegWarn = false;
 
-export default async (): Promise<void> => {
+let provider: ethers.providers.WebSocketProvider;
+let providerFallback: ethers.providers.WebSocketProvider;
+
+export const start = async (): Promise<void> => {
+    provider = new ethers.providers.WebSocketProvider(config.jsonRpcUrl);
+    providerFallback = new ethers.providers.WebSocketProvider(
+        config.jsonRpcUrlFallback
+    );
     subscribers = startChainSubscriber();
 
     process.on('unhandledRejection', (error: any) => {
