@@ -4,8 +4,8 @@ import schedule from 'node-schedule';
 
 import { ChainSubscribers } from './chainSubscribers';
 
-const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
-const providerFallback = new ethers.providers.JsonRpcProvider(
+const provider = new ethers.providers.WebSocketProvider(config.jsonRpcUrl);
+const providerFallback = new ethers.providers.WebSocketProvider(
     config.jsonRpcUrlFallback
 );
 
