@@ -18,9 +18,9 @@ let provider: ethers.providers.WebSocketProvider;
 let providerFallback: ethers.providers.WebSocketProvider;
 
 export const start = async (): Promise<void> => {
-    provider = new ethers.providers.WebSocketProvider(config.jsonRpcUrl);
+    provider = new ethers.providers.WebSocketProvider(config.webSocketUrl);
     providerFallback = new ethers.providers.WebSocketProvider(
-        config.jsonRpcUrlFallback
+        config.webSocketUrlFallback
     );
     subscribers = startChainSubscriber();
 

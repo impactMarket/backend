@@ -1,6 +1,6 @@
 import { database, tests } from '@impactmarket/core';
 import { Op, Sequelize } from 'sequelize';
-import { assert, spy, stub } from 'sinon';
+import { assert, spy, stub, restore } from 'sinon';
 import tk from 'timekeeper';
 
 import * as merkleTree from '../../src/jobs/cron/filters/merkleTree';
@@ -18,6 +18,7 @@ describe('beneficiary transactions', () => {
         await tests.config.setup.truncate(sequelize, 'Manager');
         await tests.config.setup.truncate(sequelize, 'Beneficiary');
         await tests.config.setup.truncate(sequelize);
+        restore()
     });
 
     it('(cleanupNetworkRewards) must remove merkle tree transactions', async () => {
