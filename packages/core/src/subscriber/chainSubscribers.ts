@@ -4,7 +4,7 @@ import {
     config,
     contracts,
     database,
-} from '@impactmarket/core';
+} from '../../';
 import { ethers } from 'ethers';
 
 class ChainSubscribers {

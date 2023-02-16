@@ -7,6 +7,7 @@ import * as subgraph from './src/subgraph';
 import * as types from './src/types';
 import * as utils from './src/utils';
 import * as tests from './tests';
+import subscriber from './src/subscriber';
 
 export {
     config,
@@ -18,4 +19,5 @@ export {
     types,
     tests,
     subgraph,
+    subscriber,
 };

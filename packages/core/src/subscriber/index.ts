@@ -1,4 +1,4 @@
-import { utils, config } from '@impactmarket/core';
+import { utils, config } from '../../';
 import { ethers } from 'ethers';
 import schedule from 'node-schedule';
 

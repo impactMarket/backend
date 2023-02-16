@@ -4,12 +4,12 @@ import {
     config,
     contracts,
     services,
-} from '@impactmarket/core';
+} from '../../../index';
 import { ethers } from 'ethers';
 import ganache from 'ganache-cli';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
 
-import { ChainSubscribers } from '../../src/jobs/chainSubscribers';
+import { ChainSubscribers } from '../../../src/subscriber/chainSubscribers';
 import CommunityAdminContractJSON from './CommunityAdmin.json';
 import cUSDContractJSON from './cUSD.json';
 
@@ -23,9 +23,6 @@ describe('communityAdmin', () => {
     let findCommunity: SinonStub<any, any>;
     let beneficiaryUpdated: SinonStub<any, any>;
     let CommunityAdminFactory: ethers.ContractFactory;
-    const communities = new Map<string, string>();
-    const communitiesId = new Map<string, number>();
-    const communitiesVisibility = new Map<string, boolean>();
     const ganacheProvider = ganache.provider({
         mnemonic:
             'alter toy tortoise hard lava aunt second lamp sister galaxy parent bargain',
@@ -83,13 +80,7 @@ describe('communityAdmin', () => {
             CommunityAdminContract.address
         );
 
-        subscribers = new ChainSubscribers(
-            provider,
-            [],
-            communities,
-            communitiesId,
-            communitiesVisibility
-        );
+        subscribers = new ChainSubscribers(provider);
     });
 
     after(() => {
