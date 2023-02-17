@@ -47,7 +47,7 @@ class ChainSubscribers {
 
     async _runRecoveryTxs(
         startFromBlock: number,
-        provider: ethers.providers.JsonRpcProvider
+        provider: ethers.providers.WebSocketProvider
     ) {
         utils.Logger.info('Recovering past events...');
         const rawLogs = await provider.getLogs({
@@ -125,34 +125,11 @@ class ChainSubscribers {
                         where: { contractAddress: communityAddress },
                     }
                 );
-                await database.models.beneficiary.update(
-                    {
-                        active: false,
-                    },
-                    {
-                        where: {
-                            communityId: community.publicId,
-                        },
-                    }
-                );
                 result = parsedLog;
             }
         } else if (parsedLog.name === 'CommunityAdded') {
             const communityAddress = parsedLog.args[0];
             const managerAddress = parsedLog.args[1];
-
-            const _pCommunity = await database.models.community.findOne({
-                attributes: ['id'],
-                where: {
-                    requestByAddress: managerAddress[0],
-                },
-            });
-            for (let index = 0; index < managerAddress.length; index++) {
-                await services.ubi.ManagerService.add(
-                    managerAddress[index],
-                    _pCommunity!.id
-                );
-            }
 
             const community = await database.models.community.update(
                 {
