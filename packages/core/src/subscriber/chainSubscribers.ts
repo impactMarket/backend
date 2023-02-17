@@ -107,11 +107,11 @@ class ChainSubscribers {
         if (parsedLog.name === 'CommunityRemoved') {
             const communityAddress = parsedLog.args[0];
             const community = await database.models.community.findOne({
-                attributes: ['publicId'],
+                attributes: ['id'],
                 where: { contractAddress: communityAddress },
             });
 
-            if (!community || !community.publicId) {
+            if (!community || !community.id) {
                 utils.Logger.error(
                     `Community with address ${communityAddress} wasn't found at "CommunityRemoved"`
                 );
@@ -142,7 +142,7 @@ class ChainSubscribers {
             const managerAddress = parsedLog.args[1];
 
             const _pCommunity = await database.models.community.findOne({
-                attributes: ['id', 'publicId'],
+                attributes: ['id'],
                 where: {
                     requestByAddress: managerAddress[0],
                 },
