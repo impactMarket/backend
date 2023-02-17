@@ -12,6 +12,7 @@ export const sendSMS = (to: string, body: string) => {
             from: fromNumber,
             to,
         })
+        .then(console.log)
         .catch(console.error);
 
     return true;

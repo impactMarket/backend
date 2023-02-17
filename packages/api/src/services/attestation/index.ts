@@ -13,9 +13,9 @@ import { Wallet } from '@ethersproject/wallet';
 import { database } from '@impactmarket/core';
 import { randomBytes } from 'crypto';
 import { Op } from 'sequelize';
-import { sendEmail } from 'services/email';
 
 import config from '../../config';
+import { sendEmail } from '../../services/email';
 import { sendSMS } from '../sms';
 import erc20ABI from './erc20ABI.json';
 import odisABI from './odisABI.json';
@@ -84,6 +84,7 @@ const topUpOdis = async (issuer: Wallet) => {
         console.log('odis payment tx hash:', tx.transactionHash);
     } else {
         // throw Error('cUSD approval failed');
+        // TODO: send internal alert
     }
     // finishing top up odis quota
 };
@@ -109,7 +110,7 @@ export const verify = async (
         where: {
             code,
             userId,
-            expiresAt: { [Op.lt]: Date.now() },
+            expiresAt: { [Op.gt]: Date.now() },
         },
     });
 
@@ -159,6 +160,8 @@ export const verify = async (
         }),
     ]);
 
+    // TODO: save bool of validated identifier
+
     return obfuscatedIdentifier;
 };
 
@@ -182,6 +185,14 @@ export const send = async (
         // TODO: add message per language
         const body = 'Your verification code is: ' + code + '. - impactMarket';
         sendSMS(plainTextIdentifier, body);
+
+        //
+        await database.models.appUser.update(
+            {
+                phone: plainTextIdentifier,
+            },
+            { where: { id: userId } }
+        );
     } else if (type === AttestationType.EMAIL) {
         code = randomBytes(20).toString('hex');
 
@@ -193,9 +204,16 @@ export const send = async (
             subject: 'impactMarket - Verification Code',
             text: body,
         });
+
+        //
+        await database.models.appUser.update(
+            {
+                email: plainTextIdentifier,
+            },
+            { where: { id: userId } }
+        );
     }
 
-    // TODO: save identifier to db
     // save code to db
     await database.models.appUserValidationCode.create({
         code,

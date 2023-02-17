@@ -13,6 +13,7 @@ export type AttestationRequestType = {
 export const attestationValidator = celebrate({
     body: Joi.object({
         plainTextIdentifier: Joi.string().required(),
+        type: Joi.number().required(),
         code: Joi.when('service', {
             is: 'verify',
             then: Joi.string().required(),
