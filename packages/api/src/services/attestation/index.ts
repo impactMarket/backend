@@ -11,7 +11,7 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { parseEther } from '@ethersproject/units';
 import { Wallet } from '@ethersproject/wallet';
 import { database } from '@impactmarket/core';
-import { randomBytes } from 'crypto';
+import { randomBytes, randomInt } from 'crypto';
 import { Op } from 'sequelize';
 
 import config from '../../config';
@@ -180,7 +180,7 @@ export const send = async (
     let code = '';
 
     if (type === AttestationType.PHONE_NUMBER) {
-        code = Math.floor(Math.random() * (9999 - 1000) + 1000).toString();
+        code = randomInt(1000, 9999).toString();
 
         // TODO: add message per language
         const body = 'Your verification code is: ' + code + '. - impactMarket';
