@@ -21,7 +21,6 @@ describe('communityAdmin', () => {
     let CommunityAdminContract: ethers.Contract;
     let communityUpdated: SinonStub<any, any>;
     let findCommunity: SinonStub<any, any>;
-    let beneficiaryUpdated: SinonStub<any, any>;
     let CommunityAdminFactory: ethers.ContractFactory;
     const ganacheProvider = ganache.provider({
         mnemonic:
@@ -36,8 +35,7 @@ describe('communityAdmin', () => {
         communityUpdated = stub(database.models.community, 'update');
         communityUpdated.returns(Promise.resolve([1, {} as any]));
         findCommunity = stub(database.models.community, 'findOne');
-        findCommunity.returns(Promise.resolve({ publicId: 'public-id' }));
-        beneficiaryUpdated = stub(database.models.beneficiary, 'update');
+        findCommunity.returns(Promise.resolve({ id: 1 }));
         let lastBlock = 0;
 
         stub(services.ubi.ManagerService, 'add').returns(Promise.resolve(true));
@@ -80,6 +78,13 @@ describe('communityAdmin', () => {
             CommunityAdminContract.address
         );
 
+        stub(
+            database,
+            'redisClient'
+        ).value({
+            set: async () => null
+        });
+
         subscribers = new ChainSubscribers(provider as any);
     });
 
@@ -93,7 +98,6 @@ describe('communityAdmin', () => {
 
     afterEach(() => {
         communityUpdated.reset();
-        beneficiaryUpdated.reset();
     });
 
     it('add community', async () => {
@@ -160,19 +164,6 @@ describe('communityAdmin', () => {
             {
                 where: {
                     contractAddress,
-                },
-            }
-        );
-        await tests.config.utils.waitForStubCall(beneficiaryUpdated, 1);
-        assert.callCount(beneficiaryUpdated, 1);
-        assert.calledWith(
-            beneficiaryUpdated.getCall(0),
-            {
-                active: false,
-            },
-            {
-                where: {
-                    communityId: 'public-id',
                 },
             }
         );

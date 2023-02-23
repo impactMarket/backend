@@ -75,7 +75,7 @@ class ChainSubscribers {
         // iterate
         for (let x = 0; x < logs.length; x += 1) {
             // verify if cusd or community and do things
-            await this._filterAndProcessEvent(provider, logs[x]);
+            await this._filterAndProcessEvent(logs[x]);
         }
         utils.Logger.info('Past events recovered successfully!');
     }
@@ -89,7 +89,7 @@ class ChainSubscribers {
         database.redisClient.set('blockCount', 0);
 
         provider.on(filter, async (log: ethers.providers.Log) => {
-            await this._filterAndProcessEvent(provider, log);
+            await this._filterAndProcessEvent(log);
             database.redisClient.set('lastBlock', log.blockNumber);
             const blockCount = await database.redisClient.get('blockCount');
 
@@ -102,10 +102,7 @@ class ChainSubscribers {
         });
     }
 
-    async _filterAndProcessEvent(
-        provider: ethers.providers.JsonRpcProvider,
-        log: ethers.providers.Log
-    ) {
+    async _filterAndProcessEvent(log: ethers.providers.Log) {
         let parsedLog: ethers.utils.LogDescription | undefined;
         if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log);
