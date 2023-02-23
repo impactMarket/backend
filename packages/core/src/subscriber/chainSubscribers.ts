@@ -38,18 +38,23 @@ class ChainSubscribers {
         this._setupListener(this.provider);
         // we start the listener alongside with the recover system
         // so we know we don't lose events.
-        services.app.ImMetadataService.getRecoverBlock().then((block) =>
-            this._runRecoveryTxs(block, this.provider).then(() =>
-                services.app.ImMetadataService.removeRecoverBlock()
-            )
-        );
+        this._runRecoveryTxs(this.provider).then(() =>
+            services.app.ImMetadataService.removeRecoverBlock()
+        )
     }
 
     async _runRecoveryTxs(
-        startFromBlock: number,
         provider: ethers.providers.WebSocketProvider
     ) {
         utils.Logger.info('Recovering past events...');
+        let startFromBlock: number;
+        let lastBlockCached = await database.redisClient.get('lastBlock');
+        if (!lastBlockCached) {
+            startFromBlock = await services.app.ImMetadataService.getRecoverBlock();
+        } else {
+            startFromBlock = parseInt(lastBlockCached)
+        }
+
         const rawLogs = await provider.getLogs({
             fromBlock: startFromBlock,
             toBlock: 'latest',
@@ -81,9 +86,19 @@ class ChainSubscribers {
             topics: this.filterTopics,
         };
 
+        database.redisClient.set('blockCount', 0);
+
         provider.on(filter, async (log: ethers.providers.Log) => {
             await this._filterAndProcessEvent(provider, log);
-            services.app.ImMetadataService.setLastBlock(log.blockNumber);
+            database.redisClient.set('lastBlock', log.blockNumber);
+            const blockCount = await database.redisClient.get('blockCount');
+
+            if (!!blockCount && blockCount > '16560') {
+                services.app.ImMetadataService.setLastBlock(log.blockNumber);
+                database.redisClient.set('blockCount', 0);
+            } else {
+                database.redisClient.incr('blockCount');
+            }
         });
     }
 

@@ -138,15 +138,8 @@ export default (app: express.Application): void => {
     // default
     app.use(config.api.v2prefix, v2routes());
 
+    // error handling - Joi validation
     app.use((error, req, res, next) => {
-        utils.Logger.error(
-            req.originalUrl + ' -> ' + error &&
-                error.details &&
-                error.details.get('body') &&
-                error.details.get('body').details &&
-                error.details.get('body').details.length > 0 &&
-                error.details.get('body').details[0].message
-        );
         if (error && error.toString().indexOf('Validation failed') !== -1) {
             return res.status(400).json({
                 success: false,

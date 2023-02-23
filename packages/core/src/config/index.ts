@@ -21,7 +21,7 @@ export default {
     /**
      * json rpc url
      */
-    webSocketUrl: validatedEnv.CHAIN_JSON_RPC_URL,
+    webSocketUrl: validatedEnv.CHAIN_WEB_SOCKET_URL,
 
     /**
      * json rpc url fallback
@@ -31,7 +31,7 @@ export default {
     /**
      * json rpc url fallback
      */
-    webSocketUrlFallback: validatedEnv.CHAIN_JSON_RPC_URL_FALLBACK,
+    webSocketUrlFallback: validatedEnv.CHAIN_WEB_SOCKET_URL_FALLBACK,
 
     /**
      * Your secret sauce
