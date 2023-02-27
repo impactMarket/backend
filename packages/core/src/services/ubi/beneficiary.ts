@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { ethers } from 'ethers';
 import { Op, WhereAttributeHash, literal } from 'sequelize';
-import { Where } from 'sequelize/types/lib/utils';
+import { Where } from 'sequelize/types/utils';
 
 import config from '../../config';
 import { models } from '../../database';
