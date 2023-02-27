@@ -5,6 +5,7 @@ export interface ExchangeRegistry {
     name: string;
     countries: string[];
     global: boolean;
+    customImplementation: string | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -13,6 +14,7 @@ export interface ExchangeRegistryCreationAttributes {
     name: string;
     global: boolean;
     countries: string[];
+    customImplementation?: string;
 }
 
 export class ExchangeRegistryModel extends Model<
@@ -23,6 +25,7 @@ export class ExchangeRegistryModel extends Model<
     public name!: string;
     public countries!: string[];
     public global!: boolean;
+    public customImplementation!: string | null;
 
     // timestamps!
     public createdAt!: Date;
@@ -50,6 +53,10 @@ export function initializeExchangeRegistry(
             },
             countries: {
                 type: DataTypes.ARRAY(DataTypes.STRING(2)),
+                allowNull: true,
+            },
+            customImplementation: {
+                type: DataTypes.STRING(16),
                 allowNull: true,
             },
             createdAt: {

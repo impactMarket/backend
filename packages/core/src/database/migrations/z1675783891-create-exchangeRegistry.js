@@ -20,6 +20,10 @@ module.exports = {
                 type: Sequelize.ARRAY(Sequelize.STRING(2)),
                 allowNull: true,
             },
+            customImplementation: {
+                type: Sequelize.STRING(16),
+                allowNull: true,
+            },
             createdAt: {
                 type: Sequelize.DATE,
                 allowNull: false,
