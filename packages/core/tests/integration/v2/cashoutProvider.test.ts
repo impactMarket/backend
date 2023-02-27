@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import { models } from '../../../src/database';
+import { truncate } from '../../config/sequelizeSetup';
+import { models, sequelize } from '../../../src/database';
 import { ExchangeRegistry } from '../../../src/database/models/exchange/exchangeRegistry';
 import { MerchantRegistry } from '../../../src/database/models/merchant/merchantRegistry';
 import CashoutProviderService from '../../../src/services/app/cashoutProvider';
@@ -42,6 +43,11 @@ describe('cashout provider', () => {
             }
         ]);
     });
+
+    after(() => {
+        truncate(sequelize, 'ExchangeRegistryModel');
+        truncate(sequelize, 'MerchantRegistryModel');
+    })
 
     it('get cashout providers by country', async () => {
         const response = await cashoutProviderService.get({
