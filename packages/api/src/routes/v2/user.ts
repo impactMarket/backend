@@ -105,7 +105,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/', authenticateToken, timeout('1s'), userController.get);
+    route.get('/', authenticateToken, timeout('3s'), userController.get);
 
     /**
      * @swagger
@@ -315,7 +315,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/report/:query?', authenticateToken, timeout('1s'), userController.getReport);
+    route.get('/report/:query?', authenticateToken, timeout('3s'), userController.getReport);
 
     /**
      * @swagger
@@ -347,7 +347,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/logs', authenticateToken, timeout('1s'), userController.getLogs);
+    route.get('/logs', authenticateToken, timeout('3s'), userController.getLogs);
 
     /**
      * @swagger
@@ -376,7 +376,7 @@ export default (app: Router): void => {
     route.get(
         '/presigned/:query?',
         authenticateToken,
-        timeout('1s'),
+        timeout('3s'),
         userController.getPresignedUrlMedia
     );
 
@@ -419,7 +419,7 @@ export default (app: Router): void => {
     route.get(
         '/notifications/unread/:query?',
         authenticateToken,
-        timeout('1s'),
+        timeout('3s'),
         userController.getUnreadNotifications
     );
 
@@ -473,7 +473,7 @@ export default (app: Router): void => {
     route.get(
         '/notifications/:query?',
         authenticateToken,
-        timeout('1s'),
+        timeout('3s'),
         userController.getNotifications
     );
 
@@ -544,7 +544,7 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/:address', authenticateToken, timeout('1s'), userController.findBy);
+    route.get('/:address', authenticateToken, timeout('3s'), userController.findBy);
 
     route.post(
         '/push-notifications',
