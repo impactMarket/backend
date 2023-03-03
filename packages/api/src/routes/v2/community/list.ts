@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/list';
+import timeout from 'connect-timeout';
 
 export default (route: Router): void => {
     const controller = new CommunityController();
@@ -113,5 +114,5 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get('/:query?', controller.list);
+    route.get('/:query?', timeout('5s'), controller.list);
 };
