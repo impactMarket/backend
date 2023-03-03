@@ -1,10 +1,15 @@
 import { getAddress } from '@ethersproject/address';
-import { database } from '@impactmarket/core';
+import { database, services } from '@impactmarket/core';
 import { Request, Response } from 'express';
 
 import { standardResponse } from '../../utils/api';
 
 class GenericController {
+    private cashoutProviderService: services.app.CashoutProviderService;
+    constructor() {
+        this.cashoutProviderService = new services.app.CashoutProviderService();
+    }
+
     exchangeRates = (req: Request, res: Response) => {
         database.models.exchangeRates
             .findAll({
@@ -58,6 +63,13 @@ class GenericController {
         } catch (e) {
             return standardResponse(res, 400, false, '', { error: e });
         }
+    };
+
+    getCashoutProviders = (req: Request, res: Response) => {
+        this.cashoutProviderService
+            .get(req.query)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 
