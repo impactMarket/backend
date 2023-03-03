@@ -80,7 +80,7 @@ class ChainSubscribers {
         utils.Logger.info('Past events recovered successfully!');
     }
 
-    _setupListener(provider: ethers.providers.JsonRpcProvider) {
+    _setupListener(provider: ethers.providers.WebSocketProvider) {
         utils.Logger.info('Starting subscribers...');
         const filter = {
             topics: this.filterTopics,
