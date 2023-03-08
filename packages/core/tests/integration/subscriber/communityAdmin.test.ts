@@ -85,7 +85,7 @@ describe('communityAdmin', () => {
             set: async () => null
         });
 
-        subscribers = new ChainSubscribers(provider as any);
+        subscribers = new ChainSubscribers(provider as any, provider);
     });
 
     after(() => {

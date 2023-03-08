@@ -146,5 +146,5 @@ function reconnectChainSubscriber() {
 }
 
 function startChainSubscriber(fallback?: boolean): ChainSubscribers {
-    return new ChainSubscribers(fallback ? providerFallback : provider);
+    return new ChainSubscribers(fallback ? providerFallback : provider, jsonRpcProvider);
 }

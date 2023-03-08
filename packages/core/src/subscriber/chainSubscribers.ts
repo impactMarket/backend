@@ -9,11 +9,13 @@ import { ethers } from 'ethers';
 
 class ChainSubscribers {
     provider: ethers.providers.WebSocketProvider;
+    jsonRpcProvider: ethers.providers.JsonRpcProvider;
     ifaceCommunityAdmin: ethers.utils.Interface;
     filterTopics: string[][];
 
-    constructor(provider: ethers.providers.WebSocketProvider) {
-        this.provider = provider;
+    constructor(webSocketProvider: ethers.providers.WebSocketProvider, jsonRpcProvider: ethers.providers.JsonRpcProvider) {
+        this.provider = webSocketProvider;
+        this.jsonRpcProvider = jsonRpcProvider;
         this.ifaceCommunityAdmin = new ethers.utils.Interface(
             contracts.CommunityAdminABI
         );
@@ -38,13 +40,13 @@ class ChainSubscribers {
         this._setupListener(this.provider);
         // we start the listener alongside with the recover system
         // so we know we don't lose events.
-        this._runRecoveryTxs(this.provider).then(() =>
+        this._runRecoveryTxs(this.jsonRpcProvider).then(() =>
             services.app.ImMetadataService.removeRecoverBlock()
         )
     }
 
     async _runRecoveryTxs(
-        provider: ethers.providers.WebSocketProvider
+        provider: ethers.providers.JsonRpcProvider
     ) {
         utils.Logger.info('Recovering past events...');
         let startFromBlock: number;
