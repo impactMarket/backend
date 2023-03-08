@@ -3,8 +3,13 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export interface MerchantRegistry {
     id: number;
     name: string;
-    city: string;
     country: string;
+    description: string;
+    type: number;
+    fee: number;
+    min: number;
+    address: string;
+    phone: string;
     gps: {
         latitude: number;
         longitude: number;
@@ -17,8 +22,13 @@ export interface MerchantRegistry {
 
 export interface MerchantRegistryCreationAttributes {
     name: string;
-    city: string;
     country: string;
+    description: string;
+    type: number;
+    fee: number;
+    min: number;
+    address: string;
+    phone: string;
     gps: {
         latitude: number;
         longitude: number;
@@ -33,8 +43,13 @@ export class MerchantRegistryModel extends Model<
 > {
     public id!: number;
     public name!: string;
-    public city!: string;
     public country!: string;
+    public description!: string;
+    public type!: number;
+    public fee!: number;
+    public min!: number;
+    public address!: string;
+    public phone!: string;
     public gps!: {
         latitude: number;
         longitude: number;
@@ -61,11 +76,31 @@ export function initializeMerchantRegistry(
                 type: DataTypes.STRING(64),
                 allowNull: false,
             },
-            city: {
+            country: {
                 type: DataTypes.STRING(64),
                 allowNull: false,
             },
-            country: {
+            description: {
+                type: DataTypes.STRING(1024),
+                allowNull: false,
+            },
+            type: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            fee: {
+                type: DataTypes.FLOAT,
+                allowNull: false,
+            },
+            min: {
+                type: DataTypes.FLOAT,
+                allowNull: false,
+            },
+            address: {
+                type: DataTypes.STRING(256),
+                allowNull: false,
+            },
+            phone: {
                 type: DataTypes.STRING(64),
                 allowNull: false,
             },

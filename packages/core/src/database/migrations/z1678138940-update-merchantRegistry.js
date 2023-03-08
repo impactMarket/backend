@@ -7,7 +7,6 @@ module.exports = {
             return;
         }
         await queryInterface.removeColumn('merchant_registry', 'city');
-        await queryInterface.removeColumn('merchant_registry', 'country');
 
         await queryInterface.addColumn('merchant_registry', 'description', {
             type: Sequelize.STRING(1024),
