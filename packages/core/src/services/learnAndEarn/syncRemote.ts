@@ -82,6 +82,12 @@ async function getPrismicLearnAndEarn() {
                 >;
 
                 if (prismicLevel.id) {
+                    let reward = 0
+                    if (typeof prismicLevel.data.reward === 'number') {
+                        reward = prismicLevel.data.reward
+                    } else {
+                        reward = parseInt(prismicLevel.data.reward.split(' ')[0])
+                    }
                     // INSERT LEVEL
                     const [level] = await models.learnAndEarnLevel.findOrCreate(
                         {
@@ -93,7 +99,7 @@ async function getPrismicLearnAndEarn() {
                                 prismicId: prismicLevel.id,
                                 categoryId: category.id,
                                 active: true,
-                                totalReward: prismicLevel.data.reward,
+                                totalReward: reward,
                             },
                             transaction: t,
                         }
@@ -104,7 +110,7 @@ async function getPrismicLearnAndEarn() {
                     );
                     await models.learnAndEarnLevel.update(
                         {
-                            totalReward: prismicLevel.data.reward,
+                            totalReward: reward,
                             isLive: prismicLevel.data.is_live || false,
                             active: true,
                             languages: findLevelLanguages.alternate_languages
