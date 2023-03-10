@@ -11,6 +11,8 @@ import { rateLimiter } from './middlewares';
 import v1routes from './routes/v1';
 import v2routes from './routes/v2';
 
+import { utils } from '@impactmarket/core';
+
 export default (app: express.Application): void => {
     let swaggerServers: {
         url: string;
@@ -135,6 +137,23 @@ export default (app: express.Application): void => {
     app.use(config.api.prefix, v1routes());
     // default
     app.use(config.api.v2prefix, v2routes());
+
+    // error handling - Joi validation
+    app.use((error, req, res, next) => {
+        if (error && error.toString().indexOf('Validation failed') !== -1) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    name: 'INVALID_PAYLOAD',
+                    message: 'invalid payloads',
+                    details: error.details.get('query')
+                        ? error.details.get('query').details
+                        : error.details.get('body').details,
+                },
+            });
+        }
+        next();
+    });
 
     // when a route does not exist
     app.use((_, res) =>

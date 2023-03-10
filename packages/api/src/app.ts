@@ -1,5 +1,5 @@
 import 'module-alias/register';
-import { utils, config, database } from '@impactmarket/core';
+import { utils, config, database, subscriber } from '@impactmarket/core';
 import express from 'express';
 
 import serverLoader from './server';
@@ -23,6 +23,9 @@ export async function startServer() {
 
     await serverLoader(app);
     utils.Logger.info('📡 Express server loaded');
+
+    subscriber.start();
+    utils.Logger.info('⏱️ Chain Subscriber starting');
 
     return app.listen(config.port, () => {
         utils.Logger.info(`
