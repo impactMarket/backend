@@ -11,21 +11,41 @@ class ChainSubscribers {
     provider: ethers.providers.WebSocketProvider;
     jsonRpcProvider: ethers.providers.JsonRpcProvider;
     ifaceCommunityAdmin: ethers.utils.Interface;
+    ifaceCommunity: ethers.utils.Interface;
+    ifaceOldCommunity: ethers.utils.Interface;
     filterTopics: string[][];
+    allCommunitiesAddresses: string[];
+    communities: Map<string, number>;
 
-    constructor(webSocketProvider: ethers.providers.WebSocketProvider, jsonRpcProvider: ethers.providers.JsonRpcProvider) {
+    constructor(
+        webSocketProvider: ethers.providers.WebSocketProvider,
+        jsonRpcProvider: ethers.providers.JsonRpcProvider,
+        communities: Map<string, number>,
+    ) {
         this.provider = webSocketProvider;
         this.jsonRpcProvider = jsonRpcProvider;
         this.ifaceCommunityAdmin = new ethers.utils.Interface(
             contracts.CommunityAdminABI
         );
-
+        this.ifaceOldCommunity = new ethers.utils.Interface(
+            contracts.OldCommunityABI
+        );
+        this.ifaceCommunity = new ethers.utils.Interface(
+            contracts.CommunityABI
+        );
+        this.communities = communities;
+        this.allCommunitiesAddresses = Array.from(communities.keys());
+    
         this.filterTopics = [
             [
                 ethers.utils.id(
                     'CommunityAdded(address,address[],uint256,uint256,uint256,uint256,uint256,uint256,uint256)'
                 ),
                 ethers.utils.id('CommunityRemoved(address)'),
+                ethers.utils.id('BeneficiaryAdded(address)'),
+                ethers.utils.id('BeneficiaryAdded(address,address)'),
+                ethers.utils.id('BeneficiaryRemoved(address)'),
+                ethers.utils.id('BeneficiaryRemoved(address,address)'),
             ],
         ];
         this.recover();
@@ -108,6 +128,8 @@ class ChainSubscribers {
         let parsedLog: ethers.utils.LogDescription | undefined;
         if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log);
+        } else if (this.allCommunitiesAddresses.includes(log.address)) {
+            parsedLog = await this._processCommunityEvents(log);
         }
         return parsedLog;
     }
@@ -165,6 +187,40 @@ class ChainSubscribers {
             result = parsedLog;
         }
 
+        return result;
+    }
+
+    async _processCommunityEvents(
+        log: ethers.providers.Log
+    ): Promise<ethers.utils.LogDescription | undefined> {
+        let parsedLog: ethers.utils.LogDescription;
+        let result: ethers.utils.LogDescription | undefined = undefined;
+        try {
+            parsedLog = this.ifaceCommunity.parseLog(log);
+        } catch (_) {
+            // compatible with older versions
+            parsedLog = this.ifaceOldCommunity.parseLog(log);
+        }
+
+        if (parsedLog.name === 'BeneficiaryAdded') {
+            const communityAddress = log.address;
+            const community = this.communities.get(communityAddress);
+
+            if (community) {
+                utils.cache.cleanBeneficiaryCache(community);
+            }
+                
+            result = parsedLog;
+        } else if (parsedLog.name === 'BeneficiaryRemoved') {
+            const communityAddress = log.address;
+            const community = this.communities.get(communityAddress);
+
+            if (community) {
+                utils.cache.cleanBeneficiaryCache(community);
+            }
+                
+            result = parsedLog;
+        }
         return result;
     }
 }

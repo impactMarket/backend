@@ -2,8 +2,10 @@ import { utils, config } from '../../';
 import { ethers } from 'ethers';
 import schedule from 'node-schedule';
 import WebSocket from 'ws';
+import { ubi } from '../services'
 
 import { ChainSubscribers } from './chainSubscribers';
+import { Community } from '../database/models/ubi/community';
 
 let subscribers: ChainSubscribers;
 let usingFallbackUrl = false;
@@ -16,6 +18,7 @@ let waitingForResponseAfterTxRegWarn = false;
 let provider: ethers.providers.WebSocketProvider;
 let jsonRpcProvider: ethers.providers.JsonRpcProvider;
 let providerFallback: ethers.providers.WebSocketProvider;
+let availableCommunities: Community[];
 
 export const start = async (): Promise<void> => {
     provider = new ethers.providers.WebSocketProvider(config.webSocketUrl);
@@ -23,6 +26,8 @@ export const start = async (): Promise<void> => {
     providerFallback = new ethers.providers.WebSocketProvider(
         config.webSocketUrlFallback
     );
+    availableCommunities =
+        await ubi.CommunityService.listCommunitiesStructOnly();
     subscribers = startChainSubscriber();
 
     provider._websocket.on('close', () => {
@@ -146,5 +151,11 @@ function reconnectChainSubscriber() {
 }
 
 function startChainSubscriber(fallback?: boolean): ChainSubscribers {
-    return new ChainSubscribers(fallback ? providerFallback : provider, jsonRpcProvider);
+    return new ChainSubscribers(
+        fallback ? providerFallback : provider,
+        jsonRpcProvider,
+        new Map(
+            availableCommunities.map((c) => [c.contractAddress!, c.id])
+        ),
+    );
 }
