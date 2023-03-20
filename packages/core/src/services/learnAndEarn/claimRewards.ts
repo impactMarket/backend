@@ -3,6 +3,7 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 
 import { config } from '../../..';
 import { models, sequelize } from '../../database';
+import { fn, col } from 'sequelize';
 
 const iface = new Interface([
     'event RewardClaimed(address indexed beneficiary, uint256 indexed levelId)',
@@ -28,6 +29,7 @@ export async function registerClaimRewards(
 
         sequelize
             .transaction(async (t) => {
+                let levelId: number;
                 for (let index = 0; index < events.length; index++) {
                     const event = events[index];
 
@@ -38,6 +40,7 @@ export async function registerClaimRewards(
                         continue;
                     }
 
+                    levelId = event.args.levelId;
                     await models.learnAndEarnPayment.update(
                         { status: 'paid' },
                         {
@@ -50,6 +53,7 @@ export async function registerClaimRewards(
                     );
                 }
                 // If the execution reaches this line, the transaction has been committed successfully
+                checkAvailableReward(levelId!)
             })
             .catch((error) => {
                 // If the execution reaches this line, an error occurred.
@@ -59,4 +63,41 @@ export async function registerClaimRewards(
             });
     });
     return true;
+}
+
+const checkAvailableReward = async (levelId: number) => {
+    const level = await models.learnAndEarnLevel.findOne({
+        attributes: ['rewardLimit', 'totalReward'],
+        where: {
+            id: levelId,
+        }
+    });
+
+    if (!level?.rewardLimit) {
+        return;
+    }
+
+    const payments = await models.learnAndEarnPayment.findOne({
+        attributes: [
+            [fn('sum', col('amount')), 'amount'],
+        ],
+        where: {
+            levelId,
+            status: 'paid'
+        }
+    });
+
+    if (!payments?.amount) {
+        return;
+    }
+
+    if (level.rewardLimit <= (payments.amount + level.totalReward)) {
+        // do not have funds to a next payment
+        await models.learnAndEarnPayment.destroy({
+            where: {
+                status: 'pending',
+                levelId,
+            }
+        });
+    }
 }
