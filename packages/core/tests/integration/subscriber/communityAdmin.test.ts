@@ -130,6 +130,7 @@ describe('communityAdmin', () => {
                 where: {
                     requestByAddress: accounts[1],
                 },
+                returning: true,
             }
         );
     });
