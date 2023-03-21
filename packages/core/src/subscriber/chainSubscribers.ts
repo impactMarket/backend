@@ -12,9 +12,7 @@ class ChainSubscribers {
     jsonRpcProvider: ethers.providers.JsonRpcProvider;
     ifaceCommunityAdmin: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
-    ifaceOldCommunity: ethers.utils.Interface;
     filterTopics: string[][];
-    allCommunitiesAddresses: string[];
     communities: Map<string, number>;
 
     constructor(
@@ -27,24 +25,17 @@ class ChainSubscribers {
         this.ifaceCommunityAdmin = new ethers.utils.Interface(
             contracts.CommunityAdminABI
         );
-        this.ifaceOldCommunity = new ethers.utils.Interface(
-            contracts.OldCommunityABI
-        );
         this.ifaceCommunity = new ethers.utils.Interface(
             contracts.CommunityABI
         );
-        this.communities = communities;
-        this.allCommunitiesAddresses = Array.from(communities.keys());
-    
+        this.communities = communities;    
         this.filterTopics = [
             [
                 ethers.utils.id(
                     'CommunityAdded(address,address[],uint256,uint256,uint256,uint256,uint256,uint256,uint256)'
                 ),
                 ethers.utils.id('CommunityRemoved(address)'),
-                ethers.utils.id('BeneficiaryAdded(address)'),
                 ethers.utils.id('BeneficiaryAdded(address,address)'),
-                ethers.utils.id('BeneficiaryRemoved(address)'),
                 ethers.utils.id('BeneficiaryRemoved(address,address)'),
             ],
         ];
@@ -128,7 +119,7 @@ class ChainSubscribers {
         let parsedLog: ethers.utils.LogDescription | undefined;
         if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log);
-        } else if (this.allCommunitiesAddresses.includes(log.address)) {
+        } else if (this.communities.get(log.address)) {
             parsedLog = await this._processCommunityEvents(log);
         }
         return parsedLog;
@@ -161,6 +152,8 @@ class ChainSubscribers {
                         where: { contractAddress: communityAddress },
                     }
                 );
+
+                this.communities.delete(communityAddress);
                 result = parsedLog;
             }
         } else if (parsedLog.name === 'CommunityAdded') {
@@ -176,12 +169,15 @@ class ChainSubscribers {
                     where: {
                         requestByAddress: managerAddress[0],
                     },
+                    returning: true,
                 }
             );
             if (community[0] === 0) {
                 utils.Logger.error(
                     `Community with address ${communityAddress} wasn't updated at "CommunityAdded"`
                 );
+            } else {
+                this.communities.set(communityAddress, community[1][0].id);
             }
 
             result = parsedLog;
@@ -193,14 +189,8 @@ class ChainSubscribers {
     async _processCommunityEvents(
         log: ethers.providers.Log
     ): Promise<ethers.utils.LogDescription | undefined> {
-        let parsedLog: ethers.utils.LogDescription;
+        let parsedLog = this.ifaceCommunity.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
-        try {
-            parsedLog = this.ifaceCommunity.parseLog(log);
-        } catch (_) {
-            // compatible with older versions
-            parsedLog = this.ifaceOldCommunity.parseLog(log);
-        }
 
         if (parsedLog.name === 'BeneficiaryAdded') {
             const communityAddress = log.address;
