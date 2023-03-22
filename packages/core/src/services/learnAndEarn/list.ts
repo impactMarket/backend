@@ -246,31 +246,28 @@ export async function listLessons(userId: number, levelId: number) {
     }
 }
 
-const getRewardAvailable = async (levelId: number): Promise<number | null> => {
+const getRewardAvailable = async (levelId: number): Promise<boolean> => {
     const level = await models.learnAndEarnLevel.findOne({
-        attributes: ['rewardLimit'],
+        attributes: ['rewardLimit', 'totalReward'],
         where: {
             id: levelId,
         }
     });
 
     if (!level?.rewardLimit) {
-        return null;
+        return true;
     }
 
-    const payments = await models.learnAndEarnPayment.findOne({
-        attributes: [
-            [fn('sum', col('amount')), 'amount'],
-        ],
+    const payments = await models.learnAndEarnPayment.sum('amount', {
         where: {
             levelId,
             status: 'paid'
         }
     });
 
-    if (!payments?.amount) {
-        return level.rewardLimit
+    if (!payments) {
+        return true;
     }
 
-    return level.rewardLimit - payments.amount;
+    return (level.rewardLimit > (payments + level.totalReward));
 };

@@ -321,17 +321,14 @@ export async function answer(
 
             // check available reward
             if (level?.rewardLimit) {
-                const payments = await models.learnAndEarnPayment.findOne({
-                    attributes: [
-                        [fn('sum', col('amount')), 'amount'],
-                    ],
+                const payments = await models.learnAndEarnPayment.sum('amount', {
                     where: {
                         levelId: lesson!.levelId,
                         status: 'paid'
                     }
                 });
 
-                const reward = (payments?.amount || 0) + amount;
+                const reward = (payments || 0) + amount;
 
                 if (level.rewardLimit >= reward) {
                     await savePayment(user.userId, level!.id, amount, signature, t);

@@ -77,21 +77,18 @@ const checkAvailableReward = async (levelId: number) => {
         return;
     }
 
-    const payments = await models.learnAndEarnPayment.findOne({
-        attributes: [
-            [fn('sum', col('amount')), 'amount'],
-        ],
+    const payments = await models.learnAndEarnPayment.sum('amount', {
         where: {
             levelId,
             status: 'paid'
         }
     });
 
-    if (!payments?.amount) {
+    if (!payments) {
         return;
     }
 
-    if (level.rewardLimit <= (payments.amount + level.totalReward)) {
+    if (level.rewardLimit <= (payments + level.totalReward)) {
         // do not have funds to a next payment
         await models.learnAndEarnPayment.destroy({
             where: {
