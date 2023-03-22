@@ -10,7 +10,7 @@ import {
     WhereOptions,
     Includeable,
 } from 'sequelize';
-import { Literal } from 'sequelize/types/lib/utils';
+import { Literal } from 'sequelize/types/utils';
 
 import config from '../../config';
 import CommunityContractABI from '../../contracts/CommunityABI.json';

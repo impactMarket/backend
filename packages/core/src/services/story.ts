@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { Includeable, literal, Op } from 'sequelize';
-import { Literal } from 'sequelize/types/lib/utils';
+import { Literal } from 'sequelize/types/utils';
 
 import config from '../config';
 import { models, sequelize } from '../database';
