@@ -262,6 +262,7 @@ export default (route: Router): void => {
     route.get(
         '/:id/beneficiaries/:query?',
         authenticateToken,
+        cache(cacheIntervals.halfHour),
         controller.getBeneficiaries
     );
 

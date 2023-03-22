@@ -122,11 +122,6 @@ export const getBeneficiariesByAddress = async (
                 }
             }`,
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
-
-        if (cacheResults) {
-            return JSON.parse(cacheResults);
-        }
 
         const response = await axiosSubgraph.post<
             any,
@@ -148,13 +143,6 @@ export const getBeneficiariesByAddress = async (
         >('', graphqlQuery);
 
         const beneficiaryEntities = response.data?.data.beneficiaryEntities;
-
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(beneficiaryEntities),
-            'EX',
-            intervalsInSeconds.halfHour
-        );
 
         return beneficiaryEntities;
     } catch (error) {
@@ -196,11 +184,6 @@ export const getBeneficiaries = async (
                 }
             }`,
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
-
-        if (cacheResults) {
-            return JSON.parse(cacheResults);
-        }
 
         const response = await axiosSubgraph.post<
             any,
@@ -222,13 +205,6 @@ export const getBeneficiaries = async (
         >('', graphqlQuery);
 
         const beneficiaryEntities = response.data?.data.beneficiaryEntities;
-
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(beneficiaryEntities),
-            'EX',
-            intervalsInSeconds.halfHour
-        );
 
         return beneficiaryEntities;
     } catch (error) {
@@ -308,11 +284,6 @@ export const countBeneficiaries = async (
                 }
             }`,
         };
-        const cacheResults = await redisClient.get(graphqlQuery.query);
-
-        if (cacheResults) {
-            return JSON.parse(cacheResults);
-        }
 
         const response = await axiosSubgraph.post<
             any,
@@ -330,13 +301,6 @@ export const countBeneficiaries = async (
         >('', graphqlQuery);
 
         const communityEntity = response.data?.data.communityEntity;
-
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(communityEntity),
-            'EX',
-            intervalsInSeconds.halfHour
-        );
 
         switch (state) {
             case 0:

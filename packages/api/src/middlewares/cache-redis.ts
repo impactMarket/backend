@@ -20,7 +20,7 @@ export const cache =
             res.sendResponse = res.send;
             res.send = (body: any) => {
                 // Only cache if the response is 200
-                if (res.status === 200) {
+                if (res.statusCode === 200) {
                     redis.set(key, body, 'EX', duration);
                 }
                 res.sendResponse(body);
