@@ -5,19 +5,35 @@ import { Op, literal } from 'sequelize';
 import { models } from '../../database';
 import { ExchangeRegistry } from '../../database/models/exchange/exchangeRegistry';
 import { MerchantRegistry } from '../../database/models/merchant/merchantRegistry';
-import { BaseError } from '../../utils/baseError';
 
 export default class CashoutProviderService {
-    public async get(query: { country?: string; lat?: string; lng?: string }) {
-        if (!query || (!query.country && !query.lat && !query.lng)) {
-            throw new BaseError(
-                'INVALID_QUERY',
-                'Should filter by country or location (lat, lng)'
-            );
+    public async get(
+        query: {
+            country?: string;
+            lat?: string;
+            lng?: string;
+            distance?: string;
         }
-
+    ) {
         let merchants: MerchantRegistry[] | null = null,
             exchanges: ExchangeRegistry[] | null = null;
+
+        if (!query || (!query.country && !query.lat && !query.lng)) {
+            merchants = await models.merchantRegistry.findAll({
+                limit: 5,
+                order: [['createdAt', 'DESC']],
+            });
+            exchanges = await models.exchangeRegistry.findAll({
+                limit: 5,
+                order: [['createdAt', 'DESC']],
+            });
+
+            return {
+                merchants,
+                exchanges,
+            }
+        };
+
 
         if (query.country) {
             const where: any = {
@@ -55,8 +71,7 @@ export default class CashoutProviderService {
                     merchant.gps.latitude,
                 ]);
                 const dist = distance(userLocation, merchantLocation);
-                // less than 100 kilometers
-                if (dist < 100) {
+                if (dist < (query.distance || 100)) {
                     merchant['distance'] = dist;
                     return true;
                 }

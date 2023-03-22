@@ -11,11 +11,31 @@ module.exports = {
                 type: Sequelize.STRING(64),
                 allowNull: false,
             },
-            city: {
+            country: {
                 type: Sequelize.STRING(64),
                 allowNull: false,
             },
-            country: {
+            description: {
+                type: Sequelize.STRING(1024),
+                allowNull: false,
+            },
+            type: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+            },
+            fee: {
+                type: Sequelize.FLOAT,
+                allowNull: false,
+            },
+            min: {
+                type: Sequelize.FLOAT,
+                allowNull: false,
+            },
+            address: {
+                type: Sequelize.STRING(256),
+                allowNull: false,
+            },
+            phone: {
                 type: Sequelize.STRING(64),
                 allowNull: false,
             },

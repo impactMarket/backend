@@ -1,4 +1,5 @@
 import { BaseError } from './baseError';
+import * as cache from './cache';
 import countries from './countries.json';
 import * as dataFetching from './dataFetching';
 import * as jwt from './jwt';
@@ -29,4 +30,5 @@ export {
     formatObjectToNumber,
     util,
     jwt,
+    cache,
 };

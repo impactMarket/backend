@@ -89,6 +89,12 @@ export default (app: Router): void => {
      *           type: number
      *         required: false
      *         description: longitude used for nearest location
+     *       - in: query
+     *         name: distance
+     *         schema:
+     *           type: number
+     *         required: false
+     *         description: distance in kilometers between the user location and providers
      *     responses:
      *       "200":
      *         description: OK

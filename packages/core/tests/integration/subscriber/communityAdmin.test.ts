@@ -85,7 +85,11 @@ describe('communityAdmin', () => {
             set: async () => null
         });
 
-        subscribers = new ChainSubscribers(provider as any, provider);
+        subscribers = new ChainSubscribers(
+            provider as any,
+            provider,
+            new Map([]),
+        );
     });
 
     after(() => {
@@ -126,6 +130,7 @@ describe('communityAdmin', () => {
                 where: {
                     requestByAddress: accounts[1],
                 },
+                returning: true,
             }
         );
     });
