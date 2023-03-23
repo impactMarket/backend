@@ -1,5 +1,5 @@
 import { QueryTypes, Op, literal } from 'sequelize';
-import { Literal } from 'sequelize/types/lib/utils';
+import { Literal } from 'sequelize/types/utils';
 
 import { models, sequelize } from '../../database';
 import { GlobalDemographics } from '../../database/models/global/globalDemographics';

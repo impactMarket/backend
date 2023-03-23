@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { col, fn, Op, Order } from 'sequelize';
+import { col, fn, GroupedCountResultItem, Op, Order } from 'sequelize';
 
 import config from '../../config';
 import { models } from '../../database';
@@ -384,7 +384,7 @@ export default class StoryServiceV2 {
     ): Promise<{ count: number; content: ICommunitiesListStories[] }> {
         let r: {
             rows: StoryContentModel[];
-            count: number[];
+            count: GroupedCountResultItem[];
         };
         try {
             let order: Order;
