@@ -41,6 +41,10 @@ module.exports = {
                 allowNull: false,
                 defaultValue: false,
             },
+            rewardLimit: {
+                type: Sequelize.FLOAT,
+                allowNull: true,
+            },
         });
     },
     down: (queryInterface) => {

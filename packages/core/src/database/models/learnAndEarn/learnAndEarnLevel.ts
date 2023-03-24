@@ -16,6 +16,7 @@ export class LearnAndEarnLevelModel extends Model<
     public active!: boolean;
     public isLive!: boolean;
     public totalReward!: number;
+    public rewardLimit?: number;
 }
 
 export function initializeLearnAndEarnLevel(
@@ -54,6 +55,10 @@ export function initializeLearnAndEarnLevel(
                 type: DataTypes.FLOAT,
                 allowNull: false,
                 defaultValue: 0,
+            },
+            rewardLimit: {
+                type: DataTypes.FLOAT,
+                allowNull: true,
             },
             isLive: {
                 type: DataTypes.BOOLEAN,

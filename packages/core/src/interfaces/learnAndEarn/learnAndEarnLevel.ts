@@ -28,6 +28,7 @@ export interface LearnAndEarnLevel {
     active: boolean;
     isLive?: boolean;
     totalReward: number;
+    rewardLimit?: number;
 }
 
 export interface LearnAndEarnLevelCreation {
@@ -37,4 +38,5 @@ export interface LearnAndEarnLevelCreation {
     active: boolean;
     isLive?: boolean;
     totalReward: number;
+    rewardLimit?: number;
 }
