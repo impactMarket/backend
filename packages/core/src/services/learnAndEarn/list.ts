@@ -261,7 +261,6 @@ const getRewardAvailable = async (levelId: number): Promise<boolean> => {
     const payments = await models.learnAndEarnPayment.sum('amount', {
         where: {
             levelId,
-            status: 'paid'
         }
     });
 
