@@ -324,7 +324,6 @@ export async function answer(
                 const payments = await models.learnAndEarnPayment.sum('amount', {
                     where: {
                         levelId: lesson!.levelId,
-                        status: 'paid'
                     }
                 });
 

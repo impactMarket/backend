@@ -52,8 +52,6 @@ export async function registerClaimRewards(
                         }
                     );
                 }
-                // If the execution reaches this line, the transaction has been committed successfully
-                checkAvailableReward(levelId!)
             })
             .catch((error) => {
                 // If the execution reaches this line, an error occurred.
@@ -63,38 +61,4 @@ export async function registerClaimRewards(
             });
     });
     return true;
-}
-
-const checkAvailableReward = async (levelId: number) => {
-    const level = await models.learnAndEarnLevel.findOne({
-        attributes: ['rewardLimit', 'totalReward'],
-        where: {
-            id: levelId,
-        }
-    });
-
-    if (!level?.rewardLimit) {
-        return;
-    }
-
-    const payments = await models.learnAndEarnPayment.sum('amount', {
-        where: {
-            levelId,
-            status: 'paid'
-        }
-    });
-
-    if (!payments) {
-        return;
-    }
-
-    if (level.rewardLimit <= (payments + level.totalReward)) {
-        // do not have funds to a next payment
-        await models.learnAndEarnPayment.destroy({
-            where: {
-                status: 'pending',
-                levelId,
-            }
-        });
-    }
 }
