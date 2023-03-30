@@ -37,6 +37,7 @@ export enum NotificationType {
     BENEFICIARY_ADDED,
     MANAGER_ADDED,
     COMMUNITY_CREATED,
+    LOAN_ADDED,
 }
 
 export interface AppNotification {

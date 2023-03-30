@@ -97,6 +97,7 @@ function validateEnv() {
         HUBSPOT_KEY: str({ devDefault: 'xyz' }),
         DAO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         COMMUNITY_ADMIN_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
+        MICROCREDIT_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         CLAIM_LOCATION_TIMEFRAME: num({ default: 150 }),
         CLAIM_INACTIVITY_THRESHOLD: num({ default: 4 }),
         LOGIN_INACTIVITY_THRESHOLD: num({ default: 10 }),
@@ -122,6 +123,7 @@ function validateEnv() {
         VERCEL_WEBHOOK_WALLET: str({ devDefault: onlyOnTestEnv('xyz') }),
         CRON_JOB_BATCH_SIZE: num({ default: 20 }),
         MAX_DATABASE_POOL_CONNECTIONS: num({ default: 20 }),
+        FIREBASE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 

@@ -6,12 +6,17 @@ import {
     database,
 } from '../../';
 import { ethers } from 'ethers';
+import { models } from '../database';
+import { client as prismic } from '../utils/prismic';
+import { NotificationType } from '../interfaces/app/appNotification';
+import { sendFirebasePushNotification } from '../utils/util';
 
 class ChainSubscribers {
     provider: ethers.providers.WebSocketProvider;
     jsonRpcProvider: ethers.providers.JsonRpcProvider;
     ifaceCommunityAdmin: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
+    ifaceMicrocredit: ethers.utils.Interface;
     filterTopics: string[][];
     communities: Map<string, number>;
 
@@ -28,6 +33,9 @@ class ChainSubscribers {
         this.ifaceCommunity = new ethers.utils.Interface(
             contracts.CommunityABI
         );
+        this.ifaceMicrocredit = new ethers.utils.Interface(
+            contracts.MicrocreditABI
+        );
         this.communities = communities;    
         this.filterTopics = [
             [
@@ -37,6 +45,7 @@ class ChainSubscribers {
                 ethers.utils.id('CommunityRemoved(address)'),
                 ethers.utils.id('BeneficiaryAdded(address,address)'),
                 ethers.utils.id('BeneficiaryRemoved(address,address)'),
+                ethers.utils.id('LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'),
             ],
         ];
         this.recover();
@@ -121,6 +130,8 @@ class ChainSubscribers {
             await this._processCommunityAdminEvents(log);
         } else if (this.communities.get(log.address)) {
             parsedLog = await this._processCommunityEvents(log);
+        } else if (log.address === config.microcreditContractAddress) {
+            await this._processMicrocreditEvents(log);
         }
         return parsedLog;
     }
@@ -211,6 +222,68 @@ class ChainSubscribers {
                 
             result = parsedLog;
         }
+        return result;
+    }
+
+    async _processMicrocreditEvents(log: ethers.providers.Log): Promise<ethers.utils.LogDescription | undefined> {
+        let parsedLog = this.ifaceMicrocredit.parseLog(log);
+        let result: ethers.utils.LogDescription | undefined = undefined;
+        const userAddress = parsedLog.args[0];
+
+        if (parsedLog.name === 'LoanAdded') {
+            const user = await models.appUser.findOne({
+                attributes: ['id', 'language', 'walletPNT', 'appPNT'],
+                where: {
+                    address: ethers.utils.getAddress(userAddress)
+                }
+            });
+
+            if (user) {
+                let locale = 'en-us';
+
+                switch (user.language) {
+                    case 'pt':
+                        locale = 'pt-br';
+                        break;
+                    case 'es':
+                        locale = 'es-es';
+                        break;
+                    case 'fa':
+                        locale = 'fr-fr';
+                        break;
+                    default:
+                        break;
+                }
+
+                // get prismic document
+                const response = await prismic.getAllByType('pwa-view-notifications', {
+                    lang: locale,
+                });
+                const data = response[0].data;
+                const title = data[`message-type${NotificationType.LOAN_ADDED}Title`][0].text;
+                const description = data[`message-type${NotificationType.LOAN_ADDED}Description`][0].text;
+                console.log({
+                    userId: user.id,
+                    type: NotificationType.LOAN_ADDED,
+                    isWallet: true,
+                    isWebApp: true,
+                })
+                // registry notification
+                await models.appNotification.create({
+                    userId: user.id,
+                    type: NotificationType.LOAN_ADDED,
+                    isWallet: true,
+                    isWebApp: true,
+                });
+
+                if (user.walletPNT || user.appPNT) {
+                    sendFirebasePushNotification((user.walletPNT || user.appPNT)!, title, description);
+                }
+            }
+
+            result = parsedLog;
+        }
+
         return result;
     }
 }
