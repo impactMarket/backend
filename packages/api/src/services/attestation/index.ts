@@ -194,13 +194,14 @@ export const send = async (
             { where: { id: userId } }
         );
     } else if (type === AttestationType.EMAIL) {
-        code = randomBytes(20).toString('hex');
+        code = randomBytes(4).toString('hex');
 
         // TODO: add message per language
         const body = 'Your verification code is: ' + code + '. - impactMarket';
         sendEmail({
             to: plainTextIdentifier,
-            from: config.internalEmailNotifying,
+            // TODO: move to env
+            from: 'hello@impactmarket.com',
             subject: 'impactMarket - Verification Code',
             text: body,
         });

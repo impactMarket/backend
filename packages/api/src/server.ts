@@ -11,8 +11,6 @@ import { rateLimiter } from './middlewares';
 import v1routes from './routes/v1';
 import v2routes from './routes/v2';
 
-import { utils } from '@impactmarket/core';
-
 export default (app: express.Application): void => {
     let swaggerServers: {
         url: string;
@@ -21,7 +19,7 @@ export default (app: express.Application): void => {
     if (process.env.NODE_ENV === 'development') {
         swaggerServers = [
             {
-                url: 'http://localhost:5000/api/v2',
+                url: `http://localhost:${process.env.PORT}/api/v2`,
             },
         ];
     } else {
