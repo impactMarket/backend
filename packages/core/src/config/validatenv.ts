@@ -122,6 +122,7 @@ function validateEnv() {
         VERCEL_WEBHOOK_WALLET: str({ devDefault: onlyOnTestEnv('xyz') }),
         CRON_JOB_BATCH_SIZE: num({ default: 20 }),
         MAX_DATABASE_POOL_CONNECTIONS: num({ default: 20 }),
+        COMMUNITY_RESPONSE_TIMEOUT: num({ default: 5 }),
     });
 }
 
