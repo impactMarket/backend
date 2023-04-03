@@ -266,4 +266,5 @@ export default {
     cronJobBatchSize: validatedEnv.CRON_JOB_BATCH_SIZE,
 
     maxDatabasePoolConnections: validatedEnv.MAX_DATABASE_POOL_CONNECTIONS,
+    communityResponseTimeout: validatedEnv.COMMUNITY_RESPONSE_TIMEOUT,
 };
