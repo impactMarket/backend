@@ -159,31 +159,6 @@ export async function sendPushNotification(
     return false;
 }
 
-export async function sendFirebasePushNotification(title: string, body: string, token: string) {
-    try {
-        const message = {
-            notification: {
-                title,
-                body
-            },
-            token,
-        };
-
-        await axios.post(
-            'https://fcm.googleapis.com/fcm/send',
-            JSON.stringify(message),
-            {
-                headers: {
-                    Authorization: 'key=' + config.firebaseKey,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-    } catch (error) {
-        console.error('Push notification failed');
-    }
-}
-
 export function isUUID(s: string): boolean {
     const matchResult = s.match(
         /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i

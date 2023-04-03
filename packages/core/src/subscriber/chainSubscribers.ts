@@ -7,9 +7,8 @@ import {
 } from '../../';
 import { ethers } from 'ethers';
 import { models } from '../database';
-import { client as prismic } from '../utils/prismic';
 import { NotificationType } from '../interfaces/app/appNotification';
-import { sendFirebasePushNotification } from '../utils/util';
+import { sendNotification } from '../utils/pushNotification';
 
 class ChainSubscribers {
     provider: ethers.providers.WebSocketProvider;
@@ -239,46 +238,7 @@ class ChainSubscribers {
             });
 
             if (user) {
-                let locale = 'en-us';
-
-                switch (user.language) {
-                    case 'pt':
-                        locale = 'pt-br';
-                        break;
-                    case 'es':
-                        locale = 'es-es';
-                        break;
-                    case 'fa':
-                        locale = 'fr-fr';
-                        break;
-                    default:
-                        break;
-                }
-
-                // get prismic document
-                const response = await prismic.getAllByType('pwa-view-notifications', {
-                    lang: locale,
-                });
-                const data = response[0].data;
-                const title = data[`message-type${NotificationType.LOAN_ADDED}Title`][0].text;
-                const description = data[`message-type${NotificationType.LOAN_ADDED}Description`][0].text;
-                console.log({
-                    userId: user.id,
-                    type: NotificationType.LOAN_ADDED,
-                    isWallet: true,
-                    isWebApp: true,
-                })
-                // registry notification
-                await models.appNotification.create({
-                    userId: user.id,
-                    type: NotificationType.LOAN_ADDED,
-                    isWallet: true,
-                    isWebApp: true,
-                });
-
-                if (user.walletPNT || user.appPNT) {
-                    sendFirebasePushNotification((user.walletPNT || user.appPNT)!, title, description);
-                }
+                await sendNotification([user.toJSON()], NotificationType.LOAN_ADDED);
             }
 
             result = parsedLog;

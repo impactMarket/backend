@@ -12,7 +12,7 @@ import MicrocreditJSON from './Microcredit.json';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import { Sequelize } from 'sequelize';
 import { client as prismic } from '../../../src/utils/prismic';
-import * as util from '../../../src/utils/util';
+import * as util from '../../../src/utils/pushNotification';
 import { NotificationType } from '../../../src/interfaces/app/appNotification';
 
 describe('Microcredit', () => {
@@ -34,7 +34,7 @@ describe('Microcredit', () => {
         await sequelize.sync();
         provider = new ethers.providers.Web3Provider(ganacheProvider);
         accounts = await provider.listAccounts();
-        notificationUpdated = stub(database.models.appNotification, 'create');
+        notificationUpdated = stub(database.models.appNotification, 'bulkCreate');
         notificationUpdated.returns(Promise.resolve({} as any));
         MicrocreditFactory = new ethers.ContractFactory(
             MicrocreditJSON.abi,
@@ -117,12 +117,12 @@ describe('Microcredit', () => {
         assert.callCount(notificationUpdated, 1);
         assert.calledWith(
             notificationUpdated.getCall(0),
-            {
+            [{
                 userId: user.id,
                 type: NotificationType.LOAN_ADDED,
                 isWallet: true,
                 isWebApp: true
-            }
+            }]
         );
     });
 })
