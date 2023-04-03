@@ -23,6 +23,11 @@ Use the package manager [yarn](https://yarnpkg.com/) to install dependencies.
 
 See [PERFORMANCE.md](./PERFORMANCE.md) to learn more about load tests.
 
+### Troubleshooting
+
+#### lipq node-gyp issue - ValueError: invalid mode: 'rU' while trying to load binding.gyp
+See https://github.com/nodejs/node-gyp/issues/2219#issuecomment-1359160362
+
 ## License
 
 [Apache-2.0](LICENSE)

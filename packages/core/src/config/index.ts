@@ -269,4 +269,5 @@ export default {
     maxDatabasePoolConnections: validatedEnv.MAX_DATABASE_POOL_CONNECTIONS,
 
     firebaseKey: validatedEnv.FIREBASE_KEY,
+    communityResponseTimeout: validatedEnv.COMMUNITY_RESPONSE_TIMEOUT,
 };

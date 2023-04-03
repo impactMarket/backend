@@ -14,11 +14,11 @@ import { database } from '@impactmarket/core';
 import { randomBytes, randomInt } from 'crypto';
 import { Op } from 'sequelize';
 
+import erc20ABI from './erc20ABI.json';
+import odisABI from './odisABI.json';
 import config from '../../config';
 import { sendEmail } from '../../services/email';
 import { sendSMS } from '../sms';
-import erc20ABI from './erc20ABI.json';
-import odisABI from './odisABI.json';
 
 interface IOdisPaymentsContract extends Contract {
     payInCUSD(account: string, value: BigNumber): Promise<TransactionResponse>;
@@ -194,13 +194,14 @@ export const send = async (
             { where: { id: userId } }
         );
     } else if (type === AttestationType.EMAIL) {
-        code = randomBytes(20).toString('hex');
+        code = randomBytes(4).toString('hex');
 
         // TODO: add message per language
         const body = 'Your verification code is: ' + code + '. - impactMarket';
         sendEmail({
             to: plainTextIdentifier,
-            from: config.internalEmailNotifying,
+            // TODO: move to env
+            from: 'hello@impactmarket.com',
             subject: 'impactMarket - Verification Code',
             text: body,
         });

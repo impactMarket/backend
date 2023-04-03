@@ -1,4 +1,4 @@
-import { literal, Op, WhereOptions } from 'sequelize';
+import { literal, Op, WhereOptions, fn, col } from 'sequelize';
 
 import { models } from '../../database';
 import { LearnAndEarnLesson } from '../../interfaces/learnAndEarn/learnAndEarnLesson';
@@ -233,8 +233,11 @@ export async function listLessons(userId: number, levelId: number) {
             }
         );
 
+        const rewardAvailable = await getRewardAvailable(levelId);
+
         return {
             totalPoints,
+            rewardAvailable,
             completedToday: completedToday > 0,
             lessons: mappedLessons,
         };
@@ -242,3 +245,28 @@ export async function listLessons(userId: number, levelId: number) {
         throw new BaseError('LIST_LESSONS_FAILED', 'list lessons failed');
     }
 }
+
+const getRewardAvailable = async (levelId: number): Promise<boolean> => {
+    const level = await models.learnAndEarnLevel.findOne({
+        attributes: ['rewardLimit', 'totalReward'],
+        where: {
+            id: levelId,
+        }
+    });
+
+    if (!level?.rewardLimit) {
+        return true;
+    }
+
+    const payments = await models.learnAndEarnPayment.sum('amount', {
+        where: {
+            levelId,
+        }
+    });
+
+    if (!payments) {
+        return true;
+    }
+
+    return (level.rewardLimit > (payments + level.totalReward));
+};

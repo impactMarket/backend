@@ -124,6 +124,7 @@ function validateEnv() {
         CRON_JOB_BATCH_SIZE: num({ default: 20 }),
         MAX_DATABASE_POOL_CONNECTIONS: num({ default: 20 }),
         FIREBASE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
+        COMMUNITY_RESPONSE_TIMEOUT: num({ default: 50000 }),
     });
 }
 

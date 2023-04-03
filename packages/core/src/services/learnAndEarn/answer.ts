@@ -3,7 +3,7 @@ import { arrayify } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/keccak256';
 import { Wallet } from '@ethersproject/wallet';
 import BigNumber from 'bignumber.js';
-import { literal, Op } from 'sequelize';
+import { literal, Op, fn, col, Transaction } from 'sequelize';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
@@ -318,16 +318,23 @@ export async function answer(
                 points
             );
             const signature = await signParams(user.address, level!.id, amount);
-            await models.learnAndEarnPayment.create(
-                {
-                    userId: user.userId,
-                    levelId: level!.id,
-                    amount,
-                    status: 'pending',
-                    signature,
-                },
-                { transaction: t }
-            );
+
+            // check available reward
+            if (level?.rewardLimit) {
+                const payments = await models.learnAndEarnPayment.sum('amount', {
+                    where: {
+                        levelId: lesson!.levelId,
+                    }
+                });
+
+                const reward = (payments || 0) + amount;
+
+                if (level.rewardLimit >= reward) {
+                    await savePayment(user.userId, level!.id, amount, signature, t);
+                }
+            } else {
+                await savePayment(user.userId, level!.id, amount, signature, t);
+            }
 
             // verify if the category was completed
             const availableLevels = await countAvailableLevels(
@@ -395,4 +402,17 @@ export async function answer(
             error.message || 'failed to verify answers'
         );
     }
+}
+
+const savePayment = async (userId: number, levelId: number, amount: number, signature: string, t: Transaction) => {
+    await models.learnAndEarnPayment.create(
+        {
+            userId,
+            levelId,
+            amount,
+            status: 'pending',
+            signature,
+        },
+        { transaction: t }
+    );
 }

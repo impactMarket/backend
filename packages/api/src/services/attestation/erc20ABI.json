@@ -1,5 +1,23 @@
 [
     {
+        "type": "function",
+        "stateMutability": "view",
+        "payable": false,
+        "outputs": [
+            { "type": "uint256", "name": "", "internalType": "uint256" }
+        ],
+        "name": "allowance",
+        "inputs": [
+            {
+                "type": "address",
+                "name": "accountOwner",
+                "internalType": "address"
+            },
+            { "type": "address", "name": "spender", "internalType": "address" }
+        ],
+        "constant": true
+    },
+    {
         "constant": false,
         "inputs": [
             {
