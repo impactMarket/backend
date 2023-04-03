@@ -3,7 +3,7 @@ import config from '../config';
 import { client as prismic } from '../utils/prismic';
 import { NotificationType } from '../interfaces/app/appNotification';
 import { models } from '../database';
-import { AppUserModel } from 'database/models/app/appUser';
+import { AppUserModel } from '../database/models/app/appUser';
 import localesConfig from '../utils/locale.json';
 
 export async function sendNotification(
