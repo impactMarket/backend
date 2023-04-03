@@ -26,7 +26,7 @@ export async function sendNotification(
 
     // get notification from prismic
     const prismicNotifications = {};
-    const promises = languages.map(async language => {
+    const fetchMessagesFromPrismic = languages.map(async language => {
         const locale = localesConfig.find(({ shortCode }) => language === shortCode.toLowerCase())?.code;
         const defaultLocale = localesConfig.find(({ isDefault }) => isDefault)?.code;
 
@@ -47,7 +47,7 @@ export async function sendNotification(
     await Promise.all(promises);
 
     // send notification
-    const promises2 = users.map(async user => {
+    const submitPushNotificationsToFCM = users.map(async user => {
         let prismicData = prismicNotifications[user.language];
 
         if (!prismicData) {
