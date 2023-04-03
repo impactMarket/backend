@@ -14,11 +14,11 @@ import { database } from '@impactmarket/core';
 import { randomBytes, randomInt } from 'crypto';
 import { Op } from 'sequelize';
 
+import erc20ABI from './erc20ABI.json';
+import odisABI from './odisABI.json';
 import config from '../../config';
 import { sendEmail } from '../../services/email';
 import { sendSMS } from '../sms';
-import erc20ABI from './erc20ABI.json';
-import odisABI from './odisABI.json';
 
 interface IOdisPaymentsContract extends Contract {
     payInCUSD(account: string, value: BigNumber): Promise<TransactionResponse>;
