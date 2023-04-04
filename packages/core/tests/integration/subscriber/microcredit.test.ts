@@ -6,14 +6,14 @@ import {
     database,
     tests,
     config,
-    contracts,
 } from '../../../';
 import MicrocreditJSON from './Microcredit.json';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import { Sequelize } from 'sequelize';
 import { client as prismic } from '../../../src/utils/prismic';
-import * as util from '../../../src/utils/pushNotification';
 import { NotificationType } from '../../../src/interfaces/app/appNotification';
+import admin from 'firebase-admin';
+
 
 describe('Microcredit', () => {
     let sequelize: Sequelize;
@@ -73,7 +73,13 @@ describe('Microcredit', () => {
             ] as any
         ));
 
-        stub(util, 'sendFirebasePushNotification').returns(Promise.resolve())
+        stub(admin.credential, 'cert').returns({} as any);
+        stub(admin, 'initializeApp');
+        stub(admin, 'messaging').returns({
+            sendMulticast:  async function () {
+                return Promise.resolve();
+            }
+        } as any);
 
         subscribers = new ChainSubscribers(
             provider as any,

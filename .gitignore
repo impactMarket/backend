@@ -1,3 +1,6 @@
+# Firebase config file
+firebase-adminsdk.json
+
 # Logs
 logs
 *.log

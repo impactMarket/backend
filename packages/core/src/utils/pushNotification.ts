@@ -1,10 +1,13 @@
-import axios from 'axios';
-import config from '../config';
+// @ts-ignore
+// when release-task.sh runs, it will create the config file
+import serviceAccount from '../utils/firebase-adminsdk.json';
+
 import { client as prismic } from '../utils/prismic';
 import { NotificationType } from '../interfaces/app/appNotification';
 import { models } from '../database';
 import { AppUserModel } from '../database/models/app/appUser';
 import localesConfig from '../utils/locale.json';
+import admin from 'firebase-admin';
 
 export async function sendNotification(
     users: AppUserModel[],
@@ -19,7 +22,11 @@ export async function sendNotification(
     })));
 
     // filter users that have walletPNT or appPNT
-    users = users.filter(el => el.walletPNT || el.appPNT);
+    users = users.filter(el => el.walletPNT);
+
+    if (users.length === 0) {
+        return;
+    }
 
     // get only unique languages
     const languages = [...new Set(users.map(el => el.language))];
@@ -44,7 +51,7 @@ export async function sendNotification(
         };
     });
 
-    await Promise.all(promises);
+    await Promise.all(fetchMessagesFromPrismic);
 
     // send notification
     const submitPushNotificationsToFCM = users.map(async user => {
@@ -54,32 +61,50 @@ export async function sendNotification(
             prismicData = prismicNotifications['en'];
         }
 
-        sendFirebasePushNotification(prismicData.title, prismicData.description, (user.walletPNT || user.appPNT)!);
+        sendFirebasePushNotification(prismicData.title, prismicData.description, users.map(el => el.walletPNT!));
     });
 
-    await Promise.all(promises2);
+    await Promise.all(submitPushNotificationsToFCM);
 }
 
-export async function sendFirebasePushNotification(title: string, body: string, token: string) {
+export async function sendFirebasePushNotification(title: string, body: string, tokens: string[]) {
     try {
-        const message = {
-            notification: {
-                title,
-                body
-            },
-            token,
-        };
+        const batch = 500;
+        for (let i = 0; ; i = i + batch) {
+            const tokens_batch = tokens.slice(i, i + batch);
+            const message = {
+                apns: {
+                    payload: {
+                        aps: {
+                            'mutable-content': 1
+                        }
+                    }
+                },
+                notification: {
+                    body,
+                    title,
+                },
+                tokens: tokens_batch,
+            };
+            
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount as any)
+            });
+            
+            admin
+                .messaging()
+                .sendMulticast(message)
+                .then(response => {
+                    console.log('Successfully sent message:', response);
+                })
+                .catch(error => {
+                    console.log('Error sending message:', error);
+                });
 
-        await axios.post(
-            'https://fcm.googleapis.com/fcm/send',
-            JSON.stringify(message),
-            {
-                headers: {
-                    Authorization: 'key=' + config.firebaseKey,
-                    'Content-Type': 'application/json'
-                }
+            if (i + batch > tokens.length) {
+                break;
             }
-        );
+        }
     } catch (error) {
         console.error('Push notification failed');
     }
