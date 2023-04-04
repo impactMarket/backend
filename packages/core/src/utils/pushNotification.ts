@@ -1,5 +1,4 @@
-// @ts-ignore
-// when release-task.sh runs, it will create the config file
+// when release-task.sh runs, it will replace the config file
 import serviceAccount from '../utils/firebase-adminsdk.json';
 
 import { client as prismic } from '../utils/prismic';
