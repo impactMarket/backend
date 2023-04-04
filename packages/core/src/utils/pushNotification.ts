@@ -12,13 +12,15 @@ import admin from 'firebase-admin';
 export async function sendNotification(
     users: AppUserModel[],
     type: NotificationType,
+    isWallet: boolean = true,
+    isWebApp: boolean = true,
 ) {
     // registry notification
     await models.appNotification.bulkCreate(users.map(el => ({
         userId: el.id,
         type,
-        isWallet: true,
-        isWebApp: true,
+        isWallet,
+        isWebApp,
     })));
 
     // filter users that have walletPNT or appPNT
