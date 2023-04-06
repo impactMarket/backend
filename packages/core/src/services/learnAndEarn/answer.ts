@@ -320,21 +320,21 @@ export async function answer(
             const signature = await signParams(user.address, level!.id, amount);
 
             // check available reward
-            // if (level?.rewardLimit) {
-            //     const payments = await models.learnAndEarnPayment.sum('amount', {
-            //         where: {
-            //             levelId: lesson!.levelId,
-            //         }
-            //     });
+            if (level?.rewardLimit) {
+                const payments = await models.learnAndEarnPayment.sum('amount', {
+                    where: {
+                        levelId: lesson!.levelId,
+                    }
+                });
 
-            //     const reward = (payments || 0) + amount;
+                const reward = (payments || 0) + amount;
 
-            //     if (level.rewardLimit >= reward) {
-            //         await savePayment(user.userId, level!.id, amount, signature, t);
-            //     }
-            // } else {
-            await savePayment(user.userId, level!.id, amount, signature, t);
-            // }
+                if (level.rewardLimit >= reward) {
+                    await savePayment(user.userId, level!.id, amount, signature, t);
+                }
+            } else {
+                await savePayment(user.userId, level!.id, amount, signature, t);
+            }
 
             // verify if the category was completed
             const availableLevels = await countAvailableLevels(
