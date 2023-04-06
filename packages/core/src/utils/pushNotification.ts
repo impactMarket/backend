@@ -22,7 +22,7 @@ export async function sendNotification(
         isWebApp,
     })));
 
-    // filter users that have walletPNT or appPNT
+    // filter users that have walletPNT
     users = users.filter(el => el.walletPNT);
 
     if (users.length === 0) {
@@ -32,7 +32,7 @@ export async function sendNotification(
     // get only unique languages
     const languages = [...new Set(users.map(el => el.language))];
 
-    // get notification from prismic
+    // mount notification object with title and description from prismic and users by language
     const prismicNotifications = {};
     const fetchMessagesFromPrismic = languages.map(async language => {
         const locale = localesConfig.find(({ shortCode }) => language === shortCode.toLowerCase())?.code;
@@ -49,23 +49,17 @@ export async function sendNotification(
         prismicNotifications[language] = {
             title,
             description,
+            users: users.filter(el => el.language === language),
         };
     });
 
     await Promise.all(fetchMessagesFromPrismic);
 
-    // send notification
-    const submitPushNotificationsToFCM = users.map(async user => {
-        let prismicData = prismicNotifications[user.language];
-
-        if (!prismicData) {
-            prismicData = prismicNotifications['en'];
-        }
-
-        sendFirebasePushNotification(prismicData.title, prismicData.description, users.map(el => el.walletPNT!));
+    // send notification by group of languages
+    Object.keys(prismicNotifications).forEach(async key => {
+        let prismicData = prismicNotifications[key];
+        sendFirebasePushNotification(prismicData.title, prismicData.description, prismicData.users.map(el => el.walletPNT!));
     });
-
-    await Promise.all(submitPushNotificationsToFCM);
 }
 
 export async function sendFirebasePushNotification(title: string, body: string, tokens: string[]) {
