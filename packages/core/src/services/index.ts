@@ -12,6 +12,7 @@ import ReachedAddressService from './reachedAddress';
 import * as storage from './storage';
 import StoryService from './story';
 import StoryServiceV2 from './story/index';
+import MicrocreditService from './microcredit';
 import * as ubi from './ubi';
 
 const learnAndEarn = {
@@ -34,4 +35,5 @@ export {
     StoryService,
     StoryServiceV2,
     learnAndEarn,
+    MicrocreditService,
 };
