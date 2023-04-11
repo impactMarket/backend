@@ -84,6 +84,7 @@ export default {
     },
     DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
     communityAdminAddress: validatedEnv.COMMUNITY_ADMIN_ADDRESS,
+    microcreditContractAddress: validatedEnv.MICROCREDIT_CONTRACT_ADDRESS,
 
     /**
      * Decimals in cUSD token
@@ -266,5 +267,6 @@ export default {
     cronJobBatchSize: validatedEnv.CRON_JOB_BATCH_SIZE,
 
     maxDatabasePoolConnections: validatedEnv.MAX_DATABASE_POOL_CONNECTIONS,
+
     communityResponseTimeout: validatedEnv.COMMUNITY_RESPONSE_TIMEOUT,
 };
