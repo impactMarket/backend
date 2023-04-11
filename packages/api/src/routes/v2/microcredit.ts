@@ -12,7 +12,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /microcredit/global-data:
+     * /microcredit/global:
      *   get:
      *     tags:
      *       - "microcredit"
