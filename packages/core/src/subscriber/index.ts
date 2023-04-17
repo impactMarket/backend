@@ -1,10 +1,10 @@
-import { utils, config } from '../../';
 import { ethers } from 'ethers';
 import schedule from 'node-schedule';
 import WebSocket from 'ws';
-import { ubi } from '../services'
 
 import { ChainSubscribers } from './chainSubscribers';
+import { utils, config } from '../../';
+import { models } from '../database';
 import { Community } from '../database/models/ubi/community';
 
 let subscribers: ChainSubscribers;
@@ -13,7 +13,7 @@ let waitingForResponseAfterCrash = false;
 let successfullAnswersAfterCrash = 0;
 let failedAnswers = 0;
 let intervalWhenCrash: NodeJS.Timeout | undefined = undefined;
-let waitingForResponseAfterTxRegWarn = false;
+const waitingForResponseAfterTxRegWarn = false;
 
 let provider: ethers.providers.WebSocketProvider;
 let jsonRpcProvider: ethers.providers.JsonRpcProvider;
@@ -26,8 +26,10 @@ export const start = async (): Promise<void> => {
     providerFallback = new ethers.providers.WebSocketProvider(
         config.webSocketUrlFallback
     );
-    availableCommunities =
-        await ubi.CommunityService.listCommunitiesStructOnly();
+    availableCommunities = await models.community.findAll({
+        attributes: ['id', 'contractAddress'],
+        where: { status: 'valid', visibility: 'public' },
+    });
     subscribers = startChainSubscriber();
 
     provider._websocket.on('close', () => {
@@ -77,7 +79,9 @@ function reconnectChainSubscriber() {
                     );
                     successfullAnswersAfterCrash = 0;
                     failedAnswers += 1;
-                    providerFallback = new ethers.providers.WebSocketProvider(config.webSocketUrlFallback);
+                    providerFallback = new ethers.providers.WebSocketProvider(
+                        config.webSocketUrlFallback
+                    );
                 }
             } else {
                 successfullAnswersAfterCrash += 1;
@@ -107,11 +111,13 @@ function reconnectChainSubscriber() {
                         usingFallbackUrl = false;
                         failedAnswers = 0;
                         successfullAnswersAfterCrash = 0;
-                        provider = new ethers.providers.WebSocketProvider(config.webSocketUrl);
+                        provider = new ethers.providers.WebSocketProvider(
+                            config.webSocketUrl
+                        );
                         reconnectChainSubscriber();
                     });
                 }
-            };
+            }
         } else {
             if (
                 provider._websocket.readyState === WebSocket.CLOSED ||
@@ -123,12 +129,12 @@ function reconnectChainSubscriber() {
                     usingFallbackUrl = true;
                     failedAnswers = 0;
                 } else {
-                    utils.Logger.error(
-                        'Checking again if RPC is available...'
-                    );
+                    utils.Logger.error('Checking again if RPC is available...');
                     successfullAnswersAfterCrash = 0;
                     failedAnswers += 1;
-                    provider = new ethers.providers.WebSocketProvider(config.webSocketUrl);
+                    provider = new ethers.providers.WebSocketProvider(
+                        config.webSocketUrl
+                    );
                 }
             } else {
                 if (successfullAnswersAfterCrash < 5) {
@@ -145,7 +151,7 @@ function reconnectChainSubscriber() {
                     intervalWhenCrash = undefined;
                     waitingForResponseAfterCrash = false;
                 }
-            };
+            }
         }
     }, 2000);
 }
@@ -154,8 +160,6 @@ function startChainSubscriber(fallback?: boolean): ChainSubscribers {
     return new ChainSubscribers(
         fallback ? providerFallback : provider,
         jsonRpcProvider,
-        new Map(
-            availableCommunities.map((c) => [c.contractAddress!, c.id])
-        ),
+        new Map(availableCommunities.map((c) => [c.contractAddress!, c.id]))
     );
 }
