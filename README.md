@@ -2,7 +2,7 @@
     <img src="logo.png">
 </div>
 
-> impactMarket enables access to inclusive financial solutions, including Unconditional Basic Income programs to support and empower vulnerable communities. Donate now and join our mission of promoting financial inclusion.
+> impactMarket leverages Web3 to provide accessible financial solutions, including Unconditional Basic Income, the crypto wallet Libera, Microcredit, and Learn and Earn, empowering financially unserved and underserved people around the world.
 
 ## Getting started
 
@@ -23,7 +23,12 @@ Use the package manager [yarn](https://yarnpkg.com/) to install dependencies.
 
 See [PERFORMANCE.md](./PERFORMANCE.md) to learn more about load tests.
 
-### Troubleshooting
+## Thank you
+<img height="100" src="appsignal-svgrepo-com.svg">
+
+A really big thank you to [AppSignal](https://appsignal.com/) for sponsoring us. AppSignal is "No-brainer monitoring for smart developers."
+
+## Troubleshooting
 
 #### lipq node-gyp issue - ValueError: invalid mode: 'rU' while trying to load binding.gyp
 See https://github.com/nodejs/node-gyp/issues/2219#issuecomment-1359160362
