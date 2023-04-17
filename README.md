@@ -23,7 +23,7 @@ Use the package manager [yarn](https://yarnpkg.com/) to install dependencies.
 
 See [PERFORMANCE.md](./PERFORMANCE.md) to learn more about load tests.
 
-## Thank you
+## Sponsors
 <img height="100" src="appSignal.png">
 
 A really big thank you to [AppSignal](https://appsignal.com/) for sponsoring us. AppSignal is "No-brainer monitoring for smart developers."
