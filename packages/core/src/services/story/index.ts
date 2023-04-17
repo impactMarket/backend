@@ -9,6 +9,7 @@ import { StoryCommunityCreationEager } from '../../interfaces/story/storyCommuni
 import { StoryContent } from '../../interfaces/story/storyContent';
 import { getUserRoles } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
+import { cleanStoryCache } from '../../utils/cache';
 import {
     IAddStory,
     ICommunitiesListStories,
@@ -118,6 +119,10 @@ export default class StoryServiceV2 {
                 ],
             }
         );
+
+        // if success, clean cache
+        cleanStoryCache();
+        
         const newStory = created.toJSON() as StoryContent;
         return { ...newStory, loves: 0, userLoved: false, userReported: false };
     }
@@ -598,6 +603,9 @@ export default class StoryServiceV2 {
                 address: userAddress,
             });
         }
+
+        // if success, clean cache
+        cleanStoryCache();
     }
 
     public async inapropriate(

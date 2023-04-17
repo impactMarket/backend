@@ -6,3 +6,10 @@ export const cleanBeneficiaryCache = async (communityId: number) => {
         redisClient.del(key);
     });
 };
+
+export const cleanStoryCache = async () => {
+    const cachedBody = await redisClient.keys(`__express__/api/v2/stories*`);
+    cachedBody.forEach(key => {
+        redisClient.del(key);
+    });
+};
