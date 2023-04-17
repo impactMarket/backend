@@ -416,7 +416,8 @@ export default class StoryServiceV2 {
                 attributes: [
                     'id',
                     'message',
-                    'storyMediaPath',
+                    'byAddress',
+                    'storyMedia',
                     'postedAt',
                     [
                         fn('count', fn('distinct', col('storyComment.id'))),
@@ -566,6 +567,7 @@ export default class StoryServiceV2 {
                     userLoved: !!content.storyUserEngagement?.length,
                     comments: content.totalComments,
                 },
+                storyMedia: content.storyMedia,
             };
         });
         return {
