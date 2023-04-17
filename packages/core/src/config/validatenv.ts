@@ -114,6 +114,7 @@ function validateEnv() {
         AWS_LAMBDA: bool({ default: false }),
         SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         COUNCIL_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
+        MICROCREDIT_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         IMAGE_HANDLER_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         SIGNATURE_EXPIRATION: num({ default: 15 }),
         LEARN_AND_EARN_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),

@@ -16,6 +16,13 @@ const axiosCouncilSubgraph = axios.create({
     },
     timeout: 4000,
 });
+const axiosMicrocreditSubgraph = axios.create({
+    baseURL: config.microcreditSubgraphUrl,
+    headers: {
+        'content-type': 'application/json',
+    },
+    timeout: 4000,
+});
 axiosRetry(axiosSubgraph, {
     retries: 3,
     retryDelay: axiosRetry.exponentialDelay,
@@ -24,5 +31,9 @@ axiosRetry(axiosCouncilSubgraph, {
     retries: 3,
     retryDelay: axiosRetry.exponentialDelay,
 });
+axiosRetry(axiosMicrocreditSubgraph, {
+    retries: 3,
+    retryDelay: axiosRetry.exponentialDelay,
+});
 
-export { axiosSubgraph, axiosCouncilSubgraph };
+export { axiosSubgraph, axiosCouncilSubgraph, axiosMicrocreditSubgraph };

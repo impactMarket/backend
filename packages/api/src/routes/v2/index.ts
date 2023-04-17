@@ -8,6 +8,7 @@ import global from './global';
 import learnAndEarn from './learnAndEarn';
 import story from './story';
 import user from './user';
+import microcredit from './microcredit';
 
 export default (): Router => {
     const app = Router();
@@ -19,6 +20,7 @@ export default (): Router => {
     learnAndEarn(app);
     global(app);
     attestation(app);
+    microcredit(app);
 
     return app;
 };
