@@ -194,18 +194,6 @@ export interface IGlobalOutflowStatus {
 /**
  * @deprecated
  */
-export interface IGlobalInflowStatus {
-    raises: any;
-    rate: any;
-}
-
-export enum AgendaAction {
-    notification = 'notification',
-}
-
-/**
- * @deprecated
- */
 export enum GlobalDataTypeEnum {
     totalRaised = 'totalraised',
     totalDistributed = 'totaldistributed',

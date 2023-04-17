@@ -1,9 +1,7 @@
 import { services, utils, config } from '@impactmarket/core';
 import { CronJob } from 'cron';
-import {
-    internalNotifyLowCommunityFunds,
-    internalNotifyNewCommunities,
-} from './jobs/cron/community';
+
+import { internalNotifyNewCommunities } from './jobs/cron/community';
 import { updateExchangeRates } from './jobs/cron/updateExchangeRates';
 import { verifyDeletedAccounts } from './jobs/cron/user';
 
@@ -72,32 +70,6 @@ function cron() {
     // );
 
     if (config.internalNotifications) {
-        try {
-            // at 7:12pm
-            // eslint-disable-next-line no-new
-            new CronJob(
-                '12 19 * * *',
-                () => {
-                    internalNotifyLowCommunityFunds()
-                        .then(() => {
-                            services.app.CronJobExecutedService.add(
-                                'internalNotifyLowCommunityFunds'
-                            );
-                            utils.Logger.info(
-                                'internalNotifyLowCommunityFunds successfully executed!'
-                            );
-                        })
-                        .catch((e) => {
-                            utils.Logger.error(
-                                'internalNotifyLowCommunityFunds FAILED! ' + e
-                            );
-                        });
-                },
-                null,
-                true
-            );
-        } catch (_) {}
-
         try {
             // at 7:30am on Wednesday
             // eslint-disable-next-line no-new

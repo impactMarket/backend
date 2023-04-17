@@ -39,16 +39,6 @@ export function storyAssociation(sequelize: Sequelize) {
             as: 'user',
         }
     );
-    // used to post from the content with incude
-    sequelize.models.StoryContentModel.hasOne(
-        sequelize.models.AppMediaContentModel,
-        {
-            foreignKey: 'id',
-            sourceKey: 'mediaMediaId',
-            as: 'media',
-            constraints: false,
-        }
-    );
 
     sequelize.models.StoryContentModel.hasOne(sequelize.models.AppUserModel, {
         foreignKey: 'address',

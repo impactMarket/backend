@@ -7,12 +7,9 @@ import { listLessons, listLevels } from './learnAndEarn/list';
 import { startLesson } from './learnAndEarn/start';
 import { webhook } from './learnAndEarn/syncRemote';
 import { total } from './learnAndEarn/userData';
-import * as media from './media';
-import ReachedAddressService from './reachedAddress';
-import * as storage from './storage';
-import StoryService from './story';
-import StoryServiceV2 from './story/index';
 import MicrocreditService from './microcredit';
+import * as storage from './storage';
+import StoryServiceV2 from './story/index';
 import * as ubi from './ubi';
 
 const learnAndEarn = {
@@ -30,9 +27,6 @@ export {
     storage,
     ubi,
     Email,
-    media,
-    ReachedAddressService,
-    StoryService,
     StoryServiceV2,
     learnAndEarn,
     MicrocreditService,

@@ -1,5 +1,5 @@
-import { interfaces, database } from '@impactmarket/core';
-import { QueryTypes, Op } from 'sequelize';
+import { database } from '@impactmarket/core';
+import { Op } from 'sequelize';
 
 export async function verifyDeletedAccounts(): Promise<void> {
     const t = await database.sequelize.transaction();
@@ -12,26 +12,9 @@ export async function verifyDeletedAccounts(): Promise<void> {
             where: {
                 deletedAt: { [Op.lt]: date },
             },
-            include: [
-                {
-                    model: database.models.appUserTrust,
-                    as: 'trust',
-                },
-            ],
         });
 
         const addresses = users.map((el) => el.address);
-
-        users.forEach((user: interfaces.app.appUser.AppUser) =>
-            user.trust?.forEach(async (el) => {
-                await database.models.appUserTrust.destroy({
-                    where: {
-                        id: el.id,
-                    },
-                    transaction: t,
-                });
-            })
-        );
 
         await database.models.appUser.destroy({
             where: {

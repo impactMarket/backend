@@ -1,4 +1,3 @@
-import { AppMediaContent } from '../app/appMediaContent';
 import { AppUser } from '../app/appUser';
 import { StoryCommunity, StoryCommunityCreationEager } from './storyCommunity';
 import { StoryEngagement, StoryEngagementCreation } from './storyEngagement';
@@ -15,7 +14,6 @@ export interface StoryContent {
     postedAt: Date;
 
     // extensions
-    media?: AppMediaContent;
     storyCommunity?: StoryCommunity;
     storyEngagement?: StoryEngagement;
     storyUserEngagement?: StoryUserEngagement[];

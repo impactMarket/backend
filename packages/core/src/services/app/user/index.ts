@@ -10,7 +10,6 @@ import { AppNotification } from '../../../interfaces/app/appNotification';
 import {
     AppUserCreationAttributes,
     AppUserUpdate,
-    AppUser,
 } from '../../../interfaces/app/appUser';
 import { ProfileContentStorage } from '../../../services/storage';
 import { getAllBeneficiaries } from '../../../subgraph/queries/beneficiary';

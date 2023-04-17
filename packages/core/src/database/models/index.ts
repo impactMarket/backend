@@ -2,23 +2,17 @@ import { Sequelize } from 'sequelize';
 
 import { initializeAirgrabProof } from './airgrab/airgrabProof';
 import { initializeAirgrabUser } from './airgrab/airgrabUser';
-import { initializeAgenda } from './app/agenda';
 import { initializeAppAnonymousReport } from './app/anonymousReport';
 import { initializeAppClientCredential } from './app/appClientCredential';
 import { initializeAppLog } from './app/appLog';
-import { initializeAppMediaContent } from './app/appMediaContent';
-import { initializeAppMediaThumbnail } from './app/appMediaThumbnail';
 import { initializeAppNotification } from './app/appNotification';
 import { initializeAppProposal } from './app/appProposal';
 import { initializeAppUser } from './app/appUser';
-import { initializeAppUserThroughTrust } from './app/appUserThroughTrust';
-import { initializeAppUserTrust } from './app/appUserTrust';
 import { initializeAppUserValidationCode } from './app/appUserValidationCode';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
 import { initializeExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
 import { airgrabAssociation } from './associations/airgrab';
-import { appAssociation } from './associations/app';
 import { communityAssociation } from './associations/community';
 import { learnAndEarnAssociation } from './associations/learnAndEarn';
 import { storyAssociation } from './associations/story';
@@ -38,7 +32,6 @@ import { initializeLearnAndEarnUserLesson } from './learnAndEarn/learnAndEarnUse
 import { initializeLearnAndEarnUserLevel } from './learnAndEarn/learnAndEarnUserLevel';
 import { initializeMerchantCommunity } from './merchant/merchantCommunity';
 import { initializeMerchantRegistry } from './merchant/merchantRegistry';
-import { initializeReachedAddress } from './reachedAddress';
 import { initializeStoryComment } from './story/storyComment';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryContent } from './story/storyContent';
@@ -49,14 +42,9 @@ import { initializeBeneficiary } from './ubi/beneficiary';
 import { initializeCommunity } from './ubi/community';
 import { initializeUbiCommunityContract } from './ubi/communityContract';
 import { initializeUbiCommunityDailyMetrics } from './ubi/communityDailyMetrics';
-import { initializeUbiCommunityDailyState } from './ubi/communityDailyState';
 import { initializeUbiCommunityDemographics } from './ubi/communityDemographics';
-import { initializeInflow } from './ubi/inflow';
 import { initializeManager } from './ubi/manager';
-import { initializeUbiRequestChangeParams } from './ubi/requestChangeParams';
-import { initializeUbiBeneficiaryRegistry } from './ubi/ubiBeneficiaryRegistry';
 import { initializeUbiBeneficiarySurvey } from './ubi/ubiBeneficiarySurvey';
-import { initializeUbiBeneficiaryTransaction } from './ubi/ubiBeneficiaryTransaction';
 import { initializeUbiClaimLocation } from './ubi/ubiClaimLocation';
 import { initializeUbiCommunityCampaign } from './ubi/ubiCommunityCampaign';
 import { initializeUbiCommunityLabel } from './ubi/ubiCommunityLabel';
@@ -70,15 +58,10 @@ import { initializeWalletAirdropUser } from './walletAirdrop/walletAirdropUser';
 export default function initModels(sequelize: Sequelize): void {
     // app
     initializeAppUser(sequelize);
-    initializeAppUserTrust(sequelize);
-    initializeAppUserThroughTrust(sequelize);
-    initializeAgenda(sequelize);
     initializeExchangeRates(sequelize);
     initializeImMetadata(sequelize);
     initializeAppAnonymousReport(sequelize);
     initializeCronJobExecuted(sequelize);
-    initializeAppMediaContent(sequelize);
-    initializeAppMediaThumbnail(sequelize);
     initializeAppNotification(sequelize);
     initializeUbiBeneficiarySurvey(sequelize);
     initializeAppProposal(sequelize);
@@ -89,25 +72,17 @@ export default function initModels(sequelize: Sequelize): void {
     // ubi
     initializeCommunity(sequelize);
     initializeUbiCommunityContract(sequelize);
-    initializeUbiCommunityDailyState(sequelize);
     initializeUbiCommunityDailyMetrics(sequelize);
     initializeUbiCommunityDemographics(sequelize);
     initializeUbiCommunitySuspect(sequelize);
-    initializeUbiRequestChangeParams(sequelize);
     initializeUbiClaimLocation(sequelize);
     initializeManager(sequelize);
     initializeBeneficiary(sequelize);
-    initializeUbiBeneficiaryRegistry(sequelize);
-    initializeUbiBeneficiaryTransaction(sequelize);
-    initializeInflow(sequelize);
     initializeUbiCommunityPromoter(sequelize);
     initializeUbiPromoter(sequelize);
     initializeUbiPromoterSocialMedia(sequelize);
     initializeUbiCommunityLabel(sequelize);
     initializeUbiCommunityCampaign(sequelize);
-
-    // others
-    initializeReachedAddress(sequelize);
 
     // global
     initializeGlobalDailyState(sequelize);
@@ -151,7 +126,6 @@ export default function initModels(sequelize: Sequelize): void {
     userAssociation(sequelize);
     communityAssociation(sequelize);
     storyAssociation(sequelize);
-    appAssociation(sequelize);
     airgrabAssociation(sequelize);
     walletAidropAssociation(sequelize);
     learnAndEarnAssociation(sequelize);

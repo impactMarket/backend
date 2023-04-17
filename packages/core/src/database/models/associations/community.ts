@@ -19,22 +19,6 @@ export function communityAssociation(sequelize: Sequelize) {
         }
     );
     // used to query from the community with incude
-    sequelize.models.Community.hasOne(sequelize.models.AppMediaContentModel, {
-        foreignKey: 'id',
-        sourceKey: 'coverMediaId',
-        as: 'cover',
-        constraints: false,
-    });
-    // used to query from the community with incude
-    // TODO: used only once, should be removed
-    sequelize.models.Community.hasMany(
-        sequelize.models.UbiCommunityDailyStateModel,
-        {
-            foreignKey: 'communityId',
-            as: 'dailyState',
-        }
-    );
-    // used to query from the community with incude
     // used only at calcuateCommunitiesMetrics
     sequelize.models.Community.hasMany(
         sequelize.models.UbiCommunityDailyMetricsModel,
@@ -44,12 +28,6 @@ export function communityAssociation(sequelize: Sequelize) {
         }
     );
 
-    // used to query from the community with incude
-    sequelize.models.Community.hasMany(sequelize.models.Inflow, {
-        foreignKey: 'contractAddress',
-        sourceKey: 'contractAddress',
-        as: 'inflow',
-    });
     // used to query from the community with incude
     sequelize.models.Community.hasMany(sequelize.models.Beneficiary, {
         foreignKey: 'communityId',

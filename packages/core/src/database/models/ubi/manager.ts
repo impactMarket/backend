@@ -2,7 +2,6 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { AppUser } from '../../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
-import { UbiBeneficiaryRegistry } from '../../../interfaces/ubi/ubiBeneficiaryRegistry';
 
 export interface ManagerAttributes {
     id: number;

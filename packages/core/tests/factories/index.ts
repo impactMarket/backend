@@ -1,17 +1,6 @@
 import BeneficiaryFactory from './beneficiary';
-import BeneficiaryTransactionFactory from './beneficiaryTransaction';
 import CommunityFactory from './community';
-import InflowFactory from './inflow';
 import ManagerFactory from './manager';
-import StoryFactory from './story';
 import UserFactory from './user';
 
-export {
-    BeneficiaryFactory,
-    BeneficiaryTransactionFactory,
-    CommunityFactory,
-    InflowFactory,
-    ManagerFactory,
-    StoryFactory,
-    UserFactory,
-};
+export { BeneficiaryFactory, CommunityFactory, ManagerFactory, UserFactory };

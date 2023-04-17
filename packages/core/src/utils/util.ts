@@ -3,8 +3,6 @@ import axios from 'axios';
 import BigNumber from 'bignumber.js';
 
 import config from '../config';
-import { AppMediaThumbnail } from '../interfaces/app/appMediaThumbnail';
-import UserService from '../services/app/user';
 import { BaseError } from './baseError';
 import { Logger } from './logger';
 
@@ -117,45 +115,45 @@ export async function sendPushNotification(
     data: any,
     pushNotificationToken?: string | null
 ): Promise<boolean> {
-    if (!pushNotificationToken) {
-        const user = await UserService.get(userAddress);
-        if (!user) return false;
-        pushNotificationToken = user.pushNotificationToken;
-    }
-    if (pushNotificationToken !== null && pushNotificationToken.length > 0) {
-        const message = {
-            to: pushNotificationToken,
-            sound: 'default',
-            title,
-            body,
-            color: '#2400ff',
-            data,
-        };
-        try {
-            // handle success
-            const requestHeaders = {
-                headers: {
-                    Accept: 'application/json',
-                    'Accept-encoding': 'gzip, deflate',
-                    'Content-Type': 'application/json',
-                },
-            };
-            const result = await axios.post(
-                'https://exp.host/--/api/v2/push/send',
-                message,
-                requestHeaders
-            );
-            return result.status === 200;
-        } catch (error) {
-            Logger.error(
-                "Couldn't send notification " +
-                    error +
-                    ' with request ' +
-                    JSON.stringify(message)
-            );
-            return false;
-        }
-    }
+    // if (!pushNotificationToken) {
+    //     const user = await UserService.get(userAddress);
+    //     if (!user) return false;
+    //     pushNotificationToken = user.pushNotificationToken;
+    // }
+    // if (pushNotificationToken !== null && pushNotificationToken.length > 0) {
+    //     const message = {
+    //         to: pushNotificationToken,
+    //         sound: 'default',
+    //         title,
+    //         body,
+    //         color: '#2400ff',
+    //         data,
+    //     };
+    //     try {
+    //         // handle success
+    //         const requestHeaders = {
+    //             headers: {
+    //                 Accept: 'application/json',
+    //                 'Accept-encoding': 'gzip, deflate',
+    //                 'Content-Type': 'application/json',
+    //             },
+    //         };
+    //         const result = await axios.post(
+    //             'https://exp.host/--/api/v2/push/send',
+    //             message,
+    //             requestHeaders
+    //         );
+    //         return result.status === 200;
+    //     } catch (error) {
+    //         Logger.error(
+    //             "Couldn't send notification " +
+    //                 error +
+    //                 ' with request ' +
+    //                 JSON.stringify(message)
+    //         );
+    //         return false;
+    //     }
+    // }
     return false;
 }
 
@@ -169,43 +167,6 @@ export function isUUID(s: string): boolean {
 export function isAddress(s: string): boolean {
     const matchResult = s.match(/^0x[a-fA-F0-9]{40}$/i);
     return matchResult ? matchResult.length > 0 : false;
-}
-
-export function createThumbnailUrl(
-    bucket: string,
-    key: string,
-    thumbnailSizes: { width: number; height: number }[]
-): AppMediaThumbnail[] {
-    const avatar: AppMediaThumbnail[] = [];
-    for (let i = 0; i < config.thumbnails.pixelRatio.length; i++) {
-        const pr = config.thumbnails.pixelRatio[i];
-        for (let i = 0; i < thumbnailSizes.length; i++) {
-            const size = thumbnailSizes[i];
-            const body = {
-                bucket,
-                key,
-                edits: {
-                    resize: {
-                        width: size.width * pr,
-                        height: size.height * pr,
-                        fit: 'inside',
-                    },
-                },
-            };
-
-            const url = `${config.imageHandlerUrl}/${Buffer.from(
-                JSON.stringify(body)
-            ).toString('base64')}`;
-            avatar.push({
-                url,
-                width: size.width,
-                height: size.height,
-                pixelRatio: pr,
-            } as any);
-        }
-    }
-
-    return avatar;
 }
 
 export const getSearchInput = (searchInput: string) => {
