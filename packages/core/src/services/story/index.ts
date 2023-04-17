@@ -150,7 +150,8 @@ export default class StoryServiceV2 {
             attributes: [
                 'id',
                 'message',
-                'storyMediaPath',
+                'storyMedia',
+                'byAddress',
                 'postedAt',
                 [
                     fn('count', fn('distinct', col('storyComment.id'))),
@@ -238,7 +239,6 @@ export default class StoryServiceV2 {
         return {
             // we can use ! because it's included on the query
             id: content.id,
-            storyMediaPath: content.storyMediaPath,
             message: content.message,
             isDeletable: userAddress
                 ? content.byAddress.toLowerCase() === userAddress.toLowerCase()
@@ -253,6 +253,7 @@ export default class StoryServiceV2 {
                     : false,
                 comments: content.totalComments,
             },
+            storyMedia: content.storyMedia,
         };
     }
 
@@ -265,7 +266,8 @@ export default class StoryServiceV2 {
             attributes: [
                 'id',
                 'message',
-                'storyMediaPath',
+                'storyMedia',
+                'byAddress',
                 'postedAt',
                 [
                     fn('count', fn('distinct', col('storyComment.id'))),
@@ -344,7 +346,6 @@ export default class StoryServiceV2 {
             };
             return {
                 id: content.id,
-                storyMediaPath: content.storyMediaPath,
                 message: content.message,
                 isDeletable:
                     content.byAddress.toLowerCase() ===
@@ -357,6 +358,7 @@ export default class StoryServiceV2 {
                     userLoved: !!content.storyUserEngagement?.length,
                     comments: content.totalComments,
                 },
+                storyMedia: content.storyMedia,
             };
         });
         return {
@@ -554,7 +556,6 @@ export default class StoryServiceV2 {
             return {
                 // we can use ! because it's included on the query
                 id: content.id,
-                storyMediaPath: content.storyMediaPath,
                 message: content.message,
                 isDeletable: userAddress
                     ? content.byAddress.toLowerCase() ===

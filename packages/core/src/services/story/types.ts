@@ -11,15 +11,15 @@ export interface ICommunityStory {
     id: number;
     message: string | null;
     byAddress: string;
-    storyMediaPath: string | null;
     loves: number;
     userLoved: boolean;
     userReported: boolean;
+    storyMedia?: string[];
 }
 export interface ICommunityStoryGet {
     id: number;
     message: string | null;
-    storyMediaPath: string | null;
+    storyMedia?: string[];
     isDeletable: boolean;
     createdAt: Date;
     community?: any;
