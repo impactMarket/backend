@@ -6,9 +6,10 @@ import community from './community';
 import generic from './generic';
 import global from './global';
 import learnAndEarn from './learnAndEarn';
+import microcredit from './microcredit';
+import referral from './referral';
 import story from './story';
 import user from './user';
-import microcredit from './microcredit';
 import protocol from './protocol';
 
 export default (): Router => {
@@ -23,6 +24,7 @@ export default (): Router => {
     attestation(app);
     microcredit(app);
     protocol(app);
+    referral(app);
 
     return app;
 };
