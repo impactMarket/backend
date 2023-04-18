@@ -86,7 +86,7 @@ module.exports = {
                 },
             },
             {
-                tableName: 'user',
+                tableName: 'app_user',
                 sequelize: queryInterface.sequelize, // this bit is important
             }
         );
