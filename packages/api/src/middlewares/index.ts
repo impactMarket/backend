@@ -17,7 +17,7 @@ export function authenticateToken(
     // Gather the jwt access token from the request header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (token == null) {
+    if (token === null || token === undefined) {
         if ((req as any).authTokenIsOptional) {
             next();
             return;
@@ -97,7 +97,7 @@ export function adminAuthentication(
     // Gather the jwt access token from the request header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    if (token == null) {
+    if (token === null || token === undefined) {
         res.sendStatus(401); // if there isn't any token
         return;
     }

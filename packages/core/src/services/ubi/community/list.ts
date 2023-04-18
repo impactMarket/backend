@@ -455,7 +455,7 @@ export class CommunityListService {
         // TODO: review validation
         if (returnState) {
             const batch = config.cronJobBatchSize;
-            for (let i = 0; ; i = i + batch) {
+            for (let i = 0; ; i += batch) {
                 const communities = communitiesId.slice(i, i + batch);
                 const promises = communities.map(async (id) => {
                     let baseState: any = {},

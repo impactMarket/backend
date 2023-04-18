@@ -80,7 +80,7 @@ class CommunityController {
         } = req.body;
 
         this.communityService
-            .editSubmission(parseInt(id), {
+            .editSubmission(parseInt(id, 10), {
                 requestByAddress: req.user.address,
                 name,
                 description,
@@ -113,7 +113,7 @@ class CommunityController {
         }
 
         this.communityService
-            .review(parseInt(id), review, req.user.address)
+            .review(parseInt(id, 10), review, req.user.address)
             .then((r) => standardResponse(res, 201, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -134,7 +134,7 @@ class CommunityController {
         this.communityService
             .edit(
                 req.user.address,
-                parseInt(id),
+                parseInt(id, 10),
                 {
                     name,
                     description,

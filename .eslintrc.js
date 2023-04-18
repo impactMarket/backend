@@ -2,6 +2,8 @@
 module.exports = {
     extends: ['impact-market/node', 'prettier'],
     rules: {
+        'no-bitwise': 'off',
+        'no-loop-func': 'off',
         'sort-keys': 'off',
         'new-cap': 'off',
         '@typescript-eslint/no-unused-expressions': 'off',
