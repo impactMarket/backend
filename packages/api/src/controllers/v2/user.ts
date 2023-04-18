@@ -92,7 +92,10 @@ class UserController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public findBy = (req: RequestWithUser, res: Response) => {
+    public getUserFromAuthorizedAccount = (
+        req: RequestWithUser,
+        res: Response
+    ) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
@@ -106,7 +109,7 @@ class UserController {
         const { address } = req.params;
 
         this.userService
-            .findUserBy(getAddress(address), req.user.address)
+            .getUserFromAuthorizedAccount(getAddress(address), req.user.address)
             .then((community) => standardResponse(res, 200, true, community))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
