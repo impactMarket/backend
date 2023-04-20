@@ -1,4 +1,3 @@
-import { AppMediaContent } from '../app/appMediaContent';
 import { UbiPromoterSocialMedia } from './ubiPromoterSocialMedia';
 
 /**
@@ -22,8 +21,6 @@ import { UbiPromoterSocialMedia } from './ubiPromoterSocialMedia';
  *          description:
  *            type: string
  *            description: Promoter description
- *          logo:
- *            $ref: '#/components/schemas/AppMediaContent'
  *          socialMedia:
  *            type: array
  *            items:
@@ -36,7 +33,6 @@ export interface UbiPromoter {
     description: string;
     logoMediaPath: string;
 
-    logo?: AppMediaContent;
     socialMedia?: UbiPromoterSocialMedia[];
 }
 

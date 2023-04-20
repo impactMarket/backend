@@ -1,10 +1,4 @@
-import {
-    services,
-    utils,
-    config,
-    contracts,
-    database,
-} from '../../';
+import { services, utils, config, contracts, database } from '../../';
 import { ethers } from 'ethers';
 import { models } from '../database';
 import { NotificationType } from '../interfaces/app/appNotification';
@@ -22,7 +16,7 @@ class ChainSubscribers {
     constructor(
         webSocketProvider: ethers.providers.WebSocketProvider,
         jsonRpcProvider: ethers.providers.JsonRpcProvider,
-        communities: Map<string, number>,
+        communities: Map<string, number>
     ) {
         this.provider = webSocketProvider;
         this.jsonRpcProvider = jsonRpcProvider;
@@ -35,7 +29,7 @@ class ChainSubscribers {
         this.ifaceMicrocredit = new ethers.utils.Interface(
             contracts.MicrocreditABI
         );
-        this.communities = communities;    
+        this.communities = communities;
         this.filterTopics = [
             [
                 ethers.utils.id(
@@ -44,7 +38,9 @@ class ChainSubscribers {
                 ethers.utils.id('CommunityRemoved(address)'),
                 ethers.utils.id('BeneficiaryAdded(address,address)'),
                 ethers.utils.id('BeneficiaryRemoved(address,address)'),
-                ethers.utils.id('LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'),
+                ethers.utils.id(
+                    'LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'
+                ),
             ],
         ];
         this.recover();
@@ -61,19 +57,18 @@ class ChainSubscribers {
         // so we know we don't lose events.
         this._runRecoveryTxs(this.jsonRpcProvider).then(() =>
             services.app.ImMetadataService.removeRecoverBlock()
-        )
+        );
     }
 
-    async _runRecoveryTxs(
-        provider: ethers.providers.JsonRpcProvider
-    ) {
+    async _runRecoveryTxs(provider: ethers.providers.JsonRpcProvider) {
         utils.Logger.info('Recovering past events...');
         let startFromBlock: number;
         let lastBlockCached = await database.redisClient.get('lastBlock');
         if (!lastBlockCached) {
-            startFromBlock = await services.app.ImMetadataService.getRecoverBlock();
+            startFromBlock =
+                await services.app.ImMetadataService.getRecoverBlock();
         } else {
-            startFromBlock = parseInt(lastBlockCached)
+            startFromBlock = parseInt(lastBlockCached, 10);
         }
 
         const rawLogs = await provider.getLogs({
@@ -209,7 +204,7 @@ class ChainSubscribers {
             if (community) {
                 utils.cache.cleanBeneficiaryCache(community);
             }
-                
+
             result = parsedLog;
         } else if (parsedLog.name === 'BeneficiaryRemoved') {
             const communityAddress = log.address;
@@ -218,13 +213,15 @@ class ChainSubscribers {
             if (community) {
                 utils.cache.cleanBeneficiaryCache(community);
             }
-                
+
             result = parsedLog;
         }
         return result;
     }
 
-    async _processMicrocreditEvents(log: ethers.providers.Log): Promise<ethers.utils.LogDescription | undefined> {
+    async _processMicrocreditEvents(
+        log: ethers.providers.Log
+    ): Promise<ethers.utils.LogDescription | undefined> {
         let parsedLog = this.ifaceMicrocredit.parseLog(log);
         let result: ethers.utils.LogDescription | undefined = undefined;
         const userAddress = parsedLog.args[0];
@@ -233,12 +230,15 @@ class ChainSubscribers {
             const user = await models.appUser.findOne({
                 attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                 where: {
-                    address: ethers.utils.getAddress(userAddress)
-                }
+                    address: ethers.utils.getAddress(userAddress),
+                },
             });
 
             if (user) {
-                await sendNotification([user.toJSON()], NotificationType.LOAN_ADDED);
+                await sendNotification(
+                    [user.toJSON()],
+                    NotificationType.LOAN_ADDED
+                );
             }
 
             result = parsedLog;

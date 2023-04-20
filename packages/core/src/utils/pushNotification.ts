@@ -65,7 +65,7 @@ export async function sendNotification(
 export async function sendFirebasePushNotification(title: string, body: string, tokens: string[]) {
     try {
         const batch = 500;
-        for (let i = 0; ; i = i + batch) {
+        for (let i = 0; ; i += batch) {
             const tokens_batch = tokens.slice(i, i + batch);
             const message = {
                 apns: {

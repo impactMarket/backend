@@ -33,12 +33,12 @@ jobs:
     steps:
       - checkout
       - run: yarn
-      - run: yarn prettier
+      - run: yarn eslint:dryrun
       - run: yarn build
 
 workflows:
   version: 2
   test:
     jobs:
-      - coverage
       - lint
+      - coverage

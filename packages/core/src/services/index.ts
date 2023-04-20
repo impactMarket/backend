@@ -8,10 +8,8 @@ import { startLesson } from './learnAndEarn/start';
 import { webhook } from './learnAndEarn/syncRemote';
 import { total } from './learnAndEarn/userData';
 import { createLevel } from './learnAndEarn/create';
-import * as media from './media';
-import ReachedAddressService from './reachedAddress';
+import MicrocreditService from './microcredit';
 import * as storage from './storage';
-import StoryService from './story';
 import StoryServiceV2 from './story/index';
 import * as ubi from './ubi';
 
@@ -32,9 +30,7 @@ export {
     storage,
     ubi,
     Email,
-    media,
-    ReachedAddressService,
-    StoryService,
     StoryServiceV2,
     learnAndEarn,
+    MicrocreditService,
 };

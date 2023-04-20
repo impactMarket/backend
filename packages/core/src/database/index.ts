@@ -9,13 +9,9 @@ import * as AirgrabUser from './models/airgrab/airgrabUser';
 import * as AppAnonymousReport from './models/app/anonymousReport';
 import * as AppClientCredential from './models/app/appClientCredential';
 import * as AppLog from './models/app/appLog';
-import * as AppMediaContent from './models/app/appMediaContent';
-import * as AppMediaThumbnail from './models/app/appMediaThumbnail';
 import * as AppNotification from './models/app/appNotification';
 import * as AppProposal from './models/app/appProposal';
 import * as AppUser from './models/app/appUser';
-import * as AppUserThroughTrust from './models/app/appUserThroughTrust';
-import * as AppUserTrust from './models/app/appUserTrust';
 import { AppUserValidationCodeModel } from './models/app/appUserValidationCode';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
 import * as ExchangeRates from './models/app/exchangeRates';
@@ -36,7 +32,6 @@ import * as LearnAndEarnUserLesson from './models/learnAndEarn/learnAndEarnUserL
 import * as LearnAndEarnUserLevel from './models/learnAndEarn/learnAndEarnUserLevel';
 import * as MerchantCommunity from './models/merchant/merchantCommunity';
 import * as MerchantRegistry from './models/merchant/merchantRegistry';
-import * as ReachedAddress from './models/reachedAddress';
 import * as StoryComment from './models/story/storyComment';
 import * as StoryCommunity from './models/story/storyCommunity';
 import * as StoryContent from './models/story/storyContent';
@@ -47,14 +42,9 @@ import { Beneficiary } from './models/ubi/beneficiary';
 import { Community } from './models/ubi/community';
 import * as UbiCommunityContract from './models/ubi/communityContract';
 import * as UbiCommunityDailyMetrics from './models/ubi/communityDailyMetrics';
-import * as UbiCommunityDailyState from './models/ubi/communityDailyState';
 import * as UbiCommunityDemographics from './models/ubi/communityDemographics';
-import * as Inflow from './models/ubi/inflow';
 import * as Manager from './models/ubi/manager';
-import * as UbiRequestChangeParams from './models/ubi/requestChangeParams';
-import * as UbiBeneficiaryRegistry from './models/ubi/ubiBeneficiaryRegistry';
 import * as UbiBeneficiarySurvey from './models/ubi/ubiBeneficiarySurvey';
-import * as UbiBeneficiaryTransaction from './models/ubi/ubiBeneficiaryTransaction';
 import * as ClaimLocation from './models/ubi/ubiClaimLocation';
 import * as UbiCommunityCampaign from './models/ubi/ubiCommunityCampaign';
 import * as UbiCommunityLabel from './models/ubi/ubiCommunityLabel';
@@ -103,12 +93,8 @@ const sequelize = new Sequelize(config.dbUrl, dbConfig);
 initModels(sequelize);
 const models: DbModels = {
     appUser: sequelize.models.AppUserModel as ModelCtor<AppUser.AppUserModel>,
-    appUserTrust: sequelize.models
-        .AppUserTrustModel as ModelCtor<AppUserTrust.AppUserTrustModel>,
     appProposal: sequelize.models
         .AppProposalModel as ModelCtor<AppProposal.AppProposalModel>,
-    appUserThroughTrust: sequelize.models
-        .AppUserThroughTrustModel as ModelCtor<AppUserThroughTrust.AppUserThroughTrustModel>,
     appClientCredential: sequelize.models
         .AppClientCredentialModel as ModelCtor<AppClientCredential.AppClientCredentialModel>,
     appLog: sequelize.models.AppLogModel as ModelCtor<AppLog.AppLogModel>,
@@ -119,8 +105,6 @@ const models: DbModels = {
         .UbiCommunitySuspectModel as ModelCtor<UbiCommunitySuspect.UbiCommunitySuspectModel>,
     ubiCommunityContract: sequelize.models
         .UbiCommunityContractModel as ModelCtor<UbiCommunityContract.UbiCommunityContractModel>,
-    ubiCommunityDailyState: sequelize.models
-        .UbiCommunityDailyStateModel as ModelCtor<UbiCommunityDailyState.UbiCommunityDailyStateModel>,
     ubiCommunityDailyMetrics: sequelize.models
         .UbiCommunityDailyMetricsModel as ModelCtor<UbiCommunityDailyMetrics.UbiCommunityDailyMetricsModel>,
     ubiCommunityDemographics: sequelize.models
@@ -133,19 +117,13 @@ const models: DbModels = {
         .UbiCommunityLabelModel as ModelCtor<UbiCommunityLabel.UbiCommunityLabelModel>,
     ubiCommunityCampaign: sequelize.models
         .UbiCommunityCampaignModel as ModelCtor<UbiCommunityCampaign.UbiCommunityCampaignModel>,
-    ubiRequestChangeParams: sequelize.models
-        .UbiRequestChangeParamsModel as ModelCtor<UbiRequestChangeParams.UbiRequestChangeParamsModel>,
     ubiClaimLocation: sequelize.models
         .ClaimLocationModel as ModelCtor<ClaimLocation.ClaimLocationModel>,
     beneficiary: sequelize.models.Beneficiary as ModelCtor<Beneficiary>,
-    ubiBeneficiaryRegistry: sequelize.models
-        .UbiBeneficiaryRegistryModel as ModelCtor<UbiBeneficiaryRegistry.UbiBeneficiaryRegistryModel>,
     ubiBeneficiarySurvey: sequelize.models
         .UbiBeneficiarySurveyModel as ModelCtor<UbiBeneficiarySurvey.UbiBeneficiarySurveyModel>,
     anonymousReport: sequelize.models
         .AppAnonymousReportModel as ModelCtor<AppAnonymousReport.AppAnonymousReportModel>,
-    ubiBeneficiaryTransaction: sequelize.models
-        .UbiBeneficiaryTransactionModel as ModelCtor<UbiBeneficiaryTransaction.UbiBeneficiaryTransactionModel>,
     cronJobExecuted: sequelize.models
         .CronJobExecuted as ModelCtor<CronJobExecuted>,
     exchangeRates: sequelize.models
@@ -158,15 +136,8 @@ const models: DbModels = {
         .GlobalGrowthModel as ModelCtor<GlobalGrowth.GlobalGrowthModel>,
     // userDevice: sequelize.models
     imMetadata: sequelize.models.ImMetadata as ModelCtor<ImMetadata>,
-    inflow: sequelize.models.Inflow as ModelCtor<Inflow.Inflow>,
     manager: sequelize.models.Manager as ModelCtor<Manager.Manager>,
-    reachedAddress: sequelize.models
-        .ReachedAddress as ModelCtor<ReachedAddress.ReachedAddress>,
 
-    appMediaContent: sequelize.models
-        .AppMediaContentModel as ModelCtor<AppMediaContent.AppMediaContentModel>,
-    appMediaThumbnail: sequelize.models
-        .AppMediaThumbnailModel as ModelCtor<AppMediaThumbnail.AppMediaThumbnailModel>,
     appNotification: sequelize.models
         .AppNotificationModel as ModelCtor<AppNotification.AppNotificationModel>,
     // stories
@@ -230,20 +201,15 @@ export {
     AirgrabProof,
     AirgrabUser,
     AppAnonymousReport,
-    AppMediaContent,
-    AppMediaThumbnail,
     AppNotification,
     AppProposal,
     AppUser,
-    AppUserThroughTrust,
-    AppUserTrust,
     CronJobExecuted,
     ExchangeRates,
     ImMetadata,
     GlobalDailyState,
     GlobalDemographics,
     GlobalGrowth,
-    ReachedAddress,
     StoryCommunity,
     StoryContent,
     StoryEngagement,
@@ -253,14 +219,9 @@ export {
     Community,
     UbiCommunityContract,
     UbiCommunityDailyMetrics,
-    UbiCommunityDailyState,
     UbiCommunityDemographics,
-    Inflow,
     Manager,
-    UbiRequestChangeParams,
-    UbiBeneficiaryRegistry,
     UbiBeneficiarySurvey,
-    UbiBeneficiaryTransaction,
     ClaimLocation,
     UbiCommunityCampaign,
     UbiCommunityLabel,

@@ -1,49 +1,33 @@
 import { expect } from 'chai';
-import { Op, Sequelize } from 'sequelize';
-import Sinon, { assert, replace, spy, match } from 'sinon';
+import { Sequelize } from 'sequelize';
+import Sinon, { assert, spy, match, SinonStub, stub } from 'sinon';
 
 import { models } from '../../src/database';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
-import { StoryContentStorage } from '../../src/services/storage';
 import StoryService from '../../src/services/story';
+import * as userSubgraph from '../../src/subgraph/queries/user';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
-import StoryFactory from '../factories/story';
 import UserFactory from '../factories/user';
 
 describe('story service', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let communities: CommunityAttributes[];
-    let storyContentStorageDeleteBulk: Sinon.SinonSpy<
-        [number[]],
-        Promise<void>
-    >;
     let storyContentDestroy: Sinon.SinonSpy<any, Promise<number>>;
     let storyContentAdd: Sinon.SinonSpy;
+    let returnUserRoleSubgraph: SinonStub;
     let community1: any;
     let community2: any;
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
 
-        replace(
-            StoryContentStorage.prototype,
-            'deleteBulkContent',
-            async (mediaId: number[]) => {
-                await models.appMediaContent.destroy({
-                    where: { id: mediaId },
-                });
-            }
-        );
-        storyContentStorageDeleteBulk = spy(
-            StoryContentStorage.prototype,
-            'deleteBulkContent'
-        );
         storyContentDestroy = spy(models.storyContent, 'destroy');
         storyContentAdd = spy(models.storyContent, 'create');
+        returnUserRoleSubgraph = stub(userSubgraph, 'getUserRoles');
 
         users = await UserFactory({ n: 6 });
         communities = await CommunityFactory([
@@ -104,8 +88,8 @@ describe('story service', () => {
         await truncate(sequelize, 'Beneficiary');
         await truncate(sequelize, 'StoryContentModel');
         await truncate(sequelize);
-        await storyContentStorageDeleteBulk.restore();
         await storyContentDestroy.restore();
+        returnUserRoleSubgraph.restore();
     });
 
     describe('add', () => {
@@ -116,6 +100,13 @@ describe('story service', () => {
 
         it('add story', async () => {
             storyContentAdd.resetHistory();
+            returnUserRoleSubgraph.returns({
+                beneficiary: {
+                    community: community1.contractAddress,
+                    state: 0,
+                },
+                manager: null,
+            });
             const storyService = new StoryService();
             await storyService.add(users[0].address, {
                 byAddress: users[0].address,

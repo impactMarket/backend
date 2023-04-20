@@ -2,6 +2,7 @@ import { getAddress } from '@ethersproject/address';
 import { ethers } from 'ethers';
 import { Op } from 'sequelize';
 
+import UserLogService from './log';
 import config from '../../../config';
 import { models, sequelize } from '../../../database';
 import { AppUserModel } from '../../../database/models/app/appUser';
@@ -10,16 +11,14 @@ import { AppNotification } from '../../../interfaces/app/appNotification';
 import {
     AppUserCreationAttributes,
     AppUserUpdate,
-    AppUser,
 } from '../../../interfaces/app/appUser';
 import { ProfileContentStorage } from '../../../services/storage';
 import { getAllBeneficiaries } from '../../../subgraph/queries/beneficiary';
-import { getUserRoles } from '../../../subgraph/queries/user';
+import { UserRoles, getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
 import { Logger } from '../../../utils/logger';
 import { sendPushNotification } from '../../../utils/util';
-import UserLogService from './log';
 
 export default class UserService {
     private userLogService = new UserLogService();
@@ -35,21 +34,6 @@ export default class UserService {
 
         if (overwrite) {
             await this._overwriteUser(userParams);
-        } else {
-            // a user might be connecting with the same phone number
-            // as an existing user
-            const existsPhone = userParams.phone
-                ? await this._existsAccountByPhone(
-                      userParams.phone,
-                      userParams.address
-                  )
-                : false;
-
-            if (existsPhone)
-                throw new BaseError(
-                    'PHONE_CONFLICT',
-                    'phone associated with another account'
-                );
         }
 
         if (recover) {
@@ -57,66 +41,95 @@ export default class UserService {
         }
 
         let user: AppUserModel;
+        let userRoles: UserRoles = {
+            ambassador: null,
+            beneficiary: null,
+            councilMember: null,
+            manager: null,
+        };
+        let userRules: {
+            beneficiaryRules?: boolean;
+            managerRules?: boolean;
+        } = {};
+
+        // validate to both existing and new accounts
+        if (userParams.phone) {
+            const existsPhone = userParams.phone
+                ? await this._existsAccountByPhone(
+                      userParams.phone,
+                      userParams.address
+                  )
+                : false;
+
+            if (existsPhone) {
+                throw new BaseError(
+                    'PHONE_CONFLICT',
+                    'phone associated with another account'
+                );
+            }
+        }
+
         if (!exists) {
             // create new user
             // including their phone number information, if it exists
             user = await models.appUser.create(userParams);
         } else {
-            const pushNotification = {
-                pushNotificationToken: userParams.pushNotificationToken,
-                walletPNT: userParams.walletPNT,
-                appPNT: userParams.appPNT,
-            };
+            const findAndUpdate = async () => {
+                // it's not null at this point
+                const _user = (await models.appUser.findOne({
+                    where: { address: userParams.address },
+                }))!;
 
-            await models.appUser.update(
-                {
-                    ...pushNotification,
-                },
-                { where: { address: userParams.address } }
-            );
+                if (!_user.active) {
+                    throw new BaseError('INACTIVE_USER', 'user is inactive');
+                }
 
-            // it's not null at this point
-            user = (await models.appUser.findOne({
-                where: { address: userParams.address },
-            }))!;
-            // if the account doesn't have a phone number
-            // but it's being provided now, add it
-            // otherwise, verify if account phone number and
-            // provided phone number are the same
-            const jsonUser = user.toJSON();
-            if (!jsonUser.phone && userParams.phone) {
+                if (_user.deletedAt) {
+                    throw new BaseError(
+                        'DELETION_PROCESS',
+                        'account in deletion process'
+                    );
+                }
+
+                // if a phone number is provided, verify if it
+                // is associated with another account
+                // and if not, update the user's phone number
+                const jsonUser = _user.toJSON();
+                if (userParams.phone && userParams.phone !== jsonUser.phone) {
+                    await models.appUser.update(
+                        {
+                            phone: userParams.phone,
+                        },
+                        {
+                            where: {
+                                id: jsonUser.id,
+                            },
+                        }
+                    );
+                    _user.phone = userParams.phone;
+                }
+
+                const pushNotification = {
+                    pushNotificationToken: userParams.pushNotificationToken,
+                    walletPNT: userParams.walletPNT,
+                    appPNT: userParams.appPNT,
+                };
+
                 await models.appUser.update(
                     {
-                        phone: userParams.phone,
+                        ...pushNotification,
                     },
-                    {
-                        where: {
-                            id: jsonUser.id,
-                        },
-                    }
+                    { where: { address: userParams.address } }
                 );
-                user.phone = userParams.phone;
-            } else if (
-                jsonUser.phone &&
-                userParams.phone &&
-                userParams.phone !== jsonUser.phone
-            ) {
-                throw new BaseError(
-                    'DIFFERENT_PHONE',
-                    'phone associated with account is different'
-                );
-            }
-        }
 
-        if (!user.active) {
-            throw new BaseError('INACTIVE_USER', 'user is inactive');
-        }
+                return _user;
+            };
 
-        if (user.deletedAt) {
-            throw new BaseError(
-                'DELETION_PROCESS',
-                'account in deletion process'
-            );
+            [user, userRoles, userRules] = await Promise.all([
+                findAndUpdate(),
+                this._userRoles(userParams.address),
+                this._userRules(userParams.address),
+            ]);
         }
 
         this._updateLastLogin(user.id);
@@ -149,58 +162,48 @@ export default class UserService {
         const jsonUser = user.toJSON();
         return {
             ...jsonUser,
-            ...(await this._userRoles(user.address)),
-            ...(await this._userRules(user.address)),
+            ...userRoles,
+            ...userRules,
             token,
         };
     }
 
     public async get(address: string) {
-        const user = await models.appUser.findOne({
-            where: { address },
-        });
+        const [user, userRoles, userRules] = await Promise.all([
+            models.appUser.findOne({
+                where: { address },
+            }),
+            this._userRoles(address),
+            this._userRules(address),
+        ]);
+
         if (user === null) {
             throw new BaseError('USER_NOT_FOUND', 'user not found');
         }
+
         return {
             ...user.toJSON(),
-            ...(await this._userRoles(user.address)),
-            ...(await this._userRules(user.address)),
+            ...userRoles,
+            ...userRules,
         };
     }
 
-    public async findUserBy(address: string, userAddress: string) {
-        const userRoles = await this._userRoles(userAddress);
+    public async getUserFromAuthorizedAccount(
+        address: string,
+        authoriedAddress: string
+    ) {
+        const { ambassador, manager, councilMember } = await this._userRoles(
+            authoriedAddress
+        );
 
-        if (
-            !userRoles.ambassador &&
-            !userRoles.manager &&
-            !userRoles.councilMember
-        ) {
+        if (!ambassador && !manager && !councilMember) {
             throw new BaseError(
                 'UNAUTHORIZED',
                 'user must be ambassador, manager or council member'
             );
         }
 
-        const user = await models.appUser.findOne({
-            where: {
-                address,
-            },
-        });
-
-        const roles = await this._userRoles(address);
-
-        if (!user && roles.roles[0] === 'donor') {
-            throw new BaseError('USER_NOT_FOUND', 'user not found');
-        }
-
-        return {
-            address,
-            ...user?.toJSON(),
-            ...roles,
-            ...(await this._userRules(address)),
-        };
+        return await this.get(address);
     }
 
     public async update(user: AppUserUpdate) {
@@ -626,23 +629,10 @@ export default class UserService {
     }
 
     private async _updateLastLogin(id: number): Promise<void> {
-        const t = await sequelize.transaction();
-        try {
-            await models.appUser.update(
-                {
-                    lastLogin: new Date(),
-                },
-                {
-                    where: { id },
-                    transaction: t,
-                }
-            );
-
-            await t.commit();
-        } catch (error) {
-            await t.rollback();
-            Logger.warn(`Error to update last login: ${error}`);
-        }
+        await models.appUser.update(
+            { lastLogin: new Date() },
+            { where: { id } }
+        );
     }
 
     private async _userRoles(address: string) {
@@ -658,22 +648,22 @@ export default class UserService {
                     const community = await models.community.findOne({
                         attributes: ['id'],
                         where: {
-                            contractAddress: getAddress(userRoles[key]!.community),
+                            contractAddress: getAddress(
+                                userRoles[key]!.community
+                            ),
                             status: 'valid',
-                        }
+                        },
                     });
 
                     if (community) {
                         roles.push(key);
                     } else {
-                        delete userRoles[key]
+                        delete userRoles[key];
                     }
-
                 } else {
                     roles.push(key);
                 }
             }
-            
         }
 
         const pendingCommunity = await models.community.findOne({

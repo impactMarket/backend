@@ -455,7 +455,7 @@ export class CommunityListService {
         // TODO: review validation
         if (returnState) {
             const batch = config.cronJobBatchSize;
-            for (let i = 0; ; i = i + batch) {
+            for (let i = 0; ; i += batch) {
                 const communities = communitiesId.slice(i, i + batch);
                 const promises = communities.map(async (id) => {
                     let baseState: any = {},
@@ -465,11 +465,11 @@ export class CommunityListService {
                     );
                     if (
                         !!query.state &&
-                        (query.state === 'ubi' || query.state.indexOf('ubi') !== -1)
+                        (query.state === 'ubi' ||
+                            query.state.indexOf('ubi') !== -1)
                     ) {
-                        ubiState = await this.communityDetailsService.getUbiState(
-                            id!
-                        );
+                        ubiState =
+                            await this.communityDetailsService.getUbiState(id!);
                     }
 
                     return {
@@ -640,23 +640,6 @@ export class CommunityListService {
                         ),
                     } as { [Op.eq]: Literal },
                 },
-            });
-        }
-
-        if (fields.cover) {
-            extendedInclude.push({
-                attributes: ['id', 'url'],
-                model: models.appMediaContent,
-                as: 'cover',
-                duplicating: false,
-                include: [
-                    {
-                        attributes: ['url', 'width', 'height', 'pixelRatio'],
-                        model: models.appMediaThumbnail,
-                        as: 'thumbnails',
-                        separate: true,
-                    },
-                ],
             });
         }
 

@@ -219,7 +219,7 @@ export async function listLessons(userId: number, levelId: number) {
                 completionDate: {
                     [Op.gte]: daysAgo.setHours(0, 0, 0, 0),
                 },
-                userId: userId,
+                userId,
             },
         });
 

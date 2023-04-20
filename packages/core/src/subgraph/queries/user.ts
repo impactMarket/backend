@@ -9,29 +9,29 @@ export type UserRoles = {
     ambassador: { communities: string[]; state: number } | null;
 };
 
-type  DAOResponse = {
+type DAOResponse = {
     beneficiaryEntity: {
-        address: string,
+        address: string;
         community: {
-            id: string,
-        },
-        state: number,
-    },
+            id: string;
+        };
+        state: number;
+    };
     managerEntity: {
         community: {
-            id: string,
-        },
-        state: number,
-    },
+            id: string;
+        };
+        state: number;
+    };
 };
 type CouncilMemberResponse = {
     impactMarketCouncilMemberEntity: {
-        status: number,
-    },
+        status: number;
+    };
     ambassadorEntity: {
-        status: number,
-        communities: string[]
-    }
+        status: number;
+        communities: string[];
+    };
 };
 
 export const getUserRoles = async (address: string): Promise<UserRoles> => {
@@ -75,25 +75,39 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
             }`,
         };
 
-        const cacheDAO = await redisClient.get(graphqlQuery.query);
-        const cacheCouncil = await redisClient.get(councilGraphqlQuery.query);
+        const [cacheDAO, cacheCouncil] = await Promise.all([
+            redisClient.get(graphqlQuery.query),
+            redisClient.get(councilGraphqlQuery.query),
+        ]);
 
-        let responseDAO: DAOResponse | null = null,
-            responseCouncilMember: CouncilMemberResponse | null = null;
+        let responseDAO: DAOResponse | null = null;
+        let responseCouncilMember: CouncilMemberResponse | null = null;
 
-        if (cacheDAO) {
-            responseDAO = JSON.parse(cacheDAO)
+        if (cacheDAO && cacheCouncil) {
+            responseDAO = JSON.parse(cacheDAO);
+            responseCouncilMember = JSON.parse(cacheCouncil);
         } else {
-            const response = await axiosSubgraph.post<
-                any,
-                {
-                    data: {
-                        data: DAOResponse;
-                    };
-                }
-            >('', graphqlQuery);
+            const [rawResponseDAO, rawResponseCouncilMember] =
+                await Promise.all([
+                    axiosSubgraph.post<
+                        any,
+                        {
+                            data: {
+                                data: DAOResponse;
+                            };
+                        }
+                    >('', graphqlQuery),
+                    axiosCouncilSubgraph.post<
+                        any,
+                        {
+                            data: {
+                                data: CouncilMemberResponse;
+                            };
+                        }
+                    >('', councilGraphqlQuery),
+                ]);
 
-            responseDAO = response.data?.data;
+            responseDAO = rawResponseDAO.data?.data;
 
             redisClient.set(
                 graphqlQuery.query,
@@ -101,21 +115,8 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                 'EX',
                 intervalsInSeconds.oneHour
             );
-        }
 
-        if (cacheCouncil) {
-            responseCouncilMember = JSON.parse(cacheCouncil);
-        } else {
-            const response = await axiosCouncilSubgraph.post<
-                any,
-                {
-                    data: {
-                        data: CouncilMemberResponse;
-                    };
-                }
-            >('', councilGraphqlQuery);
-
-            responseCouncilMember = response.data?.data;
+            responseCouncilMember = rawResponseCouncilMember.data?.data;
 
             redisClient.set(
                 councilGraphqlQuery.query,
@@ -128,11 +129,10 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
         const beneficiary = !responseDAO?.beneficiaryEntity
             ? null
             : {
-                community:
-                    responseDAO?.beneficiaryEntity?.community?.id,
-                state: responseDAO?.beneficiaryEntity?.state,
-                address: responseDAO?.beneficiaryEntity?.address,
-            };
+                  community: responseDAO?.beneficiaryEntity?.community?.id,
+                  state: responseDAO?.beneficiaryEntity?.state,
+                  address: responseDAO?.beneficiaryEntity?.address,
+              };
 
         const manager = !responseDAO?.managerEntity
             ? null
@@ -141,12 +141,13 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                   state: responseDAO.managerEntity?.state,
               };
 
-        const councilMember = !responseCouncilMember?.impactMarketCouncilMemberEntity
-            ? null
-            : {
-                  state: responseCouncilMember.impactMarketCouncilMemberEntity
-                      .status,
-              };
+        const councilMember =
+            !responseCouncilMember?.impactMarketCouncilMemberEntity
+                ? null
+                : {
+                      state: responseCouncilMember
+                          .impactMarketCouncilMemberEntity.status,
+                  };
 
         const ambassador = !responseCouncilMember?.ambassadorEntity
             ? null
@@ -220,14 +221,14 @@ export const getUserActivity = async (
                 data: {
                     data: {
                         userActivityEntities: {
-                            id: string,
-                            by: string,
-                            user: string,
+                            id: string;
+                            by: string;
+                            user: string;
                             community: {
-                                id: string,
-                            },
-                            activity: string,
-                            timestamp: number,
+                                id: string;
+                            };
+                            activity: string;
+                            timestamp: number;
                         }[];
                     };
                 };

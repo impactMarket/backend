@@ -5,7 +5,7 @@ import fs from 'fs';
 import json2csv from 'json2csv';
 import { Op, WhereOptions, fn, col, literal, Transaction } from 'sequelize';
 
-import { Community, models } from '../../../database';
+import { models } from '../../../database';
 import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { AppUser } from '../../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
@@ -30,8 +30,7 @@ import {
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { Logger } from '../../../utils/logger';
-import { isAddress, getSearchInput } from '../../../utils/util';
-import { IListBeneficiary, BeneficiaryFilterType } from '../../endpoints';
+import { getSearchInput } from '../../../utils/util';
 import { CommunityContentStorage } from '../../storage';
 const writeFile = fs.promises.writeFile;
 
@@ -515,12 +514,12 @@ export class CommunityDetailsService {
         communityId: number,
         offset: number,
         limit: number,
-        filter: BeneficiaryFilterType,
+        filter: any,
         searchInput?: string,
         orderBy?: string
     ): Promise<{
         count: number;
-        rows: IListBeneficiary[];
+        rows: any[];
     }> {
         const roles = await getUserRoles(userAddress);
         const community = await models.community.findOne({
@@ -686,27 +685,25 @@ export class CommunityDetailsService {
             count = 0;
         }
 
-        const result: IListBeneficiary[] = beneficiariesSubgraph.map(
-            (beneficiary) => {
-                const user = appUsers.find(
-                    (user) =>
-                        user.address ===
-                        ethers.utils.getAddress(beneficiary.address)
-                );
-                return {
-                    address: beneficiary.address,
-                    firstName: user?.firstName,
-                    lastName: user?.lastName,
-                    avatarMediaPath: user?.avatarMediaPath,
-                    since: beneficiary.since || 0,
-                    claimed: beneficiary.claimed!,
-                    blocked: beneficiary.state === 2,
-                    suspect: user?.suspect,
-                    isDeleted: !user || !!user!.deletedAt,
-                    state: beneficiary.state,
-                };
-            }
-        );
+        const result: any[] = beneficiariesSubgraph.map((beneficiary) => {
+            const user = appUsers.find(
+                (user) =>
+                    user.address ===
+                    ethers.utils.getAddress(beneficiary.address)
+            );
+            return {
+                address: beneficiary.address,
+                firstName: user?.firstName,
+                lastName: user?.lastName,
+                avatarMediaPath: user?.avatarMediaPath,
+                since: beneficiary.since || 0,
+                claimed: beneficiary.claimed,
+                blocked: beneficiary.state === 2,
+                suspect: user?.suspect,
+                isDeleted: !user || !!user!.deletedAt,
+                state: beneficiary.state,
+            };
+        });
 
         return {
             count,
@@ -1051,7 +1048,7 @@ export class CommunityDetailsService {
         }
 
         // validate yearOfBirth
-        const year = parseInt(user.yearOfBirth);
+        const year = parseInt(user.yearOfBirth, 10);
         if (!year) {
             return {
                 valid: false,

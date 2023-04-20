@@ -15,9 +15,6 @@ module.exports = {
                 address: await randomWallet.getAddress(),
                 username: faker.internet.userName(),
                 currency: faker.finance.currencyCode(),
-                trust: {
-                    phone: faker.phone.phoneNumber(),
-                },
             });
         }
 
@@ -89,83 +86,11 @@ module.exports = {
                 },
             },
             {
-                tableName: 'user',
+                tableName: 'app_user',
                 sequelize: queryInterface.sequelize, // this bit is important
             }
         );
 
-        const AppUserTrust = await queryInterface.sequelize.define(
-            'app_user_trust',
-            {
-                id: {
-                    type: Sequelize.INTEGER,
-                    autoIncrement: true,
-                    primaryKey: true,
-                },
-                phone: {
-                    // hashed phone number
-                    type: Sequelize.STRING(64),
-                    allowNull: false,
-                },
-                verifiedPhoneNumber: {
-                    type: Sequelize.BOOLEAN,
-                    defaultValue: false,
-                },
-                suspect: {
-                    type: Sequelize.BOOLEAN,
-                    defaultValue: false,
-                },
-            },
-            {
-                tableName: 'app_user_trust',
-                sequelize: queryInterface.sequelize, // this bit is important
-                timestamps: false,
-            }
-        );
-
-        const AppUserThroughTrust = await queryInterface.sequelize.define(
-            'app_user_through_trust',
-            {
-                userAddress: {
-                    type: Sequelize.STRING(44),
-                    references: {
-                        model: 'user',
-                        key: 'address',
-                    },
-                    onDelete: 'CASCADE',
-                    allowNull: false,
-                },
-                appUserTrustId: {
-                    type: Sequelize.INTEGER,
-                    references: {
-                        model: 'app_user_trust',
-                        key: 'id',
-                    },
-                    onDelete: 'CASCADE',
-                    allowNull: false,
-                },
-            },
-            {
-                tableName: 'app_user_through_trust',
-                sequelize: queryInterface.sequelize, // this bit is important
-                timestamps: false,
-            }
-        );
-
-        User.belongsToMany(AppUserTrust, {
-            through: AppUserThroughTrust,
-            foreignKey: 'userAddress',
-            sourceKey: 'address',
-            as: 'trust',
-        });
-
-        await User.bulkCreate(newUsers, {
-            include: [
-                {
-                    model: AppUserTrust,
-                    as: 'trust',
-                },
-            ],
-        });
+        await User.bulkCreate(newUsers);
     },
 };

@@ -8,14 +8,9 @@ import { models } from '../../database';
 import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { AppUser } from '../../interfaces/app/appUser';
 import {
-    UbiBeneficiaryRegistryCreation,
-    UbiBeneficiaryRegistryType,
-} from '../../interfaces/ubi/ubiBeneficiaryRegistry';
-import {
     UbiBeneficiarySurvey,
     UbiBeneficiarySurveyCreation,
 } from '../../interfaces/ubi/ubiBeneficiarySurvey';
-import { UbiBeneficiaryTransactionCreation } from '../../interfaces/ubi/ubiBeneficiaryTransaction';
 import {
     getBeneficiaries,
     getBeneficiariesByAddress,
@@ -25,13 +20,6 @@ import { getUserActivity } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
 import { Logger } from '../../utils/logger';
 import { isAddress } from '../../utils/util';
-import {
-    IBeneficiaryActivities,
-    IListBeneficiary,
-    BeneficiaryFilterType,
-    BeneficiaryActivity,
-} from '../endpoints';
-import CommunityService from './community';
 
 export default class BeneficiaryService {
     public static async add(
@@ -49,14 +37,6 @@ export default class BeneficiaryService {
         };
         try {
             await models.beneficiary.create(beneficiaryData);
-            await this._addRegistry({
-                address,
-                from,
-                communityId,
-                activity: UbiBeneficiaryRegistryType.add,
-                tx,
-                txAt,
-            });
             const maxClaim: any = literal(`"maxClaim" - "decreaseStep"`);
             await models.ubiCommunityContract.update(
                 {
@@ -91,14 +71,6 @@ export default class BeneficiaryService {
             { active: false },
             { where: { address, communityId } }
         );
-        await this._addRegistry({
-            address,
-            from,
-            communityId,
-            activity: UbiBeneficiaryRegistryType.remove,
-            tx,
-            txAt,
-        });
         const maxClaim: any = literal(`"maxClaim" + "decreaseStep"`);
         await models.ubiCommunityContract.update(
             {
@@ -151,19 +123,12 @@ export default class BeneficiaryService {
     public static async search(
         managerAddress: string,
         searchInput: string,
-        filter?: BeneficiaryFilterType
-    ): Promise<IListBeneficiary[]> {
+        filter?: any
+    ): Promise<any[]> {
         let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null =
             null;
 
         if (!isAddress(managerAddress)) {
-            throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
-        }
-        // prevent add community contracts as beneficiaries
-        if (
-            (await CommunityService.existsByContractAddress(managerAddress)) ===
-            true
-        ) {
             throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
         }
 
@@ -233,24 +198,22 @@ export default class BeneficiaryService {
             community!.contractAddress!
         );
 
-        const result: IListBeneficiary[] = beneficiaries.map(
-            (beneficiary: any) => {
-                const user = appUsers.find(
-                    (user) => beneficiary.address === user.address.toLowerCase()
-                );
-                return {
-                    address: ethers.utils.getAddress(beneficiary.address),
-                    username: user?.username ? user.username : null,
-                    timestamp: beneficiary.since * 1000,
-                    claimed: new BigNumber(beneficiary.claimed)
-                        .multipliedBy(10 ** config.cUSDDecimal)
-                        .toString() as any,
-                    blocked: beneficiary.state === 2,
-                    suspect: user?.suspect,
-                    isDeleted: !user || !!user.deletedAt,
-                };
-            }
-        );
+        const result: any[] = beneficiaries.map((beneficiary: any) => {
+            const user = appUsers.find(
+                (user) => beneficiary.address === user.address.toLowerCase()
+            );
+            return {
+                address: ethers.utils.getAddress(beneficiary.address),
+                username: user?.username ? user.username : null,
+                timestamp: beneficiary.since * 1000,
+                claimed: new BigNumber(beneficiary.claimed)
+                    .multipliedBy(10 ** config.cUSDDecimal)
+                    .toString() as any,
+                blocked: beneficiary.state === 2,
+                suspect: user?.suspect,
+                isDeleted: !user || !!user.deletedAt,
+            };
+        });
         return result;
     }
 
@@ -258,8 +221,8 @@ export default class BeneficiaryService {
         managerAddress: string,
         offset: number,
         limit: number,
-        filter: BeneficiaryFilterType
-    ): Promise<IListBeneficiary[]> {
+        filter: any
+    ): Promise<any[]> {
         let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null =
             null;
 
@@ -313,7 +276,7 @@ export default class BeneficiaryService {
             },
         });
 
-        const result: IListBeneficiary[] = [];
+        const result: any[] = [];
         if (Object.keys(whereSearchCondition).length > 0) {
             appUsers.forEach((user: any) => {
                 const beneficiary = beneficiaries.find(
@@ -357,7 +320,7 @@ export default class BeneficiaryService {
         return result;
     }
 
-    public static async getUserFilter(filter: BeneficiaryFilterType) {
+    public static async getUserFilter(filter: any) {
         let where = {};
 
         if (filter.unidentified !== undefined) {
@@ -382,10 +345,7 @@ export default class BeneficiaryService {
         return where;
     }
 
-    public static async getBeneficiaryFilter(
-        filter: BeneficiaryFilterType,
-        communityId: number
-    ) {
+    public static async getBeneficiaryFilter(filter: any, communityId: number) {
         const where = {
             state: '',
             inactive: '',
@@ -418,55 +378,15 @@ export default class BeneficiaryService {
         return where;
     }
 
-    public static async addTransaction(
-        beneficiaryTx: UbiBeneficiaryTransactionCreation
-    ): Promise<void> {
-        try {
-            await models.ubiBeneficiaryTransaction.create(beneficiaryTx);
-        } catch (e) {
-            if (e.name !== 'SequelizeUniqueConstraintError') {
-                Logger.error(
-                    'Error inserting new UbiBeneficiaryTransaction. Data = ' +
-                        JSON.stringify(beneficiaryTx)
-                );
-                Logger.error(e);
-            }
-        }
-    }
-
-    private static async _addRegistry(
-        registry: UbiBeneficiaryRegistryCreation
-    ): Promise<void> {
-        try {
-            await models.ubiBeneficiaryRegistry.create(registry);
-        } catch (e) {
-            if (e.name !== 'SequelizeUniqueConstraintError') {
-                Logger.error(
-                    'Error inserting new UbiBeneficiaryTransaction. Data = ' +
-                        JSON.stringify(registry)
-                );
-                Logger.error(e);
-            }
-        }
-    }
-
     public static async getBeneficiaryActivity(
         managerAddress: string,
         beneficiaryAddress: string,
         type: string,
         offset: number,
         limit: number
-    ): Promise<IBeneficiaryActivities[]> {
+    ): Promise<any[]> {
         try {
             if (!isAddress(managerAddress)) {
-                throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
-            }
-            // prevent add community contracts as beneficiaries
-            if (
-                (await CommunityService.existsByContractAddress(
-                    managerAddress
-                )) === true
-            ) {
                 throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
             }
 
@@ -502,22 +422,8 @@ export default class BeneficiaryService {
                         offset,
                         limit
                     );
-                case 'REGISTRY':
-                    return this.getRegistryActivity(
-                        beneficiaryAddress,
-                        communityId,
-                        offset,
-                        limit
-                    );
-                case 'TRANSACTION':
-                    return this.getTransactionActivity(
-                        beneficiaryAddress,
-                        communityId,
-                        offset,
-                        limit
-                    );
                 default:
-                    return this.getAllActivity(
+                    return this.getRegistryActivity(
                         beneficiaryAddress,
                         communityId,
                         offset,
@@ -534,7 +440,7 @@ export default class BeneficiaryService {
         _communityId: number,
         _offset?: number,
         _limit?: number
-    ): Promise<IBeneficiaryActivities[]> {
+    ): Promise<any[]> {
         return [];
     }
 
@@ -543,7 +449,7 @@ export default class BeneficiaryService {
         communityId: number,
         offset?: number,
         limit?: number
-    ): Promise<IBeneficiaryActivities[]> {
+    ): Promise<any[]> {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
             where: {
@@ -578,70 +484,9 @@ export default class BeneficiaryService {
                 txAt: new Date(el.timestamp * 1000),
                 withAddress: el.by,
                 username: user ? user.username! : undefined,
-                activity: BeneficiaryActivity[el.activity],
+                activity: undefined as any,
             };
         });
-    }
-
-    private static async getTransactionActivity(
-        beneficiaryAddress: string,
-        communityId: number,
-        offset?: number,
-        limit?: number
-    ): Promise<IBeneficiaryActivities[]> {
-        const transactions = await models.ubiBeneficiaryTransaction.findAll({
-            where: {
-                beneficiary: beneficiaryAddress,
-            },
-            include: [
-                {
-                    attributes: ['username'],
-                    model: models.appUser,
-                    as: 'user',
-                },
-            ],
-            order: [['txAt', 'DESC']],
-            limit,
-            offset,
-        });
-        return transactions.map((transaction) => ({
-            id: transaction.id,
-            type: 'transaction',
-            tx: transaction.tx,
-            txAt: transaction.txAt,
-            withAddress: transaction.withAddress,
-            username: transaction['user']
-                ? transaction['user']['username']
-                : null,
-            amount: transaction.amount,
-            isFromBeneficiary: transaction.isFromBeneficiary,
-        }));
-    }
-
-    private static async getAllActivity(
-        beneficiaryAddress: string,
-        communityId: number,
-        offset: number,
-        limit: number
-    ): Promise<IBeneficiaryActivities[]> {
-        const registry = await this.getRegistryActivity(
-            beneficiaryAddress,
-            communityId
-        );
-        const transaction = await this.getTransactionActivity(
-            beneficiaryAddress,
-            communityId
-        );
-        const claim = await this.getClaimActivity(
-            beneficiaryAddress,
-            communityId
-        );
-
-        const activitiesOrdered = [...registry, ...transaction, ...claim].sort(
-            (a, b) => b.txAt.getTime() - a.txAt.getTime()
-        );
-
-        return activitiesOrdered.slice(offset, offset + limit);
     }
 
     public static async readRules(address: string): Promise<boolean> {

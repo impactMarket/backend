@@ -181,24 +181,17 @@ describe('user service v2', () => {
             const firstPhone = faker.phone.phoneNumber();
             const secondPhone = faker.phone.phoneNumber();
             // first login
-            const newUser = await userService.create({
+            await userService.create({
                 address,
                 phone: firstPhone,
             });
             // second login
-            let error: any;
-            await userService
-                .create({
-                    address,
-                    phone: secondPhone,
-                    pushNotificationToken: 'token',
-                })
-                .catch((err) => {
-                    error = err;
-                });
-            expect(error.message).to.equal(
-                'phone associated with account is different'
-            );
+            const updatedUser = await userService.create({
+                address,
+                phone: secondPhone,
+                pushNotificationToken: 'token',
+            });
+            expect(updatedUser.phone).to.equal(secondPhone);
         });
         it('try to login with an inactive account', async () => {
             const randomWallet = ethers.Wallet.createRandom();
@@ -343,7 +336,7 @@ describe('user service v2', () => {
                 address,
             });
 
-            const user = await userService.findUserBy(
+            const user = await userService.getUserFromAuthorizedAccount(
                 newUser.address,
                 'managerAddress'
             );
@@ -363,7 +356,7 @@ describe('user service v2', () => {
 
             let error: any;
             await userService
-                .findUserBy(newUser.address, 'managerAddress')
+                .getUserFromAuthorizedAccount(newUser.address, 'managerAddress')
                 .catch((err) => {
                     error = err;
                 });
@@ -391,7 +384,11 @@ describe('user service v2', () => {
 
             let error: any;
             await userService
-                .findUserBy('invalidAddress', 'managerAddress')
+                .getUserFromAuthorizedAccount(
+                    'invalidAddress',
+                    'managerAddress'
+                )
+                .then((user) => console.log({ invalid: user }))
                 .catch((err) => {
                     error = err;
                 });

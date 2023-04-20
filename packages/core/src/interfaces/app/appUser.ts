@@ -1,7 +1,5 @@
 import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { BeneficiaryAttributes } from '../ubi/beneficiary';
-import { AppMediaContent } from './appMediaContent';
-import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
 
 /**
  * @swagger
@@ -76,8 +74,6 @@ import { AppUserTrust, AppUserTrustCreation } from './appUserTrust';
  *          updatedAt:
  *            type: date
  *            description: Manager date of last update
- *          avatar:
- *            $ref: '#/components/schemas/AppMediaContent'
  */
 export interface AppUser {
     id: number;
@@ -110,8 +106,6 @@ export interface AppUser {
     updatedAt: Date;
     deletedAt: Date | null;
 
-    avatar?: AppMediaContent;
-    trust?: AppUserTrust[];
     beneficiary?: BeneficiaryAttributes[];
     manager?: ManagerAttributes[];
 }
@@ -158,6 +152,4 @@ export interface AppUserCreationAttributes {
     phone?: string;
     readBeneficiaryRules?: boolean;
     readManagerRules?: boolean;
-
-    trust?: AppUserTrustCreation;
 }

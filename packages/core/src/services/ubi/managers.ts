@@ -5,7 +5,6 @@ import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { BaseError } from '../../utils/baseError';
 import { Logger } from '../../utils/logger';
 import { isAddress } from '../../utils/util';
-import { IManagerDetailsManager } from '../endpoints';
 
 export default class ManagerService {
     public static manager = models.manager;
@@ -55,87 +54,6 @@ export default class ManagerService {
             return r.toJSON() as ManagerAttributes;
         }
         return null;
-    }
-
-    /**
-     * @deprecated Since mobile version 1.1.0
-     */
-    public static async search(
-        managerAddress: string,
-        address: string
-    ): Promise<IManagerDetailsManager[]> {
-        // select mq."user" address, u.username username, mq."createdAt" "timestamp"
-        // from manager m, manager mq
-        //     left join "user" u on u.address = mq."user"
-        // where m."communityId" = mq."communityId"
-        // and m."user" = '0x833961aab38d24EECdCD2129Aa5a5d41Fd86Acbf'
-        // and mq."user" = '0x64771E37aA6cD3AeD0660fee96F6651CE4d1E3a5'
-        // order by mq."createdAt" desc
-
-        if (!isAddress(managerAddress)) {
-            throw new BaseError(
-                'NOT_MANAGER',
-                'Not a manager ' + managerAddress
-            );
-        }
-
-        const query = `
-            select mq."address" address, u.username username, mq."createdAt" "timestamp"
-            from manager m, manager mq left join "app_user" u on u.address = mq."address" 
-            where mq.active = true and m."communityId" = mq."communityId" and m."address" = :managerAddress and mq."address" = :address
-            order by mq."createdAt" desc
-        `;
-
-        return await this.sequelize.query(query, {
-            type: QueryTypes.SELECT,
-            replacements: {
-                managerAddress,
-                address,
-            },
-        });
-    }
-
-    /**
-     * @deprecated Since mobile version 1.1.0 Replaced with /community/{id}/managers
-     */
-    public static async listManagers(
-        managerAddress: string,
-        offset: number,
-        limit: number
-    ): Promise<IManagerDetailsManager[]> {
-        // select mq."user" address, u.username username, mq."createdAt" "timestamp"
-        // from manager m, manager mq
-        //     left join "user" u on u.address = mq."user"
-        // where m."communityId" = mq."communityId"
-        // and m."user" = '0x833961aab38d24EECdCD2129Aa5a5d41Fd86Acbf'
-        // order by mq."createdAt" desc
-        // offset 0
-        // limit 10
-
-        if (!isAddress(managerAddress)) {
-            throw new BaseError(
-                'NOT_MANAGER',
-                'Not a manager ' + managerAddress
-            );
-        }
-
-        const query = `
-            select mq."address" address, u.username username, mq."createdAt" "timestamp"
-            from manager m, manager mq left join "app_user" u on u.address = mq."address" 
-            where mq.active = true and m."communityId" = mq."communityId" and m."address" = :managerAddress
-            order by mq."createdAt" desc
-            offset :offset
-            limit :limit
-        `;
-
-        return await this.sequelize.query(query, {
-            type: QueryTypes.SELECT,
-            replacements: {
-                managerAddress,
-                offset,
-                limit,
-            },
-        });
     }
 
     public static async remove(

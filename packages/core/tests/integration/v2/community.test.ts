@@ -1,11 +1,11 @@
-import { expect } from 'chai';
+import { expect, use } from 'chai';
+import chaiSubset from 'chai-subset';
 import { ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { replace, stub, SinonStub, restore } from 'sinon';
 
 import { models, sequelize as database } from '../../../src/database';
 import { AppUser } from '../../../src/interfaces/app/appUser';
-import { CommunityContentStorage } from '../../../src/services/storage';
 import { CommunityCreateService } from '../../../src/services/ubi/community/create';
 import { CommunityDetailsService } from '../../../src/services/ubi/community/details';
 import { CommunityListService } from '../../../src/services/ubi/community/list';
@@ -15,6 +15,8 @@ import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import BeneficiaryFactory from '../../factories/beneficiary';
 import CommunityFactory from '../../factories/community';
 import UserFactory from '../../factories/user';
+
+use(chaiSubset);
 
 describe('community service v2', () => {
     let sequelize: Sequelize;
@@ -37,14 +39,6 @@ describe('community service v2', () => {
         await sequelize.sync();
         users = await UserFactory({ n: 5 });
         replace(database, 'query', sequelize.query);
-
-        replace(
-            CommunityContentStorage.prototype,
-            'deleteContent',
-            async (mediaId: number) => {
-                //
-            }
-        );
 
         returnProposalsSubgraph = stub(subgraph, 'getCommunityProposal');
         returnCommunityEntities = stub(subgraph, 'communityEntities');
@@ -1504,31 +1498,6 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const media = await models.appMediaContent.create({
-                    url: 'test.com',
-                    width: 0,
-                    height: 0,
-                });
-
-                await models.appMediaThumbnail.create({
-                    mediaContentId: media.id,
-                    url: 'test.com',
-                    width: 0,
-                    height: 0,
-                    pixelRatio: 0,
-                });
-
-                await models.community.update(
-                    {
-                        coverMediaId: media.id,
-                    },
-                    {
-                        where: {
-                            id: communities[0].id,
-                        },
-                    }
-                );
-
                 returnCommunityEntities.returns([
                     {
                         id: communities[0].contractAddress,
@@ -1545,7 +1514,6 @@ describe('community service v2', () => {
                     'publicId',
                     'contractAddress',
                     'contract',
-                    'cover',
                 ]);
                 expect(result.rows[0].contract).to.have.deep.keys([
                     'claimAmount',
@@ -1559,17 +1527,6 @@ describe('community service v2', () => {
                     'updatedAt',
                     'maxTranche',
                     'minTranche',
-                ]);
-                expect(result.rows[0].cover).to.have.deep.keys([
-                    'id',
-                    'url',
-                    'thumbnails',
-                ]);
-                expect(result.rows[0].cover!.thumbnails![0]).to.have.deep.keys([
-                    'url',
-                    'width',
-                    'height',
-                    'pixelRatio',
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,
