@@ -10,13 +10,17 @@ export class LearnAndEarnLevelModel extends Model<
     LearnAndEarnLevelCreation
 > {
     public id!: number;
-    public prismicId!: string;
-    public categoryId!: number;
-    public languages?: string[];
-    public active!: boolean;
-    public isLive!: boolean;
+    public prismicId!: string; // TODO: remove
+    public categoryId!: number; // TODO: remove
+    public languages?: string[]; // TODO: remove
+    public active!: boolean; // TODO: remove
+    public isLive!: boolean; // TODO: remove
+    public title!: string;
     public totalReward!: number;
     public rewardLimit?: number;
+    public asset!: string;
+    public adminUserId!: number;
+    public status!: string;
 }
 
 export function initializeLearnAndEarnLevel(
@@ -30,9 +34,13 @@ export function initializeLearnAndEarnLevel(
                 autoIncrement: true,
                 primaryKey: true,
             },
+            title: {
+                type: DataTypes.STRING(255),
+                allowNull: false,
+            },
             prismicId: {
                 type: DataTypes.STRING(32),
-                allowNull: false,
+                allowNull: true,
             },
             categoryId: {
                 type: DataTypes.INTEGER,
@@ -41,7 +49,7 @@ export function initializeLearnAndEarnLevel(
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: true,
             },
             languages: {
                 type: DataTypes.ARRAY(DataTypes.STRING(3)),
@@ -49,7 +57,7 @@ export function initializeLearnAndEarnLevel(
             },
             active: {
                 type: DataTypes.BOOLEAN,
-                allowNull: false,
+                allowNull: true,
             },
             totalReward: {
                 type: DataTypes.FLOAT,
@@ -64,6 +72,25 @@ export function initializeLearnAndEarnLevel(
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,
+            },
+            adminUserId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'app_user',
+                    key: 'id',
+                },
+                onDelete: 'CASCADE',
+                allowNull: false,
+            },
+            status: {
+                type: DataTypes.ENUM(
+                    'pending',
+                    'aproved',
+                    'declined',
+                    'published'
+                ),
+                allowNull: false,
+                defaultValue: 'pending',
             },
         },
         {

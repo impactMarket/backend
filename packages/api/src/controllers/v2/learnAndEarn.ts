@@ -64,6 +64,23 @@ class LearnAndEarnController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
+    listAdminLevels = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        services.learnAndEarn
+            .listAdminLevels(req.user.userId)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    };
+
     registerClaimRewards = (
         req: RequestWithUser<never, never, RegisterClaimRewardsRequestType>,
         res: Response
@@ -164,6 +181,23 @@ class LearnAndEarnController {
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    createLevel = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!',
+                },
+            });
+            return;
+        }
+
+        services.learnAndEarn
+            .createLevel(req.body.title, req.user.userId)
+            .then((r) => standardResponse(res, 200, true, r))
+            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+    }
 }
 
 export default LearnAndEarnController;

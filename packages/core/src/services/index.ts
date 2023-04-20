@@ -3,10 +3,11 @@ import Email from './email';
 import * as global from './global';
 import { answer } from './learnAndEarn/answer';
 import { registerClaimRewards } from './learnAndEarn/claimRewards';
-import { listLessons, listLevels } from './learnAndEarn/list';
+import { listLessons, listLevels, listAdminLevels } from './learnAndEarn/list';
 import { startLesson } from './learnAndEarn/start';
 import { webhook } from './learnAndEarn/syncRemote';
 import { total } from './learnAndEarn/userData';
+import { createLevel } from './learnAndEarn/create';
 import * as media from './media';
 import ReachedAddressService from './reachedAddress';
 import * as storage from './storage';
@@ -19,9 +20,11 @@ const learnAndEarn = {
     registerClaimRewards,
     listLessons,
     listLevels,
+    listAdminLevels,
     startLesson,
     webhook,
     total,
+    createLevel,
 };
 export {
     app,

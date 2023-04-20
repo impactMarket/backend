@@ -163,6 +163,21 @@ export async function listLevels(
     }
 }
 
+export async function listAdminLevels(userId: number) {
+    try {
+        const levels = await models.learnAndEarnLevel.findAll({
+            attributes: ['id', 'title', 'status'],
+            where: {
+                adminUserId: userId,
+            },
+        });
+        return levels;
+    } catch (error) {
+        console.log({ error });
+        throw new BaseError('LIST_LEVELS_FAILED', 'list levels failed');
+    }
+}
+
 export async function listLessons(userId: number, levelId: number) {
     try {
         const user = await models.appUser.findOne({

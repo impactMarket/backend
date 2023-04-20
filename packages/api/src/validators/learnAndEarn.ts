@@ -55,6 +55,12 @@ class LearnAndEarnValidator {
             transactionHash: Joi.string().required(),
         }),
     });
+
+    createLevel = celebrate({
+        body: defaultSchema.object({
+            title: Joi.string().required(),
+        }),
+    });
 }
 
 export default LearnAndEarnValidator;

@@ -52,6 +52,57 @@ export default (app: Router): void => {
         learnAndEarnController.listLevels
     );
 
+    /**
+     * @swagger
+     *
+     * /learn-and-earn/levels/admin:
+     *   get:
+     *     tags:
+     *       - "learn-and-earn"
+     *     summary: "List admin levels"
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.get(
+        '/levels/admin',
+        authenticateToken,
+        learnAndEarnController.listAdminLevels
+    );
+
+    /**
+     * @swagger
+     *
+     * /learn-and-earn/levels:
+     *   post:
+     *     tags:
+     *       - "learn-and-earn"
+     *     summary: "Create level"
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               title:
+     *                 type: string
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post(
+        '/levels',
+        authenticateToken,
+        learnAndEarnValidator.createLevel,
+        learnAndEarnController.createLevel
+    );
+
     route.put(
         '/levels',
         authenticateToken,
