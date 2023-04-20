@@ -7,14 +7,12 @@ import { ExchangeRegistry } from '../../database/models/exchange/exchangeRegistr
 import { MerchantRegistry } from '../../database/models/merchant/merchantRegistry';
 
 export default class CashoutProviderService {
-    public async get(
-        query: {
-            country?: string;
-            lat?: string;
-            lng?: string;
-            distance?: string;
-        }
-    ) {
+    public async get(query: {
+        country?: string;
+        lat?: string;
+        lng?: string;
+        distance?: string;
+    }) {
         let merchants: MerchantRegistry[] | null = null,
             exchanges: ExchangeRegistry[] | null = null;
 
@@ -31,9 +29,8 @@ export default class CashoutProviderService {
             return {
                 merchants,
                 exchanges,
-            }
-        };
-
+            };
+        }
 
         if (query.country) {
             const where: any = {
@@ -57,8 +54,8 @@ export default class CashoutProviderService {
 
         if (query.lat && query.lng) {
             const userLocation = point([
-                parseInt(query.lng),
-                parseInt(query.lat),
+                parseInt(query.lng, 10),
+                parseInt(query.lat, 10),
             ]);
 
             if (!merchants) {
@@ -71,7 +68,7 @@ export default class CashoutProviderService {
                     merchant.gps.latitude,
                 ]);
                 const dist = distance(userLocation, merchantLocation);
-                if (dist < (query.distance || 100)) {
+                if (dist < parseInt(query.distance || '100', 10)) {
                     merchant['distance'] = dist;
                     return true;
                 }

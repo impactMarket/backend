@@ -1048,7 +1048,7 @@ export class CommunityDetailsService {
         }
 
         // validate yearOfBirth
-        const year = parseInt(user.yearOfBirth);
+        const year = parseInt(user.yearOfBirth, 10);
         if (!year) {
             return {
                 valid: false,

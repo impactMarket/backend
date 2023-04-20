@@ -35,7 +35,7 @@ class CommunityController {
                 parseInt(offset, 10),
                 parseInt(limit, 10),
                 {
-                    state: state ? parseInt(state) : undefined,
+                    state: state ? parseInt(state, 10) : undefined,
                 },
                 search !== undefined && typeof search === 'string'
                     ? search
@@ -83,11 +83,11 @@ class CommunityController {
         this.detailsService
             .listBeneficiaries(
                 req.user.address,
-                parseInt(req.params.id),
+                parseInt(req.params.id, 10),
                 parseInt(offset, 10),
                 parseInt(limit, 10),
                 {
-                    state: state ? parseInt(state) : undefined,
+                    state: state ? parseInt(state, 10) : undefined,
                     suspect: suspect ? suspect === 'true' : undefined,
                     inactivity: inactivity ? inactivity === 'true' : undefined,
                     unidentified: unidentified

@@ -82,11 +82,14 @@ async function getPrismicLearnAndEarn() {
                 >;
 
                 if (prismicLevel.id) {
-                    let reward = 0
+                    let reward = 0;
                     if (typeof prismicLevel.data.reward === 'number') {
-                        reward = prismicLevel.data.reward
+                        reward = prismicLevel.data.reward;
                     } else {
-                        reward = parseInt(prismicLevel.data.reward.split(' ')[0])
+                        reward = parseInt(
+                            prismicLevel.data.reward.split(' ')[0],
+                            10
+                        );
                     }
                     // INSERT LEVEL
                     const [level] = await models.learnAndEarnLevel.findOrCreate(
@@ -166,8 +169,7 @@ async function getPrismicLearnAndEarn() {
                             await models.learnAndEarnLesson.update(
                                 {
                                     active: true,
-                                    isLive:
-                                        prismicLesson.data.is_live || false,
+                                    isLive: prismicLesson.data.is_live || false,
                                     languages:
                                         findLessonLanguages.alternate_languages
                                             .map(({ lang }) => {
@@ -218,16 +220,19 @@ async function getPrismicLearnAndEarn() {
                                         transaction: t,
                                     });
                                 quizIds.push(quiz.id);
-                                await models.learnAndEarnQuiz.update({
-                                    active: true,
-                                    answer,
-                                }, {
-                                    where: {
-                                        order: quizIndex,
-                                        lessonId: lesson.id,
+                                await models.learnAndEarnQuiz.update(
+                                    {
+                                        active: true,
+                                        answer,
                                     },
-                                    transaction: t,
-                                })
+                                    {
+                                        where: {
+                                            order: quizIndex,
+                                            lessonId: lesson.id,
+                                        },
+                                        transaction: t,
+                                    }
+                                );
                             }
                         }
                     }

@@ -76,7 +76,7 @@ describe('Microcredit', () => {
         stub(admin.credential, 'cert').returns({} as any);
         stub(admin, 'initializeApp');
         stub(admin, 'messaging').returns({
-            sendMulticast:  async function () {
+            async sendMulticast () {
                 return Promise.resolve();
             }
         } as any);

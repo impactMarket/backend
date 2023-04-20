@@ -33,7 +33,7 @@ export default class UserLogService {
             const community = await models.community.findOne({
                 attributes: ['id'],
                 where: {
-                    id: parseInt(entity),
+                    id: parseInt(entity, 10),
                     ambassadorAddress,
                 },
             });
