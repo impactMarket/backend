@@ -1,3 +1,4 @@
+import timeout from 'connect-timeout';
 import { Router } from 'express';
 
 import UserController from '../../controllers/v2/user';
@@ -7,7 +8,6 @@ import {
     verifySignature,
 } from '../../middlewares';
 import userValidators from '../../validators/user';
-import timeout from 'connect-timeout';
 
 export default (app: Router): void => {
     const route = Router();
@@ -315,7 +315,12 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/report/:query?', authenticateToken, timeout('3s'), userController.getReport);
+    route.get(
+        '/report/:query?',
+        authenticateToken,
+        timeout('3s'),
+        userController.getReport
+    );
 
     /**
      * @swagger
@@ -347,7 +352,12 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/logs', authenticateToken, timeout('3s'), userController.getLogs);
+    route.get(
+        '/logs',
+        authenticateToken,
+        timeout('3s'),
+        userController.getLogs
+    );
 
     /**
      * @swagger
@@ -527,7 +537,7 @@ export default (app: Router): void => {
      *   get:
      *     tags:
      *       - "users"
-     *     summary: "Get user by address"
+     *     summary: "Get user by address using authorized account"
      *     parameters:
      *       - in: path
      *         name: address
@@ -544,7 +554,12 @@ export default (app: Router): void => {
      *     - api_auth:
      *       - "write:modify":
      */
-    route.get('/:address', authenticateToken, timeout('3s'), userController.findBy);
+    route.get(
+        '/:address',
+        authenticateToken,
+        timeout('3s'),
+        userController.getUserFromAuthorizedAccount
+    );
 
     route.post(
         '/push-notifications',
