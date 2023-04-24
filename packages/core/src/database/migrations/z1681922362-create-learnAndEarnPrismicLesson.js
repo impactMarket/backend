@@ -10,7 +10,11 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            referenceCode: {
+            levelId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+            },
+            lessonId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },

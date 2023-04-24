@@ -11,7 +11,8 @@ export class LearnAndEarnPrismicLessonModel extends Model<
 > {
     public id!: number;
     public prismicId!: string;
-    public referenceCode!: number;
+    public levelId!: number;
+    public lessonId!: number;
     public language!: string;
     public isLive!: boolean;
 }
@@ -31,7 +32,11 @@ export function initializeLearnAndEarnPrismicLesson(
                 type: DataTypes.STRING(32),
                 allowNull: true,
             },
-            referenceCode: {
+            levelId: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+            },
+            lessonId: {
                 type: DataTypes.INTEGER,
                 allowNull: true,
             },

@@ -7,14 +7,15 @@
  *        required:
  *          - id
  *          - prismicId
- *          - referenceCode
+ *          - lessonId
+ *          - levelId
  *          - language
  *        properties:
  *          id:
  *            type: integer
  *          prismicId:
  *            type: string
- *          referenceCode:
+ *          lessonId:
  *            type: number
  *          language:
  *            type: string
@@ -24,14 +25,16 @@
 export interface LearnAndEarnPrismicLesson {
     id: number;
     prismicId: string;
-    referenceCode: number;
+    levelId: number;
+    lessonId: number;
     language: string;
     isLive: boolean;
 }
 
 export interface LearnAndEarnPrismicLessonCreation {
     prismicId: string;
-    referenceCode: number;
+    levelId: number;
+    lessonId: number;
     language: string;
     isLive?: boolean;
 }
