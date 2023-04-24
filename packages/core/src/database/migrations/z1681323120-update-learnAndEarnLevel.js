@@ -9,11 +9,6 @@ module.exports = {
             allowNull: true,
         });
 
-        await queryInterface.addColumn('learn_and_earn_level', 'asset', {
-            type: Sequelize.STRING(64),
-            allowNull: true,
-        });
-
         await queryInterface.addColumn('learn_and_earn_level', 'adminUserId', {
             type: Sequelize.INTEGER,
             references: {

@@ -10,9 +10,13 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
+            title: {
+                type: Sequelize.STRING(255),
+                allowNull: true,
+            },
             prismicId: {
                 type: Sequelize.STRING(32),
-                allowNull: false,
+                allowNull: true,
             },
             categoryId: {
                 type: Sequelize.INTEGER,
@@ -21,7 +25,7 @@ module.exports = {
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: true,
             },
             totalReward: {
                 type: Sequelize.FLOAT,
@@ -34,7 +38,26 @@ module.exports = {
             },
             active: {
                 type: Sequelize.BOOLEAN,
+                allowNull: true,
+            },
+            adminUserId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'app_user',
+                    key: 'id',
+                },
+                onDelete: 'CASCADE',
+                allowNull: true,
+            },
+            status: {
+                type: Sequelize.ENUM(
+                    'pending',
+                    'aproved',
+                    'declined',
+                    'published'
+                ),
                 allowNull: false,
+                defaultValue: 'pending',
             },
             isLive: {
                 type: Sequelize.BOOLEAN,
