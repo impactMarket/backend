@@ -18,16 +18,20 @@
  *            type: number
  *          language:
  *            type: string
+ *          isLive:
+ *            type: boolean
  */
 export interface LearnAndEarnPrismicLevel {
     id: number;
     prismicId: string;
     levelId: number;
     language: string;
+    isLive: boolean;
 }
 
 export interface LearnAndEarnPrismicLevelCreation {
     prismicId: string;
     levelId: number;
     language: string;
+    isLive?: boolean;
 }

@@ -13,6 +13,7 @@ export class LearnAndEarnPrismicLevelModel extends Model<
     public prismicId!: string;
     public levelId!: number;
     public language!: string;
+    public isLive!: boolean;
 }
 
 export function initializeLearnAndEarnPrismicLevel(
@@ -42,6 +43,11 @@ export function initializeLearnAndEarnPrismicLevel(
             language: {
                 type: DataTypes.STRING(2),
                 allowNull: false,
+            },
+            isLive: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
             },
         },
         {

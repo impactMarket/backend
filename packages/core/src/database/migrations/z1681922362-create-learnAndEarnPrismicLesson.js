@@ -22,6 +22,11 @@ module.exports = {
                 type: Sequelize.STRING(2),
                 allowNull: false,
             },
+            isLive: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
         });
     },
     down: (queryInterface) => {

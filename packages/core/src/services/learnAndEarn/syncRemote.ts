@@ -20,8 +20,10 @@ async function getPrismicLearnAndEarn() {
             fetchLinks: [
                 'pwa-lae-level.reward',
                 'pwa-lae-level.id',
+                'pwa-lae-level.is_live',
                 'pwa-lae-level.lessons',
                 'pwa-lae-lesson.id',
+                'pwa-lae-lesson.is_live',
             ],
         });
 
@@ -45,6 +47,7 @@ async function getPrismicLearnAndEarn() {
                     prismicId: prismicLevel.id,
                     levelId: prismicLevel.data.id,
                     language:  lang,
+                    isLive: prismicLevel.data.is_live,
                 }, {
                     transaction: t,
                 });
@@ -69,6 +72,7 @@ async function getPrismicLearnAndEarn() {
                             prismicId: prismicLesson.id,
                             referenceCode,
                             language: lang,
+                            isLive: prismicLesson.data.is_live,
                         }, {
                             transaction: t,
                         });
