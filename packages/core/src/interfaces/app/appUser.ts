@@ -82,6 +82,7 @@ export interface AppUser {
     phoneValidated: boolean;
     readBeneficiaryRules?: boolean | null;
     readManagerRules?: boolean | null;
+    referralCode?: string | null;
 
     // timestamps
     createdAt: Date;
