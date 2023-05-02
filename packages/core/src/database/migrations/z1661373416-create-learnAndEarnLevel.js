@@ -10,10 +10,6 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            title: {
-                type: Sequelize.STRING(255),
-                allowNull: true,
-            },
             prismicId: {
                 type: Sequelize.STRING(32),
                 allowNull: true,

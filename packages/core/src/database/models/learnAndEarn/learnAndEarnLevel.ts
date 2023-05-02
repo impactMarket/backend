@@ -15,7 +15,6 @@ export class LearnAndEarnLevelModel extends Model<
     public languages?: string[]; // TODO: remove
     public active!: boolean; // TODO: remove
     public isLive!: boolean; // TODO: remove
-    public title!: string;
     public totalReward!: number;
     public rewardLimit?: number;
     public asset!: string;
@@ -33,10 +32,6 @@ export function initializeLearnAndEarnLevel(
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
-            },
-            title: {
-                type: DataTypes.STRING(255),
-                allowNull: false,
             },
             prismicId: {
                 type: DataTypes.STRING(32),

@@ -3,7 +3,7 @@ import Email from './email';
 import * as global from './global';
 import { answer } from './learnAndEarn/answer';
 import { registerClaimRewards } from './learnAndEarn/claimRewards';
-import { listLessons, listLevels, listAdminLevels } from './learnAndEarn/list';
+import { listLessons, listLevels, listLevelsByAdmin } from './learnAndEarn/list';
 import { startLesson } from './learnAndEarn/start';
 import { webhook } from './learnAndEarn/syncRemote';
 import { total } from './learnAndEarn/userData';
@@ -18,7 +18,7 @@ const learnAndEarn = {
     registerClaimRewards,
     listLessons,
     listLevels,
-    listAdminLevels,
+    listLevelsByAdmin,
     startLesson,
     webhook,
     total,

@@ -70,7 +70,7 @@ export default (app: Router): void => {
     route.get(
         '/levels/admin',
         authenticateToken,
-        learnAndEarnController.listAdminLevels
+        learnAndEarnController.listLevelsByAdmin
     );
 
     /**
@@ -81,14 +81,6 @@ export default (app: Router): void => {
      *     tags:
      *       - "learn-and-earn"
      *     summary: "Create level"
-     *     requestBody:
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               title:
-     *                 type: string
      *     responses:
      *       "200":
      *         description: OK
@@ -99,7 +91,6 @@ export default (app: Router): void => {
     route.post(
         '/levels',
         authenticateToken,
-        learnAndEarnValidator.createLevel,
         learnAndEarnController.createLevel
     );
 

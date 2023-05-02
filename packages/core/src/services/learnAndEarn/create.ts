@@ -1,8 +1,7 @@
 import { models } from '../../database';
 
-export async function createLevel(title: string, userId: number) {
+export async function createLevel(userId: number) {
     const level = await models.learnAndEarnLevel.create({
-        title,
         adminUserId: userId,
     });
     

@@ -163,7 +163,7 @@ export async function listLevels(
     }
 }
 
-export async function listAdminLevels(userId: number) {
+export async function listLevelsByAdmin(userId: number) {
     try {
         const levels = await models.learnAndEarnLevel.findAll({
             attributes: ['id', 'title', 'status'],

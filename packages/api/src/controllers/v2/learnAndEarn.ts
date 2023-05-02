@@ -64,7 +64,7 @@ class LearnAndEarnController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    listAdminLevels = (req: RequestWithUser, res: Response) => {
+    listLevelsByAdmin = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
@@ -76,7 +76,7 @@ class LearnAndEarnController {
         }
 
         services.learnAndEarn
-            .listAdminLevels(req.user.userId)
+            .listLevelsByAdmin(req.user.userId)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
@@ -194,7 +194,7 @@ class LearnAndEarnController {
         }
 
         services.learnAndEarn
-            .createLevel(req.body.title, req.user.userId)
+            .createLevel(req.user.userId)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     }

@@ -22,7 +22,6 @@
  */
 export interface LearnAndEarnLevel {
     id: number;
-    title: string;
     prismicId: string;
     categoryId: number;
     languages?: string[];
@@ -41,7 +40,6 @@ export interface LearnAndEarnLevel {
 }
 
 export interface LearnAndEarnLevelCreation {
-    title: string;
     adminUserId: number;
     status?: string;
 }
