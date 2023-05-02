@@ -10,7 +10,7 @@ export type AnswerRequestType = {
     answers: number[];
 };
 export type StartLessonRequestType = {
-    lesson: number;
+    lesson: string;
 };
 export type ListLevelsRequestType = {
     status: string;
@@ -18,6 +18,7 @@ export type ListLevelsRequestType = {
     level: string;
     limit?: string;
     offset?: string;
+    language?: string;
 };
 export type RegisterClaimRewardsRequestType = {
     transactionHash: string;
@@ -36,7 +37,7 @@ class LearnAndEarnValidator {
 
     startLesson = celebrate({
         body: defaultSchema.object({
-            lesson: Joi.number().required(),
+            lesson: Joi.string().required(),
         }),
     });
 
@@ -47,6 +48,7 @@ class LearnAndEarnValidator {
                 .valid('available', 'started', 'completed'),
             category: Joi.string().optional(),
             level: Joi.string().optional(),
+            language: Joi.string().optional(),
         },
     });
 

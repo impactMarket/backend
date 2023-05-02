@@ -1,30 +1,26 @@
 import { models } from '../../database';
 import { BaseError } from '../../utils/baseError';
 
-export async function startLesson(userId: number, lessonId: number) {
+export async function startLesson(userId: number, prismicId: string) {
     try {
         const status = 'started';
-        const lesson = await models.learnAndEarnLesson.findOne({
-            attributes: ['levelId'],
+        const lesson = await models.learnAndEarnPrismicLesson.findOne({
+            attributes: ['levelId', 'lessonId'],
             where: {
-                id: lessonId,
-            },
-        });
-        const level = await models.learnAndEarnLevel.findOne({
-            attributes: ['id', 'categoryId'],
-            where: {
-                id: lesson!.levelId,
+                prismicId: prismicId,
             },
         });
 
         // create userLesson
         const userLesson = await models.learnAndEarnUserLesson.findOrCreate({
             where: {
-                lessonId,
+                lessonId: lesson!.lessonId,
+                levelId: lesson!.levelId,
                 userId,
             },
             defaults: {
-                lessonId,
+                lessonId: lesson!.lessonId,
+                levelId: lesson!.levelId,
                 userId,
                 points: 0,
                 attempts: 0,
@@ -44,24 +40,9 @@ export async function startLesson(userId: number, lessonId: number) {
             },
         });
 
-        const userCategory = await models.learnAndEarnUserCategory.findOrCreate(
-            {
-                where: {
-                    categoryId: level!.categoryId,
-                    userId,
-                },
-                defaults: {
-                    categoryId: level!.categoryId,
-                    userId,
-                    status,
-                },
-            }
-        );
-
         return {
             lesson: userLesson[0].toJSON(),
             level: userLevel[0].toJSON(),
-            category: userCategory[0].toJSON(),
         };
     } catch (error) {
         throw new BaseError(

@@ -25,7 +25,7 @@ export async function total(userId: number): Promise<{
             attributes: ['language'],
             where: { id: userId },
         });
-        const levels = (await models.learnAndEarnLevel.findAll({
+        const levels = (await models.learnAndEarnPrismicLevel.findAll({
             attributes: [
                 [
                     literal(
@@ -47,8 +47,7 @@ export async function total(userId: number): Promise<{
                 },
             ],
             where: {
-                active: true,
-                languages: { [Op.contains]: [user!.language] },
+                language: user!.language,
                 ...(process.env.API_ENVIRONMENT === 'production'
                 ? { isLive: true }
                 : {})
@@ -60,7 +59,7 @@ export async function total(userId: number): Promise<{
         }[];
 
         // get lessons
-        const lessons = (await models.learnAndEarnLesson.findAll({
+        const lessons = (await models.learnAndEarnPrismicLesson.findAll({
             attributes: [
                 [
                     literal(
@@ -81,9 +80,14 @@ export async function total(userId: number): Promise<{
                     required: false,
                 },
             ],
+            group: [
+                '"LearnAndEarnPrismicLessonModel".levelId',
+                '"LearnAndEarnPrismicLessonModel".lessonId',
+                '"LearnAndEarnPrismicLessonModel".language',
+                '"userLesson".status'
+            ],
             where: {
-                active: true,
-                languages: { [Op.contains]: [user!.language] },
+                language: user!.language,
                 ...(process.env.API_ENVIRONMENT === 'production'
                     ? { isLive: true }
                     : {})

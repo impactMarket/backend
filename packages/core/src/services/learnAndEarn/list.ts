@@ -1,19 +1,19 @@
-import { literal, Op, WhereOptions, fn, col } from 'sequelize';
+import { literal, Op, WhereOptions, fn, col, Includeable, ProjectionAlias } from 'sequelize';
 
 import { models } from '../../database';
-import { LearnAndEarnLesson } from '../../interfaces/learnAndEarn/learnAndEarnLesson';
-import { LearnAndEarnLevel } from '../../interfaces/learnAndEarn/learnAndEarnLevel';
+import { LearnAndEarnPrismicLevel } from '../../interfaces/learnAndEarn/learnAndEarnPrismicLevel';
+import { LearnAndEarnPrismicLesson } from '../../interfaces/learnAndEarn/learnAndEarnPrismicLesson';
 import { formatObjectToNumber } from '../../utils';
 import { BaseError } from '../../utils/baseError';
 import config from '../../config';
 
 export async function listLevels(
-    userId: number,
     offset: number,
     limit: number,
+    userId?: number,
     status?: string,
-    category?: string,
-    level?: string
+    level?: string,
+    language?: string,
 ): Promise<{
     count: number;
     rows: {
@@ -25,114 +25,100 @@ export async function listLevels(
     }[];
 }> {
     try {
-        let whereCategory = {};
-        if (category) {
-            whereCategory = {
+        const userQuery: {
+            attributes: ProjectionAlias[];
+            include: Includeable[];
+            group: string[];
+        } = {
+            attributes: [],
+            include: [],
+            group: [],
+        };
+
+        if (userId) {
+            const user = await models.appUser.findOne({
+                attributes: ['language'],
+                where: { id: userId },
+            });
+            language = user?.language;
+            userQuery.include.push({
+                attributes: [],
+                model: models.learnAndEarnUserLevel,
+                as: 'userLevel',
+                required: false,
                 where: {
-                    prismicId: category,
+                    userId,
                 },
-            };
+                duplicating: false,
+            });
+            userQuery.attributes.push(
+                [literal('"userLevel".status'), 'status']
+            );
+            userQuery.group.push('"userLevel".status');
         }
 
-        const user = await models.appUser.findOne({
-            attributes: ['language'],
-            where: { id: userId },
-        });
-        const where: WhereOptions<LearnAndEarnLevel> = {
+        if (!language) {
+            throw new BaseError('LANGUAGE_NOT_FOUND', 'language not found');
+        }
+
+        const where: WhereOptions<LearnAndEarnPrismicLevel> = {
             [Op.and]: [
-                // TODO: sanitize this
                 status
-                    ? literal(
-                          status === 'available'
-                              ? `("userLevel".status = 'started' or "userLevel".status is null)`
-                              : `"userLevel".status = '${status}'`
-                      )
+                    ? status === 'available'
+                        ? {
+                                [Op.or]: [
+                                    { '$userLevel.status$': 'started' },
+                                    { '$userLevel.status$': null },
+                                ],
+                            }
+                        : { '$userLevel.status$': status }
                     : {},
                 level ? { prismicId: level } : {},
-                { languages: { [Op.contains]: [user!.language] } },
-                { active: true },
+                { language },
                 process.env.API_ENVIRONMENT === 'production'
                     ? { isLive: true }
                     : {},
             ],
         };
-        const userLevels = (await models.learnAndEarnLevel.findAll({
+        
+
+        const userLevels = (await models.learnAndEarnPrismicLevel.findAll({
             attributes: [
-                'id',
+                'levelId',
                 'prismicId',
-                'totalReward',
-                [literal('"userLevel".status'), 'status'],
                 [literal(`count(lesson.id)`), 'totalLessons'],
+                ...userQuery.attributes,
             ],
             include: [
+                ...userQuery.include,
                 {
                     attributes: [],
-                    model: models.learnAndEarnUserLevel,
-                    as: 'userLevel',
-                    required: false,
-                    where: {
-                        userId,
-                    },
-                    duplicating: false,
-                },
-                {
-                    attributes: [],
-                    model: models.learnAndEarnLesson,
+                    model: models.learnAndEarnPrismicLesson,
                     as: 'lesson',
                     duplicating: false,
-                    where: {
-                        active: true,
-                    }
-                },
-                {
-                    attributes: ['prismicId'],
-                    model: models.learnAndEarnCategory,
-                    as: 'category',
-                    duplicating: false,
-                    ...whereCategory,
+                    where: process.env.API_ENVIRONMENT === 'production'
+                            ? { isLive: true }
+                            : {},
                 },
             ],
             where,
             group: [
-                '"LearnAndEarnLevelModel".id',
-                '"LearnAndEarnLevelModel".prismicId',
-                '"LearnAndEarnLevelModel"."totalReward"',
-                'category."prismicId',
-                'category.id',
-                '"userLevel".status',
+                '"LearnAndEarnPrismicLevelModel".id',
+                '"LearnAndEarnPrismicLevelModel".prismicId',
+                ...userQuery.group,
             ],
-            order: [literal('"category".id')],
             limit,
             offset,
             raw: true,
         })) as unknown as {
-            id: number;
             prismicId: string;
-            totalReward: number;
             status: string;
             totalLessons: number;
-            category?: {
-                prismicId: string;
-            };
         }[];
-        const count = await models.learnAndEarnLevel.count({
+        const count = await models.learnAndEarnPrismicLevel.count({
             attributes: [],
             include: [
-                {
-                    attributes: [],
-                    model: models.learnAndEarnUserLevel,
-                    as: 'userLevel',
-                    required: false,
-                    where: {
-                        userId,
-                    },
-                },
-                {
-                    attributes: [],
-                    model: models.learnAndEarnCategory,
-                    as: 'category',
-                    ...whereCategory,
-                },
+                ...userQuery.include,
             ],
             where,
         });
@@ -140,26 +126,20 @@ export async function listLevels(
             count,
             rows: userLevels.map(
                 ({
-                    id,
                     prismicId,
-                    totalReward,
                     totalLessons,
                     status,
-                    category,
                 }) =>
                     formatObjectToNumber({
-                        id,
                         prismicId,
-                        totalReward,
                         totalLessons,
                         status: status || 'available',
-                        category: category?.prismicId,
                     })
             ),
         };
     } catch (error) {
         console.log({ error });
-        throw new BaseError('LIST_LEVELS_FAILED', 'list levels failed');
+        throw new BaseError(error.name || 'LIST_LEVELS_FAILED', error.message || 'list levels failed');
     }
 }
 
@@ -178,66 +158,95 @@ export async function listLevelsByAdmin(userId: number) {
     }
 }
 
-export async function listLessons(userId: number, levelId: number) {
+export async function listLessons(levelId: number | string, userId?: number, language?: string) {
     try {
-        const user = await models.appUser.findOne({
-            attributes: ['language'],
-            where: { id: userId },
-        });
-        const lessons = await models.learnAndEarnLesson.findAll({
-            include: [
-                {
-                    attributes: [
-                        'status',
-                        'points',
-                        'attempts',
-                        'completionDate',
-                    ],
-                    model: models.learnAndEarnUserLesson,
-                    as: 'userLesson',
-                    required: false,
-                    where: {
-                        userId,
-                    },
+        const include: Includeable[] = [];
+
+        if (userId) {
+            const user = await models.appUser.findOne({
+                attributes: ['language'],
+                where: { id: userId },
+            });
+
+            if (user?.language) {
+                language = user.language;
+            }
+
+            include.push({
+                attributes: [
+                    'status',
+                    'points',
+                    'attempts',
+                    'completionDate',
+                ],
+                model: models.learnAndEarnUserLesson,
+                as: 'userLesson',
+                required: false,
+                where: {
+                    userId,
                 },
-            ],
+            })
+        }
+
+        if (!language) {
+            throw new BaseError('LANGUAGE_NOT_FOUND', 'language not found');
+        }
+
+        if (typeof levelId === 'string') {
+            const level = await models.learnAndEarnPrismicLevel.findOne({
+                attributes: ['levelId'],
+                where: {
+                    prismicId: levelId,
+                },
+            });
+
+            if (!level) {
+                throw new BaseError('LEVEL_NOT_FOUND', 'level not found');
+            }
+            levelId = level.levelId;
+        }
+
+        const lessons = await models.learnAndEarnPrismicLesson.findAll({
+            include,
             where: {
                 levelId,
-                languages: { [Op.contains]: [user!.language] },
-                active: true,
+                language,
                 ...(process.env.API_ENVIRONMENT === 'production'
                     ? { isLive: true }
                     : {}),
             },
         });
 
-        let totalPoints = 0;
-        const daysAgo = new Date();
-        daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
-        const completedToday = await models.learnAndEarnUserLesson.count({
-            where: {
-                completionDate: {
-                    [Op.gte]: daysAgo.setHours(0, 0, 0, 0),
+        let totalPoints = 0,
+            completedToday = 0;
+
+        if (userId) {
+            const daysAgo = new Date();
+            daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
+            completedToday = await models.learnAndEarnUserLesson.count({
+                where: {
+                    completionDate: {
+                        [Op.gte]: daysAgo.setHours(0, 0, 0, 0),
+                    },
+                    userId,
                 },
-                userId,
-            },
-        });
+            });
+        }
 
         const mappedLessons = lessons.map(
-            ({ id, prismicId, levelId, userLesson }: LearnAndEarnLesson) => {
+            ({ prismicId, levelId, userLesson }: LearnAndEarnPrismicLesson) => {
                 const { status, points, attempts, completionDate } =
-                    userLesson!.length > 0
+                    !!userLesson && userLesson.length > 0
                         ? userLesson![0].toJSON()
                         : {
-                              status: 'available',
-                              points: 0,
-                              attempts: 0,
-                              completionDate: null,
-                          };
+                            status: 'available',
+                            points: 0,
+                            attempts: 0,
+                            completionDate: null,
+                        };
 
                 totalPoints += points || 0;
                 return {
-                    id,
                     prismicId,
                     levelId,
                     status,
@@ -247,7 +256,6 @@ export async function listLessons(userId: number, levelId: number) {
                 };
             }
         );
-
         const rewardAvailable = await getRewardAvailable(levelId);
 
         return {
@@ -257,7 +265,7 @@ export async function listLessons(userId: number, levelId: number) {
             lessons: mappedLessons,
         };
     } catch (error) {
-        throw new BaseError('LIST_LESSONS_FAILED', 'list lessons failed');
+        throw new BaseError(error.name || 'LIST_LESSONS_FAILED', error.message || 'list lessons failed');
     }
 }
 

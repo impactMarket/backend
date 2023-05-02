@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import LearnAndEarnController from '../../controllers/v2/learnAndEarn';
-import { authenticateToken } from '../../middlewares';
+import { authenticateToken, optionalAuthentication } from '../../middlewares';
 import LearnAndEarnValidator from '../../validators/learnAndEarn';
 
 export default (app: Router): void => {
@@ -47,7 +47,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/levels',
-        authenticateToken,
+        optionalAuthentication,
         learnAndEarnValidator.listLevels,
         learnAndEarnController.listLevels
     );
@@ -125,7 +125,7 @@ export default (app: Router): void => {
      */
     route.get(
         '/levels/:id',
-        authenticateToken,
+        optionalAuthentication,
         learnAndEarnController.listLessons
     );
 

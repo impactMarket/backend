@@ -21,11 +21,6 @@ module.exports = {
             },
             lessonId: {
                 type: Sequelize.INTEGER,
-                references: {
-                    model: 'learn_and_earn_lesson',
-                    key: 'id',
-                },
-                onDelete: 'CASCADE',
                 allowNull: false,
             },
             status: {
