@@ -47,7 +47,6 @@ class LearnAndEarnController {
                 parseInt(limit, 10),
                 req.user?.userId,
                 status,
-                category,
                 level,
                 language,
             )
