@@ -10,6 +10,10 @@ const client = prismic.createClient(endpoint, { accessToken });
 // eslint-disable-next-line no-undef
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
+
         // get all user lesson
         const userLessons = await queryInterface.sequelize.query(
             `select learn_and_earn_user_lesson.id as id, learn_and_earn_lesson."prismicId" as "prismicId", learn_and_earn_lesson."levelId" as "levelId"

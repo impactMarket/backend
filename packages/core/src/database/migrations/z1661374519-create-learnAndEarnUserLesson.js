@@ -23,6 +23,15 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
             },
+            levelId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'learn_and_earn_level',
+                    key: 'id',
+                },
+                onDelete: 'CASCADE',
+                allowNull: true,
+            },
             status: {
                 type: Sequelize.ENUM('available', 'started', 'completed'),
                 allowNull: false,

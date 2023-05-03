@@ -3,6 +3,10 @@
 // eslint-disable-next-line no-undef
 module.exports = {
     async up(queryInterface, Sequelize) {
+        if (process.env.NODE_ENV === 'test') {
+            return;
+        }
+
         // add new columns
         await queryInterface.addColumn('learn_and_earn_user_lesson', 'levelId', {
             type: Sequelize.INTEGER,
