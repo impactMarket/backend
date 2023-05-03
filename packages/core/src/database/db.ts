@@ -19,6 +19,8 @@ import { GlobalGrowthModel } from './models/global/globalGrowth';
 import { LearnAndEarnCategoryModel } from './models/learnAndEarn/learnAndEarnCategory';
 import { LearnAndEarnLessonModel } from './models/learnAndEarn/learnAndEarnLesson';
 import { LearnAndEarnLevelModel } from './models/learnAndEarn/learnAndEarnLevel';
+import { LearnAndEarnPrismicLevelModel } from './models/learnAndEarn/learnAndEarnPrismicLevel';
+import { LearnAndEarnPrismicLessonModel } from './models/learnAndEarn/learnAndEarnPrismicLesson';
 import { LearnAndEarnPaymentModel } from './models/learnAndEarn/learnAndEarnPayment';
 import { LearnAndEarnQuizModel } from './models/learnAndEarn/learnAndEarnQuiz';
 import { LearnAndEarnUserCategoryModel } from './models/learnAndEarn/learnAndEarnUserCategory';
@@ -94,6 +96,8 @@ export interface DbModels {
     learnAndEarnCategory: ModelCtor<LearnAndEarnCategoryModel>;
     learnAndEarnLesson: ModelCtor<LearnAndEarnLessonModel>;
     learnAndEarnLevel: ModelCtor<LearnAndEarnLevelModel>;
+    learnAndEarnPrismicLevel: ModelCtor<LearnAndEarnPrismicLevelModel>;
+    learnAndEarnPrismicLesson: ModelCtor<LearnAndEarnPrismicLessonModel>;
     learnAndEarnQuiz: ModelCtor<LearnAndEarnQuizModel>;
     learnAndEarnUserCategory: ModelCtor<LearnAndEarnUserCategoryModel>;
     learnAndEarnUserLesson: ModelCtor<LearnAndEarnUserLessonModel>;

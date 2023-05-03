@@ -23,6 +23,8 @@ import * as GlobalGrowth from './models/global/globalGrowth';
 import * as LearnAndEarnCategory from './models/learnAndEarn/learnAndEarnCategory';
 import * as LearnAndEarnLesson from './models/learnAndEarn/learnAndEarnLesson';
 import * as LearnAndEarnLevel from './models/learnAndEarn/learnAndEarnLevel';
+import * as LearnAndEarnPrismicLevel from './models/learnAndEarn/learnAndEarnPrismicLevel';
+import * as LearnAndEarnPrismicLesson from './models/learnAndEarn/learnAndEarnPrismicLesson';
 import * as LearnAndEarnPayment from './models/learnAndEarn/learnAndEarnPayment';
 import * as LearnAndEarnQuiz from './models/learnAndEarn/learnAndEarnQuiz';
 import * as LearnAndEarnUserCategory from './models/learnAndEarn/learnAndEarnUserCategory';
@@ -167,6 +169,10 @@ const models: DbModels = {
         .LearnAndEarnLessonModel as ModelCtor<LearnAndEarnLesson.LearnAndEarnLessonModel>,
     learnAndEarnLevel: sequelize.models
         .LearnAndEarnLevelModel as ModelCtor<LearnAndEarnLevel.LearnAndEarnLevelModel>,
+    learnAndEarnPrismicLevel: sequelize.models
+        .LearnAndEarnPrismicLevelModel as ModelCtor<LearnAndEarnPrismicLevel.LearnAndEarnPrismicLevelModel>,
+    learnAndEarnPrismicLesson: sequelize.models
+        .LearnAndEarnPrismicLessonModel as ModelCtor<LearnAndEarnPrismicLesson.LearnAndEarnPrismicLessonModel>,
     learnAndEarnQuiz: sequelize.models
         .LearnAndEarnQuizModel as ModelCtor<LearnAndEarnQuiz.LearnAndEarnQuizModel>,
     learnAndEarnUserCategory: sequelize.models

@@ -25,6 +25,8 @@ import { initializeGlobalGrowth } from './global/globalGrowth';
 import { initializeLearnAndEarnCategory } from './learnAndEarn/learnAndEarnCategory';
 import { initializeLearnAndEarnLesson } from './learnAndEarn/learnAndEarnLesson';
 import { initializeLearnAndEarnLevel } from './learnAndEarn/learnAndEarnLevel';
+import { initializeLearnAndEarnPrismicLevel } from './learnAndEarn/learnAndEarnPrismicLevel';
+import { initializeLearnAndEarnPrismicLesson } from './learnAndEarn/learnAndEarnPrismicLesson';
 import { initializeLearnAndEarnPayment } from './learnAndEarn/learnAndEarnPayment';
 import { initializeLearnAndEarnQuiz } from './learnAndEarn/learnAndEarnQuiz';
 import { initializeLearnAndEarnUserCategory } from './learnAndEarn/learnAndEarnUserCategory';
@@ -113,6 +115,8 @@ export default function initModels(sequelize: Sequelize): void {
     initializeLearnAndEarnCategory(sequelize);
     initializeLearnAndEarnLesson(sequelize);
     initializeLearnAndEarnLevel(sequelize);
+    initializeLearnAndEarnPrismicLevel(sequelize);
+    initializeLearnAndEarnPrismicLesson(sequelize);
     initializeLearnAndEarnQuiz(sequelize);
     initializeLearnAndEarnUserCategory(sequelize);
     initializeLearnAndEarnUserLesson(sequelize);

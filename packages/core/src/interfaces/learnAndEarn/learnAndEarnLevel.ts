@@ -29,14 +29,17 @@ export interface LearnAndEarnLevel {
     isLive?: boolean;
     totalReward: number;
     rewardLimit?: number;
+    asset?: string;
+    adminUserId: number;
+    status: [
+        'pending',
+        'aproved',
+        'declined',
+        'published'
+    ];
 }
 
 export interface LearnAndEarnLevelCreation {
-    prismicId: string;
-    categoryId: number;
-    languages?: string[];
-    active: boolean;
-    isLive?: boolean;
-    totalReward: number;
-    rewardLimit?: number;
+    adminUserId: number;
+    status?: string;
 }
