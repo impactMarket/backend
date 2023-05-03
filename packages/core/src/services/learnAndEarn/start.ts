@@ -7,7 +7,7 @@ export async function startLesson(userId: number, prismicId: string) {
         const lesson = await models.learnAndEarnPrismicLesson.findOne({
             attributes: ['levelId', 'lessonId'],
             where: {
-                prismicId: prismicId,
+                prismicId,
             },
         });
 
