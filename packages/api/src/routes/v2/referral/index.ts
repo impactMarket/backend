@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import ReferralController from '~controllers/v2/referral';
 import { cache } from '~middlewares/cache-redis';
-import { authenticateToken } from '~middlewares/index';
+import { authenticateToken, verifyTypedSignature } from '~middlewares/index';
 import { cacheIntervals } from '~utils/api';
 import { referralPostValidator } from '~validators/referral';
 
@@ -19,13 +19,39 @@ export default (app: Router): void => {
      *     tags:
      *     - "referrals"
      *     summary: "Get user referral data"
+     *     description: "This GET method is used to generate the user referral code, or, if it aready exists, simply return it. This method requires the user to be authenticated and provide an EIP712 signature."
+     *     parameters:
+     *       - in: header
+     *         name: signature
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: EIP712 signature
+     *       - in: header
+     *         name: expiry
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: expiry value to include in EIP712 signature
+     *       - in: header
+     *         name: message
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: message value to include in EIP712 signature
      *     responses:
      *       "200":
      *         description: "Success"
      *       "403":
      *         description: "Invalid input"
      */
-    route.get('/', cache(cacheIntervals.oneHour), controller.get);
+    route.get(
+        '/',
+        authenticateToken,
+        verifyTypedSignature,
+        cache(cacheIntervals.oneHour),
+        controller.get
+    );
 
     /**
      * @swagger

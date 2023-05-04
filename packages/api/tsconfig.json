@@ -21,6 +21,7 @@
             "~controllers/*": ["controllers/*"],
             "~validators/*": ["validators/*"],
             "~middlewares/*": ["middlewares/*"],
+            "~services/*": ["services/*"],
             "~utils/*": ["utils/*"]
         }
     },
