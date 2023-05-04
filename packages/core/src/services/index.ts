@@ -3,12 +3,17 @@ import Email from './email';
 import * as global from './global';
 import { answer } from './learnAndEarn/answer';
 import { registerClaimRewards } from './learnAndEarn/claimRewards';
-import { listLessons, listLevels, listLevelsByAdmin } from './learnAndEarn/list';
+import {
+    listLessons,
+    listLevels,
+    listLevelsByAdmin,
+} from './learnAndEarn/list';
 import { startLesson } from './learnAndEarn/start';
 import { webhook } from './learnAndEarn/syncRemote';
 import { total } from './learnAndEarn/userData';
 import { createLevel } from './learnAndEarn/create';
-import MicrocreditService from './microcredit';
+import Protocol from './protocol';
+import * as MicroCredit from './microcredit';
 import * as storage from './storage';
 import StoryServiceV2 from './story/index';
 import * as ubi from './ubi';
@@ -32,5 +37,6 @@ export {
     Email,
     StoryServiceV2,
     learnAndEarn,
-    MicrocreditService,
+    MicroCredit,
+    Protocol,
 };
