@@ -19,8 +19,14 @@ export default (app: Router): void => {
      *     tags:
      *     - "referrals"
      *     summary: "Get user referral data"
-     *     description: "This GET method is used to generate the user referral code, or, if it aready exists, simply return it. This method requires the user to be authenticated and provide an EIP712 signature."
+     *     description: "This GET method is used to generate the user referral code, or, if it aready exists, simply return it. This method requires the user to be authenticated and provide an EIP712 signature. Use the utils demo to generate the signature."
      *     parameters:
+     *       - in: query
+     *         name: campaignId
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: campaign id
      *       - in: header
      *         name: signature
      *         schema:
@@ -46,7 +52,7 @@ export default (app: Router): void => {
      *         description: "Invalid input"
      */
     route.get(
-        '/',
+        '/:campaignId',
         authenticateToken,
         verifyTypedSignature,
         cache(cacheIntervals.oneHour),

@@ -7,6 +7,7 @@ import { initializeAppClientCredential } from './app/appClientCredential';
 import { initializeAppLog } from './app/appLog';
 import { initializeAppNotification } from './app/appNotification';
 import { initializeAppProposal } from './app/appProposal';
+import { initializeAppReferralCode } from './app/appReferralCode';
 import { initializeAppUser } from './app/appUser';
 import { initializeAppUserValidationCode } from './app/appUserValidationCode';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
@@ -70,6 +71,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeAppClientCredential(sequelize);
     initializeAppLog(sequelize);
     initializeAppUserValidationCode(sequelize);
+    initializeAppReferralCode(sequelize);
 
     // ubi
     initializeCommunity(sequelize);

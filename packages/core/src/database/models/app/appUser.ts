@@ -28,7 +28,6 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public phoneValidated!: boolean;
     public readBeneficiaryRules!: boolean;
     public readManagerRules!: boolean;
-    public referralCode!: string;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -122,9 +121,6 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
                 type: DataTypes.BOOLEAN,
                 defaultValue: false,
                 allowNull: false,
-            },
-            referralCode: {
-                type: DataTypes.STRING(64),
             },
             createdAt: {
                 type: DataTypes.DATE,
