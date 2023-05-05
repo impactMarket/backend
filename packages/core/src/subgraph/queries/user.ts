@@ -1,4 +1,8 @@
-import { axiosCouncilSubgraph, axiosSubgraph } from '../config';
+import {
+    axiosCouncilSubgraph,
+    axiosMicrocreditSubgraph,
+    axiosSubgraph,
+} from '../config';
 import { redisClient } from '../../database';
 import { intervalsInSeconds } from '../../types';
 
@@ -7,6 +11,7 @@ export type UserRoles = {
     manager: { community: string; state: number } | null;
     councilMember: { state: number } | null;
     ambassador: { communities: string[]; state: number } | null;
+    loanManager: { state: number } | null;
 };
 
 type DAOResponse = {
@@ -31,6 +36,11 @@ type CouncilMemberResponse = {
     ambassadorEntity: {
         status: number;
         communities: string[];
+    };
+};
+type MicroCreditResponse = {
+    loanManager: {
+        state: number;
     };
 };
 
@@ -74,38 +84,62 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                 }
             }`,
         };
+        const microcreditGraphqlQuery = {
+            operationName: 'loanManager',
+            query: `query loanManager {
+                loanManager(
+                    id: "${address.toLowerCase()}"
+                ) {
+                    state
+                }
+            }`,
+        };
 
-        const [cacheDAO, cacheCouncil] = await Promise.all([
+        const [cacheDAO, cacheCouncil, microcredit] = await Promise.all([
             redisClient.get(graphqlQuery.query),
             redisClient.get(councilGraphqlQuery.query),
+            redisClient.get(microcreditGraphqlQuery.query),
         ]);
 
         let responseDAO: DAOResponse | null = null;
         let responseCouncilMember: CouncilMemberResponse | null = null;
+        let responseMicroCredit: MicroCreditResponse | null = null;
 
-        if (cacheDAO && cacheCouncil) {
+        if (cacheDAO && cacheCouncil && microcredit) {
             responseDAO = JSON.parse(cacheDAO);
             responseCouncilMember = JSON.parse(cacheCouncil);
+            responseMicroCredit = JSON.parse(microcredit);
         } else {
-            const [rawResponseDAO, rawResponseCouncilMember] =
-                await Promise.all([
-                    axiosSubgraph.post<
-                        any,
-                        {
-                            data: {
-                                data: DAOResponse;
-                            };
-                        }
-                    >('', graphqlQuery),
-                    axiosCouncilSubgraph.post<
-                        any,
-                        {
-                            data: {
-                                data: CouncilMemberResponse;
-                            };
-                        }
-                    >('', councilGraphqlQuery),
-                ]);
+            const [
+                rawResponseDAO,
+                rawResponseCouncilMember,
+                rawResponseMicroCredit,
+            ] = await Promise.all([
+                axiosSubgraph.post<
+                    any,
+                    {
+                        data: {
+                            data: DAOResponse;
+                        };
+                    }
+                >('', graphqlQuery),
+                axiosCouncilSubgraph.post<
+                    any,
+                    {
+                        data: {
+                            data: CouncilMemberResponse;
+                        };
+                    }
+                >('', councilGraphqlQuery),
+                axiosMicrocreditSubgraph.post<
+                    any,
+                    {
+                        data: {
+                            data: MicroCreditResponse;
+                        };
+                    }
+                >('', microcreditGraphqlQuery),
+            ]);
 
             responseDAO = rawResponseDAO.data?.data;
 
@@ -124,43 +158,59 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                 'EX',
                 intervalsInSeconds.oneHour
             );
+
+            responseMicroCredit = rawResponseMicroCredit.data?.data;
+
+            redisClient.set(
+                microcreditGraphqlQuery.query,
+                JSON.stringify(responseMicroCredit),
+                'EX',
+                intervalsInSeconds.oneHour
+            );
         }
 
         const beneficiary = !responseDAO?.beneficiaryEntity
             ? null
             : {
-                  community: responseDAO?.beneficiaryEntity?.community?.id,
-                  state: responseDAO?.beneficiaryEntity?.state,
-                  address: responseDAO?.beneficiaryEntity?.address,
-              };
+                community: responseDAO?.beneficiaryEntity?.community?.id,
+                state: responseDAO?.beneficiaryEntity?.state,
+                address: responseDAO?.beneficiaryEntity?.address,
+            };
 
         const manager = !responseDAO?.managerEntity
             ? null
             : {
-                  community: responseDAO.managerEntity?.community?.id,
-                  state: responseDAO.managerEntity?.state,
-              };
+                community: responseDAO.managerEntity?.community?.id,
+                state: responseDAO.managerEntity?.state,
+            };
 
         const councilMember =
             !responseCouncilMember?.impactMarketCouncilMemberEntity
                 ? null
                 : {
-                      state: responseCouncilMember
-                          .impactMarketCouncilMemberEntity.status,
-                  };
+                    state: responseCouncilMember
+                        .impactMarketCouncilMemberEntity.status,
+                };
 
         const ambassador = !responseCouncilMember?.ambassadorEntity
             ? null
             : {
-                  communities:
-                      responseCouncilMember.ambassadorEntity?.communities,
-                  state: responseCouncilMember.ambassadorEntity?.status,
-              };
+                communities:
+                    responseCouncilMember.ambassadorEntity?.communities,
+                state: responseCouncilMember.ambassadorEntity?.status,
+            };
+
+        const loanManager = !responseMicroCredit?.loanManager
+            ? null
+            : {
+                state: responseMicroCredit.loanManager?.state,
+            };
         return {
             beneficiary,
             manager,
             councilMember,
             ambassador,
+            loanManager,
         };
     } catch (error) {
         throw new Error(error);

@@ -174,9 +174,33 @@ export async function answer(
     try {
         const daysAgo = new Date();
         daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
+        
+        const lessonRegistry = await models.learnAndEarnLesson.findOne({
+            attributes: ['levelId'],
+            where: {
+                id: lessonId,
+            },
+        });
+
+        if (!lessonRegistry) {
+            throw new BaseError(
+                'LESSON_NOT_FOUND',
+                'lesson not found for the given id'
+            );
+        }
 
         // check if already completed a lesson today
         const concludedLessons = await models.learnAndEarnUserLesson.count({
+            include: [
+                {
+                    model: models.learnAndEarnLesson,
+                    as: 'lesson',
+                    required: true,
+                    where: {
+                        levelId: lessonRegistry.levelId,
+                    },
+                },
+            ],
             where: {
                 completionDate: {
                     [Op.gte]: daysAgo.setHours(0, 0, 0, 0),

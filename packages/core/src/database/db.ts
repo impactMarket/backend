@@ -1,4 +1,4 @@
-import { ModelCtor, Sequelize } from 'sequelize/types';
+import { ModelStatic, Sequelize } from 'sequelize/types';
 
 import { AirgrabProofModel } from './models/airgrab/airgrabProof';
 import { AirgrabUserModel } from './models/airgrab/airgrabUser';
@@ -51,63 +51,63 @@ import { WalletAirdropProofModel } from './models/walletAirdrop/walletAirdropPro
 import { WalletAirdropUserModel } from './models/walletAirdrop/walletAirdropUser';
 
 export interface DbModels {
-    appUser: ModelCtor<AppUserModel>;
-    appProposal: ModelCtor<AppProposalModel>;
-    appLog: ModelCtor<AppLogModel>;
-    appClientCredential: ModelCtor<AppClientCredentialModel>;
-    anonymousReport: ModelCtor<AppAnonymousReportModel>;
-    cronJobExecuted: ModelCtor<CronJobExecuted>;
-    exchangeRates: ModelCtor<ExchangeRates>;
-    imMetadata: ModelCtor<ImMetadata>;
-    appNotification: ModelCtor<AppNotificationModel>;
-    appUserValidationCode: ModelCtor<AppUserValidationCodeModel>;
-    ubiBeneficiarySurvey: ModelCtor<UbiBeneficiarySurveyModel>;
+    appUser: ModelStatic<AppUserModel>;
+    appProposal: ModelStatic<AppProposalModel>;
+    appLog: ModelStatic<AppLogModel>;
+    appClientCredential: ModelStatic<AppClientCredentialModel>;
+    anonymousReport: ModelStatic<AppAnonymousReportModel>;
+    cronJobExecuted: ModelStatic<CronJobExecuted>;
+    exchangeRates: ModelStatic<ExchangeRates>;
+    imMetadata: ModelStatic<ImMetadata>;
+    appNotification: ModelStatic<AppNotificationModel>;
+    appUserValidationCode: ModelStatic<AppUserValidationCodeModel>;
+    ubiBeneficiarySurvey: ModelStatic<UbiBeneficiarySurveyModel>;
     //
-    community: ModelCtor<Community>;
-    ubiCommunitySuspect: ModelCtor<UbiCommunitySuspectModel>;
-    ubiCommunityContract: ModelCtor<UbiCommunityContractModel>;
-    ubiCommunityDailyMetrics: ModelCtor<UbiCommunityDailyMetricsModel>;
-    ubiCommunityDemographics: ModelCtor<UbiCommunityDemographicsModel>;
-    ubiPromoter: ModelCtor<UbiPromoterModel>;
-    ubiPromoterSocialMedia: ModelCtor<UbiPromoterSocialMediaModel>;
-    ubiCommunityLabels: ModelCtor<UbiCommunityLabelModel>;
-    ubiCommunityCampaign: ModelCtor<UbiCommunityCampaignModel>;
-    ubiClaimLocation: ModelCtor<ClaimLocationModel>;
-    beneficiary: ModelCtor<Beneficiary>;
-    manager: ModelCtor<Manager>;
+    community: ModelStatic<Community>;
+    ubiCommunitySuspect: ModelStatic<UbiCommunitySuspectModel>;
+    ubiCommunityContract: ModelStatic<UbiCommunityContractModel>;
+    ubiCommunityDailyMetrics: ModelStatic<UbiCommunityDailyMetricsModel>;
+    ubiCommunityDemographics: ModelStatic<UbiCommunityDemographicsModel>;
+    ubiPromoter: ModelStatic<UbiPromoterModel>;
+    ubiPromoterSocialMedia: ModelStatic<UbiPromoterSocialMediaModel>;
+    ubiCommunityLabels: ModelStatic<UbiCommunityLabelModel>;
+    ubiCommunityCampaign: ModelStatic<UbiCommunityCampaignModel>;
+    ubiClaimLocation: ModelStatic<ClaimLocationModel>;
+    beneficiary: ModelStatic<Beneficiary>;
+    manager: ModelStatic<Manager>;
     //
-    globalDailyState: ModelCtor<GlobalDailyState>;
-    globalDemographics: ModelCtor<GlobalDemographics>;
-    globalGrowth: ModelCtor<GlobalGrowthModel>;
+    globalDailyState: ModelStatic<GlobalDailyState>;
+    globalDemographics: ModelStatic<GlobalDemographics>;
+    globalGrowth: ModelStatic<GlobalGrowthModel>;
     //
-    storyContent: ModelCtor<StoryContentModel>;
-    storyCommunity: ModelCtor<StoryCommunityModel>;
-    storyEngagement: ModelCtor<StoryEngagementModel>;
-    storyUserEngagement: ModelCtor<StoryUserEngagementModel>;
-    storyUserReport: ModelCtor<StoryUserReportModel>;
-    storyComment: ModelCtor<StoryCommentModel>;
+    storyContent: ModelStatic<StoryContentModel>;
+    storyCommunity: ModelStatic<StoryCommunityModel>;
+    storyEngagement: ModelStatic<StoryEngagementModel>;
+    storyUserEngagement: ModelStatic<StoryUserEngagementModel>;
+    storyUserReport: ModelStatic<StoryUserReportModel>;
+    storyComment: ModelStatic<StoryCommentModel>;
     //
-    airgrabUser: ModelCtor<AirgrabUserModel>;
-    airgrabProof: ModelCtor<AirgrabProofModel>;
+    airgrabUser: ModelStatic<AirgrabUserModel>;
+    airgrabProof: ModelStatic<AirgrabProofModel>;
     //
-    walletAirdropUser: ModelCtor<WalletAirdropUserModel>;
-    walletAirdropProof: ModelCtor<WalletAirdropProofModel>;
+    walletAirdropUser: ModelStatic<WalletAirdropUserModel>;
+    walletAirdropProof: ModelStatic<WalletAirdropProofModel>;
     //
-    learnAndEarnCategory: ModelCtor<LearnAndEarnCategoryModel>;
-    learnAndEarnLesson: ModelCtor<LearnAndEarnLessonModel>;
-    learnAndEarnLevel: ModelCtor<LearnAndEarnLevelModel>;
-    learnAndEarnPrismicLevel: ModelCtor<LearnAndEarnPrismicLevelModel>;
-    learnAndEarnPrismicLesson: ModelCtor<LearnAndEarnPrismicLessonModel>;
-    learnAndEarnQuiz: ModelCtor<LearnAndEarnQuizModel>;
-    learnAndEarnUserCategory: ModelCtor<LearnAndEarnUserCategoryModel>;
-    learnAndEarnUserLesson: ModelCtor<LearnAndEarnUserLessonModel>;
-    learnAndEarnUserLevel: ModelCtor<LearnAndEarnUserLevelModel>;
-    learnAndEarnPayment: ModelCtor<LearnAndEarnPaymentModel>;
+    learnAndEarnCategory: ModelStatic<LearnAndEarnCategoryModel>;
+    learnAndEarnLesson: ModelStatic<LearnAndEarnLessonModel>;
+    learnAndEarnLevel: ModelStatic<LearnAndEarnLevelModel>;
+    learnAndEarnPrismicLevel: ModelStatic<LearnAndEarnPrismicLevelModel>;
+    learnAndEarnPrismicLesson: ModelStatic<LearnAndEarnPrismicLessonModel>;
+    learnAndEarnQuiz: ModelStatic<LearnAndEarnQuizModel>;
+    learnAndEarnUserCategory: ModelStatic<LearnAndEarnUserCategoryModel>;
+    learnAndEarnUserLesson: ModelStatic<LearnAndEarnUserLessonModel>;
+    learnAndEarnUserLevel: ModelStatic<LearnAndEarnUserLevelModel>;
+    learnAndEarnPayment: ModelStatic<LearnAndEarnPaymentModel>;
     //
-    merchantRegistry: ModelCtor<MerchantRegistryModel>;
-    merchantCommunity: ModelCtor<MerchantCommunityModel>;
+    merchantRegistry: ModelStatic<MerchantRegistryModel>;
+    merchantCommunity: ModelStatic<MerchantCommunityModel>;
     //
-    exchangeRegistry: ModelCtor<ExchangeRegistryModel>;
+    exchangeRegistry: ModelStatic<ExchangeRegistryModel>;
 }
 export interface DbLoader {
     sequelize: Sequelize;

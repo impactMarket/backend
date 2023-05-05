@@ -1,12 +1,13 @@
 // API to app
 
 export const enum intervalsInSeconds {
+    twoMins = 120,
     halfHour = 1800,
     oneHour = 3600,
     sixHours = 21600,
     twelveHours = 43200,
     oneDay = 86400,
-};
+}
 
 /**
  * @deprecated

@@ -217,21 +217,27 @@ export async function listLessons(levelId: number | string, userId?: number, lan
             },
         });
 
-        let totalPoints = 0,
-            completedToday = 0;
-
-        if (userId) {
-            const daysAgo = new Date();
-            daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
-            completedToday = await models.learnAndEarnUserLesson.count({
-                where: {
-                    completionDate: {
-                        [Op.gte]: daysAgo.setHours(0, 0, 0, 0),
+        let totalPoints = 0;
+        const daysAgo = new Date();
+        daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
+        const completedToday = await models.learnAndEarnUserLesson.count({
+            include: [
+                {
+                    model: models.learnAndEarnLesson,
+                    as: 'lesson',
+                    required: true,
+                    where: {
+                        levelId,
                     },
-                    userId,
                 },
-            });
-        }
+            ],
+            where: {
+                completionDate: {
+                    [Op.gte]: daysAgo.setHours(0, 0, 0, 0),
+                },
+                userId,
+            },
+        });
 
         const mappedLessons = lessons.map(
             ({ prismicId, levelId, userLesson }: LearnAndEarnPrismicLesson) => {
