@@ -46,6 +46,7 @@ export default class UserService {
             beneficiary: null,
             councilMember: null,
             manager: null,
+            loanManager: null,
         };
         let userRules: {
             beneficiaryRules?: boolean;
@@ -56,9 +57,9 @@ export default class UserService {
         if (userParams.phone) {
             const existsPhone = userParams.phone
                 ? await this._existsAccountByPhone(
-                      userParams.phone,
-                      userParams.address
-                  )
+                    userParams.phone,
+                    userParams.address
+                )
                 : false;
 
             if (existsPhone) {
