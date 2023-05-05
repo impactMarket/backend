@@ -215,6 +215,16 @@ export async function listLessons(userId: number, levelId: number) {
         const daysAgo = new Date();
         daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
         const completedToday = await models.learnAndEarnUserLesson.count({
+            include: [
+                {
+                    model: models.learnAndEarnLesson,
+                    as: 'lesson',
+                    required: true,
+                    where: {
+                        levelId,
+                    },
+                },
+            ],
             where: {
                 completionDate: {
                     [Op.gte]: daysAgo.setHours(0, 0, 0, 0),
