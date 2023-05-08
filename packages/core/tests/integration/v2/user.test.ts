@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { ethers } from 'ethers';
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { Sequelize } from 'sequelize';
 import { SinonStub, stub, restore } from 'sinon';
 

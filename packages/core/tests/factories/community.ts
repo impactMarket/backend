@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 
 import { Community } from '../../src/database/models/ubi/community';
 import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
@@ -52,7 +52,7 @@ const data = async (props: ICreateProps) => {
                   longitude: 0,
               },
         language: 'pt',
-        name: props.name ? props.name : faker.company.companyName(),
+        name: props.name ? props.name : faker.company.name(),
         coverMediaPath: 'cover/image.jpg',
         started: props.started ? props.started : new Date(),
         status: props.status ? props.status : 'valid',

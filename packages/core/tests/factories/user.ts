@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 
 import { AppUserModel } from '../../src/database/models/app/appUser';
 import {
@@ -32,7 +32,7 @@ const data = async (props?: ICreateProps) => {
         gender: props?.gender ? props?.gender : 'u',
         pushNotificationToken: '',
         suspect: props?.suspect ? props.suspect : false,
-        phone: props?.phone ? props.phone : faker.phone.phoneNumber(),
+        phone: props?.phone ? props.phone : faker.phone.number(),
         active: props?.active,
         year: props?.year,
     };
