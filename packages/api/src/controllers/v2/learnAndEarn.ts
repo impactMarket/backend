@@ -99,7 +99,7 @@ class LearnAndEarnController {
         const id = parseInt(req.params.id, 10);
 
         services.learnAndEarn
-            .listLessons(id ? id : req.params.id, req.user?.userId, language as any)
+            .listLessons(id ? id : req.params.id, req.user?.userId, language as string)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
