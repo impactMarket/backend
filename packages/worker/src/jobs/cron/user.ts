@@ -1,5 +1,5 @@
 import { database } from '@impactmarket/core';
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 
 export async function verifyDeletedAccounts(): Promise<void> {
     const t = await database.sequelize.transaction();
@@ -7,10 +7,12 @@ export async function verifyDeletedAccounts(): Promise<void> {
         const date = new Date();
         date.setDate(date.getDate() - 15);
 
+        const { lt } = Op;
+
         const users = await database.models.appUser.findAll({
             attributes: ['address'],
             where: {
-                deletedAt: { [Op.lt]: date },
+                deletedAt: { [lt]: date },
             },
         });
 
@@ -19,7 +21,7 @@ export async function verifyDeletedAccounts(): Promise<void> {
         await database.models.appUser.destroy({
             where: {
                 address: { [Op.in]: addresses },
-            },
+            } as WhereOptions,
             transaction: t,
         });
 
