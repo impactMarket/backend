@@ -30,11 +30,12 @@ export default class MicroCreditList {
                 claimed: number;
                 repayed: string;
                 lastRepayment: number;
-            }[];
+            };
         }[]
     > => {
         // get borrowers loans from subgraph
-        const borrowers = await getBorrowers(query);
+        // and return only the active loan (which is only one)
+        const borrowers = (await getBorrowers({ ...query, claimed: true })).map((b) => ({ ...b, loans: b.loans[0] }));
 
         // get borrowers profile from database
         const userProfile = await models.appUser.findAll({
