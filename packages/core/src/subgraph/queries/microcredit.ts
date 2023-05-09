@@ -111,6 +111,7 @@ export const getBorrowers = async (query: {
     offset?: number;
     limit?: number;
     addedBy?: string;
+    claimed?: boolean;
 }): Promise<
     {
         id: string;
@@ -137,7 +138,9 @@ export const getBorrowers = async (query: {
                         addedBy: "${
                             query.addedBy ? query.addedBy.toLowerCase() : ''
                         }"
+                        ${query.claimed ? `claimed_not: null` : ''}
                     }
+                    ${query.claimed ? `orderBy: claimed orderDirection: desc` : ''}
                 ) {
                     amount
                     period
