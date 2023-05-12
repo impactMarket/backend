@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 
 import UserLogService from './log';
 import config from '../../../config';
-import { models, sequelize } from '../../../database';
+import { models } from '../../../database';
 import { AppUserModel } from '../../../database/models/app/appUser';
 import { LogTypes } from '../../../interfaces/app/appLog';
 import { AppNotification } from '../../../interfaces/app/appNotification';
@@ -17,6 +17,7 @@ import { getAllBeneficiaries } from '../../../subgraph/queries/beneficiary';
 import { UserRoles, getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
+import { sendFirebasePushNotification } from '../../../utils/pushNotification';
 
 export default class UserService {
     private userLogService = new UserLogService();
@@ -488,8 +489,7 @@ export default class UserService {
                     },
                 },
             });
-            // TODO: refactor!
-            // sendNotification(users, 1);
+            sendFirebasePushNotification(users.map(el => el.walletPNT!), title, body, data);
         } else if (communitiesIds && communitiesIds.length) {
             const communities = await models.community.findAll({
                 attributes: ['contractAddress'],
@@ -528,9 +528,7 @@ export default class UserService {
                     },
                 },
             });
-
-            // TODO: refactor!
-            // sendNotification(users, 1);
+            sendFirebasePushNotification(users.map(el => el.walletPNT!), title, body, data);
         } else {
             throw new BaseError('INVALID_OPTION', 'invalid option');
         }

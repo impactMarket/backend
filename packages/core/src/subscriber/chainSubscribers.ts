@@ -1,5 +1,6 @@
 import { services, utils, config, contracts, database } from '../../';
 import { ethers } from 'ethers';
+import { getAddress } from '@ethersproject/address';
 import { models } from '../database';
 import { NotificationType } from '../interfaces/app/appNotification';
 import { sendNotification } from '../utils/pushNotification';
@@ -183,6 +184,19 @@ class ChainSubscribers {
                 );
             } else {
                 this.communities.set(communityAddress, community[1][0].id);
+                const user = await models.appUser.findOne({
+                    attributes: ['language', 'walletPNT', 'appPNT'],
+                    where: {
+                        address: getAddress( managerAddress[0]),
+                    },
+                });
+    
+                if (user) {
+                    await sendNotification(
+                        [user.toJSON()],
+                        NotificationType.COMMUNITY_CREATED
+                    );
+                }
             }
 
             result = parsedLog;
@@ -200,9 +214,23 @@ class ChainSubscribers {
         if (parsedLog.name === 'BeneficiaryAdded') {
             const communityAddress = log.address;
             const community = this.communities.get(communityAddress);
+            const userAddress = parsedLog.args[0];
 
             if (community) {
                 utils.cache.cleanBeneficiaryCache(community);
+            }
+            const user = await models.appUser.findOne({
+                attributes: ['language', 'walletPNT', 'appPNT'],
+                where: {
+                    address: getAddress(userAddress),
+                },
+            });
+
+            if (user) {
+                await sendNotification(
+                    [user.toJSON()],
+                    NotificationType.BENEFICIARY_ADDED
+                );
             }
 
             result = parsedLog;
@@ -230,7 +258,7 @@ class ChainSubscribers {
             const user = await models.appUser.findOne({
                 attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                 where: {
-                    address: ethers.utils.getAddress(userAddress),
+                    address: getAddress(userAddress),
                 },
             });
 
