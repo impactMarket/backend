@@ -43,9 +43,6 @@ export default (app: Router): void => {
      *               currency:
      *                 type: string
      *                 required: false
-     *               pushNotificationToken:
-     *                 type: string
-     *                 required: false
      *               walletPNT:
      *                 type: string
      *                 required: false
@@ -127,10 +124,6 @@ export default (app: Router): void => {
      *                 required: false
      *               currency:
      *                 type: string
-     *                 required: false
-     *               pushNotificationToken:
-     *                 type: string
-     *                 nullable: true
      *                 required: false
      *               walletPNT:
      *                 type: string

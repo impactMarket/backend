@@ -125,7 +125,7 @@ export interface IAddressAndName {
 // TODO: remove
 export interface IUser {
     address: string;
-    username: string | null;
+    firstName: string | null;
     currency: string | null;
     avatar: string;
     language: number;

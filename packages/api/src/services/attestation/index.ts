@@ -162,7 +162,21 @@ export const verify = async (
         }),
     ]);
 
-    // TODO: save bool of validated identifier
+    if (type === AttestationType.PHONE_NUMBER) {
+        await database.models.appUser.update(
+            {
+                phoneValidated: true,
+            },
+            { where: { id: userId } }
+        );
+    } else if (type === AttestationType.EMAIL) {
+        await database.models.appUser.update(
+            {
+                emailValidated: true,
+            },
+            { where: { id: userId } }
+        );
+    }
 
     return obfuscatedIdentifier;
 };

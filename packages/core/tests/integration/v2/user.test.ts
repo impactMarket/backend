@@ -167,13 +167,11 @@ describe('user service v2', () => {
             await userService.create({
                 address,
                 phone,
-                pushNotificationToken: 'token',
             });
             const findUser = await models.appUser.findOne({
                 where: { address: newUser.address },
             });
             expect(findUser).to.not.be.null;
-            expect(findUser?.pushNotificationToken).to.be.eq('token');
         });
         it('login with a different phone number', async () => {
             const randomWallet = ethers.Wallet.createRandom();
@@ -189,7 +187,6 @@ describe('user service v2', () => {
             const updatedUser = await userService.create({
                 address,
                 phone: secondPhone,
-                pushNotificationToken: 'token',
             });
             expect(updatedUser.phone).to.equal(secondPhone);
         });
@@ -712,7 +709,6 @@ describe('user service v2', () => {
             });
             expect(logs[0].user).to.include({
                 address: users[1].address,
-                username: users[1].username,
             });
         });
 

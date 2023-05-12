@@ -157,7 +157,7 @@ export default class BeneficiaryService {
             searchInput.toLowerCase().indexOf('update') === -1
         ) {
             whereSearchCondition = {
-                username: { [Op.iLike]: `%${searchInput.slice(0, 16)}%` },
+                // username: { [Op.iLike]: `%${searchInput.slice(0, 16)}%` },
             };
         } else {
             throw new BaseError('INVALID_SEARCH', 'Not valid search!');
@@ -204,13 +204,11 @@ export default class BeneficiaryService {
             );
             return {
                 address: ethers.utils.getAddress(beneficiary.address),
-                username: user?.username ? user.username : null,
                 timestamp: beneficiary.since * 1000,
                 claimed: new BigNumber(beneficiary.claimed)
                     .multipliedBy(10 ** config.cUSDDecimal)
                     .toString() as any,
                 blocked: beneficiary.state === 2,
-                suspect: user?.suspect,
                 isDeleted: !user || !!user.deletedAt,
             };
         });
@@ -286,7 +284,6 @@ export default class BeneficiaryService {
                 if (beneficiary) {
                     result.push({
                         address: user.address,
-                        username: user?.username ? user.username : null,
                         timestamp: beneficiary.since
                             ? beneficiary.since * 1000
                             : 0,
@@ -294,7 +291,6 @@ export default class BeneficiaryService {
                             .multipliedBy(10 ** config.cUSDDecimal)
                             .toString() as any,
                         blocked: beneficiary.state === 2,
-                        suspect: user?.suspect,
                         isDeleted: !!user.deletedAt,
                     } as any);
                 }
@@ -306,13 +302,11 @@ export default class BeneficiaryService {
                 );
                 result.push({
                     address: ethers.utils.getAddress(beneficiary.address),
-                    username: user?.username ? user.username : null,
                     timestamp: beneficiary.since * 1000,
                     claimed: new BigNumber(beneficiary.claimed)
                         .multipliedBy(10 ** config.cUSDDecimal)
                         .toString() as any,
                     blocked: beneficiary.state === 2,
-                    suspect: user?.suspect,
                     isDeleted: !user || !!user.deletedAt,
                 } as any);
             });
@@ -326,7 +320,7 @@ export default class BeneficiaryService {
         if (filter.unidentified !== undefined) {
             where = {
                 ...where,
-                username: filter.unidentified ? null : { [Op.not]: null },
+                firstName: filter.unidentified ? null : { [Op.not]: null },
             };
         }
 
@@ -463,7 +457,7 @@ export default class BeneficiaryService {
             limit
         );
         const users = await models.appUser.findAll({
-            attributes: ['username', 'address'],
+            attributes: ['firstName', 'address'],
             where: {
                 address: {
                     [Op.in]: registry.map((el) =>
@@ -483,7 +477,6 @@ export default class BeneficiaryService {
                 tx: el.id,
                 txAt: new Date(el.timestamp * 1000),
                 withAddress: el.by,
-                username: user ? user.username! : undefined,
                 activity: undefined as any,
             };
         });

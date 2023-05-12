@@ -262,10 +262,10 @@ export class CommunityDetailsService {
      *          address:
      *            type: string
      *            description: Manager address
-     *          username:
+     *          firstName:
      *            type: string
      *            nullable: true
-     *            description: Manager username or null
+     *            description: Manager firstName or null
      *          isDeleted:
      *            type: boolean
      *            description: True if manager deleted account
@@ -699,7 +699,6 @@ export class CommunityDetailsService {
                 since: beneficiary.since || 0,
                 claimed: beneficiary.claimed,
                 blocked: beneficiary.state === 2,
-                suspect: user?.suspect,
                 isDeleted: !user || !!user!.deletedAt,
                 state: beneficiary.state,
             };
