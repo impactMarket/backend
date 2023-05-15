@@ -12,7 +12,7 @@
     },
     "dependencies": {
         "@impactmarket/core": "1.0.0",
-        "@prismicio/client": "6.3.0",
+        "@prismicio/client": "6.7.3",
         "axios": "0.21.1",
         "ethers": "5.5.1"
     },
