@@ -8,6 +8,7 @@ import { AppUserModel } from '../database/models/app/appUser';
 import localesConfig from '../utils/locale.json';
 import admin from 'firebase-admin';
 import { AppUser } from '../interfaces/app/appUser';
+import { utils } from '../..';
 
 export async function sendNotification(
     users: AppUserModel[],
@@ -59,7 +60,7 @@ export async function sendNotification(
     // send notification by group of languages
     Object.keys(prismicNotifications).forEach(async key => {
         let prismicData = prismicNotifications[key];
-        sendFirebasePushNotification(prismicData.users.map(el => el.walletPNT!), prismicData.title, prismicData.description);
+        sendFirebasePushNotification(prismicData.users.map(el => el.walletPNT!), prismicData.title, prismicData.description).catch((error) => utils.Logger.error('sendFirebasePushNotification' + error));
     });
 }
 

@@ -18,6 +18,7 @@ import { UserRoles, getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
 import { sendFirebasePushNotification } from '../../../utils/pushNotification';
+import { utils } from '../../../..';
 
 export default class UserService {
     private userLogService = new UserLogService();
@@ -489,7 +490,7 @@ export default class UserService {
                     },
                 },
             });
-            sendFirebasePushNotification(users.map(el => el.walletPNT!), title, body, data);
+            sendFirebasePushNotification(users.map(el => el.walletPNT!), title, body, data).catch((error) => utils.Logger.error('sendFirebasePushNotification' + error));
         } else if (communitiesIds && communitiesIds.length) {
             const communities = await models.community.findAll({
                 attributes: ['contractAddress'],
@@ -528,7 +529,7 @@ export default class UserService {
                     },
                 },
             });
-            sendFirebasePushNotification(users.map(el => el.walletPNT!), title, body, data);
+            sendFirebasePushNotification(users.map(el => el.walletPNT!), title, body, data).catch((error) => utils.Logger.error('sendFirebasePushNotification' + error));
         } else {
             throw new BaseError('INVALID_OPTION', 'invalid option');
         }
