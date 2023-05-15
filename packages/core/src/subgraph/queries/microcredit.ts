@@ -122,6 +122,8 @@ export const getBorrowers = async (query: {
             claimed: number;
             repayed: string;
             lastRepayment: number;
+            lastRepaymentAmount: string;
+            lastDebt: string;
         }[];
     }[]
 > => {
@@ -148,6 +150,8 @@ export const getBorrowers = async (query: {
                     claimed
                     repayed
                     lastRepayment
+                    lastRepaymentAmount
+                    lastDebt
                 }
             }
         }`,
@@ -173,6 +177,8 @@ export const getBorrowers = async (query: {
                             claimed: number;
                             repayed: string;
                             lastRepayment: number;
+                            lastRepaymentAmount: string;
+                            lastDebt: string;
                         }[];
                     }[];
                 };
