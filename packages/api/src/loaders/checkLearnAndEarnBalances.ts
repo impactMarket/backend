@@ -40,7 +40,7 @@ const LearnAndEarnAbi = [
 
 // using ethers, verify the balance of each level on LearnAndEarn and if below X, send email to someone
 export async function checkLearnAndEarnBalances() {
-    utils.Logger.info('Running checkLearnAndEarnBalances...');
+    utils.Logger.info('🕵️ Running checkLearnAndEarnBalances...');
     const provider = new JsonRpcProvider(config.jsonRpcUrl);
     const learnAndEarn = new Contract(config.contractAddresses.learnAndEarn, LearnAndEarnAbi, provider);
 

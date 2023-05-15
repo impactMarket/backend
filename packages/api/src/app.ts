@@ -22,14 +22,14 @@ export async function startServer() {
     if (process.env.NODE_ENV !== 'test') {
         await database.sequelize.sync();
     }
-    utils.Logger.info('🗺️  Database loaded and connected');
+    utils.Logger.info('🗺️ Database loaded and connected');
 
     serverLoader(app);
     utils.Logger.info('📡 Express server loaded');
 
     startSubscribers();
-    checkWalletBalances();
-    checkLearnAndEarnBalances();
+    checkWalletBalances().then(() => utils.Logger.info('🕵️ checkWalletBalances finished')).catch((err) => utils.Logger.error('checkWalletBalances' + err));
+    checkLearnAndEarnBalances().then(() => utils.Logger.info('🕵️ checkLearnAndEarnBalances finished')).catch((err) => utils.Logger.error('checkLearnAndEarnBalances' + err));
 
     return app.listen(config.port, () => {
         utils.Logger.info(`

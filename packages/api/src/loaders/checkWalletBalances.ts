@@ -8,7 +8,7 @@ import { utils } from '@impactmarket/core';
 // using ethers, verify the balance of cusd (an erc20) on a given account
 // if below X, send email to someone
 export async function checkWalletBalances() {
-    utils.Logger.info('Running checkLearnAndEarnBalances...');
+    utils.Logger.info('🕵️ Running checkLearnAndEarnBalances...');
     const accounts = config.hotWalletsCheckBalance.split(';');
     const provider = new JsonRpcProvider(config.jsonRpcUrl);
     const contract = new Contract(config.cUSDContractAddress, [
