@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { Wallet } from 'ethers';
 import { faker } from '@faker-js/faker';
 
 import { AppUserModel } from '../../src/database/models/app/appUser';
@@ -23,7 +23,7 @@ interface ICreateProps {
  * @return {Object}       An object to build the user from.
  */
 const data = async (props?: ICreateProps) => {
-    const randomWallet = ethers.Wallet.createRandom();
+    const randomWallet = Wallet.createRandom();
     const defaultProps: AppUserCreationAttributes = {
         address: await randomWallet.getAddress(),
         firstName: faker.name.firstName(),

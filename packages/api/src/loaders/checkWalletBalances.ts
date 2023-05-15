@@ -1,6 +1,4 @@
-import { Contract } from '@ethersproject/contracts';
-import { parseEther, formatEther } from '@ethersproject/units';
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { Contract, parseEther, formatEther, JsonRpcProvider } from 'ethers';
 import config from '../config';
 import { sendEmail } from '../services/email';
 import { utils } from '@impactmarket/core';

@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { AbiCoder, getAddress } from 'ethers';
 import { Op, literal, OrderItem, WhereOptions, Includeable } from 'sequelize';
 import { Literal } from 'sequelize/types/utils';
 
@@ -166,7 +166,7 @@ export class CommunityListService {
                     ...extendedWhere,
                     contractAddress: {
                         [Op.in]: ambassador.communities.map((address: string) =>
-                            ethers.utils.getAddress(address)
+                            getAddress(address)
                         ),
                     },
                 };
@@ -231,7 +231,7 @@ export class CommunityListService {
                                     orderType
                                 );
                                 contractAddress = funds!.map((el) =>
-                                    ethers.utils.getAddress(el.id)
+                                    getAddress(el.id)
                                 );
                             } else {
                                 // list communities out of funds after
@@ -272,7 +272,7 @@ export class CommunityListService {
                                         orderType
                                     );
                                 contractAddress = beneficiariesState!.map(
-                                    (el) => ethers.utils.getAddress(el.id)
+                                    (el) => getAddress(el.id)
                                 );
                             } else {
                                 // list communities beneficiaries after
@@ -300,7 +300,7 @@ export class CommunityListService {
                     extendedWhere
                 );
                 contractAddress = beneficiariesState!.map((el) =>
-                    ethers.utils.getAddress(el.id)
+                    getAddress(el.id)
                 );
             }
         }
@@ -402,7 +402,7 @@ export class CommunityListService {
                 contractAddress
             );
             contractAddress = beneficiariesState!.map((el) =>
-                ethers.utils.getAddress(el.id)
+                getAddress(el.id)
             );
 
             // re-order IDs
@@ -427,7 +427,7 @@ export class CommunityListService {
                 contractAddress
             );
             contractAddress = funds!.map((el) =>
-                ethers.utils.getAddress(el.id)
+                getAddress(el.id)
             );
 
             // re-order IDs
@@ -520,7 +520,7 @@ export class CommunityListService {
         const requestByAddress: string[] = [];
         proposals.forEach((element) => {
             try {
-                const calldata = ethers.utils.defaultAbiCoder.decode(
+                const calldata = AbiCoder.defaultAbiCoder().decode(
                     [
                         'address[]',
                         'address',
@@ -535,7 +535,7 @@ export class CommunityListService {
                     ],
                     element
                 );
-                requestByAddress.push(ethers.utils.getAddress(calldata[0][0]));
+                requestByAddress.push(getAddress(calldata[0][0]));
             } catch (_error) {}
         });
 

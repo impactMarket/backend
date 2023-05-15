@@ -1,6 +1,6 @@
 import { expect, use } from 'chai';
 import chaiSubset from 'chai-subset';
-import { ethers } from 'ethers';
+import { AbiCoder, ethers } from 'ethers';
 import { Sequelize } from 'sequelize';
 import { replace, stub, SinonStub, restore } from 'sinon';
 
@@ -1601,7 +1601,7 @@ describe('community service v2', () => {
                     },
                 ]);
 
-                const data = ethers.utils.defaultAbiCoder.encode(
+                const data = AbiCoder.defaultAbiCoder().encode(
                     [
                         'address[]',
                         'uint256',

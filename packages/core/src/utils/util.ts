@@ -1,4 +1,4 @@
-import { getAddress } from '@ethersproject/address';
+import { getAddress } from 'ethers';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 

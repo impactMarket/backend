@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { Wallet } from 'ethers';
 import { faker } from '@faker-js/faker';
 
 import { Community } from '../../src/database/models/ubi/community';
@@ -70,7 +70,7 @@ const data = async (props: ICreateProps) => {
         ...props,
     };
     if (props.hasAddress) {
-        const randomWallet = ethers.Wallet.createRandom();
+        const randomWallet = Wallet.createRandom();
         defaultProps = {
             ...defaultProps,
             contractAddress: await randomWallet.getAddress(),

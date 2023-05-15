@@ -1,5 +1,4 @@
-import { Contract } from '@ethersproject/contracts';
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { Contract, JsonRpcProvider } from 'ethers';
 import { config, contracts } from '@impactmarket/core';
 import { BigNumber } from 'bignumber.js';
 import { Request, Response } from 'express';

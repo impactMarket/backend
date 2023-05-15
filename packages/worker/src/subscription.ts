@@ -7,7 +7,7 @@ import {
 } from '@impactmarket/core';
 import { execute } from 'apollo-link';
 import { WebSocketLink } from 'apollo-link-ws';
-import { ethers } from 'ethers';
+import { getAddress } from 'ethers';
 import gql from 'graphql-tag';
 import { Op } from 'sequelize';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
@@ -72,7 +72,7 @@ export const communitySubscription = async () => {
                                         attributes: ['id', 'ambassadorAddress'],
                                         where: {
                                             contractAddress:
-                                                ethers.utils.getAddress(
+                                                getAddress(
                                                     communityEntitiy.id
                                                 ),
                                         },
@@ -195,7 +195,7 @@ export const userActivitySubscription = async () => {
                                     await database.models.appUser.findOne({
                                         attributes: ['id'],
                                         where: {
-                                            address: ethers.utils.getAddress(
+                                            address: getAddress(
                                                 userActivity.user
                                             ),
                                         },
@@ -229,7 +229,7 @@ export const userActivitySubscription = async () => {
                                                     attributes: ['id'],
                                                     where: {
                                                         contractAddress:
-                                                            ethers.utils.getAddress(
+                                                            getAddress(
                                                                 userActivity
                                                                     .community
                                                                     .id

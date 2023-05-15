@@ -1,5 +1,4 @@
-import { ethers } from 'ethers';
-import { getAddress } from '@ethersproject/address';
+import { getAddress } from 'ethers';
 import { col, fn, GroupedCountResultItem, Op, Order } from 'sequelize';
 
 import { IAddStory, ICommunityStory, ICommunityStoryGet } from './types';
@@ -74,7 +73,7 @@ export default class StoryServiceV2 {
         const community = await models.community.findOne({
             attributes: ['id'],
             where: {
-                contractAddress: ethers.utils.getAddress(communityAddress),
+                contractAddress: getAddress(communityAddress),
                 visibility: 'public',
             },
         });

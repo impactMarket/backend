@@ -1,5 +1,5 @@
 import { database } from '@impactmarket/core';
-import { ethers } from 'ethers';
+import { getAddress } from 'ethers';
 import { Request, Response } from 'express';
 
 const getAirgrab = async (req: Request, res: Response) => {
@@ -10,7 +10,7 @@ const getAirgrab = async (req: Request, res: Response) => {
                 exclude: ['id', 'address'],
             },
             where: {
-                address: ethers.utils.getAddress(address),
+                address: getAddress(address),
             },
             include: [
                 {

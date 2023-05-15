@@ -43,7 +43,7 @@
 //         replace(
 //             config,
 //             'learnAndEarnPrivateKey',
-//             ethers.Wallet.createRandom().privateKey
+//             Wallet.createRandom().privateKey
 //         );
 
 //         // add category, level and lessons with pt language as user's default

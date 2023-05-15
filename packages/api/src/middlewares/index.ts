@@ -1,5 +1,5 @@
 import { config, database } from '@impactmarket/core';
-import { ethers } from 'ethers';
+import { verifyMessage } from 'ethers';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
 import { verify } from 'jsonwebtoken';
@@ -153,7 +153,7 @@ export function verifySignature(
         return;
     }
 
-    const address = ethers.utils.verifyMessage(
+    const address = verifyMessage(
         message as string,
         signature as string
     );

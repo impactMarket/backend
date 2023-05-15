@@ -1,45 +1,44 @@
 import { services, utils, config, contracts, database } from '../../';
-import { ethers } from 'ethers';
-import { getAddress } from '@ethersproject/address';
+import { getAddress, Interface, JsonRpcProvider, WebSocketProvider, id, Log, LogDescription } from 'ethers';
 import { models } from '../database';
 import { NotificationType } from '../interfaces/app/appNotification';
 import { sendNotification } from '../utils/pushNotification';
 
 class ChainSubscribers {
-    provider: ethers.providers.WebSocketProvider;
-    jsonRpcProvider: ethers.providers.JsonRpcProvider;
-    ifaceCommunityAdmin: ethers.utils.Interface;
-    ifaceCommunity: ethers.utils.Interface;
-    ifaceMicrocredit: ethers.utils.Interface;
+    provider: WebSocketProvider;
+    jsonRpcProvider: JsonRpcProvider;
+    ifaceCommunityAdmin: Interface;
+    ifaceCommunity: Interface;
+    ifaceMicrocredit: Interface;
     filterTopics: string[][];
     communities: Map<string, number>;
 
     constructor(
-        webSocketProvider: ethers.providers.WebSocketProvider,
-        jsonRpcProvider: ethers.providers.JsonRpcProvider,
+        webSocketProvider: WebSocketProvider,
+        jsonRpcProvider: JsonRpcProvider,
         communities: Map<string, number>
     ) {
         this.provider = webSocketProvider;
         this.jsonRpcProvider = jsonRpcProvider;
-        this.ifaceCommunityAdmin = new ethers.utils.Interface(
+        this.ifaceCommunityAdmin = new Interface(
             contracts.CommunityAdminABI
         );
-        this.ifaceCommunity = new ethers.utils.Interface(
+        this.ifaceCommunity = new Interface(
             contracts.CommunityABI
         );
-        this.ifaceMicrocredit = new ethers.utils.Interface(
+        this.ifaceMicrocredit = new Interface(
             contracts.MicrocreditABI
         );
         this.communities = communities;
         this.filterTopics = [
             [
-                ethers.utils.id(
+                id(
                     'CommunityAdded(address,address[],uint256,uint256,uint256,uint256,uint256,uint256,uint256)'
                 ),
-                ethers.utils.id('CommunityRemoved(address)'),
-                ethers.utils.id('BeneficiaryAdded(address,address)'),
-                ethers.utils.id('BeneficiaryRemoved(address,address)'),
-                ethers.utils.id(
+                id('CommunityRemoved(address)'),
+                id('BeneficiaryAdded(address,address)'),
+                id('BeneficiaryRemoved(address,address)'),
+                id(
                     'LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'
                 ),
             ],
@@ -61,7 +60,7 @@ class ChainSubscribers {
         );
     }
 
-    async _runRecoveryTxs(provider: ethers.providers.JsonRpcProvider) {
+    async _runRecoveryTxs(provider: JsonRpcProvider) {
         utils.Logger.info('Recovering past events...');
         let startFromBlock: number;
         let lastBlockCached = await database.redisClient.get('lastBlock');
@@ -97,7 +96,7 @@ class ChainSubscribers {
         utils.Logger.info('Past events recovered successfully!');
     }
 
-    _setupListener(provider: ethers.providers.WebSocketProvider) {
+    _setupListener(provider: WebSocketProvider) {
         utils.Logger.info('Starting subscribers...');
         const filter = {
             topics: this.filterTopics,
@@ -105,7 +104,7 @@ class ChainSubscribers {
 
         database.redisClient.set('blockCount', 0);
 
-        provider.on(filter, async (log: ethers.providers.Log) => {
+        provider.on(filter, async (log: Log) => {
             await this._filterAndProcessEvent(log);
             database.redisClient.set('lastBlock', log.blockNumber);
             const blockCount = await database.redisClient.get('blockCount');
@@ -119,23 +118,24 @@ class ChainSubscribers {
         });
     }
 
-    async _filterAndProcessEvent(log: ethers.providers.Log) {
-        let parsedLog: ethers.utils.LogDescription | undefined;
+    async _filterAndProcessEvent(log: Log) {
         if (log.address === config.communityAdminAddress) {
             await this._processCommunityAdminEvents(log);
         } else if (this.communities.get(log.address)) {
-            parsedLog = await this._processCommunityEvents(log);
+            await this._processCommunityEvents(log);
         } else if (log.address === config.microcreditContractAddress) {
             await this._processMicrocreditEvents(log);
         }
-        return parsedLog;
     }
 
     async _processCommunityAdminEvents(
-        log: ethers.providers.Log
-    ): Promise<ethers.utils.LogDescription | undefined> {
-        const parsedLog = this.ifaceCommunityAdmin.parseLog(log);
-        let result: ethers.utils.LogDescription | undefined = undefined;
+        log: Log
+    ): Promise<LogDescription | undefined> {
+        const parsedLog = this.ifaceCommunityAdmin.parseLog({ data: log.data, topics: log.topics as string[] });
+        if (!parsedLog) {
+            return undefined;
+        }
+        let result: LogDescription | undefined = undefined;
 
         if (parsedLog.name === 'CommunityRemoved') {
             const communityAddress = parsedLog.args[0];
@@ -187,10 +187,10 @@ class ChainSubscribers {
                 const user = await models.appUser.findOne({
                     attributes: ['language', 'walletPNT', 'appPNT'],
                     where: {
-                        address: getAddress( managerAddress[0]),
+                        address: getAddress(managerAddress[0]),
                     },
                 });
-    
+
                 if (user) {
                     await sendNotification(
                         [user.toJSON()],
@@ -206,10 +206,13 @@ class ChainSubscribers {
     }
 
     async _processCommunityEvents(
-        log: ethers.providers.Log
-    ): Promise<ethers.utils.LogDescription | undefined> {
-        let parsedLog = this.ifaceCommunity.parseLog(log);
-        let result: ethers.utils.LogDescription | undefined = undefined;
+        log: Log
+    ): Promise<LogDescription | undefined> {
+        let parsedLog = this.ifaceCommunity.parseLog({ data: log.data, topics: log.topics as string[] });
+        if (!parsedLog) {
+            return undefined;
+        }
+        let result: LogDescription | undefined = undefined;
 
         if (parsedLog.name === 'BeneficiaryAdded') {
             const communityAddress = log.address;
@@ -248,10 +251,13 @@ class ChainSubscribers {
     }
 
     async _processMicrocreditEvents(
-        log: ethers.providers.Log
-    ): Promise<ethers.utils.LogDescription | undefined> {
-        let parsedLog = this.ifaceMicrocredit.parseLog(log);
-        let result: ethers.utils.LogDescription | undefined = undefined;
+        log: Log
+    ): Promise<LogDescription | undefined> {
+        let parsedLog = this.ifaceMicrocredit.parseLog({ data: log.data, topics: log.topics as string[] });
+        if (!parsedLog) {
+            return undefined;
+        }
+        let result: LogDescription | undefined = undefined;
         const userAddress = parsedLog.args[0];
 
         if (parsedLog.name === 'LoanAdded') {

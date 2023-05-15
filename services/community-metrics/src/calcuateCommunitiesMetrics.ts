@@ -1,4 +1,4 @@
-import { getAddress } from '@ethersproject/address';
+import { getAddress } from 'ethers';
 import { interfaces, config, database, subgraph } from '@impactmarket/core';
 import { CommunityAttributes } from '@impactmarket/core/src/interfaces/ubi/community';
 import BigNumber from 'bignumber.js';
@@ -136,7 +136,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
     const batch = config.cronJobBatchSize;
     // for each community
-    for (let i = 0; ; i = i + batch) {
+    for (let i = 0; ; i += batch) {
         await calculateMetrics(communitiesState.slice(i, i + batch));
         if (i + batch > communitiesState.length) {
             break;

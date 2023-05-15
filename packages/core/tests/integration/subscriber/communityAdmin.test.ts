@@ -5,8 +5,8 @@ import {
     contracts,
     services,
 } from '../../../';
-import { ethers } from 'ethers';
-import ganache from 'ganache-cli';
+import { Contract, ContractFactory, JsonRpcProvider, JsonRpcSigner, ethers } from 'ethers';
+import ganache from 'ganache';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
 
 import { ChainSubscribers } from '../../../src/subscriber/chainSubscribers';
@@ -14,14 +14,15 @@ import CommunityAdminContractJSON from './CommunityAdmin.json';
 import cUSDContractJSON from './cUSD.json';
 
 describe('communityAdmin', () => {
-    let provider: ethers.providers.Web3Provider;
+    let provider: JsonRpcProvider;
     let subscribers: ChainSubscribers;
+    let signers: JsonRpcSigner[] = [];
     let accounts: string[] = [];
-    let cUSD: ethers.Contract;
-    let CommunityAdminContract: ethers.Contract;
+    let cUSD: Contract;
+    let CommunityAdminContract: Contract;
     let communityUpdated: SinonStub<any, any>;
     let findCommunity: SinonStub<any, any>;
-    let CommunityAdminFactory: ethers.ContractFactory;
+    let CommunityAdminFactory: ContractFactory;
     const ganacheProvider = ganache.provider({
         mnemonic:
             'alter toy tortoise hard lava aunt second lamp sister galaxy parent bargain',
@@ -30,8 +31,9 @@ describe('communityAdmin', () => {
     let getRecoverBlockStub: SinonStub<any, any>;
 
     before(async () => {
-        provider = new ethers.providers.Web3Provider(ganacheProvider);
-        accounts = await provider.listAccounts();
+        provider = new JsonRpcProvider(ganacheProvider);
+        signers = await provider.listAccounts();
+        accounts = signers.map((a) => a.address);
         communityUpdated = stub(database.models.community, 'update');
         communityUpdated.returns(Promise.resolve([1, {} as any]));
         findCommunity = stub(database.models.community, 'findOne');
@@ -56,23 +58,23 @@ describe('communityAdmin', () => {
         getLastBlockStub.returns(Promise.resolve(lastBlock));
         getRecoverBlockStub.returns(Promise.resolve(lastBlock));
 
-        const cUSDFactory = new ethers.ContractFactory(
+        const cUSDFactory = new ContractFactory(
             cUSDContractJSON.abi,
             cUSDContractJSON.bytecode,
-            provider.getSigner(0)
+            signers[0]
         );
-        cUSD = await cUSDFactory.deploy();
+        cUSD = await cUSDFactory.deploy() as any;
         stub(config, 'cUSDContractAddress').value(cUSD.address);
 
-        CommunityAdminFactory = new ethers.ContractFactory(
+        CommunityAdminFactory = new ContractFactory(
             contracts.CommunityAdminABI,
             CommunityAdminContractJSON.bytecode,
-            provider.getSigner(0)
+            signers[0]
         );
 
         CommunityAdminContract = await CommunityAdminFactory.deploy(
             cUSD.address
-        );
+        ) as any;
 
         stub(config, 'communityAdminAddress').value(
             CommunityAdminContract.address
@@ -105,9 +107,9 @@ describe('communityAdmin', () => {
     });
 
     it('add community', async () => {
-        const newCommunityAddress = await CommunityAdminContract.connect(
-            provider.getSigner(0)
-        ).addCommunity(
+        const newCommunityAddress = (await CommunityAdminContract.connect(
+            signers[0]
+        ) as any).addCommunity(
             [accounts[1]],
             '2000000000000000000',
             '1500000000000000000000',
@@ -136,9 +138,9 @@ describe('communityAdmin', () => {
     });
 
     it('remove community', async () => {
-        const newCommunityAddress = await CommunityAdminContract.connect(
-            provider.getSigner(0)
-        ).addCommunity(
+        const newCommunityAddress = (await CommunityAdminContract.connect(
+            signers[0]
+        ) as any).addCommunity(
             [accounts[1]],
             '2000000000000000000',
             '1500000000000000000000',
@@ -153,9 +155,9 @@ describe('communityAdmin', () => {
         communityUpdated.reset();
 
         const contractAddress = txResult.events[0].args[0];
-        const removedCommunity = await CommunityAdminContract.connect(
-            provider.getSigner(0)
-        ).removeCommunity(contractAddress);
+        const removedCommunity = (await CommunityAdminContract.connect(
+            signers[0]
+        ) as any).removeCommunity(contractAddress);
         await removedCommunity.wait();
 
         await tests.config.utils.waitForStubCall(communityUpdated, 1);

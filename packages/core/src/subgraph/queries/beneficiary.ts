@@ -1,4 +1,4 @@
-import { utils } from 'ethers';
+import { getAddress } from 'ethers';
 
 import { axiosSubgraph,  } from '../config';
 import { redisClient } from '../../database';
@@ -259,7 +259,7 @@ export const getBeneficiaryCommunity = async (
             intervalsInSeconds.oneHour
         );
 
-        return utils.getAddress(
+        return getAddress(
             beneficiaryEntity.community.id
         );
     } catch (error) {

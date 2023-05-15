@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { JsonRpcProvider, WebSocketProvider } from 'ethers';
 import schedule from 'node-schedule';
 import WebSocket from 'ws';
 
@@ -15,24 +15,24 @@ let failedAnswers = 0;
 let intervalWhenCrash: NodeJS.Timeout | undefined = undefined;
 const waitingForResponseAfterTxRegWarn = false;
 
-let provider: ethers.providers.WebSocketProvider;
-let jsonRpcProvider: ethers.providers.JsonRpcProvider;
-let providerFallback: ethers.providers.WebSocketProvider;
+let provider: WebSocketProvider;
+let providerFallback: WebSocketProvider;
+let jsonRpcProvider: JsonRpcProvider;
 let availableCommunities: Community[];
 
 export const start = async (): Promise<void> => {
-    provider = new ethers.providers.WebSocketProvider(config.webSocketUrl);
-    jsonRpcProvider = new ethers.providers.WebSocketProvider(config.jsonRpcUrl);
-    providerFallback = new ethers.providers.WebSocketProvider(
+    provider = new WebSocketProvider(config.webSocketUrl);
+    providerFallback = new WebSocketProvider(
         config.webSocketUrlFallback
     );
+    jsonRpcProvider = new JsonRpcProvider(config.jsonRpcUrl);
     availableCommunities = await models.community.findAll({
         attributes: ['id', 'contractAddress'],
         where: { status: 'valid', visibility: 'public' },
     });
     subscribers = startChainSubscriber();
 
-    provider._websocket.on('close', () => {
+    provider.on('close', () => {
         utils.Logger.error('WS connection lost! Reconnecting...');
         reconnectChainSubscriber();
     });
@@ -65,8 +65,8 @@ function reconnectChainSubscriber() {
     intervalWhenCrash = setInterval(() => {
         if (usingFallbackUrl) {
             if (
-                providerFallback._websocket.readyState === WebSocket.CLOSED ||
-                providerFallback._websocket.readyState === WebSocket.CLOSING
+                providerFallback.websocket.readyState === WebSocket.CLOSED ||
+                providerFallback.websocket.readyState === WebSocket.CLOSING
             ) {
                 if (failedAnswers > 5) {
                     utils.Logger.error('Try the principal provider');
@@ -79,7 +79,7 @@ function reconnectChainSubscriber() {
                     );
                     successfullAnswersAfterCrash = 0;
                     failedAnswers += 1;
-                    providerFallback = new ethers.providers.WebSocketProvider(
+                    providerFallback = new WebSocketProvider(
                         config.webSocketUrlFallback
                     );
                 }
@@ -111,7 +111,7 @@ function reconnectChainSubscriber() {
                         usingFallbackUrl = false;
                         failedAnswers = 0;
                         successfullAnswersAfterCrash = 0;
-                        provider = new ethers.providers.WebSocketProvider(
+                        provider = new WebSocketProvider(
                             config.webSocketUrl
                         );
                         reconnectChainSubscriber();
@@ -120,8 +120,8 @@ function reconnectChainSubscriber() {
             }
         } else {
             if (
-                provider._websocket.readyState === WebSocket.CLOSED ||
-                provider._websocket.readyState === WebSocket.CLOSING
+                provider.websocket.readyState === WebSocket.CLOSED ||
+                provider.websocket.readyState === WebSocket.CLOSING
             ) {
                 if (failedAnswers > 5) {
                     utils.Logger.error('Use fallback provider');
@@ -132,7 +132,7 @@ function reconnectChainSubscriber() {
                     utils.Logger.error('Checking again if RPC is available...');
                     successfullAnswersAfterCrash = 0;
                     failedAnswers += 1;
-                    provider = new ethers.providers.WebSocketProvider(
+                    provider = new WebSocketProvider(
                         config.webSocketUrl
                     );
                 }

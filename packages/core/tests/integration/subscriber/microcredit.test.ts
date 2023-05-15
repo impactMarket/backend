@@ -1,5 +1,5 @@
-import { ethers } from 'ethers';
-import ganache from 'ganache-cli';
+import { Contract, ContractFactory, JsonRpcProvider, JsonRpcSigner, ethers } from 'ethers';
+import ganache from 'ganache';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
 import { ChainSubscribers } from '../../../src/subscriber/chainSubscribers';
 import {
@@ -17,10 +17,11 @@ import admin from 'firebase-admin';
 
 describe('Microcredit', () => {
     let sequelize: Sequelize;
-    let provider: ethers.providers.Web3Provider;
+    let provider: JsonRpcProvider;
     let subscribers: ChainSubscribers;
-    let MicrocreditContract: ethers.Contract;
-    let MicrocreditFactory: ethers.ContractFactory;
+    let MicrocreditContract: Contract;
+    let MicrocreditFactory: ContractFactory;
+    let signers: JsonRpcSigner[] = [];
     let accounts: string[] = [];
     let notificationUpdated: SinonStub<any, any>;
 
@@ -32,16 +33,17 @@ describe('Microcredit', () => {
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
-        provider = new ethers.providers.Web3Provider(ganacheProvider);
-        accounts = await provider.listAccounts();
+        provider = new JsonRpcProvider(ganacheProvider);
+        signers = await provider.listAccounts();
+        accounts = signers.map((a) => a.address);
         notificationUpdated = stub(database.models.appNotification, 'bulkCreate');
         notificationUpdated.returns(Promise.resolve({} as any));
-        MicrocreditFactory = new ethers.ContractFactory(
+        MicrocreditFactory = new ContractFactory(
             MicrocreditJSON.abi,
             MicrocreditJSON.bytecode,
-            provider.getSigner(accounts[0])
+            signers[0]
         );
-        MicrocreditContract = await MicrocreditFactory.deploy();
+        MicrocreditContract = await MicrocreditFactory.deploy() as any;
 
         stub(config, 'microcreditContractAddress').value(
             MicrocreditContract.address
@@ -105,12 +107,12 @@ describe('Microcredit', () => {
             walletPNT: 'abc123',
         });
 
-        await MicrocreditContract.connect(provider.getSigner(accounts[0])).addManagers([provider.getSigner(accounts[0])._address]);
+        (await MicrocreditContract.connect(signers[0]) as any).addManagers([accounts[0]]);
 
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const newMicrocreditContract = await MicrocreditContract.connect(provider.getSigner(accounts[0])).addLoan(
+        const newMicrocreditContract = (await MicrocreditContract.connect(signers[0]) as any).addLoan(
             accounts[0],
             100,
             90,

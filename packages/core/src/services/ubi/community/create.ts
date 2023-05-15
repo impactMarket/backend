@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { Interface, LogDescription } from 'ethers';
 
 import CommunityContractABI from '../../../contracts/CommunityABI.json';
 import { Community, models, sequelize } from '../../../database';
@@ -56,16 +56,16 @@ export class CommunityCreateService {
 
         // if it was submitted as private, validate the transaction first.
         if (txReceipt !== undefined) {
-            const ifaceCommunity = new ethers.utils.Interface(
+            const ifaceCommunity = new Interface(
                 CommunityContractABI
             );
-            const eventsCoomunity: ethers.utils.LogDescription[] = [];
+            const eventsCoomunity: LogDescription[] = [];
             for (let index = 0; index < txReceipt.logs.length; index++) {
                 try {
                     const parsedLog = ifaceCommunity.parseLog(
                         txReceipt.logs[index]
                     );
-                    eventsCoomunity.push(parsedLog);
+                    eventsCoomunity.push(parsedLog!);
                 } catch (e) {}
             }
             const index = eventsCoomunity.findIndex(

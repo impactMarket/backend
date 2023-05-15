@@ -1,6 +1,6 @@
 import { models } from '../../database';
 import { getBorrowers } from '../../subgraph/queries/microcredit';
-import { getAddress } from '@ethersproject/address';
+import { getAddress } from 'ethers';
 
 function mergeArrays(arr1: any[], arr2: any[], key: string) {
     const map = new Map(arr1.map((item) => [item[key], item]));

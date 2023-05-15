@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { getAddress } from 'ethers';
 
 import { models } from '../../../database';
 import { LogTypes, AppLog } from '../../../interfaces/app/appLog';
@@ -70,7 +70,7 @@ export default class UserLogService {
             const community = await models.community.findOne({
                 attributes: ['id'],
                 where: {
-                    contractAddress: ethers.utils.getAddress(contractAddress),
+                    contractAddress: getAddress(contractAddress),
                     ambassadorAddress,
                 },
             });

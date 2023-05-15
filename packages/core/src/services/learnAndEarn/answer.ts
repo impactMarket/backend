@@ -1,9 +1,6 @@
-import { defaultAbiCoder } from '@ethersproject/abi';
-import { arrayify } from '@ethersproject/bytes';
-import { keccak256 } from '@ethersproject/keccak256';
-import { Wallet } from '@ethersproject/wallet';
+import { getBytes, keccak256, Wallet, AbiCoder } from 'ethers';
 import BigNumber from 'bignumber.js';
-import { literal, Op, fn, col, Transaction } from 'sequelize';
+import { literal, Op, Transaction } from 'sequelize';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
@@ -108,7 +105,7 @@ async function signParams(
     amountEarned: number
 ): Promise<string> {
     const wallet = new Wallet(config.learnAndEarnPrivateKey);
-    const encoded = defaultAbiCoder.encode(
+    const encoded = AbiCoder.defaultAbiCoder().encode(
         ['address', 'uint256', 'uint256'],
         [
             beneficiaryAddress,
@@ -121,7 +118,7 @@ async function signParams(
     );
     const hash = keccak256(encoded);
 
-    return wallet.signMessage(arrayify(hash));
+    return wallet.signMessage(getBytes(hash));
 }
 
 async function calculateReward(

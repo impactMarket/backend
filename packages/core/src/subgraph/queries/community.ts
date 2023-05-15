@@ -1,5 +1,4 @@
-import { getAddress } from '@ethersproject/address';
-import { ethers } from 'ethers';
+import { getAddress, JsonRpcProvider } from 'ethers';
 
 import config from '../../config';
 import { redisClient } from '../../database';
@@ -8,7 +7,7 @@ import { intervalsInSeconds } from '../../types';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
-        const provider = new ethers.providers.JsonRpcProvider(
+        const provider = new JsonRpcProvider(
             config.jsonRpcUrl
         );
         const blockNumber = await provider.getBlockNumber();

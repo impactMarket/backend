@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
+import { getAddress } from 'ethers';
 import { Op, WhereAttributeHash, literal } from 'sequelize';
 import { Where } from 'sequelize/types/utils';
 
@@ -150,7 +150,7 @@ export default class BeneficiaryService {
         const addresses: string[] = [];
 
         if (isAddress(searchInput)) {
-            addresses.push(ethers.utils.getAddress(searchInput));
+            addresses.push(getAddress(searchInput));
         } else if (
             searchInput.toLowerCase().indexOf('drop') === -1 &&
             searchInput.toLowerCase().indexOf('delete') === -1 &&
@@ -203,7 +203,7 @@ export default class BeneficiaryService {
                 (user) => beneficiary.address === user.address.toLowerCase()
             );
             return {
-                address: ethers.utils.getAddress(beneficiary.address),
+                address: getAddress(beneficiary.address),
                 timestamp: beneficiary.since * 1000,
                 claimed: new BigNumber(beneficiary.claimed)
                     .multipliedBy(10 ** config.cUSDDecimal)
@@ -262,7 +262,7 @@ export default class BeneficiaryService {
         );
 
         const addresses = beneficiaries.map((beneficiary) =>
-            ethers.utils.getAddress(beneficiary.address)
+            getAddress(beneficiary.address)
         );
 
         const appUsers = await models.appUser.findAll({
@@ -301,7 +301,7 @@ export default class BeneficiaryService {
                     (user) => beneficiary.address === user.address.toLowerCase()
                 );
                 result.push({
-                    address: ethers.utils.getAddress(beneficiary.address),
+                    address: getAddress(beneficiary.address),
                     timestamp: beneficiary.since * 1000,
                     claimed: new BigNumber(beneficiary.claimed)
                         .multipliedBy(10 ** config.cUSDDecimal)
@@ -461,7 +461,7 @@ export default class BeneficiaryService {
             where: {
                 address: {
                     [Op.in]: registry.map((el) =>
-                        ethers.utils.getAddress(el.by)
+                        getAddress(el.by)
                     ),
                 },
             },
@@ -469,7 +469,7 @@ export default class BeneficiaryService {
 
         return registry.map((el) => {
             const user = users.find(
-                (user) => user.address === ethers.utils.getAddress(el.by)
+                (user) => user.address === getAddress(el.by)
             );
             return {
                 id: el.id as any,

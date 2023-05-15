@@ -1,5 +1,4 @@
-import { getAddress } from '@ethersproject/address';
-import { ethers } from 'ethers';
+import { getAddress } from 'ethers';
 import { Op } from 'sequelize';
 
 import UserLogService from './log';
@@ -513,7 +512,7 @@ export default class UserService {
                 );
                 beneficiaries.forEach((beneficiary) => {
                     beneficiaryAddress.push(
-                        ethers.utils.getAddress(beneficiary.address)
+                        getAddress(beneficiary.address)
                     );
                 });
             }

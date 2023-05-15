@@ -1,7 +1,7 @@
 import distance from '@turf/distance';
 import { point, multiPolygon, polygon } from '@turf/helpers';
 import pointsWithinPolygon from '@turf/points-within-polygon';
-import { ethers } from 'ethers';
+import { getAddress } from 'ethers';
 import { Op } from 'sequelize';
 
 import config from '../../../config';
@@ -81,7 +81,7 @@ export default class ClaimLocationService {
             const beneficiaryCommunity = await models.community.findOne({
                 attributes: ['id', 'publicId'],
                 where: {
-                    contractAddress: ethers.utils.getAddress(
+                    contractAddress: getAddress(
                         beneficiary[0].community.id
                     ),
                 },

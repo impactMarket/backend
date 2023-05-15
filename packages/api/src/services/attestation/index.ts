@@ -4,12 +4,7 @@ import {
     AuthenticationMethod,
     OdisContextName,
 } from '@celo/identity/lib/odis/query';
-import { TransactionResponse } from '@ethersproject/abstract-provider';
-import { BigNumber } from '@ethersproject/bignumber';
-import { Contract } from '@ethersproject/contracts';
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { parseEther } from '@ethersproject/units';
-import { Wallet } from '@ethersproject/wallet';
+import { TransactionResponse, BigNumberish, Contract, JsonRpcProvider, parseEther, Wallet } from 'ethers';
 import { database } from '@impactmarket/core';
 import { randomBytes, randomInt } from 'crypto';
 import { Op } from 'sequelize';
@@ -20,13 +15,13 @@ import config from '../../config';
 import { sendEmail } from '../../services/email';
 import { sendSMS } from '../sms';
 
-interface IOdisPaymentsContract extends Contract {
-    payInCUSD(account: string, value: BigNumber): Promise<TransactionResponse>;
+type IOdisPaymentsContract = Contract & {
+    payInCUSD(account: string, value: BigNumberish): Promise<TransactionResponse>;
 }
-interface IERC20Contract extends Contract {
+type IERC20Contract = Contract & {
     increaseAllowance(
         spender: string,
-        value: BigNumber
+        value: BigNumberish
     ): Promise<TransactionResponse>;
 }
 
@@ -62,13 +57,16 @@ const topUpOdis = async (issuer: Wallet) => {
 
     const ONE_CENT_CUSD_WEI = parseEther('0.01');
 
-    if (ONE_CENT_CUSD_WEI.gt(currentAllowance)) {
+    if (ONE_CENT_CUSD_WEI > currentAllowance) {
         const approvalTxReceipt = await stableTokenContract.increaseAllowance(
-            odisPaymentsContract.address,
+            config.attestations.odisProxy,
             ONE_CENT_CUSD_WEI
         );
         const tx = await approvalTxReceipt.wait();
-        console.log('cusd approval tx hash:', tx.transactionHash);
+        if (!tx) {
+            throw Error('cUSD approval failed');
+        }
+        console.log('cusd approval tx hash:', tx.hash);
         enoughAllowance = tx.status === 1;
     } else {
         enoughAllowance = true;
@@ -81,7 +79,7 @@ const topUpOdis = async (issuer: Wallet) => {
             ONE_CENT_CUSD_WEI
         );
         const tx = await odisPayment.wait();
-        console.log('odis payment tx hash:', tx.transactionHash);
+        console.log('odis payment tx hash:', tx!.hash);
     } else {
         // throw Error('cUSD approval failed');
         // TODO: send internal alert

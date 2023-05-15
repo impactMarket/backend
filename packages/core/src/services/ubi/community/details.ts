@@ -1,6 +1,5 @@
-import { getAddress } from '@ethersproject/address';
+import { getAddress } from 'ethers';
 import csv from 'csvtojson';
-import { ethers } from 'ethers';
 import fs from 'fs';
 import json2csv from 'json2csv';
 import { Op, WhereOptions, fn, col, literal, Transaction } from 'sequelize';
@@ -452,7 +451,7 @@ export class CommunityDetailsService {
                     filter.state
                 );
                 addresses = managersSubgraph.map((manager) =>
-                    ethers.utils.getAddress(manager.address)
+                    getAddress(manager.address)
                 );
                 appUsers = await models.appUser.findAll({
                     attributes: managerAttributes,
@@ -472,10 +471,10 @@ export class CommunityDetailsService {
                 const user = appUsers.find(
                     (user) =>
                         user.address ===
-                        ethers.utils.getAddress(manager.address)
+                        getAddress(manager.address)
                 );
                 return {
-                    address: ethers.utils.getAddress(manager.address),
+                    address: getAddress(manager.address),
                     firstName: user?.firstName,
                     lastName: user?.lastName,
                     email: user?.email,
@@ -544,7 +543,7 @@ export class CommunityDetailsService {
                 );
             }
         } else if (roles.manager) {
-            const contractAddress = ethers.utils.getAddress(
+            const contractAddress = getAddress(
                 roles.manager.community
             );
             if (community.contractAddress !== contractAddress) {
@@ -664,7 +663,7 @@ export class CommunityDetailsService {
                 filter.state !== null ? (filter.state as number) : undefined
             );
             addresses = beneficiariesSubgraph.map((beneficiary) =>
-                ethers.utils.getAddress(beneficiary.address)
+                getAddress(beneficiary.address)
             );
             appUsers = await models.appUser.findAll({
                 attributes: [
@@ -689,7 +688,7 @@ export class CommunityDetailsService {
             const user = appUsers.find(
                 (user) =>
                     user.address ===
-                    ethers.utils.getAddress(beneficiary.address)
+                    getAddress(beneficiary.address)
             );
             return {
                 address: beneficiary.address,
@@ -762,7 +761,7 @@ export class CommunityDetailsService {
                 const userRole = await getUserRoles(userAddress);
                 if (userRole.manager) {
                     showEmail =
-                        ethers.utils.getAddress(userRole.manager.community) ===
+                        getAddress(userRole.manager.community) ===
                         community.contractAddress;
                 }
             }

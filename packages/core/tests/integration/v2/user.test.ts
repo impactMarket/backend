@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { ethers } from 'ethers';
+import { Wallet } from 'ethers';
 import { faker } from '@faker-js/faker';
 import { Sequelize } from 'sequelize';
 import { SinonStub, stub, restore } from 'sinon';
@@ -89,7 +89,7 @@ describe('user service v2', () => {
         });
 
         it('create user successfully', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const newUser = await userService.create({
                 address,
@@ -100,7 +100,7 @@ describe('user service v2', () => {
             expect(findUser).to.not.be.null;
         });
         it('create user overwriting', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const phone = faker.phone.phoneNumber();
             const newUser = await userService.create(
@@ -116,8 +116,8 @@ describe('user service v2', () => {
             expect(findUser).to.not.be.null;
         });
         it('duplicated phone number', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
-            const secondRandomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
+            const secondRandomWallet = Wallet.createRandom();
             const firstAddress = await randomWallet.getAddress();
             const secondAddress = await secondRandomWallet.getAddress();
             const phone = faker.phone.phoneNumber();
@@ -139,7 +139,7 @@ describe('user service v2', () => {
             );
         });
         it('create user recovering account', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const phone = faker.phone.phoneNumber();
             const newUser = await userService.create(
@@ -156,7 +156,7 @@ describe('user service v2', () => {
             expect(findUser).to.not.be.null;
         });
         it('login with an existing account', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const phone = faker.phone.phoneNumber();
             // first login
@@ -174,7 +174,7 @@ describe('user service v2', () => {
             expect(findUser).to.not.be.null;
         });
         it('login with a different phone number', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const firstPhone = faker.phone.phoneNumber();
             const secondPhone = faker.phone.phoneNumber();
@@ -191,7 +191,7 @@ describe('user service v2', () => {
             expect(updatedUser.phone).to.equal(secondPhone);
         });
         it('try to login with an inactive account', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             // first login
             const newUser = await userService.create({
@@ -220,7 +220,7 @@ describe('user service v2', () => {
             expect(error.message).to.equal('user is inactive');
         });
         it('try to login with a deleted account', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const newUser = await userService.create({
                 address,
@@ -255,7 +255,7 @@ describe('user service v2', () => {
                 status: 'active',
                 roles: undefined,
             });
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const newUser = await userService.create(
                 {
@@ -269,7 +269,7 @@ describe('user service v2', () => {
             expect(newUser).to.be.not.null;
         });
         it('login with invalid clientId', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
 
             let error: any;
@@ -298,7 +298,7 @@ describe('user service v2', () => {
         });
 
         it('get an user successfully', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const newUser = await userService.create({
                 address,
@@ -327,7 +327,7 @@ describe('user service v2', () => {
                     state: 0,
                 },
             });
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const newUser = await userService.create({
                 address,
@@ -345,7 +345,7 @@ describe('user service v2', () => {
                 beneficiary: null,
                 manager: null,
             });
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const newUser = await userService.create({
                 address,
@@ -400,7 +400,7 @@ describe('user service v2', () => {
                 beneficiary: null,
                 manager: null,
             });
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const phone = faker.phone.phoneNumber();
             await userService.create({
@@ -417,8 +417,8 @@ describe('user service v2', () => {
                 beneficiary: null,
                 manager: null,
             });
-            const randomWallet = ethers.Wallet.createRandom();
-            const secondRandomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
+            const secondRandomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const secondAddress = await secondRandomWallet.getAddress();
             const phone = faker.phone.phoneNumber();
@@ -457,7 +457,7 @@ describe('user service v2', () => {
 
     describe('patch', () => {
         it('read beneficiary rules', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             await userService.create({
                 address,
@@ -465,7 +465,7 @@ describe('user service v2', () => {
             await userService.patch(address, 'beneficiary-rules');
         });
         it('read manager rules', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             await userService.create({
                 address,
@@ -480,7 +480,7 @@ describe('user service v2', () => {
                 beneficiary: null,
                 manager: null,
             });
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             await userService.create({
                 address,
@@ -496,7 +496,7 @@ describe('user service v2', () => {
                     state: 0,
                 },
             });
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             await userService.create({
                 address,
@@ -588,7 +588,7 @@ describe('user service v2', () => {
 
     describe('notifications', () => {
         it('get notification', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const user = await userService.create({
                 address,
@@ -608,7 +608,7 @@ describe('user service v2', () => {
             expect(notifications.count).to.be.eq(1);
         });
         it('read notifications successfully', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const user = await userService.create({
                 address,
@@ -637,7 +637,7 @@ describe('user service v2', () => {
             expect(error.message).to.be.eq('notifications were not updated!');
         });
         it('get unread notifications', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const user = await userService.create({
                 address,
@@ -760,7 +760,7 @@ describe('user service v2', () => {
             expect(error.message).to.be.eq('user not found');
         });
         it('failed to get log from a invalid community address', async () => {
-            const randomWallet = ethers.Wallet.createRandom();
+            const randomWallet = Wallet.createRandom();
             const address = await randomWallet.getAddress();
             returnUserRoleSubgraph.returns({
                 beneficiary: null,

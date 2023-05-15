@@ -1,5 +1,4 @@
-import { Interface } from '@ethersproject/abi';
-import { JsonRpcProvider } from '@ethersproject/providers';
+import { Interface, JsonRpcProvider } from 'ethers';
 
 import { config } from '../../..';
 import { models, sequelize } from '../../database';
@@ -19,9 +18,9 @@ export async function registerClaimRewards(
     provider.waitForTransaction(transactionHash).then((transaction) => {
         // in case other unknown events are included on that transaction,
         // ignore them
-        const events = transaction.logs.map((log) => {
+        const events = transaction!.logs.map((log) => {
             try {
-                return iface.parseLog(log);
+                return iface.parseLog({ data: log.data, topics: log.topics as string[] });
             } catch (_) {
                 return null;
             }
