@@ -362,7 +362,7 @@ describe('user service v2', () => {
                 });
 
             expect(error.message).to.be.eq(
-                'user must be ambassador, manager or council member'
+                'user must be ambassador, ubi manager, loand manager or council member'
             );
         });
         it('try to find user with invalid address', async () => {
