@@ -94,6 +94,7 @@ function validateEnv() {
         IMPACTLABS_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         IDO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         TREASURY_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
+        LEARN_AND_EARN_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_LAMBDA: bool({ default: false }),
         SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         // attestation service (ASv2)
@@ -109,6 +110,8 @@ function validateEnv() {
         // chain
         CHAIN_IS_MAINNET: bool({ devDefault: true }),
         CHAIN_JSON_RPC_URL_CELO: str({ devDefault: onlyOnTestEnv('xyz') }),
+        // hot wallets
+        HOT_WALLET_CHECK_BALANCE: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 

@@ -72,6 +72,7 @@ export default {
         dao: validatedEnv.DAO_CONTRACT_ADDRESS,
         ido: validatedEnv.IDO_CONTRACT_ADDRESS,
         treasury: validatedEnv.TREASURY_CONTRACT_ADDRESS,
+        learnAndEarn: validatedEnv.LEARN_AND_EARN_CONTRACT_ADDRESS,
     },
     DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
     communityAdminAddress: validatedEnv.COMMUNITY_ADMIN_ADDRESS,
@@ -272,4 +273,11 @@ export default {
         isMainnet: validatedEnv.CHAIN_IS_MAINNET,
         jsonRPCUrlCelo: validatedEnv.CHAIN_JSON_RPC_URL_CELO,
     },
+
+    /**
+     * Variables for hot wallets
+     * They are used in different sevices and we need to keep track if
+     * they have enough balance to perform the operations
+     */
+    hotWalletsCheckBalance: validatedEnv.HOT_WALLET_CHECK_BALANCE,
 };
