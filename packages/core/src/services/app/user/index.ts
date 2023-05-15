@@ -193,14 +193,14 @@ export default class UserService {
         address: string,
         authoriedAddress: string
     ) {
-        const { ambassador, manager, councilMember } = await this._userRoles(
+        const { ambassador, manager, councilMember, loanManager } = await this._userRoles(
             authoriedAddress
         );
 
-        if (!ambassador && !manager && !councilMember) {
+        if (!ambassador && !manager && !councilMember && !loanManager) {
             throw new BaseError(
                 'UNAUTHORIZED',
-                'user must be ambassador, manager or council member'
+                'user must be ambassador, ubi manager, loand manager or council member'
             );
         }
 

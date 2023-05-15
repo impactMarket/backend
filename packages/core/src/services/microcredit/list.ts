@@ -30,6 +30,8 @@ export default class MicroCreditList {
                 claimed: number;
                 repayed: string;
                 lastRepayment: number;
+                lastRepaymentAmount: string;
+                lastDebt: string;
             };
         }[]
     > => {
