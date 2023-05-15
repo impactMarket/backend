@@ -1,8 +1,11 @@
 import 'module-alias/register';
-import { utils, config, database, subscriber } from '@impactmarket/core';
+import { utils, config, database } from '@impactmarket/core';
 import express from 'express';
 
 import serverLoader from './server';
+import { startSubscribers } from './loaders/subscriber';
+import { checkWalletBalances } from './loaders/checkWalletBalances';
+import { checkLearnAndEarnBalances } from './loaders/checkLearnAndEarnBalances';
 
 export async function startServer() {
     const app = express();
@@ -21,11 +24,12 @@ export async function startServer() {
     }
     utils.Logger.info('🗺️  Database loaded and connected');
 
-    await serverLoader(app);
+    serverLoader(app);
     utils.Logger.info('📡 Express server loaded');
 
-    subscriber.start();
-    utils.Logger.info('⏱️ Chain Subscriber starting');
+    startSubscribers();
+    checkWalletBalances();
+    checkLearnAndEarnBalances();
 
     return app.listen(config.port, () => {
         utils.Logger.info(`
