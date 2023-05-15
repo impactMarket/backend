@@ -48,7 +48,7 @@ export default class UserLogService {
             return models.appLog.findAll({
                 include: [
                     {
-                        attributes: ['username', 'address'],
+                        attributes: ['firstName', 'address'],
                         model: models.appUser,
                         as: 'user',
                     },
@@ -84,7 +84,7 @@ export default class UserLogService {
             return models.appLog.findAll({
                 include: [
                     {
-                        attributes: ['username', 'address'],
+                        attributes: ['firstName', 'address'],
                         model: models.appUser,
                         as: 'user',
                         where: {

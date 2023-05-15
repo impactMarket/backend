@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 
 import UserLogService from './log';
 import config from '../../../config';
-import { models, sequelize } from '../../../database';
+import { models } from '../../../database';
 import { AppUserModel } from '../../../database/models/app/appUser';
 import { LogTypes } from '../../../interfaces/app/appLog';
 import { AppNotification } from '../../../interfaces/app/appNotification';
@@ -17,8 +17,8 @@ import { getAllBeneficiaries } from '../../../subgraph/queries/beneficiary';
 import { UserRoles, getUserRoles } from '../../../subgraph/queries/user';
 import { BaseError } from '../../../utils/baseError';
 import { generateAccessToken } from '../../../utils/jwt';
-import { Logger } from '../../../utils/logger';
-import { sendPushNotification } from '../../../utils/util';
+import { sendFirebasePushNotification } from '../../../utils/pushNotification';
+import { utils } from '../../../..';
 
 export default class UserService {
     private userLogService = new UserLogService();
@@ -111,7 +111,6 @@ export default class UserService {
                 }
 
                 const pushNotification = {
-                    pushNotificationToken: userParams.pushNotificationToken,
                     walletPNT: userParams.walletPNT,
                     appPNT: userParams.appPNT,
                 };
@@ -483,23 +482,15 @@ export default class UserService {
     ) {
         if (country) {
             const users = await models.appUser.findAll({
-                attributes: ['pushNotificationToken'],
+                attributes: ['walletPNT'],
                 where: {
                     country,
-                    pushNotificationToken: {
+                    walletPNT: {
                         [Op.not]: null,
                     },
                 },
             });
-            users.forEach((user) => {
-                sendPushNotification(
-                    user.address,
-                    title,
-                    body,
-                    data,
-                    user.pushNotificationToken
-                );
-            });
+            sendFirebasePushNotification(users.map(el => el.walletPNT!), title, body, data).catch((error) => utils.Logger.error('sendFirebasePushNotification' + error));
         } else if (communitiesIds && communitiesIds.length) {
             const communities = await models.community.findAll({
                 attributes: ['contractAddress'],
@@ -528,26 +519,17 @@ export default class UserService {
             }
             // get users
             const users = await models.appUser.findAll({
-                attributes: ['pushNotificationToken'],
+                attributes: ['walletPNT'],
                 where: {
                     address: {
                         [Op.in]: beneficiaryAddress,
                     },
-                    pushNotificationToken: {
+                    walletPNT: {
                         [Op.not]: null,
                     },
                 },
             });
-
-            users.forEach((user) => {
-                sendPushNotification(
-                    user.address,
-                    title,
-                    body,
-                    data,
-                    user.pushNotificationToken
-                );
-            });
+            sendFirebasePushNotification(users.map(el => el.walletPNT!), title, body, data).catch((error) => utils.Logger.error('sendFirebasePushNotification' + error));
         } else {
             throw new BaseError('INVALID_OPTION', 'invalid option');
         }

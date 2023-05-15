@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   postgres:
-    image: postgres:14.6-alpine
+    image: postgres:15.3-alpine
     restart: always
     environment:
       - POSTGRES_USER=postgres
@@ -13,7 +13,7 @@ services:
       - ./postgres_data:/var/lib/postgresql/data
 
   redis:
-    image: redis:6.2-alpine
+    image: redis:7-alpine
     restart: always
     ports:
       - '6379:6379'

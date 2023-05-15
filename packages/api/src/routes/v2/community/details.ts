@@ -106,7 +106,7 @@ export default (route: Router): void => {
      *         schema:
      *           type: string
      *         required: false
-     *         description: search by address or username
+     *         description: search by address or firstName
      *       - in: query
      *         name: orderBy
      *         schema:
@@ -241,7 +241,7 @@ export default (route: Router): void => {
      *         schema:
      *           type: string
      *         required: false
-     *         description: search by address or username
+     *         description: search by address or firstName
      *       - in: query
      *         name: orderBy
      *         schema:

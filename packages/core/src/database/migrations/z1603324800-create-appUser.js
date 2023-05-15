@@ -12,16 +12,9 @@ module.exports = {
                 allowNull: false,
                 unique: true,
             },
-            avatarMediaId: {
-                type: Sequelize.INTEGER,
-                allowNull: true,
-            },
             avatarMediaPath: {
                 type: Sequelize.STRING(44),
                 allowNull: true,
-            },
-            username: {
-                type: Sequelize.STRING(128),
             },
             firstName: {
                 type: Sequelize.STRING(128),
@@ -37,9 +30,6 @@ module.exports = {
             currency: {
                 type: Sequelize.STRING(4),
                 defaultValue: 'USD',
-            },
-            pushNotificationToken: {
-                type: Sequelize.STRING(64),
             },
             walletPNT: {
                 type: Sequelize.STRING(256),
@@ -61,11 +51,6 @@ module.exports = {
                 defaultValue: Sequelize.fn('now'),
                 allowNull: false,
             },
-            suspect: {
-                type: Sequelize.BOOLEAN,
-                defaultValue: false,
-                allowNull: false,
-            },
             active: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: true,
@@ -74,6 +59,10 @@ module.exports = {
             email: {
                 type: Sequelize.STRING(64),
                 allowNull: true,
+            },
+            emailValidated: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
             },
             bio: {
                 type: Sequelize.STRING(512),
@@ -87,9 +76,9 @@ module.exports = {
                 type: Sequelize.STRING(64),
                 allowNull: true,
             },
-            createdAt: {
-                allowNull: false,
-                type: Sequelize.DATE,
+            phoneValidated: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: false,
             },
             readBeneficiaryRules: {
                 type: Sequelize.BOOLEAN,
@@ -100,6 +89,10 @@ module.exports = {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,
+            },
+            createdAt: {
+                allowNull: false,
+                type: Sequelize.DATE,
             },
             updatedAt: {
                 allowNull: false,

@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { getAddress } from '@ethersproject/address';
 import { col, fn, GroupedCountResultItem, Op, Order } from 'sequelize';
 
 import { IAddStory, ICommunityStory, ICommunityStoryGet } from './types';
@@ -12,6 +13,7 @@ import { getUserRoles } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
 import { cleanStoryCache } from '../../utils/cache';
 import { StoryContentStorage } from '../storage';
+import { sendNotification } from '../../utils/pushNotification';
 
 export default class StoryServiceV2 {
     private storyContentStorage = new StoryContentStorage();
@@ -590,6 +592,19 @@ export default class StoryServiceV2 {
             });
         } else {
             this.addNotification(userAddress, contentId);
+            const user = await models.appUser.findOne({
+                attributes: ['language', 'walletPNT', 'appPNT'],
+                where: {
+                    address: getAddress(userAddress),
+                },
+            });
+
+            if (user) {
+                await sendNotification(
+                    [user.toJSON()],
+                    NotificationType.STORY_LIKED
+                );
+            }
 
             await models.storyUserEngagement.create({
                 contentId,

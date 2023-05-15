@@ -7,6 +7,8 @@ import { models } from '../database';
 import { AppUserModel } from '../database/models/app/appUser';
 import localesConfig from '../utils/locale.json';
 import admin from 'firebase-admin';
+import { AppUser } from '../interfaces/app/appUser';
+import { utils } from '../..';
 
 export async function sendNotification(
     users: AppUserModel[],
@@ -33,7 +35,7 @@ export async function sendNotification(
     const languages = [...new Set(users.map(el => el.language))];
 
     // mount notification object with title and description from prismic and users by language
-    const prismicNotifications = {};
+    const prismicNotifications: { [language:string]: { title: string, description: string, users: AppUser[] } } = {};
     const fetchMessagesFromPrismic = languages.map(async language => {
         const locale = localesConfig.find(({ shortCode }) => language === shortCode.toLowerCase())?.code;
         const defaultLocale = localesConfig.find(({ isDefault }) => isDefault)?.code;
@@ -58,23 +60,17 @@ export async function sendNotification(
     // send notification by group of languages
     Object.keys(prismicNotifications).forEach(async key => {
         let prismicData = prismicNotifications[key];
-        sendFirebasePushNotification(prismicData.title, prismicData.description, prismicData.users.map(el => el.walletPNT!));
+        sendFirebasePushNotification(prismicData.users.map(el => el.walletPNT!), prismicData.title, prismicData.description).catch((error) => utils.Logger.error('sendFirebasePushNotification' + error));
     });
 }
 
-export async function sendFirebasePushNotification(title: string, body: string, tokens: string[]) {
+export async function sendFirebasePushNotification(tokens: string[], title: string, body: string, data: any = undefined) {
     try {
         const batch = 500;
         for (let i = 0; ; i += batch) {
             const tokens_batch = tokens.slice(i, i + batch);
             const message = {
-                apns: {
-                    payload: {
-                        aps: {
-                            'mutable-content': 1
-                        }
-                    }
-                },
+                data,
                 notification: {
                     body,
                     title,
@@ -93,7 +89,7 @@ export async function sendFirebasePushNotification(title: string, body: string, 
                     console.log('Successfully sent message:', response);
                 })
                 .catch(error => {
-                    console.log('Error sending message:', error);
+                    console.error('Error sending message:', error);
                 });
 
             if (i + batch > tokens.length) {

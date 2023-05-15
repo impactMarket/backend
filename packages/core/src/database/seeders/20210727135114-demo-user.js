@@ -13,7 +13,8 @@ module.exports = {
             const randomWallet = ethers.Wallet.createRandom();
             newUsers.push({
                 address: await randomWallet.getAddress(),
-                username: faker.internet.userName(),
+                firstName: faker.person.firstName(),
+                lastName: faker.person.lastName(),
                 currency: faker.finance.currencyCode(),
             });
         }
@@ -31,16 +32,10 @@ module.exports = {
                     allowNull: false,
                     unique: true,
                 },
-                avatarMediaId: {
-                    type: Sequelize.INTEGER,
-                    // references: {
-                    //     model: 'app_media_content',
-                    //     key: 'id',
-                    // },
-                    // // onDelete: 'SET NULL', // default
-                    allowNull: true,
+                firstName: {
+                    type: Sequelize.STRING(128),
                 },
-                username: {
+                lastName: {
                     type: Sequelize.STRING(128),
                 },
                 language: {
@@ -51,9 +46,6 @@ module.exports = {
                 currency: {
                     type: Sequelize.STRING(4),
                     defaultValue: 'USD',
-                },
-                pushNotificationToken: {
-                    type: Sequelize.STRING(64),
                 },
                 gender: {
                     type: Sequelize.STRING(2),
@@ -67,11 +59,6 @@ module.exports = {
                 lastLogin: {
                     type: Sequelize.DATE,
                     defaultValue: Sequelize.fn('now'),
-                    allowNull: false,
-                },
-                suspect: {
-                    type: Sequelize.BOOLEAN,
-                    defaultValue: false,
                     allowNull: false,
                 },
                 createdAt: {

@@ -8,26 +8,24 @@ import {
 export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public id!: number;
     public address!: string;
-    public username!: string | null;
     public firstName!: string | null;
     public lastName!: string | null;
-    public avatarMediaId!: number | null;
     public avatarMediaPath!: string | null;
     public language!: string;
     public currency!: string;
-    public pushNotificationToken!: string | null;
     public walletPNT!: string | null;
     public appPNT!: string | null;
     public gender!: string;
     public year!: number | null;
     public children!: number | null;
     public lastLogin!: Date;
-    public suspect!: boolean;
     public active!: boolean;
     public email!: string;
+    public emailValidated!: boolean;
     public bio!: string;
     public country!: string;
     public phone!: string;
+    public phoneValidated!: boolean;
     public readBeneficiaryRules!: boolean;
     public readManagerRules!: boolean;
 
@@ -50,21 +48,9 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
                 allowNull: false,
                 primaryKey: true, // TODO: remove and set "id" as the primary key
             },
-            avatarMediaId: {
-                type: DataTypes.INTEGER,
-                references: {
-                    model: 'app_media_content',
-                    key: 'id',
-                },
-                // onDelete: 'SET NULL', // default
-                allowNull: true,
-            },
             avatarMediaPath: {
                 type: DataTypes.STRING(44),
                 allowNull: true,
-            },
-            username: {
-                type: DataTypes.STRING(128),
             },
             firstName: {
                 type: DataTypes.STRING(128),
@@ -79,9 +65,6 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             },
             currency: {
                 type: DataTypes.STRING(4),
-            },
-            pushNotificationToken: {
-                type: DataTypes.STRING(64),
             },
             walletPNT: {
                 type: DataTypes.STRING(256),
@@ -102,6 +85,10 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             email: {
                 type: DataTypes.STRING(64),
             },
+            emailValidated: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
+            },
             bio: {
                 type: DataTypes.STRING(64),
             },
@@ -111,14 +98,13 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             phone: {
                 type: DataTypes.STRING(64),
             },
+            phoneValidated: {
+                type: DataTypes.BOOLEAN,
+                defaultValue: false,
+            },
             lastLogin: {
                 type: DataTypes.DATE,
                 defaultValue: Sequelize.fn('now'),
-                allowNull: false,
-            },
-            suspect: {
-                type: DataTypes.BOOLEAN,
-                defaultValue: false,
                 allowNull: false,
             },
             active: {
