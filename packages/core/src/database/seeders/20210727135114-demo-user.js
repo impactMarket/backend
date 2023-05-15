@@ -1,6 +1,6 @@
 'use strict';
 const { ethers } = require('ethers');
-const faker = require('faker');
+const { faker } = require('@faker-js/faker');
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {

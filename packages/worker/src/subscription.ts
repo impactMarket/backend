@@ -206,6 +206,7 @@ export const userActivitySubscription = async () => {
                                     userActivity.timestamp
                                 );
                                 if (user && userRole) {
+                                    const { gte } = Op;
                                     const notification =
                                         await database.models.appNotification.findOne(
                                             {
@@ -213,7 +214,7 @@ export const userActivitySubscription = async () => {
                                                     userId: user.id,
                                                     type: userRole,
                                                     createdAt: {
-                                                        [Op.gte]: new Date(
+                                                        [gte]: new Date(
                                                             userActivity.timestamp *
                                                                 1000
                                                         ),

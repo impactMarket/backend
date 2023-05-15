@@ -15,11 +15,6 @@
         "@impactmarket/core": "1.0.0"
     },
     "devDependencies": {
-        "@typescript-eslint/eslint-plugin": "3.4.0",
-        "@typescript-eslint/parser": "3.4.0",
-        "eslint": "7.3.1",
-        "eslint-config-prettier": "6.11.0",
-        "eslint-config-universe": "4.0.0",
         "serverless": "3.25.1",
         "serverless-plugin-tracing": "2.0.0",
         "serverless-webpack": "5.11.0",

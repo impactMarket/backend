@@ -361,7 +361,7 @@ export default (app: Router): void => {
      *   delete:
      *     tags:
      *       - "stories"
-     *     summary: Delete a story
+     *     summary: Delete a story comment
      *     parameters:
      *       - in: path
      *         name: id

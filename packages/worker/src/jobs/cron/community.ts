@@ -8,34 +8,36 @@ export async function internalNotifyNewCommunities(): Promise<void> {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+    const { gte } = Op;
+
     const totalPending = await database.models.community.findAndCountAll({
-        where: { createdAt: { [Op.gte]: sevenDaysAgo }, status: 'pending' },
+        where: { createdAt: { [gte]: sevenDaysAgo }, status: 'pending' },
         order: ['review'],
     });
     const pending = await database.models.community.count({
         where: {
-            createdAt: { [Op.gte]: sevenDaysAgo },
+            createdAt: { [gte]: sevenDaysAgo },
             status: 'pending',
             review: 'pending',
         },
     });
     const inReview = await database.models.community.count({
         where: {
-            createdAt: { [Op.gte]: sevenDaysAgo },
+            createdAt: { [gte]: sevenDaysAgo },
             status: 'pending',
             review: 'in-progress',
         },
     });
     const halted = await database.models.community.count({
         where: {
-            createdAt: { [Op.gte]: sevenDaysAgo },
+            createdAt: { [gte]: sevenDaysAgo },
             status: 'pending',
             review: 'halted',
         },
     });
     const closed = await database.models.community.count({
         where: {
-            createdAt: { [Op.gte]: sevenDaysAgo },
+            createdAt: { [gte]: sevenDaysAgo },
             status: 'pending',
             review: 'closed',
         },

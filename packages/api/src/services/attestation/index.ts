@@ -105,12 +105,14 @@ export const verify = async (
 ) => {
     // check if code exists and is valid
     // TODO: create startup process to delete expired codes
+    const { gt } = Op;
     const validCode = await database.models.appUserValidationCode.findOne({
         attributes: ['id'],
         where: {
             code,
             userId,
-            expiresAt: { [Op.gt]: Date.now() },
+            // lol, using Op.gt gives typescript error after sequelize >6.29.0
+            expiresAt: { [gt]: Date.now() },
         },
     });
 

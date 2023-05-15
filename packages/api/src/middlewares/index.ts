@@ -2,7 +2,7 @@ import { config, database } from '@impactmarket/core';
 import { ethers } from 'ethers';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
-import jwt from 'jsonwebtoken';
+import { verify } from 'jsonwebtoken';
 import RedisStore from 'rate-limit-redis';
 
 import { RequestWithUser, UserInRequest } from './core';
@@ -26,8 +26,9 @@ export function authenticateToken(
         return;
     }
 
-    jwt.verify(token, config.jwtSecret, async (err, _user) => {
-        if (err) {
+    verify(token, config.jwtSecret, async (err, _user) => {
+        // prevent error when token is not valid and _user undefined or string
+        if (err || typeof _user !== 'object') {
             res.sendStatus(403);
             return;
         }
@@ -102,7 +103,7 @@ export function adminAuthentication(
         return;
     }
 
-    jwt.verify(token, config.jwtSecret, (err, _admin) => {
+    verify(token, config.jwtSecret, (err, _admin) => {
         if (err) {
             res.sendStatus(403);
             return;
