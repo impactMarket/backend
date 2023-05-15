@@ -1,8 +1,11 @@
 import 'module-alias/register';
-import { utils, config, database, subscriber } from '@impactmarket/core';
+import { utils, config, database } from '@impactmarket/core';
 import express from 'express';
 
 import serverLoader from './server';
+import { startSubscribers } from './loaders/subscriber';
+import { checkWalletBalances } from './loaders/checkWalletBalances';
+import { checkLearnAndEarnBalances } from './loaders/checkLearnAndEarnBalances';
 
 export async function startServer() {
     const app = express();
@@ -19,13 +22,14 @@ export async function startServer() {
     if (process.env.NODE_ENV !== 'test') {
         await database.sequelize.sync();
     }
-    utils.Logger.info('🗺️  Database loaded and connected');
+    utils.Logger.info('🗺️ Database loaded and connected');
 
-    await serverLoader(app);
+    serverLoader(app);
     utils.Logger.info('📡 Express server loaded');
 
-    subscriber.start();
-    utils.Logger.info('⏱️ Chain Subscriber starting');
+    startSubscribers();
+    checkWalletBalances().then(() => utils.Logger.info('🕵️ checkWalletBalances finished')).catch((err) => utils.Logger.error('checkWalletBalances' + err));
+    checkLearnAndEarnBalances().then(() => utils.Logger.info('🕵️ checkLearnAndEarnBalances finished')).catch((err) => utils.Logger.error('checkLearnAndEarnBalances' + err));
 
     return app.listen(config.port, () => {
         utils.Logger.info(`
