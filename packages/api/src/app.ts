@@ -27,9 +27,12 @@ export async function startServer() {
     serverLoader(app);
     utils.Logger.info('📡 Express server loaded');
 
-    startSubscribers();
-    checkWalletBalances().then(() => utils.Logger.info('🕵️ checkWalletBalances finished')).catch((err) => utils.Logger.error('checkWalletBalances' + err));
-    checkLearnAndEarnBalances().then(() => utils.Logger.info('🕵️ checkLearnAndEarnBalances finished')).catch((err) => utils.Logger.error('checkLearnAndEarnBalances' + err));
+    // prevent subscribers and validations to run on dev mode
+    if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
+        startSubscribers();
+        checkWalletBalances().then(() => utils.Logger.info('🕵️ checkWalletBalances finished')).catch((err) => utils.Logger.error('checkWalletBalances' + err));
+        checkLearnAndEarnBalances().then(() => utils.Logger.info('🕵️ checkLearnAndEarnBalances finished')).catch((err) => utils.Logger.error('checkLearnAndEarnBalances' + err));
+    }
 
     return app.listen(config.port, () => {
         utils.Logger.info(`
