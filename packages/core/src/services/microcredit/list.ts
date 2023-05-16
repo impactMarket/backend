@@ -1,6 +1,10 @@
 import { models } from '../../database';
-import { getBorrowers } from '../../subgraph/queries/microcredit';
+import { getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
 import { getAddress } from '@ethersproject/address';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { MicrocreditABI as MicroCreditABI } from '../../contracts';
+import { BigNumber, Contract } from 'ethers';
+import { config } from '../../..';
 
 function mergeArrays(arr1: any[], arr2: any[], key: string) {
     const map = new Map(arr1.map((item) => [item[key], item]));
@@ -54,4 +58,80 @@ export default class MicroCreditList {
             'address'
         );
     };
+
+    /**
+     * @swagger
+     *  components:
+     *    schemas:
+     *      getRepaymentsHistory:
+     *        type: object
+     *        properties:
+     *          count:
+     *            type: number
+     *            description: total number of repayments
+     *            example: 5
+     *          repayments:
+     *            type: array
+     *            items:
+     *              type: object
+     *              properties:
+     *                index:
+     *                  type: number
+     *                  description: repayment index
+     *                  example: 1
+     *                amount:
+     *                  type: number
+     *                  description: repayment amount
+     *                  example: 7
+     *                debt:
+     *                  type: number
+     *                  description: remain debt after repayment
+     *                  example: 45
+     *                timestamp:
+     *                  type: number
+     *                  description: repayment timestamp in seconds
+     *                  example: 1623352800
+     */
+    /**
+     * Using ethers underneath, get the repayment history of a borrower
+     * @param query query params
+     */
+    public getRepaymentsHistory = async (query: {
+        offset?: number;
+        limit?: number;
+        loanId: number;
+        borrower: string;
+    }): Promise<{
+        count: number;
+        repayments: {
+            index: number;
+            amount: number;
+            debt: number;
+            timestamp: number;
+        }[];
+    }> => {
+        const { borrower, loanId, offset, limit } = query;
+        const provider = new JsonRpcProvider(config.jsonRpcUrl);
+        const microcredit = new Contract(config.microcreditContractAddress, MicroCreditABI, provider);
+        const totalRepayments = await getLoanRepayments(borrower, loanId);
+
+        const repaymentsPromise: { date: number; amount: BigNumber }[] = [];
+        // iterates from offset (or zero if offset not defined) to offset + the min between totalRepayments and limit (or 10 if limit not defined)
+        for (let i = (offset ?? 0); i < ((offset ?? 0) + Math.min(totalRepayments, limit ?? 10)); i++) {
+            repaymentsPromise.push(microcredit.userLoanRepayments(borrower, loanId, i));
+        }
+
+        const repayments = await Promise.all(repaymentsPromise);
+
+        return {
+            count: totalRepayments,
+            repayments: repayments.map((r, i) => ({
+                index: repayments.length - i,
+                amount: r.amount.div(BigNumber.from(10).pow(18)).toNumber(),
+                debt: 0,
+                timestamp: parseInt(r.date.toString(), 10),
+            }))
+        }
+    }
+
 }

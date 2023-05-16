@@ -199,3 +199,44 @@ export const getBorrowers = async (query: {
 
     return borrowers;
 };
+
+export const getLoanRepayments = async (userAddress: string, loanId: number): Promise<number> => {
+    const graphqlQuery = {
+        operationName: 'loan',
+        query: `query loan {
+            loan(id: "${userAddress.toLowerCase()}-${loanId}") {
+                repayments
+            }
+        }`,
+    };
+
+    const cacheResults = await redisClient.get(graphqlQuery.query);
+
+    if (cacheResults) {
+        return JSON.parse(cacheResults);
+    }
+
+    const response = await axiosMicrocreditSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    loan: {
+                        repayments: number;
+                    };
+                };
+            };
+        }
+    >('', graphqlQuery);
+
+    const loanRepayments = response.data?.data.loan.repayments;
+
+    redisClient.set(
+        graphqlQuery.query,
+        JSON.stringify(loanRepayments),
+        'EX',
+        intervalsInSeconds.twoMins
+    );
+
+    return loanRepayments;
+}

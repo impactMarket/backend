@@ -36,6 +36,9 @@ export default (app: Router): void => {
      *                type: string
      *                enum: [verify, send]
      *                required: true
+     *     responses:
+     *       "200":
+     *         description: OK
      *     security:
      *     - api_auth:
      *       - "write:modify":
