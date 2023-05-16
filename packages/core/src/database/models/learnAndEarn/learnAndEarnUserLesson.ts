@@ -12,6 +12,7 @@ export class LearnAndEarnUserLessonModel extends Model<
     public id!: number;
     public userId!: number;
     public lessonId!: number;
+    public levelId!: number;
     public status!: 'available' | 'started' | 'completed';
     public completionDate!: Date;
     public attempts!: number;
@@ -40,11 +41,10 @@ export function initializeLearnAndEarnUserLesson(
             },
             lessonId: {
                 type: DataTypes.INTEGER,
-                references: {
-                    model: 'learn_and_earn_lesson',
-                    key: 'id',
-                },
-                onDelete: 'CASCADE',
+                allowNull: false,
+            },
+            levelId: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
             status: {

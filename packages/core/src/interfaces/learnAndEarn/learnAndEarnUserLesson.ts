@@ -19,6 +19,8 @@
  *            type: integer
  *          lessonId:
  *            type: integer
+ *          levelId:
+ *            type: integer
  *          status:
  *            type: string
  *          completionDate:
@@ -32,6 +34,7 @@ export interface LearnAndEarnUserLesson {
     id: number;
     userId: number;
     lessonId: number;
+    levelId: number;
     status: 'available' | 'started' | 'completed';
     completionDate: Date;
     attempts: number;
@@ -41,6 +44,7 @@ export interface LearnAndEarnUserLesson {
 export interface LearnAndEarnUserLessonCreation {
     userId: number;
     lessonId: number;
+    levelId: number;
     status: 'available' | 'started' | 'completed';
     completionDate?: Date;
     attempts?: number;

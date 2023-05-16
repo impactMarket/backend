@@ -10,6 +10,33 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
         }
     );
 
+    sequelize.models.LearnAndEarnPrismicLevelModel.hasMany(
+        sequelize.models.LearnAndEarnUserLevelModel,
+        {
+            foreignKey: 'levelId',
+            sourceKey: 'levelId',
+            as: 'userLevel',
+        }
+    );
+
+    sequelize.models.LearnAndEarnPrismicLevelModel.hasMany(
+        sequelize.models.LearnAndEarnPrismicLessonModel,
+        {
+            foreignKey: 'levelId',
+            sourceKey: 'levelId',
+            as: 'lesson',
+        }
+    );
+
+    sequelize.models.LearnAndEarnPrismicLessonModel.hasMany(
+        sequelize.models.LearnAndEarnUserLessonModel,
+        {
+            foreignKey: 'levelId',
+            sourceKey: 'levelId',
+            as: 'userLesson',
+        }
+    );
+
     sequelize.models.LearnAndEarnLessonModel.hasMany(
         sequelize.models.LearnAndEarnUserLessonModel,
         {

@@ -32,6 +32,11 @@ async function getPrismicLearnAndEarn() {
             truncate: true,
             transaction: t,
         });
+        // clean lessons
+        await models.learnAndEarnPrismicLesson.destroy({
+            truncate: true,
+            transaction: t,
+        });
 
         // insert new levels
         for (
@@ -42,6 +47,18 @@ async function getPrismicLearnAndEarn() {
             const prismicLevel = response[levelIndex];
 
             if (prismicLevel.data.id) {
+                // check if level exists locally
+                const level = await models.learnAndEarnLevel.findOne({
+                    attributes: ['id'],
+                    where: {
+                        id: prismicLevel.data.id,
+                    },
+                });
+
+                if (!level?.id) {
+                    continue;
+                }
+
                 const lang = prismicLevel.lang ? prismicLevel.lang.split('-')[0] : 'en';
                 await models.learnAndEarnPrismicLevel.create({
                     prismicId: prismicLevel.id,
@@ -49,12 +66,6 @@ async function getPrismicLearnAndEarn() {
                     language:  lang,
                     isLive: prismicLevel.data.is_live,
                 }, {
-                    transaction: t,
-                });
-
-                // clean lessons
-                await models.learnAndEarnPrismicLesson.destroy({
-                    truncate: true,
                     transaction: t,
                 });
 

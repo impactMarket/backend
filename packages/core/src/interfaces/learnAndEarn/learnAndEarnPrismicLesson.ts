@@ -1,3 +1,5 @@
+import { LearnAndEarnUserLessonModel } from '../../database/models/learnAndEarn/learnAndEarnUserLesson';
+
 /**
  * @swagger
  *  components:
@@ -29,6 +31,8 @@ export interface LearnAndEarnPrismicLesson {
     lessonId: number;
     language: string;
     isLive: boolean;
+
+    userLesson?: LearnAndEarnUserLessonModel[];
 }
 
 export interface LearnAndEarnPrismicLessonCreation {

@@ -32,17 +32,7 @@ class LearnAndEarnController {
         req: RequestWithUser<never, never, never, ListLevelsRequestType>,
         res: Response
     ) => {
-        if (req.user === undefined) {
-            standardResponse(res, 401, false, '', {
-                error: {
-                    name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
-            });
-            return;
-        }
-
-        let { category, status, level, limit, offset } = req.query;
+        let { category, status, level, limit, offset, language } = req.query;
 
         if (offset === undefined || typeof offset !== 'string') {
             offset = config.defaultOffset.toString();
@@ -53,12 +43,12 @@ class LearnAndEarnController {
 
         services.learnAndEarn
             .listLevels(
-                req.user.userId,
                 parseInt(offset, 10),
                 parseInt(limit, 10),
+                req.user?.userId,
                 status,
-                category,
-                level
+                level,
+                language,
             )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
@@ -104,18 +94,12 @@ class LearnAndEarnController {
     };
 
     listLessons = (req: RequestWithUser<{ id: string }>, res: Response) => {
-        if (req.user === undefined) {
-            standardResponse(res, 401, false, '', {
-                error: {
-                    name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
-            });
-            return;
-        }
+        let { language } = req.query;
+
+        const id = parseInt(req.params.id, 10);
 
         services.learnAndEarn
-            .listLessons(req.user.userId, parseInt(req.params.id, 10))
+            .listLessons(id ? id : req.params.id, req.user?.userId, language as string)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
