@@ -687,7 +687,7 @@ describe('user service v2', () => {
                 {
                     name: communities[0].name,
                     description: communities[0].description,
-                    coverMediaPath: communities[0].coverMediaPath,
+                    coverMediaPath: communities[0].coverMediaPath!,
                 },
                 users[1].id
             );
