@@ -50,7 +50,7 @@ import { UbiPromoterSocialMediaModel } from './models/ubi/ubiPromoterSocialMedia
 import { WalletAirdropProofModel } from './models/walletAirdrop/walletAirdropProof';
 import { WalletAirdropUserModel } from './models/walletAirdrop/walletAirdropUser';
 
-export interface DbModels {
+export type DbModels = {
     appUser: ModelStatic<AppUserModel>;
     appProposal: ModelStatic<AppProposalModel>;
     appLog: ModelStatic<AppLogModel>;
