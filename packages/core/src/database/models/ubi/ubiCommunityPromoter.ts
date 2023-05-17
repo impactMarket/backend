@@ -37,6 +37,7 @@ export function initializeUbiCommunityPromoter(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_community_promoter',
+            modelName: 'ubiCommunityPromoter',
             timestamps: false,
             sequelize,
         }

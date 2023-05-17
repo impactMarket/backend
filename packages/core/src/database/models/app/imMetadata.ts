@@ -48,6 +48,7 @@ export function initializeImMetadata(sequelize: Sequelize): void {
         },
         {
             tableName: 'immetadata',
+            modelName: 'imMetadata',
             sequelize,
         }
     );

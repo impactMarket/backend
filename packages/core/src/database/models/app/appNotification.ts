@@ -4,6 +4,7 @@ import {
     AppNotification,
     AppNotificationCreation,
 } from '../../../interfaces/app/appNotification';
+import { DbModels } from '../../../database/db';
 
 export class AppNotificationModel extends Model<
     AppNotification,
@@ -22,6 +23,7 @@ export class AppNotificationModel extends Model<
 }
 
 export function initializeAppNotification(sequelize: Sequelize): void {
+    const { appUser } = sequelize.models as DbModels;
     AppNotificationModel.init(
         {
             id: {
@@ -32,7 +34,7 @@ export function initializeAppNotification(sequelize: Sequelize): void {
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: sequelize.models.AppUserModel,
+                    model: appUser,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -68,6 +70,7 @@ export function initializeAppNotification(sequelize: Sequelize): void {
         },
         {
             tableName: 'app_notification',
+            modelName: 'appNotification',
             sequelize,
             updatedAt: false,
         }

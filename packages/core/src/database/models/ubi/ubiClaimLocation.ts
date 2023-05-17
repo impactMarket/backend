@@ -48,6 +48,7 @@ export function initializeUbiClaimLocation(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_claim_location',
+            modelName: 'ubiClaimLocation',
             updatedAt: false,
             sequelize,
         }

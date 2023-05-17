@@ -1,72 +1,59 @@
+import { DbModels } from '../../../database/db';
 import { Sequelize } from 'sequelize';
 
 export function learnAndEarnAssociation(sequelize: Sequelize) {
-    sequelize.models.LearnAndEarnLevelModel.hasMany(
-        sequelize.models.LearnAndEarnUserLevelModel,
-        {
-            foreignKey: 'levelId',
-            sourceKey: 'id',
-            as: 'userLevel',
-        }
-    );
+    const {
+        learnAndEarnCategory,
+        learnAndEarnLesson,
+        learnAndEarnLevel,
+        learnAndEarnUserLevel,
+        learnAndEarnUserLesson,
+        learnAndEarnPrismicLevel,
+        learnAndEarnPrismicLesson,
+    } = sequelize.models as DbModels;
 
-    sequelize.models.LearnAndEarnPrismicLevelModel.hasMany(
-        sequelize.models.LearnAndEarnUserLevelModel,
-        {
-            foreignKey: 'levelId',
-            sourceKey: 'levelId',
-            as: 'userLevel',
-        }
-    );
+    learnAndEarnLevel.hasMany(learnAndEarnUserLevel, {
+        foreignKey: 'levelId',
+        sourceKey: 'id',
+        as: 'userLevel',
+    });
 
-    sequelize.models.LearnAndEarnPrismicLevelModel.hasMany(
-        sequelize.models.LearnAndEarnPrismicLessonModel,
-        {
-            foreignKey: 'levelId',
-            sourceKey: 'levelId',
-            as: 'lesson',
-        }
-    );
+    learnAndEarnPrismicLevel.hasMany(learnAndEarnUserLevel, {
+        foreignKey: 'levelId',
+        sourceKey: 'levelId',
+        as: 'userLevel',
+    });
 
-    sequelize.models.LearnAndEarnPrismicLessonModel.hasMany(
-        sequelize.models.LearnAndEarnUserLessonModel,
-        {
-            foreignKey: 'levelId',
-            sourceKey: 'levelId',
-            as: 'userLesson',
-        }
-    );
+    learnAndEarnPrismicLevel.hasMany(learnAndEarnPrismicLesson, {
+        foreignKey: 'levelId',
+        sourceKey: 'levelId',
+        as: 'lesson',
+    });
 
-    sequelize.models.LearnAndEarnLessonModel.hasMany(
-        sequelize.models.LearnAndEarnUserLessonModel,
-        {
-            foreignKey: 'lessonId',
-            sourceKey: 'id',
-            as: 'userLesson',
-        }
-    );
+    learnAndEarnPrismicLesson.hasMany(learnAndEarnUserLesson, {
+        foreignKey: 'levelId',
+        sourceKey: 'levelId',
+        as: 'userLesson',
+    });
 
-    sequelize.models.LearnAndEarnUserLessonModel.belongsTo(
-        sequelize.models.LearnAndEarnLessonModel,
-        {
-            foreignKey: 'lessonId',
-            as: 'lesson',
-        }
-    );
+    learnAndEarnLesson.hasMany(learnAndEarnUserLesson, {
+        foreignKey: 'lessonId',
+        sourceKey: 'id',
+        as: 'userLesson',
+    });
 
-    sequelize.models.LearnAndEarnLevelModel.hasMany(
-        sequelize.models.LearnAndEarnLessonModel,
-        {
-            foreignKey: 'levelId',
-            as: 'lesson',
-        }
-    );
+    learnAndEarnUserLesson.belongsTo(learnAndEarnLesson, {
+        foreignKey: 'lessonId',
+        as: 'lesson',
+    });
 
-    sequelize.models.LearnAndEarnLevelModel.belongsTo(
-        sequelize.models.LearnAndEarnCategoryModel,
-        {
-            foreignKey: 'categoryId',
-            as: 'category',
-        }
-    );
+    learnAndEarnLevel.hasMany(learnAndEarnLesson, {
+        foreignKey: 'levelId',
+        as: 'lesson',
+    });
+
+    learnAndEarnLevel.belongsTo(learnAndEarnCategory, {
+        foreignKey: 'categoryId',
+        as: 'category',
+    });
 }

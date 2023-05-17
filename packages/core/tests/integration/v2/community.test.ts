@@ -68,7 +68,7 @@ describe('community service v2', () => {
 
     describe('list', () => {
         afterEach(async () => {
-            await truncate(sequelize, 'Beneficiary');
+            await truncate(sequelize, 'beneficiary');
             returnClaimedSubgraph.resetHistory();
             returnCommunityEntities.resetHistory();
             returnUserRoleSubgraph.resetHistory();
@@ -76,7 +76,7 @@ describe('community service v2', () => {
 
         describe('by name', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'Community');
+                await truncate(sequelize, 'community');
             });
 
             it('full name', async () => {
@@ -404,7 +404,7 @@ describe('community service v2', () => {
 
         describe('by country', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'Community');
+                await truncate(sequelize, 'community');
             });
 
             it('single country', async () => {
@@ -706,8 +706,8 @@ describe('community service v2', () => {
 
         describe('sort', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'Beneficiary');
-                await truncate(sequelize, 'Community');
+                await truncate(sequelize, 'beneficiary');
+                await truncate(sequelize, 'community');
             });
 
             it('without query parameters (most beneficiaries)', async () => {
@@ -1254,8 +1254,8 @@ describe('community service v2', () => {
 
         describe('query string filter', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'Beneficiary');
-                await truncate(sequelize, 'Community');
+                await truncate(sequelize, 'beneficiary');
+                await truncate(sequelize, 'community');
                 returnProposalsSubgraph.resetHistory();
                 returnClaimedSubgraph.resetHistory();
             });
@@ -1706,8 +1706,8 @@ describe('community service v2', () => {
 
         describe('ambassador list', () => {
             afterEach(async () => {
-                await truncate(sequelize, 'Beneficiary');
-                await truncate(sequelize, 'Community');
+                await truncate(sequelize, 'beneficiary');
+                await truncate(sequelize, 'community');
                 returnProposalsSubgraph.resetHistory();
                 returnClaimedSubgraph.resetHistory();
             });
@@ -1851,7 +1851,7 @@ describe('community service v2', () => {
 
     describe('find', () => {
         afterEach(async () => {
-            await truncate(sequelize, 'Community');
+            await truncate(sequelize, 'community');
             returnClaimedSubgraph.resetHistory();
             returnCommunityEntities.resetHistory();
         });
@@ -1947,7 +1947,7 @@ describe('community service v2', () => {
 
     describe('edit', () => {
         afterEach(async () => {
-            await truncate(sequelize, 'Community');
+            await truncate(sequelize, 'community');
             returnClaimedSubgraph.resetHistory();
             returnCommunityEntities.resetHistory();
         });

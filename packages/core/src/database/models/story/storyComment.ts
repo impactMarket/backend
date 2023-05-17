@@ -58,6 +58,7 @@ export function initializeStoryComment(
         },
         {
             tableName: 'story_comment',
+            modelName: 'storyComment',
             sequelize,
         }
     );

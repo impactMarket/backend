@@ -93,6 +93,7 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
         },
         {
             tableName: 'beneficiary',
+            modelName: 'beneficiary',
             sequelize,
         }
     );

@@ -46,6 +46,7 @@ export function initializeStoryCommunity(
         },
         {
             tableName: 'story_community',
+            modelName: 'storyCommunity',
             sequelize,
             timestamps: false,
         }

@@ -4,6 +4,7 @@ import {
     AppUserValidationCode,
     AppUserValidationCodeCreation,
 } from '../../../interfaces/app/appUserValidationCode';
+import { DbModels } from '../../../database/db';
 
 export class AppUserValidationCodeModel extends Model<
     AppUserValidationCode,
@@ -17,6 +18,7 @@ export class AppUserValidationCodeModel extends Model<
 }
 
 export function initializeAppUserValidationCode(sequelize: Sequelize): void {
+    const { appUser } = sequelize.models as DbModels;
     AppUserValidationCodeModel.init(
         {
             id: {
@@ -27,7 +29,7 @@ export function initializeAppUserValidationCode(sequelize: Sequelize): void {
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: sequelize.models.AppUserModel,
+                    model: appUser,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -48,6 +50,7 @@ export function initializeAppUserValidationCode(sequelize: Sequelize): void {
         },
         {
             tableName: 'app_user_validation_code',
+            modelName: 'appUserValidationCode',
             sequelize,
             updatedAt: false,
             createdAt: false,

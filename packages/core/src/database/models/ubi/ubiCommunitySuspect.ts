@@ -48,6 +48,7 @@ export function initializeUbiCommunitySuspect(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_community_suspect',
+            modelName: 'ubiCommunitySuspect',
             timestamps: false,
             sequelize,
         }

@@ -74,8 +74,8 @@ describe('user service v2', () => {
     });
 
     after(async () => {
-        await truncate(sequelize, 'AppUserModel');
-        await truncate(sequelize, 'Community');
+        await truncate(sequelize, 'appUser');
+        await truncate(sequelize, 'community');
         await truncate(sequelize);
         restore();
     });
@@ -524,7 +524,7 @@ describe('user service v2', () => {
 
     describe('report', () => {
         after(async () => {
-            await truncate(sequelize, 'AppAnonymousReportModel');
+            await truncate(sequelize, 'appAnonymousReport');
         });
 
         describe('create', () => {
@@ -659,7 +659,7 @@ describe('user service v2', () => {
 
     describe('logs', () => {
         after(async () => {
-            await truncate(sequelize, 'AppLogModel');
+            await truncate(sequelize, 'appLog');
         });
 
         it('get user logs - edited community', async () => {

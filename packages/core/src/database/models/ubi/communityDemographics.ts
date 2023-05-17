@@ -101,6 +101,7 @@ export function initializeUbiCommunityDemographics(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_community_demographics',
+            modelName: 'ubiCommunityDemographics',
             timestamps: false,
             sequelize,
         }

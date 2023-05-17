@@ -55,8 +55,8 @@ describe('cashout provider', () => {
     });
 
     after(() => {
-        truncate(sequelize, 'ExchangeRegistryModel');
-        truncate(sequelize, 'MerchantRegistryModel');
+        truncate(sequelize, 'exchangeRegistry');
+        truncate(sequelize, 'merchantRegistry');
     })
 
     it('get cashout providers by country', async () => {

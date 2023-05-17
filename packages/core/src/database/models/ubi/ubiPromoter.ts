@@ -41,6 +41,7 @@ export function initializeUbiPromoter(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_promoter',
+            modelName: 'ubiPromoter',
             timestamps: false,
             sequelize,
         }

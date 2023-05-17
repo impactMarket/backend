@@ -135,6 +135,7 @@ export function initializeGlobalDemographics(sequelize: Sequelize): void {
         },
         {
             tableName: 'globaldemographics',
+            modelName: 'globalDemographics',
             sequelize,
         }
     );

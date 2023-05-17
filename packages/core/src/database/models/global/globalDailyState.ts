@@ -219,6 +219,7 @@ export function initializeGlobalDailyState(sequelize: Sequelize): void {
         },
         {
             tableName: 'globaldailystate',
+            modelName: 'globalDailyState',
             sequelize,
         }
     );

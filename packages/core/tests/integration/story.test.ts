@@ -85,8 +85,8 @@ describe('story service', () => {
     });
 
     after(async () => {
-        await truncate(sequelize, 'Beneficiary');
-        await truncate(sequelize, 'StoryContentModel');
+        await truncate(sequelize, 'beneficiary');
+        await truncate(sequelize, 'storyContent');
         await truncate(sequelize);
         await storyContentDestroy.restore();
         returnUserRoleSubgraph.restore();
@@ -94,7 +94,7 @@ describe('story service', () => {
 
     describe('add', () => {
         afterEach(async () => {
-            await truncate(sequelize, 'StoryContentModel');
+            await truncate(sequelize, 'storyContent');
             storyContentAdd.resetHistory();
         });
 

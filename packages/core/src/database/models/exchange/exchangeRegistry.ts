@@ -70,6 +70,7 @@ export function initializeExchangeRegistry(
         },
         {
             tableName: 'exchange_registry',
+            modelName: 'exchangeRegistry',
             sequelize,
         }
     );

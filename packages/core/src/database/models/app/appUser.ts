@@ -137,6 +137,7 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
         },
         {
             tableName: 'app_user',
+            modelName: 'appUser',
             sequelize,
         }
     );

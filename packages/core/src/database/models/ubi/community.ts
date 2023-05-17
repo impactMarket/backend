@@ -168,6 +168,7 @@ export function initializeCommunity(sequelize: Sequelize): void {
         },
         {
             tableName: 'community',
+            modelName: 'community',
             sequelize,
         }
     );

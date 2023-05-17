@@ -47,6 +47,7 @@ export function initializeWalletAirdropUser(
         },
         {
             tableName: 'wallet_airdrop_user',
+            modelName: 'walletAirdropUser',
             timestamps: false,
             sequelize,
         }

@@ -69,6 +69,7 @@ export function initializeLearnAndEarnUserLesson(
         },
         {
             tableName: 'learn_and_earn_user_lesson',
+            modelName: 'learnAndEarnUserLesson',
             timestamps: false,
             sequelize,
         }

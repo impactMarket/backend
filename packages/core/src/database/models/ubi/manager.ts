@@ -2,6 +2,7 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { AppUser } from '../../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
+import { DbModels } from '../../../database/db';
 
 export interface ManagerAttributes {
     id: number;
@@ -39,6 +40,7 @@ export class Manager extends Model<
 }
 
 export function initializeManager(sequelize: Sequelize): void {
+    const { appUser } = sequelize.models as DbModels;
     Manager.init(
         {
             id: {
@@ -49,7 +51,7 @@ export function initializeManager(sequelize: Sequelize): void {
             address: {
                 type: DataTypes.STRING(44),
                 references: {
-                    model: sequelize.models.AppUserModel,
+                    model: appUser,
                     key: 'address',
                 },
                 onDelete: 'RESTRICT',
@@ -84,6 +86,7 @@ export function initializeManager(sequelize: Sequelize): void {
         },
         {
             tableName: 'manager',
+            modelName: 'manager',
             sequelize,
         }
     );

@@ -71,6 +71,7 @@ export function initializeStoryContent(
         },
         {
             tableName: 'story_content',
+            modelName: 'storyContent',
             sequelize,
             timestamps: false,
         }

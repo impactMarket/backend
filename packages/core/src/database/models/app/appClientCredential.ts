@@ -57,6 +57,7 @@ export function initializeAppClientCredential(
         },
         {
             tableName: 'app_client_credential',
+            modelName: 'appClientCredential',
             sequelize,
         }
     );

@@ -43,6 +43,7 @@ export function initializeUbiPromoterSocialMedia(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_promoter_social_media',
+            modelName: 'ubiPromoterSocialMedia',
             timestamps: false,
             sequelize,
         }

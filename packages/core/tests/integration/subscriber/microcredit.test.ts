@@ -93,7 +93,7 @@ describe('Microcredit', () => {
             subscribers.stop();
         }
         provider.removeAllListeners();
-        await truncate(sequelize, 'AppUserModel');
+        await truncate(sequelize, 'appUser');
         await truncate(sequelize);
         restore();
     });

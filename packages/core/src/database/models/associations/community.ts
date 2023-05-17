@@ -1,102 +1,87 @@
+import { DbModels } from '../../../database/db';
 import { Sequelize } from 'sequelize';
 
 export function communityAssociation(sequelize: Sequelize) {
-    // used to query from the community with incude
-    // TODO: to be removed
-    sequelize.models.Community.hasMany(
-        sequelize.models.UbiCommunitySuspectModel,
-        {
-            foreignKey: 'communityId',
-            as: 'suspect',
-        }
-    );
-    // used to query from the community with incude
-    sequelize.models.Community.hasOne(
-        sequelize.models.UbiCommunityContractModel,
-        {
-            foreignKey: 'communityId',
-            as: 'contract',
-        }
-    );
-    // used to query from the community with incude
-    // used only at calcuateCommunitiesMetrics
-    sequelize.models.Community.hasMany(
-        sequelize.models.UbiCommunityDailyMetricsModel,
-        {
-            foreignKey: 'communityId',
-            as: 'metrics',
-        }
-    );
+    const {
+        community,
+        ubiCommunityContract,
+        ubiCommunityDailyMetrics,
+        ubiPromoter,
+        ubiPromoterSocialMedia,
+        ubiCommunityPromoter,
+        appAnonymousReport,
+        manager,
+        beneficiary,
+        appProposal,
+        appUser,
+        ubiCommunityDemographics,
+        merchantCommunity,
+        merchantRegistry,
+    } = sequelize.models as DbModels;
 
     // used to query from the community with incude
-    sequelize.models.Community.hasMany(sequelize.models.Beneficiary, {
+    community.hasOne(ubiCommunityContract, {
+        foreignKey: 'communityId',
+        as: 'contract',
+    });
+    // used to query from the community with incude
+    // used only at calcuateCommunitiesMetrics
+    community.hasMany(ubiCommunityDailyMetrics, {
+        foreignKey: 'communityId',
+        as: 'metrics',
+    });
+
+    // used to query from the community with incude
+    community.hasMany(beneficiary, {
         foreignKey: 'communityId',
         sourceKey: 'id',
         as: 'beneficiaries',
     });
 
     // used to query from the community with incude
-    sequelize.models.Community.hasMany(sequelize.models.Manager, {
+    community.hasMany(manager, {
         foreignKey: 'communityId',
         sourceKey: 'id',
         as: 'managers',
     });
 
     // used to query from the promoter with incude
-    sequelize.models.UbiPromoterModel.belongsToMany(
-        sequelize.models.Community,
-        {
-            through: sequelize.models.UbiCommunityPromoterModel,
-            foreignKey: 'promoterId',
-            sourceKey: 'id',
-            as: 'community',
-        }
-    );
-    sequelize.models.Community.belongsToMany(
-        sequelize.models.UbiPromoterModel,
-        {
-            through: sequelize.models.UbiCommunityPromoterModel,
-            foreignKey: 'communityId',
-            sourceKey: 'id',
-            as: 'promoter',
-        }
-    );
-    sequelize.models.UbiPromoterModel.hasMany(
-        sequelize.models.UbiPromoterSocialMediaModel,
-        {
-            foreignKey: 'promoterId',
-            as: 'socialMedia',
-        }
-    );
-    sequelize.models.Community.hasOne(sequelize.models.AppProposalModel, {
+    ubiPromoter.belongsToMany(community, {
+        through: ubiCommunityPromoter,
+        foreignKey: 'promoterId',
+        sourceKey: 'id',
+        as: 'community',
+    });
+    community.belongsToMany(ubiPromoter, {
+        through: ubiCommunityPromoter,
+        foreignKey: 'communityId',
+        sourceKey: 'id',
+        as: 'promoter',
+    });
+    ubiPromoter.hasMany(ubiPromoterSocialMedia, {
+        foreignKey: 'promoterId',
+        as: 'socialMedia',
+    });
+    community.hasOne(appProposal, {
         foreignKey: 'id',
         sourceKey: 'proposalId',
         as: 'proposal',
     });
-    sequelize.models.Community.hasOne(sequelize.models.AppUserModel, {
+    community.hasOne(appUser, {
         foreignKey: 'address',
         sourceKey: 'ambassadorAddress',
         as: 'ambassador',
     });
-    sequelize.models.UbiCommunityDemographicsModel.belongsTo(
-        sequelize.models.Community,
-        {
-            foreignKey: 'communityId',
-            as: 'community',
-        }
-    );
-    sequelize.models.AppAnonymousReportModel.belongsTo(
-        sequelize.models.Community,
-        {
-            foreignKey: 'communityId',
-            as: 'community',
-        }
-    );
-    sequelize.models.MerchantRegistryModel.hasMany(
-        sequelize.models.MerchantCommunityModel,
-        {
-            foreignKey: 'merchantId',
-            as: 'merchantCommunity',
-        }
-    );
+    ubiCommunityDemographics.belongsTo(community, {
+        foreignKey: 'communityId',
+        as: 'community',
+    });
+    appAnonymousReport.belongsTo(community, {
+        foreignKey: 'communityId',
+        as: 'community',
+    });
+    merchantRegistry.hasMany(merchantCommunity, {
+        foreignKey: 'merchantId',
+        as: 'merchantCommunity',
+    });
 }
