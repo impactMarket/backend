@@ -77,7 +77,7 @@ async function getPrismicLearnAndEarn() {
                     lessonIndex++
                 ) {
                     const prismicLesson = lessons[lessonIndex].lesson;
-                    if (prismicLesson.data.id) {
+                    if (prismicLesson.data?.id) {
                         await models.learnAndEarnPrismicLesson.create({
                             prismicId: prismicLesson.id,
                             levelId: prismicLevel.data.id,
