@@ -102,7 +102,7 @@ describe('user service v2', () => {
         it('create user overwriting', async () => {
             const randomWallet = ethers.Wallet.createRandom();
             const address = await randomWallet.getAddress();
-            const phone = faker.phone.phoneNumber();
+            const phone = faker.phone.number();
             const newUser = await userService.create(
                 {
                     address,
@@ -120,7 +120,7 @@ describe('user service v2', () => {
             const secondRandomWallet = ethers.Wallet.createRandom();
             const firstAddress = await randomWallet.getAddress();
             const secondAddress = await secondRandomWallet.getAddress();
-            const phone = faker.phone.phoneNumber();
+            const phone = faker.phone.number();
             const newUser = await userService.create({
                 address: firstAddress,
                 phone,
@@ -141,7 +141,7 @@ describe('user service v2', () => {
         it('create user recovering account', async () => {
             const randomWallet = ethers.Wallet.createRandom();
             const address = await randomWallet.getAddress();
-            const phone = faker.phone.phoneNumber();
+            const phone = faker.phone.number();
             const newUser = await userService.create(
                 {
                     address,
@@ -158,7 +158,7 @@ describe('user service v2', () => {
         it('login with an existing account', async () => {
             const randomWallet = ethers.Wallet.createRandom();
             const address = await randomWallet.getAddress();
-            const phone = faker.phone.phoneNumber();
+            const phone = faker.phone.number();
             // first login
             const newUser = await userService.create({
                 address,
@@ -176,8 +176,8 @@ describe('user service v2', () => {
         it('login with a different phone number', async () => {
             const randomWallet = ethers.Wallet.createRandom();
             const address = await randomWallet.getAddress();
-            const firstPhone = faker.phone.phoneNumber();
-            const secondPhone = faker.phone.phoneNumber();
+            const firstPhone = faker.phone.number();
+            const secondPhone = faker.phone.number();
             // first login
             await userService.create({
                 address,
@@ -402,7 +402,7 @@ describe('user service v2', () => {
             });
             const randomWallet = ethers.Wallet.createRandom();
             const address = await randomWallet.getAddress();
-            const phone = faker.phone.phoneNumber();
+            const phone = faker.phone.number();
             await userService.create({
                 address,
             });
@@ -421,7 +421,7 @@ describe('user service v2', () => {
             const secondRandomWallet = ethers.Wallet.createRandom();
             const address = await randomWallet.getAddress();
             const secondAddress = await secondRandomWallet.getAddress();
-            const phone = faker.phone.phoneNumber();
+            const phone = faker.phone.number();
             await userService.create({
                 address,
                 phone,
