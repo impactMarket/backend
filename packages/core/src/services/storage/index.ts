@@ -1,4 +1,5 @@
 import config from '../../config';
+import crypto from 'crypto';
 import { AWS } from './aws';
 
 type PreSignedUrlResponse = {
@@ -93,7 +94,7 @@ export class ContentStorage {
                 filePrefix = 'avatar/';
                 break;
         }
-        const filename = `${now.getTime()}${Math.ceil(Math.random() * (999 - 100) + 100)}${mimetype}`;
+        const filename = `${now.getTime()}${crypto.randomInt(1000, 9999)}${mimetype}`;
         return [`${filePrefix}${filename}`, filename];
     }
 
