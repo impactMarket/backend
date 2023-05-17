@@ -10,8 +10,15 @@ import {
 const validator = createValidator();
 
 const queryListBorrowersSchema = defaultSchema.object({
-    offset: Joi.number().optional(),
-    limit: Joi.number().optional(),
+    offset: Joi.number().optional().default(0),
+    limit: Joi.number().optional().max(20).default(10),
+});
+
+const queryRepaymentsHistorySchema = defaultSchema.object({
+    offset: Joi.number().optional().default(0),
+    limit: Joi.number().optional().max(20).default(5),
+    loanId: Joi.number().required(),
+    borrower: Joi.string().required(),
 });
 
 interface ListBorrowersRequestSchema extends ValidatedRequestSchema {
@@ -21,6 +28,16 @@ interface ListBorrowersRequestSchema extends ValidatedRequestSchema {
     };
 }
 
-const listBorrowersValidator = validator.query(queryListBorrowersSchema);
+interface RepaymentHistoryRequestSchema extends ValidatedRequestSchema {
+    [ContainerTypes.Query]: {
+        offset?: number;
+        limit?: number;
+        loanId: number;
+        borrower: string;
+    };
+}
 
-export { listBorrowersValidator, ListBorrowersRequestSchema };
+const listBorrowersValidator = validator.query(queryListBorrowersSchema);
+const repaymentsHistoryValidator = validator.query(queryRepaymentsHistorySchema);
+
+export { listBorrowersValidator, repaymentsHistoryValidator, ListBorrowersRequestSchema, RepaymentHistoryRequestSchema };
