@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import list from './list';
+import create from './create';
 
 export default (app: Router): void => {
     const route = Router();
@@ -8,4 +9,5 @@ export default (app: Router): void => {
     app.use('/microcredit', route);
 
     list(route);
+    create(route);
 };

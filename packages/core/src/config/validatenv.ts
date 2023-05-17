@@ -55,13 +55,13 @@ function validateEnv() {
         }),
         IMPACT_MARKET_CONTRACT_BLOCK: num({ devDefault: 0 }),
         ATTESTATION_PROXY_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
+        // aws config
         AWS_ACCESS_KEY_ID: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_SECRET_ACCESS_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
-        AWS_BUCKET_COMMUNITY: str({ devDefault: onlyOnTestEnv('xyz') }),
-        AWS_BUCKET_STORY: str({ devDefault: onlyOnTestEnv('xyz') }),
-        AWS_BUCKET_PROFILE: str({ devDefault: onlyOnTestEnv('xyz') }),
-        AWS_BUCKET_TEMPORARY: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_REGION: str({ devDefault: onlyOnTestEnv('xyz') }),
+        AWS_BUCKET_APP: str({ devDefault: onlyOnTestEnv('xyz') }),
+        AWS_BUCKET_MICROCREDIT: str({ devDefault: onlyOnTestEnv('xyz') }),
+        //
         CURRENCIES_API_BASE_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         POSITION_STACK_API_BASE_URL: str({ devDefault: 'xyz' }),

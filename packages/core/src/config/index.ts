@@ -114,10 +114,8 @@ export default {
         secretAccessKey: validatedEnv.AWS_SECRET_ACCESS_KEY,
         region: validatedEnv.AWS_REGION,
         bucket: {
-            community: validatedEnv.AWS_BUCKET_COMMUNITY,
-            story: validatedEnv.AWS_BUCKET_STORY,
-            profile: validatedEnv.AWS_BUCKET_PROFILE,
-            temporary: validatedEnv.AWS_BUCKET_TEMPORARY,
+            app: validatedEnv.AWS_BUCKET_APP,
+            microCredit: validatedEnv.AWS_BUCKET_MICROCREDIT,
         },
         lambda: validatedEnv.AWS_LAMBDA,
     },
