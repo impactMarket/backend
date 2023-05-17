@@ -178,7 +178,7 @@ class LearnAndEarnController {
         }
 
         services.learnAndEarn
-            .createLevel(req.user.userId)
+            .createLevel(req.user.userId, req.body.rules)
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     }

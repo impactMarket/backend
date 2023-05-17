@@ -6,6 +6,7 @@ import { LearnAndEarnPrismicLesson } from '../../interfaces/learnAndEarn/learnAn
 import { formatObjectToNumber } from '../../utils';
 import { BaseError } from '../../utils/baseError';
 import config from '../../config';
+import { getUserRoles } from '../../subgraph/queries/user';
 
 export async function listLevels(
     offset: number,
@@ -34,12 +35,57 @@ export async function listLevels(
             include: [],
             group: [],
         };
+        const levelQuery : {
+            include: Includeable[];
+            group: string[];
+        } = {
+            include: [],
+            group: [],
+        };
 
         if (userId) {
             const user = await models.appUser.findOne({
-                attributes: ['language'],
+                attributes: ['address', 'language', 'country'],
                 where: { id: userId },
             });
+            const userRole = await getUserRoles(user!.address);
+            const roles = Object.keys(userRole).filter(
+                (key) => userRole[key as keyof typeof userRole]
+            );
+
+            levelQuery.group = ['level.rules'];
+            levelQuery.include = [
+                {
+                    attributes: ['rules'],
+                    model: models.learnAndEarnLevel,
+                    as: 'level',
+                    where: {
+                        rules: {
+                            countries: {
+                                ...(user?.country ? {
+                                    [Op.or]: [
+                                        {[Op.is]: null},
+                                        {[Op.iLike]: `%${user.country}%`},
+                                    ]
+                                } : {
+                                    [Op.is]: null,
+                                }),
+                            },
+                            roles: {
+                                [Op.or]: [
+                                    { [Op.is]: null },
+                                    ...(roles.map((role) => ({
+                                        [Op.iLike]: `%${role}%`,
+                                        })
+                                    ))
+                                ],
+                            },
+                        }
+                    },
+                    duplicating: false,
+                }
+            ];
+
             language = user?.language;
             userQuery.include.push({
                 attributes: [],
@@ -91,14 +137,18 @@ export async function listLevels(
             ],
             include: [
                 ...userQuery.include,
+                ...levelQuery.include,
                 {
                     attributes: [],
                     model: models.learnAndEarnPrismicLesson,
                     as: 'lesson',
                     duplicating: false,
-                    where: process.env.API_ENVIRONMENT === 'production'
+                    where: {
+                        ...(process.env.API_ENVIRONMENT === 'production'
                             ? { isLive: true }
-                            : {},
+                            : {}),
+                        language,
+                    }
                 },
             ],
             where,
@@ -106,25 +156,70 @@ export async function listLevels(
                 '"learnAndEarnPrismicLevel".id',
                 '"learnAndEarnPrismicLevel".prismicId',
                 ...userQuery.group,
+                ...levelQuery.group,
             ],
             limit,
             offset,
             raw: true,
         })) as unknown as {
+            levelId: number;
             prismicId: string;
             status: string;
             totalLessons: number;
+            rules?: {
+                limitUsers: number;
+                countries: string[];
+                roles: string[];
+            };
         }[];
         const count = await models.learnAndEarnPrismicLevel.count({
             attributes: [],
             include: [
                 ...userQuery.include,
+                ...levelQuery.include,
             ],
             where,
         });
+
+        // get levels where limitUser is bellow the total of users that started the level X days ago
+        const startedUsers = await models.learnAndEarnLevel.findAll({
+            attributes: ['id'],
+            include: [
+                {
+                    attributes: [],
+                    model: models.learnAndEarnUserLevel,
+                    as: 'userLevel',
+                    where: {
+                        [Op.or]: [
+                            {
+                                status: 'started',
+                                createdAt: {
+                                    [Op.gte]: new Date(
+                                        new Date().getDate() - config.daysToLimitUsers
+                                    ),
+                                },
+                            },
+                            {
+                                status: 'completed',
+                            },
+                        ],
+                    },
+                },
+            ],
+            group: ['"LearnAndEarnLevelModel".id'],
+            having: literal(`count("userLevel"."id") >= ("LearnAndEarnLevelModel"."rules"#>>'{limitUsers}')::int`),
+            raw: true,
+        }); 
+
+        // filter levels
+        const filteredUserLevels = userLevels.filter((userLevel) => {
+            const startedUser = startedUsers.find((startedUser) => startedUser.id === userLevel.levelId);
+            return !startedUser;
+        });
+
         return {
-            count,
-            rows: userLevels.map(
+            count: count - startedUsers.length,
+            rows: filteredUserLevels.map(
                 ({
                     prismicId,
                     totalLessons,

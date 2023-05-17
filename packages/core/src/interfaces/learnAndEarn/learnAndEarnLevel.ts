@@ -37,9 +37,19 @@ export interface LearnAndEarnLevel {
         'declined',
         'published'
     ];
+    rules?: {
+        countries?: string[];
+        roles?: string[];
+        limitUsers?: number;
+    };
 }
 
 export interface LearnAndEarnLevelCreation {
     adminUserId: number;
     status?: string;
+    rules?: {
+        countries?: string[];
+        roles?: string[];
+        limitUsers?: number;
+    };
 }

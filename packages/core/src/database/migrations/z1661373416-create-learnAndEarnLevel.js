@@ -55,6 +55,10 @@ module.exports = {
                 allowNull: false,
                 defaultValue: 'pending',
             },
+            rules: {
+                type: Sequelize.JSONB,
+                allowNull: true,
+            },
             isLive: {
                 type: Sequelize.BOOLEAN,
                 allowNull: false,

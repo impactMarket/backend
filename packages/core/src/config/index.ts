@@ -260,6 +260,7 @@ export default {
     signatureExpiration: validatedEnv.SIGNATURE_EXPIRATION,
     learnAndEarnPrivateKey: validatedEnv.LEARN_AND_EARN_PRIVATE_KEY,
     intervalBetweenLessons: validatedEnv.INTERVAL_BETWEEN_LESSONS,
+    daysToLimitUsers: validatedEnv.DAYS_TO_LIMIT_USERS,
     vercelWebhooks: {
         pwa: validatedEnv.VERCEL_WEBHOOK_PWA,
         website: validatedEnv.VERCEL_WEBHOOK_WEBSITE,
