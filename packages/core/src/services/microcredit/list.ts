@@ -1,5 +1,5 @@
 import { models } from '../../database';
-import { getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
+import { getBorrowers, getLoanManager, getLoanRepayments } from '../../subgraph/queries/microcredit';
 import { getAddress } from '@ethersproject/address';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
@@ -18,14 +18,15 @@ export default class MicroCreditList {
     public listBorrowers = async (query: {
         offset?: number;
         limit?: number;
-        addedBy?: string;
-    }): Promise<
-        {
+        addedBy: string;
+    }): Promise<{
+        count: number;
+        rows: {
             address: string;
             firstName: string;
             lastName: string;
             avatarMediaPath: string;
-            loans: {
+            loan: {
                 amount: string;
                 period: number;
                 dailyInterest: number;
@@ -35,26 +36,33 @@ export default class MicroCreditList {
                 lastRepaymentAmount: string;
                 lastDebt: string;
             };
-        }[]
-    > => {
+        }[];
+    }> => {
         // get borrowers loans from subgraph
         // and return only the active loan (which is only one)
-        const borrowers = (await getBorrowers({ ...query, claimed: true })).map(b => ({ ...b, loans: b.loans[0] }));
+        const [rawBorrowers, loanManager] = await Promise.all([
+            getBorrowers({ ...query, claimed: false }),
+            getLoanManager(query.addedBy)
+        ]);
+        const borrowers = rawBorrowers.map(b => ({ address: getAddress(b.id), loan: b.loans[0] }));
 
         // get borrowers profile from database
         const userProfile = await models.appUser.findAll({
             attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
             where: {
-                address: borrowers.map(b => getAddress(b.id))
+                address: borrowers.map(b => b.address)
             }
         });
 
         // merge borrowers loans and profile
-        return mergeArrays(
-            borrowers.map(b => ({ address: getAddress(b.id), ...b })),
-            userProfile.map(u => u.toJSON()),
-            'address'
-        );
+        return {
+            count: loanManager.borrowers,
+            rows: mergeArrays(
+                borrowers,
+                userProfile.map(u => u.toJSON()),
+                'address'
+            )
+        };
     };
 
     /**
@@ -101,7 +109,7 @@ export default class MicroCreditList {
         borrower: string;
     }): Promise<{
         count: number;
-        repayments: {
+        rows: {
             index: number;
             amount: number;
             debt: number;
@@ -123,7 +131,7 @@ export default class MicroCreditList {
 
         return {
             count: totalRepayments,
-            repayments: repayments.map((r, i) => ({
+            rows: repayments.map((r, i) => ({
                 index: repayments.length - i,
                 amount: r.amount.div(BigNumber.from(10).pow(18)).toNumber(),
                 debt: 0,
