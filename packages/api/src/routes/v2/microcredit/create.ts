@@ -2,8 +2,8 @@ import { Router } from 'express';
 import timeout from 'connect-timeout';
 
 import { MicroCreditController } from '../../../controllers/v2/microcredit/create';
-import { preSignerUrlFromAWSValidator } from '../../../validators/microcredit';
-import { authenticateToken } from '../../../middlewares';
+import { postDocsValidator, preSignerUrlFromAWSValidator } from '../../../validators/microcredit';
+import { authenticateToken, verifySignature } from '../../../middlewares';
 
 export default (route: Router): void => {
     const controller = new MicroCreditController();
@@ -14,7 +14,7 @@ export default (route: Router): void => {
      * /microcredit/presigned:
      *   get:
      *     tags:
-     *       - "users"
+     *       - "microcredit"
      *     summary: "Get AWS presigned URL to upload media content"
      *     parameters:
      *       - in: query
@@ -39,4 +39,37 @@ export default (route: Router): void => {
         timeout('3s'),
         controller.getPresignedUrlMedia
     );
+
+    /**
+     * @swagger
+     *
+     * /microcredit/docs:
+     *   post:
+     *     tags:
+     *       - "microcredit"
+     *     summary: "Add microcredit related docs to a user"
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: array
+     *             items:
+     *               type: object
+     *               properties:
+     *                 filepath:
+     *                   type: string
+     *                   example: some/path/to/file.pdf
+     *                 category:
+     *                   type: number
+     *                   example: 1
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - api_auth:
+     *       - "write:modify":
+     */
+    route.post('/docs', authenticateToken, verifySignature, postDocsValidator, controller.postDocs);
 };

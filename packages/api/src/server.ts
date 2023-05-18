@@ -56,6 +56,10 @@ export default (app: express.Application): void => {
                         name: 'communities',
                         description: 'UBI communities',
                     },
+                    {
+                        name: 'microcredit',
+                        description: 'MicroCredit endpoints',
+                    },
                 ],
                 servers: swaggerServers,
                 schemes: [urlSchema],

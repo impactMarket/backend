@@ -1,4 +1,4 @@
-import { Joi } from 'celebrate';
+import { celebrate, Joi } from 'celebrate';
 
 import { defaultSchema } from './defaultSchema';
 import { ContainerTypes, createValidator, ValidatedRequestSchema } from '../utils/queryValidator';
@@ -42,14 +42,37 @@ interface RepaymentHistoryRequestSchema extends ValidatedRequestSchema {
     };
 }
 
+// I wish this comes true https://github.com/hapijs/joi/issues/2864#issuecomment-1322736004
+
+// This should match Joi validations
+type PostDocsRequestType = [
+    {
+        filepath: string;
+        category: number;
+    }
+];
+
 const listBorrowersValidator = validator.query(queryListBorrowersSchema);
 const repaymentsHistoryValidator = validator.query(queryRepaymentsHistorySchema);
 const preSignerUrlFromAWSValidator = validator.query(queryPreSignerUrlFromAWSSchema);
+const postDocsValidator = celebrate({
+    body: defaultSchema
+        .array()
+        .items(
+            Joi.object({
+                filepath: Joi.string().required(),
+                category: Joi.number().required()
+            }).required()
+        )
+        .required()
+});
 
 export {
     listBorrowersValidator,
     preSignerUrlFromAWSValidator,
     repaymentsHistoryValidator,
+    postDocsValidator,
+    PostDocsRequestType,
     ListBorrowersRequestSchema,
     PreSignerUrlFromAWSRequestSchema,
     RepaymentHistoryRequestSchema
