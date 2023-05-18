@@ -7,11 +7,9 @@ import { BigNumber, Contract } from 'ethers';
 import { config } from '../../..';
 
 function mergeArrays(arr1: any[], arr2: any[], key: string) {
-    const map = new Map(arr1.map((item) => [item[key], item]));
-    arr2.forEach((item) => {
-        map.has(item[key])
-            ? Object.assign(map.get(item[key]), item)
-            : map.set(item[key], item);
+    const map = new Map(arr1.map(item => [item[key], item]));
+    arr2.forEach(item => {
+        map.has(item[key]) ? Object.assign(map.get(item[key]), item) : map.set(item[key], item);
     });
     return Array.from(map.values());
 }
@@ -41,20 +39,20 @@ export default class MicroCreditList {
     > => {
         // get borrowers loans from subgraph
         // and return only the active loan (which is only one)
-        const borrowers = (await getBorrowers({ ...query, claimed: true })).map((b) => ({ ...b, loans: b.loans[0] }));
+        const borrowers = (await getBorrowers({ ...query, claimed: true })).map(b => ({ ...b, loans: b.loans[0] }));
 
         // get borrowers profile from database
         const userProfile = await models.appUser.findAll({
             attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
             where: {
-                address: borrowers.map((b) => getAddress(b.id)),
-            },
+                address: borrowers.map(b => getAddress(b.id))
+            }
         });
 
         // merge borrowers loans and profile
         return mergeArrays(
-            borrowers.map((b) => ({ address: getAddress(b.id), ...b })),
-            userProfile.map((u) => u.toJSON()),
+            borrowers.map(b => ({ address: getAddress(b.id), ...b })),
+            userProfile.map(u => u.toJSON()),
             'address'
         );
     };
@@ -117,7 +115,7 @@ export default class MicroCreditList {
 
         const repaymentsPromise: { date: number; amount: BigNumber }[] = [];
         // iterates from offset (or zero if offset not defined) to offset + the min between totalRepayments and limit (or 10 if limit not defined)
-        for (let i = (offset ?? 0); i < ((offset ?? 0) + Math.min(totalRepayments, limit ?? 10)); i++) {
+        for (let i = offset ?? 0; i < (offset ?? 0) + Math.min(totalRepayments, limit ?? 10); i++) {
             repaymentsPromise.push(microcredit.userLoanRepayments(borrower, loanId, i));
         }
 
@@ -129,10 +127,10 @@ export default class MicroCreditList {
                 index: repayments.length - i,
                 amount: r.amount.div(BigNumber.from(10).pow(18)).toNumber(),
                 debt: 0,
-                timestamp: parseInt(r.date.toString(), 10),
+                timestamp: parseInt(r.date.toString(), 10)
             }))
-        }
-    }
+        };
+    };
 
     /**
      * Get borrower profile, including docs and loans
@@ -143,8 +141,8 @@ export default class MicroCreditList {
         const borrower = await models.appUser.findOne({
             attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
             where: {
-                address,
-            },
+                address
+            }
         });
 
         if (!borrower) {
@@ -154,13 +152,13 @@ export default class MicroCreditList {
         const docs = await models.microCreditDocs.findAll({
             attributes: ['filepath', 'category'],
             where: {
-                userId: borrower.id,
-            },
+                userId: borrower.id
+            }
         });
 
         return {
             ...borrower.toJSON(),
-            docs: docs.map((d) => d.toJSON()),
+            docs: docs.map(d => d.toJSON())
         };
-    }
+    };
 }

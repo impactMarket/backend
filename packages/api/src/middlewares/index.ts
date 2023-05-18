@@ -10,11 +10,7 @@ import { RequestWithUser, UserInRequest } from './core';
 const { getUserRoles } = subgraph.queries.user;
 const { redisClient } = database;
 
-export function authenticateToken(
-    req: RequestWithUser,
-    res: Response,
-    next: NextFunction
-): void {
+export function authenticateToken(req: RequestWithUser, res: Response, next: NextFunction): void {
     // Gather the jwt access token from the request header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -40,28 +36,21 @@ export function authenticateToken(
 
         if (_user.clientId) {
             // validate external token
-            const credential =
-                await database.models.appClientCredential.findOne({
-                    where: {
-                        clientId: _user.clientId,
-                        status: 'active',
-                    },
-                });
+            const credential = await database.models.appClientCredential.findOne({
+                where: {
+                    clientId: _user.clientId,
+                    status: 'active'
+                }
+            });
             if (credential && credential.roles) {
                 let path = req.path.split('/')[1];
                 if (!path) {
                     const baseUrl = req.baseUrl.split('/');
                     path = baseUrl[baseUrl.length - 1];
                 }
-                const authorization = checkRoles(
-                    credential.roles,
-                    path,
-                    req.method
-                );
+                const authorization = checkRoles(credential.roles, path, req.method);
                 if (!authorization) {
-                    res.send(`User has no permition to ${req.path}`).status(
-                        403
-                    );
+                    res.send(`User has no permition to ${req.path}`).status(403);
                     return;
                 }
             } else {
@@ -82,20 +71,12 @@ export function authenticateToken(
     });
 }
 
-export function optionalAuthentication(
-    req: RequestWithUser,
-    res: Response,
-    next: NextFunction
-): void {
+export function optionalAuthentication(req: RequestWithUser, res: Response, next: NextFunction): void {
     req['authTokenIsOptional'] = true;
     authenticateToken(req, res, next);
 }
 
-export function adminAuthentication(
-    req: Request,
-    res: Response,
-    next: NextFunction
-): void {
+export function adminAuthentication(req: Request, res: Response, next: NextFunction): void {
     // Gather the jwt access token from the request header
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -131,16 +112,12 @@ export const rateLimiter = rateLimit({
         : {
               store: new RedisStore({
                   // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-                  sendCommand: (...args: string[]) => redisClient.call(...args),
-              }),
-          }),
+                  sendCommand: (...args: string[]) => redisClient.call(...args)
+              })
+          })
 });
 
-export function verifySignature(
-    req: RequestWithUser,
-    res: Response,
-    next: NextFunction
-): void {
+export function verifySignature(req: RequestWithUser, res: Response, next: NextFunction): void {
     const { signature, message } = req.headers;
 
     if (!signature || !message) {
@@ -148,16 +125,13 @@ export function verifySignature(
             success: false,
             error: {
                 name: 'INVALID_SINATURE',
-                message: 'signature is invalid',
-            },
+                message: 'signature is invalid'
+            }
         });
         return;
     }
 
-    const address = ethers.utils.verifyMessage(
-        message as string,
-        signature as string
-    );
+    const address = ethers.utils.verifyMessage(message as string, signature as string);
 
     if (address.toLowerCase() === req.user?.address.toLowerCase()) {
         // validate signature timestamp
@@ -167,22 +141,20 @@ export function verifySignature(
                 success: false,
                 error: {
                     name: 'EXPIRED_SIGNATURE',
-                    message: 'signature is expired',
-                },
+                    message: 'signature is expired'
+                }
             });
             return;
         }
         const expirationDate = new Date();
-        expirationDate.setDate(
-            expirationDate.getDate() - config.signatureExpiration
-        );
+        expirationDate.setDate(expirationDate.getDate() - config.signatureExpiration);
         if (parseInt(timestamp[0], 10) < expirationDate.getTime()) {
             res.status(403).json({
                 success: false,
                 error: {
                     name: 'EXPIRED_SIGNATURE',
-                    message: 'signature is expired',
-                },
+                    message: 'signature is expired'
+                }
             });
             return;
         }
@@ -192,8 +164,8 @@ export function verifySignature(
             success: false,
             error: {
                 name: 'INVALID_SINATURE',
-                message: 'signature is invalid',
-            },
+                message: 'signature is invalid'
+            }
         });
     }
 }
@@ -207,10 +179,7 @@ const checkRoles = (roles: string[], path: string, reqMethod: string) => {
                 method === '*' ||
                 (reqMethod === 'GET' && method === 'read') ||
                 (reqMethod === 'DELETE' && method === 'delete') ||
-                ((reqMethod === 'POST' ||
-                    reqMethod === 'PUT' ||
-                    reqMethod === 'PATCH') &&
-                    method === 'write')
+                ((reqMethod === 'POST' || reqMethod === 'PUT' || reqMethod === 'PATCH') && method === 'write')
             ) {
                 authorizate = true;
                 break;
@@ -220,40 +189,37 @@ const checkRoles = (roles: string[], path: string, reqMethod: string) => {
     return authorizate;
 };
 
-export const onlyAuthorizedRoles = (authorisedRoles: string[]) => async (
-    req: RequestWithUser,
-    res: Response,
-    next: NextFunction
-) => {
-    if (!req.user) {
-        res.status(403).json({
-            success: false,
-            error: {
-                name: 'INVALID_SINATURE',
-                message: 'signature is invalid',
-            },
-        });
-        return;
-    }
-
-    // get user roles
-    // this method already has cache
-    const userRoles = await getUserRoles(req.user.address);
-
-    // check if user has at least one of the required roles
-    for (let i = 0; i < authorisedRoles.length; i++) {
-        if (userRoles[authorisedRoles[i]]) {
-            next();
+export const onlyAuthorizedRoles =
+    (authorisedRoles: string[]) => async (req: RequestWithUser, res: Response, next: NextFunction) => {
+        if (!req.user) {
+            res.status(403).json({
+                success: false,
+                error: {
+                    name: 'INVALID_SINATURE',
+                    message: 'signature is invalid'
+                }
+            });
             return;
         }
-    }
 
-    res.status(401).json({
-        success: false,
-        error: {
-            name: 'NOT_AUTHORIZED',
-            message: 'you are not authorized to perform this action',
-        },
-    });
-    return;
-};
+        // get user roles
+        // this method already has cache
+        const userRoles = await getUserRoles(req.user.address);
+
+        // check if user has at least one of the required roles
+        for (let i = 0; i < authorisedRoles.length; i++) {
+            if (userRoles[authorisedRoles[i]]) {
+                next();
+                return;
+            }
+        }
+
+        res.status(401).json({
+            success: false,
+            error: {
+                name: 'NOT_AUTHORIZED',
+                message: 'you are not authorized to perform this action'
+            }
+        });
+        return;
+    };
