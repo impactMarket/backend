@@ -103,8 +103,8 @@ export async function listLevels(
             ],
             where,
             group: [
-                '"LearnAndEarnPrismicLevelModel".id',
-                '"LearnAndEarnPrismicLevelModel".prismicId',
+                '"learnAndEarnPrismicLevel".id',
+                '"learnAndEarnPrismicLevel".prismicId',
                 ...userQuery.group,
             ],
             limit,

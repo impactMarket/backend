@@ -1,4 +1,4 @@
-import { literal, Op } from 'sequelize';
+import { literal } from 'sequelize';
 
 import { models } from '../../database';
 import { formatObjectToNumber } from '../../utils';
@@ -81,9 +81,9 @@ export async function total(userId: number): Promise<{
                 },
             ],
             group: [
-                '"LearnAndEarnPrismicLessonModel".levelId',
-                '"LearnAndEarnPrismicLessonModel".lessonId',
-                '"LearnAndEarnPrismicLessonModel".language',
+                '"learnAndEarnPrismicLesson".levelId',
+                '"learnAndEarnPrismicLesson".lessonId',
+                '"learnAndEarnPrismicLesson".language',
                 '"userLesson".status'
             ],
             where: {
