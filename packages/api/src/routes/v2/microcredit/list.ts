@@ -38,8 +38,9 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
      */
     route.get(
         '/borrowers/:query?',
@@ -70,8 +71,9 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
      */
     route.get(
         '/borrower/:query?',
@@ -125,8 +127,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/getRepaymentsHistory'
      *     security:
-     *     - api_auth:
-     *       - "write:modify"
+     *     - BearerToken: []
      *     - SignatureMessage: []
      *     - Signature: []
      */

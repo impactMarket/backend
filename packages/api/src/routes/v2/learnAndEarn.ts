@@ -42,8 +42,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/levels',
@@ -64,8 +63,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/levels/admin',
@@ -85,8 +83,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.post(
         '/levels',
@@ -121,8 +118,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/levels/:id',
@@ -154,8 +150,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.put(
         '/lessons',
@@ -184,8 +179,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.post(
         '/lessons',
@@ -211,8 +205,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get('/', authenticateToken, learnAndEarnController.total);
 };

@@ -29,12 +29,14 @@ export default (route: Router): void => {
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
      */
     route.get(
         '/presigned/:query?',
         authenticateToken,
+        verifySignature,
         preSignerUrlFromAWSValidator,
         timeout('3s'),
         controller.getPresignedUrlMedia
@@ -68,8 +70,9 @@ export default (route: Router): void => {
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
      */
     route.post('/docs', authenticateToken, verifySignature, postDocsValidator, controller.postDocs);
 };

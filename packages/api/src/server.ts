@@ -35,7 +35,7 @@ export default (app: express.Application): void => {
             swaggerDefinition: {
                 openapi: '3.0.1',
                 info: {
-                    description: 'Swagger UI for impactMarket API',
+                    description: 'Swagger UI for impactMarket API. To generate signatures use https://etherscan.io/verifiedSignatures',
                     version: '1.0.0',
                     title: 'impactMarket',
                     license: {
@@ -65,14 +65,10 @@ export default (app: express.Application): void => {
                 schemes: [urlSchema],
                 components: {
                     securitySchemes: {
-                        api_auth: {
+                        BearerToken: {
                             type: 'http',
                             scheme: 'bearer',
-                            bearerFormat: 'JWT',
-                            scopes: {
-                                write: 'modify',
-                                read: 'read',
-                            },
+                            bearerFormat: 'JWT'
                         },
                         Signature: {
                             type: 'apiKey',

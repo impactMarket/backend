@@ -61,8 +61,7 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.post(
         '/',
