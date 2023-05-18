@@ -134,4 +134,33 @@ export default class MicroCreditList {
         }
     }
 
+    /**
+     * Get borrower profile, including docs and loans
+     * @param address borrower address
+     */
+    public getBorrower = async (query: { address: string }) => {
+        const { address } = query;
+        const borrower = await models.appUser.findOne({
+            attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
+            where: {
+                address,
+            },
+        });
+
+        if (!borrower) {
+            throw new Error('Borrower not found');
+        }
+
+        const docs = await models.microCreditDocs.findAll({
+            attributes: ['filepath', 'category'],
+            where: {
+                userId: borrower.id,
+            },
+        });
+
+        return {
+            ...borrower.toJSON(),
+            docs: docs.map((d) => d.toJSON()),
+        };
+    }
 }

@@ -21,15 +21,14 @@ const queryPreSignerUrlFromAWSSchema = defaultSchema.object({
     mime: Joi.string().required()
 });
 
+const queryGetBorrowerSchema = defaultSchema.object<{ address: string }>({
+    address: Joi.string().required()
+});
+
 interface ListBorrowersRequestSchema extends ValidatedRequestSchema {
     [ContainerTypes.Query]: {
         offset?: number;
         limit?: number;
-    };
-}
-interface PreSignerUrlFromAWSRequestSchema extends ValidatedRequestSchema {
-    [ContainerTypes.Query]: {
-        mime: string;
     };
 }
 
@@ -39,6 +38,18 @@ interface RepaymentHistoryRequestSchema extends ValidatedRequestSchema {
         limit?: number;
         loanId: number;
         borrower: string;
+    };
+}
+
+interface PreSignerUrlFromAWSRequestSchema extends ValidatedRequestSchema {
+    [ContainerTypes.Query]: {
+        mime: string;
+    };
+}
+
+interface GetBorrowerRequestSchema extends ValidatedRequestSchema {
+    [ContainerTypes.Query]: {
+        address: string;
     };
 }
 
@@ -55,9 +66,10 @@ type PostDocsRequestType = [
 const listBorrowersValidator = validator.query(queryListBorrowersSchema);
 const repaymentsHistoryValidator = validator.query(queryRepaymentsHistorySchema);
 const preSignerUrlFromAWSValidator = validator.query(queryPreSignerUrlFromAWSSchema);
+const queryGetBorrowerValidator = validator.query(queryGetBorrowerSchema);
 const postDocsValidator = celebrate({
     body: defaultSchema
-        .array()
+        .array<PostDocsRequestType>()
         .items(
             Joi.object({
                 filepath: Joi.string().required(),
@@ -71,9 +83,11 @@ export {
     listBorrowersValidator,
     preSignerUrlFromAWSValidator,
     repaymentsHistoryValidator,
+    queryGetBorrowerValidator,
     postDocsValidator,
-    PostDocsRequestType,
     ListBorrowersRequestSchema,
     PreSignerUrlFromAWSRequestSchema,
-    RepaymentHistoryRequestSchema
+    RepaymentHistoryRequestSchema,
+    GetBorrowerRequestSchema,
+    PostDocsRequestType
 };

@@ -1,4 +1,4 @@
-import { config, database } from '@impactmarket/core';
+import { config, database, subgraph } from '@impactmarket/core';
 import { ethers } from 'ethers';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
@@ -7,6 +7,7 @@ import RedisStore from 'rate-limit-redis';
 
 import { RequestWithUser, UserInRequest } from './core';
 
+const { getUserRoles } = subgraph.queries.user;
 const { redisClient } = database;
 
 export function authenticateToken(
@@ -217,4 +218,42 @@ const checkRoles = (roles: string[], path: string, reqMethod: string) => {
         }
     }
     return authorizate;
+};
+
+export const onlyAuthorizedRoles = (authorisedRoles: string[]) => async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction
+) => {
+    if (!req.user) {
+        res.status(403).json({
+            success: false,
+            error: {
+                name: 'INVALID_SINATURE',
+                message: 'signature is invalid',
+            },
+        });
+        return;
+    }
+
+    // get user roles
+    // this method already has cache
+    const userRoles = await getUserRoles(req.user.address);
+
+    // check if user has at least one of the required roles
+    for (let i = 0; i < authorisedRoles.length; i++) {
+        if (userRoles[authorisedRoles[i]]) {
+            next();
+            return;
+        }
+    }
+
+    res.status(401).json({
+        success: false,
+        error: {
+            name: 'NOT_AUTHORIZED',
+            message: 'you are not authorized to perform this action',
+        },
+    });
+    return;
 };

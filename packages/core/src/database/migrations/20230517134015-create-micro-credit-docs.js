@@ -20,7 +20,7 @@ module.exports = {
             },
             category: {
                 allowNull: false,
-                type: Sequelize.NUMBER
+                type: Sequelize.INTEGER
             },
             filepath: {
                 allowNull: false,

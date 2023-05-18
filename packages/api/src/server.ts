@@ -58,7 +58,7 @@ export default (app: express.Application): void => {
                     },
                     {
                         name: 'microcredit',
-                        description: 'MicroCredit endpoints',
+                        description: 'MicroCredit endpoints. In this section, all endpoints are protected by authentication and signature verification. Be sure to be properly authenticated!',
                     },
                 ],
                 servers: swaggerServers,
@@ -74,6 +74,16 @@ export default (app: express.Application): void => {
                                 read: 'read',
                             },
                         },
+                        Signature: {
+                            type: 'apiKey',
+                            in: 'header',
+                            name: 'signature',
+                        },
+                        SignatureMessage: {
+                            type: 'apiKey',
+                            in: 'header',
+                            name: 'message',
+                        }
                     },
                 },
             },
