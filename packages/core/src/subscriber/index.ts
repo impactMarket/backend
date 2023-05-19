@@ -22,7 +22,7 @@ let availableCommunities: Community[];
 
 export const start = async (): Promise<void> => {
     provider = new ethers.providers.WebSocketProvider(config.webSocketUrl);
-    jsonRpcProvider = new ethers.providers.WebSocketProvider(config.jsonRpcUrl);
+    jsonRpcProvider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
     providerFallback = new ethers.providers.WebSocketProvider(
         config.webSocketUrlFallback
     );
