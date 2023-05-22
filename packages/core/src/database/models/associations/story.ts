@@ -10,7 +10,13 @@ export function storyAssociation(sequelize: Sequelize) {
         storyEngagement,
         storyUserEngagement,
         storyUserReport,
+        community,
     } = sequelize.models as DbModels;
+
+    storyCommunity.belongsTo(community, {
+        foreignKey: 'communityId',
+        as: 'community',
+    });
 
     // used to query from the community with incude
     storyCommunity.belongsTo(storyContent, {
