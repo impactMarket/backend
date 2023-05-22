@@ -127,7 +127,8 @@ describe('Microcredit', () => {
                 userId: user.id,
                 type: NotificationType.LOAN_ADDED,
                 isWallet: true,
-                isWebApp: true
+                isWebApp: true,
+                params: undefined
             }]
         );
     });
