@@ -15,6 +15,7 @@ export async function sendNotification(
     type: NotificationType,
     isWallet: boolean = true,
     isWebApp: boolean = true,
+    params?: object,
 ) {
     // registry notification
     await models.appNotification.bulkCreate(users.map(el => ({
@@ -22,6 +23,7 @@ export async function sendNotification(
         type,
         isWallet,
         isWebApp,
+        params,
     })));
 
     // filter users that have walletPNT
