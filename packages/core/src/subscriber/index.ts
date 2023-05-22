@@ -18,6 +18,7 @@ const waitingForResponseAfterTxRegWarn = false;
 let provider: ethers.providers.WebSocketProvider;
 let jsonRpcProvider: ethers.providers.JsonRpcProvider;
 let providerFallback: ethers.providers.WebSocketProvider;
+let jsonRpcProviderFallback: ethers.providers.JsonRpcProvider;
 let availableCommunities: Community[];
 
 export const start = async (): Promise<void> => {
@@ -26,6 +27,8 @@ export const start = async (): Promise<void> => {
     providerFallback = new ethers.providers.WebSocketProvider(
         config.webSocketUrlFallback
     );
+    jsonRpcProviderFallback = new ethers.providers.JsonRpcProvider(config.jsonRpcUrlFallback);
+
     availableCommunities = await models.community.findAll({
         attributes: ['id', 'contractAddress'],
         where: { status: 'valid', visibility: 'public' },
@@ -159,7 +162,7 @@ function reconnectChainSubscriber() {
 function startChainSubscriber(fallback?: boolean): ChainSubscribers {
     return new ChainSubscribers(
         fallback ? providerFallback : provider,
-        jsonRpcProvider,
+        fallback ? jsonRpcProviderFallback : jsonRpcProvider,
         new Map(availableCommunities.map((c) => [c.contractAddress!, c.id]))
     );
 }

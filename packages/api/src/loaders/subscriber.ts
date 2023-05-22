@@ -54,6 +54,8 @@ export function startSubscribers() {
 
     // catches ctrl+c event
     process.on('SIGINT', exitHandler.bind(null, { exit: true }));
+    // catches dyno restart event
+    process.on('SIGTERM', exitHandler.bind(null, { exit: true }));
     // catches "kill pid" (for example: nodemon restart)
     process.on('SIGUSR1', exitHandler.bind(null, { exit: true }));
     process.on('SIGUSR2', exitHandler.bind(null, { exit: true }));
