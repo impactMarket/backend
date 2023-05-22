@@ -220,7 +220,7 @@ class ChainSubscribers {
                 utils.cache.cleanBeneficiaryCache(community);
             }
             const user = await models.appUser.findOne({
-                attributes: ['language', 'walletPNT', 'appPNT'],
+                attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                 where: {
                     address: getAddress(userAddress),
                 },
