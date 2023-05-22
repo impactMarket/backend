@@ -194,7 +194,13 @@ class ChainSubscribers {
                 if (user) {
                     await sendNotification(
                         [user.toJSON()],
-                        NotificationType.COMMUNITY_CREATED
+                        NotificationType.COMMUNITY_CREATED,
+                        true,
+                        true,
+                        {
+                            communityId:
+                                community[1][0].id,
+                        }
                     );
                 }
             }
@@ -214,7 +220,7 @@ class ChainSubscribers {
         if (parsedLog.name === 'BeneficiaryAdded') {
             const communityAddress = log.address;
             const community = this.communities.get(communityAddress);
-            const userAddress = parsedLog.args[0];
+            const userAddress = parsedLog.args[1];
 
             if (community) {
                 utils.cache.cleanBeneficiaryCache(community);
@@ -229,7 +235,12 @@ class ChainSubscribers {
             if (user) {
                 await sendNotification(
                     [user.toJSON()],
-                    NotificationType.BENEFICIARY_ADDED
+                    NotificationType.BENEFICIARY_ADDED,
+                    true,
+                    true,
+                    {
+                        communityId: community,
+                    }
                 );
             }
 
