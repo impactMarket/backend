@@ -243,13 +243,13 @@ export class CommunityListService {
                     }
                     case 'newest':
                         orderOption.push([
-                            literal('"Community"."createdAt"'),
+                            literal('"community"."createdAt"'),
                             orderType ? orderType : 'DESC',
                         ]);
                         break;
                     case 'updated':
                         orderOption.push([
-                            literal('"Community"."updatedAt"'),
+                            literal('"community"."updatedAt"'),
                             orderType ? orderType : 'DESC',
                         ]);
                         break;
@@ -636,7 +636,7 @@ export class CommunityListService {
                 where: {
                     createdAt: {
                         [Op.eq]: literal(
-                            '(select max("createdAt") from ubi_community_suspect ucs where ucs."communityId"="Community".id and date("createdAt") > (current_date - INTERVAL \'1 day\'))'
+                            '(select max("createdAt") from ubi_community_suspect ucs where ucs."communityId"="community".id and date("createdAt") > (current_date - INTERVAL \'1 day\'))'
                         ),
                     } as { [Op.eq]: Literal },
                 },
