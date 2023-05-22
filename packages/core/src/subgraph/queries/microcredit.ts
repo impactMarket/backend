@@ -25,29 +25,24 @@ export const getGlobalData = async (): Promise<{
                     id: 0
                 ) {
                     borrowed {
-                        id
                         asset
                         amount
                     }
                     debt {
-                        id
                         asset
                         amount
                     }
                     repaid {
-                        id
                         asset
                         amount
                     }
                     interest {
-                        id
                         asset
                         amount
                     }
                     borrowers
                     repayments
                     liquidity {
-                        id
                         asset
                         amount
                     }
@@ -62,7 +57,7 @@ export const getGlobalData = async (): Promise<{
                     data: {
                         microCredit: {
                             borrowed: Asset[];
-                            debit: Asset[];
+                            debt: Asset[];
                             repaid: Asset[];
                             interest: Asset[];
                             borrowers: number;
@@ -82,8 +77,8 @@ export const getGlobalData = async (): Promise<{
                     ? parseFloat(microCredit.borrowed[0].amount)
                     : 0,
             currentDebt:
-                microCredit.debit && microCredit.debit.length
-                    ? parseFloat(microCredit.debit[0].amount)
+                microCredit.debt && microCredit.debt.length
+                    ? parseFloat(microCredit.debt[0].amount)
                     : 0,
             paidBack:
                 microCredit.repaid && microCredit.repaid.length
