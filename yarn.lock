@@ -5925,10 +5925,10 @@ aws-sdk@2.1259.0:
     uuid "8.0.0"
     xml2js "0.4.19"
 
-aws-sdk@2.1373.0, aws-sdk@^2.1194.0:
-  version "2.1373.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1373.0.tgz#e1e7d5b01498de48dd0cd8c7849c1766c115f13d"
-  integrity sha512-3/P79VU2VVeiof25bn8TSepEhWCRhwuQGYoEWX/2pApQRJAY+w/3JFVKHjbAe3NYEEBNeiAE6PQ9DqWz5Pp+Lw==
+aws-sdk@2.1381.0, aws-sdk@^2.1194.0:
+  version "2.1381.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1381.0.tgz#bd5b8ed12aedb3a55f9f451e1cb323298c588cf0"
+  integrity sha512-4dzE/zZZCG/MIYntKs61F0h0zJa3S5aXX90B2ZnNOf1zvPEJ/gMpv7u3C3FV7UMPyfg00JWAu3g9i+G2j8Wujw==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
