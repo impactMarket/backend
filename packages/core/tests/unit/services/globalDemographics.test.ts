@@ -110,7 +110,7 @@ describe('calculate global demographics', () => {
     });
 
     after(async () => {
-        await truncate(sequelize, 'Beneficiary');
+        await truncate(sequelize, 'beneficiary');
         await truncate(sequelize);
     });
 

@@ -123,6 +123,7 @@ export function initializeUbiCommunityContract(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_community_contract',
+            modelName: 'ubiCommunityContract',
             sequelize,
         }
     );

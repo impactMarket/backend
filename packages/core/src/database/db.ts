@@ -49,13 +49,14 @@ import { UbiPromoterModel } from './models/ubi/ubiPromoter';
 import { UbiPromoterSocialMediaModel } from './models/ubi/ubiPromoterSocialMedia';
 import { WalletAirdropProofModel } from './models/walletAirdrop/walletAirdropProof';
 import { WalletAirdropUserModel } from './models/walletAirdrop/walletAirdropUser';
+import { UbiCommunityPromoterModel } from './models/ubi/ubiCommunityPromoter';
 
-export interface DbModels {
+export type DbModels = {
     appUser: ModelStatic<AppUserModel>;
     appProposal: ModelStatic<AppProposalModel>;
     appLog: ModelStatic<AppLogModel>;
     appClientCredential: ModelStatic<AppClientCredentialModel>;
-    anonymousReport: ModelStatic<AppAnonymousReportModel>;
+    appAnonymousReport: ModelStatic<AppAnonymousReportModel>;
     cronJobExecuted: ModelStatic<CronJobExecuted>;
     exchangeRates: ModelStatic<ExchangeRates>;
     imMetadata: ModelStatic<ImMetadata>;
@@ -69,6 +70,7 @@ export interface DbModels {
     ubiCommunityDailyMetrics: ModelStatic<UbiCommunityDailyMetricsModel>;
     ubiCommunityDemographics: ModelStatic<UbiCommunityDemographicsModel>;
     ubiPromoter: ModelStatic<UbiPromoterModel>;
+    ubiCommunityPromoter: ModelStatic<UbiCommunityPromoterModel>;
     ubiPromoterSocialMedia: ModelStatic<UbiPromoterSocialMediaModel>;
     ubiCommunityLabels: ModelStatic<UbiCommunityLabelModel>;
     ubiCommunityCampaign: ModelStatic<UbiCommunityCampaignModel>;

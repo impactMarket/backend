@@ -37,6 +37,7 @@ export function initializeUbiCommunityCampaign(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_community_campaign',
+            modelName: 'ubiCommunityCampaign',
             timestamps: false,
             sequelize,
         }

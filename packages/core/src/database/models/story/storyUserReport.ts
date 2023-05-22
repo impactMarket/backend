@@ -46,6 +46,7 @@ export function initializeStoryUserReport(
         },
         {
             tableName: 'story_user_report',
+            modelName: 'storyUserReport',
             sequelize,
             timestamps: false,
         }

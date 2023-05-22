@@ -60,6 +60,7 @@ export function initializeAppAnonymousReport(sequelize: Sequelize): void {
         },
         {
             tableName: 'app_anonymous_report',
+            modelName: 'appAnonymousReport',
             updatedAt: false,
             sequelize,
         }

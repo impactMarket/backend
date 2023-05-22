@@ -57,6 +57,7 @@ export function initializeLearnAndEarnUserLevel(
         },
         {
             tableName: 'learn_and_earn_user_level',
+            modelName: 'learnAndEarnUserLevel',
             timestamps: false,
             sequelize,
         }

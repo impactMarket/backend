@@ -29,6 +29,7 @@ export function initializeAppProposal(sequelize: Sequelize): void {
         },
         {
             tableName: 'app_proposal',
+            modelName: 'appProposal',
             timestamps: false,
             sequelize,
         }

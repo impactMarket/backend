@@ -292,7 +292,7 @@ export default class UserService {
         communityId: number,
         category: 'general' | 'potential-fraud'
     ) {
-        await models.anonymousReport.create({
+        await models.appAnonymousReport.create({
             message,
             communityId,
             category,
@@ -348,7 +348,7 @@ export default class UserService {
             addresses = communities;
         }
 
-        return models.anonymousReport.findAndCountAll({
+        return models.appAnonymousReport.findAndCountAll({
             include: [
                 {
                     attributes: [

@@ -48,6 +48,7 @@ export function initializeExchangeRates(sequelize: Sequelize): void {
         },
         {
             tableName: 'exchangerates',
+            modelName: 'appExchangeRates',
             sequelize,
         }
     );

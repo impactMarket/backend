@@ -54,6 +54,7 @@ export function initializeAirgrabUser(
         },
         {
             tableName: 'airgrab_user',
+            modelName: 'airgrabUser',
             timestamps: false,
             sequelize,
         }

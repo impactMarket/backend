@@ -41,6 +41,7 @@ export function initializeUbiCommunityLabel(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_community_label',
+            modelName: 'ubiCommunityLabel',
             timestamps: false,
             sequelize,
         }

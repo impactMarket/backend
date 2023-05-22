@@ -87,6 +87,7 @@ export function initializeGlobalGrowth(
         },
         {
             tableName: 'globalgrowth',
+            modelName: 'globalGrowth',
             sequelize,
         }
     );

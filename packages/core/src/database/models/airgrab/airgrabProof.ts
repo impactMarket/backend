@@ -41,6 +41,7 @@ export function initializeAirgrabProof(
         },
         {
             tableName: 'airgrab_proof',
+            modelName: 'airgrabProof',
             timestamps: false,
             sequelize,
         }

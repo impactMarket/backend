@@ -52,6 +52,7 @@ export function initializeLearnAndEarnPrismicLevel(
         },
         {
             tableName: 'learn_and_earn_prismic_level',
+            modelName: 'learnAndEarnPrismicLevel',
             timestamps: false,
             sequelize,
         }

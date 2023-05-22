@@ -71,6 +71,7 @@ export function initializeUbiCommunityDailyMetrics(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_community_daily_metrics',
+            modelName: 'ubiCommunityDailyMetrics',
             sequelize, // this bit is important
         }
     );

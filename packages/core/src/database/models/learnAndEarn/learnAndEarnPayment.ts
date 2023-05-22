@@ -73,6 +73,7 @@ export function initializeLearnAndEarnPayment(
         },
         {
             tableName: 'learn_and_earn_payment',
+            modelName: 'learnAndEarnPayment',
             timestamps: false,
             sequelize,
         }

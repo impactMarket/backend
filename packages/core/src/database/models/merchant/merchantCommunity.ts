@@ -51,6 +51,7 @@ export function initializeMerchantCommunity(
         },
         {
             tableName: 'merchant_community',
+            modelName: 'merchantCommunity',
             timestamps: false,
             sequelize,
         }

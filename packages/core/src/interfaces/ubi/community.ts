@@ -146,8 +146,8 @@ export interface CommunityAttributes {
     email: string;
     visibility: 'public' | 'private';
     coverImage: string; // TODO: to be removed
-    coverMediaId: number;
-    coverMediaPath: string;
+    coverMediaId: number | null;
+    coverMediaPath: string | null;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     review: 'pending' | 'claimed' | 'declined' | 'accepted';
     started: Date; // TODO: to be removed

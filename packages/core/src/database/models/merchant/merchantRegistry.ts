@@ -129,6 +129,7 @@ export function initializeMerchantRegistry(
         },
         {
             tableName: 'merchant_registry',
+            modelName: 'merchantRegistry',
             sequelize,
         }
     );

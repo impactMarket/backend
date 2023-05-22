@@ -107,7 +107,7 @@ export default class CommunityDemographicsService {
                     visibility: 'public',
                     status: 'valid',
                 },
-                group: ['"Community".id'],
+                group: ['"community".id'],
                 raw: true,
             })) as any;
 

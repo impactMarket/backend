@@ -47,6 +47,7 @@ export function initializeAppLog(sequelize: Sequelize): void {
         },
         {
             tableName: 'app_log',
+            modelName: 'appLog',
             updatedAt: false,
             sequelize,
         }

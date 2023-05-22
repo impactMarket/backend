@@ -51,6 +51,7 @@ export function initializeUbiBeneficiarySurvey(sequelize: Sequelize): void {
         },
         {
             tableName: 'ubi_beneficiary_survey',
+            modelName: 'ubiBeneficiarySurvey',
             sequelize,
             updatedAt: false,
         }

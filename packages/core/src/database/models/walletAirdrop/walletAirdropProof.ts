@@ -41,6 +41,7 @@ export function initializeWalletAirdropProof(
         },
         {
             tableName: 'wallet_airdrop_proof',
+            modelName: 'walletAirdropProof',
             timestamps: false,
             sequelize,
         }

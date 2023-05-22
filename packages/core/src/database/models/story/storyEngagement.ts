@@ -42,6 +42,7 @@ export function initializeStoryEngagement(
         },
         {
             tableName: 'story_engagement',
+            modelName: 'storyEngagement',
             sequelize,
             timestamps: false,
         }

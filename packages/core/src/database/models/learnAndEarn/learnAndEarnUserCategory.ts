@@ -57,6 +57,7 @@ export function initializeLearnAndEarnUserCategory(
         },
         {
             tableName: 'learn_and_earn_user_category',
+            modelName: 'learnAndEarnUserCategory',
             timestamps: false,
             sequelize,
         }

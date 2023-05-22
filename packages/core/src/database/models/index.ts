@@ -12,7 +12,6 @@ import { initializeAppUserValidationCode } from './app/appUserValidationCode';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
 import { initializeExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
-import { airgrabAssociation } from './associations/airgrab';
 import { communityAssociation } from './associations/community';
 import { learnAndEarnAssociation } from './associations/learnAndEarn';
 import { storyAssociation } from './associations/story';
@@ -130,7 +129,6 @@ export default function initModels(sequelize: Sequelize): void {
     userAssociation(sequelize);
     communityAssociation(sequelize);
     storyAssociation(sequelize);
-    airgrabAssociation(sequelize);
     walletAidropAssociation(sequelize);
     learnAndEarnAssociation(sequelize);
 }

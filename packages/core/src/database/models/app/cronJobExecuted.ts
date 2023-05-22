@@ -55,6 +55,7 @@ export function initializeCronJobExecuted(sequelize: Sequelize): void {
         },
         {
             tableName: 'cronjobexecuted',
+            modelName: 'cronJobExecuted',
             sequelize,
         }
     );

@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 
 import CommunityContractABI from '../../../contracts/CommunityABI.json';
-import { Community, models, sequelize } from '../../../database';
+import { models, sequelize } from '../../../database';
 import { LogTypes } from '../../../interfaces/app/appLog';
 import {
     CommunityAttributes,
@@ -35,7 +35,7 @@ export class CommunityCreateService {
         contractParams,
         coverMediaPath,
         placeId,
-    }: ICommunityCreationAttributes): Promise<Community> {
+    }: ICommunityCreationAttributes): Promise<CommunityAttributes> {
         let managerAddress: string = '';
         let createObject: ICommunityCreationAttributes = {
             requestByAddress,

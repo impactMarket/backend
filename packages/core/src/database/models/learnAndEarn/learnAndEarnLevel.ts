@@ -90,6 +90,7 @@ export function initializeLearnAndEarnLevel(
         },
         {
             tableName: 'learn_and_earn_level',
+            modelName: 'learnAndEarnLevel',
             timestamps: false,
             sequelize,
         }
