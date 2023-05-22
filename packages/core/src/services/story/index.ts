@@ -536,7 +536,7 @@ export default class StoryServiceV2 {
                     ? parseInt(query.limit, 10)
                     : config.defaultLimit,
                 group: [
-                    'StoryContentModel.id',
+                    'storyContent.id',
                     'storyCommunity.id',
                     'storyCommunity->community.id',
                     'storyEngagement.id',
