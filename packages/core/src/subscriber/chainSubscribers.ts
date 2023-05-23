@@ -8,6 +8,7 @@ import { sendNotification } from '../utils/pushNotification';
 class ChainSubscribers {
     provider: ethers.providers.WebSocketProvider;
     jsonRpcProvider: ethers.providers.JsonRpcProvider;
+    jsonRpcProviderFallback: ethers.providers.JsonRpcProvider;
     ifaceCommunityAdmin: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
     ifaceMicrocredit: ethers.utils.Interface;
@@ -17,10 +18,12 @@ class ChainSubscribers {
     constructor(
         webSocketProvider: ethers.providers.WebSocketProvider,
         jsonRpcProvider: ethers.providers.JsonRpcProvider,
+        jsonRpcProviderFallback: ethers.providers.JsonRpcProvider,
         communities: Map<string, number>
     ) {
         this.provider = webSocketProvider;
         this.jsonRpcProvider = jsonRpcProvider;
+        this.jsonRpcProviderFallback = jsonRpcProviderFallback;
         this.ifaceCommunityAdmin = new ethers.utils.Interface(
             contracts.CommunityAdminABI
         );
@@ -56,12 +59,16 @@ class ChainSubscribers {
         this._setupListener(this.provider);
         // we start the listener alongside with the recover system
         // so we know we don't lose events.
-        this._runRecoveryTxs(this.jsonRpcProvider).then(() =>
-            services.app.ImMetadataService.removeRecoverBlock()
-        );
+        this._runRecoveryTxs(this.jsonRpcProvider, this.jsonRpcProviderFallback)
+            .then(() =>
+                services.app.ImMetadataService.removeRecoverBlock()
+            )
+            .catch((error) =>
+                utils.Logger.error('Failed to recover past events!', error)
+            );
     }
 
-    async _runRecoveryTxs(provider: ethers.providers.JsonRpcProvider) {
+    async _runRecoveryTxs(provider: ethers.providers.JsonRpcProvider, fallbackProvider: ethers.providers.JsonRpcProvider) {
         utils.Logger.info('Recovering past events...');
         let startFromBlock: number;
         let lastBlockCached = await database.redisClient.get('lastBlock');
@@ -72,11 +79,16 @@ class ChainSubscribers {
             startFromBlock = parseInt(lastBlockCached, 10);
         }
 
-        const rawLogs = await provider.getLogs({
-            fromBlock: startFromBlock,
-            toBlock: 'latest',
-            topics: this.filterTopics,
-        });
+        let rawLogs: ethers.providers.Log[] = [];
+
+        try {
+            rawLogs = await this._getLogs(startFromBlock, provider);
+            utils.Logger.info('Got logs from main provider!');
+        } catch (error) {
+            utils.Logger.error('Failed to get logs from main provider!', error);
+            rawLogs = await this._getLogs(startFromBlock, fallbackProvider);
+            utils.Logger.info('Got logs from fallback provider!');
+        }
 
         const logs = rawLogs.sort((a, b) => {
             if (a.blockNumber > b.blockNumber) {
@@ -95,6 +107,14 @@ class ChainSubscribers {
             await this._filterAndProcessEvent(logs[x]);
         }
         utils.Logger.info('Past events recovered successfully!');
+    }
+
+    async _getLogs(startFromBlock: number, provider: ethers.providers.JsonRpcProvider) {
+        return provider.getLogs({
+            fromBlock: startFromBlock,
+            toBlock: 'latest',
+            topics: this.filterTopics,
+        });
     }
 
     _setupListener(provider: ethers.providers.WebSocketProvider) {

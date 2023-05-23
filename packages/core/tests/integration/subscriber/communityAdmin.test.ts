@@ -88,6 +88,7 @@ describe('communityAdmin', () => {
         subscribers = new ChainSubscribers(
             provider as any,
             provider,
+            provider, // fallback
             new Map([]),
         );
     });

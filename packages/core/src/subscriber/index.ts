@@ -162,7 +162,8 @@ function reconnectChainSubscriber() {
 function startChainSubscriber(fallback?: boolean): ChainSubscribers {
     return new ChainSubscribers(
         fallback ? providerFallback : provider,
-        fallback ? jsonRpcProviderFallback : jsonRpcProvider,
+        jsonRpcProvider,
+        jsonRpcProviderFallback,
         new Map(availableCommunities.map((c) => [c.contractAddress!, c.id]))
     );
 }
