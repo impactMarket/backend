@@ -43,13 +43,17 @@ describe('cashout provider', () => {
         exchanges = await models.exchangeRegistry.bulkCreate([
             {
                 name: 'exchange 1',
-                global: true,
-                countries: ['PT']
+                description: 'exchange description 1',
+                countries: ['PT'],
+				global: true,
+				fee: 0.1,
             },
             {
                 name: 'exchange 2',
-                global: false,
-                countries: ['BR']
+                description: 'exchange description 1',
+                countries: ['BR'],
+				global: false,
+				fee: 0.1,
             }
         ]);
     });
