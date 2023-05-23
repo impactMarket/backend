@@ -59,9 +59,13 @@ class ChainSubscribers {
         this._setupListener(this.provider);
         // we start the listener alongside with the recover system
         // so we know we don't lose events.
-        this._runRecoveryTxs(this.jsonRpcProvider, this.jsonRpcProviderFallback).then(() =>
-            services.app.ImMetadataService.removeRecoverBlock()
-        );
+        this._runRecoveryTxs(this.jsonRpcProvider, this.jsonRpcProviderFallback)
+            .then(() =>
+                services.app.ImMetadataService.removeRecoverBlock()
+            )
+            .catch((error) =>
+                utils.Logger.error('Failed to recover past events!', error)
+            );
     }
 
     async _runRecoveryTxs(provider: ethers.providers.JsonRpcProvider, fallbackProvider: ethers.providers.JsonRpcProvider) {
