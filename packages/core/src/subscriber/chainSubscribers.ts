@@ -78,22 +78,11 @@ class ChainSubscribers {
         let rawLogs: ethers.providers.Log[] = [];
 
         try {
-            rawLogs = await provider.getLogs({
-                fromBlock: startFromBlock,
-                toBlock: 'latest',
-                topics: this.filterTopics,
-            });
-
+            rawLogs = await this._getLogs(startFromBlock, provider);
             utils.Logger.info('Got logs from main provider!');
         } catch (error) {
             utils.Logger.error('Failed to get logs from main provider!', error);
-            
-            rawLogs = await fallbackProvider.getLogs({
-                fromBlock: startFromBlock,
-                toBlock: 'latest',
-                topics: this.filterTopics,
-            });
-
+            rawLogs = await this._getLogs(startFromBlock, fallbackProvider);
             utils.Logger.info('Got logs from fallback provider!');
         }
 
@@ -114,6 +103,14 @@ class ChainSubscribers {
             await this._filterAndProcessEvent(logs[x]);
         }
         utils.Logger.info('Past events recovered successfully!');
+    }
+
+    async _getLogs(startFromBlock: number, provider: ethers.providers.JsonRpcProvider) {
+        return provider.getLogs({
+            fromBlock: startFromBlock,
+            toBlock: 'latest',
+            topics: this.filterTopics,
+        });
     }
 
     _setupListener(provider: ethers.providers.WebSocketProvider) {
