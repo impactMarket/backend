@@ -1,6 +1,6 @@
 import distance from '@turf/distance';
 import { point } from '@turf/helpers';
-import { Op, literal } from 'sequelize';
+import { Op, WhereOptions, literal } from 'sequelize';
 
 import { models } from '../../database';
 import { ExchangeRegistry } from '../../database/models/exchange/exchangeRegistry';
@@ -13,15 +13,14 @@ export default class CashoutProviderService {
         lng?: string;
         distance?: string;
     }) {
-        let merchants: MerchantRegistry[] | null = null,
-            exchanges: ExchangeRegistry[] | null = null;
+        let merchants: MerchantRegistry[] | null = null;
 
         if (!query || (!query.country && !query.lat && !query.lng)) {
             merchants = await models.merchantRegistry.findAll({
                 limit: 5,
                 order: [['createdAt', 'DESC']],
             });
-            exchanges = await models.exchangeRegistry.findAll({
+            const exchanges = await models.exchangeRegistry.findAll({
                 limit: 5,
                 order: [['createdAt', 'DESC']],
             });
@@ -32,8 +31,12 @@ export default class CashoutProviderService {
             };
         }
 
+        let exchangesWhere: WhereOptions<ExchangeRegistry> = {
+            global: true,
+        };
+
         if (query.country) {
-            const where: any = {
+            exchangesWhere = {
                 [Op.or]: [
                     literal(`'${query.country}' = ANY(countries)`),
                     { global: true },
@@ -45,12 +48,12 @@ export default class CashoutProviderService {
                     country: query.country,
                 },
             });
-
-            exchanges = await models.exchangeRegistry.findAll({
-                where,
-                order: ['global'],
-            });
         }
+
+        const exchanges = await models.exchangeRegistry.findAll({
+            where: exchangesWhere,
+            order: ['global'],
+        });
 
         if (query.lat && query.lng) {
             const userLocation = point([
@@ -67,20 +70,11 @@ export default class CashoutProviderService {
                     merchant.gps.longitude,
                     merchant.gps.latitude,
                 ]);
-                const dist = distance(userLocation, merchantLocation);
-                if (dist < parseInt(query.distance || '100', 10)) {
-                    merchant['distance'] = dist;
-                    return true;
-                }
+                return (
+                    distance(userLocation, merchantLocation) <
+                    parseInt(query.distance || '100', 10)
+                );
             });
-
-            if (!exchanges) {
-                exchanges = await models.exchangeRegistry.findAll({
-                    where: {
-                        global: true,
-                    },
-                });
-            }
         }
 
         return {
