@@ -221,7 +221,7 @@ export default class StoryServiceV2 {
                 id: storyId,
             },
             group: [
-                'StoryContentModel.id',
+                'storyContent.id',
                 'storyCommunity.id',
                 'storyCommunity->community.id',
                 'storyEngagement.id',
