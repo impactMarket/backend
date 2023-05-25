@@ -1,7 +1,7 @@
 import { MicroCreditContentStorage } from '../../services/storage';
 import { models } from '../../database';
 
-export default class MicroCreditList {
+export default class MicroCreditCreate {
     private microCreditContentStorage = new MicroCreditContentStorage();
 
     public async getPresignedUrlMedia(mime: string) {

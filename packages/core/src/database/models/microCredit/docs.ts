@@ -1,6 +1,7 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
 import { MicroCreditDocs, MicroCreditDocsCreationAttributes } from '../../../interfaces/microCredit/docs';
+import { DbModels } from '../../../database/db';
 
 export class MicroCreditDocsModel extends Model<MicroCreditDocs, MicroCreditDocsCreationAttributes> {
     public id!: number;
@@ -14,6 +15,7 @@ export class MicroCreditDocsModel extends Model<MicroCreditDocs, MicroCreditDocs
 }
 
 export function initializeMicroCreditDocs(sequelize: Sequelize): typeof MicroCreditDocsModel {
+    const { appUser } = sequelize.models as DbModels;
     MicroCreditDocsModel.init(
         {
             id: {
@@ -24,7 +26,7 @@ export function initializeMicroCreditDocs(sequelize: Sequelize): typeof MicroCre
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: sequelize.models.AppUserModel,
+                    model: appUser,
                     key: 'id'
                 },
                 onDelete: 'CASCADE',
@@ -49,6 +51,7 @@ export function initializeMicroCreditDocs(sequelize: Sequelize): typeof MicroCre
         },
         {
             tableName: 'microcredit_docs',
+            modelName: 'microCreditDocs',
             sequelize
         }
     );
