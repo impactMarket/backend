@@ -1,9 +1,0 @@
-{
-    "extension": ["ts"],
-    "spec": "tests/**/*.test.ts",
-    "require": ["ts-node/register", "tsconfig-paths/register"],
-    "delay": false,
-    "bail": false,
-    "watch": false,
-    "timeout": 30000
-}

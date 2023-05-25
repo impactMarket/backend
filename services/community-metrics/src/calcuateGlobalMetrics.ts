@@ -18,7 +18,8 @@ export async function calcuateGlobalMetrics(): Promise<void> {
     yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
 
     // get last global metrics
-    let lastGlobalMetrics: database.GlobalDailyState.GlobalDailyStateCreationAttributes;
+    // TODO: maybe we need to export interfaces
+    let lastGlobalMetrics: any;
     const last = await database.models.globalDailyState.findAll({
         order: [['date', 'DESC']],
         limit: 1,
@@ -185,6 +186,7 @@ async function calculateUbiPulse(
     }> => {
         const fiveDaysAgo = new Date(date);
         fiveDaysAgo.setDate(date.getDate() - 5);
+        const { lte } = Op;
         const communitiesId = (
             await database.models.community.findAll({
                 attributes: ['id'],
@@ -192,7 +194,7 @@ async function calculateUbiPulse(
                     visibility: 'public',
                     status: 'valid',
                     started: {
-                        [Op.lte]: fiveDaysAgo,
+                        [lte]: fiveDaysAgo,
                     },
                 },
                 raw: true,
@@ -219,7 +221,8 @@ async function calculateUbiPulse(
                 where: {
                     date,
                     communityId: { [Op.in]: communitiesId },
-                },
+                } as any,
+                // TODO: this Op.in is giving types errors
                 raw: true,
             })
         )[0] as any;
@@ -277,7 +280,8 @@ async function calculateUbiPulse(
 
 async function calculateEconomicActivity(
     yesterdayDateOnly: Date,
-    lastGlobalMetrics: database.GlobalDailyState.GlobalDailyStateCreationAttributes
+    // TODO: maybe we need to export interfaces
+    lastGlobalMetrics: any
 ) {
     let totalVolume = '0';
     let totalTransactions = '0';
@@ -335,7 +339,8 @@ async function calculateEconomicActivity(
 
 async function calculateChartsData(
     yesterdayDateOnly: Date,
-    lastGlobalMetrics: database.GlobalDailyState.GlobalDailyStateCreationAttributes
+    // TODO: maybe we need to export interfaces
+    lastGlobalMetrics: any
 ) {
     const yesterdayId =
         (((yesterdayDateOnly.getTime() / 1000) | 0) / 86400) | 0;
