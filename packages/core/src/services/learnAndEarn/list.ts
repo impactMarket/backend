@@ -206,8 +206,8 @@ export async function listLevels(
                     },
                 },
             ],
-            group: ['"LearnAndEarnLevelModel".id'],
-            having: literal(`count("userLevel"."id") >= ("LearnAndEarnLevelModel"."rules"#>>'{limitUsers}')::int`),
+            group: ['"learnAndEarnLevel".id'],
+            having: literal(`count("userLevel"."id") >= ("learnAndEarnLevel"."rules"#>>'{limitUsers}')::int`),
             raw: true,
         }); 
 
