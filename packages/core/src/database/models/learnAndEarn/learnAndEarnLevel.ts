@@ -20,6 +20,11 @@ export class LearnAndEarnLevelModel extends Model<
     public asset!: string;
     public adminUserId!: number;
     public status!: string;
+    public rules!: {
+        countries: string[];
+        roles: string[];
+        limitUsers: number;
+    };
 }
 
 export function initializeLearnAndEarnLevel(
@@ -67,6 +72,10 @@ export function initializeLearnAndEarnLevel(
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
                 defaultValue: false,
+            },
+            rules: {
+                type: DataTypes.JSONB,
+                allowNull: true,
             },
             adminUserId: {
                 type: DataTypes.INTEGER,

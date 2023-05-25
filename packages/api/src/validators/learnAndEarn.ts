@@ -57,6 +57,16 @@ class LearnAndEarnValidator {
             transactionHash: Joi.string().required(),
         }),
     });
+
+    createLevel = celebrate({
+        body: defaultSchema.object({
+            rules: defaultSchema.object({
+                countries: defaultSchema.array().items(Joi.string().length(2).required()).optional(),
+                roles: defaultSchema.array().items(Joi.string().valid('manager', 'beneficiary', 'ambassador').required()).optional(),
+                limitUsers: Joi.number().optional(),
+            }).optional(),
+        }),
+    });
 }
 
 export default LearnAndEarnValidator;

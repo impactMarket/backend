@@ -14,6 +14,8 @@ export class LearnAndEarnUserLevelModel extends Model<
     public levelId!: number;
     public status!: 'available' | 'started' | 'completed';
     public completionDate!: Date;
+
+    public readonly createdAt!: Date;
 }
 
 export function initializeLearnAndEarnUserLevel(
@@ -54,11 +56,16 @@ export function initializeLearnAndEarnUserLevel(
                 type: DataTypes.DATE,
                 allowNull: true,
             },
+            createdAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
         },
         {
             tableName: 'learn_and_earn_user_level',
             modelName: 'learnAndEarnUserLevel',
             timestamps: false,
+            updatedAt: false,
             sequelize,
         }
     );

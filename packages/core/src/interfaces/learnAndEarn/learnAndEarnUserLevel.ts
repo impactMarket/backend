@@ -28,6 +28,7 @@ export interface LearnAndEarnUserLevel {
     levelId: number;
     status: 'available' | 'started' | 'completed';
     completionDate: Date;
+    createdAt: Date;
 }
 
 export interface LearnAndEarnUserLevelCreation {

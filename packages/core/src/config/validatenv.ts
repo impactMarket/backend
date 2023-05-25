@@ -119,6 +119,7 @@ function validateEnv() {
         SIGNATURE_EXPIRATION: num({ default: 15 }),
         LEARN_AND_EARN_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         INTERVAL_BETWEEN_LESSONS: num({ default: 7 }),
+        DAYS_TO_LIMIT_USERS: num({ default: 30 }),
         VERCEL_WEBHOOK_PWA: str({ devDefault: onlyOnTestEnv('xyz') }),
         VERCEL_WEBHOOK_WEBSITE: str({ devDefault: onlyOnTestEnv('xyz') }),
         VERCEL_WEBHOOK_WALLET: str({ devDefault: onlyOnTestEnv('xyz') }),
