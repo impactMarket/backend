@@ -18,16 +18,9 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
         as: 'userLevel',
     });
 
-    learnAndEarnPrismicLevel.hasMany(learnAndEarnLevel, {
-        foreignKey: 'id',
-        sourceKey: 'levelId',
-        as: 'level',
-    });
-
-    learnAndEarnPrismicLevel.hasMany(learnAndEarnUserLevel, {
+    learnAndEarnPrismicLevel.belongsTo(learnAndEarnLevel, {
         foreignKey: 'levelId',
-        sourceKey: 'levelId',
-        as: 'userLevel',
+        as: 'level',
     });
 
     learnAndEarnPrismicLevel.hasMany(learnAndEarnUserLevel, {
