@@ -38,6 +38,7 @@ export enum NotificationType {
     MANAGER_ADDED,
     COMMUNITY_CREATED,
     LOAN_ADDED,
+    LEARN_AND_EARN_DO_NEW_LESSON
 }
 
 export interface AppNotification {
