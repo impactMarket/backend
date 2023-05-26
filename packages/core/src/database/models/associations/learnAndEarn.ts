@@ -1,5 +1,5 @@
 import { DbModels } from '../../../database/db';
-import { Sequelize } from 'sequelize';
+import { Sequelize, Op } from 'sequelize';
 
 export function learnAndEarnAssociation(sequelize: Sequelize) {
     const {
@@ -39,6 +39,12 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
         foreignKey: 'levelId',
         sourceKey: 'levelId',
         as: 'userLesson',
+        scope: {
+            [Op.and]: sequelize.where(sequelize.col("learnAndEarnPrismicLesson.lessonId"),
+                Op.eq,
+                sequelize.col("userLesson.lessonId")),
+        },
+        constraints: false,
     });
 
     learnAndEarnLesson.hasMany(learnAndEarnUserLesson, {

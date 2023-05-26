@@ -6,7 +6,7 @@ import { defaultSchema } from './defaultSchema';
 
 // This should match Joi validations
 export type AnswerRequestType = {
-    lesson: number;
+    lesson: string;
     answers: number[];
 };
 export type StartLessonRequestType = {
@@ -31,7 +31,7 @@ class LearnAndEarnValidator {
                 .array()
                 .items(Joi.number().required())
                 .required(),
-            lesson: Joi.number().required(),
+            lesson: Joi.string().required(),
         }),
     });
 
@@ -49,6 +49,8 @@ class LearnAndEarnValidator {
             category: Joi.string().optional(),
             level: Joi.string().optional(),
             language: Joi.string().optional(),
+            limit: Joi.number().optional(),
+            offset: Joi.number().optional(),
         },
     });
 

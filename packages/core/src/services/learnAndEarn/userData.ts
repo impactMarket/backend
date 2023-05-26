@@ -80,12 +80,6 @@ export async function total(userId: number): Promise<{
                     required: false,
                 },
             ],
-            group: [
-                '"learnAndEarnPrismicLesson".levelId',
-                '"learnAndEarnPrismicLesson".lessonId',
-                '"learnAndEarnPrismicLesson".language',
-                '"userLesson".status'
-            ],
             where: {
                 language: user!.language,
                 ...(process.env.API_ENVIRONMENT === 'production'
