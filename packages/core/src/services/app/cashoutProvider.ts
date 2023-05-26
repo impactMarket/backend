@@ -65,28 +65,35 @@ export default class CashoutProviderService {
                 merchants = await models.merchantRegistry.findAll();
             }
 
-            merchants = merchants.filter((merchant) => {
-                const merchantLocation = point([
-                    merchant.gps.longitude,
-                    merchant.gps.latitude,
-                ]);
-                return (
-                    distance(userLocation, merchantLocation) <
-                    parseInt(query.distance || '100', 10)
-                );
-            });
+            merchants = merchants
+                .map((merchant) => {
+                    const merchantLocation = point([
+                        merchant.gps.longitude,
+                        merchant.gps.latitude,
+                    ]);
+                    return {
+                        ...merchant,
+                        distance: distance(userLocation, merchantLocation),
+                    };
+                })
+                .filter(
+                    (merchant) =>
+                        merchant.distance <
+                        parseInt(query.distance || '100', 10)
+                )
+                .sort((x, y) => {
+                    if (x.distance > y.distance) {
+                        return 1;
+                    }
+                    if (x.distance < y.distance) {
+                        return -1;
+                    }
+                    return 0;
+                });
         }
 
         return {
-            merchants: merchants?.sort((x, y) => {
-                if (x['distance'] > y['distance']) {
-                    return 1;
-                }
-                if (x['distance'] < y['distance']) {
-                    return -1;
-                }
-                return 0;
-            }),
+            merchants,
             exchanges,
         };
     }

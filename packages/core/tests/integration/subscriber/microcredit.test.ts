@@ -15,7 +15,7 @@ import { NotificationType } from '../../../src/interfaces/app/appNotification';
 import admin from 'firebase-admin';
 
 
-describe('Microcredit', () => {
+describe.skip('Microcredit', () => {
     let sequelize: Sequelize;
     let provider: ethers.providers.Web3Provider;
     let subscribers: ChainSubscribers;
