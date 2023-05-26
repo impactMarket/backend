@@ -28,7 +28,6 @@ export async function startServer() {
     utils.Logger.info('📡 Express server loaded');
 
     utils.pushNotification.initPushNotificationService();
-    utils.Logger.info('🔔 Push notification service initialized');
 
     // prevent subscribers and validations to run on dev mode
     if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {

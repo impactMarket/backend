@@ -98,7 +98,13 @@ export async function sendFirebasePushNotification(tokens: string[], title: stri
 }
 
 export function initPushNotificationService() {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount as any)
-    });
+    try {
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount as any)
+        });
+    
+        Logger.info('🔔 Push notification service initialized');
+    } catch (error) {
+        Logger.error('Push notification service failed to initialize', error);
+    }
 }
