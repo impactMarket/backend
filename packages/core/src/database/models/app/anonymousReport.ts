@@ -4,6 +4,7 @@ import {
     AppAnonymousReport,
     AppAnonymousReportCreation,
 } from '../../../interfaces/app/appAnonymousReport';
+import { DbModels } from '../../../database/db';
 
 export class AppAnonymousReportModel extends Model<
     AppAnonymousReport,
@@ -18,6 +19,7 @@ export class AppAnonymousReportModel extends Model<
 }
 
 export function initializeAppAnonymousReport(sequelize: Sequelize): void {
+    const { community } = sequelize.models as DbModels;
     AppAnonymousReportModel.init(
         {
             id: {
@@ -28,7 +30,7 @@ export function initializeAppAnonymousReport(sequelize: Sequelize): void {
             communityId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'community',
+                    model: community,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',

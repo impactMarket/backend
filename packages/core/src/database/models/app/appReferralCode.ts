@@ -4,6 +4,7 @@ import {
     AppReferralCode,
     AppReferralCodeCreation,
 } from '../../../interfaces/app/appReferralCode';
+import { DbModels } from '../../../database/db';
 
 export class AppReferralCodeModel extends Model<
     AppReferralCode,
@@ -16,6 +17,7 @@ export class AppReferralCodeModel extends Model<
 }
 
 export function initializeAppReferralCode(sequelize: Sequelize): void {
+    const { appUser } = sequelize.models as DbModels;
     AppReferralCodeModel.init(
         {
             code: {
@@ -30,7 +32,7 @@ export function initializeAppReferralCode(sequelize: Sequelize): void {
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: sequelize.models.AppUserModel,
+                    model: appUser,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -39,6 +41,7 @@ export function initializeAppReferralCode(sequelize: Sequelize): void {
         },
         {
             tableName: 'app_referral_code',
+            modelName: 'appReferralCode',
             timestamps: false,
             sequelize,
         }

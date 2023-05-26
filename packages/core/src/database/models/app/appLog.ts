@@ -5,6 +5,7 @@ import {
     AppLogCreation,
     LogTypes,
 } from '../../../interfaces/app/appLog';
+import { DbModels } from '../../../database/db';
 
 export class AppLogModel extends Model<AppLog, AppLogCreation> {
     public id!: number;
@@ -16,6 +17,7 @@ export class AppLogModel extends Model<AppLog, AppLogCreation> {
 }
 
 export function initializeAppLog(sequelize: Sequelize): void {
+    const { appUser } = sequelize.models as DbModels;
     AppLogModel.init(
         {
             id: {
@@ -25,6 +27,11 @@ export function initializeAppLog(sequelize: Sequelize): void {
             },
             userId: {
                 type: DataTypes.INTEGER,
+                references: {
+                    model: appUser,
+                    key: 'id',
+                },
+                onDelete: 'CASCADE',
                 allowNull: false,
             },
             type: {
