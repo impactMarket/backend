@@ -5,6 +5,7 @@ import * as dataFetching from './dataFetching';
 import * as jwt from './jwt';
 import { Logger } from './logger';
 import * as util from './util';
+import * as pushNotification from './pushNotification';
 
 /**
  * format object's values to number if they are numbers in string format
@@ -31,4 +32,5 @@ export {
     util,
     jwt,
     cache,
+    pushNotification
 };
