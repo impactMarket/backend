@@ -1,0 +1,105 @@
+[
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_sender",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "_campaignIds",
+                "type": "uint256[]"
+            },
+            {
+                "internalType": "address[]",
+                "name": "_newUserAddresses",
+                "type": "address[]"
+            },
+            {
+                "internalType": "bytes[]",
+                "name": "_signatures",
+                "type": "bytes[]"
+            }
+        ],
+        "name": "claimReward",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "type": "function",
+        "stateMutability": "view",
+        "outputs": [
+            {
+                "type": "uint256",
+                "name": "",
+                "internalType": "uint256"
+            }
+        ],
+        "name": "campaignReferralLinks",
+        "inputs": [
+            {
+                "type": "uint256",
+                "name": "_campaignId",
+                "internalType": "uint256"
+            },
+            {
+                "type": "address",
+                "name": "_senderAddress",
+                "internalType": "address"
+            }
+        ]
+    },
+    {
+        "type": "function",
+        "stateMutability": "view",
+        "outputs": [
+            {
+                "type": "address",
+                "name": "token",
+                "internalType": "contract IERC20"
+            },
+            {
+                "type": "uint256",
+                "name": "balance",
+                "internalType": "uint256"
+            },
+            {
+                "type": "CampaignState",
+                "name": "state",
+                "internalType": "CampaignState"
+            },
+            {
+                "type": "uint256",
+                "name": "startTime",
+                "internalType": "uint256"
+            },
+            {
+                "type": "uint256",
+                "name": "endTime",
+                "internalType": "uint256"
+            },
+            {
+                "type": "uint256",
+                "name": "rewardAmount",
+                "internalType": "uint256"
+            },
+            {
+                "type": "uint256",
+                "name": "maxReferralLinks",
+                "internalType": "uint256"
+            }
+        ],
+        "name": "campaigns",
+        "inputs": [
+            {
+                "type": "uint256",
+                "name": "_campaignId",
+                "internalType": "uint256"
+            }
+        ]
+    }
+]

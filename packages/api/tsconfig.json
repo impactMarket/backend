@@ -22,7 +22,8 @@
             "~validators/*": ["validators/*"],
             "~middlewares/*": ["middlewares/*"],
             "~services/*": ["services/*"],
-            "~utils/*": ["utils/*"]
+            "~utils/*": ["utils/*"],
+            "~config/*": ["config/*"]
         }
     },
     "include": ["src"],

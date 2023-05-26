@@ -34,6 +34,7 @@ function validateEnv() {
         }),
         JWT_SECRET: str({ devDefault: onlyOnTestEnv('xyz') }),
         CUSD_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
+        REFERRAL_LINK_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         IMPACT_MARKET_CONTRACT_ADDRESS: str({
             devDefault: onlyOnTestEnv('xyz'),
         }),
@@ -112,6 +113,8 @@ function validateEnv() {
         CHAIN_JSON_RPC_URL_CELO: str({ devDefault: onlyOnTestEnv('xyz') }),
         // hot wallets
         HOT_WALLET_CHECK_BALANCE: str({ devDefault: onlyOnTestEnv('xyz') }),
+        // signers
+        SIGNERS_REFERRAL_LINK: str({ devDefault: onlyOnTestEnv('xyz') }),
     });
 }
 

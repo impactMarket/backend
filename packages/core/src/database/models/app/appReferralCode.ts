@@ -5,6 +5,7 @@ import {
     AppReferralCodeCreation,
 } from '../../../interfaces/app/appReferralCode';
 import { DbModels } from '../../../database/db';
+import { AppUserModel } from './appUser';
 
 export class AppReferralCodeModel extends Model<
     AppReferralCode,
@@ -14,6 +15,8 @@ export class AppReferralCodeModel extends Model<
     public code!: string;
     public campaignId!: number;
     public userId!: number;
+
+    public readonly user?: AppUserModel;
 }
 
 export function initializeAppReferralCode(sequelize: Sequelize): void {

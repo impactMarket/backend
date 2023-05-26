@@ -73,6 +73,7 @@ export default {
         ido: validatedEnv.IDO_CONTRACT_ADDRESS,
         treasury: validatedEnv.TREASURY_CONTRACT_ADDRESS,
         learnAndEarn: validatedEnv.LEARN_AND_EARN_CONTRACT_ADDRESS,
+        referralLink: validatedEnv.REFERRAL_LINK_CONTRACT_ADDRESS,
     },
     DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
     communityAdminAddress: validatedEnv.COMMUNITY_ADMIN_ADDRESS,
@@ -278,4 +279,11 @@ export default {
      * they have enough balance to perform the operations
      */
     hotWalletsCheckBalance: validatedEnv.HOT_WALLET_CHECK_BALANCE,
+
+    /**
+     * Variables for signers
+     */
+    signers: {
+        referralLink: validatedEnv.SIGNERS_REFERRAL_LINK,
+    }
 };
