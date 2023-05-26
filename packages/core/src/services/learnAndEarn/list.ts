@@ -142,6 +142,7 @@ export async function listLevels(
                     attributes: [],
                     model: models.learnAndEarnPrismicLesson,
                     as: 'lesson',
+                    required: false,
                     duplicating: false,
                     where: {
                         ...(process.env.API_ENVIRONMENT === 'production'
@@ -316,21 +317,12 @@ export async function listLessons(levelId: number | string, userId?: number, lan
         const daysAgo = new Date();
         daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
         const completedToday = await models.learnAndEarnUserLesson.count({
-            include: [
-                {
-                    model: models.learnAndEarnLesson,
-                    as: 'lesson',
-                    required: true,
-                    where: {
-                        levelId,
-                    },
-                },
-            ],
             where: {
                 completionDate: {
                     [Op.gte]: daysAgo.setHours(0, 0, 0, 0),
                 },
                 userId,
+                levelId,
             },
         });
 

@@ -59,6 +59,7 @@ export function initializeLearnAndEarnUserLevel(
             createdAt: {
                 type: DataTypes.DATE,
                 allowNull: false,
+                defaultValue: DataTypes.NOW,
             },
         },
         {
