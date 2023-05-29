@@ -4,6 +4,7 @@ import { keccak256 } from '@ethersproject/keccak256';
 import { Wallet } from '@ethersproject/wallet';
 import BigNumber from 'bignumber.js';
 import { literal, Op, fn, col, Transaction } from 'sequelize';
+import { client as prismic } from '../../utils/prismic';
 
 import config from '../../config';
 import { models, sequelize } from '../../database';
@@ -13,11 +14,11 @@ async function countAvailableLessons(
     levelId: number,
     userId: number
 ): Promise<number> {
-    const availableLessons = (await models.learnAndEarnLesson.findAll({
+    const availableLessons = (await models.learnAndEarnPrismicLesson.findAll({
         attributes: [
             [
                 literal(
-                    `count(*) FILTER (WHERE "userLesson".status = 'available' or "userLesson".status is null)`
+                    `count(distinct "learnAndEarnPrismicLesson"."lessonId") FILTER (WHERE "userLesson".status = 'available' or "userLesson".status is null)`
                 ),
                 'available',
             ],
@@ -35,46 +36,11 @@ async function countAvailableLessons(
         ],
         where: {
             levelId,
-            active: true,
         },
         raw: true,
     })) as any;
 
     return parseInt(availableLessons[0].available, 10);
-}
-
-async function countAvailableLevels(
-    categoryId: number,
-    userId: number
-): Promise<number> {
-    const availableLevels = (await models.learnAndEarnLevel.findAll({
-        attributes: [
-            [
-                literal(
-                    `count(*) FILTER (WHERE "userLevel".status = 'available' or "userLevel".status is null)`
-                ),
-                'available',
-            ],
-        ],
-        include: [
-            {
-                attributes: [],
-                model: models.learnAndEarnUserLevel,
-                as: 'userLevel',
-                where: {
-                    userId,
-                },
-                required: false,
-            },
-        ],
-        where: {
-            active: true,
-            categoryId,
-        },
-        raw: true,
-    })) as any;
-
-    return parseInt(availableLevels[0].available, 10);
 }
 
 async function getTotalPoints(
@@ -83,18 +49,9 @@ async function getTotalPoints(
 ): Promise<number> {
     const totalPoints = (await models.learnAndEarnUserLesson.findAll({
         attributes: [[literal(`sum(points)`), 'total']],
-        include: [
-            {
-                attributes: [],
-                model: models.learnAndEarnLesson,
-                as: 'lesson',
-                where: {
-                    levelId,
-                },
-            },
-        ],
         where: {
             userId,
+            levelId,
         },
         raw: true,
     })) as any;
@@ -136,10 +93,11 @@ async function calculateReward(
         },
     });
     const previousPoints = await getTotalPoints(userId, levelId);
-    const totalLessons = await models.learnAndEarnLesson.count({
+    const totalLessons = await models.learnAndEarnPrismicLesson.count({
+        distinct: true,
+        col: 'lessonId',
         where: {
             levelId,
-            active: true,
         },
     });
     const totalPointsEarned = previousPoints + points;
@@ -168,17 +126,17 @@ async function calculateReward(
 export async function answer(
     user: { userId: number; address: string },
     answers: number[],
-    lessonId: number
+    prismicId: string
 ) {
     const t = await sequelize.transaction();
     try {
         const daysAgo = new Date();
         daysAgo.setDate(daysAgo.getDate() - config.intervalBetweenLessons);
         
-        const lessonRegistry = await models.learnAndEarnLesson.findOne({
-            attributes: ['levelId'],
+        const lessonRegistry = await models.learnAndEarnPrismicLesson.findOne({
+            attributes: ['lessonId', 'levelId'],
             where: {
-                id: lessonId,
+                prismicId,
             },
         });
 
@@ -191,21 +149,12 @@ export async function answer(
 
         // check if already completed a lesson today
         const concludedLessons = await models.learnAndEarnUserLesson.count({
-            include: [
-                {
-                    model: models.learnAndEarnLesson,
-                    as: 'lesson',
-                    required: true,
-                    where: {
-                        levelId: lessonRegistry.levelId,
-                    },
-                },
-            ],
             where: {
                 completionDate: {
                     [Op.gte]: daysAgo.setHours(0, 0, 0, 0),
                 },
                 userId: user.userId,
+                levelId: lessonRegistry.levelId,
             },
         });
 
@@ -216,21 +165,23 @@ export async function answer(
             );
         }
 
-        const quizzes = await models.learnAndEarnQuiz.findAll({
-            where: {
-                lessonId,
-                active: true,
-            },
-            order: ['order'],
+        const prismicLesson = await prismic.getByID(prismicId, {
+            lang: '*',
         });
 
-        if (!quizzes || !quizzes.length) {
-            throw new BaseError('QUIZ_NOT_FOUND', 'quiz not found');
+
+        if (!prismicLesson) {
+            throw new BaseError(
+                'LESSON_NOT_FOUND',
+                'lesson not found for the given id'
+            );
         }
 
+        const rightAnswers = prismicLesson.data.questions.map((question) => question.items.findIndex((item) => item['is-correct']));
+
+        // get wrong answers
         const wrongAnswers = answers.reduce<number[]>((acc, el, index) => {
-            const quiz = quizzes.find((quiz) => quiz.order === index);
-            if (quiz?.answer !== el) {
+            if (rightAnswers[index] !== el) {
                 acc.push(index);
             }
             return acc;
@@ -244,7 +195,8 @@ export async function answer(
                     by: 1,
                     where: {
                         userId: user.userId,
-                        lessonId,
+                        lessonId: lessonRegistry.lessonId,
+                        levelId: lessonRegistry.levelId,
                         status: 'started',
                     },
                 }
@@ -261,7 +213,8 @@ export async function answer(
         // completed lesson, calculate points
         const userLesson = await models.learnAndEarnUserLesson.findOne({
             where: {
-                lessonId,
+                lessonId: lessonRegistry.lessonId,
+                levelId: lessonRegistry.levelId,
                 userId: user.userId,
             },
         });
@@ -300,19 +253,17 @@ export async function answer(
             {
                 where: {
                     userId: user.userId,
-                    lessonId,
+                    lessonId: lessonRegistry.lessonId,
+                    levelId: lessonRegistry.levelId,
                 },
                 transaction: t,
             }
         );
 
-        const lesson = await models.learnAndEarnLesson.findOne({
-            where: { id: quizzes[0].lessonId },
-        });
-        const totalPoints = await getTotalPoints(user.userId, lesson!.levelId);
+        const totalPoints = await getTotalPoints(user.userId, lessonRegistry.levelId);
         // verify if all the lessons was completed
         const availableLessons = await countAvailableLessons(
-            lesson!.levelId,
+            lessonRegistry.levelId,
             user.userId
         );
 
@@ -326,7 +277,7 @@ export async function answer(
                 {
                     where: {
                         userId: user.userId,
-                        levelId: lesson!.levelId,
+                        levelId: lessonRegistry.levelId,
                     },
                     transaction: t,
                 }
@@ -334,81 +285,42 @@ export async function answer(
 
             // create signature
             const level = await models.learnAndEarnLevel.findOne({
-                where: { id: lesson!.levelId },
+                attributes: ['rewardLimit'],
+                where: { id: lessonRegistry.levelId },
             });
             const amount = await calculateReward(
                 user.userId,
-                level!.id,
+                lessonRegistry.levelId,
                 points
             );
-            const signature = await signParams(user.address, level!.id, amount);
+            const signature = await signParams(user.address, lessonRegistry.levelId, amount);
 
             // check available reward
             if (level?.rewardLimit) {
                 const payments = await models.learnAndEarnPayment.sum('amount', {
                     where: {
-                        levelId: lesson!.levelId,
+                        levelId: lessonRegistry.levelId,
                     }
                 });
 
                 const reward = (payments || 0) + amount;
 
                 if (level.rewardLimit >= reward) {
-                    await savePayment(user.userId, level!.id, amount, signature, t);
+                    await savePayment(user.userId, lessonRegistry.levelId, amount, signature, t);
                 }
             } else {
-                await savePayment(user.userId, level!.id, amount, signature, t);
+                await savePayment(user.userId, lessonRegistry.levelId, amount, signature, t);
             }
 
-            // verify if the category was completed
-            const availableLevels = await countAvailableLevels(
-                level!.categoryId,
-                user.userId
-            );
-
-            if (availableLevels === 0) {
-                // if so, complete category
-                await models.learnAndEarnUserCategory.update(
-                    {
-                        status: 'completed',
-                        completionDate: new Date(),
-                    },
-                    {
-                        where: {
-                            userId: user.userId,
-                            categoryId: level!.categoryId,
-                        },
-                        transaction: t,
-                    }
-                );
-                const category = await models.learnAndEarnCategory.findOne({
-                    attributes: ['prismicId'],
-                    where: {
-                        id: level!.categoryId,
-                    },
-                });
-                await t.commit();
-
-                return {
-                    success: true,
-                    attempts,
-                    points,
-                    totalPoints: points + totalPoints,
-                    availableLessons,
-                    levelCompleted: level!.prismicId,
-                    categoryCompleted: category!.prismicId,
-                };
-            } else {
-                await t.commit();
-                return {
-                    success: true,
-                    attempts,
-                    points,
-                    totalPoints: points + totalPoints,
-                    availableLessons,
-                    levelCompleted: level!.prismicId,
-                };
-            }
+            await t.commit();
+            return {
+                success: true,
+                attempts,
+                points,
+                totalPoints: points + totalPoints,
+                availableLessons,
+                levelCompleted: lessonRegistry.levelId,
+            };
         } else {
             await t.commit();
             return {

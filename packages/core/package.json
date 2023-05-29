@@ -44,7 +44,7 @@
         "typescript": "5.0.4"
     },
     "dependencies": {
-        "@faker-js/faker": "7.6.0",
+        "@faker-js/faker": "8.0.2",
         "@prismicio/client": "6.7.3",
         "@sendgrid/mail": "7.7.0",
         "@turf/distance": "6.5.0",

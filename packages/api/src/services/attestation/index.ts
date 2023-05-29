@@ -10,7 +10,7 @@ import { Contract } from '@ethersproject/contracts';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { parseEther } from '@ethersproject/units';
 import { Wallet } from '@ethersproject/wallet';
-import { database } from '@impactmarket/core';
+import { database, utils } from '@impactmarket/core';
 import { randomBytes, randomInt } from 'crypto';
 import { Op } from 'sequelize';
 
@@ -19,6 +19,9 @@ import odisABI from './odisABI.json';
 import config from '../../config';
 import { sendEmail } from '../../services/email';
 import { sendSMS } from '../sms';
+
+const { client: prismic } = utils.prismic;
+const { locales } = utils;
 
 interface IOdisPaymentsContract extends Contract {
     payInCUSD(account: string, value: BigNumber): Promise<TransactionResponse>;
@@ -195,14 +198,33 @@ export const send = async (
 ) => {
     let code = '';
 
+    const user = await database.models.appUser.findOne({
+        attributes: ['language'],
+        where: { id: userId },
+    });
+    const locale = locales.find(({ shortCode }) => user?.language.toLowerCase() === shortCode.toLowerCase())?.code;
     if (type === AttestationType.PHONE_NUMBER) {
         code = randomInt(1000, 9999).toString();
 
-        // TODO: add message per language
-        const body = 'Your verification code is: ' + code + '. - impactMarket';
+        const response = await prismic.getAllByType('push_notifications_data', {
+            lang: locale || 'en-US',
+        });
+        let smsPhoneValidationMessage: string | undefined;
+        if (response.length > 0) {
+            const data = response[0].data;
+            smsPhoneValidationMessage = data['sms-phone-validation-message'];
+        }
+        if (!smsPhoneValidationMessage) {
+            const response = await prismic.getAllByType('push_notifications_data', {
+                lang: 'en-US',
+            });
+            const data = response[0].data;
+            smsPhoneValidationMessage = data['sms-phone-validation-message'];
+        }
+        const body = smsPhoneValidationMessage!.replace('{{code}}', code);
+
         sendSMS(plainTextIdentifier, body);
 
-        //
         await database.models.appUser.update(
             {
                 phone: plainTextIdentifier,
@@ -212,17 +234,34 @@ export const send = async (
     } else if (type === AttestationType.EMAIL) {
         code = randomBytes(4).toString('hex');
 
-        // TODO: add message per language
-        const body = 'Your verification code is: ' + code + '. - impactMarket';
+        const response = await prismic.getAllByType('push_notifications_data', {
+            lang: locale || 'en-US',
+        });
+        let emailValidationSubject: string | undefined;
+        let emailValidationBody: string | undefined;
+        if (response.length > 0) {
+            const data = response[0].data;
+            emailValidationSubject = data['email-validation-subject'];
+            emailValidationBody = data['email-validation-body'];
+        }
+        if (!emailValidationSubject || !emailValidationBody) {
+            const response = await prismic.getAllByType('push_notifications_data', {
+                lang: 'en-US',
+            });
+            const data = response[0].data;
+            emailValidationSubject = data['email-validation-subject'];
+            emailValidationBody = data['email-validation-body'];
+        }
+        const body = emailValidationBody!.replace('{{code}}', code);
+
         sendEmail({
             to: plainTextIdentifier,
             // TODO: move to env
             from: 'hello@impactmarket.com',
-            subject: 'impactMarket - Verification Code',
+            subject: emailValidationSubject,
             text: body,
         });
 
-        //
         await database.models.appUser.update(
             {
                 email: plainTextIdentifier,

@@ -9,6 +9,13 @@ type Asset = {
 };
 
 export const getGlobalData = async (): Promise<{
+    borrowed: number;
+    debt: number;
+    repaid: number;
+    interest: number;
+    loans: number;
+    repaidLoans: number;
+    liquidity: number;
     totalBorrowed: number;
     currentDebt: number;
     paidBack: number;
@@ -40,8 +47,8 @@ export const getGlobalData = async (): Promise<{
                         asset
                         amount
                     }
-                    borrowers
-                    repayments
+                    loans
+                    repaidLoans
                     liquidity {
                         asset
                         amount
@@ -60,8 +67,8 @@ export const getGlobalData = async (): Promise<{
                             debt: Asset[];
                             repaid: Asset[];
                             interest: Asset[];
-                            borrowers: number;
-                            repayments: number;
+                            loans: number;
+                            repaidLoans: number;
                             liquidity: Asset[];
                         };
                     };
@@ -71,32 +78,159 @@ export const getGlobalData = async (): Promise<{
 
         const microCredit = response.data?.data.microCredit;
 
-        return {
-            totalBorrowed:
-                microCredit.borrowed && microCredit.borrowed.length
-                    ? parseFloat(microCredit.borrowed[0].amount)
-                    : 0,
-            currentDebt:
-                microCredit.debt && microCredit.debt.length
-                    ? parseFloat(microCredit.debt[0].amount)
-                    : 0,
-            paidBack:
-                microCredit.repaid && microCredit.repaid.length
-                    ? parseFloat(microCredit.repaid[0].amount)
-                    : 0,
-            earnedInterest:
-                microCredit.interest && microCredit.interest.length
-                    ? parseFloat(microCredit.interest[0].amount)
-                    : 0,
-            activeBorrowers: microCredit.borrowers ? microCredit.borrowers : 0,
-            totalDebitsRepaid: microCredit.repayments
-                ? microCredit.repayments
-                : 0,
-            liquidityAvailable:
-                microCredit.liquidity && microCredit.liquidity.length
-                    ? parseFloat(microCredit.liquidity[0].amount)
-                    : 0,
+        const borrowed =
+            microCredit.borrowed && microCredit.borrowed.length
+                ? parseFloat(microCredit.borrowed[0].amount)
+                : 0;
+        const debt =
+            microCredit.debt && microCredit.debt.length
+                ? parseFloat(microCredit.debt[0].amount)
+                : 0;
+        const repaid =
+            microCredit.repaid && microCredit.repaid.length
+                ? parseFloat(microCredit.repaid[0].amount)
+                : 0;
+        const interest =
+            microCredit.interest && microCredit.interest.length
+                ? parseFloat(microCredit.interest[0].amount)
+                : 0;
+        const loans = microCredit.loans ? microCredit.loans : 0;
+        const repaidLoans = microCredit.repaidLoans
+            ? microCredit.repaidLoans
+            : 0;
+
+        // TODO: this should be removed onde the website is updated
+        const backwardsSupport: any = {
+            totalBorrowed: borrowed,
+            currentDebt: debt,
+            paidBack: repaid,
+            earnedInterest: interest,
+            activeBorrowers: loans,
+            totalDebitsRepaid: repaidLoans,
+            liquidityAvailable: 0,
         };
+
+        return {
+            borrowed,
+            debt,
+            repaid,
+            interest,
+            loans,
+            repaidLoans,
+            liquidity: 0,
+            ...backwardsSupport,
+        };
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
+export const getMicroCreditStatsLastDays = async (
+    fromDayId: number,
+    toDayId: number
+): Promise<{
+    borrowed: number;
+    debt: number;
+    repaid: number;
+    interest: number;
+}> => {
+    try {
+        const graphqlQuery = {
+            operationName: 'microCredit',
+            query: `query microCredit {
+                microCredits(
+                    where: {
+                      id_gte: ${fromDayId}
+                      id_lt: ${toDayId}
+                    }
+                ) {
+                    borrowed {
+                        asset
+                        amount
+                    }
+                    debt {
+                        asset
+                        amount
+                    }
+                    repaid {
+                        asset
+                        amount
+                    }
+                    interest {
+                        asset
+                        amount
+                    }
+                }
+            }`,
+        };
+
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosMicrocreditSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        microCredits: {
+                            borrowed: Asset[];
+                            debt: Asset[];
+                            repaid: Asset[];
+                            interest: Asset[];
+                        }[];
+                    };
+                };
+            }
+        >('', graphqlQuery);
+
+        const microCredits = response.data?.data.microCredits;
+
+        const borrowed = microCredits.reduce((acc, curr) => {
+            if (curr.borrowed && curr.borrowed.length) {
+                return acc + parseFloat(curr.borrowed[0].amount);
+            }
+            return acc;
+        }, 0);
+
+        const debt = microCredits.reduce((acc, curr) => {
+            if (curr.debt && curr.debt.length) {
+                return acc + parseFloat(curr.debt[0].amount);
+            }
+            return acc;
+        }, 0);
+
+        const repaid = microCredits.reduce((acc, curr) => {
+            if (curr.repaid && curr.repaid.length) {
+                return acc + parseFloat(curr.repaid[0].amount);
+            }
+            return acc;
+        }, 0);
+
+        const interest = microCredits.reduce((acc, curr) => {
+            if (curr.interest && curr.interest.length) {
+                return acc + parseFloat(curr.interest[0].amount);
+            }
+            return acc;
+        }, 0);
+
+        const stats = {
+            borrowed,
+            debt,
+            repaid,
+            interest,
+        };
+
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(stats),
+            'EX',
+            intervalsInSeconds.twoMins
+        );
+
+        return stats;
     } catch (error) {
         throw new Error(error);
     }
@@ -115,7 +249,7 @@ export const getBorrowers = async (query: {
             period: number;
             dailyInterest: number;
             claimed: number;
-            repayed: string;
+            repaid: string;
             lastRepayment: number;
             lastRepaymentAmount: string;
             lastDebt: string;
@@ -137,13 +271,17 @@ export const getBorrowers = async (query: {
                         }"
                         ${query.claimed ? `claimed_not: null` : ''}
                     }
-                    ${query.claimed ? `orderBy: claimed orderDirection: desc` : ''}
+                    ${
+                        query.claimed
+                            ? `orderBy: claimed orderDirection: desc`
+                            : ''
+                    }
                 ) {
                     amount
                     period
                     dailyInterest
                     claimed
-                    repayed
+                    repaid
                     lastRepayment
                     lastRepaymentAmount
                     lastDebt
@@ -170,7 +308,7 @@ export const getBorrowers = async (query: {
                             period: number;
                             dailyInterest: number;
                             claimed: number;
-                            repayed: string;
+                            repaid: string;
                             lastRepayment: number;
                             lastRepaymentAmount: string;
                             lastDebt: string;
@@ -195,7 +333,10 @@ export const getBorrowers = async (query: {
     return borrowers;
 };
 
-export const getLoanRepayments = async (userAddress: string, loanId: number): Promise<number> => {
+export const getLoanRepayments = async (
+    userAddress: string,
+    loanId: number
+): Promise<number> => {
     const graphqlQuery = {
         operationName: 'loan',
         query: `query loan {
@@ -234,4 +375,4 @@ export const getLoanRepayments = async (userAddress: string, loanId: number): Pr
     );
 
     return loanRepayments;
-}
+};

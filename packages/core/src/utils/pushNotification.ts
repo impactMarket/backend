@@ -6,9 +6,11 @@ import { NotificationType } from '../interfaces/app/appNotification';
 import { models } from '../database';
 import { AppUserModel } from '../database/models/app/appUser';
 import localesConfig from '../utils/locale.json';
+// it needs to be imported this way, or the initialize will fail
 import admin from 'firebase-admin';
 import { AppUser } from '../interfaces/app/appUser';
-import { utils } from '../..';
+import { utils } from '../../index';
+import { Logger } from './logger';
 
 export async function sendNotification(
     users: AppUserModel[],
@@ -38,27 +40,28 @@ export async function sendNotification(
 
     // mount notification object with title and description from prismic and users by language
     const prismicNotifications: { [language:string]: { title: string, description: string, users: AppUser[] } } = {};
-    const fetchMessagesFromPrismic = languages.map(async language => {
+
+    const fetchNotificationsFromPrismic = async (language: string) => {
         const locale = localesConfig.find(({ shortCode }) => language === shortCode.toLowerCase())?.code;
         const defaultLocale = localesConfig.find(({ isDefault }) => isDefault)?.code;
 
         // get prismic document
-        const response = await prismic.getAllByType('pwa-view-notifications', {
+        const response = await prismic.getAllByType('push_notifications_data', {
             lang: locale || defaultLocale,
         });
         const data = response[0].data;
-        const title = data[`message-type${type}Title`][0].text;
-        const description = data[`message-type${type}Description`][0].text;
-
+        const title = data[`type${type}title`];
+        const description = data[`type${type}description`];
+        
         prismicNotifications[language] = {
             title,
             description,
             users: users.filter(el => el.language === language),
         };
-    });
-
-    await Promise.all(fetchMessagesFromPrismic);
-
+    };
+    
+    await Promise.all(languages.map(fetchNotificationsFromPrismic));
+    
     // send notification by group of languages
     Object.keys(prismicNotifications).forEach(async key => {
         let prismicData = prismicNotifications[key];
@@ -80,25 +83,28 @@ export async function sendFirebasePushNotification(tokens: string[], title: stri
                 tokens: tokens_batch,
             };
             
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount as any)
-            });
-            
-            admin
-                .messaging()
-                .sendMulticast(message)
-                .then(response => {
-                    console.log('Successfully sent message:', response);
-                })
-                .catch(error => {
-                    console.error('Error sending message:', error);
-                });
+            admin.messaging()
+                .sendEachForMulticast(message, process.env.NODE_ENV === 'developement')
+                .then(Logger.info)
+                .catch(Logger.error);
 
             if (i + batch > tokens.length) {
                 break;
             }
         }
     } catch (error) {
-        console.error('Push notification failed');
+        Logger.error('Push notification failed', error);
+    }
+}
+
+export function initPushNotificationService() {
+    try {
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount as any)
+        });
+    
+        Logger.info('🔔 Push notification service initialized');
+    } catch (error) {
+        Logger.error('Push notification service failed to initialize', error);
     }
 }
