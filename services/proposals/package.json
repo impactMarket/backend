@@ -13,8 +13,8 @@
     "dependencies": {
         "@impactmarket/core": "1.0.0",
         "@prismicio/client": "6.7.3",
-        "axios": "0.21.1",
-        "ethers": "5.5.1"
+        "axios": "1.4.0",
+        "ethers": "5.7.2"
     },
     "devDependencies": {
         "serverless-bundle": "fancywriter/serverless-bundle#c53aa061ed83f683dbb665f9734fc1dca624788a"

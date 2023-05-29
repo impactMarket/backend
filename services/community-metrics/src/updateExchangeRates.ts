@@ -9,7 +9,7 @@ async function updateExchangeRates(): Promise<void> {
     const latestRates = query.data.rates;
     for (const currency in latestRates) {
         const rate = latestRates[currency];
-        await database.models.exchangeRates.update(
+        await database.models.appExchangeRates.update(
             {
                 rate,
             },

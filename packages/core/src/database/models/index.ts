@@ -10,7 +10,7 @@ import { initializeAppProposal } from './app/appProposal';
 import { initializeAppUser } from './app/appUser';
 import { initializeAppUserValidationCode } from './app/appUserValidationCode';
 import { initializeCronJobExecuted } from './app/cronJobExecuted';
-import { initializeExchangeRates } from './app/exchangeRates';
+import { initializeAppExchangeRates } from './app/exchangeRates';
 import { initializeImMetadata } from './app/imMetadata';
 import { communityAssociation } from './associations/community';
 import { learnAndEarnAssociation } from './associations/learnAndEarn';
@@ -59,7 +59,7 @@ import { initializeWalletAirdropUser } from './walletAirdrop/walletAirdropUser';
 export default function initModels(sequelize: Sequelize): void {
     // app
     initializeAppUser(sequelize);
-    initializeExchangeRates(sequelize);
+    initializeAppExchangeRates(sequelize);
     initializeImMetadata(sequelize);
     initializeAppAnonymousReport(sequelize);
     initializeCronJobExecuted(sequelize);

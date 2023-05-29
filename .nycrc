@@ -8,7 +8,6 @@
         "packages/core/src/utils/logger.ts",
         "packages/core/src/services/transactions.ts",
         "packages/core/tests",
-        "packages/worker/tests",
         "packages/api/tests"
     ]
 }
