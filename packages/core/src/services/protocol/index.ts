@@ -13,7 +13,7 @@ export default class ProtocolService {
 
         const estimatedMaturity = 0; // (paid back in the past 3 months / 3 / current debt)
         const avgBorrowedAmount = Math.round(
-            subgraphData.totalBorrowed / subgraphData.activeBorrowers
+            subgraphData.borrowed / subgraphData.loans
         );
         const apr = 0; // (paid back past 7 months - borrowed past 7 months) / borrowed past 7 months / 7 * 12
 
