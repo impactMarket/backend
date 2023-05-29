@@ -118,6 +118,117 @@ export const getGlobalData = async (): Promise<{
     }
 };
 
+export const getMicroCreditStatsLastDays = async (
+    fromDayId: number,
+    toDayId: number
+): Promise<{
+    borrowed: number;
+    debt: number;
+    repaid: number;
+    interest: number;
+}> => {
+    try {
+        const graphqlQuery = {
+            operationName: 'microCredit',
+            query: `query microCredit {
+                microCredits(
+                    where: {
+                      id_gte: ${fromDayId}
+                      id_lt: ${toDayId}
+                    }
+                ) {
+                    borrowed {
+                        asset
+                        amount
+                    }
+                    debt {
+                        asset
+                        amount
+                    }
+                    repaid {
+                        asset
+                        amount
+                    }
+                    interest {
+                        asset
+                        amount
+                    }
+                }
+            }`,
+        };
+
+        const cacheResults = await redisClient.get(graphqlQuery.query);
+
+        if (cacheResults) {
+            return JSON.parse(cacheResults);
+        }
+
+        const response = await axiosMicrocreditSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        microCredits: {
+                            borrowed: Asset[];
+                            debt: Asset[];
+                            repaid: Asset[];
+                            interest: Asset[];
+                        }[];
+                    };
+                };
+            }
+        >('', graphqlQuery);
+
+        const microCredits = response.data?.data.microCredits;
+
+        const borrowed = microCredits.reduce((acc, curr) => {
+            if (curr.borrowed && curr.borrowed.length) {
+                return acc + parseFloat(curr.borrowed[0].amount);
+            }
+            return acc;
+        }, 0);
+
+        const debt = microCredits.reduce((acc, curr) => {
+            if (curr.debt && curr.debt.length) {
+                return acc + parseFloat(curr.debt[0].amount);
+            }
+            return acc;
+        }, 0);
+
+        const repaid = microCredits.reduce((acc, curr) => {
+            if (curr.repaid && curr.repaid.length) {
+                return acc + parseFloat(curr.repaid[0].amount);
+            }
+            return acc;
+        }, 0);
+
+        const interest = microCredits.reduce((acc, curr) => {
+            if (curr.interest && curr.interest.length) {
+                return acc + parseFloat(curr.interest[0].amount);
+            }
+            return acc;
+        }, 0);
+
+        const stats = {
+            borrowed,
+            debt,
+            repaid,
+            interest,
+        };
+
+        redisClient.set(
+            graphqlQuery.query,
+            JSON.stringify(stats),
+            'EX',
+            intervalsInSeconds.twoMins
+        );
+
+        return stats;
+    } catch (error) {
+        throw new Error(error);
+    }
+};
+
 export const getBorrowers = async (query: {
     offset?: number;
     limit?: number;
