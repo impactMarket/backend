@@ -11,7 +11,7 @@ class GenericController {
     }
 
     exchangeRates = (req: Request, res: Response) => {
-        database.models.exchangeRates
+        database.models.appExchangeRates
             .findAll({
                 attributes: ['currency', 'rate'],
             })

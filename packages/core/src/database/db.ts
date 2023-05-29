@@ -10,7 +10,7 @@ import { AppProposalModel } from './models/app/appProposal';
 import { AppUserModel } from './models/app/appUser';
 import { AppUserValidationCodeModel } from './models/app/appUserValidationCode';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
-import { ExchangeRates } from './models/app/exchangeRates';
+import { AppExchangeRates } from './models/app/exchangeRates';
 import { ImMetadata } from './models/app/imMetadata';
 import { ExchangeRegistryModel } from './models/exchange/exchangeRegistry';
 import { GlobalDailyState } from './models/global/globalDailyState';
@@ -58,7 +58,7 @@ export type DbModels = {
     appClientCredential: ModelStatic<AppClientCredentialModel>;
     appAnonymousReport: ModelStatic<AppAnonymousReportModel>;
     cronJobExecuted: ModelStatic<CronJobExecuted>;
-    exchangeRates: ModelStatic<ExchangeRates>;
+    appExchangeRates: ModelStatic<AppExchangeRates>;
     imMetadata: ModelStatic<ImMetadata>;
     appNotification: ModelStatic<AppNotificationModel>;
     appUserValidationCode: ModelStatic<AppUserValidationCodeModel>;
