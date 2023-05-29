@@ -27,7 +27,7 @@
         "axios": "0.24.0",
         "bignumber.js": "9.0.0",
         "cron": "2.3.0",
-        "ethers": "5.5.1",
+        "ethers": "6.4.0",
         "graphql-tag": "^2.12.6",
         "mathjs": "11.8.0",
         "module-alias": "2.2.2",
