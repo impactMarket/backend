@@ -16,6 +16,13 @@ export const getGlobalData = async (): Promise<{
     loans: number;
     repaidLoans: number;
     liquidity: number;
+    totalBorrowed: number;
+    currentDebt: number;
+    paidBack: number;
+    earnedInterest: number;
+    activeBorrowers: number;
+    totalDebitsRepaid: number;
+    liquidityAvailable: number;
 }> => {
     try {
         const graphqlQuery = {
