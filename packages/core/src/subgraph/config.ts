@@ -23,15 +23,16 @@ const axiosMicrocreditSubgraph = axios.create({
     },
     timeout: 4000,
 });
-axiosRetry(axiosSubgraph, {
+// TODO: " as any" is a temporary solution to deploy to heroku
+axiosRetry(axiosSubgraph as any, {
     retries: 3,
     retryDelay: axiosRetry.exponentialDelay,
 });
-axiosRetry(axiosCouncilSubgraph, {
+axiosRetry(axiosCouncilSubgraph as any, {
     retries: 3,
     retryDelay: axiosRetry.exponentialDelay,
 });
-axiosRetry(axiosMicrocreditSubgraph, {
+axiosRetry(axiosMicrocreditSubgraph as any, {
     retries: 3,
     retryDelay: axiosRetry.exponentialDelay,
 });
