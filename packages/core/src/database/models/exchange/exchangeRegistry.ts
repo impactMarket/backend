@@ -3,18 +3,26 @@ import { Sequelize, DataTypes, Model } from 'sequelize';
 export interface ExchangeRegistry {
     id: number;
     name: string;
+    description: string;
+    logoUrl: string | null;
     countries: string[];
     global: boolean;
     customImplementation: string | null;
+    iframeUrl: string | null;
+    fee: number | null;
     createdAt: Date;
     updatedAt: Date;
 }
 
 export interface ExchangeRegistryCreationAttributes {
     name: string;
-    global: boolean;
+    description: string;
+    logoUrl: string | null;
     countries: string[];
+    global: boolean;
     customImplementation?: string;
+    iframeUrl?: string;
+    fee?: number;
 }
 
 export class ExchangeRegistryModel extends Model<
@@ -23,9 +31,13 @@ export class ExchangeRegistryModel extends Model<
 > {
     public id!: number;
     public name!: string;
+    public description!: string;
+    public logoUrl!: string | null;
     public countries!: string[];
     public global!: boolean;
     public customImplementation!: string | null;
+    public iframeUrl!: string | null;
+    public fee!: number | null;
 
     // timestamps!
     public createdAt!: Date;
@@ -46,17 +58,33 @@ export function initializeExchangeRegistry(
                 type: DataTypes.STRING(64),
                 allowNull: false,
             },
-            global: {
-                type: DataTypes.BOOLEAN,
+            description: {
+                type: DataTypes.STRING(256),
                 allowNull: false,
-                defaultValue: false,
+            },
+            logoUrl: {
+                type: DataTypes.STRING(256),
+                allowNull: true,
             },
             countries: {
                 type: DataTypes.ARRAY(DataTypes.STRING(2)),
                 allowNull: true,
             },
+            global: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
             customImplementation: {
                 type: DataTypes.STRING(16),
+                allowNull: true,
+            },
+            iframeUrl: {
+                type: DataTypes.STRING(256),
+                allowNull: true,
+            },
+            fee: {
+                type: DataTypes.FLOAT,
                 allowNull: true,
             },
             createdAt: {

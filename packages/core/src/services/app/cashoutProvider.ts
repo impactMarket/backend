@@ -1,10 +1,13 @@
 import distance from '@turf/distance';
 import { point } from '@turf/helpers';
-import { Op, literal } from 'sequelize';
+import { Op, WhereOptions, literal } from 'sequelize';
 
 import { models } from '../../database';
 import { ExchangeRegistry } from '../../database/models/exchange/exchangeRegistry';
-import { MerchantRegistry } from '../../database/models/merchant/merchantRegistry';
+import {
+    MerchantRegistry,
+    MerchantRegistryModel,
+} from '../../database/models/merchant/merchantRegistry';
 
 export default class CashoutProviderService {
     public async get(query: {
@@ -13,86 +16,90 @@ export default class CashoutProviderService {
         lng?: string;
         distance?: string;
     }) {
-        let merchants: MerchantRegistry[] | null = null,
-            exchanges: ExchangeRegistry[] | null = null;
+        let rawMerchants: MerchantRegistryModel[] | null = null;
+        let merchants: MerchantRegistry[] | null = null;
 
         if (!query || (!query.country && !query.lat && !query.lng)) {
-            merchants = await models.merchantRegistry.findAll({
+            rawMerchants = await models.merchantRegistry.findAll({
                 limit: 5,
                 order: [['createdAt', 'DESC']],
             });
-            exchanges = await models.exchangeRegistry.findAll({
+            const exchanges = await models.exchangeRegistry.findAll({
                 limit: 5,
                 order: [['createdAt', 'DESC']],
             });
 
             return {
-                merchants,
-                exchanges,
+                merchants: rawMerchants.map((merchant) => merchant.toJSON()),
+                exchanges: exchanges.map((exchange) => exchange.toJSON()),
             };
         }
 
+        let exchangesWhere: WhereOptions<ExchangeRegistry> = {
+            global: true,
+        };
+
         if (query.country) {
-            const where: any = {
+            exchangesWhere = {
                 [Op.or]: [
                     literal(`'${query.country}' = ANY(countries)`),
                     { global: true },
                 ],
             };
 
-            merchants = await models.merchantRegistry.findAll({
+            rawMerchants = await models.merchantRegistry.findAll({
                 where: {
                     country: query.country,
                 },
             });
-
-            exchanges = await models.exchangeRegistry.findAll({
-                where,
-                order: ['global'],
-            });
+            if (!query.lat && !query.lng) {
+                merchants = rawMerchants.map((merchant) => merchant.toJSON());
+            }
         }
+
+        const exchanges = await models.exchangeRegistry.findAll({
+            where: exchangesWhere,
+            order: ['global'],
+        });
 
         if (query.lat && query.lng) {
             const userLocation = point([
-                parseInt(query.lng, 10),
-                parseInt(query.lat, 10),
+                parseFloat(query.lng),
+                parseFloat(query.lat),
             ]);
 
-            if (!merchants) {
-                merchants = await models.merchantRegistry.findAll();
+            if (!rawMerchants) {
+                rawMerchants = await models.merchantRegistry.findAll();
             }
 
-            merchants = merchants.filter((merchant) => {
-                const merchantLocation = point([
-                    merchant.gps.longitude,
-                    merchant.gps.latitude,
-                ]);
-                const dist = distance(userLocation, merchantLocation);
-                if (dist < parseInt(query.distance || '100', 10)) {
-                    merchant['distance'] = dist;
-                    return true;
-                }
-            });
-
-            if (!exchanges) {
-                exchanges = await models.exchangeRegistry.findAll({
-                    where: {
-                        global: true,
-                    },
+            merchants = rawMerchants
+                .map((merchant) => {
+                    const merchantLocation = point([
+                        merchant.gps.longitude,
+                        merchant.gps.latitude,
+                    ]);
+                    return {
+                        ...merchant.toJSON(),
+                        distance: distance(userLocation, merchantLocation),
+                    };
+                })
+                .filter(
+                    (merchant) =>
+                        merchant.distance < parseFloat(query.distance || '100')
+                )
+                .sort((x, y) => {
+                    if (x.distance > y.distance) {
+                        return 1;
+                    }
+                    if (x.distance < y.distance) {
+                        return -1;
+                    }
+                    return 0;
                 });
-            }
         }
 
         return {
-            merchants: merchants?.sort((x, y) => {
-                if (x['distance'] > y['distance']) {
-                    return 1;
-                }
-                if (x['distance'] < y['distance']) {
-                    return -1;
-                }
-                return 0;
-            }),
+            merchants,
             exchanges,
         };
     }

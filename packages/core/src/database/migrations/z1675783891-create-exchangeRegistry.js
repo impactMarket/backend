@@ -11,17 +11,33 @@ module.exports = {
                 type: Sequelize.STRING(64),
                 allowNull: false,
             },
-            global: {
-                type: Sequelize.BOOLEAN,
+            description: {
+                type: Sequelize.STRING(256),
                 allowNull: false,
-                defaultValue: false,
+            },
+            logoUrl: {
+                type: Sequelize.STRING(256),
+                allowNull: true,
             },
             countries: {
                 type: Sequelize.ARRAY(Sequelize.STRING(2)),
                 allowNull: true,
             },
+            global: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
             customImplementation: {
                 type: Sequelize.STRING(16),
+                allowNull: true,
+            },
+            iframeUrl: {
+                type: Sequelize.STRING(256),
+                allowNull: true,
+            },
+            fee: {
+                type: Sequelize.FLOAT,
                 allowNull: true,
             },
             createdAt: {
