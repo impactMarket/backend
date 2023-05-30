@@ -69,5 +69,9 @@
         "sequelize": "6.31.1",
         "sequelize-cli": "6.6.0",
         "winston": "3.8.2"
+    },
+    "resolutions": {
+        "axios": "1.4.0",
+        "axios-retry": "3.5.0"
     }
 }
