@@ -12,7 +12,7 @@
     },
     "dependencies": {
         "aws-sdk": "2.1384.0",
-        "axios": "1.4.0"
+        "axios": "0.24.0"
     },
     "devDependencies": {
         "@types/aws-lambda": "8.10.102",
