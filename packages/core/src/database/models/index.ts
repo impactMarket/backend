@@ -55,6 +55,7 @@ import { initializeUbiPromoter } from './ubi/ubiPromoter';
 import { initializeUbiPromoterSocialMedia } from './ubi/ubiPromoterSocialMedia';
 import { initializeWalletAirdropProof } from './walletAirdrop/walletAirdropProof';
 import { initializeWalletAirdropUser } from './walletAirdrop/walletAirdropUser';
+import { initializeMicroCreditDocs } from './microCredit/docs';
 
 export default function initModels(sequelize: Sequelize): void {
     // app
@@ -121,6 +122,9 @@ export default function initModels(sequelize: Sequelize): void {
     initializeLearnAndEarnUserLesson(sequelize);
     initializeLearnAndEarnUserLevel(sequelize);
     initializeLearnAndEarnPayment(sequelize);
+
+    // MicroCredit
+    initializeMicroCreditDocs(sequelize);
 
     // Exchange
     initializeExchangeRegistry(sequelize);

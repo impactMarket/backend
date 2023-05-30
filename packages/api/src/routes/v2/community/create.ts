@@ -94,8 +94,7 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.post(
         '/',
@@ -176,8 +175,7 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.patch(
         '/:id',
@@ -209,8 +207,7 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.put(
         '/:id/review',
@@ -247,8 +244,7 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.put(
         '/:id',

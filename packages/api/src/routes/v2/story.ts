@@ -33,8 +33,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/presigned/:query?',
@@ -71,8 +70,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: "Success"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.post('/', authenticateToken, storyValidator.add, storyController.add);
 
@@ -95,8 +93,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.delete('/:id', authenticateToken, storyController.remove);
 
@@ -145,8 +142,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get('/:id', optionalAuthentication, storyController.getById);
 
@@ -209,8 +205,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/:query?',
@@ -238,8 +233,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.put('/love/:id', authenticateToken, storyController.love);
 
@@ -271,8 +265,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.put(
         '/inapropriate/:id',
@@ -311,8 +304,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get('/:id/comments/:query?', storyController.getComments);
 
@@ -344,8 +336,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.post(
         '/:id/comments',
@@ -379,8 +370,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.delete(
         '/:id/comments/:commentId',

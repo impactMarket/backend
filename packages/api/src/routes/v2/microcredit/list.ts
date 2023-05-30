@@ -1,8 +1,12 @@
 import { Router } from 'express';
 
 import { MicroCreditController } from '../../../controllers/v2/microcredit/list';
-import { listBorrowersValidator, repaymentsHistoryValidator } from '../../../validators/microcredit';
-import { authenticateToken } from '../../../middlewares';
+import {
+    listBorrowersValidator,
+    queryGetBorrowerValidator,
+    repaymentsHistoryValidator
+} from '../../../validators/microcredit';
+import { authenticateToken, onlyAuthorizedRoles, verifySignature } from '../../../middlewares';
 import { cache } from '../../../middlewares/cache-redis';
 import { cacheIntervals } from '../../../utils/api';
 
@@ -34,15 +38,51 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
      */
     route.get(
         '/borrowers/:query?',
         authenticateToken,
+        verifySignature,
+        onlyAuthorizedRoles(['loanManager']),
         listBorrowersValidator,
         cache(cacheIntervals.fiveMinutes),
         controller.listBorrowers
+    );
+
+    /**
+     * @swagger
+     *
+     * /microcredit/borrower:
+     *   get:
+     *     tags:
+     *       - "microcredit"
+     *     summary: "Get borrower data by loan manager"
+     *     parameters:
+     *       - in: query
+     *         name: address
+     *         schema:
+     *           type: string
+     *         required: true
+     *         description: borrower address
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
+     */
+    route.get(
+        '/borrower/:query?',
+        authenticateToken,
+        verifySignature,
+        onlyAuthorizedRoles(['loanManager']),
+        queryGetBorrowerValidator,
+        cache(cacheIntervals.fiveMinutes),
+        controller.getBorrower
     );
 
     /**
@@ -53,6 +93,7 @@ export default (route: Router): void => {
      *     tags:
      *       - "microcredit"
      *     summary: "Get repayments history of a user"
+     *     description: "Gets repayments history of a user, only accessible to the loan manager"
      *     parameters:
      *       - in: query
      *         name: offset
@@ -86,12 +127,15 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/getRepaymentsHistory'
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
      */
     route.get(
         '/repayment-history/:query?',
         authenticateToken,
+        verifySignature,
+        onlyAuthorizedRoles(['loanManager']),
         repaymentsHistoryValidator,
         cache(cacheIntervals.fiveMinutes),
         controller.getRepaymentsHistory

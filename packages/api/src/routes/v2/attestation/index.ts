@@ -40,8 +40,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.post('/', authenticateToken, attestationValidator, attestation);
 };

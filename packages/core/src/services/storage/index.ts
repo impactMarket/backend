@@ -1,18 +1,83 @@
 import config from '../../config';
+import crypto from 'crypto';
 import { AWS } from './aws';
 
+type PreSignedUrlResponse = {
+    uploadURL: string;
+    filename: string;
+    filePath: string;
+};
 enum StorageCategory {
     communityCover,
     promoterLogo,
     story,
     profile,
+    microCredit
 }
 export class ContentStorage {
-    protected _generatedStorageFileName(
-        category: StorageCategory,
-        mimetype: string
-    ): string[] {
+    protected _getContentTypesFromMime(mime: string): string {
+        switch (mime) {
+            // images
+            case 'jpg':
+            case 'jpeg':
+                return 'image/jpeg';
+            case 'png':
+                return 'image/png';
+            case 'avif':
+                return 'image/avif';
+            case 'bmp':
+                return 'image/bmp';
+            case 'svg':
+                return 'image/svg+xml';
+            case 'gif':
+                return 'image/gif';
+            case 'webp':
+                return 'image/webp';
+            case 'tiff':
+                return 'image/tiff';
+            // videos
+            case 'mp4':
+                return 'video/mp4';
+            case 'mpeg':
+                return 'video/mpeg';
+            case 'webm':
+                return 'video/webm';
+            case 'ogv':
+                return 'video/ogg';
+            case '3gp':
+                return 'video/3gpp';
+            case '3g2':
+                return 'video/3gpp2';
+            case 'mov':
+                return 'video/quicktime';
+            case 'avi':
+                return 'video/x-msvideo';
+            // files
+            case 'pdf':
+                return 'application/pdf';
+            default:
+                throw new Error(`Mime type ${mime} not supported`);
+        }
+    }
+
+    protected _getBucketConfig(category: StorageCategory) {
+        switch (category) {
+            case StorageCategory.microCredit:
+                return {
+                    Bucket: config.aws.bucket.microCredit,
+                    ACL: 'private'
+                };
+            default:
+                return {
+                    Bucket: config.aws.bucket.app,
+                    ACL: 'public-read'
+                };
+        }
+    }
+
+    protected _generatedStorageFileName(category: StorageCategory, mimetype: string): string[] {
         // s3 recommends to use file prefix. Works like folders
+        // some buckets do not have folders
         const now = new Date();
         let filePrefix = '';
         switch (category) {
@@ -29,142 +94,61 @@ export class ContentStorage {
                 filePrefix = 'avatar/';
                 break;
         }
-        const filename = `${now.getTime()}${
-            mimetype.length > 0 ? mimetype : '.jpeg'
-        }`;
-        return [`${filePrefix}$${filename}`, filename];
+        const filename = `${now.getTime()}${crypto.randomInt(1000, 9999)}${mimetype}`;
+        return [`${filePrefix}${filename}`, filename];
     }
 
-    protected async _awsQueryToDelete(path: string, category: StorageCategory) {
-        const params: AWS.S3.DeleteObjectRequest = {
-            Bucket: this._mapCategoryToBucket(category),
-            Key: path.split(`${config.cloudfrontUrl}/`)[1],
-        };
-        //
-        const s3 = new AWS.S3();
-        await s3.deleteObject(params).promise();
-    }
-
-    /**
-     * @param filePath complete file url
-     */
-    protected async _deleteBulkContentFromS3(
-        filePath: string[],
-        category: StorageCategory
-    ) {
-        const params: AWS.S3.DeleteObjectsRequest = {
-            Bucket: this._mapCategoryToBucket(category),
-            Delete: {
-                Objects: filePath.map((f) => ({
-                    Key: f.split(`${config.cloudfrontUrl}/`)[1],
-                })),
-            },
-        };
-        //
-        const s3 = new AWS.S3();
-        await s3.deleteObjects(params).promise();
-        return true;
-    }
-
-    protected _mapCategoryToBucket(category: StorageCategory) {
-        if (category === StorageCategory.story) {
-            return config.aws.bucket.story;
-        } else if (category === StorageCategory.profile) {
-            return config.aws.bucket.profile;
-        } else if (
-            category === StorageCategory.communityCover ||
-            category === StorageCategory.promoterLogo
-        ) {
-            return config.aws.bucket.community;
-        }
-        throw new Error('invalid category');
-    }
-
-    protected async _getPresignedUrlPutObject(
-        mime: string,
-        category: StorageCategory
-    ) {
+    protected async _getPresignedUrlPutObject(mime: string, category: StorageCategory): Promise<PreSignedUrlResponse> {
         // jpg or jpe are not a mimetype
         if (mime === 'jpg' || mime === 'jpe') {
             mime = 'jpeg';
         }
-        const [filePath, filename] = this._generatedStorageFileName(
-            category,
-            `.${mime}`
-        );
+        const [filePath, filename] = this._generatedStorageFileName(category, `.${mime}`);
         const params: AWS.S3.PutObjectRequest = {
-            Bucket: config.aws.bucket.temporary,
             Key: filePath,
-            ACL: 'public-read',
-            ContentType: 'image/' + mime,
+            ContentType: this._getContentTypesFromMime(mime),
+            ...this._getBucketConfig(category)
         };
         const s3 = new AWS.S3();
         const uploadURL = await s3.getSignedUrlPromise('putObject', params);
         return {
             uploadURL,
             filename,
-            filePath,
+            filePath
         };
     }
 }
 
 interface IContentStorage {
-    getPresignedUrlPutObject(mime: string): Promise<{
-        uploadURL: string;
-        filename: string;
-    }>;
+    getPresignedUrlPutObject(mime: string): Promise<PreSignedUrlResponse>;
 }
 
-export class StoryContentStorage
-    extends ContentStorage
-    implements IContentStorage
-{
-    getPresignedUrlPutObject(mime: string): Promise<{
-        uploadURL: string;
-        filename: string;
-    }> {
+export class StoryContentStorage extends ContentStorage implements IContentStorage {
+    getPresignedUrlPutObject(mime: string) {
         return this._getPresignedUrlPutObject(mime, StorageCategory.story);
     }
 }
 
-export class CommunityContentStorage
-    extends ContentStorage
-    implements IContentStorage
-{
-    getPresignedUrlPutObject(mime: string): Promise<{
-        uploadURL: string;
-        filename: string;
-    }> {
-        return this._getPresignedUrlPutObject(
-            mime,
-            StorageCategory.communityCover
-        );
+export class CommunityContentStorage extends ContentStorage implements IContentStorage {
+    getPresignedUrlPutObject(mime: string) {
+        return this._getPresignedUrlPutObject(mime, StorageCategory.communityCover);
     }
 }
 
-export class PromoterContentStorage
-    extends ContentStorage
-    implements IContentStorage
-{
-    getPresignedUrlPutObject(mime: string): Promise<{
-        uploadURL: string;
-        filename: string;
-    }> {
-        return this._getPresignedUrlPutObject(
-            mime,
-            StorageCategory.promoterLogo
-        );
+export class PromoterContentStorage extends ContentStorage implements IContentStorage {
+    getPresignedUrlPutObject(mime: string) {
+        return this._getPresignedUrlPutObject(mime, StorageCategory.promoterLogo);
     }
 }
 
-export class ProfileContentStorage
-    extends ContentStorage
-    implements IContentStorage
-{
-    getPresignedUrlPutObject(mime: string): Promise<{
-        uploadURL: string;
-        filename: string;
-    }> {
+export class ProfileContentStorage extends ContentStorage implements IContentStorage {
+    getPresignedUrlPutObject(mime: string) {
         return this._getPresignedUrlPutObject(mime, StorageCategory.profile);
+    }
+}
+
+export class MicroCreditContentStorage extends ContentStorage implements IContentStorage {
+    getPresignedUrlPutObject(mime: string) {
+        return this._getPresignedUrlPutObject(mime, StorageCategory.microCredit);
     }
 }

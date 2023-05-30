@@ -99,8 +99,7 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get('/', authenticateToken, timeout('3s'), userController.get);
 
@@ -172,8 +171,7 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.put(
         '/',
@@ -209,8 +207,7 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.patch('/', authenticateToken, userController.patch);
 
@@ -228,8 +225,7 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.delete('/', authenticateToken, userController.delete);
 
@@ -264,8 +260,7 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.post(
         '/report',
@@ -305,8 +300,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: "Success"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/report/:query?',
@@ -342,8 +336,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/logs',
@@ -373,8 +366,7 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/presigned/:query?',
@@ -416,8 +408,7 @@ export default (app: Router): void => {
      *                    type: integer
      *                    description: number of unread notifications
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/notifications/unread/:query?',
@@ -470,8 +461,7 @@ export default (app: Router): void => {
      *                  data:
      *                    $ref: '#/components/schemas/AppNotification'
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/notifications/:query?',
@@ -513,8 +503,7 @@ export default (app: Router): void => {
      *                    type: boolean
      *                    description: if true the notification was updated
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.put(
         '/notifications/read',
@@ -544,8 +533,7 @@ export default (app: Router): void => {
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/:address',

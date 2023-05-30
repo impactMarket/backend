@@ -249,8 +249,7 @@ export default (route: Router): void => {
      *         required: false
      *         description: order key and order direction separated by colon (claimed:desc)
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      *     responses:
      *       "200":
      *         description: OK
@@ -321,8 +320,7 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.get(
         '/media/:mime',
@@ -378,8 +376,7 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
      */
     route.post(
         '/beneficiaries',

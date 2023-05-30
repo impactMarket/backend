@@ -376,3 +376,50 @@ export const getLoanRepayments = async (
 
     return loanRepayments;
 };
+
+// get loanManager entity from the subgraph
+export const getLoanManager = async (userAddress: string): Promise<{
+    state: number;
+    borrowers: number;
+}> => {
+    const graphqlQuery = {
+        operationName: 'loanManager',
+        query: `query loanManager {
+            loanManager(id: "${userAddress.toLowerCase()}") {
+                state
+                borrowers
+            }
+        }`,
+    };
+
+    const cacheResults = await redisClient.get(graphqlQuery.query);
+
+    if (cacheResults) {
+        return JSON.parse(cacheResults);
+    }
+
+    const response = await axiosMicrocreditSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    loanManager: {
+                        state: number;
+                        borrowers: number;
+                    };
+                };
+            };
+        }
+    >('', graphqlQuery);
+
+    const loanManager = response.data?.data.loanManager;
+
+    redisClient.set(
+        graphqlQuery.query,
+        JSON.stringify(loanManager),
+        'EX',
+        intervalsInSeconds.twoMins
+    );
+
+    return loanManager;
+};
