@@ -4,7 +4,10 @@ import { Op, WhereOptions, literal } from 'sequelize';
 
 import { models } from '../../database';
 import { ExchangeRegistry } from '../../database/models/exchange/exchangeRegistry';
-import { MerchantRegistry } from '../../database/models/merchant/merchantRegistry';
+import {
+    MerchantRegistry,
+    MerchantRegistryModel,
+} from '../../database/models/merchant/merchantRegistry';
 
 export default class CashoutProviderService {
     public async get(query: {
@@ -13,10 +16,11 @@ export default class CashoutProviderService {
         lng?: string;
         distance?: string;
     }) {
+        let rawMerchants: MerchantRegistryModel[] | null = null;
         let merchants: MerchantRegistry[] | null = null;
 
         if (!query || (!query.country && !query.lat && !query.lng)) {
-            merchants = await models.merchantRegistry.findAll({
+            rawMerchants = await models.merchantRegistry.findAll({
                 limit: 5,
                 order: [['createdAt', 'DESC']],
             });
@@ -26,8 +30,8 @@ export default class CashoutProviderService {
             });
 
             return {
-                merchants,
-                exchanges,
+                merchants: rawMerchants.map((merchant) => merchant.toJSON()),
+                exchanges: exchanges.map((exchange) => exchange.toJSON()),
             };
         }
 
@@ -43,11 +47,14 @@ export default class CashoutProviderService {
                 ],
             };
 
-            merchants = await models.merchantRegistry.findAll({
+            rawMerchants = await models.merchantRegistry.findAll({
                 where: {
                     country: query.country,
                 },
             });
+            if (!query.lat && !query.lng) {
+                merchants = rawMerchants.map((merchant) => merchant.toJSON());
+            }
         }
 
         const exchanges = await models.exchangeRegistry.findAll({
@@ -57,29 +64,28 @@ export default class CashoutProviderService {
 
         if (query.lat && query.lng) {
             const userLocation = point([
-                parseInt(query.lng, 10),
-                parseInt(query.lat, 10),
+                parseFloat(query.lng),
+                parseFloat(query.lat),
             ]);
 
-            if (!merchants) {
-                merchants = await models.merchantRegistry.findAll();
+            if (!rawMerchants) {
+                rawMerchants = await models.merchantRegistry.findAll();
             }
 
-            merchants = merchants
+            merchants = rawMerchants
                 .map((merchant) => {
                     const merchantLocation = point([
                         merchant.gps.longitude,
                         merchant.gps.latitude,
                     ]);
                     return {
-                        ...merchant,
+                        ...merchant.toJSON(),
                         distance: distance(userLocation, merchantLocation),
                     };
                 })
                 .filter(
                     (merchant) =>
-                        merchant.distance <
-                        parseInt(query.distance || '100', 10)
+                        merchant.distance < parseFloat(query.distance || '100')
                 )
                 .sort((x, y) => {
                     if (x.distance > y.distance) {
