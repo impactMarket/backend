@@ -9,72 +9,69 @@ import { referralPostValidator } from '~validators/referral';
 export default (app: Router): void => {
     const controller = new ReferralController();
     const route = Router();
-    app.use('/referral', route);
+    app.use('/referrals', route);
 
     /**
      * @swagger
      *
-     * /referral:
+     * /referrals/{campaignId}:
      *   get:
      *     tags:
-     *     - "referrals"
+     *       - "referrals"
      *     summary: "Get user referral data"
      *     description: "This GET method is used to generate the user referral code, or, if it aready exists, simply return it. This method requires the user to be authenticated and provide an EIP712 signature. Use the utils demo to generate the signature."
      *     parameters:
-     *       - in: query
+     *       - in: path
      *         name: campaignId
      *         schema:
-     *           type: string
+     *           type: integer
      *         required: true
      *         description: campaign id
-     *       - in: header
-     *         name: signature
-     *         schema:
-     *           type: string
-     *         required: true
-     *         description: EIP712 signature
-     *       - in: header
-     *         name: expiry
-     *         schema:
-     *           type: string
-     *         required: true
-     *         description: expiry value to include in EIP712 signature
-     *       - in: header
-     *         name: message
-     *         schema:
-     *           type: string
-     *         required: true
-     *         description: message value to include in EIP712 signature
-     *     responses:
-     *       "200":
-     *         description: "Success"
-     *       "403":
-     *         description: "Invalid input"
-     */
-    route.get(
-        '/:campaignId',
-        authenticateToken,
-        verifyTypedSignature,
-        cache(cacheIntervals.oneHour),
-        controller.get
-    );
-
-    /**
-     * @swagger
-     *
-     * /referral:
-     *   post:
-     *     tags:
-     *     - "referrals"
-     *     summary: "Use a referral code"
      *     responses:
      *       "200":
      *         description: "Success"
      *       "403":
      *         description: "Invalid input"
      *     security:
-     *     - api_auth:
-     *       - "write:modify":
+     *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - SignatureExpiry: []
+     *     - Signature: []
+     */
+    route.get(
+        '/:campaignId',
+        authenticateToken,
+        // verifyTypedSignature,
+        // cache(cacheIntervals.oneHour),
+        controller.get
+    );
+
+    /**
+     * @swagger
+     *
+     * /referrals:
+     *   post:
+     *     tags:
+     *     - "referrals"
+     *     summary: "Use a referral code"
+     *     requestBody:
+     *      required: true
+     *      content:
+     *        application/json:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              code:
+     *                type: string
+     *                required: true
+     *                example: a84349a0
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - BearerToken: []
      */
     route.post('/', authenticateToken, referralPostValidator, controller.post);
 };

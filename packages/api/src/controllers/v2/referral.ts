@@ -17,7 +17,7 @@ export default class ReferralController {
             return;
         }
 
-        getReferralCode(req.user.userId, parseInt(req.params.campaingId, 10))
+        getReferralCode(req.user.userId, parseInt(req.params.campaignId, 10))
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

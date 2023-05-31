@@ -11,7 +11,6 @@ export class AppReferralCodeModel extends Model<
     AppReferralCode,
     AppReferralCodeCreation
 > {
-    public id!: number;
     public code!: string;
     public campaignId!: number;
     public userId!: number;

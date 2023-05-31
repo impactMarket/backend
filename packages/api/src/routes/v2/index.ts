@@ -7,7 +7,7 @@ import generic from './generic';
 import global from './global';
 import learnAndEarn from './learnAndEarn';
 import microcredit from './microcredit';
-import referral from './referral';
+import referrals from './referrals';
 import story from './story';
 import user from './user';
 import protocol from './protocol';
@@ -24,7 +24,7 @@ export default (): Router => {
     attestation(app);
     microcredit(app);
     protocol(app);
-    referral(app);
+    referrals(app);
 
     return app;
 };

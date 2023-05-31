@@ -139,10 +139,14 @@ export const useReferralCode = async (userId: number, referralCode: string) => {
         throw new Error('Referral code not found');
     }
 
+    const signer = new ethers.Wallet(
+        config.signers.referralLink,
+        new ethers.providers.JsonRpcProvider(config.jsonRpcUrl)
+    );
     const referralLinkContract = new ethers.Contract(
         config.contractAddresses.referralLink,
         referralsLinkABI,
-        new ethers.providers.JsonRpcProvider(config.jsonRpcUrl)
+        signer
     ) as ReferralsLinkContract;
 
     // validate code usages from the smart-contract

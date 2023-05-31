@@ -60,6 +60,10 @@ export default (app: express.Application): void => {
                         name: 'microcredit',
                         description: 'MicroCredit endpoints. In this section, all endpoints are protected by authentication and signature verification. Be sure to be properly authenticated!',
                     },
+                    {
+                        name: 'referrals',
+                        description: 'impactMarket referral program!',
+                    },
                 ],
                 servers: swaggerServers,
                 schemes: [urlSchema],
@@ -79,6 +83,11 @@ export default (app: express.Application): void => {
                             type: 'apiKey',
                             in: 'header',
                             name: 'message',
+                        },
+                        SignatureExpiry: {
+                            type: 'apiKey',
+                            in: 'header',
+                            name: 'expiry',
                         }
                     },
                 },
