@@ -172,6 +172,8 @@ export default (app: Router): void => {
      *         description: "Invalid input"
      *     security:
      *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
      */
     route.put(
         '/',
