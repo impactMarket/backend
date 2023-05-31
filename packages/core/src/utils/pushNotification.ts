@@ -19,54 +19,58 @@ export async function sendNotification(
     isWebApp: boolean = true,
     params?: object,
 ) {
-    // registry notification
-    await models.appNotification.bulkCreate(users.map(el => ({
-        userId: el.id,
-        type,
-        isWallet,
-        isWebApp,
-        params,
-    })));
+    try {
+        // registry notification
+        await models.appNotification.bulkCreate(users.map(el => ({
+            userId: el.id,
+            type,
+            isWallet,
+            isWebApp,
+            params,
+        })));
 
-    // filter users that have walletPNT
-    users = users.filter(el => el.walletPNT);
+        // filter users that have walletPNT
+        users = users.filter(el => el.walletPNT);
 
-    if (users.length === 0) {
-        return;
-    }
+        if (users.length === 0) {
+            return;
+        }
 
-    // get only unique languages
-    const languages = [...new Set(users.map(el => el.language))];
+        // get only unique languages
+        const languages = [...new Set(users.map(el => el.language))];
 
-    // mount notification object with title and description from prismic and users by language
-    const prismicNotifications: { [language:string]: { title: string, description: string, users: AppUser[] } } = {};
+        // mount notification object with title and description from prismic and users by language
+        const prismicNotifications: { [language:string]: { title: string, description: string, users: AppUser[] } } = {};
 
-    const fetchNotificationsFromPrismic = async (language: string) => {
-        const locale = localesConfig.find(({ shortCode }) => language === shortCode.toLowerCase())?.code;
-        const defaultLocale = localesConfig.find(({ isDefault }) => isDefault)?.code;
+        const fetchNotificationsFromPrismic = async (language: string) => {
+            const locale = localesConfig.find(({ shortCode }) => language === shortCode.toLowerCase())?.code;
+            const defaultLocale = localesConfig.find(({ isDefault }) => isDefault)?.code;
 
-        // get prismic document
-        const response = await prismic.getAllByType('push_notifications_data', {
-            lang: locale || defaultLocale,
-        });
-        const data = response[0].data;
-        const title = data[`type${type}title`];
-        const description = data[`type${type}description`];
-        
-        prismicNotifications[language] = {
-            title,
-            description,
-            users: users.filter(el => el.language === language),
+            // get prismic document
+            const response = await prismic.getAllByType('push_notifications_data', {
+                lang: locale || defaultLocale,
+            });
+            const data = response[0].data;
+            const title = data[`type${type}title`];
+            const description = data[`type${type}description`];
+            
+            prismicNotifications[language] = {
+                title,
+                description,
+                users: users.filter(el => el.language === language),
+            };
         };
-    };
-    
-    await Promise.all(languages.map(fetchNotificationsFromPrismic));
-    
-    // send notification by group of languages
-    Object.keys(prismicNotifications).forEach(async key => {
-        let prismicData = prismicNotifications[key];
-        sendFirebasePushNotification(prismicData.users.map(el => el.walletPNT!), prismicData.title, prismicData.description).catch((error) => utils.Logger.error('sendFirebasePushNotification' + error));
-    });
+        
+        await Promise.all(languages.map(fetchNotificationsFromPrismic));
+        
+        // send notification by group of languages
+        Object.keys(prismicNotifications).forEach(async key => {
+            let prismicData = prismicNotifications[key];
+            sendFirebasePushNotification(prismicData.users.map(el => el.walletPNT!), prismicData.title, prismicData.description).catch((error) => utils.Logger.error('sendFirebasePushNotification' + error));
+        });   
+    } catch (error) {
+        Logger.error('Failed to add notification:', error);
+    }
 }
 
 export async function sendFirebasePushNotification(tokens: string[], title: string, body: string, data: any = undefined) {
