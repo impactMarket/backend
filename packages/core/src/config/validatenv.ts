@@ -91,6 +91,7 @@ function validateEnv() {
         SENDGRID_API_KEY: str({ default: 'xyz' }),
         INTERNAL_EMAIL_NOTIFYING: str({ default: 'none@none.none' }),
         INTERNAL_EMAIL_TO_NOTIFY: str({ default: 'none@none.none' }),
+        FIREBASE_FILE_BASE64: str({ devDefault: 'xyz' }),
         HAS_REDIS_TLS: bool({ default: true }),
         INTERNAL_NOTIFICATIONS: bool({ default: false }),
         MAX_REQUEST_PER_USER: num({ default: 900 }),

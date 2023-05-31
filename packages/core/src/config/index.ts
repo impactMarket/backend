@@ -232,6 +232,7 @@ export default {
     sendgridApi: validatedEnv.SENDGRID_API_KEY,
     internalEmailNotifying: validatedEnv.INTERNAL_EMAIL_NOTIFYING,
     internalEmailToNotify: validatedEnv.INTERNAL_EMAIL_TO_NOTIFY,
+    firebaseFileBase64: validatedEnv.FIREBASE_FILE_BASE64,
 
     hasRedisTls: validatedEnv.HAS_REDIS_TLS,
 
