@@ -18,10 +18,7 @@ type ReferralsLinkContract = ethers.Contract & {
         _newUserAddresses: string[],
         _signatures: string[]
     ) => Promise<ethers.providers.TransactionResponse>;
-    campaignReferralLinks: (
-        _campaignId: string,
-        _senderAddress: string
-    ) => Promise<BigNumber>;
+    campaignReferralLinks: (_campaignId: string, _senderAddress: string) => Promise<BigNumber>;
     campaigns: (_campaignId: number) => Promise<{
         token: string;
         balance: BigNumber;
@@ -33,16 +30,9 @@ type ReferralsLinkContract = ethers.Contract & {
     }>;
 };
 
-async function signParams(
-    sender: string,
-    campaignId: number,
-    receiverAddress: string
-): Promise<string> {
+async function signParams(sender: string, campaignId: number, receiverAddress: string): Promise<string> {
     const wallet = new Wallet(config.signers.referralLink);
-    const encoded = defaultAbiCoder.encode(
-        ['address', 'uint256', 'address'],
-        [sender, campaignId, receiverAddress]
-    );
+    const encoded = defaultAbiCoder.encode(['address', 'uint256', 'address'], [sender, campaignId, receiverAddress]);
     const hash = keccak256(encoded);
 
     return wallet.signMessage(arrayify(hash));
@@ -57,8 +47,8 @@ export const generateReferralCode = async () => {
 
     const referralCodeExists = await appReferralCode.findOne({
         where: {
-            code: referralCode,
-        },
+            code: referralCode
+        }
     });
 
     if (referralCodeExists) {
@@ -78,8 +68,8 @@ export const generateReferralCode = async () => {
 export const getReferralCode = async (userId: number, campaignId: number) => {
     const user = await appUser.findOne({
         where: {
-            id: userId,
-        },
+            id: userId
+        }
     });
 
     if (!user) {
@@ -88,8 +78,8 @@ export const getReferralCode = async (userId: number, campaignId: number) => {
 
     const referralCodeExists = await appReferralCode.findOne({
         where: {
-            campaignId,
-        },
+            campaignId
+        }
     });
 
     if (referralCodeExists) {
@@ -101,7 +91,7 @@ export const getReferralCode = async (userId: number, campaignId: number) => {
     const referral = await appReferralCode.create({
         code: referralCode,
         campaignId,
-        userId,
+        userId
     });
 
     return referral;
@@ -115,8 +105,8 @@ export const getReferralCode = async (userId: number, campaignId: number) => {
 export const useReferralCode = async (userId: number, referralCode: string) => {
     const user = await appUser.findOne({
         where: {
-            id: userId,
-        },
+            id: userId
+        }
     });
 
     if (!user) {
@@ -127,12 +117,12 @@ export const useReferralCode = async (userId: number, referralCode: string) => {
         include: [
             {
                 model: appUser,
-                as: 'user',
-            },
+                as: 'user'
+            }
         ],
         where: {
-            code: referralCode,
-        },
+            code: referralCode
+        }
     });
 
     if (!referralCodeExists || !referralCodeExists.user) {
@@ -152,16 +142,9 @@ export const useReferralCode = async (userId: number, referralCode: string) => {
     // validate code usages from the smart-contract
     // sign message
     const [referralUsages, rawMaxUsages, signature] = await Promise.all([
-        referralLinkContract.campaignReferralLinks(
-            referralCodeExists.campaignId.toString(),
-            user.address
-        ),
+        referralLinkContract.campaignReferralLinks(referralCodeExists.campaignId.toString(), user.address),
         referralLinkContract.campaigns(referralCodeExists.campaignId),
-        signParams(
-            user.address,
-            referralCodeExists.campaignId,
-            referralCodeExists.user.address
-        ),
+        signParams(user.address, referralCodeExists.campaignId, referralCodeExists.user.address)
     ]);
     const maxUsages = rawMaxUsages.maxReferralLinks.toNumber();
 
