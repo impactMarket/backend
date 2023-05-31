@@ -41,8 +41,8 @@ export default (app: Router): void => {
     route.get(
         '/:campaignId',
         authenticateToken,
-        // verifyTypedSignature,
-        // cache(cacheIntervals.oneHour),
+        verifyTypedSignature,
+        cache(cacheIntervals.tenMinutes),
         controller.get
     );
 
@@ -73,5 +73,5 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post('/', authenticateToken, referralPostValidator, controller.post);
+    route.post('/', authenticateToken, verifyTypedSignature, referralPostValidator, controller.post);
 };
