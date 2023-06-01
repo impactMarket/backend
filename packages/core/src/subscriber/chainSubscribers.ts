@@ -154,156 +154,168 @@ class ChainSubscribers {
     async _processCommunityAdminEvents(
         log: ethers.providers.Log
     ): Promise<ethers.utils.LogDescription | undefined> {
-        const parsedLog = this.ifaceCommunityAdmin.parseLog(log);
-        let result: ethers.utils.LogDescription | undefined = undefined;
+        try {
+            const parsedLog = this.ifaceCommunityAdmin.parseLog(log);
+            let result: ethers.utils.LogDescription | undefined = undefined;
 
-        if (parsedLog.name === 'CommunityRemoved') {
-            const communityAddress = parsedLog.args[0];
-            const community = await database.models.community.findOne({
-                attributes: ['id'],
-                where: { contractAddress: communityAddress },
-            });
+            if (parsedLog.name === 'CommunityRemoved') {
+                const communityAddress = parsedLog.args[0];
+                const community = await database.models.community.findOne({
+                    attributes: ['id'],
+                    where: { contractAddress: communityAddress },
+                });
 
-            if (!community || !community.id) {
-                utils.Logger.error(
-                    `Community with address ${communityAddress} wasn't found at "CommunityRemoved"`
-                );
-            } else {
-                await database.models.community.update(
+                if (!community || !community.id) {
+                    utils.Logger.error(
+                        `Community with address ${communityAddress} wasn't found at "CommunityRemoved"`
+                    );
+                } else {
+                    await database.models.community.update(
+                        {
+                            status: 'removed',
+                            deletedAt: new Date(),
+                        },
+                        {
+                            where: { contractAddress: communityAddress },
+                        }
+                    );
+
+                    this.communities.delete(communityAddress);
+                    result = parsedLog;
+                }
+            } else if (parsedLog.name === 'CommunityAdded') {
+                const communityAddress = parsedLog.args[0];
+                const managerAddress = parsedLog.args[1];
+
+                const community = await database.models.community.update(
                     {
-                        status: 'removed',
-                        deletedAt: new Date(),
+                        contractAddress: communityAddress,
+                        status: 'valid',
                     },
                     {
-                        where: { contractAddress: communityAddress },
+                        where: {
+                            requestByAddress: managerAddress[0],
+                        },
+                        returning: true,
                     }
                 );
+                if (community[0] === 0) {
+                    utils.Logger.error(
+                        `Community with address ${communityAddress} wasn't updated at "CommunityAdded"`
+                    );
+                } else {
+                    this.communities.set(communityAddress, community[1][0].id);
+                    const user = await models.appUser.findOne({
+                        attributes: ['id', 'language', 'walletPNT', 'appPNT'],
+                        where: {
+                            address: getAddress( managerAddress[0]),
+                        },
+                    });
+        
+                    if (user) {
+                        await sendNotification(
+                            [user.toJSON()],
+                            NotificationType.COMMUNITY_CREATED,
+                            true,
+                            true,
+                            {
+                                communityId:
+                                    community[1][0].id,
+                            }
+                        );
+                    }
+                }
 
-                this.communities.delete(communityAddress);
                 result = parsedLog;
             }
-        } else if (parsedLog.name === 'CommunityAdded') {
-            const communityAddress = parsedLog.args[0];
-            const managerAddress = parsedLog.args[1];
 
-            const community = await database.models.community.update(
-                {
-                    contractAddress: communityAddress,
-                    status: 'valid',
-                },
-                {
-                    where: {
-                        requestByAddress: managerAddress[0],
-                    },
-                    returning: true,
+            return result;
+        } catch (error) {
+            utils.Logger.error('Failed to process Community Admin Events:', error);
+        }
+    }
+
+    async _processCommunityEvents(
+        log: ethers.providers.Log
+    ): Promise<ethers.utils.LogDescription | undefined> {
+        try {
+            let parsedLog = this.ifaceCommunity.parseLog(log);
+            let result: ethers.utils.LogDescription | undefined = undefined;
+
+            if (parsedLog.name === 'BeneficiaryAdded') {
+                const communityAddress = log.address;
+                const community = this.communities.get(communityAddress);
+                const userAddress = parsedLog.args[1];
+
+                if (community) {
+                    utils.cache.cleanBeneficiaryCache(community);
                 }
-            );
-            if (community[0] === 0) {
-                utils.Logger.error(
-                    `Community with address ${communityAddress} wasn't updated at "CommunityAdded"`
-                );
-            } else {
-                this.communities.set(communityAddress, community[1][0].id);
                 const user = await models.appUser.findOne({
                     attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                     where: {
-                        address: getAddress( managerAddress[0]),
+                        address: getAddress(userAddress),
+                    },
+                });
+
+                if (user) {
+                    await sendNotification(
+                        [user.toJSON()],
+                        NotificationType.BENEFICIARY_ADDED,
+                        true,
+                        true,
+                        {
+                            communityId: community,
+                        }
+                    );
+                }
+
+                result = parsedLog;
+            } else if (parsedLog.name === 'BeneficiaryRemoved') {
+                const communityAddress = log.address;
+                const community = this.communities.get(communityAddress);
+
+                if (community) {
+                    utils.cache.cleanBeneficiaryCache(community);
+                }
+
+                result = parsedLog;
+            }
+            return result;       
+        } catch (error) {
+            utils.Logger.error('Failed to process Community Events:', error);
+        }
+    }
+
+    async _processMicrocreditEvents(
+        log: ethers.providers.Log
+    ): Promise<ethers.utils.LogDescription | undefined> {
+        try {
+            let parsedLog = this.ifaceMicrocredit.parseLog(log);
+            let result: ethers.utils.LogDescription | undefined = undefined;
+            const userAddress = parsedLog.args[0];
+    
+            if (parsedLog.name === 'LoanAdded') {
+                const user = await models.appUser.findOne({
+                    attributes: ['id', 'language', 'walletPNT', 'appPNT'],
+                    where: {
+                        address: getAddress(userAddress),
                     },
                 });
     
                 if (user) {
                     await sendNotification(
                         [user.toJSON()],
-                        NotificationType.COMMUNITY_CREATED,
-                        true,
-                        true,
-                        {
-                            communityId:
-                                community[1][0].id,
-                        }
+                        NotificationType.LOAN_ADDED
                     );
                 }
+    
+                result = parsedLog;
             }
-
-            result = parsedLog;
+    
+            return result;
+        } catch (error) {
+            utils.Logger.error('Failed to process Microcredit Events:', error);
         }
-
-        return result;
-    }
-
-    async _processCommunityEvents(
-        log: ethers.providers.Log
-    ): Promise<ethers.utils.LogDescription | undefined> {
-        let parsedLog = this.ifaceCommunity.parseLog(log);
-        let result: ethers.utils.LogDescription | undefined = undefined;
-
-        if (parsedLog.name === 'BeneficiaryAdded') {
-            const communityAddress = log.address;
-            const community = this.communities.get(communityAddress);
-            const userAddress = parsedLog.args[1];
-
-            if (community) {
-                utils.cache.cleanBeneficiaryCache(community);
-            }
-            const user = await models.appUser.findOne({
-                attributes: ['id', 'language', 'walletPNT', 'appPNT'],
-                where: {
-                    address: getAddress(userAddress),
-                },
-            });
-
-            if (user) {
-                await sendNotification(
-                    [user.toJSON()],
-                    NotificationType.BENEFICIARY_ADDED,
-                    true,
-                    true,
-                    {
-                        communityId: community,
-                    }
-                );
-            }
-
-            result = parsedLog;
-        } else if (parsedLog.name === 'BeneficiaryRemoved') {
-            const communityAddress = log.address;
-            const community = this.communities.get(communityAddress);
-
-            if (community) {
-                utils.cache.cleanBeneficiaryCache(community);
-            }
-
-            result = parsedLog;
-        }
-        return result;
-    }
-
-    async _processMicrocreditEvents(
-        log: ethers.providers.Log
-    ): Promise<ethers.utils.LogDescription | undefined> {
-        let parsedLog = this.ifaceMicrocredit.parseLog(log);
-        let result: ethers.utils.LogDescription | undefined = undefined;
-        const userAddress = parsedLog.args[0];
-
-        if (parsedLog.name === 'LoanAdded') {
-            const user = await models.appUser.findOne({
-                attributes: ['id', 'language', 'walletPNT', 'appPNT'],
-                where: {
-                    address: getAddress(userAddress),
-                },
-            });
-
-            if (user) {
-                await sendNotification(
-                    [user.toJSON()],
-                    NotificationType.LOAN_ADDED
-                );
-            }
-
-            result = parsedLog;
-        }
-
-        return result;
     }
 }
 
