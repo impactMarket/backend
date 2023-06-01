@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import ganache from 'ganache-cli';
+import ganache from 'ganache';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
 import { ChainSubscribers } from '../../../src/subscriber/chainSubscribers';
 import {
@@ -32,7 +32,7 @@ describe.skip('Microcredit', () => {
     before(async () => {
         sequelize = sequelizeSetup();
         await sequelize.sync();
-        provider = new ethers.providers.Web3Provider(ganacheProvider);
+        provider = new ethers.providers.Web3Provider(ganacheProvider as any);
         accounts = await provider.listAccounts();
         notificationUpdated = stub(database.models.appNotification, 'bulkCreate');
         notificationUpdated.returns(Promise.resolve({} as any));

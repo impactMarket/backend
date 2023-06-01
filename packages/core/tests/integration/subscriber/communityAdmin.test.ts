@@ -6,7 +6,7 @@ import {
     services,
 } from '../../../';
 import { ethers } from 'ethers';
-import ganache from 'ganache-cli';
+import ganache from 'ganache';
 import { assert, SinonStub, stub, match, restore } from 'sinon';
 
 import { ChainSubscribers } from '../../../src/subscriber/chainSubscribers';
@@ -30,7 +30,8 @@ describe('communityAdmin', () => {
     let getRecoverBlockStub: SinonStub<any, any>;
 
     before(async () => {
-        provider = new ethers.providers.Web3Provider(ganacheProvider);
+        // types are different, but it works well
+        provider = new ethers.providers.Web3Provider(ganacheProvider as any);
         accounts = await provider.listAccounts();
         communityUpdated = stub(database.models.community, 'update');
         communityUpdated.returns(Promise.resolve([1, {} as any]));
