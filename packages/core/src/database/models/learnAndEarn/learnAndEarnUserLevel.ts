@@ -4,6 +4,7 @@ import {
     LearnAndEarnUserLevel,
     LearnAndEarnUserLevelCreation,
 } from '../../../interfaces/learnAndEarn/learnAndEarnUserLevel';
+import { DbModels } from '../../../database/db';
 
 export class LearnAndEarnUserLevelModel extends Model<
     LearnAndEarnUserLevel,
@@ -21,6 +22,7 @@ export class LearnAndEarnUserLevelModel extends Model<
 export function initializeLearnAndEarnUserLevel(
     sequelize: Sequelize
 ): typeof LearnAndEarnUserLevelModel {
+    const { appUser, learnAndEarnLevel } = sequelize.models as DbModels;
     LearnAndEarnUserLevelModel.init(
         {
             id: {
@@ -32,7 +34,7 @@ export function initializeLearnAndEarnUserLevel(
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'app_user',
+                    model: appUser,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -41,7 +43,7 @@ export function initializeLearnAndEarnUserLevel(
             levelId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'learn_and_earn_level',
+                    model: learnAndEarnLevel,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',

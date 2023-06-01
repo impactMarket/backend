@@ -4,6 +4,7 @@ import {
     LearnAndEarnUserLesson,
     LearnAndEarnUserLessonCreation,
 } from '../../../interfaces/learnAndEarn/learnAndEarnUserLesson';
+import { DbModels } from '../../../database/db';
 
 export class LearnAndEarnUserLessonModel extends Model<
     LearnAndEarnUserLesson,
@@ -22,6 +23,7 @@ export class LearnAndEarnUserLessonModel extends Model<
 export function initializeLearnAndEarnUserLesson(
     sequelize: Sequelize
 ): typeof LearnAndEarnUserLessonModel {
+    const { appUser } = sequelize.models as DbModels;
     LearnAndEarnUserLessonModel.init(
         {
             id: {
@@ -33,7 +35,7 @@ export function initializeLearnAndEarnUserLesson(
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'app_user',
+                    model: appUser,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',

@@ -3,6 +3,7 @@ import { Sequelize, Op } from 'sequelize';
 
 export function learnAndEarnAssociation(sequelize: Sequelize) {
     const {
+        appUser,
         learnAndEarnCategory,
         learnAndEarnLesson,
         learnAndEarnLevel,
@@ -66,5 +67,10 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
     learnAndEarnLevel.belongsTo(learnAndEarnCategory, {
         foreignKey: 'categoryId',
         as: 'category',
+    });
+
+    learnAndEarnLevel.belongsTo(appUser, {
+        foreignKey: 'adminUserId',
+        as: 'adminUser',
     });
 }
