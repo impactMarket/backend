@@ -1,6 +1,3 @@
-// when release-task.sh runs, it will replace the config file
-import serviceAccount from '../utils/firebase-adminsdk.json';
-
 import { client as prismic } from '../utils/prismic';
 import { NotificationType } from '../interfaces/app/appNotification';
 import { models } from '../database';
@@ -11,6 +8,7 @@ import admin from 'firebase-admin';
 import { AppUser } from '../interfaces/app/appUser';
 import { utils } from '../../index';
 import { Logger } from './logger';
+import config from '../config';
 
 export async function sendNotification(
     users: AppUserModel[],
@@ -99,8 +97,12 @@ export async function sendFirebasePushNotification(tokens: string[], title: stri
 
 export function initPushNotificationService() {
     try {
+        // recover config file
+        const base64file = config.firebaseFileBase64;
+        const jsonConfig = JSON.parse(Buffer.from(base64file, 'base64').toString());
+        
         admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount as any)
+            credential: admin.credential.cert(jsonConfig)
         });
     
         Logger.info('🔔 Push notification service initialized');
