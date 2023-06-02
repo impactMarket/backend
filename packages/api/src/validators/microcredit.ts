@@ -29,6 +29,10 @@ interface ListBorrowersRequestSchema extends ValidatedRequestSchema {
     [ContainerTypes.Query]: {
         offset?: number;
         limit?: number;
+        claimed?: boolean;
+        filter?: 'repaid' | 'needHelp';
+        orderBy?: 'amount' | 'period' | 'lastRepayment' | 'lastDebt';
+        orderDirection?: 'desc' | 'asc';
     };
 }
 

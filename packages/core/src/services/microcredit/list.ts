@@ -1,5 +1,10 @@
 import { models } from '../../database';
-import { getBorrowers, getLoanManager, getLoanRepayments } from '../../subgraph/queries/microcredit';
+import {
+    SubgraphGetBorrowersQuery,
+    getBorrowers,
+    getLoanManager,
+    getLoanRepayments
+} from '../../subgraph/queries/microcredit';
 import { getAddress } from '@ethersproject/address';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
@@ -15,11 +20,9 @@ function mergeArrays(arr1: any[], arr2: any[], key: string) {
 }
 
 export default class MicroCreditList {
-    public listBorrowers = async (query: {
-        offset?: number;
-        limit?: number;
-        addedBy: string;
-    }): Promise<{
+    public listBorrowers = async (
+        query: SubgraphGetBorrowersQuery
+    ): Promise<{
         count: number;
         rows: {
             address: string;
@@ -44,7 +47,12 @@ export default class MicroCreditList {
             getBorrowers({ ...query, claimed: false }),
             getLoanManager(query.addedBy)
         ]);
-        const borrowers = rawBorrowers.map(b => ({ address: getAddress(b.id), loan: b.loans[0] }));
+        const borrowers = rawBorrowers.map(b => {
+            const v = { address: getAddress(b.borrower!.id), loan: b };
+            delete v.loan['borrower'];
+
+            return v;
+        });
 
         // get borrowers profile from database
         const userProfile = await models.appUser.findAll({

@@ -236,58 +236,68 @@ export const getMicroCreditStatsLastDays = async (
     }
 };
 
-export const getBorrowers = async (query: {
+export type SubgraphGetBorrowersQuery = {
     offset?: number;
     limit?: number;
-    addedBy?: string;
+    addedBy: string;
     claimed?: boolean;
-}): Promise<
+    filter?: 'repaid' | 'needHelp';
+    orderBy?: 'amount' | 'period' | 'lastRepayment' | 'lastDebt';
+    orderDirection?: 'desc' | 'asc';
+};
+
+export const getBorrowers = async (
+    query: SubgraphGetBorrowersQuery
+): Promise<
     {
-        id: string;
-        loans: {
-            amount: string;
-            period: number;
-            dailyInterest: number;
-            claimed: number;
-            repaid: string;
-            lastRepayment: number;
-            lastRepaymentAmount: string;
-            lastDebt: string;
-        }[];
+        // optional so it can be deleted from object!
+        borrower?: {
+            id: string;
+        };
+        amount: string;
+        period: number;
+        dailyInterest: number;
+        claimed: number;
+        repaid: string;
+        lastRepayment: number;
+        lastRepaymentAmount: string;
+        lastDebt: string;
     }[]
 > => {
+    const { offset, limit, addedBy, claimed, filter, orderBy, orderDirection } = query;
+
+    // date 3 months ago
+    const date = new Date();
+    date.setMonth(date.getMonth() - 3);
+
     const graphqlQuery = {
         operationName: 'borrowers',
         query: `query borrowers {
-            borrowers(
-                first: ${query.limit ? query.limit : 10}
-                skip: ${query.offset ? query.offset : 0}
-            ) {
-                id
-                loans(
-                    where: {
-                        addedBy: "${
-                            query.addedBy ? query.addedBy.toLowerCase() : ''
-                        }"
-                        ${query.claimed ? `claimed_not: null` : ''}
-                    }
-                    ${
-                        query.claimed
-                            ? `orderBy: claimed orderDirection: desc`
-                            : ''
-                    }
-                ) {
-                    amount
-                    period
-                    dailyInterest
-                    claimed
-                    repaid
-                    lastRepayment
-                    lastRepaymentAmount
-                    lastDebt
+            loans(
+                first: ${limit ? limit : 10}
+                skip: ${offset ? offset : 0}
+                where: {
+                    addedBy: "${addedBy.toLowerCase()}"
+                    ${claimed ? 'claimed_not: null' : ''}
+                    ${filter && filter === 'needHelp' ? `lastRepayment_lte: ${date.getTime() / 1000}` : ''}
+                    ${filter !== undefined ? (filter === 'repaid' ? 'lastDebt: 0' : 'lastDebt_not: 0') : ''}
                 }
+                ${orderBy ? `orderBy: ${orderBy}` : ''}
+                ${orderDirection ? `orderDirection: ${orderDirection}` : ''}
+            ) {
+                borrower {
+                    id
+                }
+                amount
+                period
+                dailyInterest
+                claimed
+                repaid
+                lastRepayment
+                lastRepaymentAmount
+                lastDebt
             }
-        }`,
+        }`
     };
 
     const cacheResults = await redisClient.get(graphqlQuery.query);
@@ -301,34 +311,27 @@ export const getBorrowers = async (query: {
         {
             data: {
                 data: {
-                    borrowers: {
-                        id: string;
-                        loans: {
-                            amount: string;
-                            period: number;
-                            dailyInterest: number;
-                            claimed: number;
-                            repaid: string;
-                            lastRepayment: number;
-                            lastRepaymentAmount: string;
-                            lastDebt: string;
-                        }[];
+                    loans: {
+                        borrower: {
+                            id: string;
+                        };
+                        amount: string;
+                        period: number;
+                        dailyInterest: number;
+                        claimed: number;
+                        repaid: string;
+                        lastRepayment: number;
+                        lastRepaymentAmount: string;
+                        lastDebt: string;
                     }[];
                 };
             };
         }
     >('', graphqlQuery);
 
-    const borrowers = response.data?.data.borrowers.filter(
-        (b) => b.loans.length > 0
-    );
+    const borrowers = response.data?.data.loans;
 
-    redisClient.set(
-        graphqlQuery.query,
-        JSON.stringify(borrowers),
-        'EX',
-        intervalsInSeconds.twoMins
-    );
+    redisClient.set(graphqlQuery.query, JSON.stringify(borrowers), 'EX', intervalsInSeconds.twoMins);
 
     return borrowers;
 };
