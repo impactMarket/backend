@@ -21,7 +21,7 @@
         "services/*"
     ],
     "devDependencies": {
-        "lerna": "^4.0.0",
+        "lerna": "^6.6.2",
         "eslint-config-impact-market": "2.2.0"
     },
     "scripts": {
