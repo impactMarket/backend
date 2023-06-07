@@ -4,6 +4,7 @@ import {
     LearnAndEarnLesson,
     LearnAndEarnLessonCreation,
 } from '../../../interfaces/learnAndEarn/learnAndEarnLesson';
+import { DbModels } from '../../../database/db';
 
 export class LearnAndEarnLessonModel extends Model<
     LearnAndEarnLesson,
@@ -20,6 +21,7 @@ export class LearnAndEarnLessonModel extends Model<
 export function initializeLearnAndEarnLesson(
     sequelize: Sequelize
 ): typeof LearnAndEarnLessonModel {
+    const { learnAndEarnLevel } = sequelize.models as DbModels;
     LearnAndEarnLessonModel.init(
         {
             id: {
@@ -35,7 +37,7 @@ export function initializeLearnAndEarnLesson(
             levelId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'learn_and_earn_level',
+                    model: learnAndEarnLevel,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',

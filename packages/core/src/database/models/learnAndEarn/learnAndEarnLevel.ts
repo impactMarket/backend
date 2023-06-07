@@ -4,6 +4,8 @@ import {
     LearnAndEarnLevel,
     LearnAndEarnLevelCreation,
 } from '../../../interfaces/learnAndEarn/learnAndEarnLevel';
+import { DbModels } from '../../../database/db';
+import { AppUserModel } from '../app/appUser';
 
 export class LearnAndEarnLevelModel extends Model<
     LearnAndEarnLevel,
@@ -25,11 +27,14 @@ export class LearnAndEarnLevelModel extends Model<
         roles: string[];
         limitUsers: number;
     };
+
+    public adminUser?: AppUserModel;
 }
 
 export function initializeLearnAndEarnLevel(
     sequelize: Sequelize
 ): typeof LearnAndEarnLevelModel {
+    const { appUser, learnAndEarnCategory } = sequelize.models as DbModels;
     LearnAndEarnLevelModel.init(
         {
             id: {
@@ -45,7 +50,7 @@ export function initializeLearnAndEarnLevel(
             categoryId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'learn_and_earn_category',
+                    model: learnAndEarnCategory,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -80,7 +85,7 @@ export function initializeLearnAndEarnLevel(
             adminUserId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'app_user',
+                    model: appUser,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',

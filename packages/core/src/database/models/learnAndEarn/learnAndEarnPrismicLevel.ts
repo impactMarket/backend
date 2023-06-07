@@ -4,6 +4,7 @@ import {
     LearnAndEarnPrismicLevel,
     LearnAndEarnPrismicLevelCreation,
 } from '../../../interfaces/learnAndEarn/learnAndEarnPrismicLevel';
+import { DbModels } from '../../../database/db';
 
 export class LearnAndEarnPrismicLevelModel extends Model<
     LearnAndEarnPrismicLevel,
@@ -19,6 +20,7 @@ export class LearnAndEarnPrismicLevelModel extends Model<
 export function initializeLearnAndEarnPrismicLevel(
     sequelize: Sequelize
 ): typeof LearnAndEarnPrismicLevelModel {
+    const { learnAndEarnLevel } = sequelize.models as DbModels;
     LearnAndEarnPrismicLevelModel.init(
         {
             id: {
@@ -34,7 +36,7 @@ export function initializeLearnAndEarnPrismicLevel(
             levelId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'learn_and_earn_level',
+                    model: learnAndEarnLevel,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',

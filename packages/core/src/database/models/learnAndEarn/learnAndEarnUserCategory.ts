@@ -4,6 +4,7 @@ import {
     LearnAndEarnUserCategory,
     LearnAndEarnUserCategoryCreation,
 } from '../../../interfaces/learnAndEarn/learnAndEarnUserCategory';
+import { DbModels } from '../../../database/db';
 
 export class LearnAndEarnUserCategoryModel extends Model<
     LearnAndEarnUserCategory,
@@ -19,6 +20,7 @@ export class LearnAndEarnUserCategoryModel extends Model<
 export function initializeLearnAndEarnUserCategory(
     sequelize: Sequelize
 ): typeof LearnAndEarnUserCategoryModel {
+    const { appUser, learnAndEarnCategory } = sequelize.models as DbModels;
     LearnAndEarnUserCategoryModel.init(
         {
             id: {
@@ -30,7 +32,7 @@ export function initializeLearnAndEarnUserCategory(
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'app_user',
+                    model: appUser,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
@@ -39,7 +41,7 @@ export function initializeLearnAndEarnUserCategory(
             categoryId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: 'learn_and_earn_category',
+                    model: learnAndEarnCategory,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
