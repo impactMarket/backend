@@ -1,5 +1,5 @@
 import { models } from '../../database';
-import { getBorrowers, getLoanManager, getLoanRepayments } from '../../subgraph/queries/microcredit';
+import { SubgraphGetBorrowersQuery, getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
 import { getAddress } from '@ethersproject/address';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
@@ -15,11 +15,9 @@ function mergeArrays(arr1: any[], arr2: any[], key: string) {
 }
 
 export default class MicroCreditList {
-    public listBorrowers = async (query: {
-        offset?: number;
-        limit?: number;
-        addedBy: string;
-    }): Promise<{
+    public listBorrowers = async (
+        query: SubgraphGetBorrowersQuery
+    ): Promise<{
         count: number;
         rows: {
             address: string;
@@ -40,11 +38,13 @@ export default class MicroCreditList {
     }> => {
         // get borrowers loans from subgraph
         // and return only the active loan (which is only one)
-        const [rawBorrowers, loanManager] = await Promise.all([
-            getBorrowers({ ...query, claimed: false }),
-            getLoanManager(query.addedBy)
-        ]);
-        const borrowers = rawBorrowers.map(b => ({ address: getAddress(b.id), loan: b.loans[0] }));
+        const rawBorrowers = await getBorrowers({ ...query, claimed: false });
+        const borrowers = rawBorrowers.borrowers.map(b => {
+            const v = { address: getAddress(b.borrower!.id), loan: b };
+            delete v.loan['borrower'];
+
+            return v;
+        });
 
         // get borrowers profile from database
         const userProfile = await models.appUser.findAll({
@@ -56,7 +56,7 @@ export default class MicroCreditList {
 
         // merge borrowers loans and profile
         return {
-            count: loanManager.borrowers,
+            count: rawBorrowers.count,
             rows: mergeArrays(
                 borrowers,
                 userProfile.map(u => u.toJSON()),
