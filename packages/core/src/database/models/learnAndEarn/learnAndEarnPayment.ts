@@ -23,7 +23,7 @@ export class LearnAndEarnPaymentModel extends Model<
 export function initializeLearnAndEarnPayment(
     sequelize: Sequelize
 ): typeof LearnAndEarnPaymentModel {
-    const { appUser, learnAndEarnLesson } = sequelize.models as DbModels;
+    const { appUser, learnAndEarnLevel } = sequelize.models as DbModels;
     LearnAndEarnPaymentModel.init(
         {
             id: {
@@ -44,7 +44,7 @@ export function initializeLearnAndEarnPayment(
             levelId: {
                 type: DataTypes.INTEGER,
                 references: {
-                    model: learnAndEarnLesson,
+                    model: learnAndEarnLevel,
                     key: 'id',
                 },
                 onDelete: 'CASCADE',
