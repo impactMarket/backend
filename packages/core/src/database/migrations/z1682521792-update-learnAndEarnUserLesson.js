@@ -27,7 +27,7 @@ module.exports = {
 
         // get prismic document
         try {
-            const prismicData = await client.getAllByIDs(prismicIds);
+            const prismicData = await client.getAllByIDs([...new Set(prismicIds)]);
 
             userLessons.forEach(async (userLesson) => {
                 const prismic = prismicData.find(
