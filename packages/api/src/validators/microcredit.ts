@@ -126,6 +126,14 @@ const putApplicationsValidator = celebrate({
         )
         .required()
 });
+const saveForm = celebrate({
+    body: defaultSchema
+        .object({
+            form: Joi.object().required(),
+            submit: Joi.bool().optional()
+        })
+        .required()
+});
 
 export {
     listBorrowersValidator,
@@ -135,6 +143,7 @@ export {
     queryGetBorrowerValidator,
     postDocsValidator,
     putApplicationsValidator,
+    saveForm,
     ListBorrowersRequestSchema,
     ListApplicationsRequestSchema,
     PreSignerUrlFromAWSRequestSchema,
