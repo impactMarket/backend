@@ -7,7 +7,11 @@ const validator = createValidator();
 
 const queryListBorrowersSchema = defaultSchema.object({
     offset: Joi.number().optional().default(0),
-    limit: Joi.number().optional().max(20).default(10)
+    limit: Joi.number().optional().max(20).default(10),
+    claimed: Joi.boolean().optional(),
+    filter: Joi.string().optional().valid('repaid', 'needHelp'),
+    orderBy: Joi.string().optional().valid('amount', 'period', 'lastRepayment', 'lastDebt'),
+    orderDirection: Joi.string().optional().valid('desc', 'asc')
 });
 
 const queryRepaymentsHistorySchema = defaultSchema.object({

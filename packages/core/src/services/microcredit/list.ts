@@ -1,10 +1,5 @@
 import { models } from '../../database';
-import {
-    SubgraphGetBorrowersQuery,
-    getBorrowers,
-    getLoanManager,
-    getLoanRepayments
-} from '../../subgraph/queries/microcredit';
+import { SubgraphGetBorrowersQuery, getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
 import { getAddress } from '@ethersproject/address';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
@@ -43,11 +38,8 @@ export default class MicroCreditList {
     }> => {
         // get borrowers loans from subgraph
         // and return only the active loan (which is only one)
-        const [rawBorrowers, loanManager] = await Promise.all([
-            getBorrowers({ ...query, claimed: false }),
-            getLoanManager(query.addedBy)
-        ]);
-        const borrowers = rawBorrowers.map(b => {
+        const rawBorrowers = await getBorrowers({ ...query, claimed: false });
+        const borrowers = rawBorrowers.borrowers.map(b => {
             const v = { address: getAddress(b.borrower!.id), loan: b };
             delete v.loan['borrower'];
 
@@ -64,7 +56,7 @@ export default class MicroCreditList {
 
         // merge borrowers loans and profile
         return {
-            count: loanManager.borrowers,
+            count: rawBorrowers.count,
             rows: mergeArrays(
                 borrowers,
                 userProfile.map(u => u.toJSON()),
