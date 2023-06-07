@@ -33,7 +33,7 @@ export function initializeMicroCreditDocs(sequelize: Sequelize): typeof MicroCre
                 allowNull: false
             },
             category: {
-                type: DataTypes.NUMBER,
+                type: DataTypes.INTEGER,
                 allowNull: false
             },
             filepath: {
