@@ -5,6 +5,8 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
 import { BigNumber, Contract } from 'ethers';
 import { config } from '../../..';
+import { WhereOptions } from 'sequelize';
+import { MicroCreditApplications } from '../../interfaces/microCredit/applications';
 
 function mergeArrays(arr1: any[], arr2: any[], key: string) {
     const map = new Map(arr1.map(item => [item[key], item]));
@@ -62,6 +64,70 @@ export default class MicroCreditList {
                 userProfile.map(u => u.toJSON()),
                 'address'
             )
+        };
+    };
+
+    // read application from models.microCreditApplications, including appUser to include profile
+    public listApplications = async (query: {
+        offset?: number;
+        limit?: number;
+        filter?: 'pending' | 'approved' | 'rejected';
+        orderBy?: 'appliedOn';
+        orderDirection?: 'desc' | 'asc';
+    }): Promise<{
+        count: number;
+        rows: {
+            // from models.appUser
+            address: string;
+            firstName: string | null;
+            lastName: string | null;
+            avatarMediaPath: string | null;
+            // from models.microCreditApplications
+            application: {
+                amount: number;
+                period: number;
+                appliedOn: Date;
+                status: number;
+                decisionOn: Date;
+            };
+        }[];
+    }> => {
+        const where: WhereOptions<MicroCreditApplications> = {};
+        // map filter to status (pending: 0, approved: 1, rejected: 2)
+        const statusMap = {
+            pending: 0,
+            approved: 1,
+            rejected: 2
+        };
+        if (query.filter !== undefined) {
+            where.status = statusMap[query.filter];
+        }
+        const applications = await models.microCreditApplications.findAndCountAll({
+            attributes: ['id', 'amount', 'period', 'status', 'decisionOn', 'createdAt'],
+            where,
+            include: [
+                {
+                    model: models.appUser,
+                    as: 'user',
+                    attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath']
+                }
+            ],
+            order: [[query.orderBy || 'createdAt', query.orderDirection || 'desc']],
+            offset: query.offset,
+            limit: query.limit
+        });
+
+        return {
+            count: applications.count,
+            rows: applications.rows.map(a => {
+                const v = { application: { ...a.toJSON(), appliedOn: a.createdAt } };
+                delete v.application['user'];
+
+                return {
+                    ...v,
+                    ...a.user!.toJSON()
+                };
+            })
         };
     };
 

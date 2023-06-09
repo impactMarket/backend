@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { MicroCreditController } from '../../../controllers/v2/microcredit/list';
 import {
+    listApplicationsValidator,
     listBorrowersValidator,
     queryGetBorrowerValidator,
     repaymentsHistoryValidator
@@ -20,7 +21,7 @@ export default (route: Router): void => {
      *   get:
      *     tags:
      *       - "microcredit"
-     *     summary: "Get List of Borrowers by manager"
+     *     summary: "Get list of borrowers by manager"
      *     parameters:
      *       - in: query
      *         name: offset
@@ -110,6 +111,66 @@ export default (route: Router): void => {
         queryGetBorrowerValidator,
         cache(cacheIntervals.fiveMinutes),
         controller.getBorrower
+    );
+
+    /**
+     * @swagger
+     *
+     * /microcredit/applications:
+     *   get:
+     *     tags:
+     *       - "microcredit"
+     *     summary: "Get list of applications"
+     *     parameters:
+     *       - in: query
+     *         name: offset
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: offset used for pagination
+     *       - in: query
+     *         name: limit
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: limit used for pagination
+     *       - in: query
+     *         name: filter
+     *         schema:
+     *           type: string
+     *           enum: [pending, approved, rejected]
+     *         required: false
+     *         description: optional filter
+     *       - in: query
+     *         name: orderBy
+     *         schema:
+     *           type: string
+     *           enum: [appliedOn]
+     *         required: false
+     *         description: order by
+     *       - in: query
+     *         name: orderDirection
+     *         schema:
+     *           type: string
+     *           enum: [desc, asc]
+     *         required: false
+     *         description: order direction
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
+     */
+    route.get(
+        '/applications/:query?',
+        authenticateToken,
+        // verifySignature,
+        // onlyAuthorizedRoles(['loanManager']),
+        listApplicationsValidator,
+        // cache(cacheIntervals.fiveMinutes),
+        controller.listApplications
     );
 
     /**
