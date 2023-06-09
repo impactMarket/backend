@@ -52,6 +52,7 @@ import { WalletAirdropProofModel } from './models/walletAirdrop/walletAirdropPro
 import { WalletAirdropUserModel } from './models/walletAirdrop/walletAirdropUser';
 import { UbiCommunityPromoterModel } from './models/ubi/ubiCommunityPromoter';
 import { MicroCreditDocsModel } from './models/microCredit/docs';
+import { MicroCreditApplicationsModel } from './models/microCredit/applications';
 
 export type DbModels = {
     appUser: ModelStatic<AppUserModel>;
@@ -113,6 +114,7 @@ export type DbModels = {
     merchantCommunity: ModelStatic<MerchantCommunityModel>;
     //
     microCreditDocs: ModelStatic<MicroCreditDocsModel>;
+    microCreditApplications: ModelStatic<MicroCreditApplicationsModel>;
     //
     exchangeRegistry: ModelStatic<ExchangeRegistryModel>;
 }
