@@ -94,11 +94,6 @@ export default {
     currenciesApiKey: validatedEnv.CURRENCIES_API_KEY,
 
     /**
-     * Master internal key.
-     */
-    masterKey: validatedEnv.MASTER_KEY,
-
-    /**
      * AWS config.
      */
     aws: {
@@ -113,40 +108,9 @@ export default {
     },
 
     /**
-     * Fleek Storage config.
-     */
-    fleekStorage: {
-        accessKeyId: validatedEnv.FLEEK_STORAGE_KEY_ID,
-        secretAccessKey: validatedEnv.FLEEK_STORAGE_ACCESS_KEY,
-    },
-
-    /**
-     * Mobile versions.
-     */
-    mobileVersion: {
-        latest: validatedEnv.LATEST_MOBILE_APP_VERSION,
-        minimal: validatedEnv.MINIMAL_MOBILE_APP_VERSION,
-    },
-
-    /**
-     * Placeholder image to use meanwhile community creation.
-     */
-    communityPlaceholderImageUrl: validatedEnv.COMMUNITY_PLACEHOLDER_IMAGE_URL,
-
-    /**
      * Cloudfront URL to be useed
      */
     cloudfrontUrl: validatedEnv.CLOUDFRONT_URL,
-
-    /**
-     * Key used to hash
-     */
-    hashKey: validatedEnv.HASH_KEY,
-
-    /**
-     *
-     */
-    adminKey: validatedEnv.ADMIN_KEY,
 
     /**
      * Thumbnails size for media content
@@ -213,8 +177,6 @@ export default {
     },
 
     redis: validatedEnv.REDIS_URL,
-
-    impactMarketStoryCoverId: validatedEnv.IMPACTMARKET_STORY_COVER_ID,
 
     positionStackApiBaseUrl: validatedEnv.POSITION_STACK_API_BASE_URL,
     positionStackApiKey: validatedEnv.POSITION_STACK_API_KEY,

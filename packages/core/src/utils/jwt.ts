@@ -11,7 +11,6 @@ export function generateAccessToken(
         {
             userId,
             address: userAddress,
-            masterKey: config.masterKey,
             clientId,
         },
         config.jwtSecret

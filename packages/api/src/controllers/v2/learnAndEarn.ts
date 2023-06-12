@@ -148,20 +148,9 @@ class LearnAndEarnController {
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    webhook = (req: Request, res: Response) => {
-        // const { documents } = req.body;
-
-        // if (!documents || !documents.length) {
-        //     standardResponse(res, 400, false, '', {
-        //         error: {
-        //             name: 'INVALID_DOCUMENTS',
-        //             message: 'invalid documents',
-        //         },
-        //     });
-        //     return;
-        // }
+    webhook = (_: Request, res: Response) => {
         services.learnAndEarn
-            .webhook([])
+            .webhook()
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));
     };

@@ -81,27 +81,7 @@ export function optionalAuthentication(req: RequestWithUser, res: Response, next
 }
 
 export function adminAuthentication(req: Request, res: Response, next: NextFunction): void {
-    // Gather the jwt access token from the request header
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (token === null || token === undefined) {
-        res.sendStatus(401); // if there isn't any token
-        return;
-    }
-
-    verify(token, config.jwtSecret, (err, _admin) => {
-        if (err) {
-            res.sendStatus(403);
-            return;
-        }
-        const admin = _admin as { key: string };
-        //
-        if (config.adminKey !== admin.key) {
-            res.sendStatus(403);
-            return;
-        }
-        next(); // pass the execution off to whatever request the client intended
-    });
+    next();
 }
 
 export const rateLimiter = rateLimit({

@@ -102,11 +102,6 @@ export default {
     currenciesApiKey: validatedEnv.CURRENCIES_API_KEY,
 
     /**
-     * Master internal key.
-     */
-    masterKey: validatedEnv.MASTER_KEY,
-
-    /**
      * AWS config.
      */
     aws: {
@@ -121,40 +116,9 @@ export default {
     },
 
     /**
-     * Fleek Storage config.
-     */
-    fleekStorage: {
-        accessKeyId: validatedEnv.FLEEK_STORAGE_KEY_ID,
-        secretAccessKey: validatedEnv.FLEEK_STORAGE_ACCESS_KEY,
-    },
-
-    /**
-     * Mobile versions.
-     */
-    mobileVersion: {
-        latest: validatedEnv.LATEST_MOBILE_APP_VERSION,
-        minimal: validatedEnv.MINIMAL_MOBILE_APP_VERSION,
-    },
-
-    /**
-     * Placeholder image to use meanwhile community creation.
-     */
-    communityPlaceholderImageUrl: validatedEnv.COMMUNITY_PLACEHOLDER_IMAGE_URL,
-
-    /**
      * Cloudfront URL to be useed
      */
     cloudfrontUrl: validatedEnv.CLOUDFRONT_URL,
-
-    /**
-     * Key used to hash
-     */
-    hashKey: validatedEnv.HASH_KEY,
-
-    /**
-     *
-     */
-    adminKey: validatedEnv.ADMIN_KEY,
 
     /**
      * Thumbnails size for media content
@@ -222,8 +186,6 @@ export default {
 
     redis: validatedEnv.REDIS_URL,
 
-    impactMarketStoryCoverId: validatedEnv.IMPACTMARKET_STORY_COVER_ID,
-
     positionStackApiBaseUrl: validatedEnv.POSITION_STACK_API_BASE_URL,
     positionStackApiKey: validatedEnv.POSITION_STACK_API_KEY,
     claimVerification: validatedEnv.CLAIM_VERIFICATION,
@@ -260,11 +222,6 @@ export default {
     learnAndEarnPrivateKey: validatedEnv.LEARN_AND_EARN_PRIVATE_KEY,
     intervalBetweenLessons: validatedEnv.INTERVAL_BETWEEN_LESSONS,
     daysToLimitUsers: validatedEnv.DAYS_TO_LIMIT_USERS,
-    vercelWebhooks: {
-        pwa: validatedEnv.VERCEL_WEBHOOK_PWA,
-        website: validatedEnv.VERCEL_WEBHOOK_WEBSITE,
-        wallet: validatedEnv.VERCEL_WEBHOOK_WALLET,
-    },
     cronJobBatchSize: validatedEnv.CRON_JOB_BATCH_SIZE,
 
     maxDatabasePoolConnections: validatedEnv.MAX_DATABASE_POOL_CONNECTIONS,
