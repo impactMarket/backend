@@ -166,10 +166,9 @@ export default (route: Router): void => {
     route.get(
         '/applications/:query?',
         authenticateToken,
-        // verifySignature,
-        // onlyAuthorizedRoles(['loanManager']),
+        verifySignature,
+        onlyAuthorizedRoles(['loanManager']),
         listApplicationsValidator,
-        // cache(cacheIntervals.fiveMinutes),
         controller.listApplications
     );
 

@@ -92,6 +92,12 @@ type PostDocsRequestType = [
         category: number;
     }
 ];
+type PutApplicationsRequestType = [
+    {
+        applicationId: number;
+        status: number;
+    }
+];
 
 const listBorrowersValidator = validator.query(queryListBorrowersSchema);
 const listApplicationsValidator = validator.query(queryListApplicationsSchema);
@@ -109,6 +115,17 @@ const postDocsValidator = celebrate({
         )
         .required()
 });
+const putApplicationsValidator = celebrate({
+    body: defaultSchema
+        .array<PutApplicationsRequestType>()
+        .items(
+            Joi.object({
+                applicationId: Joi.number().required(),
+                status: Joi.number().required()
+            }).required()
+        )
+        .required()
+});
 
 export {
     listBorrowersValidator,
@@ -117,10 +134,12 @@ export {
     repaymentsHistoryValidator,
     queryGetBorrowerValidator,
     postDocsValidator,
+    putApplicationsValidator,
     ListBorrowersRequestSchema,
     ListApplicationsRequestSchema,
     PreSignerUrlFromAWSRequestSchema,
     RepaymentHistoryRequestSchema,
     GetBorrowerRequestSchema,
-    PostDocsRequestType
+    PostDocsRequestType,
+    PutApplicationsRequestType
 };

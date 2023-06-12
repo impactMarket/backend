@@ -2,8 +2,12 @@ import { Router } from 'express';
 import timeout from 'connect-timeout';
 
 import { MicroCreditController } from '../../../controllers/v2/microcredit/create';
-import { postDocsValidator, preSignerUrlFromAWSValidator } from '../../../validators/microcredit';
-import { authenticateToken, verifySignature } from '../../../middlewares';
+import {
+    postDocsValidator,
+    preSignerUrlFromAWSValidator,
+    putApplicationsValidator
+} from '../../../validators/microcredit';
+import { authenticateToken, onlyAuthorizedRoles, verifySignature } from '../../../middlewares';
 
 export default (route: Router): void => {
     const controller = new MicroCreditController();
@@ -75,4 +79,45 @@ export default (route: Router): void => {
      *     - Signature: []
      */
     route.post('/docs', authenticateToken, verifySignature, postDocsValidator, controller.postDocs);
+
+    /**
+     * @swagger
+     *
+     * /microcredit/applications:
+     *   put:
+     *     tags:
+     *       - "microcredit"
+     *     summary: "Update microcredit applications"
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: array
+     *             items:
+     *               type: object
+     *               properties:
+     *                 applicationId:
+     *                   type: number
+     *                   example: 523
+     *                 status:
+     *                   type: number
+     *                   example: 1
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
+     */
+    route.put(
+        '/applications',
+        authenticateToken,
+        verifySignature,
+        onlyAuthorizedRoles(['loanManager']),
+        putApplicationsValidator,
+        controller.updateApplication
+    );
 };
