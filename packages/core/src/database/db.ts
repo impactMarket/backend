@@ -7,6 +7,7 @@ import { AppClientCredentialModel } from './models/app/appClientCredential';
 import { AppLogModel } from './models/app/appLog';
 import { AppNotificationModel } from './models/app/appNotification';
 import { AppProposalModel } from './models/app/appProposal';
+import { AppReferralCodeModel } from './models/app/appReferralCode';
 import { AppUserModel } from './models/app/appUser';
 import { AppUserValidationCodeModel } from './models/app/appUserValidationCode';
 import { CronJobExecuted } from './models/app/cronJobExecuted';
@@ -64,6 +65,7 @@ export type DbModels = {
     appNotification: ModelStatic<AppNotificationModel>;
     appUserValidationCode: ModelStatic<AppUserValidationCodeModel>;
     ubiBeneficiarySurvey: ModelStatic<UbiBeneficiarySurveyModel>;
+    appReferralCode: ModelStatic<AppReferralCodeModel>;
     //
     community: ModelStatic<Community>;
     ubiCommunitySuspect: ModelStatic<UbiCommunitySuspectModel>;

@@ -377,6 +377,8 @@ export default (route: Router): void => {
      *         description: OK
      *     security:
      *     - BearerToken: []
+     *     - SignatureMessage: []
+     *     - Signature: []
      */
     route.post(
         '/beneficiaries',

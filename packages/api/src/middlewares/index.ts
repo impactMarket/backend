@@ -1,5 +1,9 @@
 import { config, database, subgraph } from '@impactmarket/core';
-import { ethers } from 'ethers';
+import {
+    TypedDataDomain,
+    TypedDataField,
+} from '@ethersproject/abstract-signer';
+import { verifyMessage, verifyTypedData } from '@ethersproject/wallet';
 import { Response, NextFunction, Request } from 'express';
 import rateLimit from 'express-rate-limit';
 import { verify } from 'jsonwebtoken';
@@ -131,7 +135,7 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
         return;
     }
 
-    const address = ethers.utils.verifyMessage(message as string, signature as string);
+    const address = verifyMessage(message as string, signature as string);
 
     if (address.toLowerCase() === req.user?.address.toLowerCase()) {
         // validate signature timestamp
@@ -166,6 +170,70 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
                 name: 'INVALID_SINATURE',
                 message: 'signature is invalid'
             }
+        });
+    }
+}
+
+export function verifyTypedSignature(
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction
+): void {
+    const { signature, expiry, message } = req.headers;
+
+    if (!signature || !message || !expiry) {
+        res.status(401).json({
+            success: false,
+            error: {
+                name: 'INVALID_SINATURE',
+                message: 'signature is invalid',
+            },
+        });
+        return;
+    }
+
+    // validate if signature has expired
+    if (parseInt(expiry as string, 10) < Date.now() / 1000) {
+        res.status(403).json({
+            success: false,
+            error: {
+                name: 'EXPIRED_SIGNATURE',
+                message: 'signature is expired',
+            },
+        });
+        return;
+    }
+
+    // same format as @impactmarket/utils
+    const domain: TypedDataDomain = {
+        chainId: config.jsonRpcUrl.includes('alfajores') ? 44787 : 42220,
+        name: 'impactMarket',
+        verifyingContract: config.DAOContractAddress,
+        version: '1',
+    };
+    const types: Record<string, TypedDataField[]> = {
+        Auth: [
+            { name: 'message', type: 'string' },
+            { name: 'expiry', type: 'uint256' },
+        ],
+    };
+    const value: Record<string, any> = {
+        expiry,
+        message,
+    };
+
+    // verify signature
+    const address = verifyTypedData(domain, types, value, signature as string);
+
+    if (address.toLowerCase() !== req.user?.address.toLowerCase()) {
+        next();
+    } else {
+        res.status(403).json({
+            success: false,
+            error: {
+                name: 'INVALID_SINATURE',
+                message: 'signature is invalid',
+            },
         });
     }
 }

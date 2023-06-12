@@ -2,7 +2,7 @@ import { DbModels } from '../../../database/db';
 import { Sequelize } from 'sequelize';
 
 export function userAssociation(sequelize: Sequelize) {
-    const { appUser, beneficiary, manager, community, appLog } =
+    const { appUser, beneficiary, manager, community, appLog, appReferralCode } =
         sequelize.models as DbModels;
     // used to query from the beneficiary with incude
     beneficiary.belongsTo(appUser, {
@@ -33,6 +33,12 @@ export function userAssociation(sequelize: Sequelize) {
     });
 
     appLog.belongsTo(appUser, {
+        foreignKey: 'userId',
+        targetKey: 'id',
+        as: 'user',
+    });
+
+    appReferralCode.belongsTo(appUser, {
         foreignKey: 'userId',
         targetKey: 'id',
         as: 'user',
