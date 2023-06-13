@@ -19,6 +19,10 @@ module.exports = {
                 type: Sequelize.STRING(256),
                 allowNull: true,
             },
+            website: {
+                type: Sequelize.STRING(128),
+                allowNull: true,
+            },
             countries: {
                 type: Sequelize.ARRAY(Sequelize.STRING(2)),
                 allowNull: true,

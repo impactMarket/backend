@@ -5,6 +5,7 @@ export interface ExchangeRegistry {
     name: string;
     description: string;
     logoUrl: string | null;
+    website: string | null;
     countries: string[];
     global: boolean;
     customImplementation: string | null;
@@ -18,6 +19,7 @@ export interface ExchangeRegistryCreationAttributes {
     name: string;
     description: string;
     logoUrl: string | null;
+    website: string | null;
     countries: string[];
     global: boolean;
     customImplementation?: string;
@@ -33,6 +35,7 @@ export class ExchangeRegistryModel extends Model<
     public name!: string;
     public description!: string;
     public logoUrl!: string | null;
+    public website!: string | null;
     public countries!: string[];
     public global!: boolean;
     public customImplementation!: string | null;
@@ -64,6 +67,10 @@ export function initializeExchangeRegistry(
             },
             logoUrl: {
                 type: DataTypes.STRING(256),
+                allowNull: true,
+            },
+            website: {
+                type: DataTypes.STRING(128),
                 allowNull: true,
             },
             countries: {
