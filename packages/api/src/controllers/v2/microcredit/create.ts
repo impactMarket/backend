@@ -81,6 +81,26 @@ class MicroCreditController {
             .then(r => standardResponse(res, 201, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    saveForm = async (req: RequestWithUser, res: Response): Promise<void> => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!'
+                }
+            });
+            return;
+        }
+
+        const form = req.body.form;
+        const submit = req.body.submit;
+
+        this.microCreditService
+            .saveForm(req.user.userId, form, !!submit)
+            .then(community => standardResponse(res, 201, true, community))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export { MicroCreditController };

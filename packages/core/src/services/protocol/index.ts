@@ -7,9 +7,6 @@ import {
     getMicroCreditStatsLastDays,
     getGlobalData,
 } from '../../subgraph/queries/microcredit';
-import { models } from '../../database';
-import { MicroCreditFormModel } from '../../database/models/microCredit/form';
-import { BaseError } from '../../utils';
 
 export default class ProtocolService {
     public getMicroCreditData = async (): Promise<any> => {
@@ -40,33 +37,4 @@ export default class ProtocolService {
             liquidityAvailable: new BigNumber(balance.toString()).dividedBy(new BigNumber(10).pow(18)).toNumber()
         };
     };
-
-    public saveForm = async (userId: number, form: object, submitted: boolean): Promise<MicroCreditFormModel> => {
-        try {
-            const userForm = await models.microCreditForm.findOrCreate({
-                where: {
-                    userId
-                },
-                defaults: {
-                    form,
-                    userId,
-                    submitted,
-                }
-            });
-
-            // update form
-            const newForm = { ...userForm[0].form, ...form };
-
-            // TODO: if submitted, check if all required fields was filled (prismic)
-
-            const data = await userForm[0].update({ 
-                form: newForm,
-                submitted,
-            });
-
-            return data;
-        } catch (error) {
-            throw new BaseError('SAVE_FORM_ERROR', error.message);
-        }
-    }
 }

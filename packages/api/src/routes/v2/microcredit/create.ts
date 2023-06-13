@@ -5,7 +5,8 @@ import { MicroCreditController } from '../../../controllers/v2/microcredit/creat
 import {
     postDocsValidator,
     preSignerUrlFromAWSValidator,
-    putApplicationsValidator
+    putApplicationsValidator,
+    saveForm
 } from '../../../validators/microcredit';
 import { authenticateToken, onlyAuthorizedRoles, verifySignature } from '../../../middlewares';
 
@@ -120,4 +121,31 @@ export default (route: Router): void => {
         putApplicationsValidator,
         controller.updateApplication
     );
+
+    /**
+     * /microcredit/form:
+     *   post:
+     *     tags:
+     *       - "microcredit"
+     *     summary: "Save MicroCredit Form"
+     *     requestBody:
+     *      required: true
+     *      content:
+     *        application/json:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              form:
+     *                type: object
+     *                required: true
+     *              submit:
+     *                type: boolean
+     *                required: false
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - BearerToken: []
+     */
+    route.post('/form', authenticateToken, saveForm, controller.saveForm);
 };
