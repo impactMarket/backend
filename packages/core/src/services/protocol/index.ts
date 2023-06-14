@@ -23,14 +23,14 @@ export default class ProtocolService {
 
         // TODO: calculate applications { totalApplications, inReview }
 
-        // paid back in the past 3 months / 3 / current debt
+        // current debt / (paid back in the past 3 months / 3)
         const estimatedMaturity =
-            ninetyDaysData.repaid / 3 / subgraphData.currentDebt;
+            subgraphData.currentDebt / (ninetyDaysData.repaid / 3);
         const avgBorrowedAmount = Math.round(
             subgraphData.borrowed / subgraphData.loans
         );
-        // Interest paid in the past month / Debt paid in the past month * 12
-        const apr = (thirtyDaysData.interest / thirtyDaysData.repaid) * 12;
+        // interest paid in the past month / Debt paid in the past month * 12
+        const apr = (thirtyDaysData.interest / thirtyDaysData.repaid) * 12 * 100;
 
         const provider = new JsonRpcProvider(config.jsonRpcUrl);
         const cUSD = new Contract(
@@ -41,8 +41,8 @@ export default class ProtocolService {
         const balance = await cUSD.balanceOf(config.microcreditContractAddress);
 
         return {
-            totalApplications: 0,
-            inReview: 0,
+            totalApplications: 200,
+            inReview: 25,
             estimatedMaturity,
             avgBorrowedAmount,
             apr,
