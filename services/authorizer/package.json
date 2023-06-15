@@ -1,0 +1,21 @@
+{
+    "name": "@impactmarket/authorizer",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "tsc",
+        "test": "NODE_ENV=test mocha"
+    },
+    "author": "impact-market",
+    "license": "Apache-2.0",
+    "engines": {
+        "node": "18.x"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "8.10.102",
+        "@types/node": "18.16.4",
+        "serverless-bundle": "fancywriter/serverless-bundle#c53aa061ed83f683dbb665f9734fc1dca624788a"
+    },
+    "dependencies": {
+        "jsonwebtoken": "9.0.0"
+    }
+}
