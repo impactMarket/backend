@@ -5,12 +5,37 @@ import { ContainerTypes, createValidator, ValidatedRequestSchema } from '../util
 
 const validator = createValidator();
 
-const queryListBorrowersSchema = defaultSchema.object({
+type ListBorrowersType = {
+    offset?: number;
+    limit?: number;
+    claimed?: boolean;
+    filter?: 'repaid' | 'needHelp';
+    orderBy?: 'amount' | 'period' | 'lastRepayment' | 'lastDebt';
+    orderDirection?: 'desc' | 'asc';
+};
+
+type ListApplicationsType = {
+    offset?: number;
+    limit?: number;
+    filter?: 'pending' | 'approved' | 'rejected';
+    orderBy?: 'appliedOn';
+    orderDirection?: 'desc' | 'asc';
+};
+
+const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(10),
     claimed: Joi.boolean().optional(),
     filter: Joi.string().optional().valid('repaid', 'needHelp'),
     orderBy: Joi.string().optional().valid('amount', 'period', 'lastRepayment', 'lastDebt'),
+    orderDirection: Joi.string().optional().valid('desc', 'asc')
+});
+
+const queryListApplicationsSchema = defaultSchema.object<ListApplicationsType>({
+    offset: Joi.number().optional().default(0),
+    limit: Joi.number().optional().max(20).default(10),
+    filter: Joi.string().optional().valid('pending', 'approved', 'rejected'),
+    orderBy: Joi.string().optional().valid('appliedOn'),
     orderDirection: Joi.string().optional().valid('desc', 'asc')
 });
 
@@ -30,14 +55,11 @@ const queryGetBorrowerSchema = defaultSchema.object<{ address: string }>({
 });
 
 interface ListBorrowersRequestSchema extends ValidatedRequestSchema {
-    [ContainerTypes.Query]: {
-        offset?: number;
-        limit?: number;
-        claimed?: boolean;
-        filter?: 'repaid' | 'needHelp';
-        orderBy?: 'amount' | 'period' | 'lastRepayment' | 'lastDebt';
-        orderDirection?: 'desc' | 'asc';
-    };
+    [ContainerTypes.Query]: ListBorrowersType;
+}
+
+interface ListApplicationsRequestSchema extends ValidatedRequestSchema {
+    [ContainerTypes.Query]: ListApplicationsType;
 }
 
 interface RepaymentHistoryRequestSchema extends ValidatedRequestSchema {
@@ -70,8 +92,15 @@ type PostDocsRequestType = [
         category: number;
     }
 ];
+type PutApplicationsRequestType = [
+    {
+        applicationId: number;
+        status: number;
+    }
+];
 
 const listBorrowersValidator = validator.query(queryListBorrowersSchema);
+const listApplicationsValidator = validator.query(queryListApplicationsSchema);
 const repaymentsHistoryValidator = validator.query(queryRepaymentsHistorySchema);
 const preSignerUrlFromAWSValidator = validator.query(queryPreSignerUrlFromAWSSchema);
 const queryGetBorrowerValidator = validator.query(queryGetBorrowerSchema);
@@ -86,16 +115,31 @@ const postDocsValidator = celebrate({
         )
         .required()
 });
+const putApplicationsValidator = celebrate({
+    body: defaultSchema
+        .array<PutApplicationsRequestType>()
+        .items(
+            Joi.object({
+                applicationId: Joi.number().required(),
+                status: Joi.number().required()
+            }).required()
+        )
+        .required()
+});
 
 export {
     listBorrowersValidator,
+    listApplicationsValidator,
     preSignerUrlFromAWSValidator,
     repaymentsHistoryValidator,
     queryGetBorrowerValidator,
     postDocsValidator,
+    putApplicationsValidator,
     ListBorrowersRequestSchema,
+    ListApplicationsRequestSchema,
     PreSignerUrlFromAWSRequestSchema,
     RepaymentHistoryRequestSchema,
     GetBorrowerRequestSchema,
-    PostDocsRequestType
+    PostDocsRequestType,
+    PutApplicationsRequestType
 };

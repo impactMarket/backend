@@ -2,7 +2,11 @@ import { services } from '@impactmarket/core';
 import { Response } from 'express';
 
 import { standardResponse } from '../../../utils/api';
-import { PostDocsRequestType, PreSignerUrlFromAWSRequestSchema } from '../../../validators/microcredit';
+import {
+    PostDocsRequestType,
+    PreSignerUrlFromAWSRequestSchema,
+    PutApplicationsRequestType
+} from '../../../validators/microcredit';
 import { ValidatedRequest } from '../../../utils/queryValidator';
 import { RequestWithUser } from '../../../middlewares/core';
 
@@ -57,6 +61,23 @@ class MicroCreditController {
 
         this.microCreditService
             .postDocs(req.user.userId, req.body)
+            .then(r => standardResponse(res, 201, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+    };
+
+    updateApplication = (req: RequestWithUser<any, any, PutApplicationsRequestType>, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!'
+                }
+            });
+            return;
+        }
+
+        this.microCreditService
+            .updateApplication(req.body)
             .then(r => standardResponse(res, 201, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
