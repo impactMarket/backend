@@ -1,15 +1,13 @@
-import { config, database, subgraph } from '@impactmarket/core';
-import {
-    TypedDataDomain,
-    TypedDataField,
-} from '@ethersproject/abstract-signer';
+import { database, subgraph } from '@impactmarket/core';
+import { TypedDataDomain, TypedDataField } from '@ethersproject/abstract-signer';
 import { verifyMessage, verifyTypedData } from '@ethersproject/wallet';
-import { Response, NextFunction, Request } from 'express';
+import { Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import { verify } from 'jsonwebtoken';
 import RedisStore from 'rate-limit-redis';
 
 import { RequestWithUser, UserInRequest } from './core';
+import config from '~config/index';
 
 const { getUserRoles } = subgraph.queries.user;
 const { redisClient } = database;
@@ -80,7 +78,28 @@ export function optionalAuthentication(req: RequestWithUser, res: Response, next
     authenticateToken(req, res, next);
 }
 
-export function adminAuthentication(req: Request, res: Response, next: NextFunction): void {
+export function adminAuthentication(req: RequestWithUser, res: Response, next: NextFunction): void {
+    if (!req.hasValidTypedSignature) {
+        res.status(401).json({
+            success: false,
+            error: {
+                name: 'INVALID_SINATURE',
+                message: 'signature is invalid'
+            }
+        });
+        return;
+    }
+
+    if (!req.user?.address || !config.admin.authorisedAddresses.includes(req.user.address)) {
+        res.status(403).json({
+            success: false,
+            error: {
+                name: 'NOT_AUTHORIZED',
+                message: 'you are not authorized to perform this action'
+            }
+        });
+        return;
+    }
     next();
 }
 
@@ -154,11 +173,7 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
     }
 }
 
-export function verifyTypedSignature(
-    req: RequestWithUser,
-    res: Response,
-    next: NextFunction
-): void {
+export function verifyTypedSignature(req: RequestWithUser, res: Response, next: NextFunction): void {
     const { signature, expiry, message } = req.headers;
 
     if (!signature || !message || !expiry) {
@@ -166,8 +181,8 @@ export function verifyTypedSignature(
             success: false,
             error: {
                 name: 'INVALID_SINATURE',
-                message: 'signature is invalid',
-            },
+                message: 'signature is invalid'
+            }
         });
         return;
     }
@@ -178,8 +193,8 @@ export function verifyTypedSignature(
             success: false,
             error: {
                 name: 'EXPIRED_SIGNATURE',
-                message: 'signature is expired',
-            },
+                message: 'signature is expired'
+            }
         });
         return;
     }
@@ -189,31 +204,32 @@ export function verifyTypedSignature(
         chainId: config.jsonRpcUrl.includes('alfajores') ? 44787 : 42220,
         name: 'impactMarket',
         verifyingContract: config.DAOContractAddress,
-        version: '1',
+        version: '1'
     };
     const types: Record<string, TypedDataField[]> = {
         Auth: [
             { name: 'message', type: 'string' },
-            { name: 'expiry', type: 'uint256' },
-        ],
+            { name: 'expiry', type: 'uint256' }
+        ]
     };
     const value: Record<string, any> = {
         expiry,
-        message,
+        message
     };
 
     // verify signature
     const address = verifyTypedData(domain, types, value, signature as string);
 
     if (address.toLowerCase() !== req.user?.address.toLowerCase()) {
+        req.hasValidTypedSignature = true;
         next();
     } else {
         res.status(403).json({
             success: false,
             error: {
                 name: 'INVALID_SINATURE',
-                message: 'signature is invalid',
-            },
+                message: 'signature is invalid'
+            }
         });
     }
 }

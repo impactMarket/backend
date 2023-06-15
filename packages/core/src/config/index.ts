@@ -120,85 +120,15 @@ export default {
      */
     cloudfrontUrl: validatedEnv.CLOUDFRONT_URL,
 
-    /**
-     * Thumbnails size for media content
-     * 0 (zero) is for auto
-     */
-    thumbnails: {
-        story: [
-            {
-                width: 94,
-                height: 148,
-            },
-            {
-                width: 84,
-                height: 140,
-            },
-        ],
-        community: {
-            cover: [
-                {
-                    width: 392,
-                    height: 392,
-                },
-                {
-                    width: 293,
-                    height: 293,
-                },
-                {
-                    width: 88,
-                    height: 88,
-                },
-                {
-                    width: 330,
-                    height: 330,
-                },
-                {
-                    width: 42,
-                    height: 42,
-                },
-                {
-                    width: 294,
-                    height: 294,
-                },
-            ],
-        },
-        promoter: {
-            logo: [
-                {
-                    width: 100,
-                    height: 100,
-                },
-            ],
-        },
-        profile: [
-            {
-                width: 42,
-                height: 42,
-            },
-            {
-                width: 80,
-                height: 80,
-            },
-        ],
-        pixelRatio: [1, 2],
-    },
-
     redis: validatedEnv.REDIS_URL,
 
-    positionStackApiBaseUrl: validatedEnv.POSITION_STACK_API_BASE_URL,
-    positionStackApiKey: validatedEnv.POSITION_STACK_API_KEY,
     claimVerification: validatedEnv.CLAIM_VERIFICATION,
     storyCronActive: validatedEnv.STORY_CRON_ACTIVE,
     slackApi: validatedEnv.SLACK_API,
     sendgridApi: validatedEnv.SENDGRID_API_KEY,
-    internalEmailNotifying: validatedEnv.INTERNAL_EMAIL_NOTIFYING,
-    internalEmailToNotify: validatedEnv.INTERNAL_EMAIL_TO_NOTIFY,
     firebaseFileBase64: validatedEnv.FIREBASE_FILE_BASE64,
 
     hasRedisTls: validatedEnv.HAS_REDIS_TLS,
-
-    internalNotifications: validatedEnv.INTERNAL_NOTIFICATIONS,
 
     maxRequestPerUser: validatedEnv.MAX_REQUEST_PER_USER,
     hubspotKey: validatedEnv.HUBSPOT_KEY,
@@ -218,7 +148,6 @@ export default {
     councilSubgraphUrl: validatedEnv.COUNCIL_SUBGRAPH_URL,
     microcreditSubgraphUrl: validatedEnv.MICROCREDIT_SUBGRAPH_URL,
     imageHandlerUrl: validatedEnv.IMAGE_HANDLER_URL,
-    signatureExpiration: validatedEnv.SIGNATURE_EXPIRATION,
     learnAndEarnPrivateKey: validatedEnv.LEARN_AND_EARN_PRIVATE_KEY,
     intervalBetweenLessons: validatedEnv.INTERVAL_BETWEEN_LESSONS,
     daysToLimitUsers: validatedEnv.DAYS_TO_LIMIT_USERS,

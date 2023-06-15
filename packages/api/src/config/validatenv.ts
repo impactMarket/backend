@@ -47,10 +47,6 @@ function validateEnv() {
         AWS_BUCKET_APP: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_BUCKET_MICROCREDIT: str({ devDefault: onlyOnTestEnv('xyz') }),
         //
-        CURRENCIES_API_BASE_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
-        CURRENCIES_API_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
-        POSITION_STACK_API_BASE_URL: str({ devDefault: 'xyz' }),
-        POSITION_STACK_API_KEY: str({ devDefault: 'xyz' }),
         CLAIM_VERIFICATION: bool({ default: false }),
         LOG_LEVEL: str({ default: 'warn' }),
         API_ENVIRONMENT: str({
@@ -62,10 +58,7 @@ function validateEnv() {
         STORY_CRON_ACTIVE: bool({ default: false }),
         SLACK_API: str({ default: 'xyz' }),
         SENDGRID_API_KEY: str({ default: 'xyz' }),
-        INTERNAL_EMAIL_NOTIFYING: str({ default: 'none@none.none' }),
-        INTERNAL_EMAIL_TO_NOTIFY: str({ default: 'none@none.none' }),
         HAS_REDIS_TLS: bool({ default: true }),
-        INTERNAL_NOTIFICATIONS: bool({ default: false }),
         MAX_REQUEST_PER_USER: num({ default: 900 }),
         HUBSPOT_KEY: str({ devDefault: 'xyz' }),
         DAO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
@@ -85,6 +78,8 @@ function validateEnv() {
         TREASURY_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         LEARN_AND_EARN_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AWS_LAMBDA: bool({ default: false }),
+        SIGNATURE_EXPIRATION: num({ default: 15 }),
+        ADMIN_AUTHORISED_ADDRESSES: str(),
         SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         // attestation service (ASv2)
         ATTESTATION_ISSUER_PRIVATE_KEY: str({

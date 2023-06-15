@@ -64,8 +64,6 @@ function validateEnv() {
         //
         CURRENCIES_API_BASE_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         CURRENCIES_API_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
-        POSITION_STACK_API_BASE_URL: str({ devDefault: 'xyz' }),
-        POSITION_STACK_API_KEY: str({ devDefault: 'xyz' }),
         CLAIM_VERIFICATION: bool({ default: false }),
         LOG_LEVEL: str({ default: 'warn' }),
         API_ENVIRONMENT: str({
@@ -77,11 +75,8 @@ function validateEnv() {
         STORY_CRON_ACTIVE: bool({ default: false }),
         SLACK_API: str({ default: 'xyz' }),
         SENDGRID_API_KEY: str({ default: 'xyz' }),
-        INTERNAL_EMAIL_NOTIFYING: str({ default: 'none@none.none' }),
-        INTERNAL_EMAIL_TO_NOTIFY: str({ default: 'none@none.none' }),
         FIREBASE_FILE_BASE64: str({ devDefault: 'xyz' }),
         HAS_REDIS_TLS: bool({ default: true }),
-        INTERNAL_NOTIFICATIONS: bool({ default: false }),
         MAX_REQUEST_PER_USER: num({ default: 900 }),
         HUBSPOT_KEY: str({ devDefault: 'xyz' }),
         DAO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
@@ -105,7 +100,6 @@ function validateEnv() {
         COUNCIL_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         MICROCREDIT_SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         IMAGE_HANDLER_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
-        SIGNATURE_EXPIRATION: num({ default: 15 }),
         LEARN_AND_EARN_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         INTERVAL_BETWEEN_LESSONS: num({ default: 7 }),
         DAYS_TO_LIMIT_USERS: num({ default: 30 }),
