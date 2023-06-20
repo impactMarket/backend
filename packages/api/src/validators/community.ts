@@ -17,36 +17,8 @@ const create = celebrate({
             longitude: Joi.number().required(),
         }).required(),
         email: Joi.string().required(),
-        coverMediaId: Joi.number().optional(), // v1
-        coverMediaPath: Joi.string().optional(), // v2
-        placeId: Joi.string().optional(), // v2
-        txReceipt: Joi.when('contractAddress', {
-            not: undefined,
-            then: Joi.object().required(),
-            otherwise: Joi.object().optional(),
-        }),
-        contractParams: Joi.object().required(),
-    }),
-});
-
-/**
- * @deprecated
- */
-const add = celebrate({
-    body: defaultSchema.object({
-        requestByAddress: Joi.string().required(),
-        name: Joi.string().required(),
-        contractAddress: Joi.string().optional(),
-        description: Joi.string().required(),
-        language: Joi.string().required(),
-        currency: Joi.string().required(),
-        city: Joi.string().required(),
-        country: Joi.string().required(),
-        gps: Joi.object({
-            latitude: Joi.number().required(),
-            longitude: Joi.number().required(),
-        }).required(),
-        email: Joi.string().required(),
+        coverMediaPath: Joi.string().optional(),
+        placeId: Joi.string().optional(),
         txReceipt: Joi.when('contractAddress', {
             not: undefined,
             then: Joi.object().required(),
@@ -65,7 +37,6 @@ const edit = celebrate({
         city: Joi.string().optional(), // TODO: to remove
         country: Joi.string().optional(), // TODO: to remove
         email: Joi.string().optional(), // TODO: to remove
-        coverMediaId: Joi.number().optional(),
         coverMediaPath: Joi.string().optional(),
     }),
 });
@@ -83,23 +54,9 @@ const editSubmission = celebrate({
             longitude: Joi.number().required(),
         }).optional(),
         email: Joi.string().optional(),
-        coverMediaId: Joi.number().optional(), // only v1
-        coverMediaPath: Joi.string().optional(), // only v2
-        placeId: Joi.string().optional(), // only v2
+        coverMediaPath: Joi.string().optional(),
+        placeId: Joi.string().optional(),
         contractParams: Joi.object().optional(),
-    }),
-});
-
-const accept = celebrate({
-    body: defaultSchema.object({
-        acceptanceTransaction: Joi.string().required(),
-        publicId: Joi.string().required(),
-    }),
-});
-
-const remove = celebrate({
-    body: defaultSchema.object({
-        publicId: Joi.string().required(),
     }),
 });
 
@@ -112,11 +69,8 @@ const review = celebrate({
 });
 
 export default {
-    add,
     create,
     edit,
     editSubmission,
-    accept,
-    remove,
     review,
 };

@@ -17,12 +17,10 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *        type: object
  *        required:
  *          - id
- *          - publicId
  *          - requestByAddress
  *          - contractAddress
  *          - name
  *          - description
- *          - descriptionEn
  *          - language
  *          - currency
  *          - city
@@ -30,8 +28,6 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *          - gps
  *          - email
  *          - visibility
- *          - coverImage
- *          - coverMediaId
  *          - coverMediaPath
  *          - status
  *          - review
@@ -53,8 +49,6 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *        properties:
  *          id:
  *            type: integer
- *          publicId:
- *            type: string
  *          requestByAddress:
  *            type: string
  *          contractAddress:
@@ -62,8 +56,6 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *          name:
  *            type: string
  *          description:
- *            type: string
- *          descriptionEn:
  *            type: string
  *          language:
  *            type: string
@@ -85,10 +77,6 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
  *          visibility:
  *            type: string
  *            enum: [public, private]
- *          coverImage:
- *            type: string
- *          coverMediaId:
- *            type: integer
  *          coverMediaPath:
  *            type: string
  *          status:
@@ -129,12 +117,10 @@ import { UbiCommunitySuspect } from './ubiCommunitySuspect';
 
 export interface CommunityAttributes {
     id: number; // Note that the `null assertion` `!` is required in strict mode.
-    publicId: string; // TODO: to be removed
     requestByAddress: string;
     contractAddress: string | null;
     name: string;
     description: string;
-    descriptionEn: string | null;
     language: string;
     currency: string;
     city: string;
@@ -145,8 +131,6 @@ export interface CommunityAttributes {
     };
     email: string;
     visibility: 'public' | 'private';
-    coverImage: string; // TODO: to be removed
-    coverMediaId: number | null;
     coverMediaPath: string | null;
     status: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     review: 'pending' | 'claimed' | 'declined' | 'accepted';
@@ -173,9 +157,7 @@ export interface CommunityAttributes {
 }
 
 export interface ICommunityCreationAttributes extends IBaseCommunityAttributes {
-    descriptionEn?: string;
     visibility?: 'public' | 'private';
-    coverImage?: string; // TODO: will be required once next version is released
     status?: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     started?: Date;
     txReceipt?: any | undefined;
@@ -196,7 +178,6 @@ export interface IBaseCommunityAttributes {
         longitude: number;
     };
     email: string;
-    coverMediaId?: number;
     coverMediaPath?: string;
     contractParams?: ICommunityContractParams;
     placeId?: string;

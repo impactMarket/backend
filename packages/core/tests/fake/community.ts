@@ -3,17 +3,6 @@ import { UbiCommunityContractModel } from '../../src/database/models/ubi/communi
 export const now = new Date();
 export const nowTimestamp = now.getTime();
 
-export const communityPublicIds = [
-    // more than 30 days, fully running
-    'c77a15a7-2cef-4d1e-96db-afd0b91ab71d',
-    'b090d41f-91c0-4f18-a809-633217590bbb',
-    'a3b4ad6e-dc8e-4861-b5b2-c1973907c515',
-    // running for less that 30 days, fully running
-    'ffb2fa59-78c6-4378-82a8-2a28f9056c3d',
-    'fa12164c-3039-47e1-9005-aaad668215ee',
-    // no beneficiaries
-    '2c0f816e-3475-4d4a-847f-13fb141993f6',
-];
 export const communityIds = [
     // more than 30 days, fully running
     0, 1, 2,
@@ -105,7 +94,6 @@ communitiesContract.set(
 export const validNonEmptyMonthLongCommunities: any[] = [
     {
         id: communityIds[0],
-        publicId: communityPublicIds[0],
         contractAddress: '0xFdd8bD58115FfBf04e47411c1d228eCC45E93075',
         state: {
             claimed: '3946000000000000000000',
@@ -116,7 +104,6 @@ export const validNonEmptyMonthLongCommunities: any[] = [
     },
     {
         id: communityIds[1],
-        publicId: communityPublicIds[1],
         contractAddress: '0x510Bf5D8feBCA69fCfe73d391783be01B3324c69',
         state: {
             claimed: '163000000000000000000',
@@ -127,7 +114,6 @@ export const validNonEmptyMonthLongCommunities: any[] = [
     },
     {
         id: communityIds[2],
-        publicId: communityPublicIds[2],
         contractAddress: '0x473a3be7C2A42452Ed0b521614B3b76BC59D2D1D',
         state: {
             claimed: '2068500000000000000000',
@@ -142,7 +128,6 @@ export const validNonEmptyMonthLongCommunities: any[] = [
 export const validNonEmptyLessThanMonthLongCommunities: any[] = [
     {
         id: communityIds[3],
-        publicId: communityPublicIds[3],
         contractAddress: '0xD7C06AfE310baCD786BA2929088298b9e60322ec',
         state: {
             claimed: '20500000000000000000',
@@ -153,7 +138,6 @@ export const validNonEmptyLessThanMonthLongCommunities: any[] = [
     },
     {
         id: communityIds[4],
-        publicId: communityPublicIds[4],
         contractAddress: '0xFdd8bD58115FfBf04e47411c1d228eCC45E93075',
         state: {
             claimed: '3200000000000000000',
@@ -168,7 +152,6 @@ export const validNonEmptyLessThanMonthLongCommunities: any[] = [
 export const validEmptyCommunities: any[] = [
     {
         id: communityIds[5],
-        publicId: communityPublicIds[5],
         contractAddress: '0x473a3be7C2A42452Ed0b521614B3b76BC59D2D1D',
         state: {
             claimed: '0',
@@ -183,5 +166,5 @@ export const communityAddressesAndIds = new Map(
     validNonEmptyMonthLongCommunities
         .concat(validNonEmptyLessThanMonthLongCommunities)
         .concat(validEmptyCommunities)
-        .map((c) => [c.contractAddress, c.publicId])
+        .map((c) => [c.contractAddress, c.id])
 );

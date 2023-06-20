@@ -1290,13 +1290,12 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    fields: 'id;contractAddress;publicId;contract.maxClaim;contract.claimAmount',
+                    fields: 'id;contractAddress;contract.maxClaim;contract.claimAmount',
                 });
 
                 expect(result.rows[0]).to.have.deep.keys([
                     'id',
                     'contractAddress',
-                    'publicId',
                     'contract',
                 ]);
                 expect(result.rows[0].contract).to.have.deep.keys([
@@ -1305,7 +1304,6 @@ describe('community service v2', () => {
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,
-                    publicId: communities[0].publicId,
                 });
                 expect(result.rows[0].contract).to.include({
                     maxClaim: communities[0]!.contract!.maxClaim,
@@ -1345,13 +1343,12 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    fields: 'id;contractAddress;publicId;contract.maxClaim;proposal.*',
+                    fields: 'id;contractAddress;contract.maxClaim;proposal.*',
                 });
 
                 expect(result.rows[0]).to.have.deep.keys([
                     'id',
                     'contractAddress',
-                    'publicId',
                     'contract',
                     'proposal',
                 ]);
@@ -1363,7 +1360,6 @@ describe('community service v2', () => {
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,
-                    publicId: communities[0].publicId,
                 });
                 expect(result.rows[0].contract).to.include({
                     maxClaim: communities[0]!.contract!.maxClaim,
@@ -1411,21 +1407,17 @@ describe('community service v2', () => {
                     'contract',
                     'contractAddress',
                     'country',
-                    'coverImage',
-                    'coverMediaId',
                     'coverMediaPath',
                     'createdAt',
                     'currency',
                     'deletedAt',
                     'description',
-                    'descriptionEn',
                     'gps',
                     'id',
                     'language',
                     'name',
                     'proposalId',
                     'ambassadorAddress',
-                    'publicId',
                     'requestByAddress',
                     'review',
                     'started',
@@ -1449,15 +1441,11 @@ describe('community service v2', () => {
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,
-                    publicId: communities[0].publicId,
                     city: communities[0].city,
                     contractAddress: communities[0].contractAddress,
                     country: communities[0].country,
-                    coverImage: communities[0].coverImage,
-                    coverMediaId: communities[0].coverMediaId,
                     currency: communities[0].currency,
                     description: communities[0].description,
-                    descriptionEn: communities[0].descriptionEn,
                     language: communities[0].language,
                     name: communities[0].name,
                     requestByAddress: communities[0].requestByAddress,
@@ -1506,12 +1494,11 @@ describe('community service v2', () => {
                 ]);
 
                 const result = await communityListService.list({
-                    fields: 'id;publicId;contractAddress;contract.*;cover.*',
+                    fields: 'id;contractAddress;contract.*;cover.*',
                 });
 
                 expect(result.rows[0]).to.have.deep.keys([
                     'id',
-                    'publicId',
                     'contractAddress',
                     'contract',
                 ]);
@@ -1530,7 +1517,6 @@ describe('community service v2', () => {
                 ]);
                 expect(result.rows[0]).to.include({
                     id: communities[0].id,
-                    publicId: communities[0].publicId,
                     contractAddress: communities[0].contractAddress,
                 });
                 expect(result.rows[0].contract).to.include({

@@ -79,7 +79,7 @@ export default class ClaimLocationService {
             }
 
             const beneficiaryCommunity = await models.community.findOne({
-                attributes: ['id', 'publicId'],
+                attributes: ['id'],
                 where: {
                     contractAddress: ethers.utils.getAddress(
                         beneficiary[0].community.id
@@ -87,10 +87,7 @@ export default class ClaimLocationService {
                 },
             });
 
-            if (
-                beneficiaryCommunity?.id === communityId ||
-                beneficiaryCommunity?.publicId === communityId
-            ) {
+            if (beneficiaryCommunity?.id === communityId) {
                 await models.ubiClaimLocation.create({
                     communityId: beneficiaryCommunity.id,
                     gps,

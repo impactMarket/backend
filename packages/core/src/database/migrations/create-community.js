@@ -7,12 +7,6 @@ module.exports = {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            publicId: {
-                type: Sequelize.UUID,
-                defaultValue: Sequelize.UUIDV4,
-                unique: true,
-                allowNull: false,
-            },
             requestByAddress: {
                 type: Sequelize.STRING(44),
                 unique: true,
@@ -28,10 +22,6 @@ module.exports = {
             description: {
                 type: Sequelize.STRING(1024),
                 allowNull: false,
-            },
-            descriptionEn: {
-                type: Sequelize.STRING(1024),
-                allowNull: true,
             },
             language: {
                 type: Sequelize.STRING(8),
@@ -62,14 +52,6 @@ module.exports = {
             visibility: {
                 type: Sequelize.ENUM('public', 'private'),
                 allowNull: false,
-            },
-            coverImage: {
-                type: Sequelize.STRING(128),
-                // allowNull: false,
-            },
-            coverMediaId: {
-                type: Sequelize.INTEGER,
-                allowNull: true,
             },
             coverMediaPath: {
                 type: Sequelize.STRING(44),
