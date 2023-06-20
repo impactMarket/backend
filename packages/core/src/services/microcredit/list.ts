@@ -5,8 +5,9 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
 import { BigNumber, Contract } from 'ethers';
 import { config } from '../../..';
-import { WhereOptions } from 'sequelize';
+import { WhereOptions, literal, Op } from 'sequelize';
 import { MicroCreditApplications } from '../../interfaces/microCredit/applications';
+import { BaseError } from '../../utils';
 
 function mergeArrays(arr1: any[], arr2: any[], key: string) {
     const map = new Map(arr1.map(item => [item[key], item]));
@@ -235,4 +236,223 @@ export default class MicroCreditList {
             docs: docs.map(d => d.toJSON())
         };
     };
+
+    /**
+     * @swagger
+     *  components:
+     *    schemas:
+     *      ageRange:
+     *        type: object
+     *        properties:
+     *          ageRange1:
+     *            type: number
+     *            description: age range 18 - 24
+     *          ageRange2:
+     *            type: number
+     *            description: age range 25 - 34
+     *          ageRange3:
+     *            type: number
+     *            description: age range 35 - 44
+     *          ageRange4:
+     *            type: number
+     *            description: age range 45 - 54
+     *          ageRange5:
+     *            type: number
+     *            description: age range 55 - 64
+     *          ageRange6:
+     *            type: number
+     *            description: age range 65+
+     */
+
+    /**
+     * @swagger
+     *  components:
+     *    schemas:
+     *      demographics:
+     *        type: object
+     *        properties:
+     *          gender:
+     *            type: array
+     *            items:
+     *              type: object
+     *              properties:
+     *                country:
+     *                  type: string
+     *                  description: country
+     *                  example: BR
+     *                male:
+     *                  type: number
+     *                  description: total user males
+     *                female:
+     *                  type: number
+     *                  description: total user females
+     *                undisclosed:
+     *                  type: number
+     *                  description: users with no information about gender
+     *                totalGender:
+     *                  type: number
+     *                  description: total users
+     *          ageRange:
+     *            type: object
+     *            properties:
+     *              paid:
+     *                $ref: '#/components/schemas/ageRange'
+     *              pending:
+     *                $ref: '#/components/schemas/ageRange'
+     *              overdue:
+     *                $ref: '#/components/schemas/ageRange'
+     * 
+    */
+    public demographics = async () => {
+        try {
+            // get all borrower addresses
+            const limit = 100;
+            const addresses: {
+                paid: string[],
+                pending: string[],
+                overdue: string[],
+            } = {
+                paid: [],
+                pending: [],
+                overdue: [],
+            };
+
+            for (let i = 0; ; i += limit) {
+                const rawBorrowers = await getBorrowers({ limit, offset: i, claimed: true, filter: 'all' });
+                if (rawBorrowers.borrowers.length === 0)
+                    break;
+
+                rawBorrowers.borrowers.forEach((b) => {
+                    // create payment status
+                    if (b.lastDebt === '0') {
+                        addresses.paid.push(getAddress(b.borrower!.id));
+                    } else {
+                        const limitDate = new Date();
+                        const claimed = new Date(b.claimed*1000);
+                        limitDate.setSeconds(claimed.getSeconds() + b.period);
+
+                        if (limitDate > new Date()) {
+                            addresses.overdue.push(getAddress(b.borrower!.id));
+                        } else {
+                            addresses.pending.push(getAddress(b.borrower!.id));
+                        }
+                    }
+                });
+            }
+            
+            const year = new Date().getUTCFullYear();
+            const ageAttributes: any[] = [
+                [
+                    literal(
+                        `count(*) FILTER (WHERE ${year}-year BETWEEN 18 AND 24)`
+                    ),
+                    'ageRange1',
+                ],
+                [
+                    literal(
+                        `count(*) FILTER (WHERE ${year}-year BETWEEN 25 AND 34)`
+                    ),
+                    'ageRange2',
+                ],
+                [
+                    literal(
+                        `count(*) FILTER (WHERE ${year}-year BETWEEN 35 AND 44)`
+                    ),
+                    'ageRange3',
+                ],
+                [
+                    literal(
+                        `count(*) FILTER (WHERE ${year}-year BETWEEN 45 AND 54)`
+                    ),
+                    'ageRange4',
+                ],
+                [
+                    literal(
+                        `count(*) FILTER (WHERE ${year}-year BETWEEN 55 AND 64)`
+                    ),
+                    'ageRange5',
+                ],
+                [
+                    literal(
+                        `count(*) FILTER (WHERE ${year}-year BETWEEN 65 AND 120)`
+                    ),
+                    'ageRange6',
+                ],
+            ];
+            const genderAttributes: any[] = [
+                'country',
+                [
+                    literal(
+                        'count(*) FILTER (WHERE gender = \'m\')'
+                    ),
+                    'male',
+                ],
+                [
+                    literal(
+                        'count(*) FILTER (WHERE gender = \'f\')'
+                    ),
+                    'female',
+                ],
+                [
+                    literal(
+                        'count(*) FILTER (WHERE gender = \'u\'  OR gender is null)'
+                    ),
+                    'undisclosed',
+                ],
+                [literal('count(*)'), 'totalGender'],
+            ]
+
+            // get age range and gender by payment status
+            const [overdue, pending, paid, gender] = await Promise.all([
+                models.appUser.findAll({
+                attributes: ageAttributes,
+                where: {
+                    address: {
+                    [Op.in]: addresses.overdue
+                    }
+                },
+                raw: true,
+                }),
+                models.appUser.findAll({
+                attributes: ageAttributes,
+                where: {
+                    address: {
+                    [Op.in]: addresses.pending
+                    }
+                },
+                raw: true,
+                }),
+                models.appUser.findAll({
+                attributes: ageAttributes,
+                where: {
+                    address: {
+                    [Op.in]: addresses.paid
+                    }
+                },
+                raw: true,
+                }),
+                models.appUser.findAll({
+                attributes: genderAttributes,
+                where: {
+                    address: {
+                    [Op.in]: [...addresses.paid, ...addresses.overdue, ...addresses.pending]
+                    }
+                },
+                group: ['country'],
+                raw: true,
+                }),
+            ]);          
+            
+            return {
+                gender,
+                ageRange: {
+                    paid: paid[0],
+                    pending: pending[0],
+                    overdue: overdue[0],
+                },
+            };
+        } catch (error) {
+            throw new BaseError('DEMOGRAPHICS_FAILED', error.message || 'failed to get microcredit demographics')
+        }
+    }
 }

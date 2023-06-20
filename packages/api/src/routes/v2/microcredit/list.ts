@@ -227,4 +227,27 @@ export default (route: Router): void => {
         cache(cacheIntervals.fiveMinutes),
         controller.getRepaymentsHistory
     );
+
+    /**
+     * @swagger
+     *
+     * /microcredit/demographics:
+     *   get:
+     *     tags:
+     *       - "microcredit"
+     *     summary: "Get Microcredit demographics"
+     *     description: "Get Microcredit demographics"
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/demographics'
+     */
+    route.get(
+        '/demographics',
+        cache(cacheIntervals.oneHour),
+        controller.demographics
+    )
 };

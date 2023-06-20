@@ -222,14 +222,14 @@ export const getMicroCreditStatsLastDays = async (
 export type SubgraphGetBorrowersQuery = {
     offset?: number;
     limit?: number;
-    addedBy: string;
+    addedBy?: string;
     claimed?: boolean;
-    filter?: 'repaid' | 'needHelp';
+    filter?: 'repaid' | 'needHelp' | 'all';
     orderBy?: 'amount' | 'period' | 'lastRepayment' | 'lastDebt';
     orderDirection?: 'desc' | 'asc';
 };
 
-const filtersToBorrowersQuery = (filter: 'repaid' | 'needHelp' | undefined): string => {
+const filtersToBorrowersQuery = (filter: 'repaid' | 'needHelp' | 'all' | undefined): string => {
     switch (filter) {
         case 'repaid':
             return 'lastDebt: 0';
@@ -238,6 +238,8 @@ const filtersToBorrowersQuery = (filter: 'repaid' | 'needHelp' | undefined): str
             const date = new Date();
             date.setMonth(date.getMonth() - 3);
             return `lastRepayment_lte: ${Math.floor(date.getTime() / 1000)}`;
+        case 'all':
+            return '';
         default:
             return 'lastDebt_not: 0';
     }
@@ -253,7 +255,7 @@ const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<numb
                 first: 1000
                 skip: 0
                 where: {
-                    addedBy: "${addedBy.toLowerCase()}"
+                    ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
                     ${claimed ? 'claimed_not: null' : ''}
                     ${filtersToBorrowersQuery(filter)}
                 }
@@ -333,7 +335,7 @@ export const getBorrowers = async (
                 first: ${limit ? limit : 10}
                 skip: ${offset ? offset : 0}
                 where: {
-                    addedBy: "${addedBy.toLowerCase()}"
+                    ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
                     ${claimed ? 'claimed_not: null' : ''}
                     ${filtersToBorrowersQuery(filter)}
                     ${filter === 'repaid' ? `borrower_in: ${JSON.stringify(countOrList)}` : ''}
