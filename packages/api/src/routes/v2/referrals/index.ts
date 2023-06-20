@@ -14,7 +14,7 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /referrals/{campaignId}:
+     * /referrals/{cid}:
      *   get:
      *     tags:
      *       - "referrals"
@@ -22,7 +22,7 @@ export default (app: Router): void => {
      *     description: "This GET method is used to generate the user referral code, or, if it aready exists, simply return it. This method requires the user to be authenticated and provide an EIP712 signature. Use the utils demo to generate the signature."
      *     parameters:
      *       - in: path
-     *         name: campaignId
+     *         name: cid
      *         schema:
      *           type: integer
      *         required: true
@@ -34,15 +34,14 @@ export default (app: Router): void => {
      *         description: "Invalid input"
      *     security:
      *     - BearerToken: []
-     *     - SignatureMessage: []
-     *     - SignatureExpiry: []
-     *     - Signature: []
+     *     - SignatureEIP712Signature: []
+     *     - SignatureEIP712Value: []
      */
     route.get(
-        '/:campaignId',
+        '/:cid',
         authenticateToken,
-        verifyTypedSignature,
-        cache(cacheIntervals.tenMinutes),
+        // verifyTypedSignature,
+        // cache(cacheIntervals.tenMinutes),
         controller.get
     );
 
@@ -73,5 +72,11 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post('/', authenticateToken, verifyTypedSignature, referralPostValidator, controller.post);
+    route.post(
+        '/',
+        authenticateToken,
+        verifyTypedSignature,
+        referralPostValidator,
+        controller.post
+    );
 };

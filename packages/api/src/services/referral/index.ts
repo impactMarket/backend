@@ -8,6 +8,7 @@ import { defaultAbiCoder } from '@ethersproject/abi';
 import { arrayify } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/keccak256';
 import { Wallet } from '@ethersproject/wallet';
+import { BaseError } from '@impactmarket/core/src/utils';
 
 const { appReferralCode, appUser } = database.models;
 
@@ -152,11 +153,20 @@ export const useReferralCode = async (userId: number, referralCode: string) => {
         throw new Error('Referral code already used');
     }
 
-    // call smart-contract to send funds to new user
-    await referralLinkContract.claimReward(
-        referralCodeExists.user.address,
-        [referralCodeExists.campaignId.toString()],
-        [user.address],
-        [signature]
-    );
+    try {
+        // call smart-contract to send funds to new user
+        await referralLinkContract.claimReward(
+            referralCodeExists.user.address,
+            [referralCodeExists.campaignId.toString()],
+            [user.address],
+            [signature]
+        );
+    } catch (error) {
+        console.log(error.error)
+        if (error.error?.message?.indexOf('ReferralLink') !== -1) {
+            throw new BaseError('REFERRAL_LINK_ERROR', error.error?.message?.match(/\"execution reverted: ([\w\s\d:]*)\",/)[1]);
+        }
+
+        throw error;
+    }
 };
