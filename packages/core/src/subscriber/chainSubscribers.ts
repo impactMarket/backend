@@ -6,9 +6,8 @@ import { NotificationType } from '../interfaces/app/appNotification';
 import { sendNotification } from '../utils/pushNotification';
 
 class ChainSubscribers {
-    provider: ethers.providers.WebSocketProvider;
-    jsonRpcProvider: ethers.providers.JsonRpcProvider;
-    jsonRpcProviderFallback: ethers.providers.JsonRpcProvider;
+    provider: ethers.providers.JsonRpcProvider;
+    providerFallback: ethers.providers.JsonRpcProvider;
     ifaceCommunityAdmin: ethers.utils.Interface;
     ifaceCommunity: ethers.utils.Interface;
     ifaceMicrocredit: ethers.utils.Interface;
@@ -16,14 +15,12 @@ class ChainSubscribers {
     communities: Map<string, number>;
 
     constructor(
-        webSocketProvider: ethers.providers.WebSocketProvider,
         jsonRpcProvider: ethers.providers.JsonRpcProvider,
         jsonRpcProviderFallback: ethers.providers.JsonRpcProvider,
         communities: Map<string, number>
     ) {
-        this.provider = webSocketProvider;
-        this.jsonRpcProvider = jsonRpcProvider;
-        this.jsonRpcProviderFallback = jsonRpcProviderFallback;
+        this.provider = jsonRpcProvider;
+        this.providerFallback = jsonRpcProviderFallback;
         this.ifaceCommunityAdmin = new ethers.utils.Interface(
             contracts.CommunityAdminABI
         );
@@ -59,7 +56,7 @@ class ChainSubscribers {
         this._setupListener(this.provider);
         // we start the listener alongside with the recover system
         // so we know we don't lose events.
-        this._runRecoveryTxs(this.jsonRpcProvider, this.jsonRpcProviderFallback)
+        this._runRecoveryTxs(this.provider, this.providerFallback)
             .then(() =>
                 services.app.ImMetadataService.removeRecoverBlock()
             )
@@ -117,7 +114,7 @@ class ChainSubscribers {
         });
     }
 
-    _setupListener(provider: ethers.providers.WebSocketProvider) {
+    _setupListener(provider: ethers.providers.JsonRpcProvider) {
         utils.Logger.info('Starting subscribers...');
         const filter = {
             topics: this.filterTopics,
@@ -126,6 +123,7 @@ class ChainSubscribers {
         database.redisClient.set('blockCount', 0);
 
         provider.on(filter, async (log: ethers.providers.Log) => {
+            utils.Logger.info('Receiving new event');
             await this._filterAndProcessEvent(log);
             database.redisClient.set('lastBlock', log.blockNumber);
             const blockCount = await database.redisClient.get('blockCount');
@@ -159,6 +157,8 @@ class ChainSubscribers {
             let result: ethers.utils.LogDescription | undefined = undefined;
 
             if (parsedLog.name === 'CommunityRemoved') {
+                utils.Logger.info('Remove Community event');
+
                 const communityAddress = parsedLog.args[0];
                 const community = await database.models.community.findOne({
                     attributes: ['id'],
@@ -184,6 +184,8 @@ class ChainSubscribers {
                     result = parsedLog;
                 }
             } else if (parsedLog.name === 'CommunityAdded') {
+                utils.Logger.info('Add Community event');
+
                 const communityAddress = parsedLog.args[0];
                 const managerAddress = parsedLog.args[1];
 
@@ -243,6 +245,8 @@ class ChainSubscribers {
             let result: ethers.utils.LogDescription | undefined = undefined;
 
             if (parsedLog.name === 'BeneficiaryAdded') {
+                utils.Logger.info('Add Beneficiary event');
+
                 const communityAddress = log.address;
                 const community = this.communities.get(communityAddress);
                 const userAddress = parsedLog.args[1];
@@ -271,6 +275,8 @@ class ChainSubscribers {
 
                 result = parsedLog;
             } else if (parsedLog.name === 'BeneficiaryRemoved') {
+                utils.Logger.info('Remove Beneficiary event');
+
                 const communityAddress = log.address;
                 const community = this.communities.get(communityAddress);
 
@@ -295,6 +301,8 @@ class ChainSubscribers {
             const userAddress = parsedLog.args[0];
     
             if (parsedLog.name === 'LoanAdded') {
+                utils.Logger.info('Add Loan event');
+
                 const user = await models.appUser.findOne({
                     attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                     where: {
