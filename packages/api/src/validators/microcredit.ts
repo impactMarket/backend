@@ -10,16 +10,26 @@ type ListBorrowersType = {
     limit?: number;
     claimed?: boolean;
     filter?: 'repaid' | 'needHelp';
-    orderBy?: 'amount' | 'period' | 'lastRepayment' | 'lastDebt';
-    orderDirection?: 'desc' | 'asc';
+    orderBy?:
+        | 'amount'
+        | 'amount:asc'
+        | 'amount:desc'
+        | 'period'
+        | 'period:asc'
+        | 'period:desc'
+        | 'lastRepayment'
+        | 'lastRepayment:asc'
+        | 'lastRepayment:desc'
+        | 'lastDebt'
+        | 'lastDebt:asc'
+        | 'lastDebt:desc';
 };
 
 type ListApplicationsType = {
     offset?: number;
     limit?: number;
     filter?: 'pending' | 'approved' | 'rejected';
-    orderBy?: 'appliedOn';
-    orderDirection?: 'desc' | 'asc';
+    orderBy?: 'appliedOn' | 'appliedOn:asc' | 'appliedOn:desc';
 };
 
 const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
@@ -27,16 +37,29 @@ const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
     limit: Joi.number().optional().max(20).default(10),
     claimed: Joi.boolean().optional(),
     filter: Joi.string().optional().valid('repaid', 'needHelp'),
-    orderBy: Joi.string().optional().valid('amount', 'period', 'lastRepayment', 'lastDebt'),
-    orderDirection: Joi.string().optional().valid('desc', 'asc')
+    orderBy: Joi.string()
+        .optional()
+        .valid(
+            'amount',
+            'amount:asc',
+            'amount:desc',
+            'period',
+            'period:asc',
+            'period:desc',
+            'lastRepayment',
+            'lastRepayment:asc',
+            'lastRepayment:desc',
+            'lastDebt',
+            'lastDebt:asc',
+            'lastDebt:desc'
+        )
 });
 
 const queryListApplicationsSchema = defaultSchema.object<ListApplicationsType>({
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(10),
     filter: Joi.string().optional().valid('pending', 'approved', 'rejected'),
-    orderBy: Joi.string().optional().valid('appliedOn'),
-    orderDirection: Joi.string().optional().valid('desc', 'asc')
+    orderBy: Joi.string().optional().valid('appliedOn', 'appliedOn:asc', 'appliedOn:desc')
 });
 
 const queryRepaymentsHistorySchema = defaultSchema.object({

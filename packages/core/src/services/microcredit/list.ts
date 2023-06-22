@@ -1,5 +1,5 @@
 import { models } from '../../database';
-import { SubgraphGetBorrowersQuery, getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
+import { SubgraphGetBorrowersQuery, getBorrowerLoansCount, getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
 import { getAddress } from '@ethersproject/address';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
@@ -7,6 +7,7 @@ import { BigNumber, Contract } from 'ethers';
 import { config } from '../../..';
 import { WhereOptions } from 'sequelize';
 import { MicroCreditApplications } from '../../interfaces/microCredit/applications';
+import { utils } from '@impactmarket/core';
 
 function mergeArrays(arr1: any[], arr2: any[], key: string) {
     const map = new Map(arr1.map(item => [item[key], item]));
@@ -72,8 +73,7 @@ export default class MicroCreditList {
         offset?: number;
         limit?: number;
         filter?: 'pending' | 'approved' | 'rejected';
-        orderBy?: 'appliedOn';
-        orderDirection?: 'desc' | 'asc';
+        orderBy?: 'appliedOn' | 'appliedOn:asc' | 'appliedOn:desc';
     }): Promise<{
         count: number;
         rows: {
@@ -92,6 +92,7 @@ export default class MicroCreditList {
             };
         }[];
     }> => {
+        const [orderKey, orderDirection] = query.orderBy ? query.orderBy.split(':') : [undefined, undefined];
         const where: WhereOptions<MicroCreditApplications> = {};
         // map filter to status (pending: 0, approved: 1, rejected: 2)
         const statusMap = {
@@ -112,7 +113,7 @@ export default class MicroCreditList {
                     attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath']
                 }
             ],
-            order: [[query.orderBy || 'createdAt', query.orderDirection || 'desc']],
+            order: [[orderKey || 'createdAt', orderDirection || 'desc']],
             offset: query.offset,
             limit: query.limit
         });
@@ -220,7 +221,7 @@ export default class MicroCreditList {
         });
 
         if (!borrower) {
-            throw new Error('Borrower not found');
+            throw new utils.BaseError('USER_NOT_FOUND' ,'Borrower not found');
         }
 
         const docs = await models.microCreditDocs.findAll({
@@ -230,8 +231,11 @@ export default class MicroCreditList {
             }
         });
 
+        const loans = await getBorrowerLoansCount(address);
+
         return {
             ...borrower.toJSON(),
+            loans,
             docs: docs.map(d => d.toJSON())
         };
     };

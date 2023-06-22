@@ -225,8 +225,19 @@ export type SubgraphGetBorrowersQuery = {
     addedBy: string;
     claimed?: boolean;
     filter?: 'repaid' | 'needHelp';
-    orderBy?: 'amount' | 'period' | 'lastRepayment' | 'lastDebt';
-    orderDirection?: 'desc' | 'asc';
+    orderBy?:
+        | 'amount'
+        | 'amount:asc'
+        | 'amount:desc'
+        | 'period'
+        | 'period:asc'
+        | 'period:desc'
+        | 'lastRepayment'
+        | 'lastRepayment:asc'
+        | 'lastRepayment:desc'
+        | 'lastDebt'
+        | 'lastDebt:asc'
+        | 'lastDebt:desc';
 };
 
 const filtersToBorrowersQuery = (filter: 'repaid' | 'needHelp' | undefined): string => {
@@ -244,7 +255,8 @@ const filtersToBorrowersQuery = (filter: 'repaid' | 'needHelp' | undefined): str
 };
 
 const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<number | string[]> => {
-    const { addedBy, claimed, filter, orderBy, orderDirection } = query;
+    const { addedBy, claimed, filter, orderBy } = query;
+    const [orderKey, orderDirection] = orderBy ? orderBy.split(':') : [undefined, undefined];
 
     const graphqlQuery = {
         operationName: 'borrowers',
@@ -257,7 +269,7 @@ const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<numb
                     ${claimed ? 'claimed_not: null' : ''}
                     ${filtersToBorrowersQuery(filter)}
                 }
-                ${orderBy ? `orderBy: ${orderBy}` : ''}
+                ${orderKey ? `orderBy: ${orderKey}` : ''}
                 ${orderDirection ? `orderDirection: ${orderDirection}` : ''}
             ) {
                 id
@@ -319,12 +331,13 @@ export const getBorrowers = async (
         lastDebt: string;
     }[];
 }> => {
-    const { offset, limit, addedBy, claimed, filter, orderBy, orderDirection } = query;
+    const { offset, limit, addedBy, claimed, filter, orderBy } = query;
 
     // date 3 months ago
     const date = new Date();
     date.setMonth(date.getMonth() - 3);
     const countOrList = await countGetBorrowers(query);
+    const [orderKey, orderDirection] = orderBy ? orderBy.split(':') : [undefined, undefined];
 
     const graphqlQuery = {
         operationName: 'borrowers',
@@ -338,7 +351,7 @@ export const getBorrowers = async (
                     ${filtersToBorrowersQuery(filter)}
                     ${filter === 'repaid' ? `borrower_in: ${JSON.stringify(countOrList)}` : ''}
                 }
-                ${orderBy ? `orderBy: ${orderBy}` : ''}
+                ${orderKey ? `orderBy: ${orderKey}` : ''}
                 ${orderDirection ? `orderDirection: ${orderDirection}` : ''}
             ) {
                 borrower {
@@ -396,6 +409,45 @@ export const getBorrowers = async (
     }
 
     return { count, borrowers };
+};
+
+export const getBorrowerLoansCount = async (borrower: string): Promise<number> => {
+    const graphqlQuery = {
+        operationName: 'borrower',
+        query: `query borrower {
+            borrower(
+                id: "${borrower.toLowerCase()}"
+            ) {
+                loans {
+                    id
+                }
+            }
+        }`
+    };
+
+    const cacheResults = await redisClient.get(graphqlQuery.query);
+
+    if (cacheResults) {
+        return JSON.parse(cacheResults);
+    }
+
+    const response = await axiosMicrocreditSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    borrower: {
+                        loans: string[];
+                    };
+                };
+            };
+        }
+    >('', graphqlQuery);
+
+    const loans = response.data?.data.borrower.loans.length;
+    redisClient.set(graphqlQuery.query, JSON.stringify(loans), 'EX', intervalsInSeconds.twoMins);
+
+    return loans;
 };
 
 export const getLoanRepayments = async (userAddress: string, loanId: number): Promise<number> => {
