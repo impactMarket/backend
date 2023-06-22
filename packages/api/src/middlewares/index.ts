@@ -128,7 +128,7 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
             success: false,
             error: {
                 name: 'INVALID_SINATURE',
-                message: 'signature is invalid'
+                message: 'signature or message not provided'
             }
         });
         return;
@@ -144,14 +144,14 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
                 success: false,
                 error: {
                     name: 'EXPIRED_SIGNATURE',
-                    message: 'signature is expired'
+                    message: 'invalid timestamp'
                 }
             });
             return;
         }
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() - config.signatureExpiration);
-        if (parseInt(timestamp[0], 10) < expirationDate.getTime()) {
+        if (parseInt(timestamp[0], 10) < expirationDate.getTime() / 1000) {
             res.status(403).json({
                 success: false,
                 error: {
@@ -167,7 +167,7 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
             success: false,
             error: {
                 name: 'INVALID_SINATURE',
-                message: 'signature is invalid'
+                message: 'invalid signer'
             }
         });
     }
