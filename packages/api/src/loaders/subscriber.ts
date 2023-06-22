@@ -40,7 +40,7 @@ export function startSubscribers() {
                     utils.Logger.info('⏱️ Chain Subscriber stopping');
                     database.redisClient.del(redisPIDCondigVariable);
                     // emit the process being closed
-                    redisPublisher.publish('subscriber-listener-status', process.pid.toString()).then(() => {
+                    redisPublisher.publish(subscriptionsChannel, process.pid.toString()).then(() => {
                         // eslint-disable-next-line no-process-exit
                         process.exit();
                     });
@@ -60,7 +60,21 @@ export function startSubscribers() {
     process.on('SIGUSR1', exitHandler.bind(null, { exit: true }));
     process.on('SIGUSR2', exitHandler.bind(null, { exit: true }));
 
-    redisListener.on('pmessage', (_, channel, msg) => {
+    redisListener.subscribe(subscriptionsChannel, (err, count) => {
+        if (err) {
+          utils.Logger.error("Failed to subscribe: %s", err.message);
+        } else {
+          utils.Logger.info(
+            `Subscribed successfully! This client is currently subscribed to ${count} channels.`
+          );
+        }
+    });
+
+    redisListener.on('message', (channel, msg) => {
+        utils.Logger.info('Receiveing message: ');
+        utils.Logger.info(channel);
+        utils.Logger.info(msg);
+        
         if (channel === subscriptionsChannel) {
             const processId = parseInt(msg, 10);
             if (processId !== process.pid) {
