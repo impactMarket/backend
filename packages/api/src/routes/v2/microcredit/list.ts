@@ -52,16 +52,9 @@ export default (route: Router): void => {
      *         name: orderBy
      *         schema:
      *           type: string
-     *           enum: [amount, period, lastRepayment, lastDebt]
+     *           enum: [amount, amount:asc, amount:desc, period, period:asc, period:desc, lastRepayment, lastRepayment:asc, lastRepayment:desc, lastDebt, lastDebt:asc, lastDebt:desc]
      *         required: false
      *         description: order by
-     *       - in: query
-     *         name: orderDirection
-     *         schema:
-     *           type: string
-     *           enum: [desc, asc]
-     *         required: false
-     *         description: order direction
      *     responses:
      *       "200":
      *         description: OK
@@ -145,16 +138,9 @@ export default (route: Router): void => {
      *         name: orderBy
      *         schema:
      *           type: string
-     *           enum: [appliedOn]
+     *           enum: [appliedOn, appliedOn:asc, appliedOn:desc]
      *         required: false
      *         description: order by
-     *       - in: query
-     *         name: orderDirection
-     *         schema:
-     *           type: string
-     *           enum: [desc, asc]
-     *         required: false
-     *         description: order direction
      *     responses:
      *       "200":
      *         description: OK
