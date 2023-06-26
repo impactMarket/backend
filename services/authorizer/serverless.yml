@@ -1,0 +1,21 @@
+service: authorizer
+
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ${env:AWS_REGION}
+
+functions:
+  authorizer:
+    handler: handler.authorizer
+    events:
+      - http:
+          path: authorizer
+          method: post
+          private: true
+
+plugins:
+  - serverless-bundle
