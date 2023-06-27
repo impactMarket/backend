@@ -144,7 +144,7 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
                 success: false,
                 error: {
                     name: 'EXPIRED_SIGNATURE',
-                    message: 'invalid timestamp'
+                    message: 'signature expiry not provided'
                 }
             });
             return;
@@ -174,10 +174,8 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
 }
 
 export function verifyTypedSignature(req: RequestWithUser, res: Response, next: NextFunction): void {
-    console.log('start', req.headers);
     const { eip712Signature, eip712Value: rawEip712Value } = req.headers;
     const eip712Value = JSON.parse(rawEip712Value as string) as Record<string, any>;
-    console.log('start2');
 
     if (!eip712Signature || !eip712Value) {
         res.status(401).json({
@@ -215,10 +213,6 @@ export function verifyTypedSignature(req: RequestWithUser, res: Response, next: 
             { name: 'expiry', type: 'uint256' }
         ]
     };
-    // const value: Record<string, any> = {
-    //     expiry,
-    //     message
-    // };
 
     // verify signature
     const address = verifyTypedData(domain, types, eip712Value, eip712Signature as string);
