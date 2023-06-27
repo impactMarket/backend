@@ -28,12 +28,6 @@ export const standardResponse = (
         count?: number;
     }
 ) => {
-    console.log({
-        success,
-        data,
-        error: options?.error,
-        count: options?.count,
-    })
     res.status(status).send({
         success,
         data,
