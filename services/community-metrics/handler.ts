@@ -1,5 +1,5 @@
 import { verifyDeletedAccounts } from './src/user';
-import { calcuateCommunitiesMetrics } from './src/calcuateCommunitiesMetrics';
+import { calcuateCommunitiesMetrics, calcuateCommunitiesDemographics } from './src/calcuateCommunitiesMetrics';
 import { calcuateGlobalMetrics } from './src/calcuateGlobalMetrics';
 import { services } from '@impactmarket/core';
 import { updateExchangeRates } from './src/updateExchangeRates';
@@ -29,10 +29,8 @@ export const calculate = async (event, context) => {
     try {
         const globalDemographicsService =
             new services.global.GlobalDemographicsService();
-        const communityDemographicsService =
-            new services.ubi.CommunityDemographicsService();
 
-        await communityDemographicsService.calculate();
+        await calcuateCommunitiesDemographics();
         await globalDemographicsService.calculate();
     } catch (error) {
         console.error('Error communityDemographicsService/globalDemographicsService: ', error);
