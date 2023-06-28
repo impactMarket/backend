@@ -110,10 +110,10 @@ export const getReferralCode = async (userId: number, campaignId: number) => {
     });
 
     if (!user) {
-        throw new BaseError('USER_NOT_FOUND', 'User not found');
+        throw new utils.BaseError('USER_NOT_FOUND', 'User not found');
     }
     if (!user.phoneValidated || !user.emailValidated) {
-        throw new BaseError('NOT_ILLEGIBLE', 'User has not verified account');
+        throw new utils.BaseError('NOT_ILLEGIBLE', 'User has not verified account');
     }
 
     const referralCodeExists = await appReferralCode.findOne({
@@ -202,7 +202,7 @@ export const useReferralCode = async (userId: number, referralCode: string) => {
         );
     } catch (error) {
         if (error.error?.message?.indexOf('ReferralLink') !== -1) {
-            throw new BaseError(
+            throw new utils.BaseError(
                 'REFERRAL_LINK_ERROR',
                 error.error?.message?.match(/\"execution reverted: ([\w\s\d:]*)\",/)[1]
             );
