@@ -1,5 +1,5 @@
 // import { database, subgraph } from '@impactmarket/core';
-import { database } from '@impactmarket/core';
+import { database, utils } from '@impactmarket/core';
 import config from '~config/index';
 import { randomBytes } from 'crypto';
 import { ethers } from 'ethers';
@@ -9,7 +9,6 @@ import { defaultAbiCoder } from '@ethersproject/abi';
 import { arrayify } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/keccak256';
 import { Wallet } from '@ethersproject/wallet';
-import { BaseError } from '@impactmarket/core/src/utils';
 
 // const { getReferralCampaignAndUsages } = subgraph.queries.referrals;
 const { appReferralCode, appUser } = database.models;
@@ -70,7 +69,7 @@ export const getCampaignsIllegibility = async (userId: number) => {
 
     // for every campaign, the user needs to be registered and have a validated email and phone
     if (!user) {
-        throw new BaseError('USER_NOT_FOUND', 'User not found');
+        throw new utils.BaseError('USER_NOT_FOUND', 'User not found');
     }
     if (!user.phoneValidated || !user.emailValidated) {
         return [];
