@@ -241,16 +241,16 @@ export const send = async (
         let emailValidationBody: string | undefined;
         if (response.length > 0) {
             const data = response[0].data;
-            emailValidationSubject = data['email-validation-subject'];
-            emailValidationBody = data['email-validation-body'];
+            emailValidationSubject = data['email-validation-message-subject'];
+            emailValidationBody = data['email-validation-message-body'];
         }
         if (!emailValidationSubject || !emailValidationBody) {
             const response = await prismic.getAllByType('push_notifications_data', {
                 lang: 'en-US',
             });
             const data = response[0].data;
-            emailValidationSubject = data['email-validation-subject'];
-            emailValidationBody = data['email-validation-body'];
+            emailValidationSubject = data['email-validation-message-subject'];
+            emailValidationBody = data['email-validation-message-body'];
         }
         const body = emailValidationBody!.replace('{{code}}', code);
 

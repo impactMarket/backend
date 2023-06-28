@@ -3,5 +3,6 @@ import * as community from './community';
 import * as ubi from './ubi';
 import * as microcredit from './microcredit';
 import * as user from './user';
+import * as referrals from './referrals';
 
-export { beneficiary, community, ubi, microcredit, user };
+export { beneficiary, community, ubi, microcredit, referrals, user };

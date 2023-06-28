@@ -1,3 +1,4 @@
+// import { database, subgraph } from '@impactmarket/core';
 import { database } from '@impactmarket/core';
 import config from '~config/index';
 import { randomBytes } from 'crypto';
@@ -8,7 +9,9 @@ import { defaultAbiCoder } from '@ethersproject/abi';
 import { arrayify } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/keccak256';
 import { Wallet } from '@ethersproject/wallet';
+import { BaseError } from '@impactmarket/core/src/utils';
 
+// const { getReferralCampaignAndUsages } = subgraph.queries.referrals;
 const { appReferralCode, appUser } = database.models;
 
 type ReferralsLinkContract = ethers.Contract & {
@@ -58,6 +61,41 @@ export const generateReferralCode = async () => {
     return referralCode;
 };
 
+export const getCampaignsIllegibility = async (userId: number) => {
+    const user = await appUser.findOne({
+        where: {
+            id: userId
+        }
+    });
+
+    // for every campaign, the user needs to be registered and have a validated email and phone
+    if (!user) {
+        throw new BaseError('USER_NOT_FOUND', 'User not found');
+    }
+    if (!user.phoneValidated || !user.emailValidated) {
+        return [];
+    }
+
+    // validate wallet onboarding referrals (new users)
+    if (user.createdAt > new Date(Date.now() - 60 * 60 * 24 * 60 * 1000)) {
+        return [];
+    }
+
+    // TODO: remove the following code and use the one in comment
+    // once mainnet subgraph is synced!
+
+    if (config.chain.isMainnet) {
+        return [0];
+    }
+    return [1];
+
+    // const campaignsAndUsages = await getReferralCampaignAndUsages(user.address);
+
+    // return campaignsAndUsages.filter(
+    //     campaign => campaign.endTime < Date.now() / 1000 && campaign.usages < campaign.maxReferralLinks
+    // );
+};
+
 /**
  * Get a referral code for a user in AppReferralCode,
  * if the user account has been created an account less that 2 months ago.
@@ -73,7 +111,10 @@ export const getReferralCode = async (userId: number, campaignId: number) => {
     });
 
     if (!user) {
-        throw new Error('User not found');
+        throw new BaseError('USER_NOT_FOUND', 'User not found');
+    }
+    if (!user.phoneValidated || !user.emailValidated) {
+        throw new BaseError('NOT_ILLEGIBLE', 'User has not verified account');
     }
 
     const referralCodeExists = await appReferralCode.findOne({
@@ -144,7 +185,7 @@ export const useReferralCode = async (userId: number, referralCode: string) => {
     const [referralUsages, rawMaxUsages, signature] = await Promise.all([
         referralLinkContract.campaignReferralLinks(referralCodeExists.campaignId.toString(), user.address),
         referralLinkContract.campaigns(referralCodeExists.campaignId),
-        signParams(user.address, referralCodeExists.campaignId, referralCodeExists.user.address)
+        signParams(referralCodeExists.user.address, referralCodeExists.campaignId, user.address)
     ]);
     const maxUsages = rawMaxUsages.maxReferralLinks.toNumber();
 
@@ -152,11 +193,22 @@ export const useReferralCode = async (userId: number, referralCode: string) => {
         throw new Error('Referral code already used');
     }
 
-    // call smart-contract to send funds to new user
-    await referralLinkContract.claimReward(
-        referralCodeExists.user.address,
-        [referralCodeExists.campaignId.toString()],
-        [user.address],
-        [signature]
-    );
+    try {
+        // call smart-contract to send funds to new user
+        await referralLinkContract.claimReward(
+            referralCodeExists.user.address,
+            [referralCodeExists.campaignId.toString()],
+            [user.address],
+            [signature]
+        );
+    } catch (error) {
+        if (error.error?.message?.indexOf('ReferralLink') !== -1) {
+            throw new BaseError(
+                'REFERRAL_LINK_ERROR',
+                error.error?.message?.match(/\"execution reverted: ([\w\s\d:]*)\",/)[1]
+            );
+        }
+
+        throw error;
+    }
 };

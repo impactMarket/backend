@@ -14,15 +14,34 @@ export default (app: Router): void => {
     /**
      * @swagger
      *
-     * /referrals/{campaignId}:
+     * /referrals:
      *   get:
      *     tags:
      *       - "referrals"
-     *     summary: "Get user referral data"
+     *     summary: "Get user referrals data"
+     *     description: "This GET method is used to get the campaigns the user is allowed to participate!"
+     *     responses:
+     *       "200":
+     *         description: "Success"
+     *       "403":
+     *         description: "Invalid input"
+     *     security:
+     *     - BearerToken: []
+     */
+    route.get('/', authenticateToken, controller.get);
+
+    /**
+     * @swagger
+     *
+     * /referrals/{cid}:
+     *   get:
+     *     tags:
+     *       - "referrals"
+     *     summary: "Get user referral data for a given campaign"
      *     description: "This GET method is used to generate the user referral code, or, if it aready exists, simply return it. This method requires the user to be authenticated and provide an EIP712 signature. Use the utils demo to generate the signature."
      *     parameters:
      *       - in: path
-     *         name: campaignId
+     *         name: cid
      *         schema:
      *           type: integer
      *         required: true
@@ -34,16 +53,15 @@ export default (app: Router): void => {
      *         description: "Invalid input"
      *     security:
      *     - BearerToken: []
-     *     - SignatureMessage: []
-     *     - SignatureExpiry: []
-     *     - Signature: []
+     *     - SignatureEIP712Signature: []
+     *     - SignatureEIP712Value: []
      */
     route.get(
-        '/:campaignId',
+        '/:cid',
         authenticateToken,
         verifyTypedSignature,
-        cache(cacheIntervals.tenMinutes),
-        controller.get
+        cache(cacheIntervals.fiveMinutes),
+        controller.getByCampaign
     );
 
     /**

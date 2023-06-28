@@ -144,7 +144,7 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
                 success: false,
                 error: {
                     name: 'EXPIRED_SIGNATURE',
-                    message: 'invalid timestamp'
+                    message: 'signature expiry not provided'
                 }
             });
             return;
@@ -174,21 +174,22 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
 }
 
 export function verifyTypedSignature(req: RequestWithUser, res: Response, next: NextFunction): void {
-    const { signature, expiry, message } = req.headers;
+    const { eip712Signature, eip712Value: rawEip712Value } = req.headers;
+    const eip712Value = JSON.parse(rawEip712Value as string) as Record<string, any>;
 
-    if (!signature || !message || !expiry) {
+    if (!eip712Signature || !eip712Value) {
         res.status(401).json({
             success: false,
             error: {
                 name: 'INVALID_SINATURE',
-                message: 'signature is invalid'
+                message: 'signature headers missing'
             }
         });
         return;
     }
 
     // validate if signature has expired
-    if (parseInt(expiry as string, 10) < Date.now() / 1000) {
+    if (parseInt(eip712Value['expiry'] as string, 10) < Date.now() / 1000) {
         res.status(403).json({
             success: false,
             error: {
@@ -212,15 +213,11 @@ export function verifyTypedSignature(req: RequestWithUser, res: Response, next: 
             { name: 'expiry', type: 'uint256' }
         ]
     };
-    const value: Record<string, any> = {
-        expiry,
-        message
-    };
 
     // verify signature
-    const address = verifyTypedData(domain, types, value, signature as string);
+    const address = verifyTypedData(domain, types, eip712Value, eip712Signature as string);
 
-    if (address.toLowerCase() !== req.user?.address.toLowerCase()) {
+    if (address.toLowerCase() === req.user?.address.toLowerCase()) {
         req.hasValidTypedSignature = true;
         next();
     } else {
@@ -228,7 +225,7 @@ export function verifyTypedSignature(req: RequestWithUser, res: Response, next: 
             success: false,
             error: {
                 name: 'INVALID_SINATURE',
-                message: 'signature is invalid'
+                message: 'signature signer is invalid'
             }
         });
     }

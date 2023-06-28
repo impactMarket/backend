@@ -84,10 +84,15 @@ export default (app: express.Application): void => {
                             in: 'header',
                             name: 'message',
                         },
-                        SignatureExpiry: {
+                        SignatureEIP712Signature: {
                             type: 'apiKey',
                             in: 'header',
-                            name: 'expiry',
+                            name: 'eip712Signature',
+                        },
+                        SignatureEIP712Value: {
+                            type: 'apiKey',
+                            in: 'header',
+                            name: 'eip712Value',
                         }
                     },
                 },
