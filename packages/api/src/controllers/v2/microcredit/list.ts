@@ -83,6 +83,13 @@ class MicroCreditController {
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    demographics = (req: RequestWithUser, res: Response) => {
+        this.microCreditService
+            .demographics()
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export { MicroCreditController };
