@@ -90,7 +90,8 @@ export const getBeneficiariesByAddress = async (
     inactive?: string,
     community?: string,
     orderBy?: string,
-    orderDirection?: string
+    orderDirection?: string,
+    lastActivity?: number,
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const idsFormated = addresses.map((el) => `"${el.toLowerCase()}"`);
@@ -110,6 +111,7 @@ export const getBeneficiariesByAddress = async (
                                 ? `community: "${community.toLowerCase()}"`
                                 : ''
                         }
+                        ${lastActivity ? `lastActivity_lt: ${lastActivity}` : ''}
                     }
                 ) {
                     address
@@ -157,7 +159,8 @@ export const getBeneficiaries = async (
     lastClaimAt?: string,
     state?: string,
     orderBy?: string,
-    orderDirection?: string
+    orderDirection?: string,
+    lastActivity?: number,
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const graphqlQuery = {
@@ -172,6 +175,7 @@ export const getBeneficiaries = async (
                         community:"${community.toLowerCase()}"
                         ${lastClaimAt ? lastClaimAt : ''}
                         ${state ? state : ''}
+                        ${lastActivity ? `lastActivity_lt: ${lastActivity}` : ''}
                     }
                 ) {
                     address
@@ -320,3 +324,50 @@ export const countBeneficiaries = async (
         throw new Error(error);
     }
 };
+
+export const countInactiveBeneficiaries = async (
+    community: string,
+    lastActivity: number
+): Promise<number> => {
+    try {
+        const graphqlQuery = {
+            operationName: 'beneficiaryEntities',
+            query: `query beneficiaryEntities {
+                beneficiaryEntities(
+                    where: {
+                        community:"${community.toLowerCase()}"
+                        lastActivity_lt: ${lastActivity}
+                        state: 0
+                    }
+                ) {
+                    address
+                }
+            }`,
+        };
+
+        const response = await axiosSubgraph.post<
+            any,
+            {
+                data: {
+                    data: {
+                        beneficiaryEntities: {
+                            address: string,
+                            claimed: string,
+                            since: number,
+                            state: number,
+                            community: {
+                                id: string,
+                            }
+                        }[];
+                    };
+                };
+            }
+        >('', graphqlQuery);
+
+        const beneficiaryEntities = response.data?.data.beneficiaryEntities;
+
+        return beneficiaryEntities.length;
+    } catch (error) {
+        throw new Error(error);
+    }
+}

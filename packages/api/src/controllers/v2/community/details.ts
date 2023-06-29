@@ -67,6 +67,7 @@ class CommunityController {
             loginInactivity,
             search,
             orderBy,
+            lastActivity_lt,
         } = req.query;
         if (state === undefined || typeof state !== 'string') {
             state = undefined;
@@ -100,7 +101,10 @@ class CommunityController {
                 search !== undefined && typeof search === 'string'
                     ? search
                     : undefined,
-                orderBy
+                orderBy,
+                lastActivity_lt && typeof lastActivity_lt === 'string'
+                    ? parseInt(lastActivity_lt)
+                    : undefined,
             )
             .then((r) => standardResponse(res, 200, true, r))
             .catch((e) => standardResponse(res, 400, false, '', { error: e }));

@@ -248,6 +248,10 @@ export default (route: Router): void => {
      *           type: string
      *         required: false
      *         description: order key and order direction separated by colon (claimed:desc)
+     *       - in: query
+     *         name: lastActivity_lt
+     *         required: false
+     *         descripition: timestamp to filter the inactive beneficiaries
      *     security:
      *     - BearerToken: []
      *     responses:
