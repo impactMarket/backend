@@ -108,7 +108,7 @@ class MicroCreditController {
             .getUserForm(
                 req.user,
                 userId && typeof userId === 'string'
-                    ? parseInt(userId) 
+                    ? parseInt(userId, 10)
                     : undefined,
                 status && typeof status === 'string'
                     ? status
