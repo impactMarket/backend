@@ -236,4 +236,40 @@ export default (route: Router): void => {
         cache(cacheIntervals.oneHour),
         controller.demographics
     )
+
+    /**
+     * @swagger
+     *
+     * /microcredit/form:
+     *   get:
+     *     tags:
+     *       - "microcredit"
+     *     summary: "Get Microcredit form"
+     *     description: "Get Microcredit form"
+     *     parameters:
+     *       - in: query
+     *         name: userId
+     *         schema:
+     *           type: integer
+     *         required: false
+     *         description: ID of the user from whom you want to get the form. If empty, the userId of the authorization token will be considered.
+     *       - in: query
+     *         name: status
+     *         schema:
+     *           enum: [pending, submitted, in-review, approved, rejected]
+     *         required: false
+     *         description: The form status. Default "pending".
+     *     responses:
+     *       "200":
+     *         description: OK
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/form'
+     */
+    route.get(
+        '/form/:query?',
+        authenticateToken,
+        controller.getUserForm
+    )
 };

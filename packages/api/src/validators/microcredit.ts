@@ -152,6 +152,7 @@ const putApplicationsValidator = celebrate({
 const saveForm = celebrate({
     body: defaultSchema
         .object({
+            prismicId: Joi.string().required(),
             form: Joi.object().required(),
             submit: Joi.bool().optional()
         })

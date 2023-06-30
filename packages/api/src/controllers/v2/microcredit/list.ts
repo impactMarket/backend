@@ -90,6 +90,33 @@ class MicroCreditController {
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    getUserForm = (req: RequestWithUser, res: Response) => {
+        if (req.user === undefined) {
+            standardResponse(res, 400, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!'
+                }
+            });
+            return;
+        }
+
+        const { userId, status } = req.query;
+
+        this.microCreditService
+            .getUserForm(
+                req.user,
+                userId && typeof userId === 'string'
+                    ? parseInt(userId) 
+                    : undefined,
+                status && typeof status === 'string'
+                    ? status
+                    : undefined,
+            )
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+    }
 }
 
 export { MicroCreditController };

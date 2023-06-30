@@ -123,6 +123,8 @@ export default (route: Router): void => {
     );
 
     /**
+     * @swagger
+     * 
      * /microcredit/form:
      *   post:
      *     tags:
@@ -147,5 +149,10 @@ export default (route: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post('/form', authenticateToken, saveForm, controller.saveForm);
+    route.post(
+        '/form',
+        authenticateToken,
+        saveForm,
+        controller.saveForm
+    );
 };

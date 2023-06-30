@@ -5,6 +5,7 @@ import { NotificationType } from '../../interfaces/app/appNotification';
 import { AppUserModel } from '../../database/models/app/appUser';
 import { MicroCreditFormModel } from '../../database/models/microCredit/form';
 import { BaseError } from '../../utils';
+import { MicroCreditFormStatus } from '../../interfaces/microCredit/form';
 
 export default class MicroCreditCreate {
     private microCreditContentStorage = new MicroCreditContentStorage();
@@ -76,16 +77,19 @@ export default class MicroCreditCreate {
         await sendNotification(users, NotificationType.LOAN_STATUS_CHANGED);
     }
 
-    public saveForm = async (userId: number, form: object, submitted: boolean): Promise<MicroCreditFormModel> => {
+    public saveForm = async (userId: number, form: object, prismicId: string, submitted: boolean): Promise<MicroCreditFormModel> => {
         try {
+            const status = submitted ? MicroCreditFormStatus.SUBMITTED : MicroCreditFormStatus.PENDING;
             const userForm = await models.microCreditForm.findOrCreate({
                 where: {
-                    userId
+                    userId,
+                    prismicId,
                 },
                 defaults: {
                     form,
                     userId,
-                    submitted
+                    prismicId,
+                    status,
                 }
             });
 
@@ -96,7 +100,7 @@ export default class MicroCreditCreate {
 
             const data = await userForm[0].update({
                 form: newForm,
-                submitted
+                status,
             });
 
             return data;
