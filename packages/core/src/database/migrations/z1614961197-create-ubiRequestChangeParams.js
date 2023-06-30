@@ -11,11 +11,6 @@ module.exports = {
             },
             communityId: {
                 type: Sequelize.UUID,
-                references: {
-                    model: 'community',
-                    key: 'publicId',
-                },
-                onDelete: 'RESTRICT',
                 allowNull: false,
             },
             claimAmount: {

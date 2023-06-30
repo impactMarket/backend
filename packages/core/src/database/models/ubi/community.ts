@@ -10,12 +10,10 @@ export class Community extends Model<
     ICommunityCreationAttributes
 > {
     public id!: number; // Note that the `null assertion` `!` is required in strict mode.
-    public publicId!: string;
     public requestByAddress!: string;
     public contractAddress!: string | null;
     public name!: string;
     public description!: string;
-    public descriptionEn!: string | null;
     public language!: string;
     public currency!: string;
     public city!: string;
@@ -26,8 +24,6 @@ export class Community extends Model<
     };
     public email!: string;
     public visibility!: 'public' | 'private';
-    public coverImage!: string;
-    public coverMediaId!: number | null; // TODO: will be required once next version is released
     public coverMediaPath!: string | null;
     public status!: 'pending' | 'valid' | 'removed'; // pending / valid / removed
     public review!: 'pending' | 'claimed' | 'declined' | 'accepted';
@@ -50,12 +46,6 @@ export function initializeCommunity(sequelize: Sequelize): void {
                 autoIncrement: true,
                 primaryKey: true,
             },
-            publicId: {
-                type: DataTypes.UUID,
-                defaultValue: DataTypes.UUIDV4,
-                unique: true,
-                allowNull: false,
-            },
             requestByAddress: {
                 type: DataTypes.STRING(44),
                 unique: true,
@@ -71,10 +61,6 @@ export function initializeCommunity(sequelize: Sequelize): void {
             description: {
                 type: DataTypes.STRING(1024),
                 allowNull: false,
-            },
-            descriptionEn: {
-                type: DataTypes.STRING(1024),
-                allowNull: true,
             },
             language: {
                 type: DataTypes.STRING(8),
@@ -105,19 +91,6 @@ export function initializeCommunity(sequelize: Sequelize): void {
             visibility: {
                 type: DataTypes.ENUM('public', 'private'),
                 allowNull: false,
-            },
-            coverImage: {
-                type: DataTypes.STRING(128),
-                allowNull: true,
-            },
-            coverMediaId: {
-                type: DataTypes.INTEGER,
-                references: {
-                    model: 'app_media_content',
-                    key: 'id',
-                },
-                // onDelete: 'SET NULL', // default
-                allowNull: true, // TODO: will be required once next version is released
             },
             coverMediaPath: {
                 type: DataTypes.STRING(44),

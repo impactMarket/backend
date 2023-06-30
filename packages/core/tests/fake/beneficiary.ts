@@ -1,12 +1,6 @@
-import { communityPublicIds, now, nowTimestamp } from './community';
+import { now, nowTimestamp } from './community';
 
 export const activeBeneficiariesLast30Days = new Map<string, number>();
-activeBeneficiariesLast30Days.set(communityPublicIds[0], 71);
-activeBeneficiariesLast30Days.set(communityPublicIds[1], 16);
-activeBeneficiariesLast30Days.set(communityPublicIds[2], 142);
-activeBeneficiariesLast30Days.set(communityPublicIds[3], 2);
-activeBeneficiariesLast30Days.set(communityPublicIds[4], 12);
-activeBeneficiariesLast30Days.set(communityPublicIds[5], 0);
 
 // TODO: fix type
 export const allBeneficiariesInCommunity: any[][] = [
