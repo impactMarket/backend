@@ -8,6 +8,7 @@ import { config } from '../../..';
 import { WhereOptions, literal, Op } from 'sequelize';
 import { MicroCreditApplications } from '../../interfaces/microCredit/applications';
 import { utils } from '@impactmarket/core';
+import { getUserRoles } from '../../subgraph/queries/user';
 
 function mergeArrays(arr1: any[], arr2: any[], key: string) {
     const map = new Map(arr1.map(item => [item[key], item]));
@@ -457,5 +458,52 @@ export default class MicroCreditList {
         } catch (error) {
             throw new utils.BaseError('DEMOGRAPHICS_FAILED', error.message || 'failed to get microcredit demographics')
         }
+    }
+
+    /**
+     * @swagger
+     *  components:
+     *    schemas:
+     *      form:
+     *        type: object
+     *        properties:
+     *          id:
+     *            type: number
+     *          userId:
+     *            type: number
+     *          form:
+     *            type: object
+     *          prismicId:
+     *            type: number
+     *          status:
+     *            type: string
+     *            description: pending, submitted, in-review, approved, rejected
+     * 
+    */
+    public getUserForm = async (
+        requiringUser: {
+            address: string,
+            userId: number,
+        },
+        userId?: number,
+        status?: string,
+    ) => {
+        if (userId && (userId !== requiringUser.userId)) {
+            const userRoles = await getUserRoles(requiringUser.address);
+            if (
+                (!userRoles.manager || userRoles.manager.state !== 0) &&
+                (!userRoles.councilMember || userRoles.councilMember.state !== 0) && 
+                (!userRoles.ambassador || userRoles.ambassador.state !== 0)
+            ) {
+                throw new utils.BaseError('NOT_ALLOWED', 'should be a manager, councilMember or ambassador');
+            } 
+        }
+
+        return models.microCreditForm.findOne({
+            where: {
+                userId: userId || requiringUser.userId,
+                status: status || 'pending',
+            }
+        });
     }
 }

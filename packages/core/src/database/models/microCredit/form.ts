@@ -1,13 +1,14 @@
 import { Sequelize, DataTypes, Model } from 'sequelize';
 
-import { MicroCreditForm, MicroCreditFormCreationAttributes } from '../../../interfaces/microCredit/form';
+import { MicroCreditForm, MicroCreditFormCreationAttributes, MicroCreditFormStatus } from '../../../interfaces/microCredit/form';
 import { DbModels } from '../../db';
 
 export class MicroCreditFormModel extends Model<MicroCreditForm, MicroCreditFormCreationAttributes> {
     public id!: number;
     public userId!: number;
     public form!: object;
-    public submitted?: boolean;
+    public prismicId!: string;
+    public status!: MicroCreditFormStatus;
 
     // timestamps!
     public readonly createdAt!: Date;
@@ -36,10 +37,14 @@ export function initializeMicroCreditForm(sequelize: Sequelize): typeof MicroCre
                 type: DataTypes.JSONB,
                 allowNull: false
             },
-            submitted: {
-                type: DataTypes.BOOLEAN,
+            prismicId: {
+                type: DataTypes.STRING(32),
                 allowNull: false,
-                defaultValue: false
+            },
+            status: {
+                type: DataTypes.ENUM('pending', 'submitted', 'in-review', 'approved', 'rejected'),
+                allowNull: false,
+                defaultValue: 'pending'
             },
             createdAt: {
                 type: DataTypes.DATE,

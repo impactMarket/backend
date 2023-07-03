@@ -94,10 +94,10 @@ class MicroCreditController {
         }
 
         const form = req.body.form;
-        const submit = req.body.submit;
+        const { submit, prismicId } = req.body;
 
         this.microCreditService
-            .saveForm(req.user.userId, form, !!submit)
+            .saveForm(req.user.userId, form, prismicId, !!submit)
             .then(community => standardResponse(res, 201, true, community))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
