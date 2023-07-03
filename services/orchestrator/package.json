@@ -11,7 +11,7 @@
         "node": "18.x"
     },
     "dependencies": {
-        "aws-sdk": "2.1384.0",
+        "aws-sdk": "2.1409.0",
         "axios": "0.24.0"
     },
     "devDependencies": {
