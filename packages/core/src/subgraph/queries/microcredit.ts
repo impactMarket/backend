@@ -219,12 +219,19 @@ export const getMicroCreditStatsLastDays = async (
     }
 };
 
+export enum LoanStatus {
+    pending = 0,
+    active = 1,
+    repaid = 2,
+    canceled = 3
+}
+
 export type SubgraphGetBorrowersQuery = {
     offset?: number;
     limit?: number;
     addedBy?: string;
-    claimed?: boolean;
-    filter?: 'repaid' | 'needHelp' | 'all';
+    loanStatus?: LoanStatus;
+    onlyClaimed?: boolean;
     orderBy?:
         | 'amount'
         | 'amount:asc'
@@ -240,41 +247,35 @@ export type SubgraphGetBorrowersQuery = {
         | 'lastDebt:desc';
 };
 
-const filtersToBorrowersQuery = (filter: 'repaid' | 'needHelp' | 'all' | undefined): string => {
-    switch (filter) {
-        case 'repaid':
-            return 'lastDebt: 0';
-        case 'needHelp':
-            // date 3 months ago
-            const date = new Date();
-            date.setMonth(date.getMonth() - 3);
-            return `lastRepayment_lte: ${Math.floor(date.getTime() / 1000)}`;
-        case 'all':
-            return '';
-        default:
-            return 'lastDebt_not: 0';
-    }
-};
-
 const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<number | string[]> => {
-    const { addedBy, claimed, filter, orderBy } = query;
+    const { addedBy, loanStatus, orderBy, onlyClaimed } = query;
     const [orderKey, orderDirection] = orderBy ? orderBy.split(':') : [undefined, undefined];
 
     const graphqlQuery = {
         operationName: 'borrowers',
         query: `query borrowers {
-            loans(
+            borrowers(
                 first: 1000
                 skip: 0
                 where: {
-                    ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
-                    ${claimed ? 'claimed_not: null' : ''}
-                    ${filtersToBorrowersQuery(filter)}
+                    ${loanStatus !== undefined ? `lastLoanStatus: ${loanStatus}` : ''}
+                    ${onlyClaimed === true ? `lastLoanStatus_not_in:[0,3]` : ''}
+                    loans_: {
+                        ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
+                    }
                 }
-                ${orderKey ? `orderBy: ${orderKey}` : ''}
-                ${orderDirection ? `orderDirection: ${orderDirection}` : ''}
             ) {
                 id
+                loans(
+                    first: 1
+                    where: {
+                        ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
+                    }
+                    ${orderKey ? `orderBy: ${orderKey}` : 'orderBy: id'}
+                    ${orderDirection ? `orderDirection: ${orderDirection}` : 'orderDirection: desc'}
+                ) {
+                    id
+                }
             }
         }`
     };
@@ -290,25 +291,18 @@ const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<numb
         {
             data: {
                 data: {
-                    loans: {
-                        id: string;
+                    borrowers: {
+                        id: string
+                        loans: {
+                            id: string;
+                        }[];
                     }[];
                 };
             };
         }
     >('', graphqlQuery);
 
-    let borrowers = 0;
-
-    if (filter === 'repaid') {
-        const mapped = response.data?.data.loans.map(loan => loan.id.toLowerCase().split('-')[0]);
-        const raw = [...new Set(mapped)];
-        redisClient.set(graphqlQuery.query, JSON.stringify(raw), 'EX', intervalsInSeconds.twoMins);
-
-        return raw;
-    }
-
-    borrowers = response.data?.data.loans.length;
+    const borrowers = response.data?.data.borrowers.length;
     redisClient.set(graphqlQuery.query, JSON.stringify(borrowers), 'EX', intervalsInSeconds.twoMins);
 
     return borrowers;
@@ -320,20 +314,20 @@ export const getBorrowers = async (
     count: number;
     borrowers: {
         // optional so it can be deleted from object!
-        borrower?: {
-            id: string;
-        };
-        amount: string;
-        period: number;
-        dailyInterest: number;
-        claimed: number;
-        repaid: string;
-        lastRepayment: number;
-        lastRepaymentAmount: string;
-        lastDebt: string;
+        id: string;
+        loan: {
+            amount: string;
+            period: number;
+            dailyInterest: number;
+            claimed: number;
+            repaid: string;
+            lastRepayment: number;
+            lastRepaymentAmount: string;
+            lastDebt: string;
+        }
     }[];
 }> => {
-    const { offset, limit, addedBy, claimed, filter, orderBy } = query;
+    const { offset, limit, addedBy, orderBy, loanStatus, onlyClaimed } = query;
 
     // date 3 months ago
     const date = new Date();
@@ -344,29 +338,36 @@ export const getBorrowers = async (
     const graphqlQuery = {
         operationName: 'borrowers',
         query: `query borrowers {
-            loans(
+            borrowers(
                 first: ${limit ? limit : 10}
                 skip: ${offset ? offset : 0}
                 where: {
-                    ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
-                    ${claimed ? 'claimed_not: null' : ''}
-                    ${filtersToBorrowersQuery(filter)}
-                    ${filter === 'repaid' ? `borrower_in: ${JSON.stringify(countOrList)}` : ''}
+                    ${loanStatus !== undefined ? `lastLoanStatus: ${loanStatus}` : ''}
+                    ${onlyClaimed === true ? `lastLoanStatus_not_in:[0,3]` : ''}
+                    loans_: {
+                        ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
+                    }
                 }
-                ${orderKey ? `orderBy: ${orderKey}` : ''}
-                ${orderDirection ? `orderDirection: ${orderDirection}` : ''}
             ) {
-                borrower {
+                id
+                loans(
+                    first: 1
+                    where: {
+                        ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
+                    }
+                    ${orderKey ? `orderBy: ${orderKey}` : 'orderBy: id'}
+                    ${orderDirection ? `orderDirection: ${orderDirection}` : 'orderDirection: desc'}
+                ) {
                     id
+                    amount
+                    period
+                    dailyInterest
+                    claimed
+                    repaid
+                    lastRepayment
+                    lastRepaymentAmount
+                    lastDebt
                 }
-                amount
-                period
-                dailyInterest
-                claimed
-                repaid
-                lastRepayment
-                lastRepaymentAmount
-                lastDebt
             }
         }`
     };
@@ -382,25 +383,25 @@ export const getBorrowers = async (
         {
             data: {
                 data: {
-                    loans: {
-                        borrower: {
-                            id: string;
-                        };
-                        amount: string;
-                        period: number;
-                        dailyInterest: number;
-                        claimed: number;
-                        repaid: string;
-                        lastRepayment: number;
-                        lastRepaymentAmount: string;
-                        lastDebt: string;
+                    borrowers: {
+                        id: string
+                        loans: {
+                            amount: string;
+                            period: number;
+                            dailyInterest: number;
+                            claimed: number;
+                            repaid: string;
+                            lastRepayment: number;
+                            lastRepaymentAmount: string;
+                            lastDebt: string;
+                        }[];
                     }[];
                 };
             };
         }
     >('', graphqlQuery);
 
-    const borrowers = response.data?.data.loans;
+    const borrowers = response.data?.data.borrowers.map(borrower => ({ loan: borrower.loans[0], id: borrower.id }));
     let count = 0;
     redisClient.set(graphqlQuery.query, JSON.stringify(borrowers), 'EX', intervalsInSeconds.twoMins);
 

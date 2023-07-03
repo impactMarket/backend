@@ -28,6 +28,9 @@ export const standardResponse = (
         count?: number;
     }
 ) => {
+    if (options?.error && process.env.NODE_ENV === 'development') {
+        console.error(options.error);
+    }
     res.status(status).send({
         success,
         data,

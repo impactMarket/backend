@@ -36,18 +36,11 @@ export default (route: Router): void => {
      *         required: false
      *         description: limit used for pagination
      *       - in: query
-     *         name: claimed
+     *         name: loanStatus
      *         schema:
-     *           type: boolean
+     *           type: number
      *         required: false
-     *         description: filter by claimed loans (using true) or not claimed (using false) or both with undefined
-     *       - in: query
-     *         name: filter
-     *         schema:
-     *           type: string
-     *           enum: [repaid, needHelp]
-     *         required: false
-     *         description: optional filter
+     *         description: Loan Status filter (0 - pending, 1 - ongoing, 2 - repaid, 3 - canceled)
      *       - in: query
      *         name: orderBy
      *         schema:

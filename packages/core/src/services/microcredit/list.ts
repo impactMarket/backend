@@ -42,13 +42,8 @@ export default class MicroCreditList {
     }> => {
         // get borrowers loans from subgraph
         // and return only the active loan (which is only one)
-        const rawBorrowers = await getBorrowers({ ...query, claimed: false });
-        const borrowers = rawBorrowers.borrowers.map(b => {
-            const v = { address: getAddress(b.borrower!.id), loan: b };
-            delete v.loan['borrower'];
-
-            return v;
-        });
+        const rawBorrowers = await getBorrowers(query);
+        const borrowers = rawBorrowers.borrowers.map(b => ({ address: getAddress(b.id), loan: b }));
 
         // get borrowers profile from database
         const userProfile = await models.appUser.findAll({
@@ -322,23 +317,23 @@ export default class MicroCreditList {
             };
 
             for (let i = 0; ; i += limit) {
-                const rawBorrowers = await getBorrowers({ limit, offset: i, claimed: true, filter: 'all' });
+                const rawBorrowers = await getBorrowers({ limit, offset: i, onlyClaimed: true });
                 if (rawBorrowers.borrowers.length === 0)
                     break;
 
                 rawBorrowers.borrowers.forEach((b) => {
                     // create payment status
-                    if (b.lastDebt === '0') {
-                        addresses.paid.push(getAddress(b.borrower!.id));
+                    if (b.loan.lastDebt === '0') {
+                        addresses.paid.push(getAddress(b.id));
                     } else {
                         const limitDate = new Date();
-                        const claimed = new Date(b.claimed*1000);
-                        limitDate.setSeconds(claimed.getSeconds() + b.period);
+                        const claimed = new Date(b.loan.claimed * 1000);
+                        limitDate.setSeconds(claimed.getSeconds() + b.loan.period);
 
                         if (limitDate > new Date()) {
-                            addresses.overdue.push(getAddress(b.borrower!.id));
+                            addresses.overdue.push(getAddress(b.id));
                         } else {
-                            addresses.pending.push(getAddress(b.borrower!.id));
+                            addresses.pending.push(getAddress(b.id));
                         }
                     }
                 });
