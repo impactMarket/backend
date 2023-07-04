@@ -42,7 +42,7 @@ export default class MicroCreditCreate {
         for (const doc of microCreditDocs) {
             const { filepath, category } = doc;
 
-            if (category === 1) {
+            if (category === 1 && user.email) {
                 const path = Buffer.from(
                     JSON.stringify({
                         bucket: config.aws.bucket.microCredit,
