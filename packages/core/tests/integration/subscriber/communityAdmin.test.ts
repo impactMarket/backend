@@ -23,6 +23,7 @@ describe('communityAdmin', () => {
     let findCommunity: SinonStub<any, any>;
     let CommunityAdminFactory: ethers.ContractFactory;
     const ganacheProvider = ganache.provider({
+        quiet: true,
         mnemonic:
             'alter toy tortoise hard lava aunt second lamp sister galaxy parent bargain',
     });

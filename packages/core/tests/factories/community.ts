@@ -40,8 +40,8 @@ interface ICreateProps {
  */
 const data = async (props: ICreateProps) => {
     let defaultProps: any /*CommunityCreationAttributes */ = {
-        city: faker.address.city(),
-        country: props.country ? props.country : faker.address.countryCode(),
+        city: faker.location.city(),
+        country: props.country ? props.country : faker.location.countryCode(),
         currency: faker.finance.currencyCode(),
         description: faker.lorem.sentence(),
         email: faker.internet.email(),

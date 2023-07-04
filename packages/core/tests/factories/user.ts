@@ -26,8 +26,8 @@ const data = async (props?: ICreateProps) => {
     const randomWallet = ethers.Wallet.createRandom();
     const defaultProps: AppUserCreationAttributes = {
         address: await randomWallet.getAddress(),
-        firstName: faker.name.firstName(),
-        lastName: faker.name.lastName(),
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
         language: 'pt',
         currency: faker.finance.currencyCode(),
         gender: props?.gender ? props?.gender : 'u',
