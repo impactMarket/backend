@@ -245,8 +245,8 @@ export default (route: Router): void => {
      *         name: userId
      *         schema:
      *           type: integer
-     *         required: false
-     *         description: ID of the user from whom you want to get the form. If empty, the userId of the authorization token will be considered.
+     *         required: true
+     *         description: ID of the user from whom you want to get the form
      *       - in: query
      *         name: status
      *         schema:
@@ -260,10 +260,13 @@ export default (route: Router): void => {
      *           application/json:
      *             schema:
      *               $ref: '#/components/schemas/form'
+     *     security:
+     *     - BearerToken: []
      */
     route.get(
         '/form/:query?',
         authenticateToken,
+        onlyAuthorizedRoles(['loanManager', 'councilMember']),
         controller.getUserForm
     )
 };

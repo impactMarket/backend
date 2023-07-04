@@ -522,27 +522,12 @@ export default class MicroCreditList {
      *
      */
     public getUserForm = async (
-        requiringUser: {
-            address: string;
-            userId: number;
-        },
-        userId?: number,
+        userId: number,
         status?: string
     ) => {
-        if (userId && userId !== requiringUser.userId) {
-            const userRoles = await getUserRoles(requiringUser.address);
-            if (
-                (!userRoles.manager || userRoles.manager.state !== 0) &&
-                (!userRoles.councilMember || userRoles.councilMember.state !== 0) &&
-                (!userRoles.ambassador || userRoles.ambassador.state !== 0)
-            ) {
-                throw new utils.BaseError('NOT_ALLOWED', 'should be a manager, councilMember or ambassador');
-            }
-        }
-
-        return models.microCreditForm.findOne({
+        return await models.microCreditForm.findOne({
             where: {
-                userId: userId || requiringUser.userId,
+                userId,
                 status: status || 'pending'
             }
         });
