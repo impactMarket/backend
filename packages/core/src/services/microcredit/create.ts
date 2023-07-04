@@ -6,6 +6,8 @@ import { AppUserModel } from '../../database/models/app/appUser';
 import { MicroCreditFormModel } from '../../database/models/microCredit/form';
 import { BaseError } from '../../utils';
 import { MicroCreditFormStatus } from '../../interfaces/microCredit/form';
+import { sendEmail } from '../../services/email';
+import { config } from '../../..';
 
 export default class MicroCreditCreate {
     private microCreditContentStorage = new MicroCreditContentStorage();
@@ -24,10 +26,40 @@ export default class MicroCreditCreate {
             }
         ]
     ) {
+        const user = await models.appUser.findOne({
+            where: {
+                id: userId
+            }
+        });
+        if (!user) {
+            throw new BaseError('USER_NOT_FOUND', 'User not found');
+        }
         const microCreditDocs = docs.map(doc => ({
             ...doc,
             userId
         }));
+
+        for (const doc of microCreditDocs) {
+            const { filepath, category } = doc;
+
+            if (category === 1 && user.email) {
+                const path = Buffer.from(
+                    JSON.stringify({
+                        bucket: config.aws.bucket.microCredit,
+                        key: filepath
+                    })
+                ).toString('base64');
+                // send email to user
+                sendEmail({
+                    to: user.email,
+                    from: 'hello@impactmarket.com',
+                    subject: `${
+                        config.jsonRpcUrl.indexOf('alfajores') === -1 ? '' : '[TESTNET] '
+                    }Your loan contract signed`,
+                    text: `You can access your contract at ${config.imageHandlerUrl}/${path}`
+                });
+            }
+        }
 
         await models.microCreditDocs.bulkCreate(microCreditDocs);
 

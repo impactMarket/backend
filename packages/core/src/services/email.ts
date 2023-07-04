@@ -2,22 +2,11 @@ import sgMail, { MailDataRequired } from '@sendgrid/mail';
 
 import config from '../config';
 
-export default class Email {
-    constructor() {
-        if (config.sendgridApi.startsWith('SG.')) {
-            sgMail.setApiKey(config.sendgridApi);
-        }
+export const sendEmail = (msg: MailDataRequired) => {
+    if (config.sendgridApi.startsWith('SG.')) {
+        sgMail.setApiKey(config.sendgridApi);
+        sgMail.send(msg).catch(console.error);
     }
 
-    public async notify(msg: MailDataRequired) {
-        try {
-            await sgMail.send(msg);
-        } catch (error) {
-            console.error(error);
-
-            if (error.response) {
-                console.error(error.response.body);
-            }
-        }
-    }
-}
+    return true;
+};

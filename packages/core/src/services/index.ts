@@ -1,5 +1,4 @@
 import * as app from './app';
-import Email from './email';
 import * as global from './global';
 import { answer } from './learnAndEarn/answer';
 import { registerClaimRewards } from './learnAndEarn/claimRewards';
@@ -34,7 +33,6 @@ export {
     global,
     storage,
     ubi,
-    Email,
     StoryServiceV2,
     learnAndEarn,
     MicroCredit,
