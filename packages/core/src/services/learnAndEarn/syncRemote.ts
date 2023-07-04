@@ -51,6 +51,16 @@ async function getPrismicLearnAndEarn() {
                     continue;
                 }
 
+                // update reward
+                await models.learnAndEarnLevel.update({
+                    totalReward: prismicLevel.data.reward
+                }, {
+                    where: {
+                        id: prismicLevel.data.id,
+                    },
+                    transaction: t,
+                });
+
                 const lang = prismicLevel.lang ? prismicLevel.lang.split('-')[0] : 'en';
                 await models.learnAndEarnPrismicLevel.create({
                     prismicId: prismicLevel.id,
