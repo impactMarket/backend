@@ -12,16 +12,53 @@ import { AppUser } from '../../interfaces/app/appUser';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
 import { getUserRoles } from '../../subgraph/queries/user';
 
-function mergeArrays(arr1: any[], arr2: any[], key: string, mergeIfUndefined = true) {
-    const map = new Map(arr1.map(item => [item[key], item]));
-    arr2.forEach(item => {
-        if (map.has(item[key])) {
-            Object.assign(map.get(item[key]), item);
-        } else if (mergeIfUndefined) {
-            map.set(item[key], item);
+// it was ChatGPT who did it, don't ask me to explain!
+// jk, here's the prompt to generate this:
+// in nodejs, I need a method that merges two arrays using a specific key common to both.
+// But with something special. I want to merge them following the array order and sometimes
+// I'll want to use the array 1 order and sometimes the array 2 order. There's also another
+// important aspect, array 1 and 2 might not have the same items. There might be a case in
+// which array 2 does not have some keys that exist in array 1 and vice versa.
+// In those cases, the order is also very important. If I want to order by array two,
+// then the rule should be to merge only the existing items from array 1 to array 2
+// only if they exist in array two and return. Same if done with array 1 order.
+function mergeArraysByOrder<T1 extends Record<string, any>, T2 extends Record<string, any>>(
+    arr1: T1[],
+    arr2: T2[],
+    key: keyof T1 & keyof T2,
+    useArr1Order: boolean
+): (T1 & T2)[] {
+    const merged: (T1 & T2)[] = [];
+
+    const getKeyIndex = (array: (T1 | T2)[], value: T1[keyof T1] & T2[keyof T2]): number => {
+        for (let i = 0; i < array.length; i++) {
+            if (array[i][key] === value) {
+                return i;
+            }
         }
-    });
-    return Array.from(map.values());
+        return -1;
+    };
+
+    const mergeItems = (item1: T1 | T2, item2: T1 | T2): T1 & T2 => {
+        const mergedItem: T1 & T2 = { ...(item2 as T2) } as any;
+
+        for (const prop in item1) {
+            if (item1.hasOwnProperty(prop) && !mergedItem.hasOwnProperty(prop)) {
+                mergedItem[prop as keyof (T1 & T2)] = item1[prop];
+            }
+        }
+
+        return mergedItem;
+    };
+
+    for (const item of useArr1Order ? arr1 : arr2) {
+        const keyIndex = getKeyIndex(useArr1Order ? arr2 : arr1, item[key] as T1[keyof T1] & T2[keyof T2]);
+        if (keyIndex !== -1) {
+            merged.push(mergeItems(useArr1Order ? item : arr1[keyIndex], useArr1Order ? arr2[keyIndex] : item));
+        }
+    }
+
+    return merged;
 }
 
 export type GetBorrowersQuery = {
@@ -64,9 +101,9 @@ export default class MicroCreditList {
         count: number;
         rows: {
             address: string;
-            firstName: string;
-            lastName: string;
-            avatarMediaPath: string;
+            firstName: string | null;
+            lastName: string | null;
+            avatarMediaPath: string | null;
             loan: {
                 amount: string;
                 period: number;
@@ -82,10 +119,9 @@ export default class MicroCreditList {
         let usersToFilter: AppUser[] | undefined = undefined;
         let order: Order | undefined;
         let where: WhereOptions<MicroCreditBorrowers> | undefined;
-        const isOrderByBackendData = query.orderBy && query.orderBy.indexOf('performance') !== -1;
 
         // build up database queries based on query params
-        if (query.orderBy && isOrderByBackendData) {
+        if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
             order = [[literal('performance'), query.orderBy.indexOf('asc') !== -1 ? 'ASC' : 'DESC']];
         }
         if (query.filter === 'ontrack') {
@@ -154,12 +190,21 @@ export default class MicroCreditList {
             });
         }
 
+        type User = {
+            address: string;
+            firstName: string | null;
+            lastName: string | null;
+            avatarMediaPath: string | null;
+        };
         // merge borrowers loans and profile
         return {
             count: rawBorrowers.count,
-            rows: isOrderByBackendData
-                ? mergeArrays(usersToFilter, borrowers, 'address', false)
-                : mergeArrays(borrowers, usersToFilter, 'address', false)
+            rows: mergeArraysByOrder<any, User>(
+                borrowers,
+                usersToFilter,
+                'address',
+                !(query.orderBy && query.orderBy.indexOf('performance') !== -1)
+            )
         };
     };
 
@@ -546,9 +591,9 @@ export default class MicroCreditList {
                 where: {
                     id: formId
                 }
-            })
+            });
         }
-        
+
         const formResult = await models.microCreditForm.findOne({
             where: {
                 id: formId,
@@ -559,7 +604,7 @@ export default class MicroCreditList {
         if (formResult) {
             return formResult.toJSON();
         }
-        
+
         throw new utils.BaseError('NOT_ALLOWED', 'should be a loanManager, councilMember, ambassador or form owner');
     };
 }
