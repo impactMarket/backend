@@ -106,13 +106,8 @@ class MicroCreditController {
 
         this.microCreditService
             .getUserForm(
-                req.user,
-                userId && typeof userId === 'string'
-                    ? parseInt(userId, 10)
-                    : undefined,
-                status && typeof status === 'string'
-                    ? status
-                    : undefined,
+                parseInt(userId as string, 10),
+                status as string | undefined
             )
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
