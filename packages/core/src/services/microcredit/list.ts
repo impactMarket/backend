@@ -14,11 +14,13 @@ import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
 function mergeArrays(arr1: any[], arr2: any[], key: string, mergeIfUndefined = true) {
     const map = new Map(arr1.map(item => [item[key], item]));
     arr2.forEach(item => {
-        map.has(item[key])
-            ? Object.assign(map.get(item[key]), item)
-            : mergeIfUndefined
-            ? map.set(item[key], item)
-            : undefined;
+        if (map.has(item[key])) {
+            if (mergeIfUndefined) {
+                Object.assign(map.get(item[key]), item);
+            }
+        } else if (mergeIfUndefined) {
+            map.set(item[key], item);
+        }
     });
     return Array.from(map.values());
 }
