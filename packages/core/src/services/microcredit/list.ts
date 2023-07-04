@@ -319,19 +319,30 @@ export default class MicroCreditList {
             throw new utils.BaseError('USER_NOT_FOUND', 'Borrower not found');
         }
 
-        const docs = await models.microCreditDocs.findAll({
-            attributes: ['filepath', 'category'],
-            where: {
-                userId: borrower.id
-            }
-        });
+        const [docs, forms] = await Promise.all([
+            models.microCreditDocs.findAll({
+                attributes: ['filepath', 'category'],
+                where: {
+                    userId: borrower.id
+                },
+                order: [['createdAt', 'desc']]
+            }),
+            models.microCreditForm.findAll({
+                attributes: ['id', 'status', 'createdAt'],
+                where: {
+                    userId: borrower.id
+                },
+                order: [['createdAt', 'desc']]
+            })
+        ]);
 
         const loans = await getBorrowerLoansCount(address);
 
         return {
             ...borrower.toJSON(),
             loans,
-            docs: docs.map(d => d.toJSON())
+            docs: docs.map(d => d.toJSON()),
+            forms: forms.map(f => f.toJSON())
         };
     };
 
@@ -528,22 +539,27 @@ export default class MicroCreditList {
      *            description: pending, submitted, in-review, approved, rejected
      *
      */
-    public getUserForm = async (userRequest: { userId: number; address: string }, userId: number, status?: string) => {
-        if (userId && userId !== userRequest.userId) {
-            const userRoles = await getUserRoles(userRequest.address);
-            if (
-                (!userRoles.loanManager || userRoles.loanManager.state !== 0) &&
-                (!userRoles.councilMember || userRoles.councilMember.state !== 0) &&
-                (!userRoles.ambassador || userRoles.ambassador.state !== 0)
-            ) {
-                throw new utils.BaseError('NOT_ALLOWED', 'should be a loanManager, councilMember or ambassador');
-            }
+    public getUserForm = async (userRequest: { userId: number; address: string }, formId: number) => {
+        const userRoles = await getUserRoles(userRequest.address);
+        if (userRoles.loanManager || userRoles.councilMember || userRoles.ambassador) {
+            return await models.microCreditForm.findOne({
+                where: {
+                    id: formId
+                }
+            })
         }
-        return await models.microCreditForm.findOne({
+        
+        const formResult = await models.microCreditForm.findOne({
             where: {
-                userId: userId || userRequest.userId,
-                status: status || 'pending'
+                id: formId,
+                userId: userRequest.userId
             }
         });
+
+        if (formResult) {
+            return formResult.toJSON();
+        }
+        
+        throw new utils.BaseError('NOT_ALLOWED', 'should be a loanManager, councilMember, ambassador or form owner');
     };
 }
