@@ -8,14 +8,19 @@ import { config } from '../../..';
 import { WhereOptions, literal, Op, Order } from 'sequelize';
 import { MicroCreditApplications } from '../../interfaces/microCredit/applications';
 import { utils } from '@impactmarket/core';
-import { getUserRoles } from '../../subgraph/queries/user';
 import { AppUser } from '../../interfaces/app/appUser';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
 
-function mergeArrays(arr1: any[], arr2: any[], key: string) {
+function mergeArrays(arr1: any[], arr2: any[], key: string, mergeIfUndefined = true) {
     const map = new Map(arr1.map(item => [item[key], item]));
     arr2.forEach(item => {
-        map.has(item[key]) ? Object.assign(map.get(item[key]), item) : map.set(item[key], item);
+        if (map.has(item[key])) {
+            if (mergeIfUndefined) {
+                Object.assign(map.get(item[key]), item);
+            }
+        } else if (mergeIfUndefined) {
+            map.set(item[key], item);
+        }
     });
     return Array.from(map.values());
 }
@@ -78,9 +83,10 @@ export default class MicroCreditList {
         let usersToFilter: AppUser[] | undefined = undefined;
         let order: Order | undefined;
         let where: WhereOptions<MicroCreditBorrowers> | undefined;
+        const isOrderByBackendData = query.orderBy && query.orderBy.indexOf('performance') !== -1;
 
         // build up database queries based on query params
-        if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
+        if (query.orderBy && isOrderByBackendData) {
             order = [[literal('performance'), query.orderBy.indexOf('asc') !== -1 ? 'ASC' : 'DESC']];
         }
         if (query.filter === 'ontrack') {
@@ -152,7 +158,9 @@ export default class MicroCreditList {
         // merge borrowers loans and profile
         return {
             count: rawBorrowers.count,
-            rows: mergeArrays(borrowers, usersToFilter, 'address')
+            rows: isOrderByBackendData
+                ? mergeArrays(usersToFilter, borrowers, 'address', false)
+                : mergeArrays(borrowers, usersToFilter, 'address', false)
         };
     };
 
@@ -521,10 +529,7 @@ export default class MicroCreditList {
      *            description: pending, submitted, in-review, approved, rejected
      *
      */
-    public getUserForm = async (
-        userId: number,
-        status?: string
-    ) => {
+    public getUserForm = async (userId: number, status?: string) => {
         return await models.microCreditForm.findOne({
             where: {
                 userId,
