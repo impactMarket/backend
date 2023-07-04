@@ -106,6 +106,7 @@ class MicroCreditController {
 
         this.microCreditService
             .getUserForm(
+                req.user,
                 parseInt(userId as string, 10),
                 status as string | undefined
             )
