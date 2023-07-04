@@ -174,10 +174,10 @@ export function verifySignature(req: RequestWithUser, res: Response, next: NextF
 }
 
 export function verifyTypedSignature(req: RequestWithUser, res: Response, next: NextFunction): void {
-    const { eip712Signature, eip712Value: rawEip712Value } = req.headers;
+    const { eip712signature, eip712value: rawEip712Value } = req.headers;
     const eip712Value = JSON.parse(rawEip712Value as string) as Record<string, any>;
 
-    if (!eip712Signature || !eip712Value) {
+    if (!eip712signature || !eip712Value) {
         res.status(401).json({
             success: false,
             error: {
@@ -202,7 +202,7 @@ export function verifyTypedSignature(req: RequestWithUser, res: Response, next: 
 
     // same format as @impactmarket/utils
     const domain: TypedDataDomain = {
-        chainId: config.jsonRpcUrl.includes('alfajores') ? 44787 : 42220,
+        chainId: config.chain.isMainnet ? 42220 : 44787,
         name: 'impactMarket',
         verifyingContract: config.DAOContractAddress,
         version: '1'
@@ -215,7 +215,7 @@ export function verifyTypedSignature(req: RequestWithUser, res: Response, next: 
     };
 
     // verify signature
-    const address = verifyTypedData(domain, types, eip712Value, eip712Signature as string);
+    const address = verifyTypedData(domain, types, eip712Value, eip712signature as string);
 
     if (address.toLowerCase() === req.user?.address.toLowerCase()) {
         req.hasValidTypedSignature = true;
