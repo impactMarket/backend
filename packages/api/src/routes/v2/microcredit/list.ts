@@ -36,16 +36,17 @@ export default (route: Router): void => {
      *         required: false
      *         description: limit used for pagination
      *       - in: query
-     *         name: loanStatus
+     *         name: filter
      *         schema:
-     *           type: number
+     *           type: string
+     *           enum: [ontrack, need-help, repaid]
      *         required: false
-     *         description: Loan Status filter (0 - pending, 1 - ongoing, 2 - repaid, 3 - canceled)
+     *         description: optional filter (leave it undefined to get all)
      *       - in: query
      *         name: orderBy
      *         schema:
      *           type: string
-     *           enum: [amount, amount:asc, amount:desc, period, period:asc, period:desc, lastRepayment, lastRepayment:asc, lastRepayment:desc, lastDebt, lastDebt:asc, lastDebt:desc]
+     *           enum: [amount, amount:asc, amount:desc, period, period:asc, period:desc, lastRepayment, lastRepayment:asc, lastRepayment:desc, lastDebt, lastDebt:asc, lastDebt:desc, performance, performance:asc, performance:desc]
      *         required: false
      *         description: order by
      *     responses:

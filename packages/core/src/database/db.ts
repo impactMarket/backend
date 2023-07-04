@@ -54,6 +54,7 @@ import { UbiCommunityPromoterModel } from './models/ubi/ubiCommunityPromoter';
 import { MicroCreditDocsModel } from './models/microCredit/docs';
 import { MicroCreditApplicationsModel } from './models/microCredit/applications';
 import { MicroCreditFormModel } from './models/microCredit/form';
+import { MicroCreditBorrowersModel } from './models/microCredit/borrowers';
 
 export type DbModels = {
     appUser: ModelStatic<AppUserModel>;
@@ -117,6 +118,7 @@ export type DbModels = {
     microCreditDocs: ModelStatic<MicroCreditDocsModel>;
     microCreditApplications: ModelStatic<MicroCreditApplicationsModel>;
     microCreditForm: ModelStatic<MicroCreditFormModel>;
+    microCreditBorrowers: ModelStatic<MicroCreditBorrowersModel>;
     //
     exchangeRegistry: ModelStatic<ExchangeRegistryModel>;
 }

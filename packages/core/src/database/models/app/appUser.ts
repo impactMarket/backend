@@ -4,6 +4,7 @@ import {
     AppUser,
     AppUserCreationAttributes,
 } from '../../../interfaces/app/appUser';
+import { MicroCreditBorrowersModel } from '../microCredit/borrowers';
 
 export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public id!: number;
@@ -33,6 +34,8 @@ export class AppUserModel extends Model<AppUser, AppUserCreationAttributes> {
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
     public readonly deletedAt!: Date;
+
+    public readonly borrower?: MicroCreditBorrowersModel;
 }
 
 export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {

@@ -59,6 +59,7 @@ import { initializeWalletAirdropUser } from './walletAirdrop/walletAirdropUser';
 import { initializeMicroCreditDocs } from './microCredit/docs';
 import { initializeMicroCreditApplications } from './microCredit/applications';
 import { initializeMicroCreditForm } from './microCredit/form';
+import { initializeMicroCreditBorrowers } from './microCredit/borrowers';
 
 export default function initModels(sequelize: Sequelize): void {
     // app
@@ -131,6 +132,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeMicroCreditDocs(sequelize);
     initializeMicroCreditApplications(sequelize);
     initializeMicroCreditForm(sequelize);
+    initializeMicroCreditBorrowers(sequelize);
 
     // Exchange
     initializeExchangeRegistry(sequelize);

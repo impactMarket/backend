@@ -5,17 +5,10 @@ import { ContainerTypes, createValidator, ValidatedRequestSchema } from '../util
 
 const validator = createValidator();
 
-enum LoanStatus {
-    pending = 0,
-    active = 1,
-    repaid = 2,
-    canceled = 3
-}
-
 type ListBorrowersType = {
     offset?: number;
     limit?: number;
-    loanStatus?: LoanStatus;
+    filter?: 'ontrack' | 'need-help' | 'repaid';
     orderBy?:
         | 'amount'
         | 'amount:asc'
@@ -28,7 +21,10 @@ type ListBorrowersType = {
         | 'lastRepayment:desc'
         | 'lastDebt'
         | 'lastDebt:asc'
-        | 'lastDebt:desc';
+        | 'lastDebt:desc'
+        | 'performance'
+        | 'performance:asc'
+        | 'performance:desc';
 };
 
 type ListApplicationsType = {
@@ -41,7 +37,7 @@ type ListApplicationsType = {
 const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
     offset: Joi.number().optional().default(0),
     limit: Joi.number().optional().max(20).default(10),
-    loanStatus: Joi.number().optional(),
+    filter: Joi.string().optional().valid('ontrack', 'need-help', 'repaid'),
     orderBy: Joi.string()
         .optional()
         .valid(
@@ -56,7 +52,10 @@ const queryListBorrowersSchema = defaultSchema.object<ListBorrowersType>({
             'lastRepayment:desc',
             'lastDebt',
             'lastDebt:asc',
-            'lastDebt:desc'
+            'lastDebt:desc',
+            'performance',
+            'performance:asc',
+            'performance:desc'
         )
 });
 

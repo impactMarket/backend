@@ -232,6 +232,7 @@ export type SubgraphGetBorrowersQuery = {
     addedBy?: string;
     loanStatus?: LoanStatus;
     onlyClaimed?: boolean;
+    onlyBorrowers?: string[];
     orderBy?:
         | 'amount'
         | 'amount:asc'
@@ -247,8 +248,8 @@ export type SubgraphGetBorrowersQuery = {
         | 'lastDebt:desc';
 };
 
-const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<number | string[]> => {
-    const { addedBy, loanStatus, orderBy, onlyClaimed } = query;
+const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<number> => {
+    const { addedBy, loanStatus, orderBy, onlyClaimed, onlyBorrowers } = query;
     const [orderKey, orderDirection] = orderBy ? orderBy.split(':') : [undefined, undefined];
 
     const graphqlQuery = {
@@ -260,22 +261,17 @@ const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<numb
                 where: {
                     ${loanStatus !== undefined ? `lastLoanStatus: ${loanStatus}` : ''}
                     ${onlyClaimed === true ? `lastLoanStatus_not_in:[0,3]` : ''}
-                    loans_: {
-                        ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
+                    ${
+                        onlyBorrowers !== undefined
+                            ? `id_in:${JSON.stringify(onlyBorrowers.map(b => b.toLowerCase()))}`
+                            : ''
                     }
+                    ${addedBy ? `lastLoanAddedBy: "${addedBy.toLowerCase()}"` : ''}
                 }
+                ${orderKey ? `orderBy: lastLoan${orderKey.charAt(0).toUpperCase() + orderKey.slice(1)}` : 'orderBy: id'}
+                ${orderDirection ? `orderDirection: ${orderDirection}` : 'orderDirection: desc'}
             ) {
                 id
-                loans(
-                    first: 1
-                    where: {
-                        ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
-                    }
-                    ${orderKey ? `orderBy: ${orderKey}` : 'orderBy: id'}
-                    ${orderDirection ? `orderDirection: ${orderDirection}` : 'orderDirection: desc'}
-                ) {
-                    id
-                }
             }
         }`
     };
@@ -292,10 +288,7 @@ const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<numb
             data: {
                 data: {
                     borrowers: {
-                        id: string
-                        loans: {
-                            id: string;
-                        }[];
+                        id: string;
                     }[];
                 };
             };
@@ -324,15 +317,15 @@ export const getBorrowers = async (
             lastRepayment: number;
             lastRepaymentAmount: string;
             lastDebt: string;
-        }
+        };
     }[];
 }> => {
-    const { offset, limit, addedBy, orderBy, loanStatus, onlyClaimed } = query;
+    const { offset, limit, addedBy, orderBy, loanStatus, onlyClaimed, onlyBorrowers } = query;
 
     // date 3 months ago
     const date = new Date();
     date.setMonth(date.getMonth() - 3);
-    const countOrList = await countGetBorrowers(query);
+    const count = await countGetBorrowers(query);
     const [orderKey, orderDirection] = orderBy ? orderBy.split(':') : [undefined, undefined];
 
     const graphqlQuery = {
@@ -344,30 +337,25 @@ export const getBorrowers = async (
                 where: {
                     ${loanStatus !== undefined ? `lastLoanStatus: ${loanStatus}` : ''}
                     ${onlyClaimed === true ? `lastLoanStatus_not_in:[0,3]` : ''}
-                    loans_: {
-                        ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
+                    ${
+                        onlyBorrowers !== undefined
+                            ? `id_in:${JSON.stringify(onlyBorrowers.map(b => b.toLowerCase()))}`
+                            : ''
                     }
+                    ${addedBy ? `lastLoanAddedBy: "${addedBy.toLowerCase()}"` : ''}
                 }
+                ${orderKey ? `orderBy: lastLoan${orderKey.charAt(0).toUpperCase() + orderKey.slice(1)}` : 'orderBy: id'}
+                ${orderDirection ? `orderDirection: ${orderDirection}` : 'orderDirection: desc'}
             ) {
                 id
-                loans(
-                    first: 1
-                    where: {
-                        ${addedBy ? `addedBy: "${addedBy.toLowerCase()}"` : ''}
-                    }
-                    ${orderKey ? `orderBy: ${orderKey}` : 'orderBy: id'}
-                    ${orderDirection ? `orderDirection: ${orderDirection}` : 'orderDirection: desc'}
-                ) {
-                    id
-                    amount
-                    period
-                    dailyInterest
-                    claimed
-                    repaid
-                    lastRepayment
-                    lastRepaymentAmount
-                    lastDebt
-                }
+                lastLoanAmount
+                lastLoanPeriod
+                lastLoanDailyInterest
+                lastLoanClaimed
+                lastLoanRepaid
+                lastLoanLastRepayment
+                lastLoanLastRepaymentAmount
+                lastLoanLastDebt
             }
         }`
     };
@@ -384,32 +372,35 @@ export const getBorrowers = async (
             data: {
                 data: {
                     borrowers: {
-                        id: string
-                        loans: {
-                            amount: string;
-                            period: number;
-                            dailyInterest: number;
-                            claimed: number;
-                            repaid: string;
-                            lastRepayment: number;
-                            lastRepaymentAmount: string;
-                            lastDebt: string;
-                        }[];
+                        id: string;
+                        lastLoanAmount: string;
+                        lastLoanPeriod: number;
+                        lastLoanDailyInterest: number;
+                        lastLoanClaimed: number;
+                        lastLoanRepaid: string;
+                        lastLoanLastRepayment: number;
+                        lastLoanLastRepaymentAmount: string;
+                        lastLoanLastDebt: string;
                     }[];
                 };
             };
         }
     >('', graphqlQuery);
 
-    const borrowers = response.data?.data.borrowers.map(borrower => ({ loan: borrower.loans[0], id: borrower.id }));
-    let count = 0;
+    const borrowers = response.data?.data.borrowers.map(borrower => ({
+        loan: {
+            amount: borrower.lastLoanAmount,
+            period: borrower.lastLoanPeriod,
+            dailyInterest: borrower.lastLoanDailyInterest,
+            claimed: borrower.lastLoanClaimed,
+            repaid: borrower.lastLoanRepaid,
+            lastRepayment: borrower.lastLoanLastRepayment,
+            lastRepaymentAmount: borrower.lastLoanLastRepaymentAmount,
+            lastDebt: borrower.lastLoanLastDebt
+        },
+        id: borrower.id
+    }));
     redisClient.set(graphqlQuery.query, JSON.stringify(borrowers), 'EX', intervalsInSeconds.twoMins);
-
-    if (countOrList instanceof Array) {
-        count = countOrList.length;
-    } else {
-        count = countOrList;
-    }
 
     return { count, borrowers };
 };
