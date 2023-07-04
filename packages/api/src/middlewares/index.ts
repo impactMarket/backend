@@ -263,6 +263,15 @@ export const onlyAuthorizedRoles =
             return;
         }
 
+        // when a user is request access to it's own data
+        if (authorisedRoles.includes('itself')) {
+            if (req.user.address.toLowerCase() === (req.query?.address as string | undefined)?.toLowerCase()) {
+                next();
+                return;
+            }
+            // maybe we need to add userId support as well
+        }
+
         // get user roles
         // this method already has cache
         const userRoles = await getUserRoles(req.user.address);
