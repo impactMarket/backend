@@ -266,7 +266,6 @@ export default (route: Router): void => {
     route.get(
         '/form/:query?',
         authenticateToken,
-        onlyAuthorizedRoles(['loanManager', 'councilMember']),
         controller.getUserForm
     )
 };

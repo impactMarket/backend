@@ -10,6 +10,7 @@ import { MicroCreditApplications } from '../../interfaces/microCredit/applicatio
 import { utils } from '@impactmarket/core';
 import { AppUser } from '../../interfaces/app/appUser';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
+import { getUserRoles } from '../../subgraph/queries/user';
 
 function mergeArrays(arr1: any[], arr2: any[], key: string, mergeIfUndefined = true) {
     const map = new Map(arr1.map(item => [item[key], item]));
@@ -529,10 +530,20 @@ export default class MicroCreditList {
      *            description: pending, submitted, in-review, approved, rejected
      *
      */
-    public getUserForm = async (userId: number, status?: string) => {
+    public getUserForm = async (userRequest: { userId: number; address: string }, userId: number, status?: string) => {
+        if (userId && userId !== userRequest.userId) {
+            const userRoles = await getUserRoles(userRequest.address);
+            if (
+                (!userRoles.loanManager || userRoles.loanManager.state !== 0) &&
+                (!userRoles.councilMember || userRoles.councilMember.state !== 0) &&
+                (!userRoles.ambassador || userRoles.ambassador.state !== 0)
+            ) {
+                throw new utils.BaseError('NOT_ALLOWED', 'should be a loanManager, councilMember or ambassador');
+            }
+        }
         return await models.microCreditForm.findOne({
             where: {
-                userId,
+                userId: userId || userRequest.userId,
                 status: status || 'pending'
             }
         });
