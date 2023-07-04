@@ -2,7 +2,9 @@ import { getAddress } from '@ethersproject/address';
 import { interfaces, config, database, subgraph } from '@impactmarket/core';
 import { CommunityAttributes } from '@impactmarket/core/src/interfaces/ubi/community';
 import BigNumber from 'bignumber.js';
-import { Op } from 'sequelize';
+import { Op, literal } from 'sequelize';
+
+const communitiesMap: Map<string, string[]> = new Map([]);
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     const aMonthAgo = new Date();
@@ -15,7 +17,6 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     today.setUTCHours(0, 0, 0, 0);
 
     // query communities data
-
     const whereCommunity = {
         [Op.or]: [
             {
@@ -62,6 +63,9 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 await subgraph.queries.beneficiary.getAllBeneficiaries(
                     community.contractAddress!
                 );
+
+            if (allBeneficiaries.length)
+                communitiesMap.set(community.contractAddress!, allBeneficiaries.map(beneficiary => beneficiary.address));
 
             return {
                 address: community.contractAddress,
@@ -142,4 +146,111 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             break;
         }
     }
+}
+
+export async function calcuateCommunitiesDemographics() {
+    const yesterdayDateOnly = new Date();
+    yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
+    const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
+
+    // get community IDs
+    const keys = Array.from(communitiesMap.keys());
+    const communities = await database.models.community.findAll({
+        attributes: ['id', 'contractAddress'],
+        where: {
+            contractAddress: {
+                [Op.in]: keys.map(el => getAddress(el))
+            }
+        }
+    });
+
+    const year = new Date().getUTCFullYear();
+    const batch = config.cronJobBatchSize;
+    for (let i = 0; ; i = i + batch) {
+        const arrayTmp = Array.from(communitiesMap).slice(i, i + batch);
+
+        // for each community
+        const promises = arrayTmp.map(async (el) => {
+            const users = await database.models.appUser.findOne({
+                attributes: [
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-year BETWEEN 18 AND 24)`
+                        ),
+                        'ageRange1',
+                    ],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-year BETWEEN 25 AND 34)`
+                        ),
+                        'ageRange2',
+                    ],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-year BETWEEN 35 AND 44)`
+                        ),
+                        'ageRange3',
+                    ],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-year BETWEEN 45 AND 54)`
+                        ),
+                        'ageRange4',
+                    ],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-year BETWEEN 55 AND 64)`
+                        ),
+                        'ageRange5',
+                    ],
+                    [
+                        literal(
+                            `count(*) FILTER (WHERE ${year}-year BETWEEN 65 AND 120)`
+                        ),
+                        'ageRange6',
+                    ],
+                    [
+                        literal(
+                            'count(*) FILTER (WHERE gender = \'m\')'
+                        ),
+                        'male',
+                    ],
+                    [
+                        literal(
+                            'count(*) FILTER (WHERE gender = \'f\')'
+                        ),
+                        'female',
+                    ],
+                    [
+                        literal(
+                            'count(*) FILTER (WHERE gender = \'u\'  OR gender is null)'
+                        ),
+                        'undisclosed',
+                    ],
+                    [literal('count(*)'), 'totalGender'],
+                ],
+                where: {
+                    address: {
+                        [Op.in]: el[1].map(address => getAddress(address))
+                    }
+                }
+            });
+
+            const community = communities.find(community => community.contractAddress?.toLowerCase() === el[0].toLowerCase());
+            
+            await database.models.ubiCommunityDemographics.create({
+                communityId: community!.id,
+                date: yesterdayDate,
+                ...users?.toJSON() as any
+            });
+        });
+
+        await Promise.all(promises);
+    
+        if (i + batch > communitiesMap.size) {
+            break;
+        }
+    }
+
+    communitiesMap.clear();
 }
