@@ -22,8 +22,12 @@ module.exports = {
                 type: Sequelize.JSONB,
                 allowNull: false
             },
-            submitted: {
-                type: Sequelize.BOOLEAN,
+            prismicId: {
+                type: Sequelize.STRING(32),
+                allowNull: false
+            },
+            status: {
+                type: Sequelize.ENUM('pending', 'submitted', 'in-review', 'approved', 'rejected'),
                 allowNull: false,
                 defaultValue: false
             },
