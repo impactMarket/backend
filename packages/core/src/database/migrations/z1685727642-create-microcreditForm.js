@@ -29,7 +29,7 @@ module.exports = {
             status: {
                 type: Sequelize.ENUM('pending', 'submitted', 'in-review', 'approved', 'rejected'),
                 allowNull: false,
-                defaultValue: false
+                defaultValue: 'pending'
             },
             createdAt: {
                 type: Sequelize.DATE,
