@@ -1,14 +1,16 @@
 import { models } from '../../database';
-import { SubgraphGetBorrowersQuery, getBorrowerLoansCount, getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
+import { getBorrowerLoansCount, getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
 import { getAddress } from '@ethersproject/address';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
 import { BigNumber, Contract } from 'ethers';
 import { config } from '../../..';
-import { WhereOptions, literal, Op } from 'sequelize';
+import { WhereOptions, literal, Op, Order } from 'sequelize';
 import { MicroCreditApplications } from '../../interfaces/microCredit/applications';
 import { utils } from '@impactmarket/core';
 import { getUserRoles } from '../../subgraph/queries/user';
+import { AppUser } from '../../interfaces/app/appUser';
+import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
 
 function mergeArrays(arr1: any[], arr2: any[], key: string) {
     const map = new Map(arr1.map(item => [item[key], item]));
@@ -18,9 +20,42 @@ function mergeArrays(arr1: any[], arr2: any[], key: string) {
     return Array.from(map.values());
 }
 
+export type GetBorrowersQuery = {
+    offset?: number;
+    limit?: number;
+    addedBy?: string;
+    filter?: 'all' | 'ontrack' | 'need-help' | 'repaid';
+    orderBy?:
+        | 'amount'
+        | 'amount:asc'
+        | 'amount:desc'
+        | 'period'
+        | 'period:asc'
+        | 'period:desc'
+        | 'lastRepayment'
+        | 'lastRepayment:asc'
+        | 'lastRepayment:desc'
+        | 'lastDebt'
+        | 'lastDebt:asc'
+        | 'lastDebt:desc'
+        // backend orders only
+        | 'performance'
+        | 'performance:asc'
+        | 'performance:desc';
+};
+
+// exclude orderBy from the object to prepare it to be used on the subgraph
+function excludeDatabaseQueriesWhenSubgraph(query: GetBorrowersQuery) {
+    if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
+        const { orderBy, filter, ...rest } = query;
+        return rest;
+    }
+    return query;
+}
+
 export default class MicroCreditList {
     public listBorrowers = async (
-        query: SubgraphGetBorrowersQuery
+        query: GetBorrowersQuery
     ): Promise<{
         count: number;
         rows: {
@@ -40,27 +75,84 @@ export default class MicroCreditList {
             };
         }[];
     }> => {
-        // get borrowers loans from subgraph
-        // and return only the active loan (which is only one)
-        const rawBorrowers = await getBorrowers(query);
-        const borrowers = rawBorrowers.borrowers.map(b => ({ address: getAddress(b.id), loan: b }));
+        let usersToFilter: AppUser[] | undefined = undefined;
+        let order: Order | undefined;
+        let where: WhereOptions<MicroCreditBorrowers> | undefined;
 
-        // get borrowers profile from database
-        const userProfile = await models.appUser.findAll({
-            attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
-            where: {
-                address: borrowers.map(b => b.address)
-            }
+        // build up database queries based on query params
+        if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
+            order = [[literal('performance'), query.orderBy.indexOf('asc') !== -1 ? 'ASC' : 'DESC']];
+        }
+        if (query.filter === 'ontrack') {
+            where = {
+                performance: {
+                    [Op.gte]: 100
+                }
+            };
+        } else if (query.filter === 'need-help') {
+            where = {
+                performance: {
+                    [Op.lt]: 100
+                }
+            };
+        }
+        if (order || where) {
+            // performance is calculated on backend, so we need to get it from the database
+            const borrowers = await models.microCreditBorrowers.findAll({
+                attributes: ['performance'],
+                where,
+                order,
+                // limit: query.limit,
+                // offset: query.offset,
+                include: [
+                    {
+                        model: models.appUser,
+                        attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
+                        as: 'user'
+                    }
+                ]
+            });
+
+            usersToFilter = borrowers.map(b => ({ ...b.user!.toJSON(), performance: b.performance }));
+        }
+
+        // get borrowers loans from subgraph
+        // and return only the active loan
+        const rawBorrowers = await getBorrowers({
+            ...excludeDatabaseQueriesWhenSubgraph(query),
+            onlyBorrowers: usersToFilter?.map(b => b.address),
+            onlyClaimed: true,
+            loanStatus: query.filter === 'repaid' ? 2 : query.filter === undefined ? undefined : 1
         });
+        const borrowers = rawBorrowers.borrowers.map(b => ({ address: getAddress(b.id), loan: b.loan }));
+
+        if (!usersToFilter) {
+            // get borrowers profile from database
+            const userProfile = await models.appUser.findAll({
+                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
+                where: {
+                    address: borrowers.map(b => b.address)
+                },
+                include: [
+                    {
+                        model: models.microCreditBorrowers,
+                        attributes: ['performance'],
+                        as: 'borrower'
+                    }
+                ]
+            });
+            usersToFilter = userProfile.map(u => {
+                const user = u.toJSON();
+                delete user['borrower'];
+
+                return { ...user, performance: u.borrower?.performance };
+            });
+        }
 
         // merge borrowers loans and profile
         return {
             count: rawBorrowers.count,
-            rows: mergeArrays(
-                borrowers,
-                userProfile.map(u => u.toJSON()),
-                'address'
-            )
+            rows: mergeArrays(borrowers, usersToFilter, 'address')
         };
     };
 
@@ -217,7 +309,7 @@ export default class MicroCreditList {
         });
 
         if (!borrower) {
-            throw new utils.BaseError('USER_NOT_FOUND' ,'Borrower not found');
+            throw new utils.BaseError('USER_NOT_FOUND', 'Borrower not found');
         }
 
         const docs = await models.microCreditDocs.findAll({
@@ -300,28 +392,27 @@ export default class MicroCreditList {
      *                $ref: '#/components/schemas/ageRange'
      *              overdue:
      *                $ref: '#/components/schemas/ageRange'
-     * 
-    */
+     *
+     */
     public demographics = async () => {
         try {
             // get all borrower addresses
             const limit = 100;
             const addresses: {
-                paid: string[],
-                pending: string[],
-                overdue: string[],
+                paid: string[];
+                pending: string[];
+                overdue: string[];
             } = {
                 paid: [],
                 pending: [],
-                overdue: [],
+                overdue: []
             };
 
             for (let i = 0; ; i += limit) {
                 const rawBorrowers = await getBorrowers({ limit, offset: i, onlyClaimed: true });
-                if (rawBorrowers.borrowers.length === 0)
-                    break;
+                if (rawBorrowers.borrowers.length === 0) break;
 
-                rawBorrowers.borrowers.forEach((b) => {
+                rawBorrowers.borrowers.forEach(b => {
                     // create payment status
                     if (b.loan.lastDebt === '0') {
                         addresses.paid.push(getAddress(b.id));
@@ -338,122 +429,77 @@ export default class MicroCreditList {
                     }
                 });
             }
-            
+
             const year = new Date().getUTCFullYear();
             const ageAttributes: any[] = [
-                [
-                    literal(
-                        `count(*) FILTER (WHERE ${year}-year BETWEEN 18 AND 24)`
-                    ),
-                    'ageRange1',
-                ],
-                [
-                    literal(
-                        `count(*) FILTER (WHERE ${year}-year BETWEEN 25 AND 34)`
-                    ),
-                    'ageRange2',
-                ],
-                [
-                    literal(
-                        `count(*) FILTER (WHERE ${year}-year BETWEEN 35 AND 44)`
-                    ),
-                    'ageRange3',
-                ],
-                [
-                    literal(
-                        `count(*) FILTER (WHERE ${year}-year BETWEEN 45 AND 54)`
-                    ),
-                    'ageRange4',
-                ],
-                [
-                    literal(
-                        `count(*) FILTER (WHERE ${year}-year BETWEEN 55 AND 64)`
-                    ),
-                    'ageRange5',
-                ],
-                [
-                    literal(
-                        `count(*) FILTER (WHERE ${year}-year BETWEEN 65 AND 120)`
-                    ),
-                    'ageRange6',
-                ],
+                [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 18 AND 24)`), 'ageRange1'],
+                [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 25 AND 34)`), 'ageRange2'],
+                [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 35 AND 44)`), 'ageRange3'],
+                [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 45 AND 54)`), 'ageRange4'],
+                [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 55 AND 64)`), 'ageRange5'],
+                [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 65 AND 120)`), 'ageRange6']
             ];
             const genderAttributes: any[] = [
                 'country',
-                [
-                    literal(
-                        'count(*) FILTER (WHERE gender = \'m\')'
-                    ),
-                    'male',
-                ],
-                [
-                    literal(
-                        'count(*) FILTER (WHERE gender = \'f\')'
-                    ),
-                    'female',
-                ],
-                [
-                    literal(
-                        'count(*) FILTER (WHERE gender = \'u\'  OR gender is null)'
-                    ),
-                    'undisclosed',
-                ],
-                [literal('count(*)'), 'totalGender'],
-            ]
+                [literal("count(*) FILTER (WHERE gender = 'm')"), 'male'],
+                [literal("count(*) FILTER (WHERE gender = 'f')"), 'female'],
+                [literal("count(*) FILTER (WHERE gender = 'u'  OR gender is null)"), 'undisclosed'],
+                [literal('count(*)'), 'totalGender']
+            ];
 
             // get age range and gender by payment status
             const [overdue, pending, paid, gender] = await Promise.all([
                 models.appUser.findAll({
-                attributes: ageAttributes,
-                where: {
-                    address: {
-                    [Op.in]: addresses.overdue
-                    }
-                },
-                raw: true,
+                    attributes: ageAttributes,
+                    where: {
+                        address: {
+                            [Op.in]: addresses.overdue
+                        }
+                    },
+                    raw: true
                 }),
                 models.appUser.findAll({
-                attributes: ageAttributes,
-                where: {
-                    address: {
-                    [Op.in]: addresses.pending
-                    }
-                },
-                raw: true,
+                    attributes: ageAttributes,
+                    where: {
+                        address: {
+                            [Op.in]: addresses.pending
+                        }
+                    },
+                    raw: true
                 }),
                 models.appUser.findAll({
-                attributes: ageAttributes,
-                where: {
-                    address: {
-                    [Op.in]: addresses.paid
-                    }
-                },
-                raw: true,
+                    attributes: ageAttributes,
+                    where: {
+                        address: {
+                            [Op.in]: addresses.paid
+                        }
+                    },
+                    raw: true
                 }),
                 models.appUser.findAll({
-                attributes: genderAttributes,
-                where: {
-                    address: {
-                    [Op.in]: [...addresses.paid, ...addresses.overdue, ...addresses.pending]
-                    }
-                },
-                group: ['country'],
-                raw: true,
-                }),
-            ]);          
-            
+                    attributes: genderAttributes,
+                    where: {
+                        address: {
+                            [Op.in]: [...addresses.paid, ...addresses.overdue, ...addresses.pending]
+                        }
+                    },
+                    group: ['country'],
+                    raw: true
+                })
+            ]);
+
             return {
                 gender,
                 ageRange: {
                     paid: paid[0],
                     pending: pending[0],
-                    overdue: overdue[0],
-                },
+                    overdue: overdue[0]
+                }
             };
         } catch (error) {
-            throw new utils.BaseError('DEMOGRAPHICS_FAILED', error.message || 'failed to get microcredit demographics')
+            throw new utils.BaseError('DEMOGRAPHICS_FAILED', error.message || 'failed to get microcredit demographics');
         }
-    }
+    };
 
     /**
      * @swagger
@@ -473,32 +519,32 @@ export default class MicroCreditList {
      *          status:
      *            type: string
      *            description: pending, submitted, in-review, approved, rejected
-     * 
-    */
+     *
+     */
     public getUserForm = async (
         requiringUser: {
-            address: string,
-            userId: number,
+            address: string;
+            userId: number;
         },
         userId?: number,
-        status?: string,
+        status?: string
     ) => {
-        if (userId && (userId !== requiringUser.userId)) {
+        if (userId && userId !== requiringUser.userId) {
             const userRoles = await getUserRoles(requiringUser.address);
             if (
                 (!userRoles.manager || userRoles.manager.state !== 0) &&
-                (!userRoles.councilMember || userRoles.councilMember.state !== 0) && 
+                (!userRoles.councilMember || userRoles.councilMember.state !== 0) &&
                 (!userRoles.ambassador || userRoles.ambassador.state !== 0)
             ) {
                 throw new utils.BaseError('NOT_ALLOWED', 'should be a manager, councilMember or ambassador');
-            } 
+            }
         }
 
         return models.microCreditForm.findOne({
             where: {
                 userId: userId || requiringUser.userId,
-                status: status || 'pending',
+                status: status || 'pending'
             }
         });
-    }
+    };
 }
