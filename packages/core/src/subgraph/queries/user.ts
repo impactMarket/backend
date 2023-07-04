@@ -8,6 +8,7 @@ import { intervalsInSeconds } from '../../types';
 
 export type UserRoles = {
     beneficiary: { community: string; state: number; address: string } | null;
+    borrower: { id: string } | null;
     manager: { community: string; state: number } | null;
     councilMember: { state: number } | null;
     ambassador: { communities: string[]; state: number } | null;
@@ -41,6 +42,9 @@ type CouncilMemberResponse = {
 type MicroCreditResponse = {
     loanManager: {
         state: number;
+    };
+    borrower: {
+        id: string;
     };
 };
 
@@ -91,6 +95,11 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                     id: "${address.toLowerCase()}"
                 ) {
                     state
+                }
+                borrower(
+                    id: "${address.toLowerCase()}"
+                ) {
+                    id
                 }
             }`,
         };
@@ -205,8 +214,15 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
             : {
                 state: responseMicroCredit.loanManager?.state,
             };
+
+        const borrower = !responseMicroCredit?.borrower
+            ? null
+            : {
+                id: responseMicroCredit.borrower?.id,
+            };
         return {
             beneficiary,
+            borrower,
             manager,
             councilMember,
             ambassador,

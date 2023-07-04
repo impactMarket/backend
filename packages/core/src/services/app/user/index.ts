@@ -44,6 +44,7 @@ export default class UserService {
         let userRoles: UserRoles = {
             ambassador: null,
             beneficiary: null,
+            borrower: null,
             councilMember: null,
             manager: null,
             loanManager: null,
@@ -78,7 +79,7 @@ export default class UserService {
             const findAndUpdate = async () => {
                 // it's not null at this point
                 const _user = (await models.appUser.findOne({
-                    where: { address: userParams.address },
+                    where: { address: userParams.address }
                 }))!;
 
                 if (!_user.active) {
@@ -619,13 +620,27 @@ export default class UserService {
     }
 
     private async _userRoles(address: string) {
-        const userRoles = await getUserRoles(address);
+        const [userRoles, user] = await Promise.all([
+            getUserRoles(address),
+            models.appUser.findOne({
+                attributes: ['id', 'address'],
+                where: { address },
+                include: [
+                    {
+                        model: models.microCreditForm,
+                        as: 'microCreditForm',
+                        required: false,
+                    },
+                ],
+            })
+        ]);
+
         const roles: string[] = [];
         const keys = Object.keys(userRoles);
 
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
-            if (userRoles[key] && userRoles[key].state === 0) {
+            if (userRoles[key] && (userRoles[key].state === 0 || userRoles[key].status === 0 || userRoles[key].id)) {
                 if (key === 'manager' || key === 'beneficiary') {
                     // validate community locally
                     const community = await models.community.findOne({
@@ -657,6 +672,12 @@ export default class UserService {
         });
         if (pendingCommunity) roles.push('pendingManager');
         if (roles.length === 0) roles.push('donor');
+
+        // pending borrowers also need to be listed as borrower
+        // so that the loan manager can see their profile and applications
+        if (userRoles.borrower === null && user && user.microCreditForm) {
+            roles.push('borrower');
+        }
 
         return {
             ...userRoles,
