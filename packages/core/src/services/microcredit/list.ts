@@ -16,9 +16,7 @@ function mergeArrays(arr1: any[], arr2: any[], key: string, mergeIfUndefined = t
     const map = new Map(arr1.map(item => [item[key], item]));
     arr2.forEach(item => {
         if (map.has(item[key])) {
-            if (mergeIfUndefined) {
-                Object.assign(map.get(item[key]), item);
-            }
+            Object.assign(map.get(item[key]), item);
         } else if (mergeIfUndefined) {
             map.set(item[key], item);
         }
