@@ -234,25 +234,19 @@ export default (route: Router): void => {
     /**
      * @swagger
      *
-     * /microcredit/form:
+     * /microcredit/form/{id}:
      *   get:
      *     tags:
      *       - "microcredit"
      *     summary: "Get Microcredit form"
      *     description: "Get Microcredit form"
      *     parameters:
-     *       - in: query
-     *         name: userId
+     *       - in: path
+     *         name: id
      *         schema:
      *           type: integer
      *         required: true
-     *         description: ID of the user from whom you want to get the form
-     *       - in: query
-     *         name: status
-     *         schema:
-     *           enum: [pending, submitted, in-review, approved, rejected]
-     *         required: false
-     *         description: The form status. Default "pending".
+     *         description: Form id to get
      *     responses:
      *       "200":
      *         description: OK
@@ -264,7 +258,7 @@ export default (route: Router): void => {
      *     - BearerToken: []
      */
     route.get(
-        '/form/:query?',
+        '/form/:id',
         authenticateToken,
         controller.getUserForm
     )

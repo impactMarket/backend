@@ -102,13 +102,10 @@ class MicroCreditController {
             return;
         }
 
-        const { userId, status } = req.query;
-
         this.microCreditService
             .getUserForm(
                 req.user,
-                parseInt(userId as string, 10),
-                status as string | undefined
+                parseInt(req.params.id as string, 10),
             )
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
