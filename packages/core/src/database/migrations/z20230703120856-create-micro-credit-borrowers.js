@@ -19,6 +19,10 @@ module.exports = {
             },
             lastNotificationRepayment: {
                 type: Sequelize.DATE
+            },
+            manager: {
+                allowNull: false,
+                type: Sequelize.STRING(48)
             }
         });
     },
