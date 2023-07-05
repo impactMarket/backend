@@ -9,6 +9,7 @@ export class MicroCreditBorrowersModel extends Model<MicroCreditBorrowers, Micro
     public userId!: number;
     public performance!: number;
     public lastNotificationRepayment!: Date;
+    public manager!: string;
 
     public readonly user?: AppUserModel;
 }
@@ -38,6 +39,10 @@ export function initializeMicroCreditBorrowers(sequelize: Sequelize): typeof Mic
             lastNotificationRepayment: {
                 allowNull: true,
                 type: DataTypes.DATE
+            },
+            manager: {
+                allowNull: false,
+                type: DataTypes.STRING(48)
             }
         },
         {

@@ -141,10 +141,13 @@ export default class MicroCreditList {
             // performance is calculated on backend, so we need to get it from the database
             const borrowers = await models.microCreditBorrowers.findAll({
                 attributes: ['performance'],
-                where,
+                where: {
+                    ...where,
+                    manager: query.addedBy
+                },
                 order,
-                // limit: query.limit,
-                // offset: query.offset,
+                limit: order ? (query.limit ?? 10) : undefined,
+                offset: order ? (query.offset ?? 0) : undefined,
                 include: [
                     {
                         model: models.appUser,
@@ -157,11 +160,21 @@ export default class MicroCreditList {
             usersToFilter = borrowers.map(b => ({ ...b.user!.toJSON(), performance: b.performance }));
         }
 
+        let onlyBorrowers: string[] | undefined = undefined;
+        if (usersToFilter) {
+            // when there's already a list of users but no order, this means, all users were fetched
+            // so we need to slice to get only the ones we want
+            if (!order) {
+                let { offset, limit } = query;
+                usersToFilter = usersToFilter.slice(offset ?? 0, limit ?? 10);
+            }
+            onlyBorrowers = usersToFilter.map(b => b.address);
+        }
         // get borrowers loans from subgraph
         // and return only the active loan
         const rawBorrowers = await getBorrowers({
             ...excludeDatabaseQueriesWhenSubgraph(query),
-            onlyBorrowers: usersToFilter?.map(b => b.address),
+            onlyBorrowers,
             onlyClaimed: true,
             loanStatus: query.filter === 'repaid' ? 2 : query.filter === undefined ? undefined : 1
         });

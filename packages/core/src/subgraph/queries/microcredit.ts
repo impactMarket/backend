@@ -249,7 +249,7 @@ export type SubgraphGetBorrowersQuery = {
 };
 
 const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<number> => {
-    const { addedBy, loanStatus, orderBy, onlyClaimed, onlyBorrowers } = query;
+    const { addedBy, loanStatus, orderBy, onlyClaimed } = query;
     const [orderKey, orderDirection] = orderBy ? orderBy.split(':') : [undefined, undefined];
 
     const graphqlQuery = {
@@ -261,11 +261,6 @@ const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<numb
                 where: {
                     ${loanStatus !== undefined ? `lastLoanStatus: ${loanStatus}` : ''}
                     ${onlyClaimed === true ? `lastLoanStatus_not_in:[0,3]` : ''}
-                    ${
-                        onlyBorrowers !== undefined
-                            ? `id_in:${JSON.stringify(onlyBorrowers.map(b => b.toLowerCase()))}`
-                            : ''
-                    }
                     ${addedBy ? `lastLoanAddedBy: "${addedBy.toLowerCase()}"` : ''}
                 }
                 ${orderKey ? `orderBy: lastLoan${orderKey.charAt(0).toUpperCase() + orderKey.slice(1)}` : 'orderBy: id'}
@@ -332,8 +327,8 @@ export const getBorrowers = async (
         operationName: 'borrowers',
         query: `query borrowers {
             borrowers(
-                first: ${limit ? limit : 10}
-                skip: ${offset ? offset : 0}
+                first: ${limit && !onlyBorrowers ? limit : 10}
+                skip: ${offset && !onlyBorrowers ? offset : 0}
                 where: {
                     ${loanStatus !== undefined ? `lastLoanStatus: ${loanStatus}` : ''}
                     ${onlyClaimed === true ? `lastLoanStatus_not_in:[0,3]` : ''}
