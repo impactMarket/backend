@@ -438,7 +438,7 @@ export const getBorrowerLoansCount = async (borrower: string): Promise<number> =
         }
     >('', graphqlQuery);
 
-    const loans = response.data?.data.borrower.loans.length;
+    const loans = response.data?.data.borrower?.loans.length ?? 0;
     redisClient.set(graphqlQuery.query, JSON.stringify(loans), 'EX', intervalsInSeconds.twoMins);
 
     return loans;
