@@ -119,6 +119,7 @@ export default class MicroCreditList {
         let usersToFilter: AppUser[] | undefined = undefined;
         let order: Order | undefined;
         let where: WhereOptions<MicroCreditBorrowers> | undefined;
+        let count = 0;
 
         // build up database queries based on query params
         if (query.orderBy && query.orderBy.indexOf('performance') !== -1) {
@@ -139,7 +140,7 @@ export default class MicroCreditList {
         }
         if (order || where) {
             // performance is calculated on backend, so we need to get it from the database
-            const borrowers = await models.microCreditBorrowers.findAll({
+            const rBorrowers = await models.microCreditBorrowers.findAndCountAll({
                 attributes: ['performance'],
                 where: {
                     ...where,
@@ -157,7 +158,10 @@ export default class MicroCreditList {
                 ]
             });
 
-            usersToFilter = borrowers.map(b => ({ ...b.user!.toJSON(), performance: b.performance }));
+            usersToFilter = rBorrowers.rows.map(b => ({ ...b.user!.toJSON(), performance: b.performance }));
+            if (where) {
+                count = rBorrowers.count;
+            }
         }
 
         let onlyBorrowers: string[] | undefined = undefined;
@@ -178,6 +182,9 @@ export default class MicroCreditList {
             onlyClaimed: true,
             loanStatus: query.filter === 'repaid' ? 2 : query.filter === undefined ? undefined : 1
         });
+        if (!where) {
+            count = rawBorrowers.count;
+        }
         const borrowers = rawBorrowers.borrowers.map(b => ({ address: getAddress(b.id), loan: b.loan }));
 
         if (!usersToFilter) {
@@ -211,7 +218,7 @@ export default class MicroCreditList {
         };
         // merge borrowers loans and profile
         return {
-            count: rawBorrowers.count,
+            count,
             rows: mergeArraysByOrder<any, User>(
                 borrowers,
                 usersToFilter,
