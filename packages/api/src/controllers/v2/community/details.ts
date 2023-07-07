@@ -103,7 +103,7 @@ class CommunityController {
                     : undefined,
                 orderBy,
                 lastActivity_lt && typeof lastActivity_lt === 'string'
-                    ? parseInt(lastActivity_lt)
+                    ? parseInt(lastActivity_lt, 10)
                     : undefined,
             )
             .then((r) => standardResponse(res, 200, true, r))
