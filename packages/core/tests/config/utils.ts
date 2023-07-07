@@ -1,4 +1,5 @@
 import { SinonSpy, SinonStub } from 'sinon';
+import crypto from 'crypto';
 
 export async function waitForStubCall(stub: SinonStub<any, any> | SinonSpy<any, any>, callNumber: number) {
     return new Promise(resolve => {
@@ -16,7 +17,7 @@ export function randomTx() {
     const characters = 'ABCDEFabcdef0123456789';
     const charactersLength = characters.length;
     for (let i = 0; i < 64; i++) {
-        result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
+        result.push(characters.charAt(Math.floor(crypto.randomInt(22) * charactersLength)));
     }
     return '0x' + result.join('');
 }

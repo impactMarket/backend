@@ -3,6 +3,7 @@ import { SinonStub, replace, restore, stub } from 'sinon';
 import { ethers } from 'ethers';
 import { expect, use } from 'chai';
 import chaiSubset from 'chai-subset';
+import crypto from 'crypto';
 
 import * as subgraph from '../../../src/subgraph/queries/community';
 import * as userSubgraph from '../../../src/subgraph/queries/user';
@@ -666,7 +667,7 @@ describe('community service v2', () => {
                 });
                 await BeneficiaryFactory(
                     await UserFactory({
-                        n: Math.floor(Math.random() * 20)
+                        n: Math.floor(crypto.randomInt(22) * 20)
                     }),
                     community.id
                 );

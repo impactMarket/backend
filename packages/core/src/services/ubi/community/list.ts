@@ -423,7 +423,8 @@ export class CommunityListService {
 
         // formate response
         const communities: CommunityAttributes[] = [];
-        communitiesId.forEach(async id => {
+
+        for (const id of communitiesId) {
             let community: any;
             const filteredCommunity = communitiesResult.find(el => el.id === id);
             community = {
@@ -439,7 +440,7 @@ export class CommunityListService {
                 };
             }
             communities.push(community);
-        });
+        }
 
         return {
             count: communityCount,
