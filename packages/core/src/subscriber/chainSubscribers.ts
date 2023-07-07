@@ -42,6 +42,7 @@ class ChainSubscribers {
                 ethers.utils.id(
                     'LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'
                 ),
+                ethers.utils.id('ManagerChanged(address,address)'),
             ],
         ];
         this.recover();
@@ -309,12 +310,38 @@ class ChainSubscribers {
                         address: getAddress(userAddress),
                     },
                 });
-    
+                
                 if (user) {
+                    await models.microCreditBorrowers.create({
+                        userId: user.id,
+                        performance: 0,
+                        manager: (await this.provider.getTransaction(log.transactionHash)).from,
+                    });
                     await sendNotification(
                         [user.toJSON()],
                         NotificationType.LOAN_ADDED
                     );
+                }
+    
+                result = parsedLog;
+            } else if (parsedLog.name === 'ManagerChanged') {
+                utils.Logger.info('ManagerChanged event');
+
+                const user = await models.appUser.findOne({
+                    attributes: ['id'],
+                    where: {
+                        address: getAddress(userAddress),
+                    },
+                });
+                
+                if (user) {
+                    await models.microCreditBorrowers.update({
+                        manager: parsedLog.args[1],
+                    }, {
+                        where: {
+                            userId: user.id
+                        }
+                    });
                 }
     
                 result = parsedLog;
