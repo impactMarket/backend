@@ -4,7 +4,7 @@ export interface MicroCreditApplications {
     amount: number;
     period: number;
     status: number;
-	decisionOn: Date;
+    decisionOn: Date;
 
     // timestamps
     createdAt: Date;
@@ -16,5 +16,5 @@ export interface MicroCreditApplicationsCreation {
     amount: number;
     period: number;
     status: number;
-	decisionOn: Date;
+    decisionOn: Date;
 }

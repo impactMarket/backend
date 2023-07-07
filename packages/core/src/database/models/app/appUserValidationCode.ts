@@ -1,15 +1,9 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    AppUserValidationCode,
-    AppUserValidationCodeCreation,
-} from '../../../interfaces/app/appUserValidationCode';
+import { AppUserValidationCode, AppUserValidationCodeCreation } from '../../../interfaces/app/appUserValidationCode';
 import { DbModels } from '../../../database/db';
 
-export class AppUserValidationCodeModel extends Model<
-    AppUserValidationCode,
-    AppUserValidationCodeCreation
-> {
+export class AppUserValidationCodeModel extends Model<AppUserValidationCode, AppUserValidationCodeCreation> {
     public id!: number;
     public userId!: number;
     public type!: number;
@@ -24,36 +18,36 @@ export function initializeAppUserValidationCode(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: appUser,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             type: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             code: {
                 type: DataTypes.STRING(9),
-                allowNull: false,
+                allowNull: false
             },
             expiresAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'app_user_validation_code',
             modelName: 'appUserValidationCode',
             sequelize,
             updatedAt: false,
-            createdAt: false,
+            createdAt: false
         }
     );
 }

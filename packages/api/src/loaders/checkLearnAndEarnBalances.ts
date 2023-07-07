@@ -1,9 +1,9 @@
 import { Contract } from '@ethersproject/contracts';
-import { formatEther } from '@ethersproject/units';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import config from '../config';
-import { sendEmail } from '../services/email';
 import { database, utils } from '@impactmarket/core';
+import { formatEther } from '@ethersproject/units';
+import { sendEmail } from '../services/email';
+import config from '../config';
 
 const { models } = database;
 const LearnAndEarnAbi = [

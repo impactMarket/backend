@@ -1,9 +1,5 @@
-import {
-    Manager,
-    ManagerAttributes,
-    ManagerCreationAttributes,
-} from '../../src/database/models/ubi/manager';
 import { AppUser } from '../../src/interfaces/app/appUser';
+import { Manager, ManagerAttributes, ManagerCreationAttributes } from '../../src/database/models/ubi/manager';
 
 /**
  * Generate an object which container attributes needed
@@ -16,7 +12,7 @@ import { AppUser } from '../../src/interfaces/app/appUser';
 const data = async (user: AppUser, communityId: number) => {
     const defaultProps: ManagerCreationAttributes = {
         address: user.address,
-        communityId,
+        communityId
     };
     return defaultProps;
 };
@@ -30,9 +26,7 @@ const data = async (user: AppUser, communityId: number) => {
 const ManagerFactory = async (user: AppUser[], communityId: number) => {
     const result: ManagerAttributes[] = [];
     for (let index = 0; index < user.length; index++) {
-        const newBneficiary: any = await Manager.create(
-            await data(user[index], communityId)
-        );
+        const newBneficiary: any = await Manager.create(await data(user[index], communityId));
         result.push(newBneficiary.toJSON());
     }
     return result;

@@ -1,15 +1,9 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    LearnAndEarnLesson,
-    LearnAndEarnLessonCreation,
-} from '../../../interfaces/learnAndEarn/learnAndEarnLesson';
 import { DbModels } from '../../../database/db';
+import { LearnAndEarnLesson, LearnAndEarnLessonCreation } from '../../../interfaces/learnAndEarn/learnAndEarnLesson';
 
-export class LearnAndEarnLessonModel extends Model<
-    LearnAndEarnLesson,
-    LearnAndEarnLessonCreation
-> {
+export class LearnAndEarnLessonModel extends Model<LearnAndEarnLesson, LearnAndEarnLessonCreation> {
     public id!: number;
     public prismicId!: string;
     public levelId!: number;
@@ -18,9 +12,7 @@ export class LearnAndEarnLessonModel extends Model<
     public isLive!: boolean;
 }
 
-export function initializeLearnAndEarnLesson(
-    sequelize: Sequelize
-): typeof LearnAndEarnLessonModel {
+export function initializeLearnAndEarnLesson(sequelize: Sequelize): typeof LearnAndEarnLessonModel {
     const { learnAndEarnLevel } = sequelize.models as DbModels;
     LearnAndEarnLessonModel.init(
         {
@@ -28,40 +20,40 @@ export function initializeLearnAndEarnLesson(
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             prismicId: {
                 type: DataTypes.STRING(32),
-                allowNull: false,
+                allowNull: false
             },
             levelId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: learnAndEarnLevel,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             languages: {
                 type: DataTypes.ARRAY(DataTypes.STRING(3)),
-                allowNull: true,
+                allowNull: true
             },
             active: {
                 type: DataTypes.BOOLEAN,
-                allowNull: false,
+                allowNull: false
             },
             isLive: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
-            },
+                defaultValue: false
+            }
         },
         {
             tableName: 'learn_and_earn_lesson',
             modelName: 'learnAndEarnLesson',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return LearnAndEarnLessonModel;

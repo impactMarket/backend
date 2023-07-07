@@ -1,15 +1,12 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
+import { DbModels } from '../../../database/db';
 import {
     LearnAndEarnUserLevel,
-    LearnAndEarnUserLevelCreation,
-} from '../../../interfaces/learnAndEarn/learnAndEarnUserLevel';
-import { DbModels } from '../../../database/db';
-
-export class LearnAndEarnUserLevelModel extends Model<
-    LearnAndEarnUserLevel,
     LearnAndEarnUserLevelCreation
-> {
+} from '../../../interfaces/learnAndEarn/learnAndEarnUserLevel';
+
+export class LearnAndEarnUserLevelModel extends Model<LearnAndEarnUserLevel, LearnAndEarnUserLevelCreation> {
     public id!: number;
     public userId!: number;
     public levelId!: number;
@@ -19,9 +16,7 @@ export class LearnAndEarnUserLevelModel extends Model<
     public readonly createdAt!: Date;
 }
 
-export function initializeLearnAndEarnUserLevel(
-    sequelize: Sequelize
-): typeof LearnAndEarnUserLevelModel {
+export function initializeLearnAndEarnUserLevel(sequelize: Sequelize): typeof LearnAndEarnUserLevelModel {
     const { appUser, learnAndEarnLevel } = sequelize.models as DbModels;
     LearnAndEarnUserLevelModel.init(
         {
@@ -29,47 +24,47 @@ export function initializeLearnAndEarnUserLevel(
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: appUser,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             levelId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: learnAndEarnLevel,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             status: {
                 type: DataTypes.ENUM('available', 'started', 'completed'),
                 allowNull: false,
-                defaultValue: 'available',
+                defaultValue: 'available'
             },
             completionDate: {
                 type: DataTypes.DATE,
-                allowNull: true,
+                allowNull: true
             },
             createdAt: {
                 type: DataTypes.DATE,
                 allowNull: false,
-                defaultValue: DataTypes.NOW,
-            },
+                defaultValue: DataTypes.NOW
+            }
         },
         {
             tableName: 'learn_and_earn_user_level',
             modelName: 'learnAndEarnUserLevel',
             timestamps: false,
             updatedAt: false,
-            sequelize,
+            sequelize
         }
     );
     return LearnAndEarnUserLevelModel;

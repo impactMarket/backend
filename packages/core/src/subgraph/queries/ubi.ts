@@ -1,6 +1,6 @@
 import { axiosSubgraph } from '../config';
-import { redisClient } from '../../database';
 import { intervalsInSeconds } from '../../types';
+import { redisClient } from '../../database';
 
 export const getUbiDailyEntity = async (
     where: string
@@ -41,7 +41,7 @@ export const getUbiDailyEntity = async (
                     reach
                     fundingRate
                 }
-            }`,
+            }`
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
 
@@ -55,16 +55,16 @@ export const getUbiDailyEntity = async (
                 data: {
                     data: {
                         ubidailyEntities: {
-                            id: string,
-                            beneficiaries: number,
-                            claimed: string,
-                            claims: number,
-                            volume: string,
-                            transactions: number,
-                            contributed: string,
-                            contributors: number,
-                            reach: number,
-                            fundingRate: string,
+                            id: string;
+                            beneficiaries: number;
+                            claimed: string;
+                            claims: number;
+                            volume: string;
+                            transactions: number;
+                            contributed: string;
+                            contributors: number;
+                            reach: number;
+                            fundingRate: string;
                         }[];
                     };
                 };
@@ -73,12 +73,7 @@ export const getUbiDailyEntity = async (
 
         const ubidailyEntities = response.data?.data.ubidailyEntities;
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(ubidailyEntities),
-            'EX',
-            intervalsInSeconds.oneHour
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(ubidailyEntities), 'EX', intervalsInSeconds.oneHour);
 
         return ubidailyEntities;
     } catch (error) {

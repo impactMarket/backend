@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
 import { attestation } from '../../../controllers/v2/attestation';
-import { authenticateToken } from '../../../middlewares';
 import { attestationValidator } from '../../../validators/attestation';
+import { authenticateToken } from '../../../middlewares';
 
 export default (app: Router): void => {
     const route = Router();

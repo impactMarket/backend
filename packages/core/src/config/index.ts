@@ -42,14 +42,14 @@ export default {
      * Used by winston logger
      */
     logs: {
-        level: validatedEnv.LOG_LEVEL,
+        level: validatedEnv.LOG_LEVEL
     },
 
     /**
      * API configs
      */
     api: {
-        prefix: '/api',
+        prefix: '/api'
     },
 
     /**
@@ -80,7 +80,7 @@ export default {
         impactLabs: validatedEnv.IMPACTLABS_CONTRACT_ADDRESS,
         dao: validatedEnv.DAO_CONTRACT_ADDRESS,
         ido: validatedEnv.IDO_CONTRACT_ADDRESS,
-        treasury: validatedEnv.TREASURY_CONTRACT_ADDRESS,
+        treasury: validatedEnv.TREASURY_CONTRACT_ADDRESS
     },
     DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
     communityAdminAddress: validatedEnv.COMMUNITY_ADMIN_ADDRESS,
@@ -110,9 +110,9 @@ export default {
         region: validatedEnv.AWS_REGION,
         bucket: {
             app: validatedEnv.AWS_BUCKET_APP,
-            microCredit: validatedEnv.AWS_BUCKET_MICROCREDIT,
+            microCredit: validatedEnv.AWS_BUCKET_MICROCREDIT
         },
-        lambda: validatedEnv.AWS_LAMBDA,
+        lambda: validatedEnv.AWS_LAMBDA
     },
 
     /**
@@ -155,5 +155,5 @@ export default {
 
     maxDatabasePoolConnections: validatedEnv.MAX_DATABASE_POOL_CONNECTIONS,
 
-    communityResponseTimeout: validatedEnv.COMMUNITY_RESPONSE_TIMEOUT,
+    communityResponseTimeout: validatedEnv.COMMUNITY_RESPONSE_TIMEOUT
 };

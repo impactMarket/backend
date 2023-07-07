@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 interface GlobalDailyStateAttributes {
     date: Date;
@@ -59,10 +59,7 @@ export interface GlobalDailyStateCreationAttributes {
     totalReachOut: BigInt;
 }
 
-export class GlobalDailyState extends Model<
-    GlobalDailyStateAttributes,
-    GlobalDailyStateCreationAttributes
-> {
+export class GlobalDailyState extends Model<GlobalDailyStateAttributes, GlobalDailyStateCreationAttributes> {
     public date!: Date;
     public avgMedianSSI!: number;
     public claimed!: string;
@@ -103,124 +100,124 @@ export function initializeGlobalDailyState(sequelize: Sequelize): void {
                 type: DataTypes.DATEONLY,
                 primaryKey: true,
                 unique: true,
-                allowNull: false,
+                allowNull: false
             },
             avgMedianSSI: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             claimed: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
-                allowNull: false,
+                allowNull: false
             },
             claims: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
-                allowNull: false,
+                allowNull: false
             },
             beneficiaries: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
-                allowNull: false,
+                allowNull: false
             },
             raised: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
-                allowNull: false,
+                allowNull: false
             },
             backers: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
-                allowNull: false,
+                allowNull: false
             },
             volume: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(29), // max 99,999,999,999 - plus 18 decimals
-                allowNull: false,
+                allowNull: false
             },
             transactions: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
-                allowNull: false,
+                allowNull: false
             },
             reach: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
-                allowNull: false,
+                allowNull: false
             },
             reachOut: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
-                allowNull: false,
+                allowNull: false
             },
             totalRaised: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(30), // max 999,999,999,999 - plus 18 decimals
-                allowNull: false,
+                allowNull: false
             },
             totalDistributed: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(30), // max 999,999,999,999 - plus 18 decimals
-                allowNull: false,
+                allowNull: false
             },
             totalBackers: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
-                allowNull: false,
+                allowNull: false
             },
             totalBeneficiaries: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
-                allowNull: false,
+                allowNull: false
             },
             givingRate: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             ubiRate: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             fundingRate: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             spendingRate: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             avgComulativeUbi: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(24), // max 999,999 - plus 18 decimals
-                allowNull: false,
+                allowNull: false
             },
             avgUbiDuration: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             totalVolume: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(32), // max 99,999,999,999,999 - plus 18 decimals
-                allowNull: false,
+                allowNull: false
             },
             totalTransactions: {
                 type: DataTypes.BIGINT, // max 9,223,372,036,854,775,807
-                allowNull: false,
+                allowNull: false
             },
             totalReach: {
                 type: DataTypes.BIGINT, // max 9,223,372,036,854,775,807
-                allowNull: false,
+                allowNull: false
             },
             totalReachOut: {
                 type: DataTypes.BIGINT, // max 9,223,372,036,854,775,807
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'globaldailystate',
             modelName: 'globalDailyState',
-            sequelize,
+            sequelize
         }
     );
 }

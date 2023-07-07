@@ -1,13 +1,13 @@
-import { MicroCreditContentStorage } from '../../services/storage';
-import { models } from '../../database';
-import { sendNotification } from '../../utils/pushNotification';
-import { NotificationType } from '../../interfaces/app/appNotification';
 import { AppUserModel } from '../../database/models/app/appUser';
-import { MicroCreditFormModel } from '../../database/models/microCredit/form';
 import { BaseError } from '../../utils';
+import { MicroCreditContentStorage } from '../../services/storage';
+import { MicroCreditFormModel } from '../../database/models/microCredit/form';
 import { MicroCreditFormStatus } from '../../interfaces/microCredit/form';
-import { sendEmail } from '../../services/email';
+import { NotificationType } from '../../interfaces/app/appNotification';
 import { config } from '../../..';
+import { models } from '../../database';
+import { sendEmail } from '../../services/email';
+import { sendNotification } from '../../utils/pushNotification';
 
 export default class MicroCreditCreate {
     private microCreditContentStorage = new MicroCreditContentStorage();
@@ -109,19 +109,24 @@ export default class MicroCreditCreate {
         await sendNotification(users, NotificationType.LOAN_STATUS_CHANGED);
     }
 
-    public saveForm = async (userId: number, form: object, prismicId: string, submitted: boolean): Promise<MicroCreditFormModel> => {
+    public saveForm = async (
+        userId: number,
+        form: object,
+        prismicId: string,
+        submitted: boolean
+    ): Promise<MicroCreditFormModel> => {
         try {
             const status = submitted ? MicroCreditFormStatus.SUBMITTED : MicroCreditFormStatus.PENDING;
             const userForm = await models.microCreditForm.findOrCreate({
                 where: {
                     userId,
-                    prismicId,
+                    prismicId
                 },
                 defaults: {
                     form,
                     userId,
                     prismicId,
-                    status,
+                    status
                 }
             });
 
@@ -132,7 +137,7 @@ export default class MicroCreditCreate {
 
             const data = await userForm[0].update({
                 form: newForm,
-                status,
+                status
             });
 
             return data;

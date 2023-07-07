@@ -1,7 +1,11 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import { MicroCreditForm, MicroCreditFormCreationAttributes, MicroCreditFormStatus } from '../../../interfaces/microCredit/form';
 import { DbModels } from '../../db';
+import {
+    MicroCreditForm,
+    MicroCreditFormCreationAttributes,
+    MicroCreditFormStatus
+} from '../../../interfaces/microCredit/form';
 
 export class MicroCreditFormModel extends Model<MicroCreditForm, MicroCreditFormCreationAttributes> {
     public id!: number;
@@ -39,7 +43,7 @@ export function initializeMicroCreditForm(sequelize: Sequelize): typeof MicroCre
             },
             prismicId: {
                 type: DataTypes.STRING(32),
-                allowNull: false,
+                allowNull: false
             },
             status: {
                 type: DataTypes.ENUM('pending', 'submitted', 'in-review', 'approved', 'rejected'),

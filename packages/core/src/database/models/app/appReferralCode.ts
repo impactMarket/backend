@@ -1,16 +1,10 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    AppReferralCode,
-    AppReferralCodeCreation,
-} from '../../../interfaces/app/appReferralCode';
-import { DbModels } from '../../../database/db';
+import { AppReferralCode, AppReferralCodeCreation } from '../../../interfaces/app/appReferralCode';
 import { AppUserModel } from './appUser';
+import { DbModels } from '../../../database/db';
 
-export class AppReferralCodeModel extends Model<
-    AppReferralCode,
-    AppReferralCodeCreation
-> {
+export class AppReferralCodeModel extends Model<AppReferralCode, AppReferralCodeCreation> {
     public code!: string;
     public campaignId!: number;
     public userId!: number;
@@ -25,27 +19,27 @@ export function initializeAppReferralCode(sequelize: Sequelize): void {
             code: {
                 type: DataTypes.STRING(12),
                 primaryKey: true,
-                unique: true,
+                unique: true
             },
             campaignId: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: appUser,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'app_referral_code',
             modelName: 'appReferralCode',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
 }

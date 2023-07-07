@@ -1,6 +1,6 @@
 import { axiosSubgraph } from '../config';
-import { redisClient } from '../../database';
 import { intervalsInSeconds } from '../../types';
+import { redisClient } from '../../database';
 
 type UserCampaign = {
     campaignId: string;

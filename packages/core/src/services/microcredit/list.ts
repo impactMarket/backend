@@ -1,16 +1,16 @@
-import { models } from '../../database';
-import { getBorrowerLoansCount, getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
-import { getAddress } from '@ethersproject/address';
+import { AppUser } from '../../interfaces/app/appUser';
+import { BigNumber, Contract } from 'ethers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
-import { BigNumber, Contract } from 'ethers';
-import { config } from '../../..';
-import { WhereOptions, literal, Op, Order } from 'sequelize';
 import { MicroCreditApplications } from '../../interfaces/microCredit/applications';
-import { utils } from '@impactmarket/core';
-import { AppUser } from '../../interfaces/app/appUser';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
+import { Op, Order, WhereOptions, literal } from 'sequelize';
+import { config } from '../../..';
+import { getAddress } from '@ethersproject/address';
+import { getBorrowerLoansCount, getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
 import { getUserRoles } from '../../subgraph/queries/user';
+import { models } from '../../database';
+import { utils } from '@impactmarket/core';
 
 // it was ChatGPT who did it, don't ask me to explain!
 // jk, here's the prompt to generate this:
@@ -147,8 +147,8 @@ export default class MicroCreditList {
                     manager: query.addedBy
                 },
                 order,
-                limit: order ? (query.limit ?? 10) : undefined,
-                offset: order ? (query.offset ?? 0) : undefined,
+                limit: order ? query.limit ?? 10 : undefined,
+                offset: order ? query.offset ?? 0 : undefined,
                 include: [
                     {
                         model: models.appUser,
@@ -169,7 +169,7 @@ export default class MicroCreditList {
             // when there's already a list of users but no order, this means, all users were fetched
             // so we need to slice to get only the ones we want
             if (!order) {
-                let { offset, limit } = query;
+                const { offset, limit } = query;
                 usersToFilter = usersToFilter.slice(offset ?? 0, limit ?? 10);
             }
             onlyBorrowers = usersToFilter.map(b => b.address);

@@ -26,21 +26,13 @@ describe('#calculateGrowth()', () => {
         });
 
         it('bigint', async () => {
-            expect(
-                calculateGrowth(
-                    BigInt('8223372036854775807'),
-                    BigInt('9223372036854775807')
-                )
-            ).to.be.equal(12.2);
+            expect(calculateGrowth(BigInt('8223372036854775807'), BigInt('9223372036854775807'))).to.be.equal(12.2);
         });
 
         it('bignumber', async () => {
-            expect(
-                calculateGrowth(
-                    '699999999999000000000000000000',
-                    '999999999999000000000000000000'
-                )
-            ).to.be.equal(42.9);
+            expect(calculateGrowth('699999999999000000000000000000', '999999999999000000000000000000')).to.be.equal(
+                42.9
+            );
         });
     });
 });

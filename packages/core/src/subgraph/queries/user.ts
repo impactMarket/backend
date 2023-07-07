@@ -1,10 +1,6 @@
-import {
-    axiosCouncilSubgraph,
-    axiosMicrocreditSubgraph,
-    axiosSubgraph,
-} from '../config';
-import { redisClient } from '../../database';
+import { axiosCouncilSubgraph, axiosMicrocreditSubgraph, axiosSubgraph } from '../config';
 import { intervalsInSeconds } from '../../types';
+import { redisClient } from '../../database';
 
 export type UserRoles = {
     beneficiary: { community: string; state: number; address: string } | null;
@@ -70,7 +66,7 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                     }
                     state
                 }
-            }`,
+            }`
         };
         const councilGraphqlQuery = {
             operationName: 'impactMarketCouncilMemberEntity',
@@ -86,7 +82,7 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                     status
                     communities
                 }
-            }`,
+            }`
         };
         const microcreditGraphqlQuery = {
             operationName: 'loanManager',
@@ -101,13 +97,13 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                 ) {
                     id
                 }
-            }`,
+            }`
         };
 
         const [cacheDAO, cacheCouncil, microcredit] = await Promise.all([
             redisClient.get(graphqlQuery.query),
             redisClient.get(councilGraphqlQuery.query),
-            redisClient.get(microcreditGraphqlQuery.query),
+            redisClient.get(microcreditGraphqlQuery.query)
         ]);
 
         let responseDAO: DAOResponse | null = null;
@@ -119,11 +115,7 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
             responseCouncilMember = JSON.parse(cacheCouncil);
             responseMicroCredit = JSON.parse(microcredit);
         } else {
-            const [
-                rawResponseDAO,
-                rawResponseCouncilMember,
-                rawResponseMicroCredit,
-            ] = await Promise.all([
+            const [rawResponseDAO, rawResponseCouncilMember, rawResponseMicroCredit] = await Promise.all([
                 axiosSubgraph.post<
                     any,
                     {
@@ -147,17 +139,12 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
                             data: MicroCreditResponse;
                         };
                     }
-                >('', microcreditGraphqlQuery),
+                >('', microcreditGraphqlQuery)
             ]);
 
             responseDAO = rawResponseDAO.data?.data;
 
-            redisClient.set(
-                graphqlQuery.query,
-                JSON.stringify(responseDAO),
-                'EX',
-                intervalsInSeconds.oneHour
-            );
+            redisClient.set(graphqlQuery.query, JSON.stringify(responseDAO), 'EX', intervalsInSeconds.oneHour);
 
             responseCouncilMember = rawResponseCouncilMember.data?.data;
 
@@ -181,52 +168,49 @@ export const getUserRoles = async (address: string): Promise<UserRoles> => {
         const beneficiary = !responseDAO?.beneficiaryEntity
             ? null
             : {
-                community: responseDAO?.beneficiaryEntity?.community?.id,
-                state: responseDAO?.beneficiaryEntity?.state,
-                address: responseDAO?.beneficiaryEntity?.address,
-            };
+                  community: responseDAO?.beneficiaryEntity?.community?.id,
+                  state: responseDAO?.beneficiaryEntity?.state,
+                  address: responseDAO?.beneficiaryEntity?.address
+              };
 
         const manager = !responseDAO?.managerEntity
             ? null
             : {
-                community: responseDAO.managerEntity?.community?.id,
-                state: responseDAO.managerEntity?.state,
-            };
+                  community: responseDAO.managerEntity?.community?.id,
+                  state: responseDAO.managerEntity?.state
+              };
 
-        const councilMember =
-            !responseCouncilMember?.impactMarketCouncilMemberEntity
-                ? null
-                : {
-                    state: responseCouncilMember
-                        .impactMarketCouncilMemberEntity.status,
-                };
+        const councilMember = !responseCouncilMember?.impactMarketCouncilMemberEntity
+            ? null
+            : {
+                  state: responseCouncilMember.impactMarketCouncilMemberEntity.status
+              };
 
         const ambassador = !responseCouncilMember?.ambassadorEntity
             ? null
             : {
-                communities:
-                    responseCouncilMember.ambassadorEntity?.communities,
-                state: responseCouncilMember.ambassadorEntity?.status,
-            };
+                  communities: responseCouncilMember.ambassadorEntity?.communities,
+                  state: responseCouncilMember.ambassadorEntity?.status
+              };
 
         const loanManager = !responseMicroCredit?.loanManager
             ? null
             : {
-                state: responseMicroCredit.loanManager?.state,
-            };
+                  state: responseMicroCredit.loanManager?.state
+              };
 
         const borrower = !responseMicroCredit?.borrower
             ? null
             : {
-                id: responseMicroCredit.borrower?.id,
-            };
+                  id: responseMicroCredit.borrower?.id
+              };
         return {
             beneficiary,
             borrower,
             manager,
             councilMember,
             ambassador,
-            loanManager,
+            loanManager
         };
     } catch (error) {
         throw new Error(error);
@@ -273,7 +257,7 @@ export const getUserActivity = async (
                     activity
                     timestamp
                 }
-            }`,
+            }`
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
 
@@ -303,12 +287,7 @@ export const getUserActivity = async (
 
         const userActivityEntities = response.data?.data.userActivityEntities;
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(userActivityEntities),
-            'EX',
-            intervalsInSeconds.halfHour
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(userActivityEntities), 'EX', intervalsInSeconds.halfHour);
 
         return userActivityEntities;
     } catch (error) {

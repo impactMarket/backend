@@ -1,16 +1,10 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    LearnAndEarnLevel,
-    LearnAndEarnLevelCreation,
-} from '../../../interfaces/learnAndEarn/learnAndEarnLevel';
-import { DbModels } from '../../../database/db';
 import { AppUserModel } from '../app/appUser';
+import { DbModels } from '../../../database/db';
+import { LearnAndEarnLevel, LearnAndEarnLevelCreation } from '../../../interfaces/learnAndEarn/learnAndEarnLevel';
 
-export class LearnAndEarnLevelModel extends Model<
-    LearnAndEarnLevel,
-    LearnAndEarnLevelCreation
-> {
+export class LearnAndEarnLevelModel extends Model<LearnAndEarnLevel, LearnAndEarnLevelCreation> {
     public id!: number;
     public prismicId!: string; // TODO: remove
     public categoryId!: number; // TODO: remove
@@ -31,9 +25,7 @@ export class LearnAndEarnLevelModel extends Model<
     public adminUser?: AppUserModel;
 }
 
-export function initializeLearnAndEarnLevel(
-    sequelize: Sequelize
-): typeof LearnAndEarnLevelModel {
+export function initializeLearnAndEarnLevel(sequelize: Sequelize): typeof LearnAndEarnLevelModel {
     const { appUser, learnAndEarnCategory } = sequelize.models as DbModels;
     LearnAndEarnLevelModel.init(
         {
@@ -41,72 +33,67 @@ export function initializeLearnAndEarnLevel(
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             prismicId: {
                 type: DataTypes.STRING(32),
-                allowNull: true,
+                allowNull: true
             },
             categoryId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: learnAndEarnCategory,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: true,
+                allowNull: true
             },
             languages: {
                 type: DataTypes.ARRAY(DataTypes.STRING(3)),
-                allowNull: true,
+                allowNull: true
             },
             active: {
                 type: DataTypes.BOOLEAN,
-                allowNull: true,
+                allowNull: true
             },
             totalReward: {
                 type: DataTypes.FLOAT,
                 allowNull: false,
-                defaultValue: 0,
+                defaultValue: 0
             },
             rewardLimit: {
                 type: DataTypes.FLOAT,
-                allowNull: true,
+                allowNull: true
             },
             isLive: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
+                defaultValue: false
             },
             rules: {
                 type: DataTypes.JSONB,
-                allowNull: true,
+                allowNull: true
             },
             adminUserId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: appUser,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             status: {
-                type: DataTypes.ENUM(
-                    'pending',
-                    'aproved',
-                    'declined',
-                    'published'
-                ),
+                type: DataTypes.ENUM('pending', 'aproved', 'declined', 'published'),
                 allowNull: false,
-                defaultValue: 'pending',
-            },
+                defaultValue: 'pending'
+            }
         },
         {
             tableName: 'learn_and_earn_level',
             modelName: 'learnAndEarnLevel',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return LearnAndEarnLevelModel;

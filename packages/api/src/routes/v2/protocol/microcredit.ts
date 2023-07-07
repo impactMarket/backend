@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import ProtocolController from '../../../controllers/v2/protocol';
 import { cache } from '../../../middlewares/cache-redis';
 import { cacheIntervals } from '../../../utils/api';
+import ProtocolController from '../../../controllers/v2/protocol';
 
 export default (route: Router): void => {
     const protocolController = new ProtocolController();
@@ -19,9 +19,5 @@ export default (route: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get(
-        '/microcredit',
-        cache(cacheIntervals.oneHour),
-        protocolController.getMicroCreditData
-    );
+    route.get('/microcredit', cache(cacheIntervals.oneHour), protocolController.getMicroCreditData);
 };

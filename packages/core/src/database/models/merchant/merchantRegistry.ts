@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 export interface MerchantRegistry {
     id: number;
@@ -37,10 +37,7 @@ export interface MerchantRegistryCreationAttributes {
     payment: boolean;
 }
 
-export class MerchantRegistryModel extends Model<
-    MerchantRegistry,
-    MerchantRegistryCreationAttributes
-> {
+export class MerchantRegistryModel extends Model<MerchantRegistry, MerchantRegistryCreationAttributes> {
     public id!: number;
     public name!: string;
     public country!: string;
@@ -62,75 +59,73 @@ export class MerchantRegistryModel extends Model<
     public updatedAt!: Date;
 }
 
-export function initializeMerchantRegistry(
-    sequelize: Sequelize
-): typeof MerchantRegistryModel {
+export function initializeMerchantRegistry(sequelize: Sequelize): typeof MerchantRegistryModel {
     MerchantRegistryModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             name: {
                 type: DataTypes.STRING(64),
-                allowNull: false,
+                allowNull: false
             },
             country: {
                 type: DataTypes.STRING(64),
-                allowNull: false,
+                allowNull: false
             },
             description: {
                 type: DataTypes.STRING(1024),
-                allowNull: false,
+                allowNull: false
             },
             type: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             fee: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             min: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             address: {
                 type: DataTypes.STRING(256),
-                allowNull: false,
+                allowNull: false
             },
             phone: {
                 type: DataTypes.STRING(64),
-                allowNull: false,
+                allowNull: false
             },
             gps: {
                 type: DataTypes.JSON,
-                allowNull: false,
+                allowNull: false
             },
             cashout: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
+                defaultValue: false
             },
             payment: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
+                defaultValue: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'merchant_registry',
             modelName: 'merchantRegistry',
-            sequelize,
+            sequelize
         }
     );
     return MerchantRegistryModel;

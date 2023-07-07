@@ -1,10 +1,10 @@
-import { literal, QueryTypes } from 'sequelize';
+import { QueryTypes, literal } from 'sequelize';
 
-import { models, sequelize } from '../../database';
 import {
-    UbiCommunityDemographicsCreation,
     UbiCommunityDemographics,
+    UbiCommunityDemographicsCreation
 } from '../../interfaces/ubi/ubiCommunityDemographics';
+import { models, sequelize } from '../../database';
 
 export default class CommunityDemographicsService {
     public community = models.community;
@@ -24,92 +24,51 @@ export default class CommunityDemographicsService {
         const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
 
         const year = new Date().getUTCFullYear();
-        const demographics: UbiCommunityDemographicsCreation[] =
-            (await this.community.findAll({
-                attributes: [
-                    ['id', 'communityId'],
-                    [literal(`'${yesterdayDate}'`), 'date'],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 18 AND 24)`
-                        ),
-                        'ageRange1',
-                    ],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 25 AND 34)`
-                        ),
-                        'ageRange2',
-                    ],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 35 AND 44)`
-                        ),
-                        'ageRange3',
-                    ],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 45 AND 54)`
-                        ),
-                        'ageRange4',
-                    ],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 55 AND 64)`
-                        ),
-                        'ageRange5',
-                    ],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 65 AND 120)`
-                        ),
-                        'ageRange6',
-                    ],
-                    [
-                        literal(
-                            'count(*) FILTER (WHERE "beneficiaries->user".gender = \'m\')'
-                        ),
-                        'male',
-                    ],
-                    [
-                        literal(
-                            'count(*) FILTER (WHERE "beneficiaries->user".gender = \'f\')'
-                        ),
-                        'female',
-                    ],
-                    [
-                        literal(
-                            'count(*) FILTER (WHERE "beneficiaries->user".gender = \'u\'  OR "beneficiaries->user".gender is null)'
-                        ),
-                        'undisclosed',
-                    ],
-                    [literal('count(*)'), 'totalGender'],
+        const demographics: UbiCommunityDemographicsCreation[] = (await this.community.findAll({
+            attributes: [
+                ['id', 'communityId'],
+                [literal(`'${yesterdayDate}'`), 'date'],
+                [literal(`count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 18 AND 24)`), 'ageRange1'],
+                [literal(`count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 25 AND 34)`), 'ageRange2'],
+                [literal(`count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 35 AND 44)`), 'ageRange3'],
+                [literal(`count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 45 AND 54)`), 'ageRange4'],
+                [literal(`count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 55 AND 64)`), 'ageRange5'],
+                [literal(`count(*) FILTER (WHERE ${year}-"beneficiaries->user".year BETWEEN 65 AND 120)`), 'ageRange6'],
+                [literal('count(*) FILTER (WHERE "beneficiaries->user".gender = \'m\')'), 'male'],
+                [literal('count(*) FILTER (WHERE "beneficiaries->user".gender = \'f\')'), 'female'],
+                [
+                    literal(
+                        'count(*) FILTER (WHERE "beneficiaries->user".gender = \'u\'  OR "beneficiaries->user".gender is null)'
+                    ),
+                    'undisclosed'
                 ],
-                include: [
-                    {
-                        model: models.beneficiary,
-                        as: 'beneficiaries',
-                        attributes: [],
-                        where: {
-                            active: true,
-                        },
-                        include: [
-                            {
-                                model: models.appUser,
-                                as: 'user',
-                                required: false,
-                                attributes: [],
-                            },
-                        ],
+                [literal('count(*)'), 'totalGender']
+            ],
+            include: [
+                {
+                    model: models.beneficiary,
+                    as: 'beneficiaries',
+                    attributes: [],
+                    where: {
+                        active: true
                     },
-                ],
-                where: {
-                    visibility: 'public',
-                    status: 'valid',
-                },
-                group: ['"community".id'],
-                raw: true,
-            })) as any;
+                    include: [
+                        {
+                            model: models.appUser,
+                            as: 'user',
+                            required: false,
+                            attributes: []
+                        }
+                    ]
+                }
+            ],
+            where: {
+                visibility: 'public',
+                status: 'valid'
+            },
+            group: ['"community".id'],
+            raw: true
+        })) as any;
 
         await this.ubiCommunityDemographics.bulkCreate(demographics);
     }

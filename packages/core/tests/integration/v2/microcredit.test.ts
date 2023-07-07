@@ -1,13 +1,13 @@
-import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
+import { expect } from 'chai';
 
+import * as microCreditQueries from '../../../src/subgraph/queries/microcredit';
 import { AppUser } from '../../../src/interfaces/app/appUser';
+import { SinonStub, stub } from 'sinon';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
-import UserFactory from '../../factories/user';
 import MicroCreditCreate from '../../../src/services/microcredit/create';
 import MicroCreditList from '../../../src/services/microcredit/list';
-import { SinonStub, stub } from 'sinon';
-import * as microCreditQueries from '../../../src/subgraph/queries/microcredit';
+import UserFactory from '../../factories/user';
 
 describe('microCredit', () => {
     let sequelize: Sequelize;

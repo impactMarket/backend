@@ -1,16 +1,14 @@
 import { Sequelize } from 'sequelize';
-import { stub, assert, match, SinonStub } from 'sinon';
+import { SinonStub, assert, match, stub } from 'sinon';
 
-import { models } from '../../../src/database';
-import { ManagerAttributes } from '../../../src/database/models/ubi/manager';
 import { AppUser } from '../../../src/interfaces/app/appUser';
-import { BeneficiaryAttributes } from '../../../src/interfaces/ubi/beneficiary';
 import { CommunityAttributes } from '../../../src/interfaces/ubi/community';
-import GlobalDemographicsService from '../../../src/services/global/globalDemographics';
-import CommunityDemographicsService from '../../../src/services/ubi/communityDemographics';
+import { models } from '../../../src/database';
 import { sequelizeSetup, truncate } from '../../config/sequelizeSetup';
 import BeneficiaryFactory from '../../factories/beneficiary';
+import CommunityDemographicsService from '../../../src/services/ubi/communityDemographics';
 import CommunityFactory from '../../factories/community';
+import GlobalDemographicsService from '../../../src/services/global/globalDemographics';
 import ManagerFactory from '../../factories/manager';
 import UserFactory from '../../factories/user';
 
@@ -18,7 +16,7 @@ const globalDemographicsService = new GlobalDemographicsService();
 const communityDemographicsService = new CommunityDemographicsService();
 
 async function waitForStubCall(stub: SinonStub<any, any>, callNumber: number) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         const validationInterval = setInterval(() => {
             if (stub.callCount >= callNumber) {
                 resolve('');
@@ -32,8 +30,6 @@ describe('calculate global demographics', () => {
     let sequelize: Sequelize;
     let users: AppUser[];
     let communities: CommunityAttributes[];
-    let managers: ManagerAttributes[];
-    let beneficiaries: BeneficiaryAttributes[];
     const maxClaim = 450;
     let dbGlobalDemographicsInsertStub: SinonStub;
 
@@ -54,33 +50,33 @@ describe('calculate global demographics', () => {
             props: [
                 {
                     gender: 'm',
-                    year: ageRange1,
+                    year: ageRange1
                 },
                 {
                     gender: 'm',
-                    year: ageRange1,
+                    year: ageRange1
                 },
                 {
                     gender: 'f',
-                    year: ageRange2,
+                    year: ageRange2
                 },
                 {
                     gender: 'f',
-                    year: ageRange3,
+                    year: ageRange3
                 },
                 {
                     gender: 'f',
-                    year: ageRange4,
+                    year: ageRange4
                 },
                 {
                     gender: 'u',
-                    year: ageRange5,
+                    year: ageRange5
                 },
                 {
                     gender: 'u',
-                    year: ageRange6,
-                },
-            ],
+                    year: ageRange6
+                }
+            ]
         });
         communities = await CommunityFactory([
             {
@@ -93,20 +89,14 @@ describe('calculate global demographics', () => {
                     claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim,
+                    maxClaim
                 },
-                hasAddress: true,
-            },
+                hasAddress: true
+            }
         ]);
-        managers = await ManagerFactory([users[0]], communities[0].id);
-        beneficiaries = await BeneficiaryFactory(
-            users.slice(0, 7),
-            communities[0].id
-        );
-        dbGlobalDemographicsInsertStub = stub(
-            globalDemographicsService.globalDemographics,
-            'bulkCreate'
-        );
+        await ManagerFactory([users[0]], communities[0].id);
+        await BeneficiaryFactory(users.slice(0, 7), communities[0].id);
+        dbGlobalDemographicsInsertStub = stub(globalDemographicsService.globalDemographics, 'bulkCreate');
     });
 
     after(async () => {
@@ -117,8 +107,8 @@ describe('calculate global demographics', () => {
     it('calculateDemographics with undisclosed', async () => {
         await models.appUser.destroy({
             where: {
-                address: users[0].address,
-            },
+                address: users[0].address
+            }
         });
 
         await communityDemographicsService.calculate();
@@ -139,8 +129,8 @@ describe('calculate global demographics', () => {
                 female: '3',
                 male: '1',
                 totalGender: '7',
-                undisclosed: '3',
-            },
+                undisclosed: '3'
+            }
         ]);
     });
 });

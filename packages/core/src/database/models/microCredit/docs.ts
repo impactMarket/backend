@@ -1,7 +1,7 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import { MicroCreditDocs, MicroCreditDocsCreationAttributes } from '../../../interfaces/microCredit/docs';
 import { DbModels } from '../../../database/db';
+import { MicroCreditDocs, MicroCreditDocsCreationAttributes } from '../../../interfaces/microCredit/docs';
 
 export class MicroCreditDocsModel extends Model<MicroCreditDocs, MicroCreditDocsCreationAttributes> {
     public id!: number;

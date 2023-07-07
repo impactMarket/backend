@@ -1,20 +1,17 @@
-import config from '../../config';
 import { models } from '../../database';
+import config from '../../config';
 
 export default class ImMetadataService {
     public static imMetadata = models.imMetadata;
 
     public static async setLastBlock(value: number): Promise<void> {
-        await this.imMetadata.update(
-            { value: value.toString() },
-            { where: { key: 'lastBlock' } }
-        );
+        await this.imMetadata.update({ value: value.toString() }, { where: { key: 'lastBlock' } });
     }
 
     public static async getLastBlock(): Promise<number> {
         const last = await this.imMetadata.findOne({
             where: { key: 'lastBlock' },
-            raw: true,
+            raw: true
         });
         if (last === null) {
             return config.impactMarketContractBlockNumber;
@@ -30,7 +27,7 @@ export default class ImMetadataService {
             // or will lose blocks, since the system is already syncing
             await this.imMetadata.create({
                 value: value.toString(),
-                key: 'recoverBlock',
+                key: 'recoverBlock'
             });
         } catch (e) {
             //
@@ -40,7 +37,7 @@ export default class ImMetadataService {
     public static async getRecoverBlock(): Promise<number> {
         const last = await this.imMetadata.findOne({
             where: { key: 'recoverBlock' },
-            raw: true,
+            raw: true
         });
         if (last === null) {
             return await ImMetadataService.getLastBlock();
@@ -50,7 +47,7 @@ export default class ImMetadataService {
 
     public static async removeRecoverBlock(): Promise<void> {
         await this.imMetadata.destroy({
-            where: { key: 'recoverBlock' },
+            where: { key: 'recoverBlock' }
         });
     }
 }

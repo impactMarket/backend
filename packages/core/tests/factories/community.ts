@@ -2,13 +2,10 @@ import { ethers } from 'ethers';
 import { faker } from '@faker-js/faker';
 
 import { Community } from '../../src/database/models/ubi/community';
+import { CommunityAttributes } from '../../src/interfaces/ubi/community';
+import { UbiCommunityContract, UbiCommunityContractCreation } from '../../src/interfaces/ubi/ubiCommunityContract';
 import { UbiCommunityContractModel } from '../../src/database/models/ubi/communityContract';
 import { UbiCommunitySuspectModel } from '../../src/database/models/ubi/ubiCommunitySuspect';
-import { CommunityAttributes } from '../../src/interfaces/ubi/community';
-import {
-    UbiCommunityContract,
-    UbiCommunityContractCreation,
-} from '../../src/interfaces/ubi/ubiCommunityContract';
 
 interface ICreateProps {
     requestByAddress: string;
@@ -39,7 +36,7 @@ interface ICreateProps {
  * @return {Object}       An object to build the user from.
  */
 const data = async (props: ICreateProps) => {
-    let defaultProps: any /*CommunityCreationAttributes */ = {
+    let defaultProps: any /* CommunityCreationAttributes */ = {
         city: faker.location.city(),
         country: props.country ? props.country : faker.location.countryCode(),
         currency: faker.finance.currencyCode(),
@@ -49,7 +46,7 @@ const data = async (props: ICreateProps) => {
             ? props.gps
             : {
                   latitude: 0,
-                  longitude: 0,
+                  longitude: 0
               },
         language: 'pt',
         name: props.name ? props.name : faker.company.name(),
@@ -65,15 +62,15 @@ const data = async (props: ICreateProps) => {
                   communityId: 0,
                   incrementInterval: 5 * 60,
                   maxClaim: 450,
-                  decreaseStep: 1,
+                  decreaseStep: 1
               },
-        ...props,
+        ...props
     };
     if (props.hasAddress) {
         const randomWallet = ethers.Wallet.createRandom();
         defaultProps = {
             ...defaultProps,
-            contractAddress: await randomWallet.getAddress(),
+            contractAddress: await randomWallet.getAddress()
         };
     }
     return defaultProps;
@@ -91,19 +88,17 @@ const CommunityFactory = async (props: ICreateProps[]) => {
         const communityData = await data(props[index]);
         const newCommunity = await Community.create(communityData);
         const newContract = await UbiCommunityContractModel.create({
-            ...(props[index].contract
-                ? props[index].contract
-                : communityData.contract),
-            communityId: newCommunity.id,
+            ...(props[index].contract ? props[index].contract : communityData.contract),
+            communityId: newCommunity.id
         });
         result.push({
             ...(newCommunity.toJSON() as CommunityAttributes),
-            contract: newContract.toJSON() as UbiCommunityContract,
+            contract: newContract.toJSON() as UbiCommunityContract
         });
         if (props[index].suspect !== undefined) {
             await UbiCommunitySuspectModel.create({
                 communityId: newCommunity.id,
-                ...props[index].suspect!,
+                ...props[index].suspect!
             });
         }
     }

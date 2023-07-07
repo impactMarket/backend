@@ -1,14 +1,14 @@
-import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
-import { assert, spy, SinonSpy, SinonStub, stub } from 'sinon';
+import { SinonSpy, SinonStub, assert, spy, stub } from 'sinon';
+import { expect } from 'chai';
 
-import { models } from '../../src/database';
+import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
-import ClaimLocationService from '../../src/services/ubi/claimLocation';
-import * as beneficiarySubgraph from '../../src/subgraph/queries/beneficiary';
+import { models } from '../../src/database';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import BeneficiaryFactory from '../factories/beneficiary';
+import ClaimLocationService from '../../src/services/ubi/claimLocation';
 import CommunityFactory from '../factories/community';
 import UserFactory from '../factories/user';
 
@@ -35,10 +35,10 @@ describe('claim location service', () => {
                     claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: 450,
+                    maxClaim: 450
                 },
                 hasAddress: true,
-                country: 'BR',
+                country: 'BR'
             },
             {
                 requestByAddress: users[1].address,
@@ -50,9 +50,9 @@ describe('claim location service', () => {
                     claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: 450,
+                    maxClaim: 450
                 },
-                hasAddress: true,
+                hasAddress: true
             },
             {
                 requestByAddress: users[2].address,
@@ -64,10 +64,10 @@ describe('claim location service', () => {
                     claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: 450,
+                    maxClaim: 450
                 },
                 hasAddress: true,
-                country: 'PT',
+                country: 'PT'
             },
             {
                 requestByAddress: users[3].address,
@@ -79,19 +79,16 @@ describe('claim location service', () => {
                     claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: 450,
+                    maxClaim: 450
                 },
                 hasAddress: true,
-                country: 'AR',
-            },
+                country: 'AR'
+            }
         ]);
         await BeneficiaryFactory(users.slice(0, 1), communities[0].id);
         await BeneficiaryFactory(users.slice(1, 2), communities[1].id);
         await BeneficiaryFactory(users.slice(3, 4), communities[3].id);
-        returnGetBeneficiaryByAddressSubgraph = stub(
-            beneficiarySubgraph,
-            'getBeneficiariesByAddress'
-        );
+        returnGetBeneficiaryByAddressSubgraph = stub(beneficiarySubgraph, 'getBeneficiariesByAddress');
         spyClaimLocationAdd = spy(models.ubiClaimLocation, 'create');
     });
 
@@ -109,21 +106,21 @@ describe('claim location service', () => {
                     address: users[0].address.toLowerCase(),
                     claims: 0,
                     community: {
-                        id: communities[0].contractAddress,
+                        id: communities[0].contractAddress
                     },
                     lastClaimAt: 0,
                     preLastClaimAt: 0,
                     since: 0,
                     claimed: 0,
-                    state: 0,
-                },
+                    state: 0
+                }
             ]);
 
             await ClaimLocationService.add(
                 communities[0].id,
                 {
                     latitude: -22.2375236,
-                    longitude: -49.9819737,
+                    longitude: -49.9819737
                 },
                 users[0].address
             );
@@ -133,8 +130,8 @@ describe('claim location service', () => {
                 communityId: communities[0].id,
                 gps: {
                     latitude: -22.2375236,
-                    longitude: -49.9819737,
-                },
+                    longitude: -49.9819737
+                }
             });
         });
 
@@ -143,11 +140,11 @@ describe('claim location service', () => {
                 communities[2].id,
                 {
                     latitude: -22.2375236,
-                    longitude: -49.9819737,
+                    longitude: -49.9819737
                 },
                 users[0].address
             )
-                .catch((e) => expect(e.name).to.be.equal('INVALID_LOCATION'))
+                .catch(e => expect(e.name).to.be.equal('INVALID_LOCATION'))
                 .then(() => {
                     throw new Error('expected to fail');
                 });
@@ -160,20 +157,20 @@ describe('claim location service', () => {
                     address: users[3].address.toLowerCase(),
                     claims: 0,
                     community: {
-                        id: communities[3].contractAddress,
+                        id: communities[3].contractAddress
                     },
                     lastClaimAt: 0,
                     preLastClaimAt: 0,
                     since: 0,
                     claimed: 0,
-                    state: 0,
-                },
+                    state: 0
+                }
             ]);
             await ClaimLocationService.add(
                 communities[3].id,
                 {
                     latitude: -22.2375236,
-                    longitude: -49.9819737,
+                    longitude: -49.9819737
                 },
                 users[3].address
             );
@@ -182,8 +179,8 @@ describe('claim location service', () => {
                 communityId: communities[3].id,
                 gps: {
                     latitude: -22.2375236,
-                    longitude: -49.9819737,
-                },
+                    longitude: -49.9819737
+                }
             });
         });
 
@@ -192,11 +189,11 @@ describe('claim location service', () => {
                 communities[0].id,
                 {
                     latitude: -22.2375236,
-                    longitude: -49.9819737,
+                    longitude: -49.9819737
                 },
                 users[2].address
             )
-                .catch((e) => expect(e.name).to.be.equal('NOT_BENEFICIARY'))
+                .catch(e => expect(e.name).to.be.equal('NOT_BENEFICIARY'))
                 .then(() => {
                     throw new Error('expected to fail');
                 });
@@ -207,11 +204,11 @@ describe('claim location service', () => {
                 communities[0].id,
                 {
                     latitude: -22.2375236,
-                    longitude: -49.9819737,
+                    longitude: -49.9819737
                 },
                 users[2].address
             )
-                .catch((e) => {
+                .catch(e => {
                     expect(e.name).to.be.equal('NOT_ALLOWED');
                 })
                 .then(() => {

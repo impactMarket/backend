@@ -1,16 +1,14 @@
-import { getAddress } from '@ethersproject/address';
 import { ethers } from 'ethers';
+import { getAddress } from '@ethersproject/address';
 
-import config from '../../config';
-import { redisClient } from '../../database';
 import { axiosCouncilSubgraph, axiosSubgraph } from '../config';
 import { intervalsInSeconds } from '../../types';
+import { redisClient } from '../../database';
+import config from '../../config';
 
 export const getCommunityProposal = async (): Promise<string[]> => {
     try {
-        const provider = new ethers.providers.JsonRpcProvider(
-            config.jsonRpcUrl
-        );
+        const provider = new ethers.providers.JsonRpcProvider(config.jsonRpcUrl);
         const blockNumber = await provider.getBlockNumber();
 
         const graphqlQuery = {
@@ -25,7 +23,7 @@ export const getCommunityProposal = async (): Promise<string[]> => {
                 ) {
                     calldatas
                 }
-            }`,
+            }`
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
 
@@ -39,7 +37,7 @@ export const getCommunityProposal = async (): Promise<string[]> => {
                 data: {
                     data: {
                         proposalEntities: {
-                            calldatas: string[]
+                            calldatas: string[];
                         }[];
                     };
                 };
@@ -48,16 +46,9 @@ export const getCommunityProposal = async (): Promise<string[]> => {
 
         const proposalEntities = response.data?.data.proposalEntities;
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(proposalEntities),
-            'EX',
-            intervalsInSeconds.oneHour
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(proposalEntities), 'EX', intervalsInSeconds.oneHour);
 
-        return proposalEntities.map(
-            (proposal) => proposal.calldatas[0]
-        );
+        return proposalEntities.map(proposal => proposal.calldatas[0]);
     } catch (error) {
         throw new Error(error);
     }
@@ -72,7 +63,7 @@ export const getClaimed = async (
     }[]
 > => {
     try {
-        const idsFormated = ids.map((el) => `"${el.toLowerCase()}"`);
+        const idsFormated = ids.map(el => `"${el.toLowerCase()}"`);
         const graphqlQuery = {
             operationName: 'communityEntities',
             query: `query communityEntities {
@@ -86,10 +77,10 @@ export const getClaimed = async (
                     claimed
                 }
             }`,
-            variables: {},
+            variables: {}
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
-    
+
         if (cacheResults) {
             return JSON.parse(cacheResults);
         }
@@ -100,8 +91,8 @@ export const getClaimed = async (
                 data: {
                     data: {
                         communityEntities: {
-                            id: string,
-                            claimed: string,
+                            id: string;
+                            claimed: string;
                         }[];
                     };
                 };
@@ -109,12 +100,7 @@ export const getClaimed = async (
         >('', graphqlQuery);
         const communityEntities = response.data?.data.communityEntities;
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(communityEntities),
-            'EX',
-            intervalsInSeconds.halfHour
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntities), 'EX', intervalsInSeconds.halfHour);
 
         return communityEntities;
     } catch (error) {
@@ -156,7 +142,7 @@ export const getCommunityState = async (
                     originalClaimAmount
                     maxClaim 
                 }
-            }`,
+            }`
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
 
@@ -165,40 +151,35 @@ export const getCommunityState = async (
         }
 
         const response = await axiosSubgraph.post<
-        any,
-        {
-            data: {
+            any,
+            {
                 data: {
-                    communityEntity: {
-                        claims: number,
-                        claimed: string,
-                        beneficiaries: number,
-                        removedBeneficiaries: number,
-                        contributed: string,
-                        contributors: number,
-                        managers: number,
-                        baseInterval: number,
-                        estimatedFunds: string,
-                        state: number,
-                        claimAmount: string,
-                        originalClaimAmount: string,
-                        maxClaim : string,
+                    data: {
+                        communityEntity: {
+                            claims: number;
+                            claimed: string;
+                            beneficiaries: number;
+                            removedBeneficiaries: number;
+                            contributed: string;
+                            contributors: number;
+                            managers: number;
+                            baseInterval: number;
+                            estimatedFunds: string;
+                            state: number;
+                            claimAmount: string;
+                            originalClaimAmount: string;
+                            maxClaim: string;
+                        };
                     };
                 };
-            };
-        }
-    >('', graphqlQuery);
+            }
+        >('', graphqlQuery);
 
-    const communityEntity = response.data?.data.communityEntity;
+        const communityEntity = response.data?.data.communityEntity;
 
-    redisClient.set(
-        graphqlQuery.query,
-        JSON.stringify(communityEntity),
-        'EX',
-        intervalsInSeconds.halfHour
-    );
+        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntity), 'EX', intervalsInSeconds.halfHour);
 
-    return communityEntity;
+        return communityEntity;
     } catch (error) {
         throw new Error(error);
     }
@@ -231,10 +212,10 @@ export const getCommunityUBIParams = async (
                     maxTranche
                 }
             }`,
-            variables: {},
+            variables: {}
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
-    
+
         if (cacheResults) {
             return JSON.parse(cacheResults);
         }
@@ -245,13 +226,13 @@ export const getCommunityUBIParams = async (
                 data: {
                     data: {
                         communityEntity: {
-                            claimAmount: string,
-                            maxClaim: string,
-                            baseInterval: number,
-                            incrementInterval: number,
-                            decreaseStep: string,
-                            minTranche: string,
-                            maxTranche: string,
+                            claimAmount: string;
+                            maxClaim: string;
+                            baseInterval: number;
+                            incrementInterval: number;
+                            decreaseStep: string;
+                            minTranche: string;
+                            maxTranche: string;
                         };
                     };
                 };
@@ -259,12 +240,7 @@ export const getCommunityUBIParams = async (
         >('', graphqlQuery);
         const communityEntity = response.data?.data.communityEntity;
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(communityEntity),
-            'EX',
-            intervalsInSeconds.halfHour
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntity), 'EX', intervalsInSeconds.halfHour);
 
         return communityEntity;
     } catch (error) {
@@ -283,10 +259,10 @@ export const communityEntities = async (where: string, fields: string) => {
                     ${fields}
                 }
             }`,
-            variables: {},
+            variables: {}
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
-    
+
         if (cacheResults) {
             return JSON.parse(cacheResults);
         }
@@ -294,12 +270,7 @@ export const communityEntities = async (where: string, fields: string) => {
         const response = await axiosSubgraph.post('', graphqlQuery);
         const communityEntities = response.data?.data.communityEntities;
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(communityEntities),
-            'EX',
-            intervalsInSeconds.halfHour
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntities), 'EX', intervalsInSeconds.halfHour);
 
         return communityEntities;
     } catch (error) {
@@ -307,11 +278,7 @@ export const communityEntities = async (where: string, fields: string) => {
     }
 };
 
-export const getBiggestCommunities = async (
-    limit: number,
-    offset: number,
-    orderDirection?: string
-) => {
+export const getBiggestCommunities = async (limit: number, offset: number, orderDirection?: string) => {
     const graphqlQuery = {
         operationName: 'fetchCommunities',
         query: `query fetchCommunities {
@@ -324,7 +291,7 @@ export const getBiggestCommunities = async (
                 id
                 beneficiaries
             }
-        }`,
+        }`
     };
     const cacheResults = await redisClient.get(graphqlQuery.query);
 
@@ -347,12 +314,7 @@ export const getBiggestCommunities = async (
     >('', graphqlQuery);
     const communities = response.data?.data.communityEntities;
 
-    redisClient.set(
-        graphqlQuery.query,
-        JSON.stringify(communities),
-        'EX',
-        intervalsInSeconds.halfHour
-    );
+    redisClient.set(graphqlQuery.query, JSON.stringify(communities), 'EX', intervalsInSeconds.halfHour);
 
     return communities;
 };
@@ -372,7 +334,7 @@ export const getCommunityAmbassador = async (community: string) => {
                 until
             }
         }`,
-        variables: {},
+        variables: {}
     };
     const cacheResults = await redisClient.get(graphqlQuery.query);
 
@@ -383,12 +345,7 @@ export const getCommunityAmbassador = async (community: string) => {
     const response = await axiosCouncilSubgraph.post('', graphqlQuery);
     const ambassador = response.data?.data.ambassadorEntities[0];
 
-    redisClient.set(
-        graphqlQuery.query,
-        JSON.stringify(ambassador),
-        'EX',
-        intervalsInSeconds.sixHours
-    );
+    redisClient.set(graphqlQuery.query, JSON.stringify(ambassador), 'EX', intervalsInSeconds.sixHours);
 
     return ambassador;
 };
@@ -408,10 +365,10 @@ export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
                     communities
                 }
             }`,
-            variables: {},
+            variables: {}
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
-    
+
         if (cacheResults) {
             return JSON.parse(cacheResults);
         }
@@ -422,8 +379,8 @@ export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
                 data: {
                     data: {
                         ambassadorEntities: {
-                            id: string,
-                            communities: string[]
+                            id: string;
+                            communities: string[];
                         }[];
                     };
                 };
@@ -431,12 +388,7 @@ export const getAmbassadorByAddress = async (ambassadorAddress: string) => {
         >('', graphqlQuery);
         const ambassadorEntities = response.data?.data.ambassadorEntities[0];
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(ambassadorEntities),
-            'EX',
-            intervalsInSeconds.sixHours
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(ambassadorEntities), 'EX', intervalsInSeconds.sixHours);
 
         return ambassadorEntities;
     } catch (error) {
@@ -453,7 +405,7 @@ export const getCommunityStateByAddresses = async (
         id: string;
     }[]
 > => {
-    const idsFormated = addresses.map((el) => `"${el.toLowerCase()}"`);
+    const idsFormated = addresses.map(el => `"${el.toLowerCase()}"`);
 
     try {
         const graphqlQuery = {
@@ -469,10 +421,10 @@ export const getCommunityStateByAddresses = async (
                     maxClaim
                 }
             }`,
-            variables: {},
+            variables: {}
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
-    
+
         if (cacheResults) {
             return JSON.parse(cacheResults);
         }
@@ -483,9 +435,9 @@ export const getCommunityStateByAddresses = async (
                 data: {
                     data: {
                         communityEntities: {
-                            id: string,
-                            beneficiaries: number,
-                            maxClaim: string,
+                            id: string;
+                            beneficiaries: number;
+                            maxClaim: string;
                         }[];
                     };
                 };
@@ -493,12 +445,7 @@ export const getCommunityStateByAddresses = async (
         >('', graphqlQuery);
         const communityEntities = response.data?.data.communityEntities;
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(communityEntities),
-            'EX',
-            intervalsInSeconds.oneHour
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntities), 'EX', intervalsInSeconds.oneHour);
 
         return communityEntities;
     } catch (error) {
@@ -546,27 +493,27 @@ export const getCommunityDailyState = async (
                     fundingRate
                 }
             }`,
-            variables: {},
+            variables: {}
         };
-        
+
         const response = await axiosSubgraph.post<
             any,
             {
                 data: {
                     data: {
                         communityDailyEntities: {
-                            claims: number,
-                            claimed: string,
-                            beneficiaries: number,
+                            claims: number;
+                            claimed: string;
+                            beneficiaries: number;
                             community: {
-                                id: string,
-                            },
-                            contributed: string,
-                            contributors: number,
-                            transactions: number,
-                            reach: number,
-                            volume: string,
-                            fundingRate: string,
+                                id: string;
+                            };
+                            contributed: string;
+                            contributors: number;
+                            transactions: number;
+                            reach: number;
+                            volume: string;
+                            fundingRate: string;
                         }[];
                     };
                 };
@@ -574,7 +521,7 @@ export const getCommunityDailyState = async (
         >('', graphqlQuery);
         const communityDailyEntities = response.data?.data.communityDailyEntities;
 
-        return communityDailyEntities.map((daily) => ({
+        return communityDailyEntities.map(daily => ({
             claims: daily.claims,
             claimed: Number(daily.claimed),
             beneficiaries: daily.beneficiaries,
@@ -584,7 +531,7 @@ export const getCommunityDailyState = async (
             transactions: daily.transactions,
             reach: daily.reach,
             volume: daily.volume,
-            fundingRate: daily.fundingRate,
+            fundingRate: daily.fundingRate
         }));
     } catch (error) {
         throw new Error(error);

@@ -1,15 +1,15 @@
 import { Router } from 'express';
 
 import { MicroCreditController } from '../../../controllers/v2/microcredit/list';
+import { authenticateToken, onlyAuthorizedRoles, verifySignature } from '../../../middlewares';
+import { cache } from '../../../middlewares/cache-redis';
+import { cacheIntervals } from '../../../utils/api';
 import {
     listApplicationsValidator,
     listBorrowersValidator,
     queryGetBorrowerValidator,
     repaymentsHistoryValidator
 } from '../../../validators/microcredit';
-import { authenticateToken, onlyAuthorizedRoles, verifySignature } from '../../../middlewares';
-import { cache } from '../../../middlewares/cache-redis';
-import { cacheIntervals } from '../../../utils/api';
 
 export default (route: Router): void => {
     const controller = new MicroCreditController();
@@ -225,11 +225,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/demographics'
      */
-    route.get(
-        '/demographics',
-        cache(cacheIntervals.oneHour),
-        controller.demographics
-    )
+    route.get('/demographics', cache(cacheIntervals.oneHour), controller.demographics);
 
     /**
      * @swagger
@@ -257,9 +253,5 @@ export default (route: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/form/:id',
-        authenticateToken,
-        controller.getUserForm
-    )
+    route.get('/form/:id', authenticateToken, controller.getUserForm);
 };

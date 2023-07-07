@@ -35,7 +35,7 @@ export interface UbiBeneficiarySurvey {
     question: number;
     answer: string;
 
-    //timestamp
+    // timestamp
     createdAt: Date;
 }
 

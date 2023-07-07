@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 interface ImMetadataAttributes {
     key: string;
@@ -13,10 +13,7 @@ interface ImMetadataCreationAttributes {
     value: string;
 }
 
-export class ImMetadata extends Model<
-    ImMetadataAttributes,
-    ImMetadataCreationAttributes
-> {
+export class ImMetadata extends Model<ImMetadataAttributes, ImMetadataCreationAttributes> {
     public key!: string;
     public value!: string;
 
@@ -31,25 +28,25 @@ export function initializeImMetadata(sequelize: Sequelize): void {
             key: {
                 type: DataTypes.STRING(128),
                 unique: true,
-                primaryKey: true,
+                primaryKey: true
             },
             value: {
                 type: DataTypes.STRING(512),
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'immetadata',
             modelName: 'imMetadata',
-            sequelize,
+            sequelize
         }
     );
 }

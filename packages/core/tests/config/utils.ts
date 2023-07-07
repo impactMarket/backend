@@ -1,10 +1,7 @@
 import { SinonSpy, SinonStub } from 'sinon';
 
-export async function waitForStubCall(
-    stub: SinonStub<any, any> | SinonSpy<any, any>,
-    callNumber: number
-) {
-    return new Promise((resolve) => {
+export async function waitForStubCall(stub: SinonStub<any, any> | SinonSpy<any, any>, callNumber: number) {
+    return new Promise(resolve => {
         const validationInterval = setInterval(() => {
             if (stub.callCount >= callNumber) {
                 resolve('');
@@ -15,13 +12,11 @@ export async function waitForStubCall(
 }
 
 export function randomTx() {
-    var result: string[] = [];
-    var characters = 'ABCDEFabcdef0123456789';
-    var charactersLength = characters.length;
-    for (var i = 0; i < 64; i++) {
-        result.push(
-            characters.charAt(Math.floor(Math.random() * charactersLength))
-        );
+    const result: string[] = [];
+    const characters = 'ABCDEFabcdef0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < 64; i++) {
+        result.push(characters.charAt(Math.floor(Math.random() * charactersLength)));
     }
     return '0x' + result.join('');
 }

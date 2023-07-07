@@ -63,10 +63,5 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post(
-        '/',
-        authenticateToken,
-        claimLocationValidators.add,
-        controller.add
-    );
+    route.post('/', authenticateToken, claimLocationValidators.add, controller.add);
 };

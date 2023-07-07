@@ -1,15 +1,9 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    LearnAndEarnQuiz,
-    LearnAndEarnQuizCreation,
-} from '../../../interfaces/learnAndEarn/learnAndEarnQuiz';
 import { DbModels } from '../../../database/db';
+import { LearnAndEarnQuiz, LearnAndEarnQuizCreation } from '../../../interfaces/learnAndEarn/learnAndEarnQuiz';
 
-export class LearnAndEarnQuizModel extends Model<
-    LearnAndEarnQuiz,
-    LearnAndEarnQuizCreation
-> {
+export class LearnAndEarnQuizModel extends Model<LearnAndEarnQuiz, LearnAndEarnQuizCreation> {
     public id!: number;
     public order!: number;
     public lessonId!: number;
@@ -17,9 +11,7 @@ export class LearnAndEarnQuizModel extends Model<
     public answer!: number;
 }
 
-export function initializeLearnAndEarnQuiz(
-    sequelize: Sequelize
-): typeof LearnAndEarnQuizModel {
+export function initializeLearnAndEarnQuiz(sequelize: Sequelize): typeof LearnAndEarnQuizModel {
     const { learnAndEarnLesson } = sequelize.models as DbModels;
     LearnAndEarnQuizModel.init(
         {
@@ -27,35 +19,35 @@ export function initializeLearnAndEarnQuiz(
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             order: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             lessonId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: learnAndEarnLesson,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             active: {
                 type: DataTypes.BOOLEAN,
-                allowNull: false,
+                allowNull: false
             },
             answer: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'learn_and_earn_quiz',
             modelName: 'learnAndEarnQuiz',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return LearnAndEarnQuizModel;

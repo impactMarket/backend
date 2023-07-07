@@ -1,5 +1,5 @@
-import { services } from '@impactmarket/core';
 import { Request, Response } from 'express';
+import { services } from '@impactmarket/core';
 import { standardResponse } from '../../../utils/api';
 
 class ProtocolController {
@@ -8,8 +8,8 @@ class ProtocolController {
     getMicroCreditData = async (req: Request, res: Response): Promise<void> => {
         this.protocolService
             .getMicroCreditData()
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 

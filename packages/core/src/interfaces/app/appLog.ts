@@ -21,7 +21,7 @@ import { AppUser } from './appUser';
 
 export enum LogTypes {
     EDITED_COMMUNITY = 'edited_community',
-    EDITED_PROFILE = 'edited_profile',
+    EDITED_PROFILE = 'edited_profile'
 }
 
 export interface AppLog {
@@ -31,7 +31,7 @@ export interface AppLog {
     detail: object;
     communityId: number | null;
 
-    //timestamp
+    // timestamp
     createdAt: Date;
 
     user?: AppUser;

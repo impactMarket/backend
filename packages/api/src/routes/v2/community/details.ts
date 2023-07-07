@@ -2,19 +2,15 @@ import { Router } from 'express';
 import multer from 'multer';
 
 import { CommunityController } from '../../../controllers/v2/community/details';
-import {
-    authenticateToken,
-    optionalAuthentication,
-    verifySignature,
-} from '../../../middlewares';
+import { authenticateToken, optionalAuthentication, verifySignature } from '../../../middlewares';
 import { cache } from '../../../middlewares/cache-redis';
 import { cacheIntervals } from '../../../utils/api';
 
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 8000000, // 8MB
-    },
+        fileSize: 8000000 // 8MB
+    }
 });
 
 export default (route: Router): void => {
@@ -121,11 +117,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/getManagersResponse'
      */
-    route.get(
-        '/:id/managers/:query?',
-        optionalAuthentication,
-        controller.getManagers
-    );
+    route.get('/:id/managers/:query?', optionalAuthentication, controller.getManagers);
 
     /**
      * @swagger
@@ -175,11 +167,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityContract'
      */
-    route.get(
-        '/:id/ambassador',
-        optionalAuthentication,
-        controller.getAmbassador
-    );
+    route.get('/:id/ambassador', optionalAuthentication, controller.getAmbassador);
 
     /**
      * @swagger
@@ -299,11 +287,7 @@ export default (route: Router): void => {
      *                   longitude:
      *                     type: integer
      */
-    route.get(
-        '/:id/claims-location',
-        cache(cacheIntervals.oneDay),
-        controller.getClaimLocation
-    );
+    route.get('/:id/claims-location', cache(cacheIntervals.oneDay), controller.getClaimLocation);
 
     /**
      * @swagger
@@ -326,11 +310,7 @@ export default (route: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/media/:mime',
-        authenticateToken,
-        controller.getPresignedUrlMedia
-    );
+    route.get('/media/:mime', authenticateToken, controller.getPresignedUrlMedia);
 
     /**
      * @swagger
@@ -415,11 +395,7 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunityCampaign'
      */
-    route.get(
-        '/:id/campaign',
-        cache(cacheIntervals.oneHour),
-        controller.getCampaign
-    );
+    route.get('/:id/campaign', cache(cacheIntervals.oneHour), controller.getCampaign);
 
     /**
      * @swagger
@@ -451,9 +427,5 @@ export default (route: Router): void => {
      *             schema:
      *               $ref: '#/components/schemas/UbiCommunity'
      */
-    route.get(
-        '/:idOrAddress/:query?',
-        optionalAuthentication,
-        controller.findBy
-    );
+    route.get('/:idOrAddress/:query?', optionalAuthentication, controller.findBy);
 };

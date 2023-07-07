@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 export interface ExchangeRegistry {
     id: number;
@@ -27,10 +27,7 @@ export interface ExchangeRegistryCreationAttributes {
     fee?: number;
 }
 
-export class ExchangeRegistryModel extends Model<
-    ExchangeRegistry,
-    ExchangeRegistryCreationAttributes
-> {
+export class ExchangeRegistryModel extends Model<ExchangeRegistry, ExchangeRegistryCreationAttributes> {
     public id!: number;
     public name!: string;
     public description!: string;
@@ -47,66 +44,64 @@ export class ExchangeRegistryModel extends Model<
     public updatedAt!: Date;
 }
 
-export function initializeExchangeRegistry(
-    sequelize: Sequelize
-): typeof ExchangeRegistryModel {
+export function initializeExchangeRegistry(sequelize: Sequelize): typeof ExchangeRegistryModel {
     ExchangeRegistryModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             name: {
                 type: DataTypes.STRING(64),
-                allowNull: false,
+                allowNull: false
             },
             description: {
                 type: DataTypes.STRING(256),
-                allowNull: false,
+                allowNull: false
             },
             logoUrl: {
                 type: DataTypes.STRING(256),
-                allowNull: true,
+                allowNull: true
             },
             website: {
                 type: DataTypes.STRING(128),
-                allowNull: true,
+                allowNull: true
             },
             countries: {
                 type: DataTypes.ARRAY(DataTypes.STRING(2)),
-                allowNull: true,
+                allowNull: true
             },
             global: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
+                defaultValue: false
             },
             customImplementation: {
                 type: DataTypes.STRING(16),
-                allowNull: true,
+                allowNull: true
             },
             iframeUrl: {
                 type: DataTypes.STRING(256),
-                allowNull: true,
+                allowNull: true
             },
             fee: {
                 type: DataTypes.FLOAT,
-                allowNull: true,
+                allowNull: true
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'exchange_registry',
             modelName: 'exchangeRegistry',
-            sequelize,
+            sequelize
         }
     );
     return ExchangeRegistryModel;

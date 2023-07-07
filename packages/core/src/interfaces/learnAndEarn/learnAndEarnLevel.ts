@@ -31,12 +31,7 @@ export interface LearnAndEarnLevel {
     rewardLimit?: number;
     asset?: string;
     adminUserId: number;
-    status: [
-        'pending',
-        'aproved',
-        'declined',
-        'published'
-    ];
+    status: ['pending', 'aproved', 'declined', 'published'];
     rules?: {
         countries?: string[];
         roles?: string[];

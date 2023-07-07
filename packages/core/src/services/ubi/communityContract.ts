@@ -1,10 +1,10 @@
-import BigNumber from 'bignumber.js';
 import { Transaction } from 'sequelize';
+import BigNumber from 'bignumber.js';
 
-import config from '../../config';
-import { models, sequelize } from '../../database';
-import { UbiCommunityContract } from '../../interfaces/ubi/ubiCommunityContract';
 import { ICommunityContractParams } from '../../types';
+import { UbiCommunityContract } from '../../interfaces/ubi/ubiCommunityContract';
+import { models, sequelize } from '../../database';
+import config from '../../config';
 
 export default class CommunityContractService {
     public static ubiCommunityContract = models.ubiCommunityContract;
@@ -21,23 +21,20 @@ export default class CommunityContractService {
         return await this.ubiCommunityContract.create(
             {
                 communityId,
-                ...params,
+                ...params
             },
             { transaction: t }
         );
     }
 
-    public static async update(
-        communityId: number,
-        contractParams: ICommunityContractParams
-    ): Promise<boolean> {
+    public static async update(communityId: number, contractParams: ICommunityContractParams): Promise<boolean> {
         const params = this.formatContractParams(contractParams);
 
         try {
-            await sequelize.transaction(async (t) => {
+            await sequelize.transaction(async t => {
                 await this.ubiCommunityContract.update(params, {
                     where: { communityId },
-                    transaction: t,
+                    transaction: t
                 });
             });
             return true;
@@ -51,55 +48,36 @@ export default class CommunityContractService {
         }
     }
 
-    public static async get(
-        communityId: string
-    ): Promise<ICommunityContractParams> {
+    public static async get(communityId: string): Promise<ICommunityContractParams> {
         return (await this.ubiCommunityContract.findOne({
-            attributes: [
-                'claimAmount',
-                'maxClaim',
-                'baseInterval',
-                'incrementInterval',
-            ],
+            attributes: ['claimAmount', 'maxClaim', 'baseInterval', 'incrementInterval'],
             where: { communityId },
-            raw: true,
+            raw: true
         }))!;
     }
 
     public static async getAll(): Promise<Map<number, UbiCommunityContract>> {
-        return new Map(
-            (await this.ubiCommunityContract.findAll({ raw: true })).map(
-                (c) => [c.communityId, c]
-            )
-        );
+        return new Map((await this.ubiCommunityContract.findAll({ raw: true })).map(c => [c.communityId, c]));
     }
 
-    private static formatContractParams(
-        contractParams: ICommunityContractParams
-    ) {
+    private static formatContractParams(contractParams: ICommunityContractParams) {
         let { claimAmount, maxClaim, decreaseStep } = contractParams;
 
         if (typeof claimAmount === 'string' && claimAmount.length > 10) {
-            claimAmount = new BigNumber(claimAmount)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
+            claimAmount = new BigNumber(claimAmount).dividedBy(10 ** config.cUSDDecimal).toNumber();
         }
         if (typeof maxClaim === 'string' && maxClaim.length > 10) {
-            maxClaim = new BigNumber(maxClaim)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
+            maxClaim = new BigNumber(maxClaim).dividedBy(10 ** config.cUSDDecimal).toNumber();
         }
         if (typeof decreaseStep === 'string' && decreaseStep.length > 10) {
-            decreaseStep = new BigNumber(decreaseStep)
-                .dividedBy(10 ** config.cUSDDecimal)
-                .toNumber();
+            decreaseStep = new BigNumber(decreaseStep).dividedBy(10 ** config.cUSDDecimal).toNumber();
         }
 
         return {
             ...contractParams,
             claimAmount: claimAmount as number,
             maxClaim: maxClaim as number,
-            decreaseStep: decreaseStep as number,
+            decreaseStep: decreaseStep as number
         };
     }
 }

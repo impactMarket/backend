@@ -1,5 +1,5 @@
+import { Request, Response } from 'express';
 import { services } from '@impactmarket/core';
-import { Response, Request } from 'express';
 
 import { RequestWithUser } from '../../../middlewares/core';
 import { standardResponse } from '../../../utils/api';
@@ -9,8 +9,7 @@ class CommunityController {
     private communityDetailsService: services.ubi.CommunityDetailsService;
     constructor() {
         this.communityService = new services.ubi.CommunityCreateService();
-        this.communityDetailsService =
-            new services.ubi.CommunityDetailsService();
+        this.communityDetailsService = new services.ubi.CommunityDetailsService();
     }
 
     create = async (req: Request, res: Response) => {
@@ -28,7 +27,7 @@ class CommunityController {
             txReceipt,
             contractParams,
             coverMediaPath,
-            placeId,
+            placeId
         } = req.body;
 
         this.communityService
@@ -46,10 +45,10 @@ class CommunityController {
                 txReceipt,
                 contractParams,
                 coverMediaPath,
-                placeId,
+                placeId
             })
-            .then((community) => standardResponse(res, 201, true, community))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(community => standardResponse(res, 201, true, community))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     editSubmission = async (req: RequestWithUser, res: Response) => {
@@ -59,8 +58,8 @@ class CommunityController {
             standardResponse(res, 400, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
@@ -76,7 +75,7 @@ class CommunityController {
             gps,
             email,
             contractParams,
-            placeId,
+            placeId
         } = req.body;
 
         this.communityService
@@ -92,10 +91,10 @@ class CommunityController {
                 email,
                 contractParams,
                 coverMediaPath,
-                placeId,
+                placeId
             })
-            .then((r) => standardResponse(res, 201, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => standardResponse(res, 201, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     review = async (req: RequestWithUser, res: Response) => {
@@ -106,16 +105,16 @@ class CommunityController {
             standardResponse(res, 400, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
 
         this.communityService
             .review(parseInt(id, 10), review, req.user.address)
-            .then((r) => standardResponse(res, 201, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => standardResponse(res, 201, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     edit = async (req: RequestWithUser, res: Response) => {
@@ -123,8 +122,8 @@ class CommunityController {
             standardResponse(res, 400, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
@@ -138,12 +137,12 @@ class CommunityController {
                 {
                     name,
                     description,
-                    coverMediaPath,
+                    coverMediaPath
                 },
                 req.user?.userId
             )
-            .then((community) => standardResponse(res, 200, true, community))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(community => standardResponse(res, 200, true, community))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 

@@ -12,7 +12,7 @@ export enum ContainerTypes {
     Query = 'query',
     Headers = 'headers',
     Fields = 'fields',
-    Params = 'params',
+    Params = 'params'
 }
 
 /**
@@ -35,8 +35,7 @@ export type ValidatedRequestSchema = Record<ContainerTypes, any>;
  * *req.body* and others are strongly typed using your
  * *ValidatedRequestSchema*
  */
-export interface ValidatedRequest<T extends ValidatedRequestSchema>
-    extends express.Request {
+export interface ValidatedRequest<T extends ValidatedRequestSchema> extends express.Request {
     body: T[ContainerTypes.Body];
     query: T[ContainerTypes.Query] & ParsedQs;
     headers: T[ContainerTypes.Headers];
@@ -51,9 +50,7 @@ export interface ValidatedRequest<T extends ValidatedRequestSchema>
  * This will also allow you to access the original body, params, etc. as they
  * were before validation.
  */
-export interface ValidatedRequestWithRawInputsAndFields<
-    T extends ValidatedRequestSchema
-> extends express.Request {
+export interface ValidatedRequestWithRawInputsAndFields<T extends ValidatedRequestSchema> extends express.Request {
     body: T[ContainerTypes.Body];
     query: T[ContainerTypes.Query];
     headers: T[ContainerTypes.Headers];
@@ -89,30 +86,12 @@ export interface ExpressJoiContainerConfig {
  * calling *createValidator*
  */
 export interface ExpressJoiInstance {
-    body(
-        schema: Joi.Schema,
-        cfg?: ExpressJoiContainerConfig
-    ): express.RequestHandler;
-    query(
-        schema: Joi.Schema,
-        cfg?: ExpressJoiContainerConfig
-    ): express.RequestHandler;
-    params(
-        schema: Joi.Schema,
-        cfg?: ExpressJoiContainerConfig
-    ): express.RequestHandler;
-    headers(
-        schema: Joi.Schema,
-        cfg?: ExpressJoiContainerConfig
-    ): express.RequestHandler;
-    fields(
-        schema: Joi.Schema,
-        cfg?: ExpressJoiContainerConfig
-    ): express.RequestHandler;
-    response(
-        schema: Joi.Schema,
-        cfg?: ExpressJoiContainerConfig
-    ): express.RequestHandler;
+    body(schema: Joi.Schema, cfg?: ExpressJoiContainerConfig): express.RequestHandler;
+    query(schema: Joi.Schema, cfg?: ExpressJoiContainerConfig): express.RequestHandler;
+    params(schema: Joi.Schema, cfg?: ExpressJoiContainerConfig): express.RequestHandler;
+    headers(schema: Joi.Schema, cfg?: ExpressJoiContainerConfig): express.RequestHandler;
+    fields(schema: Joi.Schema, cfg?: ExpressJoiContainerConfig): express.RequestHandler;
+    response(schema: Joi.Schema, cfg?: ExpressJoiContainerConfig): express.RequestHandler;
 }
 
 // These represent the incoming data containers that we might need to validate
@@ -122,8 +101,8 @@ const containers = {
         joi: {
             convert: true,
             allowUnknown: false,
-            abortEarly: false,
-        },
+            abortEarly: false
+        }
     },
     // For use with body-parser
     body: {
@@ -131,8 +110,8 @@ const containers = {
         joi: {
             convert: true,
             allowUnknown: false,
-            abortEarly: false,
-        },
+            abortEarly: false
+        }
     },
     headers: {
         storageProperty: 'originalHeaders',
@@ -140,8 +119,8 @@ const containers = {
             convert: true,
             allowUnknown: true,
             stripUnknown: false,
-            abortEarly: false,
-        },
+            abortEarly: false
+        }
     },
     // URL params e.g "/users/:userId"
     params: {
@@ -149,8 +128,8 @@ const containers = {
         joi: {
             convert: true,
             allowUnknown: false,
-            abortEarly: false,
-        },
+            abortEarly: false
+        }
     },
     // For use with express-formidable or similar POST body parser for forms
     fields: {
@@ -158,14 +137,14 @@ const containers = {
         joi: {
             convert: true,
             allowUnknown: false,
-            abortEarly: false,
-        },
-    },
+            abortEarly: false
+        }
+    }
 };
 
 function buildErrorString(err, container) {
     let ret = `Error validating ${container}.`;
-    let details = err.error.details;
+    const details = err.error.details;
 
     for (let i = 0; i < details.length; i++) {
         ret += ` ${details[i].message}.`;
@@ -178,17 +157,14 @@ export function createValidator(config?: ExpressJoiConfig): ExpressJoiInstance {
     const cfg = config || {}; // default to an empty config
     // We'll return this instance of the middleware
     const instance = {
-        response,
+        response
     };
 
-    Object.keys(containers).forEach((type) => {
+    Object.keys(containers).forEach(type => {
         // e.g the "body" or "query" from above
         const container = containers[type];
 
-        instance[type] = function (
-            schema: Joi.Schema,
-            options?: ExpressJoiContainerConfig
-        ) {
+        instance[type] = function (schema: Joi.Schema, options?: ExpressJoiContainerConfig) {
             const opts = options || {}; // like config, default to empty object
             const computedOpts = { ...container.joi, ...cfg.joi, ...opts.joi };
             return function expressJoiValidator(
@@ -206,9 +182,7 @@ export function createValidator(config?: ExpressJoiConfig): ExpressJoiInstance {
                     ret.type = type;
                     next(ret);
                 } else {
-                    res.status(opts.statusCode || cfg.statusCode || 400).end(
-                        buildErrorString(ret, `request ${type}`)
-                    );
+                    res.status(opts.statusCode || cfg.statusCode || 400).end(buildErrorString(ret, `request ${type}`));
                 }
             };
         };
@@ -234,9 +208,7 @@ export function createValidator(config?: ExpressJoiConfig): ExpressJoiInstance {
                     ret.type = type;
                     next(ret);
                 } else {
-                    res.status(opts.statusCode || cfg.statusCode || 500).end(
-                        buildErrorString(ret, `${type} json`)
-                    );
+                    res.status(opts.statusCode || cfg.statusCode || 500).end(buildErrorString(ret, `${type} json`));
                 }
             }
         };

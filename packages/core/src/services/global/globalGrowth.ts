@@ -1,8 +1,5 @@
+import { GlobalGrowth, GlobalGrowthCreation } from '../../interfaces/global/globalGrowth';
 import { models } from '../../database';
-import {
-    GlobalGrowth,
-    GlobalGrowthCreation,
-} from '../../interfaces/global/globalGrowth';
 
 export default class GlobalGrowthService {
     public globalGrowth = models.globalGrowth;
@@ -16,7 +13,7 @@ export default class GlobalGrowthService {
         const last = await this.globalGrowth.findAll({
             order: [['date', 'DESC']],
             limit: 1,
-            raw: true,
+            raw: true
         });
         return last[0];
     }

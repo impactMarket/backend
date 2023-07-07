@@ -1,6 +1,6 @@
+import { axiosMicrocreditSubgraph } from '../config';
 import { intervalsInSeconds } from '../../types';
 import { redisClient } from '../../database';
-import { axiosMicrocreditSubgraph } from '../config';
 
 type Asset = {
     id: string;

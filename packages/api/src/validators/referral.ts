@@ -1,4 +1,4 @@
-import { celebrate, Joi } from 'celebrate';
+import { Joi, celebrate } from 'celebrate';
 
 import { defaultSchema } from './defaultSchema';
 
@@ -8,6 +8,6 @@ export type ReferralRequestType = {
 
 export const referralPostValidator = celebrate({
     body: defaultSchema.object<ReferralRequestType>({
-        code: Joi.string().required(),
-    }),
+        code: Joi.string().required()
+    })
 });

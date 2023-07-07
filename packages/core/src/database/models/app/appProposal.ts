@@ -1,9 +1,6 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    AppProposal,
-    AppProposalCreation,
-} from '../../../interfaces/app/appProposal';
+import { AppProposal, AppProposalCreation } from '../../../interfaces/app/appProposal';
 
 export class AppProposalModel extends Model<AppProposal, AppProposalCreation> {
     public id!: number;
@@ -16,22 +13,22 @@ export function initializeAppProposal(sequelize: Sequelize): void {
         {
             id: {
                 type: DataTypes.INTEGER,
-                primaryKey: true,
+                primaryKey: true
             },
             status: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             endBlock: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'app_proposal',
             modelName: 'appProposal',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
 }

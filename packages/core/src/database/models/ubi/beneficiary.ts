@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    BeneficiaryAttributes,
-    BeneficiaryCreationAttributes,
-} from '../../../interfaces/ubi/beneficiary';
+import { BeneficiaryAttributes, BeneficiaryCreationAttributes } from '../../../interfaces/ubi/beneficiary';
 
-export class Beneficiary extends Model<
-    BeneficiaryAttributes,
-    BeneficiaryCreationAttributes
-> {
+export class Beneficiary extends Model<BeneficiaryAttributes, BeneficiaryCreationAttributes> {
     public id!: number;
     public address!: string;
     public communityId!: number;
@@ -33,68 +27,68 @@ export function initializeBeneficiary(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             address: {
                 // this is associated with user table
                 type: DataTypes.STRING(44),
-                allowNull: false,
+                allowNull: false
             },
             communityId: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             active: {
                 type: DataTypes.BOOLEAN,
-                defaultValue: true,
+                defaultValue: true
             },
             blocked: {
                 type: DataTypes.BOOLEAN,
-                defaultValue: false,
+                defaultValue: false
             },
             tx: {
                 type: DataTypes.STRING(68),
                 unique: true,
-                allowNull: false,
+                allowNull: false
             },
             txAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             claims: {
                 type: DataTypes.INTEGER,
-                defaultValue: 0,
+                defaultValue: 0
             },
             claimed: {
                 type: DataTypes.DECIMAL(22), // max 9,999 - plus 18 decimals
-                defaultValue: 0,
+                defaultValue: 0
             },
             lastClaimAt: {
                 type: DataTypes.DATE,
-                allowNull: true,
+                allowNull: true
             },
             penultimateClaimAt: {
                 type: DataTypes.DATE,
-                allowNull: true,
+                allowNull: true
             },
             readRules: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
+                defaultValue: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'beneficiary',
             modelName: 'beneficiary',
-            sequelize,
+            sequelize
         }
     );
 }

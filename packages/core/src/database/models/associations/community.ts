@@ -16,33 +16,33 @@ export function communityAssociation(sequelize: Sequelize) {
         appUser,
         ubiCommunityDemographics,
         merchantCommunity,
-        merchantRegistry,
+        merchantRegistry
     } = sequelize.models as DbModels;
 
     // used to query from the community with incude
     community.hasOne(ubiCommunityContract, {
         foreignKey: 'communityId',
-        as: 'contract',
+        as: 'contract'
     });
     // used to query from the community with incude
     // used only at calcuateCommunitiesMetrics
     community.hasMany(ubiCommunityDailyMetrics, {
         foreignKey: 'communityId',
-        as: 'metrics',
+        as: 'metrics'
     });
 
     // used to query from the community with incude
     community.hasMany(beneficiary, {
         foreignKey: 'communityId',
         sourceKey: 'id',
-        as: 'beneficiaries',
+        as: 'beneficiaries'
     });
 
     // used to query from the community with incude
     community.hasMany(manager, {
         foreignKey: 'communityId',
         sourceKey: 'id',
-        as: 'managers',
+        as: 'managers'
     });
 
     // used to query from the promoter with incude
@@ -50,38 +50,38 @@ export function communityAssociation(sequelize: Sequelize) {
         through: ubiCommunityPromoter,
         foreignKey: 'promoterId',
         sourceKey: 'id',
-        as: 'community',
+        as: 'community'
     });
     community.belongsToMany(ubiPromoter, {
         through: ubiCommunityPromoter,
         foreignKey: 'communityId',
         sourceKey: 'id',
-        as: 'promoter',
+        as: 'promoter'
     });
     ubiPromoter.hasMany(ubiPromoterSocialMedia, {
         foreignKey: 'promoterId',
-        as: 'socialMedia',
+        as: 'socialMedia'
     });
     community.hasOne(appProposal, {
         foreignKey: 'id',
         sourceKey: 'proposalId',
-        as: 'proposal',
+        as: 'proposal'
     });
     community.hasOne(appUser, {
         foreignKey: 'address',
         sourceKey: 'ambassadorAddress',
-        as: 'ambassador',
+        as: 'ambassador'
     });
     ubiCommunityDemographics.belongsTo(community, {
         foreignKey: 'communityId',
-        as: 'community',
+        as: 'community'
     });
     appAnonymousReport.belongsTo(community, {
         foreignKey: 'communityId',
-        as: 'community',
+        as: 'community'
     });
     merchantRegistry.hasMany(merchantCommunity, {
         foreignKey: 'merchantId',
-        as: 'merchantCommunity',
+        as: 'merchantCommunity'
     });
 }

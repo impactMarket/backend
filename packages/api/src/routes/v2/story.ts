@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
-import StoryController from '../../controllers/v2/story';
 import { authenticateToken, optionalAuthentication } from '../../middlewares';
 import { cache } from '../../middlewares/cache-redis';
 import { cacheIntervals } from '../../utils/api';
+import StoryController from '../../controllers/v2/story';
 import StoryValidator from '../../validators/story';
 
 export default (app: Router): void => {
@@ -35,11 +35,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/presigned/:query?',
-        authenticateToken,
-        storyController.getPresignedUrlMedia
-    );
+    route.get('/presigned/:query?', authenticateToken, storyController.getPresignedUrlMedia);
 
     /**
      * @swagger
@@ -117,11 +113,7 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    route.get(
-        '/count/:query?',
-        cache(cacheIntervals.oneHour),
-        storyController.count
-    );
+    route.get('/count/:query?', cache(cacheIntervals.oneHour), storyController.count);
 
     /**
      * @swagger
@@ -207,12 +199,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/:query?',
-        optionalAuthentication,
-        cache(cacheIntervals.fiveMinutes),
-        storyController.list
-    );
+    route.get('/:query?', optionalAuthentication, cache(cacheIntervals.fiveMinutes), storyController.list);
 
     /**
      * @swagger
@@ -267,11 +254,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.put(
-        '/inapropriate/:id',
-        authenticateToken,
-        storyController.inapropriate
-    );
+    route.put('/inapropriate/:id', authenticateToken, storyController.inapropriate);
 
     /**
      * @swagger
@@ -338,12 +321,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post(
-        '/:id/comments',
-        authenticateToken,
-        storyValidator.addComment,
-        storyController.addComment
-    );
+    route.post('/:id/comments', authenticateToken, storyValidator.addComment, storyController.addComment);
 
     /**
      * @swagger
@@ -372,9 +350,5 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.delete(
-        '/:id/comments/:commentId',
-        authenticateToken,
-        storyController.removeComment
-    );
+    route.delete('/:id/comments/:commentId', authenticateToken, storyController.removeComment);
 };

@@ -1,5 +1,5 @@
-import { models } from '../../database';
 import { BaseError } from '../../utils/baseError';
+import { models } from '../../database';
 
 export async function startLesson(userId: number, prismicId: string) {
     try {
@@ -7,8 +7,8 @@ export async function startLesson(userId: number, prismicId: string) {
         const lesson = await models.learnAndEarnPrismicLesson.findOne({
             attributes: ['levelId', 'lessonId'],
             where: {
-                prismicId,
-            },
+                prismicId
+            }
         });
 
         // create userLesson
@@ -16,7 +16,7 @@ export async function startLesson(userId: number, prismicId: string) {
             where: {
                 lessonId: lesson!.lessonId,
                 levelId: lesson!.levelId,
-                userId,
+                userId
             },
             defaults: {
                 lessonId: lesson!.lessonId,
@@ -24,30 +24,27 @@ export async function startLesson(userId: number, prismicId: string) {
                 userId,
                 points: 0,
                 attempts: 0,
-                status,
-            },
+                status
+            }
         });
 
         const userLevel = await models.learnAndEarnUserLevel.findOrCreate({
             where: {
                 levelId: lesson!.levelId,
-                userId,
+                userId
             },
             defaults: {
                 levelId: lesson!.levelId,
                 userId,
-                status,
-            },
+                status
+            }
         });
 
         return {
             lesson: userLesson[0].toJSON(),
-            level: userLevel[0].toJSON(),
+            level: userLevel[0].toJSON()
         };
     } catch (error) {
-        throw new BaseError(
-            error.name || 'START_LESSON_FAILED',
-            error.message || 'failed to start a lesson'
-        );
+        throw new BaseError(error.name || 'START_LESSON_FAILED', error.message || 'failed to start a lesson');
     }
 }

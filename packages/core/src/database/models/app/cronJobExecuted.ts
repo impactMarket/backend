@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 interface CronJobExecutedAttributes {
     id: number;
@@ -14,10 +14,7 @@ interface CronJobExecutedCreationAttributes {
     lastExecuted: Date;
 }
 
-export class CronJobExecuted extends Model<
-    CronJobExecutedAttributes,
-    CronJobExecutedCreationAttributes
-> {
+export class CronJobExecuted extends Model<CronJobExecutedAttributes, CronJobExecutedCreationAttributes> {
     public id!: number;
     public jobName!: string;
     public lastExecuted!: Date;
@@ -34,29 +31,29 @@ export function initializeCronJobExecuted(sequelize: Sequelize): void {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             jobName: {
                 type: DataTypes.STRING(64),
-                allowNull: false,
+                allowNull: false
             },
             lastExecuted: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'cronjobexecuted',
             modelName: 'cronJobExecuted',
-            sequelize,
+            sequelize
         }
     );
 }

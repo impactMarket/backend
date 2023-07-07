@@ -51,7 +51,7 @@ export interface AppNotification {
     isWallet: boolean;
     isWebApp: boolean;
 
-    //timestamp
+    // timestamp
     createdAt: Date;
 }
 

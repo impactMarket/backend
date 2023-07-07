@@ -1,15 +1,9 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    AppNotification,
-    AppNotificationCreation,
-} from '../../../interfaces/app/appNotification';
+import { AppNotification, AppNotificationCreation } from '../../../interfaces/app/appNotification';
 import { DbModels } from '../../../database/db';
 
-export class AppNotificationModel extends Model<
-    AppNotification,
-    AppNotificationCreation
-> {
+export class AppNotificationModel extends Model<AppNotification, AppNotificationCreation> {
     public id!: number;
     public userId!: number;
     public type!: number;
@@ -29,50 +23,50 @@ export function initializeAppNotification(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: appUser,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             type: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             params: {
                 type: DataTypes.JSON,
-                allowNull: true,
+                allowNull: true
             },
             read: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
+                defaultValue: false
             },
             isWallet: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
+                defaultValue: false
             },
             isWebApp: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: true,
+                defaultValue: true
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'app_notification',
             modelName: 'appNotification',
             sequelize,
-            updatedAt: false,
+            updatedAt: false
         }
     );
 }

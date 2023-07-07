@@ -1,7 +1,7 @@
-import { axiosSubgraph } from '../config';
 import { ManagerSubgraph } from '../interfaces/manager';
-import { redisClient } from '../../database';
+import { axiosSubgraph } from '../config';
 import { intervalsInSeconds } from '../../types';
+import { redisClient } from '../../database';
 
 export const getCommunityManagers = async (
     communityAddress: string,
@@ -13,7 +13,7 @@ export const getCommunityManagers = async (
     offset?: number
 ): Promise<ManagerSubgraph[]> => {
     try {
-        const idsFormated = addresses?.map((el) => `"${el.toLowerCase()}"`);
+        const idsFormated = addresses?.map(el => `"${el.toLowerCase()}"`);
         const graphqlQuery = {
             operationName: 'managerEntities',
             query: `query managerEntities {
@@ -25,11 +25,7 @@ export const getCommunityManagers = async (
                     where: {
                         community: "${communityAddress.toLowerCase()}"
                         ${state ? state : ''}
-                        ${
-                            idsFormated && idsFormated.length > 0
-                                ? `address_in: [${idsFormated}]`
-                                : ''
-                        }
+                        ${idsFormated && idsFormated.length > 0 ? `address_in: [${idsFormated}]` : ''}
                     }
                 ) {
                     address
@@ -39,7 +35,7 @@ export const getCommunityManagers = async (
                     since
                     until
                 }
-            }`,
+            }`
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
 
@@ -53,12 +49,12 @@ export const getCommunityManagers = async (
                 data: {
                     data: {
                         managerEntities: {
-                            address: string,
-                            state: number,
-                            added: number,
-                            removed: number,
-                            since: number,
-                            until: number,
+                            address: string;
+                            state: number;
+                            added: number;
+                            removed: number;
+                            since: number;
+                            until: number;
                         }[];
                     };
                 };
@@ -67,12 +63,7 @@ export const getCommunityManagers = async (
 
         const managerEntities = response.data?.data.managerEntities;
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(managerEntities),
-            'EX',
-            intervalsInSeconds.oneHour
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(managerEntities), 'EX', intervalsInSeconds.oneHour);
 
         return managerEntities;
     } catch (error) {
@@ -80,10 +71,7 @@ export const getCommunityManagers = async (
     }
 };
 
-export const countManagers = async (
-    community: string,
-    state?: number
-): Promise<number> => {
+export const countManagers = async (community: string, state?: number): Promise<number> => {
     try {
         const graphqlQuery = {
             operationName: 'communityEntity',
@@ -94,7 +82,7 @@ export const countManagers = async (
                     managers
                     removedManagers
                 }
-            }`,
+            }`
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
 
@@ -108,8 +96,8 @@ export const countManagers = async (
                 data: {
                     data: {
                         communityEntity: {
-                            managers: number,
-                            removedManagers: number,
+                            managers: number;
+                            removedManagers: number;
                         };
                     };
                 };
@@ -118,23 +106,14 @@ export const countManagers = async (
 
         const communityEntity = response.data?.data.communityEntity;
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(communityEntity),
-            'EX',
-            intervalsInSeconds.oneHour
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(communityEntity), 'EX', intervalsInSeconds.oneHour);
 
         if (state === 0) {
             return communityEntity.managers;
         } else if (state === 1) {
             return communityEntity.removedManagers;
-        } else {
-            return (
-                communityEntity.managers +
-                communityEntity.removedManagers
-            );
         }
+        return communityEntity.managers + communityEntity.removedManagers;
     } catch (error) {
         throw new Error(error);
     }

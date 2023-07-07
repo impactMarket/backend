@@ -1,12 +1,9 @@
 import { Contract } from 'ethers';
+import { ERC20ABI } from '../../contracts';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { config } from '../../..';
-import { ERC20ABI } from '../../contracts';
+import { getGlobalData, getMicroCreditStatsLastDays } from '../../subgraph/queries/microcredit';
 import BigNumber from 'bignumber.js';
-import {
-    getMicroCreditStatsLastDays,
-    getGlobalData,
-} from '../../subgraph/queries/microcredit';
 
 export default class ProtocolService {
     public getMicroCreditData = async (): Promise<any> => {

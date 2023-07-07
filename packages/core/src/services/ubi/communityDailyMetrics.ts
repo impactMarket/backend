@@ -1,8 +1,8 @@
 import { Op } from 'sequelize';
 
-import { models } from '../../database';
-import { UbiCommunityDailyMetrics } from '../../interfaces/ubi/ubiCommunityDailyMetrics';
 import { ICommunityMetrics } from '../../types';
+import { UbiCommunityDailyMetrics } from '../../interfaces/ubi/ubiCommunityDailyMetrics';
+import { models } from '../../database';
 
 export default class CommunityDailyMetricsService {
     public static community = models.community;
@@ -22,21 +22,19 @@ export default class CommunityDailyMetricsService {
             ssi,
             ubiRate,
             estimatedDuration,
-            date,
+            date
         });
     }
 
-    public static async getLastMetrics(
-        communityId: number
-    ): Promise<ICommunityMetrics | undefined> {
+    public static async getLastMetrics(communityId: number): Promise<ICommunityMetrics | undefined> {
         const historical = (await this.ubiCommunityDailyMetrics.findAll({
             attributes: ['ssi'],
             where: {
-                communityId,
+                communityId
             },
             order: [['date', 'DESC']],
             limit: 15,
-            raw: true,
+            raw: true
         })) as any[];
         if (historical.length < 5) {
             // at least 5 days until showing data
@@ -44,46 +42,39 @@ export default class CommunityDailyMetricsService {
         }
         const lastMetrics = (
             await this.ubiCommunityDailyMetrics.findAll({
-                attributes: [
-                    'ssiDayAlone',
-                    'ssi',
-                    'ubiRate',
-                    'estimatedDuration',
-                ],
+                attributes: ['ssiDayAlone', 'ssi', 'ubiRate', 'estimatedDuration'],
                 where: {
-                    communityId,
+                    communityId
                 },
                 order: [['date', 'DESC']],
                 limit: 1,
-                raw: true,
+                raw: true
             })
         )[0] as any;
         return {
-            historicalSSI: historical.map((h) => h.ssi),
+            historicalSSI: historical.map(h => h.ssi),
             ssiDayAlone: lastMetrics.ssiDayAlone,
             ssi: lastMetrics.ssi,
             ubiRate: lastMetrics.ubiRate,
-            estimatedDuration: lastMetrics.estimatedDuration,
+            estimatedDuration: lastMetrics.estimatedDuration
         };
     }
 
-    public static async getHistoricalSSI(
-        communityId: number
-    ): Promise<number[]> {
+    public static async getHistoricalSSI(communityId: number): Promise<number[]> {
         const historical = await this.ubiCommunityDailyMetrics.findAll({
             attributes: ['ssi'],
             where: {
-                communityId,
+                communityId
             },
             order: [['date', 'DESC']],
             limit: 15,
-            raw: true,
+            raw: true
         });
         if (historical.length < 5) {
             // at least 5 days until showing data
             return [];
         }
-        return historical.map((h) => h.ssi);
+        return historical.map(h => h.ssi);
     }
 
     public static async getSSILast4Days(): Promise<Map<number, number[]>> {
@@ -97,10 +88,10 @@ export default class CommunityDailyMetricsService {
             where: {
                 date: {
                     [Op.lt]: todayMidnightTime,
-                    [Op.gte]: fiveDaysAgo,
-                },
+                    [Op.gte]: fiveDaysAgo
+                }
             },
-            raw: true,
+            raw: true
         });
         for (let index = 0; index < raw.length; index++) {
             const element = raw[index];

@@ -1,5 +1,5 @@
-import { database } from '@impactmarket/core';
 import { NextFunction, Request } from 'express';
+import { database } from '@impactmarket/core';
 
 const { redisClient: redis } = database;
 

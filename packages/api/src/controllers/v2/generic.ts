@@ -1,6 +1,6 @@
-import { getAddress } from '@ethersproject/address';
-import { database, services } from '@impactmarket/core';
 import { Request, Response } from 'express';
+import { database, services } from '@impactmarket/core';
+import { getAddress } from '@ethersproject/address';
 
 import { standardResponse } from '../../utils/api';
 
@@ -13,51 +13,48 @@ class GenericController {
     exchangeRates = (req: Request, res: Response) => {
         database.models.appExchangeRates
             .findAll({
-                attributes: ['currency', 'rate'],
+                attributes: ['currency', 'rate']
             })
-            .then((rates) =>
+            .then(rates =>
                 standardResponse(
                     res,
                     200,
                     true,
-                    rates.map((rate) => rate.toJSON())
+                    rates.map(rate => rate.toJSON())
                 )
             )
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     getWalletAirdrop = async (req: Request, res: Response) => {
         const { address } = req.params;
         try {
-            const walletAirdrop =
-                await database.models.walletAirdropUser.findOne({
-                    attributes: {
-                        exclude: ['id', 'address'],
-                    },
-                    where: {
-                        address: getAddress(address),
-                    },
-                    include: [
-                        {
-                            model: database.models.walletAirdropProof,
-                            as: 'proof',
-                            separate: true,
-                        },
-                    ],
-                });
+            const walletAirdrop = await database.models.walletAirdropUser.findOne({
+                attributes: {
+                    exclude: ['id', 'address']
+                },
+                where: {
+                    address: getAddress(address)
+                },
+                include: [
+                    {
+                        model: database.models.walletAirdropProof,
+                        as: 'proof',
+                        separate: true
+                    }
+                ]
+            });
 
             if (!walletAirdrop) {
                 return standardResponse(res, 400, false, '', {
                     error: {
                         name: 'USER_NOT_FOUND',
-                        message: 'user not found',
-                    },
+                        message: 'user not found'
+                    }
                 });
             }
             const airdropJson = walletAirdrop.toJSON();
-            airdropJson.proof = airdropJson.proof?.map(
-                (el) => el.hashProof
-            ) as any;
+            airdropJson.proof = airdropJson.proof?.map(el => el.hashProof) as any;
 
             return standardResponse(res, 200, true, airdropJson);
         } catch (e) {
@@ -68,8 +65,8 @@ class GenericController {
     getCashoutProviders = (req: Request, res: Response) => {
         this.cashoutProviderService
             .get(req.query)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 

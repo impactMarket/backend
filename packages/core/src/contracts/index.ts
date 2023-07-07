@@ -3,9 +3,9 @@ import CommunityAdminABI from './CommunityAdminABI.json';
 import ERC20ABI from './ERC20ABI.json';
 import IPCTDelegate from './IPCTDelegate.json';
 import ImpactMarketABI from './ImpactMarketABI.json';
+import MicrocreditABI from './MicrocreditABI.json';
 import OldCommunityABI from './OldCommunityABI.json';
 import PACTDelegateABI from './PACTDelegateABI.json';
-import MicrocreditABI from './MicrocreditABI.json';
 
 export {
     CommunityABI,
@@ -15,5 +15,5 @@ export {
     IPCTDelegate,
     OldCommunityABI,
     PACTDelegateABI,
-    MicrocreditABI,
+    MicrocreditABI
 };

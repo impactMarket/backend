@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    UbiCommunityCampaign,
-    UbiCommunityCampaignCreation,
-} from '../../../interfaces/ubi/ubiCommunityCampaign';
+import { UbiCommunityCampaign, UbiCommunityCampaignCreation } from '../../../interfaces/ubi/ubiCommunityCampaign';
 
-export class UbiCommunityCampaignModel extends Model<
-    UbiCommunityCampaign,
-    UbiCommunityCampaignCreation
-> {
+export class UbiCommunityCampaignModel extends Model<UbiCommunityCampaign, UbiCommunityCampaignCreation> {
     public communityId!: number;
     public campaignUrl!: string;
 }
@@ -19,27 +13,27 @@ export function initializeUbiCommunityCampaign(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             communityId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             campaignUrl: {
                 type: DataTypes.STRING(128),
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'ubi_community_campaign',
             modelName: 'ubiCommunityCampaign',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
 }

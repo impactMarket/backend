@@ -1,5 +1,5 @@
 import { DbModels } from '../../../database/db';
-import { Sequelize, Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 export function learnAndEarnAssociation(sequelize: Sequelize) {
     const {
@@ -10,30 +10,30 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
         learnAndEarnUserLevel,
         learnAndEarnUserLesson,
         learnAndEarnPrismicLevel,
-        learnAndEarnPrismicLesson,
+        learnAndEarnPrismicLesson
     } = sequelize.models as DbModels;
 
     learnAndEarnLevel.hasMany(learnAndEarnUserLevel, {
         foreignKey: 'levelId',
         sourceKey: 'id',
-        as: 'userLevel',
+        as: 'userLevel'
     });
 
     learnAndEarnPrismicLevel.belongsTo(learnAndEarnLevel, {
         foreignKey: 'levelId',
-        as: 'level',
+        as: 'level'
     });
 
     learnAndEarnPrismicLevel.hasMany(learnAndEarnUserLevel, {
         foreignKey: 'levelId',
         sourceKey: 'levelId',
-        as: 'userLevel',
+        as: 'userLevel'
     });
 
     learnAndEarnPrismicLevel.hasMany(learnAndEarnPrismicLesson, {
         foreignKey: 'levelId',
         sourceKey: 'levelId',
-        as: 'lesson',
+        as: 'lesson'
     });
 
     learnAndEarnPrismicLesson.hasMany(learnAndEarnUserLesson, {
@@ -41,36 +41,38 @@ export function learnAndEarnAssociation(sequelize: Sequelize) {
         sourceKey: 'levelId',
         as: 'userLesson',
         scope: {
-            [Op.and]: sequelize.where(sequelize.col("learnAndEarnPrismicLesson.lessonId"),
+            [Op.and]: sequelize.where(
+                sequelize.col('learnAndEarnPrismicLesson.lessonId'),
                 Op.eq,
-                sequelize.col("userLesson.lessonId")),
+                sequelize.col('userLesson.lessonId')
+            )
         },
-        constraints: false,
+        constraints: false
     });
 
     learnAndEarnLesson.hasMany(learnAndEarnUserLesson, {
         foreignKey: 'lessonId',
         sourceKey: 'id',
-        as: 'userLesson',
+        as: 'userLesson'
     });
 
     learnAndEarnUserLesson.belongsTo(learnAndEarnLesson, {
         foreignKey: 'lessonId',
-        as: 'lesson',
+        as: 'lesson'
     });
 
     learnAndEarnLevel.hasMany(learnAndEarnLesson, {
         foreignKey: 'levelId',
-        as: 'lesson',
+        as: 'lesson'
     });
 
     learnAndEarnLevel.belongsTo(learnAndEarnCategory, {
         foreignKey: 'categoryId',
-        as: 'category',
+        as: 'category'
     });
 
     learnAndEarnLevel.belongsTo(appUser, {
         foreignKey: 'adminUserId',
-        as: 'adminUser',
+        as: 'adminUser'
     });
 }

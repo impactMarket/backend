@@ -1,5 +1,5 @@
-import { Request } from 'express';
 import * as core from 'express-serve-static-core';
+import { Request } from 'express';
 
 export interface UserInRequest {
     address: string;

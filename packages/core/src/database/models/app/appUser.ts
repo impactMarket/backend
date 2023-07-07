@@ -1,9 +1,6 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    AppUser,
-    AppUserCreationAttributes,
-} from '../../../interfaces/app/appUser';
+import { AppUser, AppUserCreationAttributes } from '../../../interfaces/app/appUser';
 import { MicroCreditBorrowersModel } from '../microCredit/borrowers';
 import { MicroCreditFormModel } from '../microCredit/form';
 
@@ -46,104 +43,104 @@ export function initializeAppUser(sequelize: Sequelize): typeof AppUserModel {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                unique: true,
+                unique: true
             },
             address: {
                 type: DataTypes.STRING(44),
                 allowNull: false,
-                primaryKey: true, // TODO: remove and set "id" as the primary key
+                primaryKey: true // TODO: remove and set "id" as the primary key
             },
             avatarMediaPath: {
                 type: DataTypes.STRING(44),
-                allowNull: true,
+                allowNull: true
             },
             firstName: {
-                type: DataTypes.STRING(128),
+                type: DataTypes.STRING(128)
             },
             lastName: {
-                type: DataTypes.STRING(128),
+                type: DataTypes.STRING(128)
             },
             language: {
                 type: DataTypes.STRING(8),
                 defaultValue: 'en',
-                allowNull: false,
+                allowNull: false
             },
             currency: {
-                type: DataTypes.STRING(4),
+                type: DataTypes.STRING(4)
             },
             walletPNT: {
-                type: DataTypes.STRING(256),
+                type: DataTypes.STRING(256)
             },
             appPNT: {
-                type: DataTypes.STRING(256),
+                type: DataTypes.STRING(256)
             },
             gender: {
                 type: DataTypes.STRING(2),
-                defaultValue: 'u',
+                defaultValue: 'u'
             },
             year: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.INTEGER
             },
             children: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.INTEGER
             },
             email: {
-                type: DataTypes.STRING(64),
+                type: DataTypes.STRING(64)
             },
             emailValidated: {
                 type: DataTypes.BOOLEAN,
-                defaultValue: false,
+                defaultValue: false
             },
             bio: {
-                type: DataTypes.STRING(64),
+                type: DataTypes.STRING(64)
             },
             country: {
-                type: DataTypes.STRING(64),
+                type: DataTypes.STRING(64)
             },
             phone: {
-                type: DataTypes.STRING(64),
+                type: DataTypes.STRING(64)
             },
             phoneValidated: {
                 type: DataTypes.BOOLEAN,
-                defaultValue: false,
+                defaultValue: false
             },
             lastLogin: {
                 type: DataTypes.DATE,
                 defaultValue: Sequelize.fn('now'),
-                allowNull: false,
+                allowNull: false
             },
             active: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: true,
-                allowNull: false,
+                allowNull: false
             },
             readBeneficiaryRules: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: false,
-                allowNull: false,
+                allowNull: false
             },
             readManagerRules: {
                 type: DataTypes.BOOLEAN,
                 defaultValue: false,
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             deletedAt: {
                 type: DataTypes.DATE,
-                allowNull: true,
-            },
+                allowNull: true
+            }
         },
         {
             tableName: 'app_user',
             modelName: 'appUser',
-            sequelize,
+            sequelize
         }
     );
     return AppUserModel;

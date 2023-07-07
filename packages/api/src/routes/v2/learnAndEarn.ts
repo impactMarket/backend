@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import LearnAndEarnController from '../../controllers/v2/learnAndEarn';
 import { authenticateToken, optionalAuthentication } from '../../middlewares';
+import LearnAndEarnController from '../../controllers/v2/learnAndEarn';
 import LearnAndEarnValidator from '../../validators/learnAndEarn';
 
 export default (app: Router): void => {
@@ -44,12 +44,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/levels',
-        optionalAuthentication,
-        learnAndEarnValidator.listLevels,
-        learnAndEarnController.listLevels
-    );
+    route.get('/levels', optionalAuthentication, learnAndEarnValidator.listLevels, learnAndEarnController.listLevels);
 
     /**
      * @swagger
@@ -65,11 +60,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/levels/admin',
-        authenticateToken,
-        learnAndEarnController.listLevelsByAdmin
-    );
+    route.get('/levels/admin', authenticateToken, learnAndEarnController.listLevelsByAdmin);
 
     /**
      * @swagger
@@ -85,12 +76,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post(
-        '/levels',
-        authenticateToken,
-        learnAndEarnValidator.createLevel,
-        learnAndEarnController.createLevel
-    );
+    route.post('/levels', authenticateToken, learnAndEarnValidator.createLevel, learnAndEarnController.createLevel);
 
     route.put(
         '/levels',
@@ -120,11 +106,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/levels/:id',
-        optionalAuthentication,
-        learnAndEarnController.listLessons
-    );
+    route.get('/levels/:id', optionalAuthentication, learnAndEarnController.listLessons);
 
     /**
      * @swagger
@@ -152,12 +134,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.put(
-        '/lessons',
-        authenticateToken,
-        learnAndEarnValidator.answer,
-        learnAndEarnController.answer
-    );
+    route.put('/lessons', authenticateToken, learnAndEarnValidator.answer, learnAndEarnController.answer);
 
     /**
      * @swagger
@@ -181,12 +158,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post(
-        '/lessons',
-        authenticateToken,
-        learnAndEarnValidator.startLesson,
-        learnAndEarnController.startLesson
-    );
+    route.post('/lessons', authenticateToken, learnAndEarnValidator.startLesson, learnAndEarnController.startLesson);
 
     /**
      * trigger update

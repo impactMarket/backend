@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    UbiCommunitySuspect,
-    UbiCommunitySuspectCreation,
-} from '../../../interfaces/ubi/ubiCommunitySuspect';
+import { UbiCommunitySuspect, UbiCommunitySuspectCreation } from '../../../interfaces/ubi/ubiCommunitySuspect';
 
-export class UbiCommunitySuspectModel extends Model<
-    UbiCommunitySuspect,
-    UbiCommunitySuspectCreation
-> {
+export class UbiCommunitySuspectModel extends Model<UbiCommunitySuspect, UbiCommunitySuspectCreation> {
     public id!: number;
     public communityId!: number;
     public percentage!: number;
@@ -22,35 +16,35 @@ export function initializeUbiCommunitySuspect(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             communityId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             percentage: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             suspect: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATEONLY,
-                defaultValue: Sequelize.fn('now'),
-            },
+                defaultValue: Sequelize.fn('now')
+            }
         },
         {
             tableName: 'ubi_community_suspect',
             modelName: 'ubiCommunitySuspect',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
 }

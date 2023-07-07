@@ -1,5 +1,5 @@
-import { utils } from '@impactmarket/core';
 import { Response } from 'express';
+import { utils } from '@impactmarket/core';
 
 export const cacheIntervals = {
     fiveMinutes: 300,
@@ -7,7 +7,7 @@ export const cacheIntervals = {
     halfHour: 1800,
     oneHour: 3600,
     twelveHours: 43200,
-    oneDay: 86400,
+    oneDay: 86400
 };
 
 export const controllerLogAndFail = (e: any, status: number, res: Response) => {
@@ -35,6 +35,6 @@ export const standardResponse = (
         success,
         data,
         error: options?.error,
-        count: options?.count,
+        count: options?.count
     });
 };

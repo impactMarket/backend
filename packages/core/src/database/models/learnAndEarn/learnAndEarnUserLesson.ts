@@ -1,15 +1,12 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
+import { DbModels } from '../../../database/db';
 import {
     LearnAndEarnUserLesson,
-    LearnAndEarnUserLessonCreation,
-} from '../../../interfaces/learnAndEarn/learnAndEarnUserLesson';
-import { DbModels } from '../../../database/db';
-
-export class LearnAndEarnUserLessonModel extends Model<
-    LearnAndEarnUserLesson,
     LearnAndEarnUserLessonCreation
-> {
+} from '../../../interfaces/learnAndEarn/learnAndEarnUserLesson';
+
+export class LearnAndEarnUserLessonModel extends Model<LearnAndEarnUserLesson, LearnAndEarnUserLessonCreation> {
     public id!: number;
     public userId!: number;
     public lessonId!: number;
@@ -20,9 +17,7 @@ export class LearnAndEarnUserLessonModel extends Model<
     public points!: number;
 }
 
-export function initializeLearnAndEarnUserLesson(
-    sequelize: Sequelize
-): typeof LearnAndEarnUserLessonModel {
+export function initializeLearnAndEarnUserLesson(sequelize: Sequelize): typeof LearnAndEarnUserLessonModel {
     const { appUser } = sequelize.models as DbModels;
     LearnAndEarnUserLessonModel.init(
         {
@@ -30,50 +25,50 @@ export function initializeLearnAndEarnUserLesson(
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: appUser,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             lessonId: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             levelId: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             status: {
                 type: DataTypes.ENUM('available', 'started', 'completed'),
                 allowNull: false,
-                defaultValue: 'available',
+                defaultValue: 'available'
             },
             completionDate: {
                 type: DataTypes.DATE,
-                allowNull: true,
+                allowNull: true
             },
             attempts: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                defaultValue: 0,
+                defaultValue: 0
             },
             points: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                defaultValue: 0,
-            },
+                defaultValue: 0
+            }
         },
         {
             tableName: 'learn_and_earn_user_lesson',
             modelName: 'learnAndEarnUserLesson',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return LearnAndEarnUserLessonModel;

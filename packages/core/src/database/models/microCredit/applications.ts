@@ -1,8 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import { MicroCreditApplications, MicroCreditApplicationsCreation } from '../../../interfaces/microCredit/applications';
-import { DbModels } from '../../../database/db';
 import { AppUserModel } from '../app/appUser';
+import { DbModels } from '../../../database/db';
+import { MicroCreditApplications, MicroCreditApplicationsCreation } from '../../../interfaces/microCredit/applications';
 
 export class MicroCreditApplicationsModel extends Model<MicroCreditApplications, MicroCreditApplicationsCreation> {
     public id!: number;

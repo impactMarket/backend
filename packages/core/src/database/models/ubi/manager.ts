@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import { AppUser } from '../../../interfaces/app/appUser';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
@@ -23,10 +23,7 @@ export interface ManagerCreationAttributes {
     address: string;
     communityId: number;
 }
-export class Manager extends Model<
-    ManagerAttributes,
-    ManagerCreationAttributes
-> {
+export class Manager extends Model<ManagerAttributes, ManagerCreationAttributes> {
     public id!: number;
     public address!: string;
     public communityId!: number;
@@ -46,48 +43,48 @@ export function initializeManager(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             address: {
                 type: DataTypes.STRING(44),
                 references: {
                     model: appUser,
-                    key: 'address',
+                    key: 'address'
                 },
                 onDelete: 'RESTRICT',
-                allowNull: false,
+                allowNull: false
             },
             communityId: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             active: {
                 type: DataTypes.BOOLEAN,
-                defaultValue: true,
+                defaultValue: true
             },
             readRules: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
+                defaultValue: false
             },
             blocked: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
+                defaultValue: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'manager',
             modelName: 'manager',
-            sequelize,
+            sequelize
         }
     );
 }

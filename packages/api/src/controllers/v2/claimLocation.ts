@@ -1,5 +1,5 @@
-import { services } from '@impactmarket/core';
 import { Request, Response } from 'express';
+import { services } from '@impactmarket/core';
 
 import { RequestWithUser } from '../../middlewares/core';
 import { standardResponse } from '../../utils/api';
@@ -13,10 +13,10 @@ class ClaimLocationController {
     getAll = (req: Request, res: Response) => {
         this.claimLocationService
             .getAll()
-            .then((r) => {
+            .then(r => {
                 res.send(r);
             })
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     add = (req: RequestWithUser, res: Response) => {
@@ -24,8 +24,8 @@ class ClaimLocationController {
             standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
@@ -36,7 +36,7 @@ class ClaimLocationController {
             .then(() => {
                 res.sendStatus(200);
             })
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 }
 

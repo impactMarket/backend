@@ -1,14 +1,11 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import {
     UbiCommunityDemographics,
-    UbiCommunityDemographicsCreation,
+    UbiCommunityDemographicsCreation
 } from '../../../interfaces/ubi/ubiCommunityDemographics';
 
-export class UbiCommunityDemographicsModel extends Model<
-    UbiCommunityDemographics,
-    UbiCommunityDemographicsCreation
-> {
+export class UbiCommunityDemographicsModel extends Model<UbiCommunityDemographics, UbiCommunityDemographicsCreation> {
     public id!: number;
     public communityId!: number;
     public date!: Date; // date isn't unique
@@ -31,11 +28,11 @@ export function initializeUbiCommunityDemographics(sequelize: Sequelize): void {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             date: {
                 type: DataTypes.DATEONLY,
-                allowNull: false,
+                allowNull: false
             },
             communityId: {
                 type: DataTypes.INTEGER,
@@ -43,67 +40,67 @@ export function initializeUbiCommunityDemographics(sequelize: Sequelize): void {
                 unique: true,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             male: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             female: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             undisclosed: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             totalGender: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange1: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange2: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange3: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange4: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange5: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange6: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'ubi_community_demographics',
             modelName: 'ubiCommunityDemographics',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
 }

@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    UbiClaimLocation,
-    UbiClaimLocationCreation,
-} from '../../../interfaces/ubi/ubiClaimLocation';
+import { UbiClaimLocation, UbiClaimLocationCreation } from '../../../interfaces/ubi/ubiClaimLocation';
 
-export class ClaimLocationModel extends Model<
-    UbiClaimLocation,
-    UbiClaimLocationCreation
-> {
+export class ClaimLocationModel extends Model<UbiClaimLocation, UbiClaimLocationCreation> {
     public id!: number;
     public communityId!: string;
     public gps!: {
@@ -26,31 +20,31 @@ export function initializeUbiClaimLocation(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             communityId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             gps: {
                 type: DataTypes.JSON,
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'ubi_claim_location',
             modelName: 'ubiClaimLocation',
             updatedAt: false,
-            sequelize,
+            sequelize
         }
     );
 }

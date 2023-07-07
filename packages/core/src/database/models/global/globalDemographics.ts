@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 interface GlobalDemographicsAttributes {
     id: number;
@@ -34,10 +34,7 @@ export interface GlobalDemographicsCreationAttributes {
     ageRange6: number;
 }
 
-export class GlobalDemographics extends Model<
-    GlobalDemographicsAttributes,
-    GlobalDemographicsCreationAttributes
-> {
+export class GlobalDemographics extends Model<GlobalDemographicsAttributes, GlobalDemographicsCreationAttributes> {
     public id!: number;
     public date!: Date; // date isn't unique
     public country!: string;
@@ -64,79 +61,79 @@ export function initializeGlobalDemographics(sequelize: Sequelize): void {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             date: {
                 type: DataTypes.DATEONLY,
-                allowNull: false,
+                allowNull: false
             },
             country: {
                 type: DataTypes.STRING(4), // ISO code
-                allowNull: false,
+                allowNull: false
             },
             male: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             female: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             undisclosed: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             totalGender: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange1: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange2: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange3: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange4: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange5: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             ageRange6: {
                 type: DataTypes.INTEGER, // max 2,147,483,647
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'globaldemographics',
             modelName: 'globalDemographics',
-            sequelize,
+            sequelize
         }
     );
 }

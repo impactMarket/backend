@@ -1,8 +1,8 @@
 import { literal } from 'sequelize';
 
-import { models } from '../../database';
-import { formatObjectToNumber } from '../../utils';
 import { BaseError } from '../../utils/baseError';
+import { formatObjectToNumber } from '../../utils';
+import { models } from '../../database';
 
 export async function total(userId: number): Promise<{
     lesson: {
@@ -23,17 +23,12 @@ export async function total(userId: number): Promise<{
         // get levels
         const user = await models.appUser.findOne({
             attributes: ['language'],
-            where: { id: userId },
+            where: { id: userId }
         });
         const levels = (await models.learnAndEarnPrismicLevel.findAll({
             attributes: [
-                [
-                    literal(
-                        `count(*) FILTER (WHERE "userLevel".status = 'completed')`
-                    ),
-                    'completed',
-                ],
-                [literal(`count(*)`), 'total'],
+                [literal(`count(*) FILTER (WHERE "userLevel".status = 'completed')`), 'completed'],
+                [literal(`count(*)`), 'total']
             ],
             include: [
                 {
@@ -41,18 +36,16 @@ export async function total(userId: number): Promise<{
                     model: models.learnAndEarnUserLevel,
                     as: 'userLevel',
                     where: {
-                        userId,
+                        userId
                     },
-                    required: false,
-                },
+                    required: false
+                }
             ],
             where: {
                 language: user!.language,
-                ...(process.env.API_ENVIRONMENT === 'production'
-                ? { isLive: true }
-                : {})
+                ...(process.env.API_ENVIRONMENT === 'production' ? { isLive: true } : {})
             },
-            raw: true,
+            raw: true
         })) as unknown as {
             completed: string;
             total: string;
@@ -61,13 +54,8 @@ export async function total(userId: number): Promise<{
         // get lessons
         const lessons = (await models.learnAndEarnPrismicLesson.findAll({
             attributes: [
-                [
-                    literal(
-                        `count(*) FILTER (WHERE "userLesson".status = 'completed')`
-                    ),
-                    'completed',
-                ],
-                [literal(`count(*)`), 'total'],
+                [literal(`count(*) FILTER (WHERE "userLesson".status = 'completed')`), 'completed'],
+                [literal(`count(*)`), 'total']
             ],
             include: [
                 {
@@ -75,18 +63,16 @@ export async function total(userId: number): Promise<{
                     model: models.learnAndEarnUserLesson,
                     as: 'userLesson',
                     where: {
-                        userId,
+                        userId
                     },
-                    required: false,
-                },
+                    required: false
+                }
             ],
             where: {
                 language: user!.language,
-                ...(process.env.API_ENVIRONMENT === 'production'
-                    ? { isLive: true }
-                    : {})
+                ...(process.env.API_ENVIRONMENT === 'production' ? { isLive: true } : {})
             },
-            raw: true,
+            raw: true
         })) as unknown as {
             completed: string;
             total: string;
@@ -97,8 +83,8 @@ export async function total(userId: number): Promise<{
             attributes: ['levelId', 'amount', 'signature'],
             where: {
                 userId,
-                status: 'pending',
-            },
+                status: 'pending'
+            }
         });
 
         type Steps = { completed: number; total: number };
@@ -112,9 +98,9 @@ export async function total(userId: number): Promise<{
                 ...claimRewards.map(({ levelId, amount, signature }) => ({
                     levelId,
                     amount,
-                    signature,
-                })),
-            },
+                    signature
+                }))
+            }
         };
     } catch (error) {
         throw new BaseError('GET_TOTAL_FAILED', 'get total failed');

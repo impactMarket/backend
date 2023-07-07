@@ -1,49 +1,44 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import {
     LearnAndEarnCategory,
-    LearnAndEarnCategoryCreation,
+    LearnAndEarnCategoryCreation
 } from '../../../interfaces/learnAndEarn/learnAndEarnCategory';
 
-export class LearnAndEarnCategoryModel extends Model<
-    LearnAndEarnCategory,
-    LearnAndEarnCategoryCreation
-> {
+export class LearnAndEarnCategoryModel extends Model<LearnAndEarnCategory, LearnAndEarnCategoryCreation> {
     public id!: number;
     public prismicId!: string;
     public languages?: string[];
     public active!: boolean;
 }
 
-export function initializeLearnAndEarnCategory(
-    sequelize: Sequelize
-): typeof LearnAndEarnCategoryModel {
+export function initializeLearnAndEarnCategory(sequelize: Sequelize): typeof LearnAndEarnCategoryModel {
     LearnAndEarnCategoryModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             prismicId: {
                 type: DataTypes.STRING(32),
-                allowNull: false,
+                allowNull: false
             },
             languages: {
                 type: DataTypes.ARRAY(DataTypes.STRING(3)),
-                allowNull: true,
+                allowNull: true
             },
             active: {
                 type: DataTypes.BOOLEAN,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'learn_and_earn_category',
             modelName: 'learnAndEarnCategory',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return LearnAndEarnCategoryModel;

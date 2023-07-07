@@ -1,8 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import {
     LearnAndEarnPrismicLesson,
-    LearnAndEarnPrismicLessonCreation,
+    LearnAndEarnPrismicLessonCreation
 } from '../../../interfaces/learnAndEarn/learnAndEarnPrismicLesson';
 
 export class LearnAndEarnPrismicLessonModel extends Model<
@@ -17,44 +17,42 @@ export class LearnAndEarnPrismicLessonModel extends Model<
     public isLive!: boolean;
 }
 
-export function initializeLearnAndEarnPrismicLesson(
-    sequelize: Sequelize
-): typeof LearnAndEarnPrismicLessonModel {
+export function initializeLearnAndEarnPrismicLesson(sequelize: Sequelize): typeof LearnAndEarnPrismicLessonModel {
     LearnAndEarnPrismicLessonModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             prismicId: {
                 type: DataTypes.STRING(32),
-                allowNull: true,
+                allowNull: true
             },
             levelId: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
+                allowNull: true
             },
             lessonId: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
+                allowNull: true
             },
             language: {
                 type: DataTypes.STRING(2),
-                allowNull: false,
+                allowNull: false
             },
             isLive: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
-            },
+                defaultValue: false
+            }
         },
         {
             tableName: 'learn_and_earn_prismic_lesson',
             modelName: 'learnAndEarnPrismicLesson',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return LearnAndEarnPrismicLessonModel;

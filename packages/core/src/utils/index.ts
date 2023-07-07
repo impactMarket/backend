@@ -1,12 +1,12 @@
-import { BaseError } from './baseError';
 import * as cache from './cache';
-import countries from './countries.json';
 import * as dataFetching from './dataFetching';
 import * as jwt from './jwt';
-import { Logger } from './logger';
-import * as util from './util';
-import * as pushNotification from './pushNotification';
 import * as prismic from './prismic';
+import * as pushNotification from './pushNotification';
+import * as util from './util';
+import { BaseError } from './baseError';
+import { Logger } from './logger';
+import countries from './countries.json';
 import locales from './locale.json';
 
 /**

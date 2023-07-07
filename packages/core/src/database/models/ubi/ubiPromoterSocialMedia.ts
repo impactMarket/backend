@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    UbiPromoterSocialMedia,
-    UbiPromoterSocialMediaCreation,
-} from '../../../interfaces/ubi/ubiPromoterSocialMedia';
+import { UbiPromoterSocialMedia, UbiPromoterSocialMediaCreation } from '../../../interfaces/ubi/ubiPromoterSocialMedia';
 
-export class UbiPromoterSocialMediaModel extends Model<
-    UbiPromoterSocialMedia,
-    UbiPromoterSocialMediaCreation
-> {
+export class UbiPromoterSocialMediaModel extends Model<UbiPromoterSocialMedia, UbiPromoterSocialMediaCreation> {
     public id!: number;
     public promoterId!: string;
     public mediaType!: string;
@@ -21,31 +15,31 @@ export function initializeUbiPromoterSocialMedia(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             promoterId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'ubi_promoter',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             mediaType: {
                 type: DataTypes.STRING(32),
-                allowNull: true,
+                allowNull: true
             },
             url: {
                 type: DataTypes.STRING(128),
-                allowNull: true,
-            },
+                allowNull: true
+            }
         },
         {
             tableName: 'ubi_promoter_social_media',
             modelName: 'ubiPromoterSocialMedia',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
 }

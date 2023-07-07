@@ -13,5 +13,5 @@ export {
     learnAndEarnQuiz,
     learnAndEarnUserCategory,
     learnAndEarnUserLesson,
-    learnAndEarnUserLevel,
+    learnAndEarnUserLevel
 };

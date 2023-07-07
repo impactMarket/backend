@@ -1,5 +1,4 @@
-import { utils, database, subscriber } from '@impactmarket/core';
-
+import { database, subscriber, utils } from '@impactmarket/core';
 
 const subscriptionsChannel = 'subscriber-listener-status';
 const redisPIDCondigVariable = '@subscriber/processId';
@@ -15,7 +14,7 @@ export function startSubscribers() {
     // and so once again, we want to prevent that from happening
 
     // if no process id is set, start the subscriber and set the process id
-    database.redisClient.get(redisPIDCondigVariable).then((processId) => {
+    database.redisClient.get(redisPIDCondigVariable).then(processId => {
         if (processId === null) {
             subscriber.start();
             utils.Logger.info('⏱️ Chain Subscriber starting');
@@ -33,9 +32,9 @@ export function startSubscribers() {
     process.stdin.resume();
 
     // create an handler to be called the the app exits
-    async function exitHandler(options: { exit?: boolean },) {
+    async function exitHandler(options: { exit?: boolean }) {
         if (options.exit) {
-            database.redisClient.get(redisPIDCondigVariable).then((processId) => {
+            database.redisClient.get(redisPIDCondigVariable).then(processId => {
                 if (processId && parseInt(processId, 10) === process.pid) {
                     utils.Logger.info('⏱️ Chain Subscriber stopping');
                     database.redisClient.del(redisPIDCondigVariable);
@@ -62,11 +61,9 @@ export function startSubscribers() {
 
     redisListener.subscribe(subscriptionsChannel, (err, count) => {
         if (err) {
-          utils.Logger.error("Failed to subscribe: %s", err.message);
+            utils.Logger.error('Failed to subscribe: %s', err.message);
         } else {
-          utils.Logger.info(
-            `Subscribed successfully! This client is currently subscribed to ${count} channels.`
-          );
+            utils.Logger.info(`Subscribed successfully! This client is currently subscribed to ${count} channels.`);
         }
     });
 
@@ -74,7 +71,7 @@ export function startSubscribers() {
         utils.Logger.info('Receiveing message: ');
         utils.Logger.info(channel);
         utils.Logger.info(msg);
-        
+
         if (channel === subscriptionsChannel) {
             const processId = parseInt(msg, 10);
             if (processId !== process.pid) {
@@ -83,6 +80,5 @@ export function startSubscribers() {
                 database.redisClient.set(redisPIDCondigVariable, process.pid);
             }
         }
-
     });
 }

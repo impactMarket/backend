@@ -10,55 +10,55 @@ export function storyAssociation(sequelize: Sequelize) {
         storyEngagement,
         storyUserEngagement,
         storyUserReport,
-        community,
+        community
     } = sequelize.models as DbModels;
 
     storyCommunity.belongsTo(community, {
         foreignKey: 'communityId',
-        as: 'community',
+        as: 'community'
     });
 
     // used to query from the community with incude
     storyCommunity.belongsTo(storyContent, {
         foreignKey: 'contentId',
-        as: 'storyContent',
+        as: 'storyContent'
     });
     // used to post from the content with incude
     storyContent.hasOne(storyCommunity, {
         foreignKey: 'contentId',
-        as: 'storyCommunity',
+        as: 'storyCommunity'
     });
     storyContent.hasMany(storyComment, {
         foreignKey: 'contentId',
-        as: 'storyComment',
+        as: 'storyComment'
     });
     storyComment.belongsTo(appUser, {
         foreignKey: 'userId',
         targetKey: 'id',
-        as: 'user',
+        as: 'user'
     });
 
     storyContent.hasOne(appUser, {
         foreignKey: 'address',
         sourceKey: 'byAddress',
-        as: 'user',
+        as: 'user'
     });
 
     // used to post from the content with incude
     storyContent.hasOne(storyEngagement, {
         foreignKey: 'contentId',
-        as: 'storyEngagement',
+        as: 'storyEngagement'
     });
 
     // used to post from the content with incude
     storyContent.hasMany(storyUserEngagement, {
         foreignKey: 'contentId',
-        as: 'storyUserEngagement',
+        as: 'storyUserEngagement'
     });
 
     // used to post from the content with incude
     storyContent.hasMany(storyUserReport, {
         foreignKey: 'contentId',
-        as: 'storyUserReport',
+        as: 'storyUserReport'
     });
 }

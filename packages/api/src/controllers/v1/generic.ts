@@ -1,27 +1,27 @@
+import { Request, Response } from 'express';
 import { database } from '@impactmarket/core';
 import { ethers } from 'ethers';
-import { Request, Response } from 'express';
 
 const getAirgrab = async (req: Request, res: Response) => {
     const { address } = req.params;
     try {
         const user = (await database.models.airgrabUser.findOne({
             attributes: {
-                exclude: ['id', 'address'],
+                exclude: ['id', 'address']
             },
             where: {
-                address: ethers.utils.getAddress(address),
+                address: ethers.utils.getAddress(address)
             },
             include: [
                 {
                     model: database.models.airgrabProof,
                     as: 'proof',
-                    separate: true,
-                },
-            ],
+                    separate: true
+                }
+            ]
         }))!.toJSON();
 
-        user.proof = user.proof?.map((el) => el.hashProof) as any;
+        user.proof = user.proof?.map(el => el.hashProof) as any;
 
         res.send(user);
     } catch (_) {
@@ -30,5 +30,5 @@ const getAirgrab = async (req: Request, res: Response) => {
 };
 
 export default {
-    getAirgrab,
+    getAirgrab
 };

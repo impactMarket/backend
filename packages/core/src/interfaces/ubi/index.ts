@@ -27,5 +27,5 @@ export {
     ubiCommunityState,
     ubiCommunitySuspect,
     ubiPromoter,
-    ubiPromoterSocialMedia,
+    ubiPromoterSocialMedia
 };
