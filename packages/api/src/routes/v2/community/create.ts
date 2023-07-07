@@ -96,12 +96,7 @@ export default (route: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post(
-        '/',
-        authenticateToken,
-        CommunityValidator.create,
-        controller.create
-    );
+    route.post('/', authenticateToken, CommunityValidator.create, controller.create);
 
     /**
      * @swagger
@@ -177,12 +172,7 @@ export default (route: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.patch(
-        '/:id',
-        authenticateToken,
-        CommunityValidator.editSubmission,
-        controller.editSubmission
-    );
+    route.patch('/:id', authenticateToken, CommunityValidator.editSubmission, controller.editSubmission);
 
     /**
      * @swagger
@@ -209,12 +199,7 @@ export default (route: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.put(
-        '/:id/review',
-        authenticateToken,
-        CommunityValidator.review,
-        controller.review
-    );
+    route.put('/:id/review', authenticateToken, CommunityValidator.review, controller.review);
 
     /**
      * @swagger
@@ -248,11 +233,5 @@ export default (route: Router): void => {
      *     - SignatureMessage: []
      *     - Signature: []
      */
-    route.put(
-        '/:id',
-        authenticateToken,
-        verifySignature,
-        CommunityValidator.edit,
-        controller.edit
-    );
+    route.put('/:id', authenticateToken, verifySignature, CommunityValidator.edit, controller.edit);
 };

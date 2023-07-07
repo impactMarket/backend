@@ -1,6 +1,6 @@
+import { Request, Response } from 'express';
 import { getAddress } from '@ethersproject/address';
 import { services } from '@impactmarket/core';
-import { Request, Response } from 'express';
 
 import { RequestWithUser } from '../../middlewares/core';
 import { standardResponse } from '../../utils/api';
@@ -32,7 +32,7 @@ class UserController {
             bio,
             overwrite,
             recover,
-            clientId,
+            clientId
         } = req.body;
         this.userService
             .create(
@@ -50,21 +50,19 @@ class UserController {
                     email,
                     gender,
                     bio,
-                    phone,
+                    phone
                 },
                 overwrite,
                 recover,
                 clientId
             )
-            .then((user) =>
+            .then(user =>
                 standardResponse(res, 201, true, {
                     ...user,
-                    age: user.year
-                        ? new Date().getUTCFullYear() - user.year
-                        : null,
+                    age: user.year ? new Date().getUTCFullYear() - user.year : null
                 })
             )
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public get = (req: RequestWithUser, res: Response) => {
@@ -72,34 +70,29 @@ class UserController {
             standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
         this.userService
             .get(req.user.address)
-            .then((user) =>
+            .then(user =>
                 standardResponse(res, 201, true, {
                     ...user,
-                    age: user.year
-                        ? new Date().getUTCFullYear() - user.year
-                        : null,
+                    age: user.year ? new Date().getUTCFullYear() - user.year : null
                 })
             )
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
-    public getUserFromAuthorizedAccount = (
-        req: RequestWithUser,
-        res: Response
-    ) => {
+    public getUserFromAuthorizedAccount = (req: RequestWithUser, res: Response) => {
         if (req.user === undefined) {
             standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
@@ -108,8 +101,8 @@ class UserController {
 
         this.userService
             .getUserFromAuthorizedAccount(getAddress(address), req.user.address)
-            .then((community) => standardResponse(res, 200, true, community))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(community => standardResponse(res, 200, true, community))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public update = (req: RequestWithUser, res: Response) => {
@@ -117,8 +110,8 @@ class UserController {
             standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
@@ -137,7 +130,7 @@ class UserController {
             gender,
             bio,
             country,
-            phone,
+            phone
         } = req.body;
         this.userService
             .update({
@@ -155,19 +148,15 @@ class UserController {
                 gender,
                 bio,
                 country,
-                phone,
+                phone
             })
-            .then((user) =>
+            .then(user =>
                 standardResponse(res, 200, true, {
                     ...user,
-                    age: user.year
-                        ? new Date().getUTCFullYear() - user.year
-                        : null,
+                    age: user.year ? new Date().getUTCFullYear() - user.year : null
                 })
             )
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e.message })
-            );
+            .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
 
     public patch = (req: RequestWithUser, res: Response) => {
@@ -175,16 +164,16 @@ class UserController {
             standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
 
         this.userService
             .patch(req.user.address, req.body.action)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public delete = (req: RequestWithUser, res: Response) => {
@@ -192,24 +181,24 @@ class UserController {
             standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
 
         this.userService
             .delete(req.user.address)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public report = (req: Request, res: Response) => {
         const { communityId, message, category } = req.body;
         this.userService
             .report(message, communityId, category)
-            .then((r) => standardResponse(res, 201, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => standardResponse(res, 201, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public getReport = (req: RequestWithUser, res: Response) => {
@@ -217,16 +206,16 @@ class UserController {
             standardResponse(res, 400, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
 
         this.userService
             .getReport(req.user.address, req.query)
-            .then((r) => standardResponse(res, 201, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => standardResponse(res, 201, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public getLogs = (req: RequestWithUser, res: Response) => {
@@ -234,8 +223,8 @@ class UserController {
             standardResponse(res, 400, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
@@ -251,16 +240,16 @@ class UserController {
             standardResponse(res, 400, false, '', {
                 error: {
                     name: 'INVALID_QUERY',
-                    message: 'missing type or entity',
-                },
+                    message: 'missing type or entity'
+                }
             });
             return;
         }
 
         this.userLogService
             .get(req.user.address, type, entity)
-            .then((r) => standardResponse(res, 201, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => standardResponse(res, 201, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public getPresignedUrlMedia = (req: RequestWithUser, res: Response) => {
@@ -268,8 +257,8 @@ class UserController {
             standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
@@ -280,16 +269,16 @@ class UserController {
             standardResponse(res, 400, false, '', {
                 error: {
                     name: 'INVALID_QUERY',
-                    message: 'missing mime',
-                },
+                    message: 'missing mime'
+                }
             });
             return;
         }
 
         this.userService
             .getPresignedUrlMedia(mime)
-            .then((r) => standardResponse(res, 201, true, r))
-            .catch((e) => standardResponse(res, 400, false, '', { error: e }));
+            .then(r => standardResponse(res, 201, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
 
     public getNotifications = (req: RequestWithUser, res: Response) => {
@@ -297,18 +286,16 @@ class UserController {
             standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
 
         this.userService
             .getNotifications(req.query, req.user.userId)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e.message })
-            );
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
 
     public readNotifications = (req: RequestWithUser, res: Response) => {
@@ -316,8 +303,8 @@ class UserController {
             standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
@@ -326,10 +313,8 @@ class UserController {
 
         this.userService
             .readNotifications(req.user.userId, notifications)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e.message })
-            );
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
 
     public getUnreadNotifications = (req: RequestWithUser, res: Response) => {
@@ -337,18 +322,16 @@ class UserController {
             standardResponse(res, 401, false, '', {
                 error: {
                     name: 'USER_NOT_FOUND',
-                    message: 'User not identified!',
-                },
+                    message: 'User not identified!'
+                }
             });
             return;
         }
 
         this.userService
             .getUnreadNotifications(req.user.userId, req.query)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e.message })
-            );
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
 
     public sendPushNotifications = (req: Request, res: Response) => {
@@ -356,10 +339,8 @@ class UserController {
 
         this.userService
             .sendPushNotifications(title, body, country, communities, data)
-            .then((r) => standardResponse(res, 200, true, r))
-            .catch((e) =>
-                standardResponse(res, 400, false, '', { error: e.message })
-            );
+            .then(r => standardResponse(res, 200, true, r))
+            .catch(e => standardResponse(res, 400, false, '', { error: e.message }));
     };
 }
 

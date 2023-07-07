@@ -1,14 +1,14 @@
-import { point, multiPolygon } from '@turf/helpers';
-import pointsWithinPolygon from '@turf/points-within-polygon';
-import { ethers } from 'ethers';
 import { Op } from 'sequelize';
+import { ethers } from 'ethers';
+import { multiPolygon, point } from '@turf/helpers';
+import pointsWithinPolygon from '@turf/points-within-polygon';
 
-import config from '../../config';
-import { models } from '../../database';
-import { getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
 import { BaseError } from '../../utils/baseError';
-import countryNeighbors from '../../utils/countryNeighbors.json';
+import { getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
+import { models } from '../../database';
+import config from '../../config';
 import countriesGeoJSON from '../../utils/geoCountries.json';
+import countryNeighbors from '../../utils/countryNeighbors.json';
 import iso3Countries from '../../utils/iso3Countries.json';
 
 export default class ClaimLocationService {
@@ -24,7 +24,7 @@ export default class ClaimLocationService {
             const countries = (countriesGeoJSON as any).features;
             const community = await models.community.findOne({
                 attributes: ['country'],
-                where: { id: communityId },
+                where: { id: communityId }
             });
             const contries = [community!.country];
             contries.push(...countryNeighbors[community!.country].neighbours);
@@ -32,12 +32,9 @@ export default class ClaimLocationService {
             let valid = false;
             for (let i = 0; i < contries.length; i++) {
                 const countryCode = iso3Countries[contries[i]];
-                const coordinates = countries.find(
-                    (el) => el.properties.ISO_A3 === countryCode
-                );
+                const coordinates = countries.find(el => el.properties.ISO_A3 === countryCode);
                 const points = point([gps.longitude, gps.latitude]);
-                const countryCoordinate: [any] =
-                    coordinates.geometry.coordinates;
+                const countryCoordinate: [any] = coordinates.geometry.coordinates;
                 const searchWithin = multiPolygon(countryCoordinate);
 
                 const ptsWithin = pointsWithinPolygon(points, searchWithin);
@@ -48,10 +45,7 @@ export default class ClaimLocationService {
             }
 
             if (!valid) {
-                throw new BaseError(
-                    'INVALID_LOCATION',
-                    'Claim location outside community country'
-                );
+                throw new BaseError('INVALID_LOCATION', 'Claim location outside community country');
             }
 
             const beneficiary = await getBeneficiariesByAddress([address]);
@@ -63,22 +57,17 @@ export default class ClaimLocationService {
             const beneficiaryCommunity = await models.community.findOne({
                 attributes: ['id'],
                 where: {
-                    contractAddress: ethers.utils.getAddress(
-                        beneficiary[0].community.id
-                    ),
-                },
+                    contractAddress: ethers.utils.getAddress(beneficiary[0].community.id)
+                }
             });
 
             if (beneficiaryCommunity?.id === communityId) {
                 await models.ubiClaimLocation.create({
                     communityId: beneficiaryCommunity.id,
-                    gps,
+                    gps
                 });
             } else {
-                throw new BaseError(
-                    'NOT_ALLOWED',
-                    'Beneficiary does not belong to this community'
-                );
+                throw new BaseError('NOT_ALLOWED', 'Beneficiary does not belong to this community');
             }
         } catch (error) {
             throw error;
@@ -94,10 +83,10 @@ export default class ClaimLocationService {
             attributes: ['gps'],
             where: {
                 createdAt: { [Op.gte]: threeMonthsAgo },
-                communityId,
-            },
+                communityId
+            }
         });
-        return res.map((r) => r.gps);
+        return res.map(r => r.gps);
     }
 
     public static async getAll(): Promise<
@@ -107,17 +96,15 @@ export default class ClaimLocationService {
         }[]
     > {
         const fiveMonthsAgo = new Date();
-        fiveMonthsAgo.setDate(
-            fiveMonthsAgo.getDate() - config.claimLocationTimeframe
-        );
+        fiveMonthsAgo.setDate(fiveMonthsAgo.getDate() - config.claimLocationTimeframe);
         return models.ubiClaimLocation.findAll({
             attributes: ['gps'],
             where: {
                 createdAt: {
-                    [Op.gte]: fiveMonthsAgo,
-                },
+                    [Op.gte]: fiveMonthsAgo
+                }
             },
-            raw: true,
+            raw: true
         }) as any;
     }
 }

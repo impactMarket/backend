@@ -1,5 +1,5 @@
 export enum ValidationType {
-    SMS,
+    SMS
 }
 
 export interface AppUserValidationCode {

@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import GenericController from '../../controllers/v2/generic';
 import { cache } from '../../middlewares/cache-redis';
 import { cacheIntervals } from '../../utils/api';
+import GenericController from '../../controllers/v2/generic';
 
 export default (app: Router): void => {
     const genericController = new GenericController();
@@ -35,11 +35,7 @@ export default (app: Router): void => {
      *                       rate:
      *                         type: number
      */
-    app.get(
-        '/exchange-rates',
-        cache(cacheIntervals.twelveHours),
-        genericController.exchangeRates
-    );
+    app.get('/exchange-rates', cache(cacheIntervals.twelveHours), genericController.exchangeRates);
 
     /**
      * @swagger
@@ -99,8 +95,5 @@ export default (app: Router): void => {
      *       "200":
      *         description: OK
      */
-    app.get(
-        '/cashout-providers/:query?',
-        genericController.getCashoutProviders
-    );
+    app.get('/cashout-providers/:query?', genericController.getCashoutProviders);
 };

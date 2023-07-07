@@ -1,8 +1,8 @@
-import { services, utils, config, contracts, database } from '../../';
+import { NotificationType } from '../interfaces/app/appNotification';
+import { config, contracts, database, services, utils } from '../../';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import { models } from '../database';
-import { NotificationType } from '../interfaces/app/appNotification';
 import { sendNotification } from '../utils/pushNotification';
 
 class ChainSubscribers {
@@ -21,15 +21,9 @@ class ChainSubscribers {
     ) {
         this.provider = jsonRpcProvider;
         this.providerFallback = jsonRpcProviderFallback;
-        this.ifaceCommunityAdmin = new ethers.utils.Interface(
-            contracts.CommunityAdminABI
-        );
-        this.ifaceCommunity = new ethers.utils.Interface(
-            contracts.CommunityABI
-        );
-        this.ifaceMicrocredit = new ethers.utils.Interface(
-            contracts.MicrocreditABI
-        );
+        this.ifaceCommunityAdmin = new ethers.utils.Interface(contracts.CommunityAdminABI);
+        this.ifaceCommunity = new ethers.utils.Interface(contracts.CommunityABI);
+        this.ifaceMicrocredit = new ethers.utils.Interface(contracts.MicrocreditABI);
         this.communities = communities;
         this.filterTopics = [
             [
@@ -39,11 +33,9 @@ class ChainSubscribers {
                 ethers.utils.id('CommunityRemoved(address)'),
                 ethers.utils.id('BeneficiaryAdded(address,address)'),
                 ethers.utils.id('BeneficiaryRemoved(address,address)'),
-                ethers.utils.id(
-                    'LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'
-                ),
-                ethers.utils.id('ManagerChanged(address,address)'),
-            ],
+                ethers.utils.id('LoanAdded(address,uint256,uint256,uint256,uint256,uint256)'),
+                ethers.utils.id('ManagerChanged(address,address)')
+            ]
         ];
         this.recover();
     }
@@ -58,21 +50,19 @@ class ChainSubscribers {
         // we start the listener alongside with the recover system
         // so we know we don't lose events.
         this._runRecoveryTxs(this.provider, this.providerFallback)
-            .then(() =>
-                services.app.ImMetadataService.removeRecoverBlock()
-            )
-            .catch((error) =>
-                utils.Logger.error('Failed to recover past events!', error)
-            );
+            .then(() => services.app.ImMetadataService.removeRecoverBlock())
+            .catch(error => utils.Logger.error('Failed to recover past events!', error));
     }
 
-    async _runRecoveryTxs(provider: ethers.providers.JsonRpcProvider, fallbackProvider: ethers.providers.JsonRpcProvider) {
+    async _runRecoveryTxs(
+        provider: ethers.providers.JsonRpcProvider,
+        fallbackProvider: ethers.providers.JsonRpcProvider
+    ) {
         utils.Logger.info('Recovering past events...');
         let startFromBlock: number;
-        let lastBlockCached = await database.redisClient.get('lastBlock');
+        const lastBlockCached = await database.redisClient.get('lastBlock');
         if (!lastBlockCached) {
-            startFromBlock =
-                await services.app.ImMetadataService.getRecoverBlock();
+            startFromBlock = await services.app.ImMetadataService.getRecoverBlock();
         } else {
             startFromBlock = parseInt(lastBlockCached, 10);
         }
@@ -111,14 +101,14 @@ class ChainSubscribers {
         return provider.getLogs({
             fromBlock: startFromBlock,
             toBlock: 'latest',
-            topics: this.filterTopics,
+            topics: this.filterTopics
         });
     }
 
     _setupListener(provider: ethers.providers.JsonRpcProvider) {
         utils.Logger.info('Starting subscribers...');
         const filter = {
-            topics: this.filterTopics,
+            topics: this.filterTopics
         };
 
         database.redisClient.set('blockCount', 0);
@@ -150,9 +140,7 @@ class ChainSubscribers {
         return parsedLog;
     }
 
-    async _processCommunityAdminEvents(
-        log: ethers.providers.Log
-    ): Promise<ethers.utils.LogDescription | undefined> {
+    async _processCommunityAdminEvents(log: ethers.providers.Log): Promise<ethers.utils.LogDescription | undefined> {
         try {
             const parsedLog = this.ifaceCommunityAdmin.parseLog(log);
             let result: ethers.utils.LogDescription | undefined = undefined;
@@ -163,21 +151,19 @@ class ChainSubscribers {
                 const communityAddress = parsedLog.args[0];
                 const community = await database.models.community.findOne({
                     attributes: ['id'],
-                    where: { contractAddress: communityAddress },
+                    where: { contractAddress: communityAddress }
                 });
 
                 if (!community || !community.id) {
-                    utils.Logger.error(
-                        `Community with address ${communityAddress} wasn't found at "CommunityRemoved"`
-                    );
+                    utils.Logger.error(`Community with address ${communityAddress} wasn't found at "CommunityRemoved"`);
                 } else {
                     await database.models.community.update(
                         {
                             status: 'removed',
-                            deletedAt: new Date(),
+                            deletedAt: new Date()
                         },
                         {
-                            where: { contractAddress: communityAddress },
+                            where: { contractAddress: communityAddress }
                         }
                     );
 
@@ -193,39 +179,30 @@ class ChainSubscribers {
                 const community = await database.models.community.update(
                     {
                         contractAddress: communityAddress,
-                        status: 'valid',
+                        status: 'valid'
                     },
                     {
                         where: {
-                            requestByAddress: managerAddress[0],
+                            requestByAddress: managerAddress[0]
                         },
-                        returning: true,
+                        returning: true
                     }
                 );
                 if (community[0] === 0) {
-                    utils.Logger.error(
-                        `Community with address ${communityAddress} wasn't updated at "CommunityAdded"`
-                    );
+                    utils.Logger.error(`Community with address ${communityAddress} wasn't updated at "CommunityAdded"`);
                 } else {
                     this.communities.set(communityAddress, community[1][0].id);
                     const user = await models.appUser.findOne({
                         attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                         where: {
-                            address: getAddress( managerAddress[0]),
-                        },
+                            address: getAddress(managerAddress[0])
+                        }
                     });
-        
+
                     if (user) {
-                        await sendNotification(
-                            [user.toJSON()],
-                            NotificationType.COMMUNITY_CREATED,
-                            true,
-                            true,
-                            {
-                                communityId:
-                                    community[1][0].id,
-                            }
-                        );
+                        await sendNotification([user.toJSON()], NotificationType.COMMUNITY_CREATED, true, true, {
+                            communityId: community[1][0].id
+                        });
                     }
                 }
 
@@ -238,11 +215,9 @@ class ChainSubscribers {
         }
     }
 
-    async _processCommunityEvents(
-        log: ethers.providers.Log
-    ): Promise<ethers.utils.LogDescription | undefined> {
+    async _processCommunityEvents(log: ethers.providers.Log): Promise<ethers.utils.LogDescription | undefined> {
         try {
-            let parsedLog = this.ifaceCommunity.parseLog(log);
+            const parsedLog = this.ifaceCommunity.parseLog(log);
             let result: ethers.utils.LogDescription | undefined = undefined;
 
             if (parsedLog.name === 'BeneficiaryAdded') {
@@ -258,20 +233,14 @@ class ChainSubscribers {
                 const user = await models.appUser.findOne({
                     attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                     where: {
-                        address: getAddress(userAddress),
-                    },
+                        address: getAddress(userAddress)
+                    }
                 });
 
                 if (user) {
-                    await sendNotification(
-                        [user.toJSON()],
-                        NotificationType.BENEFICIARY_ADDED,
-                        true,
-                        true,
-                        {
-                            communityId: community,
-                        }
-                    );
+                    await sendNotification([user.toJSON()], NotificationType.BENEFICIARY_ADDED, true, true, {
+                        communityId: community
+                    });
                 }
 
                 result = parsedLog;
@@ -287,42 +256,37 @@ class ChainSubscribers {
 
                 result = parsedLog;
             }
-            return result;       
+            return result;
         } catch (error) {
             utils.Logger.error('Failed to process Community Events:', error);
         }
     }
 
-    async _processMicrocreditEvents(
-        log: ethers.providers.Log
-    ): Promise<ethers.utils.LogDescription | undefined> {
+    async _processMicrocreditEvents(log: ethers.providers.Log): Promise<ethers.utils.LogDescription | undefined> {
         try {
-            let parsedLog = this.ifaceMicrocredit.parseLog(log);
+            const parsedLog = this.ifaceMicrocredit.parseLog(log);
             let result: ethers.utils.LogDescription | undefined = undefined;
             const userAddress = parsedLog.args[0];
-    
+
             if (parsedLog.name === 'LoanAdded') {
                 utils.Logger.info('Add Loan event');
 
                 const user = await models.appUser.findOne({
                     attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                     where: {
-                        address: getAddress(userAddress),
-                    },
+                        address: getAddress(userAddress)
+                    }
                 });
-                
+
                 if (user) {
                     await models.microCreditBorrowers.create({
                         userId: user.id,
                         performance: 0,
-                        manager: (await this.provider.getTransaction(log.transactionHash)).from,
+                        manager: (await this.provider.getTransaction(log.transactionHash)).from
                     });
-                    await sendNotification(
-                        [user.toJSON()],
-                        NotificationType.LOAN_ADDED
-                    );
+                    await sendNotification([user.toJSON()], NotificationType.LOAN_ADDED);
                 }
-    
+
                 result = parsedLog;
             } else if (parsedLog.name === 'ManagerChanged') {
                 utils.Logger.info('ManagerChanged event');
@@ -330,23 +294,26 @@ class ChainSubscribers {
                 const user = await models.appUser.findOne({
                     attributes: ['id'],
                     where: {
-                        address: getAddress(userAddress),
-                    },
+                        address: getAddress(userAddress)
+                    }
                 });
-                
+
                 if (user) {
-                    await models.microCreditBorrowers.update({
-                        manager: parsedLog.args[1],
-                    }, {
-                        where: {
-                            userId: user.id
+                    await models.microCreditBorrowers.update(
+                        {
+                            manager: parsedLog.args[1]
+                        },
+                        {
+                            where: {
+                                userId: user.id
+                            }
                         }
-                    });
+                    );
                 }
-    
+
                 result = parsedLog;
             }
-    
+
             return result;
         } catch (error) {
             utils.Logger.error('Failed to process Microcredit Events:', error);

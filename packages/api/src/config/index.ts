@@ -32,7 +32,7 @@ export default {
      * Used by winston logger
      */
     logs: {
-        level: validatedEnv.LOG_LEVEL,
+        level: validatedEnv.LOG_LEVEL
     },
 
     /**
@@ -40,7 +40,7 @@ export default {
      */
     api: {
         prefix: '/api',
-        v2prefix: '/api/v2',
+        v2prefix: '/api/v2'
     },
 
     /**
@@ -73,7 +73,7 @@ export default {
         ido: validatedEnv.IDO_CONTRACT_ADDRESS,
         treasury: validatedEnv.TREASURY_CONTRACT_ADDRESS,
         learnAndEarn: validatedEnv.LEARN_AND_EARN_CONTRACT_ADDRESS,
-        referralLink: validatedEnv.REFERRAL_LINK_CONTRACT_ADDRESS,
+        referralLink: validatedEnv.REFERRAL_LINK_CONTRACT_ADDRESS
     },
     DAOContractAddress: validatedEnv.DAO_CONTRACT_ADDRESS,
     communityAdminAddress: validatedEnv.COMMUNITY_ADMIN_ADDRESS,
@@ -92,9 +92,9 @@ export default {
         region: validatedEnv.AWS_REGION,
         bucket: {
             app: validatedEnv.AWS_BUCKET_APP,
-            microCredit: validatedEnv.AWS_BUCKET_MICROCREDIT,
+            microCredit: validatedEnv.AWS_BUCKET_MICROCREDIT
         },
-        lambda: validatedEnv.AWS_LAMBDA,
+        lambda: validatedEnv.AWS_LAMBDA
     },
 
     /**
@@ -135,7 +135,7 @@ export default {
     attestations: {
         issuerPrivateKey: validatedEnv.ATTESTATION_ISSUER_PRIVATE_KEY,
         dekPrivateKey: validatedEnv.ATTESTATION_DEK_PRIVATE_KEY,
-        odisProxy: validatedEnv.ATTESTATION_ODIS_PROXY,
+        odisProxy: validatedEnv.ATTESTATION_ODIS_PROXY
     },
 
     /**
@@ -145,7 +145,7 @@ export default {
     twilio: {
         accountSid: validatedEnv.TWILIO_ACCOUNT_SID,
         authToken: validatedEnv.TWILIO_AUTH_TOKEN,
-        fromNumber: validatedEnv.TWILIO_FROM_NUMBER,
+        fromNumber: validatedEnv.TWILIO_FROM_NUMBER
     },
 
     /**
@@ -153,7 +153,7 @@ export default {
      */
     chain: {
         isMainnet: validatedEnv.CHAIN_IS_MAINNET,
-        jsonRPCUrlCelo: validatedEnv.CHAIN_JSON_RPC_URL_CELO,
+        jsonRPCUrlCelo: validatedEnv.CHAIN_JSON_RPC_URL_CELO
     },
 
     /**
@@ -167,13 +167,13 @@ export default {
      * Variables for signers
      */
     signers: {
-        referralLink: validatedEnv.SIGNERS_REFERRAL_LINK,
+        referralLink: validatedEnv.SIGNERS_REFERRAL_LINK
     },
 
     /**
      * Variables for restricted actions
      */
     admin: {
-        authorisedAddresses: validatedEnv.ADMIN_AUTHORISED_ADDRESSES,
+        authorisedAddresses: validatedEnv.ADMIN_AUTHORISED_ADDRESSES
     }
 };

@@ -1,15 +1,12 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
+import { DbModels } from '../../../database/db';
 import {
     LearnAndEarnPrismicLevel,
-    LearnAndEarnPrismicLevelCreation,
-} from '../../../interfaces/learnAndEarn/learnAndEarnPrismicLevel';
-import { DbModels } from '../../../database/db';
-
-export class LearnAndEarnPrismicLevelModel extends Model<
-    LearnAndEarnPrismicLevel,
     LearnAndEarnPrismicLevelCreation
-> {
+} from '../../../interfaces/learnAndEarn/learnAndEarnPrismicLevel';
+
+export class LearnAndEarnPrismicLevelModel extends Model<LearnAndEarnPrismicLevel, LearnAndEarnPrismicLevelCreation> {
     public id!: number;
     public prismicId!: string;
     public levelId!: number;
@@ -17,9 +14,7 @@ export class LearnAndEarnPrismicLevelModel extends Model<
     public isLive!: boolean;
 }
 
-export function initializeLearnAndEarnPrismicLevel(
-    sequelize: Sequelize
-): typeof LearnAndEarnPrismicLevelModel {
+export function initializeLearnAndEarnPrismicLevel(sequelize: Sequelize): typeof LearnAndEarnPrismicLevelModel {
     const { learnAndEarnLevel } = sequelize.models as DbModels;
     LearnAndEarnPrismicLevelModel.init(
         {
@@ -27,36 +22,36 @@ export function initializeLearnAndEarnPrismicLevel(
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             prismicId: {
                 type: DataTypes.STRING(32),
-                allowNull: true,
+                allowNull: true
             },
             levelId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: learnAndEarnLevel,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: true,
+                allowNull: true
             },
             language: {
                 type: DataTypes.STRING(2),
-                allowNull: false,
+                allowNull: false
             },
             isLive: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
-            },
+                defaultValue: false
+            }
         },
         {
             tableName: 'learn_and_earn_prismic_level',
             modelName: 'learnAndEarnPrismicLevel',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return LearnAndEarnPrismicLevelModel;

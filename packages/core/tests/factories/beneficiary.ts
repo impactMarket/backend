@@ -1,9 +1,6 @@
-import { Beneficiary } from '../../src/database/models/ubi/beneficiary';
 import { AppUser } from '../../src/interfaces/app/appUser';
-import {
-    BeneficiaryAttributes,
-    BeneficiaryCreationAttributes,
-} from '../../src/interfaces/ubi/beneficiary';
+import { Beneficiary } from '../../src/database/models/ubi/beneficiary';
+import { BeneficiaryAttributes, BeneficiaryCreationAttributes } from '../../src/interfaces/ubi/beneficiary';
 import { randomTx } from '../config/utils';
 
 /**
@@ -19,7 +16,7 @@ const data = async (user: AppUser, communityId: number) => {
         address: user.address,
         communityId,
         tx: randomTx(),
-        txAt: new Date(),
+        txAt: new Date()
     };
     return defaultProps;
 };
@@ -30,25 +27,16 @@ const data = async (user: AppUser, communityId: number) => {
  *
  * @return {Object}       A user instance
  */
-const BeneficiaryFactory = async (
-    user: AppUser[],
-    communityId: number,
-    isRemoving: boolean = false
-) => {
+const BeneficiaryFactory = async (user: AppUser[], communityId: number, isRemoving: boolean = false) => {
     const result: BeneficiaryAttributes[] = [];
     if (isRemoving) {
         for (let index = 0; index < user.length; index++) {
-            await Beneficiary.update(
-                { active: false },
-                { where: { address: user[index].address, communityId } }
-            );
+            await Beneficiary.update({ active: false }, { where: { address: user[index].address, communityId } });
         }
         return result;
     }
     for (let index = 0; index < user.length; index++) {
-        const newBneficiary: any = await Beneficiary.create(
-            await data(user[index], communityId)
-        );
+        const newBneficiary: any = await Beneficiary.create(await data(user[index], communityId));
         result.push(newBneficiary.toJSON());
     }
     return result;

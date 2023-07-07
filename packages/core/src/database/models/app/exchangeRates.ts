@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 export interface AppExchangeRatesAttributes {
     currency: string;
@@ -12,10 +12,7 @@ interface AppExchangeRatesCreationAttributes {
     currency: string;
     rate: number;
 }
-export class AppExchangeRates extends Model<
-    AppExchangeRatesAttributes,
-    AppExchangeRatesCreationAttributes
-> {
+export class AppExchangeRates extends Model<AppExchangeRatesAttributes, AppExchangeRatesCreationAttributes> {
     public currency!: string;
     public rate!: number;
 
@@ -31,25 +28,25 @@ export function initializeAppExchangeRates(sequelize: Sequelize): void {
                 type: DataTypes.STRING(5),
                 primaryKey: true,
                 unique: true,
-                allowNull: false,
+                allowNull: false
             },
             rate: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'exchangerates',
             modelName: 'appExchangeRates',
-            sequelize,
+            sequelize
         }
     );
 }

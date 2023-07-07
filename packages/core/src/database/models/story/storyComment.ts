@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    StoryComment,
-    StoryCommentCreation,
-} from '../../../interfaces/story/storyComment';
+import { StoryComment, StoryCommentCreation } from '../../../interfaces/story/storyComment';
 
-export class StoryCommentModel extends Model<
-    StoryComment,
-    StoryCommentCreation
-> {
+export class StoryCommentModel extends Model<StoryComment, StoryCommentCreation> {
     public id!: number;
     public contentId!: number;
     public comment!: string;
@@ -19,47 +13,45 @@ export class StoryCommentModel extends Model<
     public readonly updatedAt!: Date;
 }
 
-export function initializeStoryComment(
-    sequelize: Sequelize
-): typeof StoryCommentModel {
+export function initializeStoryComment(sequelize: Sequelize): typeof StoryCommentModel {
     StoryCommentModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'story_content',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             comment: {
                 type: DataTypes.STRING(256),
-                allowNull: false,
+                allowNull: false
             },
             userId: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'story_comment',
             modelName: 'storyComment',
-            sequelize,
+            sequelize
         }
     );
     return StoryCommentModel;

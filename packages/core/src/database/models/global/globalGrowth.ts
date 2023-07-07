@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    GlobalGrowth,
-    GlobalGrowthCreation,
-} from '../../../interfaces/global/globalGrowth';
+import { GlobalGrowth, GlobalGrowthCreation } from '../../../interfaces/global/globalGrowth';
 
-export class GlobalGrowthModel extends Model<
-    GlobalGrowth,
-    GlobalGrowthCreation
-> {
+export class GlobalGrowthModel extends Model<GlobalGrowth, GlobalGrowthCreation> {
     public date!: Date;
     public claimed!: number;
     public claims!: number;
@@ -25,70 +19,68 @@ export class GlobalGrowthModel extends Model<
     public readonly updatedAt!: Date;
 }
 
-export function initializeGlobalGrowth(
-    sequelize: Sequelize
-): typeof GlobalGrowthModel {
+export function initializeGlobalGrowth(sequelize: Sequelize): typeof GlobalGrowthModel {
     GlobalGrowthModel.init(
         {
             date: {
                 type: DataTypes.DATEONLY,
                 primaryKey: true,
                 unique: true,
-                allowNull: false,
+                allowNull: false
             },
             claimed: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             claims: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             beneficiaries: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             raised: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             backers: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             fundingRate: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             volume: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             transactions: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             reach: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             reachOut: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'globalgrowth',
             modelName: 'globalGrowth',
-            sequelize,
+            sequelize
         }
     );
     return GlobalGrowthModel;

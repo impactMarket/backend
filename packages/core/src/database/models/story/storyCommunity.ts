@@ -1,54 +1,46 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    StoryCommunity,
-    StoryCommunityCreation,
-} from '../../../interfaces/story/storyCommunity';
+import { StoryCommunity, StoryCommunityCreation } from '../../../interfaces/story/storyCommunity';
 
-export class StoryCommunityModel extends Model<
-    StoryCommunity,
-    StoryCommunityCreation
-> {
+export class StoryCommunityModel extends Model<StoryCommunity, StoryCommunityCreation> {
     public id!: number;
     public contentId!: number;
     public communityId!: number;
 }
 
-export function initializeStoryCommunity(
-    sequelize: Sequelize
-): typeof StoryCommunityModel {
+export function initializeStoryCommunity(sequelize: Sequelize): typeof StoryCommunityModel {
     StoryCommunityModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'story_content',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             communityId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'RESTRICT',
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'story_community',
             modelName: 'storyCommunity',
             sequelize,
-            timestamps: false,
+            timestamps: false
         }
     );
     return StoryCommunityModel;

@@ -1,15 +1,15 @@
-import { expect } from 'chai';
 import { Sequelize } from 'sequelize';
-import Sinon, { assert, spy, match, SinonStub, stub } from 'sinon';
+import { expect } from 'chai';
+import Sinon, { SinonStub, assert, match, spy, stub } from 'sinon';
 
-import { models } from '../../src/database';
+import * as userSubgraph from '../../src/subgraph/queries/user';
 import { AppUser } from '../../src/interfaces/app/appUser';
 import { CommunityAttributes } from '../../src/interfaces/ubi/community';
-import StoryService from '../../src/services/story';
-import * as userSubgraph from '../../src/subgraph/queries/user';
+import { models } from '../../src/database';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import BeneficiaryFactory from '../factories/beneficiary';
 import CommunityFactory from '../factories/community';
+import StoryService from '../../src/services/story';
 import UserFactory from '../factories/user';
 
 describe('story service', () => {
@@ -41,9 +41,9 @@ describe('story service', () => {
                     claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: 450,
+                    maxClaim: 450
                 },
-                hasAddress: true,
+                hasAddress: true
             },
             {
                 requestByAddress: users[3].address,
@@ -55,10 +55,10 @@ describe('story service', () => {
                     claimAmount: 1,
                     communityId: 0,
                     incrementInterval: 5 * 60,
-                    maxClaim: 450,
+                    maxClaim: 450
                 },
-                hasAddress: true,
-            },
+                hasAddress: true
+            }
         ]);
         community1 = {
             ...communities[0],
@@ -67,8 +67,8 @@ describe('story service', () => {
                 claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: 450,
-            },
+                maxClaim: 450
+            }
         };
         await BeneficiaryFactory(users.slice(0, 3), community1.id);
         community2 = {
@@ -78,8 +78,8 @@ describe('story service', () => {
                 claimAmount: 1,
                 communityId: 0,
                 incrementInterval: 5 * 60,
-                maxClaim: 450,
-            },
+                maxClaim: 450
+            }
         };
         await BeneficiaryFactory(users.slice(3, 6), community2.id);
     });
@@ -103,14 +103,14 @@ describe('story service', () => {
             returnUserRoleSubgraph.returns({
                 beneficiary: {
                     community: community1.contractAddress,
-                    state: 0,
+                    state: 0
                 },
-                manager: null,
+                manager: null
             });
             const storyService = new StoryService();
             await storyService.add(users[0].address, {
                 byAddress: users[0].address,
-                communityId: community1.id,
+                communityId: community1.id
             });
             assert.callCount(storyContentAdd, 1);
             assert.calledWith(storyContentAdd.getCall(0), {
@@ -118,7 +118,7 @@ describe('story service', () => {
                 byAddress: users[0].address,
                 isPublic: true,
                 postedAt: match.any,
-                storyEngagement: [],
+                storyEngagement: []
             });
         });
 
@@ -127,9 +127,9 @@ describe('story service', () => {
             storyService
                 .add(users[0].address, {
                     byAddress: users[0].address,
-                    communityId: communities[1].id,
+                    communityId: communities[1].id
                 })
-                .catch((e) => expect(e.name).to.be.equal('PRIVATE_COMMUNITY'))
+                .catch(e => expect(e.name).to.be.equal('PRIVATE_COMMUNITY'))
                 .then(() => {
                     throw new Error('expected to fail');
                 });

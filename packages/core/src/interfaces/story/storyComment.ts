@@ -1,4 +1,3 @@
-import { CommunityAttributes } from '../ubi/community';
 import { StoryContent } from './storyContent';
 
 /**

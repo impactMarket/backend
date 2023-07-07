@@ -1,15 +1,15 @@
-import { services } from '@impactmarket/core';
 import { Response } from 'express';
+import { services } from '@impactmarket/core';
 
-import { standardResponse } from '../../../utils/api';
 import {
     GetBorrowerRequestSchema,
     ListApplicationsRequestSchema,
     ListBorrowersRequestSchema,
     RepaymentHistoryRequestSchema
 } from '../../../validators/microcredit';
-import { ValidatedRequest } from '../../../utils/queryValidator';
 import { RequestWithUser } from '../../../middlewares/core';
+import { ValidatedRequest } from '../../../utils/queryValidator';
+import { standardResponse } from '../../../utils/api';
 
 class MicroCreditController {
     private microCreditService: services.MicroCredit.List;
@@ -103,13 +103,10 @@ class MicroCreditController {
         }
 
         this.microCreditService
-            .getUserForm(
-                req.user,
-                parseInt(req.params.id as string, 10),
-            )
+            .getUserForm(req.user, parseInt(req.params.id as string, 10))
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
-    }
+    };
 }
 
 export { MicroCreditController };

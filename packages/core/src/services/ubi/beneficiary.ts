@@ -1,25 +1,19 @@
-import BigNumber from 'bignumber.js';
-import { ethers } from 'ethers';
 import { Op, WhereAttributeHash, literal } from 'sequelize';
 import { Where } from 'sequelize/types/utils';
+import { ethers } from 'ethers';
+import BigNumber from 'bignumber.js';
 
-import config from '../../config';
-import { models } from '../../database';
-import { ManagerAttributes } from '../../database/models/ubi/manager';
 import { AppUser } from '../../interfaces/app/appUser';
-import {
-    UbiBeneficiarySurvey,
-    UbiBeneficiarySurveyCreation,
-} from '../../interfaces/ubi/ubiBeneficiarySurvey';
-import {
-    getBeneficiaries,
-    getBeneficiariesByAddress,
-} from '../../subgraph/queries/beneficiary';
-import { getCommunityState } from '../../subgraph/queries/community';
-import { getUserActivity } from '../../subgraph/queries/user';
 import { BaseError } from '../../utils/baseError';
 import { Logger } from '../../utils/logger';
+import { ManagerAttributes } from '../../database/models/ubi/manager';
+import { UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation } from '../../interfaces/ubi/ubiBeneficiarySurvey';
+import { getBeneficiaries, getBeneficiariesByAddress } from '../../subgraph/queries/beneficiary';
+import { getCommunityState } from '../../subgraph/queries/community';
+import { getUserActivity } from '../../subgraph/queries/user';
 import { isAddress } from '../../utils/util';
+import { models } from '../../database';
+import config from '../../config';
 
 export default class BeneficiaryService {
     public static async add(
@@ -33,27 +27,24 @@ export default class BeneficiaryService {
             address,
             communityId,
             tx,
-            txAt,
+            txAt
         };
         try {
             await models.beneficiary.create(beneficiaryData);
             const maxClaim: any = literal(`"maxClaim" - "decreaseStep"`);
             await models.ubiCommunityContract.update(
                 {
-                    maxClaim,
+                    maxClaim
                 },
                 {
                     where: {
-                        communityId,
-                    },
+                        communityId
+                    }
                 }
             );
         } catch (e) {
             if (e.name !== 'SequelizeUniqueConstraintError') {
-                Logger.error(
-                    'Error inserting new Beneficiary. Data = ' +
-                        JSON.stringify(beneficiaryData)
-                );
+                Logger.error('Error inserting new Beneficiary. Data = ' + JSON.stringify(beneficiaryData));
                 Logger.error(e);
             }
         }
@@ -67,19 +58,16 @@ export default class BeneficiaryService {
         tx: string,
         txAt: Date
     ): Promise<void> {
-        await models.beneficiary.update(
-            { active: false },
-            { where: { address, communityId } }
-        );
+        await models.beneficiary.update({ active: false }, { where: { address, communityId } });
         const maxClaim: any = literal(`"maxClaim" + "decreaseStep"`);
         await models.ubiCommunityContract.update(
             {
-                maxClaim,
+                maxClaim
             },
             {
                 where: {
-                    communityId,
-                },
+                    communityId
+                }
             }
         );
     }
@@ -94,39 +82,28 @@ export default class BeneficiaryService {
                 {
                     attributes: ['contractAddress'],
                     model: models.community,
-                    as: 'community',
-                },
+                    as: 'community'
+                }
             ],
             where: {
-                address,
-            },
+                address
+            }
         });
 
-        if (
-            !manager ||
-            !manager.community ||
-            !manager.community.contractAddress
-        ) {
+        if (!manager || !manager.community || !manager.community.contractAddress) {
             throw new BaseError('NOT_MANAGER', 'Not a manager ' + address);
         }
 
-        const communityState = await getCommunityState(
-            manager.community.contractAddress
-        );
+        const communityState = await getCommunityState(manager.community.contractAddress);
 
         return {
             suspicious: 0,
-            inactive: communityState.removedBeneficiaries,
+            inactive: communityState.removedBeneficiaries
         };
     }
 
-    public static async search(
-        managerAddress: string,
-        searchInput: string,
-        filter?: any
-    ): Promise<any[]> {
-        let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null =
-            null;
+    public static async search(managerAddress: string, searchInput: string, filter?: any): Promise<any[]> {
+        let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null = null;
 
         if (!isAddress(managerAddress)) {
             throw new BaseError('INVALID_ADDRESS', 'Not valid address!');
@@ -134,17 +111,17 @@ export default class BeneficiaryService {
 
         const manager = await models.manager.findOne({
             attributes: ['communityId'],
-            where: { address: managerAddress, active: true },
+            where: { address: managerAddress, active: true }
         });
         if (manager === null) {
             return [];
         }
-        const communityId = (manager.toJSON() as ManagerAttributes).communityId;
+        const { communityId } = manager.toJSON() as ManagerAttributes;
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         });
 
         const addresses: string[] = [];
@@ -166,13 +143,10 @@ export default class BeneficiaryService {
         const userFilter = filter ? await this.getUserFilter(filter) : {};
         whereSearchCondition = {
             ...whereSearchCondition,
-            ...userFilter,
+            ...userFilter
         };
 
-        const beneficiaryFilter = await this.getBeneficiaryFilter(
-            filter ? filter : {},
-            communityId
-        );
+        const beneficiaryFilter = await this.getBeneficiaryFilter(filter ? filter : {}, communityId);
 
         const appUsers = await models.appUser.findAll({
             where: {
@@ -180,15 +154,15 @@ export default class BeneficiaryService {
                 ...(addresses.length > 0
                     ? {
                           address: {
-                              [Op.in]: addresses,
-                          },
+                              [Op.in]: addresses
+                          }
                       }
-                    : {}),
-            },
+                    : {})
+            }
         });
 
         if (appUsers && appUsers.length > 0) {
-            appUsers.forEach((user) => addresses.push(user.address));
+            appUsers.forEach(user => addresses.push(user.address));
         }
 
         const beneficiaries = await getBeneficiariesByAddress(
@@ -199,59 +173,43 @@ export default class BeneficiaryService {
         );
 
         const result: any[] = beneficiaries.map((beneficiary: any) => {
-            const user = appUsers.find(
-                (user) => beneficiary.address === user.address.toLowerCase()
-            );
+            const user = appUsers.find(user => beneficiary.address === user.address.toLowerCase());
             return {
                 address: ethers.utils.getAddress(beneficiary.address),
                 timestamp: beneficiary.since * 1000,
-                claimed: new BigNumber(beneficiary.claimed)
-                    .multipliedBy(10 ** config.cUSDDecimal)
-                    .toString() as any,
+                claimed: new BigNumber(beneficiary.claimed).multipliedBy(10 ** config.cUSDDecimal).toString() as any,
                 blocked: beneficiary.state === 2,
-                isDeleted: !user || !!user.deletedAt,
+                isDeleted: !user || !!user.deletedAt
             };
         });
         return result;
     }
 
-    public static async list(
-        managerAddress: string,
-        offset: number,
-        limit: number,
-        filter: any
-    ): Promise<any[]> {
-        let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null =
-            null;
+    public static async list(managerAddress: string, offset: number, limit: number, filter: any): Promise<any[]> {
+        let whereSearchCondition: Where | WhereAttributeHash<AppUser> | null = null;
 
         if (!isAddress(managerAddress)) {
-            throw new BaseError(
-                'NOT_MANAGER',
-                'Not a manager ' + managerAddress
-            );
+            throw new BaseError('NOT_MANAGER', 'Not a manager ' + managerAddress);
         }
 
         const manager = await models.manager.findOne({
             attributes: ['communityId'],
-            where: { address: managerAddress, active: true },
+            where: { address: managerAddress, active: true }
         });
         if (manager === null) {
             return [];
         }
-        const communityId = (manager.toJSON() as ManagerAttributes).communityId;
+        const { communityId } = manager.toJSON() as ManagerAttributes;
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         });
 
         whereSearchCondition = await this.getUserFilter(filter!);
 
-        const beneficiaryFilter = await this.getBeneficiaryFilter(
-            filter!,
-            communityId
-        );
+        const beneficiaryFilter = await this.getBeneficiaryFilter(filter!, communityId);
 
         const beneficiaries = await getBeneficiaries(
             community!.contractAddress!,
@@ -261,45 +219,38 @@ export default class BeneficiaryService {
             beneficiaryFilter.state
         );
 
-        const addresses = beneficiaries.map((beneficiary) =>
-            ethers.utils.getAddress(beneficiary.address)
-        );
+        const addresses = beneficiaries.map(beneficiary => ethers.utils.getAddress(beneficiary.address));
 
         const appUsers = await models.appUser.findAll({
             where: {
                 address: {
-                    [Op.in]: addresses,
+                    [Op.in]: addresses
                 },
-                ...whereSearchCondition,
-            },
+                ...whereSearchCondition
+            }
         });
 
         const result: any[] = [];
         if (Object.keys(whereSearchCondition).length > 0) {
             appUsers.forEach((user: any) => {
                 const beneficiary = beneficiaries.find(
-                    (beneficiary) =>
-                        beneficiary.address === user.address.toLowerCase()
+                    beneficiary => beneficiary.address === user.address.toLowerCase()
                 );
                 if (beneficiary) {
                     result.push({
                         address: user.address,
-                        timestamp: beneficiary.since
-                            ? beneficiary.since * 1000
-                            : 0,
+                        timestamp: beneficiary.since ? beneficiary.since * 1000 : 0,
                         claimed: new BigNumber(beneficiary.claimed!)
                             .multipliedBy(10 ** config.cUSDDecimal)
                             .toString() as any,
                         blocked: beneficiary.state === 2,
-                        isDeleted: !!user.deletedAt,
+                        isDeleted: !!user.deletedAt
                     } as any);
                 }
             });
         } else {
             beneficiaries.forEach((beneficiary: any) => {
-                const user = appUsers.find(
-                    (user) => beneficiary.address === user.address.toLowerCase()
-                );
+                const user = appUsers.find(user => beneficiary.address === user.address.toLowerCase());
                 result.push({
                     address: ethers.utils.getAddress(beneficiary.address),
                     timestamp: beneficiary.since * 1000,
@@ -307,7 +258,7 @@ export default class BeneficiaryService {
                         .multipliedBy(10 ** config.cUSDDecimal)
                         .toString() as any,
                     blocked: beneficiary.state === 2,
-                    isDeleted: !user || !!user.deletedAt,
+                    isDeleted: !user || !!user.deletedAt
                 } as any);
             });
         }
@@ -320,7 +271,7 @@ export default class BeneficiaryService {
         if (filter.unidentified !== undefined) {
             where = {
                 ...where,
-                firstName: filter.unidentified ? null : { [Op.not]: null },
+                firstName: filter.unidentified ? null : { [Op.not]: null }
             };
         }
 
@@ -331,8 +282,8 @@ export default class BeneficiaryService {
             where = {
                 ...where,
                 lastLogin: {
-                    [Op.lt]: date,
-                },
+                    [Op.lt]: date
+                }
             };
         }
 
@@ -342,7 +293,7 @@ export default class BeneficiaryService {
     public static async getBeneficiaryFilter(filter: any, communityId: number) {
         const where = {
             state: '',
-            inactive: '',
+            inactive: ''
         };
 
         if (filter.active !== undefined) {
@@ -352,18 +303,14 @@ export default class BeneficiaryService {
         }
 
         if (filter.inactivity) {
-            const communityContract = await models.ubiCommunityContract.findOne(
-                {
-                    attributes: ['baseInterval'],
-                    where: {
-                        communityId,
-                    },
+            const communityContract = await models.ubiCommunityContract.findOne({
+                attributes: ['baseInterval'],
+                where: {
+                    communityId
                 }
-            );
+            });
 
-            const seconds =
-                communityContract!.baseInterval *
-                config.claimInactivityThreshold;
+            const seconds = communityContract!.baseInterval * config.claimInactivityThreshold;
             const lastClaimAt = new Date();
             lastClaimAt.setSeconds(lastClaimAt.getSeconds() - seconds);
             where.inactive += `lastClaimAt_lte: ${lastClaimAt}`;
@@ -390,39 +337,25 @@ export default class BeneficiaryService {
                     {
                         model: models.community,
                         as: 'community',
-                        attributes: ['id'],
-                    },
+                        attributes: ['id']
+                    }
                 ],
-                where: { address: managerAddress, active: true },
+                where: { address: managerAddress, active: true }
             });
             if (manager === null) {
                 throw new BaseError('MANAGER_NOT_FOUND', 'Manager not found');
             }
-            const communityId = (manager.toJSON() as ManagerAttributes)
-                .community?.id;
+            const communityId = (manager.toJSON() as ManagerAttributes).community?.id;
 
             if (!communityId) {
-                throw new BaseError(
-                    'COMMUNITY_NOT_FOUND',
-                    'Community not found'
-                );
+                throw new BaseError('COMMUNITY_NOT_FOUND', 'Community not found');
             }
 
             switch (type.toUpperCase()) {
                 case 'CLAIM':
-                    return this.getClaimActivity(
-                        beneficiaryAddress,
-                        communityId,
-                        offset,
-                        limit
-                    );
+                    return this.getClaimActivity(beneficiaryAddress, communityId, offset, limit);
                 default:
-                    return this.getRegistryActivity(
-                        beneficiaryAddress,
-                        communityId,
-                        offset,
-                        limit
-                    );
+                    return this.getRegistryActivity(beneficiaryAddress, communityId, offset, limit);
             }
         } catch (error) {
             throw error;
@@ -447,37 +380,19 @@ export default class BeneficiaryService {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         });
-        const registry = await getUserActivity(
-            beneficiaryAddress,
-            community!.contractAddress!,
-            offset,
-            limit
-        );
-        const users = await models.appUser.findAll({
-            attributes: ['firstName', 'address'],
-            where: {
-                address: {
-                    [Op.in]: registry.map((el) =>
-                        ethers.utils.getAddress(el.by)
-                    ),
-                },
-            },
-        });
+        const registry = await getUserActivity(beneficiaryAddress, community!.contractAddress!, offset, limit);
 
-        return registry.map((el) => {
-            const user = users.find(
-                (user) => user.address === ethers.utils.getAddress(el.by)
-            );
+        return registry.map(el => {
             return {
                 id: el.id as any,
                 type: 'registry',
                 tx: el.id,
                 txAt: new Date(el.timestamp * 1000),
                 withAddress: el.by,
-                activity: undefined as any,
+                activity: undefined as any
             };
         });
     }
@@ -486,18 +401,15 @@ export default class BeneficiaryService {
         try {
             const updated = await models.appUser.update(
                 {
-                    readBeneficiaryRules: true,
+                    readBeneficiaryRules: true
                 },
                 {
-                    where: { address },
+                    where: { address }
                 }
             );
 
             if (updated[0] === 0) {
-                throw new BaseError(
-                    'UPDATE_FAILED',
-                    'Beneficiary was not updated'
-                );
+                throw new BaseError('UPDATE_FAILED', 'Beneficiary was not updated');
             }
             return true;
         } catch (error) {
@@ -512,14 +424,14 @@ export default class BeneficiaryService {
         try {
             const user = await models.appUser.findOne({
                 attributes: ['id'],
-                where: { address },
+                where: { address }
             });
 
             if (!user) {
                 throw new BaseError('USER_NOT_FOUND', 'User not found');
             }
 
-            survey.forEach((element) => {
+            survey.forEach(element => {
                 element.userId = user.id;
             });
 

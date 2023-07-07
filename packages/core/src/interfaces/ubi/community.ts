@@ -1,7 +1,7 @@
-import { ICommunityContractParams } from '../../types';
 import { AppProposal } from '../app/appProposal';
-import { StoryCommunity } from '../story/storyCommunity';
 import { BeneficiaryAttributes } from './beneficiary';
+import { ICommunityContractParams } from '../../types';
+import { StoryCommunity } from '../story/storyCommunity';
 import { UbiClaimLocation } from './ubiClaimLocation';
 import { UbiCommunityContract } from './ubiCommunityContract';
 import { UbiCommunityDailyMetrics } from './ubiCommunityDailyMetrics';

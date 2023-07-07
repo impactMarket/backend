@@ -1,24 +1,21 @@
-import { getAddress } from '@ethersproject/address';
-import { ethers } from 'ethers';
 import { Op } from 'sequelize';
+import { ethers } from 'ethers';
+import { getAddress } from '@ethersproject/address';
 
-import UserLogService from './log';
-import config from '../../../config';
-import { models } from '../../../database';
-import { AppUserModel } from '../../../database/models/app/appUser';
-import { LogTypes } from '../../../interfaces/app/appLog';
 import { AppNotification } from '../../../interfaces/app/appNotification';
-import {
-    AppUserCreationAttributes,
-    AppUserUpdate,
-} from '../../../interfaces/app/appUser';
-import { ProfileContentStorage } from '../../../services/storage';
-import { getAllBeneficiaries } from '../../../subgraph/queries/beneficiary';
-import { UserRoles, getUserRoles } from '../../../subgraph/queries/user';
+import { AppUserCreationAttributes, AppUserUpdate } from '../../../interfaces/app/appUser';
+import { AppUserModel } from '../../../database/models/app/appUser';
 import { BaseError } from '../../../utils/baseError';
+import { LogTypes } from '../../../interfaces/app/appLog';
+import { ProfileContentStorage } from '../../../services/storage';
+import { UserRoles, getUserRoles } from '../../../subgraph/queries/user';
 import { generateAccessToken } from '../../../utils/jwt';
+import { getAllBeneficiaries } from '../../../subgraph/queries/beneficiary';
+import { models } from '../../../database';
 import { sendFirebasePushNotification } from '../../../utils/pushNotification';
 import { utils } from '../../../..';
+import UserLogService from './log';
+import config from '../../../config';
 
 export default class UserService {
     private userLogService = new UserLogService();
@@ -47,7 +44,7 @@ export default class UserService {
             borrower: null,
             councilMember: null,
             manager: null,
-            loanManager: null,
+            loanManager: null
         };
         let userRules: {
             beneficiaryRules?: boolean;
@@ -57,17 +54,11 @@ export default class UserService {
         // validate to both existing and new accounts
         if (userParams.phone) {
             const existsPhone = userParams.phone
-                ? await this._existsAccountByPhone(
-                    userParams.phone,
-                    userParams.address
-                )
+                ? await this._existsAccountByPhone(userParams.phone, userParams.address)
                 : false;
 
             if (existsPhone) {
-                throw new BaseError(
-                    'PHONE_CONFLICT',
-                    'phone associated with another account'
-                );
+                throw new BaseError('PHONE_CONFLICT', 'phone associated with another account');
             }
         }
 
@@ -87,10 +78,7 @@ export default class UserService {
                 }
 
                 if (_user.deletedAt) {
-                    throw new BaseError(
-                        'DELETION_PROCESS',
-                        'account in deletion process'
-                    );
+                    throw new BaseError('DELETION_PROCESS', 'account in deletion process');
                 }
 
                 // if a phone number is provided, verify if it
@@ -100,12 +88,12 @@ export default class UserService {
                 if (userParams.phone && userParams.phone !== jsonUser.phone) {
                     await models.appUser.update(
                         {
-                            phone: userParams.phone,
+                            phone: userParams.phone
                         },
                         {
                             where: {
-                                id: jsonUser.id,
-                            },
+                                id: jsonUser.id
+                            }
                         }
                     );
                     _user.phone = userParams.phone;
@@ -113,12 +101,12 @@ export default class UserService {
 
                 const pushNotification = {
                     walletPNT: userParams.walletPNT,
-                    appPNT: userParams.appPNT,
+                    appPNT: userParams.appPNT
                 };
 
                 await models.appUser.update(
                     {
-                        ...pushNotification,
+                        ...pushNotification
                     },
                     { where: { address: userParams.address } }
                 );
@@ -129,7 +117,7 @@ export default class UserService {
             [user, userRoles, userRules] = await Promise.all([
                 findAndUpdate(),
                 this._userRoles(userParams.address),
-                this._userRules(userParams.address),
+                this._userRules(userParams.address)
             ]);
         }
 
@@ -140,20 +128,13 @@ export default class UserService {
             const credential = await models.appClientCredential.findOne({
                 where: {
                     clientId,
-                    status: 'active',
-                },
+                    status: 'active'
+                }
             });
             if (credential) {
-                token = generateAccessToken(
-                    userParams.address,
-                    user.id,
-                    clientId
-                );
+                token = generateAccessToken(userParams.address, user.id, clientId);
             } else {
-                throw new BaseError(
-                    'INVALID_CREDENTIAL',
-                    'Client credential is invalid'
-                );
+                throw new BaseError('INVALID_CREDENTIAL', 'Client credential is invalid');
             }
         } else {
             // generate access token for future interactions that require authentication
@@ -165,17 +146,17 @@ export default class UserService {
             ...jsonUser,
             ...userRoles,
             ...userRules,
-            token,
+            token
         };
     }
 
     public async get(address: string) {
         const [user, userRoles, userRules] = await Promise.all([
             models.appUser.findOne({
-                where: { address },
+                where: { address }
             }),
             this._userRoles(address),
-            this._userRules(address),
+            this._userRules(address)
         ]);
 
         if (user === null) {
@@ -185,17 +166,12 @@ export default class UserService {
         return {
             ...user.toJSON(),
             ...userRoles,
-            ...userRules,
+            ...userRules
         };
     }
 
-    public async getUserFromAuthorizedAccount(
-        address: string,
-        authoriedAddress: string
-    ) {
-        const { ambassador, manager, councilMember, loanManager } = await this._userRoles(
-            authoriedAddress
-        );
+    public async getUserFromAuthorizedAccount(address: string, authoriedAddress: string) {
+        const { ambassador, manager, councilMember, loanManager } = await this._userRoles(authoriedAddress);
 
         if (!ambassador && !manager && !councilMember && !loanManager) {
             throw new BaseError(
@@ -209,36 +185,25 @@ export default class UserService {
 
     public async update(user: AppUserUpdate) {
         if (user.phone) {
-            const existsPhone = await this._existsAccountByPhone(
-                user.phone,
-                user.address
-            );
+            const existsPhone = await this._existsAccountByPhone(user.phone, user.address);
 
-            if (existsPhone)
-                throw new BaseError(
-                    'PHONE_CONFLICT',
-                    'phone associated with another account'
-                );
+            if (existsPhone) throw new BaseError('PHONE_CONFLICT', 'phone associated with another account');
         }
 
         const updated = await models.appUser.update(user, {
             returning: true,
-            where: { address: user.address },
+            where: { address: user.address }
         });
         if (updated[0] === 0) {
             throw new BaseError('UPDATE_FAILED', 'user was not updated!');
         }
 
-        this.userLogService.create(
-            updated[1][0].id,
-            LogTypes.EDITED_PROFILE,
-            user
-        );
+        this.userLogService.create(updated[1][0].id, LogTypes.EDITED_PROFILE, user);
 
         return {
             ...updated[1][0].toJSON(),
             ...(await this._userRoles(user.address)),
-            ...(await this._userRules(user.address)),
+            ...(await this._userRules(user.address))
         };
     }
 
@@ -247,14 +212,14 @@ export default class UserService {
             await models.appUser.update(
                 { readBeneficiaryRules: true },
                 {
-                    where: { address },
+                    where: { address }
                 }
             );
         } else if (action === 'manager-rules') {
             await models.manager.update(
                 { readRules: true },
                 {
-                    where: { address },
+                    where: { address }
                 }
             );
         }
@@ -264,21 +229,18 @@ export default class UserService {
         const roles = await getUserRoles(address);
 
         if (roles.manager !== null && roles.manager.state === 0) {
-            throw new BaseError(
-                'MANAGER',
-                "Active managers can't delete accounts"
-            );
+            throw new BaseError('MANAGER', "Active managers can't delete accounts");
         }
 
         const updated = await models.appUser.update(
             {
-                deletedAt: new Date(),
+                deletedAt: new Date()
             },
             {
                 where: {
-                    address,
+                    address
                 },
-                returning: true,
+                returning: true
             }
         );
 
@@ -288,15 +250,11 @@ export default class UserService {
         return updated[1][0].toJSON();
     }
 
-    public async report(
-        message: string,
-        communityId: number,
-        category: 'general' | 'potential-fraud'
-    ) {
+    public async report(message: string, communityId: number, category: 'general' | 'potential-fraud') {
         await models.appAnonymousReport.create({
             message,
             communityId,
-            category,
+            category
         });
         return true;
     }
@@ -311,17 +269,11 @@ export default class UserService {
     ) {
         const userRoles = await getUserRoles(user);
 
-        if (
-            !userRoles.ambassador ||
-            userRoles.ambassador.communities.length === 0
-        ) {
-            throw new BaseError(
-                'COMMUNITY_NOT_FOUND',
-                'no community found for this ambassador'
-            );
+        if (!userRoles.ambassador || userRoles.ambassador.communities.length === 0) {
+            throw new BaseError('COMMUNITY_NOT_FOUND', 'no community found for this ambassador');
         }
 
-        const communities = userRoles.ambassador.communities;
+        const { communities } = userRoles.ambassador;
         const communityId = query.community;
         let addresses: string[] = [];
 
@@ -329,20 +281,12 @@ export default class UserService {
             const community = await models.community.findOne({
                 attributes: ['contractAddress'],
                 where: {
-                    id: communityId,
-                },
+                    id: communityId
+                }
             });
 
-            if (
-                !community?.contractAddress ||
-                communities.indexOf(
-                    community?.contractAddress?.toLowerCase()
-                ) === -1
-            ) {
-                throw new BaseError(
-                    'NOT_AMBASSADOR',
-                    'user is not an ambassador of this community'
-                );
+            if (!community?.contractAddress || communities.indexOf(community?.contractAddress?.toLowerCase()) === -1) {
+                throw new BaseError('NOT_AMBASSADOR', 'user is not an ambassador of this community');
             }
             addresses.push(community.contractAddress);
         } else {
@@ -352,27 +296,18 @@ export default class UserService {
         return models.appAnonymousReport.findAndCountAll({
             include: [
                 {
-                    attributes: [
-                        'id',
-                        'contractAddress',
-                        'name',
-                        'coverMediaPath',
-                    ],
+                    attributes: ['id', 'contractAddress', 'name', 'coverMediaPath'],
                     model: models.community,
                     as: 'community',
                     where: {
                         contractAddress: {
-                            [Op.in]: addresses.map((c) => getAddress(c)),
-                        },
-                    },
-                },
+                            [Op.in]: addresses.map(c => getAddress(c))
+                        }
+                    }
+                }
             ],
-            offset: query.offset
-                ? parseInt(query.offset, 10)
-                : config.defaultOffset,
-            limit: query.limit
-                ? parseInt(query.limit, 10)
-                : config.defaultLimit,
+            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit
         });
     }
 
@@ -387,10 +322,10 @@ export default class UserService {
         try {
             await models.appUser.update(
                 {
-                    deletedAt: null,
+                    deletedAt: null
                 },
                 {
-                    where: { address },
+                    where: { address }
                 }
             );
         } catch (error) {
@@ -414,45 +349,35 @@ export default class UserService {
             where: {
                 userId,
                 isWebApp: query.isWebApp === 'true',
-                isWallet: query.isWallet === 'true',
+                isWallet: query.isWallet === 'true'
             },
-            offset: query.offset
-                ? parseInt(query.offset, 10)
-                : config.defaultOffset,
-            limit: query.limit
-                ? parseInt(query.limit, 10)
-                : config.defaultLimit,
-            order: [['createdAt', 'DESC']],
+            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
+            order: [['createdAt', 'DESC']]
         });
         return {
             count: notifications.count,
-            rows: notifications.rows as AppNotification[],
+            rows: notifications.rows as AppNotification[]
         };
     }
 
-    public async readNotifications(
-        userId: number,
-        notifications?: number[]
-    ): Promise<boolean> {
+    public async readNotifications(userId: number, notifications?: number[]): Promise<boolean> {
         const updated = await models.appNotification.update(
             {
-                read: true,
+                read: true
             },
             {
                 returning: true,
                 where: {
                     userId,
                     id: {
-                        [Op.in]: notifications,
-                    },
-                },
+                        [Op.in]: notifications
+                    }
+                }
             }
         );
         if (updated[0] === 0) {
-            throw new BaseError(
-                'UPDATE_FAILED',
-                'notifications were not updated!'
-            );
+            throw new BaseError('UPDATE_FAILED', 'notifications were not updated!');
         }
         return true;
     }
@@ -469,8 +394,8 @@ export default class UserService {
                 userId,
                 read: false,
                 isWebApp: query.isWebApp === 'true',
-                isWallet: query.isWallet === 'true',
-            },
+                isWallet: query.isWallet === 'true'
+            }
         });
     }
 
@@ -487,35 +412,36 @@ export default class UserService {
                 where: {
                     country,
                     walletPNT: {
-                        [Op.not]: null,
-                    },
-                },
+                        [Op.not]: null
+                    }
+                }
             });
-            sendFirebasePushNotification(users.map(el => el.walletPNT!), title, body, data).catch((error) => utils.Logger.error('sendFirebasePushNotification' + error));
+            sendFirebasePushNotification(
+                users.map(el => el.walletPNT!),
+                title,
+                body,
+                data
+            ).catch(error => utils.Logger.error('sendFirebasePushNotification' + error));
         } else if (communitiesIds && communitiesIds.length) {
             const communities = await models.community.findAll({
                 attributes: ['contractAddress'],
                 where: {
                     id: {
-                        [Op.in]: communitiesIds,
+                        [Op.in]: communitiesIds
                     },
                     contractAddress: {
-                        [Op.not]: null,
-                    },
-                },
+                        [Op.not]: null
+                    }
+                }
             });
             const beneficiaryAddress: string[] = [];
 
             // get beneficiaries
             for (let index = 0; index < communities.length; index++) {
                 const community = communities[index];
-                const beneficiaries = await getAllBeneficiaries(
-                    community.contractAddress!
-                );
-                beneficiaries.forEach((beneficiary) => {
-                    beneficiaryAddress.push(
-                        ethers.utils.getAddress(beneficiary.address)
-                    );
+                const beneficiaries = await getAllBeneficiaries(community.contractAddress!);
+                beneficiaries.forEach(beneficiary => {
+                    beneficiaryAddress.push(ethers.utils.getAddress(beneficiary.address));
                 });
             }
             // get users
@@ -523,14 +449,19 @@ export default class UserService {
                 attributes: ['walletPNT'],
                 where: {
                     address: {
-                        [Op.in]: beneficiaryAddress,
+                        [Op.in]: beneficiaryAddress
                     },
                     walletPNT: {
-                        [Op.not]: null,
-                    },
-                },
+                        [Op.not]: null
+                    }
+                }
             });
-            sendFirebasePushNotification(users.map(el => el.walletPNT!), title, body, data).catch((error) => utils.Logger.error('sendFirebasePushNotification' + error));
+            sendFirebasePushNotification(
+                users.map(el => el.walletPNT!),
+                title,
+                body,
+                data
+            ).catch(error => utils.Logger.error('sendFirebasePushNotification' + error));
         } else {
             throw new BaseError('INVALID_OPTION', 'invalid option');
         }
@@ -542,20 +473,20 @@ export default class UserService {
                 where: {
                     phone: user.phone,
                     address: {
-                        [Op.not]: user.address,
-                    },
-                },
+                        [Op.not]: user.address
+                    }
+                }
             });
 
-            const promises = usersToInactive.map((el) =>
+            const promises = usersToInactive.map(el =>
                 models.appUser.update(
                     {
-                        active: false,
+                        active: false
                     },
                     {
                         where: {
-                            address: el.address,
-                        },
+                            address: el.address
+                        }
                     }
                 )
             );
@@ -563,12 +494,12 @@ export default class UserService {
             promises.push(
                 models.appUser.update(
                     {
-                        active: true,
+                        active: true
                     },
                     {
                         where: {
-                            address: user.address,
-                        },
+                            address: user.address
+                        }
                     }
                 )
             );
@@ -583,7 +514,7 @@ export default class UserService {
         const exists = await models.appUser.findOne({
             attributes: ['address'],
             where: { address },
-            raw: true,
+            raw: true
         });
         return exists !== null;
     }
@@ -595,28 +526,22 @@ export default class UserService {
      * @param address address to verify
      * @returns {bool} true if there is any other account with the same phone
      */
-    private async _existsAccountByPhone(
-        phone: string,
-        address: string
-    ): Promise<boolean> {
+    private async _existsAccountByPhone(phone: string, address: string): Promise<boolean> {
         const user = await models.appUser.findOne({
             where: {
                 phone,
                 address: {
-                    [Op.not]: address,
+                    [Op.not]: address
                 },
-                active: true,
-            },
+                active: true
+            }
         });
 
         return !!user;
     }
 
     private async _updateLastLogin(id: number): Promise<void> {
-        await models.appUser.update(
-            { lastLogin: new Date() },
-            { where: { id } }
-        );
+        await models.appUser.update({ lastLogin: new Date() }, { where: { id } });
     }
 
     private async _userRoles(address: string) {
@@ -629,9 +554,9 @@ export default class UserService {
                     {
                         model: models.microCreditForm,
                         as: 'microCreditForm',
-                        required: false,
-                    },
-                ],
+                        required: false
+                    }
+                ]
             })
         ]);
 
@@ -646,11 +571,9 @@ export default class UserService {
                     const community = await models.community.findOne({
                         attributes: ['id'],
                         where: {
-                            contractAddress: getAddress(
-                                userRoles[key]!.community
-                            ),
-                            status: 'valid',
-                        },
+                            contractAddress: getAddress(userRoles[key]!.community),
+                            status: 'valid'
+                        }
                     });
 
                     if (community) {
@@ -667,8 +590,8 @@ export default class UserService {
         const pendingCommunity = await models.community.findOne({
             where: {
                 status: 'pending',
-                requestByAddress: address,
-            },
+                requestByAddress: address
+            }
         });
         if (pendingCommunity) roles.push('pendingManager');
         if (roles.length === 0) roles.push('donor');
@@ -681,7 +604,7 @@ export default class UserService {
 
         return {
             ...userRoles,
-            roles,
+            roles
         };
     }
 
@@ -689,17 +612,17 @@ export default class UserService {
         const [beneficiaryRules, managerRules] = await Promise.all([
             models.appUser.findOne({
                 attributes: ['readBeneficiaryRules'],
-                where: { address },
+                where: { address }
             }),
             models.manager.findOne({
                 attributes: ['readRules'],
-                where: { address },
-            }),
+                where: { address }
+            })
         ]);
 
         return {
             beneficiaryRules: beneficiaryRules?.readBeneficiaryRules,
-            managerRules: managerRules?.readRules,
+            managerRules: managerRules?.readRules
         };
     }
 }

@@ -1,19 +1,19 @@
+import { GroupedCountResultItem, Op, Order, col, fn } from 'sequelize';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
-import { col, fn, GroupedCountResultItem, Op, Order } from 'sequelize';
 
+import { BaseError } from '../../utils/baseError';
 import { IAddStory, ICommunityStory, ICommunityStoryGet } from './types';
-import config from '../../config';
-import { models } from '../../database';
-import { StoryContentModel } from '../../database/models/story/storyContent';
 import { NotificationType } from '../../interfaces/app/appNotification';
 import { StoryCommunityCreationEager } from '../../interfaces/story/storyCommunity';
 import { StoryContent } from '../../interfaces/story/storyContent';
-import { getUserRoles } from '../../subgraph/queries/user';
-import { BaseError } from '../../utils/baseError';
-import { cleanStoryCache } from '../../utils/cache';
+import { StoryContentModel } from '../../database/models/story/storyContent';
 import { StoryContentStorage } from '../storage';
+import { cleanStoryCache } from '../../utils/cache';
+import { getUserRoles } from '../../subgraph/queries/user';
+import { models } from '../../database';
 import { sendNotification } from '../../utils/pushNotification';
+import config from '../../config';
 
 export default class StoryServiceV2 {
     private storyContentStorage = new StoryContentStorage();
@@ -24,21 +24,15 @@ export default class StoryServiceV2 {
         }
 
         if (typeof query.mime === 'string') {
-            return this.storyContentStorage.getPresignedUrlPutObject(
-                query.mime as string
-            );
-        } else {
-            const promises = (query.mime as string[]).map(async (el) =>
-                this.storyContentStorage.getPresignedUrlPutObject(el)
-            );
-            return Promise.all(promises);
+            return this.storyContentStorage.getPresignedUrlPutObject(query.mime as string);
         }
+        const promises = (query.mime as string[]).map(async el =>
+            this.storyContentStorage.getPresignedUrlPutObject(el)
+        );
+        return Promise.all(promises);
     }
 
-    public async add(
-        fromAddress: string,
-        story: IAddStory
-    ): Promise<ICommunityStory> {
+    public async add(fromAddress: string, story: IAddStory): Promise<ICommunityStory> {
         let storyContentToAdd: {
             storyMediaPath?: string;
             message?: string;
@@ -46,7 +40,7 @@ export default class StoryServiceV2 {
         } = {};
         if (story.storyMediaPath) {
             storyContentToAdd = {
-                storyMediaPath: story.storyMediaPath,
+                storyMediaPath: story.storyMediaPath
             };
         }
         let storyCommunityToAdd: {
@@ -55,35 +49,27 @@ export default class StoryServiceV2 {
         if (story.message !== undefined) {
             storyContentToAdd = {
                 ...storyContentToAdd,
-                message: story.message,
+                message: story.message
             };
         }
         const userRole = await getUserRoles(fromAddress);
 
         if (!userRole.beneficiary && !userRole.manager) {
-            throw new BaseError(
-                'INVALID_ROLE',
-                'user not a manager/beneficiary'
-            );
+            throw new BaseError('INVALID_ROLE', 'user not a manager/beneficiary');
         }
 
-        const communityAddress = userRole.beneficiary
-            ? userRole.beneficiary.community
-            : userRole.manager!.community;
+        const communityAddress = userRole.beneficiary ? userRole.beneficiary.community : userRole.manager!.community;
 
         const community = await models.community.findOne({
             attributes: ['id'],
             where: {
                 contractAddress: ethers.utils.getAddress(communityAddress),
-                visibility: 'public',
-            },
+                visibility: 'public'
+            }
         });
 
         if (!community) {
-            throw new BaseError(
-                'PRIVATE_COMMUNITY',
-                'story cannot be added in private communities'
-            );
+            throw new BaseError('PRIVATE_COMMUNITY', 'story cannot be added in private communities');
         }
 
         if (story.storyMediaPath) {
@@ -96,9 +82,9 @@ export default class StoryServiceV2 {
         storyCommunityToAdd = {
             storyCommunity: [
                 {
-                    communityId: community.id,
-                },
-            ],
+                    communityId: community.id
+                }
+            ]
         };
         const created = await models.storyContent.create(
             {
@@ -107,13 +93,13 @@ export default class StoryServiceV2 {
                 byAddress: fromAddress,
                 isPublic: true,
                 postedAt: new Date(),
-                storyEngagement: [],
+                storyEngagement: []
             },
             {
                 include: [
                     { model: models.storyCommunity, as: 'storyCommunity' },
-                    { model: models.storyEngagement, as: 'storyEngagement' },
-                ],
+                    { model: models.storyEngagement, as: 'storyEngagement' }
+                ]
             }
         );
 
@@ -126,13 +112,13 @@ export default class StoryServiceV2 {
 
     public async remove(storyId: number, userAddress: string): Promise<number> {
         const contentPath = await models.storyContent.findOne({
-            where: { id: storyId },
+            where: { id: storyId }
         });
         if (contentPath === null) {
             return 0;
         }
         const result = await models.storyContent.destroy({
-            where: { id: storyId, byAddress: userAddress },
+            where: { id: storyId, byAddress: userAddress }
         });
         if (contentPath.storyMediaPath) {
             // TODO: delete media
@@ -143,10 +129,7 @@ export default class StoryServiceV2 {
         return result;
     }
 
-    public async getById(
-        storyId: number,
-        userAddress?: string
-    ): Promise<ICommunityStoryGet> {
+    public async getById(storyId: number, userAddress?: string): Promise<ICommunityStoryGet> {
         const story = await models.storyContent.findOne({
             subQuery: false,
             attributes: [
@@ -155,10 +138,7 @@ export default class StoryServiceV2 {
                 'storyMedia',
                 'byAddress',
                 'postedAt',
-                [
-                    fn('count', fn('distinct', col('storyComment.id'))),
-                    'totalComments',
-                ],
+                [fn('count', fn('distinct', col('storyComment.id'))), 'totalComments']
             ],
             include: [
                 {
@@ -169,15 +149,9 @@ export default class StoryServiceV2 {
                         {
                             model: models.community,
                             as: 'community',
-                            attributes: [
-                                'id',
-                                'name',
-                                'coverMediaPath',
-                                'city',
-                                'country',
-                            ],
-                        },
-                    ],
+                            attributes: ['id', 'name', 'coverMediaPath', 'city', 'country']
+                        }
+                    ]
                 },
                 ...(userAddress
                     ? [
@@ -187,12 +161,12 @@ export default class StoryServiceV2 {
                               required: false,
                               duplicating: false,
                               where: {
-                                  address: userAddress,
-                              },
+                                  address: userAddress
+                              }
                           },
                           {
                               model: models.storyEngagement,
-                              as: 'storyEngagement',
+                              as: 'storyEngagement'
                           },
                           {
                               model: models.storyUserReport,
@@ -200,35 +174,33 @@ export default class StoryServiceV2 {
                               required: false,
                               duplicating: false,
                               where: {
-                                  address: userAddress,
-                              },
-                          },
+                                  address: userAddress
+                              }
+                          }
                       ]
                     : [
                           {
                               model: models.storyEngagement,
-                              as: 'storyEngagement',
-                          },
+                              as: 'storyEngagement'
+                          }
                       ]),
                 {
                     attributes: [],
                     model: models.storyComment,
                     as: 'storyComment',
-                    required: false,
-                },
+                    required: false
+                }
             ],
             where: {
-                id: storyId,
+                id: storyId
             },
             group: [
                 'storyContent.id',
                 'storyCommunity.id',
                 'storyCommunity->community.id',
                 'storyEngagement.id',
-                ...(userAddress
-                    ? ['storyUserEngagement.id', 'storyUserReport.id']
-                    : []),
-            ],
+                ...(userAddress ? ['storyUserEngagement.id', 'storyUserReport.id'] : [])
+            ]
         });
 
         if (!story) {
@@ -242,20 +214,16 @@ export default class StoryServiceV2 {
             // we can use ! because it's included on the query
             id: content.id,
             message: content.message,
-            isDeletable: userAddress
-                ? content.byAddress.toLowerCase() === userAddress.toLowerCase()
-                : false,
+            isDeletable: userAddress ? content.byAddress.toLowerCase() === userAddress.toLowerCase() : false,
             createdAt: content.postedAt,
             community: content.storyCommunity!.community,
             engagement: {
                 loves: content.storyEngagement?.loves || 0,
                 userLoved: !!content.storyUserEngagement?.length,
-                userReported: content.storyUserReport
-                    ? content.storyUserReport.length !== 0
-                    : false,
-                comments: content.totalComments,
+                userReported: content.storyUserReport ? content.storyUserReport.length !== 0 : false,
+                comments: content.totalComments
             },
-            storyMedia: content.storyMedia,
+            storyMedia: content.storyMedia
         };
     }
 
@@ -271,16 +239,13 @@ export default class StoryServiceV2 {
                 'storyMedia',
                 'byAddress',
                 'postedAt',
-                [
-                    fn('count', fn('distinct', col('storyComment.id'))),
-                    'totalComments',
-                ],
+                [fn('count', fn('distinct', col('storyComment.id'))), 'totalComments']
             ],
             include: [
                 {
                     model: models.storyEngagement,
                     as: 'storyEngagement',
-                    duplicating: false,
+                    duplicating: false
                 },
                 {
                     model: models.storyUserEngagement,
@@ -288,8 +253,8 @@ export default class StoryServiceV2 {
                     required: false,
                     duplicating: false,
                     where: {
-                        address: onlyFromAddress,
-                    },
+                        address: onlyFromAddress
+                    }
                 },
                 {
                     model: models.storyUserReport,
@@ -297,8 +262,8 @@ export default class StoryServiceV2 {
                     required: false,
                     duplicating: false,
                     where: {
-                        address: onlyFromAddress,
-                    },
+                        address: onlyFromAddress
+                    }
                 },
                 {
                     model: models.storyCommunity,
@@ -308,64 +273,52 @@ export default class StoryServiceV2 {
                         {
                             model: models.community,
                             as: 'community',
-                            attributes: [
-                                'id',
-                                'name',
-                                'coverMediaPath',
-                                'city',
-                                'country',
-                            ],
-                        },
-                    ],
+                            attributes: ['id', 'name', 'coverMediaPath', 'city', 'country']
+                        }
+                    ]
                 },
                 {
                     attributes: [],
                     model: models.storyComment,
                     as: 'storyComment',
-                    required: false,
-                },
+                    required: false
+                }
             ],
             where: { byAddress: onlyFromAddress, isPublic: true },
             order: [['postedAt', 'DESC']],
-            offset: query.offset
-                ? parseInt(query.offset, 10)
-                : config.defaultOffset,
-            limit: query.limit
-                ? parseInt(query.limit, 10)
-                : config.defaultLimit,
+            offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+            limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
             group: [
                 'StoryContentModel.id',
                 'storyCommunity.id',
                 'storyCommunity->community.id',
                 'storyEngagement.id',
                 'storyUserEngagement.id',
-                'storyUserReport.id',
-            ],
+                'storyUserReport.id'
+            ]
         });
-        const communitiesStories = r.rows.map((c) => {
+        const communitiesStories = r.rows.map(c => {
             const content = c.toJSON() as StoryContent & {
                 totalComments: number;
             };
             return {
                 id: content.id,
                 message: content.message,
-                isDeletable:
-                    content.byAddress.toLowerCase() ===
-                    onlyFromAddress.toLowerCase(),
+                isDeletable: content.byAddress.toLowerCase() === onlyFromAddress.toLowerCase(),
                 createdAt: content.postedAt,
                 community: content.storyCommunity!.community,
                 engagement: {
                     loves: content.storyEngagement?.loves || 0,
                     userReported: !!content.storyUserReport?.length,
                     userLoved: !!content.storyUserEngagement?.length,
-                    comments: content.totalComments,
+                    comments: content.totalComments
                 },
-                storyMedia: content.storyMedia,
+                storyMedia: content.storyMedia
             };
         });
         return {
             count: r.count.length,
-            content: communitiesStories,
+            content: communitiesStories
         };
     }
 
@@ -394,11 +347,11 @@ export default class StoryServiceV2 {
                             [
                                 {
                                     model: models.storyEngagement,
-                                    as: 'storyEngagement',
+                                    as: 'storyEngagement'
                                 } as any,
                                 'loves',
-                                orderDirection,
-                            ],
+                                orderDirection
+                            ]
                         ];
                         break;
                     default:
@@ -423,10 +376,7 @@ export default class StoryServiceV2 {
                     'byAddress',
                     'storyMedia',
                     'postedAt',
-                    [
-                        fn('count', fn('distinct', col('storyComment.id'))),
-                        'totalComments',
-                    ],
+                    [fn('count', fn('distinct', col('storyComment.id'))), 'totalComments']
                 ],
                 include: [
                     {
@@ -437,28 +387,20 @@ export default class StoryServiceV2 {
                             {
                                 model: models.community,
                                 as: 'community',
-                                attributes: [
-                                    'id',
-                                    'name',
-                                    'coverMediaPath',
-                                    'city',
-                                    'country',
-                                ],
+                                attributes: ['id', 'name', 'coverMediaPath', 'city', 'country'],
                                 ...(query.country
                                     ? {
                                           where: {
                                               country:
-                                                  typeof query.country ===
-                                                  'string'
+                                                  typeof query.country === 'string'
                                                       ? query.country
                                                       : {
-                                                            [Op.in]:
-                                                                query.country,
-                                                        },
-                                          },
+                                                            [Op.in]: query.country
+                                                        }
+                                          }
                                       }
-                                    : {}),
-                            },
+                                    : {})
+                            }
                         ],
                         ...(query.communityId
                             ? {
@@ -467,15 +409,11 @@ export default class StoryServiceV2 {
                                           typeof query.communityId === 'string'
                                               ? parseInt(query.communityId, 10)
                                               : {
-                                                    [Op.in]:
-                                                        query.communityId.map(
-                                                            (c) =>
-                                                                parseInt(c, 10)
-                                                        ),
-                                                },
-                                  },
+                                                    [Op.in]: query.communityId.map(c => parseInt(c, 10))
+                                                }
+                                  }
                               }
-                            : {}),
+                            : {})
                     },
                     ...(userAddress
                         ? [
@@ -485,12 +423,12 @@ export default class StoryServiceV2 {
                                   required: false,
                                   duplicating: false,
                                   where: {
-                                      address: userAddress,
-                                  },
+                                      address: userAddress
+                                  }
                               },
                               {
                                   model: models.storyEngagement,
-                                  as: 'storyEngagement',
+                                  as: 'storyEngagement'
                               },
                               {
                                   model: models.storyUserReport,
@@ -498,60 +436,52 @@ export default class StoryServiceV2 {
                                   required: false,
                                   duplicating: false,
                                   where: {
-                                      address: userAddress,
-                                  },
-                              },
+                                      address: userAddress
+                                  }
+                              }
                           ]
                         : [
                               {
                                   model: models.storyEngagement,
-                                  as: 'storyEngagement',
-                              },
+                                  as: 'storyEngagement'
+                              }
                           ]),
                     {
                         attributes: [],
                         model: models.storyComment,
                         as: 'storyComment',
-                        required: false,
-                    },
+                        required: false
+                    }
                 ],
                 where: {
                     isPublic: true,
-                    ...(userAddress
-                        ? { '$"storyUserReport"."contentId"$': null }
-                        : {}),
+                    ...(userAddress ? { '$"storyUserReport"."contentId"$': null } : {}),
                     ...(period
                         ? {
                               postedAt: {
-                                  [Op.gte]: period,
-                              },
+                                  [Op.gte]: period
+                              }
                           }
-                        : {}),
+                        : {})
                 } as any,
                 order,
-                offset: query.offset
-                    ? parseInt(query.offset, 10)
-                    : config.defaultOffset,
-                limit: query.limit
-                    ? parseInt(query.limit, 10)
-                    : config.defaultLimit,
+                offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+                limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit,
                 group: [
                     'storyContent.id',
                     'storyCommunity.id',
                     'storyCommunity->community.id',
                     'storyEngagement.id',
-                    ...(userAddress
-                        ? ['storyUserEngagement.id', 'storyUserReport.id']
-                        : []),
-                ],
+                    ...(userAddress ? ['storyUserEngagement.id', 'storyUserReport.id'] : [])
+                ]
             });
         } catch (e) {
             return {
                 count: 0,
-                content: [],
+                content: []
             };
         }
-        const communitiesStories = r.rows.map((c) => {
+        const communitiesStories = r.rows.map(c => {
             const content = c.toJSON() as StoryContent & {
                 totalComments: number;
             };
@@ -559,23 +489,20 @@ export default class StoryServiceV2 {
                 // we can use ! because it's included on the query
                 id: content.id,
                 message: content.message,
-                isDeletable: userAddress
-                    ? content.byAddress.toLowerCase() ===
-                      userAddress.toLowerCase()
-                    : false,
+                isDeletable: userAddress ? content.byAddress.toLowerCase() === userAddress.toLowerCase() : false,
                 createdAt: content.postedAt,
                 community: content.storyCommunity!.community,
                 engagement: {
                     loves: content.storyEngagement?.loves || 0,
                     userLoved: !!content.storyUserEngagement?.length,
-                    comments: content.totalComments,
+                    comments: content.totalComments
                 },
-                storyMedia: content.storyMedia,
+                storyMedia: content.storyMedia
             };
         });
         return {
             count: r.count.length,
-            content: communitiesStories,
+            content: communitiesStories
         };
     }
 
@@ -583,32 +510,29 @@ export default class StoryServiceV2 {
         const exists = await models.storyUserEngagement.findOne({
             where: {
                 contentId,
-                address: userAddress,
-            },
+                address: userAddress
+            }
         });
         if (exists) {
             await models.storyUserEngagement.destroy({
-                where: { contentId, address: userAddress },
+                where: { contentId, address: userAddress }
             });
         } else {
             this.addNotification(userAddress, contentId);
             const user = await models.appUser.findOne({
                 attributes: ['id', 'language', 'walletPNT', 'appPNT'],
                 where: {
-                    address: getAddress(userAddress),
-                },
+                    address: getAddress(userAddress)
+                }
             });
 
             if (user) {
-                await sendNotification(
-                    [user.toJSON()],
-                    NotificationType.STORY_LIKED
-                );
+                await sendNotification([user.toJSON()], NotificationType.STORY_LIKED);
             }
 
             await models.storyUserEngagement.create({
                 contentId,
-                address: userAddress,
+                address: userAddress
             });
         }
 
@@ -616,26 +540,22 @@ export default class StoryServiceV2 {
         cleanStoryCache();
     }
 
-    public async inapropriate(
-        userAddress: string,
-        contentId: number,
-        typeId?: number
-    ) {
+    public async inapropriate(userAddress: string, contentId: number, typeId?: number) {
         const exists = await models.storyUserReport.findOne({
             where: {
                 contentId,
-                address: userAddress,
-            },
+                address: userAddress
+            }
         });
         if (exists) {
             await models.storyUserReport.destroy({
-                where: { contentId, address: userAddress },
+                where: { contentId, address: userAddress }
             });
         } else {
             await models.storyUserReport.create({
                 contentId,
                 typeId,
-                address: userAddress,
+                address: userAddress
             });
         }
     }
@@ -658,26 +578,22 @@ export default class StoryServiceV2 {
                 {
                     attributes: [],
                     model: models.community,
-                    as: 'community',
-                },
+                    as: 'community'
+                }
             ],
             group: [groupName],
-            raw: true,
+            raw: true
         })) as any;
 
         return result;
     }
 
-    public async addComment(
-        userId: number,
-        contentId: number,
-        comment: string
-    ) {
+    public async addComment(userId: number, contentId: number, comment: string) {
         try {
             await models.storyComment.create({
                 contentId,
                 comment,
-                userId,
+                userId
             });
             return true;
         } catch (error) {
@@ -685,31 +601,20 @@ export default class StoryServiceV2 {
         }
     }
 
-    public async getComments(
-        contentId: number,
-        query: { offset?: string; limit?: string }
-    ) {
+    public async getComments(contentId: number, query: { offset?: string; limit?: string }) {
         try {
             const comments = await models.storyComment.findAndCountAll({
                 include: [
                     {
-                        attributes: [
-                            'firstName',
-                            'lastName',
-                            'avatarMediaPath',
-                        ],
+                        attributes: ['firstName', 'lastName', 'avatarMediaPath'],
                         model: models.appUser,
-                        as: 'user',
-                    },
+                        as: 'user'
+                    }
                 ],
                 where: { contentId },
                 order: [['createdAt', 'desc']],
-                offset: query.offset
-                    ? parseInt(query.offset, 10)
-                    : config.defaultOffset,
-                limit: query.limit
-                    ? parseInt(query.limit, 10)
-                    : config.defaultLimit,
+                offset: query.offset ? parseInt(query.offset, 10) : config.defaultOffset,
+                limit: query.limit ? parseInt(query.limit, 10) : config.defaultLimit
             });
             return comments;
         } catch (error) {
@@ -727,7 +632,7 @@ export default class StoryServiceV2 {
     ) {
         try {
             const comment = await models.storyComment.findOne({
-                where: { id: commentId },
+                where: { id: commentId }
             });
 
             if (!comment) {
@@ -736,22 +641,19 @@ export default class StoryServiceV2 {
 
             if (comment.userId !== user.userId) {
                 const story = await models.storyContent.findOne({
-                    where: { id: contentId },
+                    where: { id: contentId }
                 });
 
                 if (user.address !== story!.byAddress) {
-                    throw new BaseError(
-                        'NOT_ALLOWED',
-                        'user is not the comment or story creator'
-                    );
+                    throw new BaseError('NOT_ALLOWED', 'user is not the comment or story creator');
                 }
             }
 
             await models.storyComment.destroy({
                 where: {
                     id: commentId,
-                    userId: user.userId,
-                },
+                    userId: user.userId
+                }
             });
             return true;
         } catch (error) {
@@ -767,17 +669,17 @@ export default class StoryServiceV2 {
                 {
                     model: models.appUser,
                     as: 'user',
-                    attributes: ['id'],
-                },
-            ],
+                    attributes: ['id']
+                }
+            ]
         }))! as StoryContent;
 
         await models.appNotification.findOrCreate({
             where: {
                 userId: story.user!.id,
                 type: NotificationType.STORY_LIKED,
-                params: { userAddress, contentId },
-            },
+                params: { userAddress, contentId }
+            }
         });
     }
 }

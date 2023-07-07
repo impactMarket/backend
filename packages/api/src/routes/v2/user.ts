@@ -1,12 +1,8 @@
-import timeout from 'connect-timeout';
 import { Router } from 'express';
+import timeout from 'connect-timeout';
 
+import { adminAuthentication, authenticateToken, verifySignature } from '../../middlewares';
 import UserController from '../../controllers/v2/user';
-import {
-    authenticateToken,
-    adminAuthentication,
-    verifySignature,
-} from '../../middlewares';
 import userValidators from '../../validators/user';
 
 export default (app: Router): void => {
@@ -175,13 +171,7 @@ export default (app: Router): void => {
      *     - SignatureMessage: []
      *     - Signature: []
      */
-    route.put(
-        '/',
-        authenticateToken,
-        verifySignature,
-        userValidators.update,
-        userController.update
-    );
+    route.put('/', authenticateToken, verifySignature, userValidators.update, userController.update);
 
     /**
      * @swagger
@@ -264,12 +254,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.post(
-        '/report',
-        authenticateToken,
-        userValidators.report,
-        userController.report
-    );
+    route.post('/report', authenticateToken, userValidators.report, userController.report);
 
     /**
      * @swagger
@@ -304,12 +289,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/report/:query?',
-        authenticateToken,
-        timeout('3s'),
-        userController.getReport
-    );
+    route.get('/report/:query?', authenticateToken, timeout('3s'), userController.getReport);
 
     /**
      * @swagger
@@ -340,12 +320,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/logs',
-        authenticateToken,
-        timeout('3s'),
-        userController.getLogs
-    );
+    route.get('/logs', authenticateToken, timeout('3s'), userController.getLogs);
 
     /**
      * @swagger
@@ -370,12 +345,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/presigned/:query?',
-        authenticateToken,
-        timeout('3s'),
-        userController.getPresignedUrlMedia
-    );
+    route.get('/presigned/:query?', authenticateToken, timeout('3s'), userController.getPresignedUrlMedia);
 
     /**
      * @swagger
@@ -412,12 +382,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/notifications/unread/:query?',
-        authenticateToken,
-        timeout('3s'),
-        userController.getUnreadNotifications
-    );
+    route.get('/notifications/unread/:query?', authenticateToken, timeout('3s'), userController.getUnreadNotifications);
 
     /**
      * @swagger
@@ -465,12 +430,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/notifications/:query?',
-        authenticateToken,
-        timeout('3s'),
-        userController.getNotifications
-    );
+    route.get('/notifications/:query?', authenticateToken, timeout('3s'), userController.getNotifications);
 
     /**
      * @swagger
@@ -537,12 +497,7 @@ export default (app: Router): void => {
      *     security:
      *     - BearerToken: []
      */
-    route.get(
-        '/:address',
-        authenticateToken,
-        timeout('3s'),
-        userController.getUserFromAuthorizedAccount
-    );
+    route.get('/:address', authenticateToken, timeout('3s'), userController.getUserFromAuthorizedAccount);
 
     route.post(
         '/push-notifications',

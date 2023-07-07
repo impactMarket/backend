@@ -33,6 +33,7 @@ jobs:
     steps:
       - checkout
       - run: yarn
+      - run: yarn prettier:dryrun
       - run: yarn eslint:dryrun
       - run: yarn build
 

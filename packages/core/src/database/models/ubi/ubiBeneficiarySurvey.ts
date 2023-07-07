@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    UbiBeneficiarySurvey,
-    UbiBeneficiarySurveyCreation,
-} from '../../../interfaces/ubi/ubiBeneficiarySurvey';
+import { UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation } from '../../../interfaces/ubi/ubiBeneficiarySurvey';
 
-export class UbiBeneficiarySurveyModel extends Model<
-    UbiBeneficiarySurvey,
-    UbiBeneficiarySurveyCreation
-> {
+export class UbiBeneficiarySurveyModel extends Model<UbiBeneficiarySurvey, UbiBeneficiarySurveyCreation> {
     public id!: number;
     public userId!: number;
     public surveyId!: number;
@@ -25,35 +19,35 @@ export function initializeUbiBeneficiarySurvey(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             userId: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             surveyId: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             question: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             answer: {
                 type: DataTypes.STRING(128),
-                allowNull: true,
+                allowNull: true
             },
             createdAt: {
                 type: DataTypes.DATE,
                 allowNull: false,
-                defaultValue: new Date(),
-            },
+                defaultValue: new Date()
+            }
         },
         {
             tableName: 'ubi_beneficiary_survey',
             modelName: 'ubiBeneficiarySurvey',
             sequelize,
-            updatedAt: false,
+            updatedAt: false
         }
     );
 }

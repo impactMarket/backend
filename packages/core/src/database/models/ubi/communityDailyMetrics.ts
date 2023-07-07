@@ -1,14 +1,11 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import {
     UbiCommunityDailyMetrics,
-    UbiCommunityDailyMetricsCreation,
+    UbiCommunityDailyMetricsCreation
 } from '../../../interfaces/ubi/ubiCommunityDailyMetrics';
 
-export class UbiCommunityDailyMetricsModel extends Model<
-    UbiCommunityDailyMetrics,
-    UbiCommunityDailyMetricsCreation
-> {
+export class UbiCommunityDailyMetricsModel extends Model<UbiCommunityDailyMetrics, UbiCommunityDailyMetricsCreation> {
     public id!: number;
     public communityId!: number;
     public ssiDayAlone!: number;
@@ -29,50 +26,50 @@ export function initializeUbiCommunityDailyMetrics(sequelize: Sequelize): void {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             communityId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'community', // name of Target model
-                    key: 'id', // key in Target model that we're referencing
+                    key: 'id' // key in Target model that we're referencing
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             ssiDayAlone: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             ssi: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             ubiRate: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             estimatedDuration: {
                 type: DataTypes.FLOAT,
-                allowNull: false,
+                allowNull: false
             },
             date: {
                 type: DataTypes.DATEONLY,
-                allowNull: false,
+                allowNull: false
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
+                allowNull: false
             },
             updatedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'ubi_community_daily_metrics',
             modelName: 'ubiCommunityDailyMetrics',
-            sequelize, // this bit is important
+            sequelize // this bit is important
         }
     );
 }

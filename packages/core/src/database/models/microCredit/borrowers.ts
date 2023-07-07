@@ -1,8 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import { MicroCreditBorrowers, MicroCreditBorrowersCreation } from '../../../interfaces/microCredit/borrowers';
-import { DbModels } from '../../../database/db';
 import { AppUserModel } from '../app/appUser';
+import { DbModels } from '../../../database/db';
+import { MicroCreditBorrowers, MicroCreditBorrowersCreation } from '../../../interfaces/microCredit/borrowers';
 
 export class MicroCreditBorrowersModel extends Model<MicroCreditBorrowers, MicroCreditBorrowersCreation> {
     public id!: number;
@@ -49,7 +49,7 @@ export function initializeMicroCreditBorrowers(sequelize: Sequelize): typeof Mic
             tableName: 'microcredit_borrowers',
             modelName: 'microCreditBorrowers',
             sequelize,
-            timestamps: false,
+            timestamps: false
         }
     );
     return MicroCreditBorrowersModel;

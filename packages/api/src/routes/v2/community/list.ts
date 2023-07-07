@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
 import { CommunityController } from '../../../controllers/v2/community/list';
-import timeout from 'connect-timeout';
 import { config } from '@impactmarket/core';
+import timeout from 'connect-timeout';
 
 export default (route: Router): void => {
     const controller = new CommunityController();

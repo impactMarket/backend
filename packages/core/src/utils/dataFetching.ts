@@ -17,14 +17,12 @@ export const fetchData = (queryString: string): IField => {
                 } else {
                     acc[splitedValue[0]] = [splitedValue[1]];
                 }
+            } else if (splitedValue[0] === '*') {
+                acc.root = [];
+            } else if (acc.root) {
+                (acc.root as string[]).push(splitedValue[0]);
             } else {
-                if (splitedValue[0] === '*') {
-                    acc.root = [];
-                } else if (acc.root) {
-                    (acc.root as string[]).push(splitedValue[0]);
-                } else {
-                    acc.root = splitedValue;
-                }
+                acc.root = splitedValue;
             }
         }
         return acc;

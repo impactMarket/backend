@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    UbiCommunityLabel,
-    UbiCommunityLabelCreation,
-} from '../../../interfaces/ubi/ubiCommunityLabel';
+import { UbiCommunityLabel, UbiCommunityLabelCreation } from '../../../interfaces/ubi/ubiCommunityLabel';
 
-export class UbiCommunityLabelModel extends Model<
-    UbiCommunityLabel,
-    UbiCommunityLabelCreation
-> {
+export class UbiCommunityLabelModel extends Model<UbiCommunityLabel, UbiCommunityLabelCreation> {
     public communityId!: string;
     public name!: string;
     public description!: string;
@@ -23,27 +17,27 @@ export function initializeUbiCommunityLabel(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             communityId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             label: {
                 type: DataTypes.STRING(32),
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'ubi_community_label',
             modelName: 'ubiCommunityLabel',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
 }

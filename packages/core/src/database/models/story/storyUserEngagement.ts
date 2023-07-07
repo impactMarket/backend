@@ -1,54 +1,46 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    StoryUserEngagement,
-    StoryUserEngagementCreation,
-} from '../../../interfaces/story/storyUserEngagement';
+import { StoryUserEngagement, StoryUserEngagementCreation } from '../../../interfaces/story/storyUserEngagement';
 
-export class StoryUserEngagementModel extends Model<
-    StoryUserEngagement,
-    StoryUserEngagementCreation
-> {
+export class StoryUserEngagementModel extends Model<StoryUserEngagement, StoryUserEngagementCreation> {
     public id!: number;
     public contentId!: number;
     public address!: number;
 }
 
-export function initializeStoryUserEngagement(
-    sequelize: Sequelize
-): typeof StoryUserEngagementModel {
+export function initializeStoryUserEngagement(sequelize: Sequelize): typeof StoryUserEngagementModel {
     StoryUserEngagementModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             contentId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'story_content',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             address: {
                 type: DataTypes.STRING(44),
                 references: {
                     model: 'app_user',
-                    key: 'address',
+                    key: 'address'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'story_user_engagement',
             modelName: 'storyUserEngagement',
             sequelize,
-            timestamps: false,
+            timestamps: false
         }
     );
     return StoryUserEngagementModel;

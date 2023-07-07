@@ -1,18 +1,18 @@
 import { ethers } from 'ethers';
 
-import CommunityContractABI from '../../../contracts/CommunityABI.json';
-import { models, sequelize } from '../../../database';
-import { LogTypes } from '../../../interfaces/app/appLog';
+import { BaseError } from '../../../utils/baseError';
 import {
     CommunityAttributes,
     IBaseCommunityAttributes,
-    ICommunityCreationAttributes,
+    ICommunityCreationAttributes
 } from '../../../interfaces/ubi/community';
-import { getUserRoles } from '../../../subgraph/queries/user';
-import { BaseError } from '../../../utils/baseError';
-import UserLogService from '../../app/user/log';
-import CommunityContractService from './contract';
 import { CommunityDetailsService } from './details';
+import { LogTypes } from '../../../interfaces/app/appLog';
+import { getUserRoles } from '../../../subgraph/queries/user';
+import { models, sequelize } from '../../../database';
+import CommunityContractABI from '../../../contracts/CommunityABI.json';
+import CommunityContractService from './contract';
+import UserLogService from '../../app/user/log';
 
 export class CommunityCreateService {
     sequelize = sequelize;
@@ -34,7 +34,7 @@ export class CommunityCreateService {
         txReceipt,
         contractParams,
         coverMediaPath,
-        placeId,
+        placeId
     }: ICommunityCreationAttributes): Promise<CommunityAttributes> {
         let managerAddress: string = '';
         let createObject: ICommunityCreationAttributes = {
@@ -51,26 +51,20 @@ export class CommunityCreateService {
             placeId,
             visibility: 'public', // will be changed if private
             status: 'pending', // will be changed if private
-            started: new Date(),
+            started: new Date()
         };
 
         // if it was submitted as private, validate the transaction first.
         if (txReceipt !== undefined) {
-            const ifaceCommunity = new ethers.utils.Interface(
-                CommunityContractABI
-            );
+            const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
             const eventsCoomunity: ethers.utils.LogDescription[] = [];
             for (let index = 0; index < txReceipt.logs.length; index++) {
                 try {
-                    const parsedLog = ifaceCommunity.parseLog(
-                        txReceipt.logs[index]
-                    );
+                    const parsedLog = ifaceCommunity.parseLog(txReceipt.logs[index]);
                     eventsCoomunity.push(parsedLog);
                 } catch (e) {}
             }
-            const index = eventsCoomunity.findIndex(
-                (event) => event !== null && event.name === 'ManagerAdded'
-            );
+            const index = eventsCoomunity.findIndex(event => event !== null && event.name === 'ManagerAdded');
             if (index !== -1) {
                 managerAddress = eventsCoomunity[index].args[0];
             } else {
@@ -80,27 +74,19 @@ export class CommunityCreateService {
                 ...createObject,
                 contractAddress: contractAddress!,
                 visibility: 'private',
-                status: 'valid',
+                status: 'valid'
             };
         }
 
         const t = await this.sequelize.transaction();
         try {
             const community = await models.community.create(createObject, {
-                transaction: t,
+                transaction: t
             });
-            await this.communityContractService.add(
-                community.id,
-                contractParams!,
-                t
-            );
+            await this.communityContractService.add(community.id, contractParams!, t);
             // await CommunityStateService.add
             if (txReceipt !== undefined) {
-                await this.communityDetailsService.addManager(
-                    managerAddress,
-                    community.id,
-                    t
-                );
+                await this.communityDetailsService.addManager(managerAddress, community.id, t);
             }
             // If the execution reaches this line, no errors were thrown.
             // We commit the transaction.
@@ -113,34 +99,25 @@ export class CommunityCreateService {
             // Since this is the service, we throw the error back to the controller,
             // so the route returns an error.
             if ((error as any).name === 'SequelizeUniqueConstraintError') {
-                throw new BaseError(
-                    'ALREADY_HAS_COMMUNITY',
-                    'A user cannot create two communities'
-                );
+                throw new BaseError('ALREADY_HAS_COMMUNITY', 'A user cannot create two communities');
             }
             throw new BaseError('ERROR', (error as any).message);
         }
     }
 
-    public async editSubmission(
-        communityId: number,
-        params: IBaseCommunityAttributes
-    ): Promise<CommunityAttributes> {
+    public async editSubmission(communityId: number, params: IBaseCommunityAttributes): Promise<CommunityAttributes> {
         const t = await this.sequelize.transaction();
         try {
             const community = await models.community.findOne({
                 attributes: ['id', 'requestByAddress', 'ambassadorAddress'],
                 where: {
                     status: 'pending',
-                    id: communityId,
-                },
+                    id: communityId
+                }
             });
 
             if (community === null) {
-                throw new BaseError(
-                    'COMMUNITY_NOT_FOUND',
-                    'community not found!'
-                );
+                throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found!');
             }
 
             // verify if user is the creator or ambassador of the community
@@ -148,10 +125,7 @@ export class CommunityCreateService {
                 params.requestByAddress !== community.requestByAddress &&
                 params.requestByAddress !== community.ambassadorAddress
             ) {
-                throw new BaseError(
-                    'NOT_ALLOWED',
-                    'User not allowed to edit the community'
-                );
+                throw new BaseError('NOT_ALLOWED', 'User not allowed to edit the community');
             }
 
             const {
@@ -165,7 +139,7 @@ export class CommunityCreateService {
                 email,
                 contractParams,
                 coverMediaPath,
-                placeId,
+                placeId
             } = params;
 
             await models.community.update(
@@ -179,29 +153,23 @@ export class CommunityCreateService {
                     gps,
                     email,
                     coverMediaPath,
-                    placeId,
+                    placeId
                 },
                 {
                     where: {
-                        id: community.id,
+                        id: community.id
                     },
-                    transaction: t,
+                    transaction: t
                 }
             );
 
             if (contractParams) {
-                await this.communityContractService.update(
-                    community.id,
-                    contractParams
-                );
+                await this.communityContractService.update(community.id, contractParams);
             }
 
             await t.commit();
 
-            return this.communityDetailsService.findById(
-                community.id,
-                params.requestByAddress
-            );
+            return this.communityDetailsService.findById(community.id, params.requestByAddress);
         } catch (error) {
             await t.rollback();
             throw error;
@@ -222,10 +190,10 @@ export class CommunityCreateService {
         const result = await models.community.update(
             {
                 review,
-                ambassadorAddress,
+                ambassadorAddress
             },
             {
-                where: { id },
+                where: { id }
             }
         );
 
@@ -251,45 +219,34 @@ export class CommunityCreateService {
         const roles = await getUserRoles(address);
 
         if (!roles.ambassador && !roles.councilMember) {
-            throw new BaseError(
-                'UNAUTHORIZED',
-                'user must be ambassador or council member'
-            );
+            throw new BaseError('UNAUTHORIZED', 'user must be ambassador or council member');
         }
 
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         });
 
         if (!community || !community.contractAddress) {
             throw new BaseError('COMMUNITY_NOT_FOUND', 'community not found');
         }
 
-        if (
-            roles.ambassador &&
-            roles.ambassador.communities.indexOf(
-                community.contractAddress.toLowerCase()
-            ) === -1
-        ) {
-            throw new BaseError(
-                'UNAUTHORIZED',
-                'user is not the ambassador of the requested community'
-            );
+        if (roles.ambassador && roles.ambassador.communities.indexOf(community.contractAddress.toLowerCase()) === -1) {
+            throw new BaseError('UNAUTHORIZED', 'user is not the ambassador of the requested community');
         }
 
         const update = await models.community.update(
             {
                 name,
                 description,
-                coverMediaPath,
+                coverMediaPath
             },
             {
                 where: {
-                    id: communityId,
-                },
+                    id: communityId
+                }
             }
         );
         if (update[0] === 0) {
@@ -297,12 +254,7 @@ export class CommunityCreateService {
         }
 
         if (userId) {
-            this.userLogService.create(
-                userId,
-                LogTypes.EDITED_COMMUNITY,
-                params,
-                communityId
-            );
+            this.userLogService.create(userId, LogTypes.EDITED_COMMUNITY, params, communityId);
         }
 
         return this.communityDetailsService.findById(communityId, address);

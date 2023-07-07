@@ -1,15 +1,9 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    AppAnonymousReport,
-    AppAnonymousReportCreation,
-} from '../../../interfaces/app/appAnonymousReport';
+import { AppAnonymousReport, AppAnonymousReportCreation } from '../../../interfaces/app/appAnonymousReport';
 import { DbModels } from '../../../database/db';
 
-export class AppAnonymousReportModel extends Model<
-    AppAnonymousReport,
-    AppAnonymousReportCreation
-> {
+export class AppAnonymousReportModel extends Model<AppAnonymousReport, AppAnonymousReportCreation> {
     public id!: number;
     public communityId!: number;
     public message!: string;
@@ -25,46 +19,41 @@ export function initializeAppAnonymousReport(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             communityId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: community,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: true,
+                allowNull: true
             },
             message: {
                 type: DataTypes.STRING(512),
-                allowNull: false,
+                allowNull: false
             },
             category: {
                 type: DataTypes.ENUM('general', 'potential-fraud'),
                 allowNull: false,
-                defaultValue: 'general',
+                defaultValue: 'general'
             },
             review: {
-                type: DataTypes.ENUM(
-                    'pending',
-                    'in-progress',
-                    'halted',
-                    'closed'
-                ),
+                type: DataTypes.ENUM('pending', 'in-progress', 'halted', 'closed'),
                 allowNull: false,
-                defaultValue: 'pending',
+                defaultValue: 'pending'
             },
             createdAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'app_anonymous_report',
             modelName: 'appAnonymousReport',
             updatedAt: false,
-            sequelize,
+            sequelize
         }
     );
 }

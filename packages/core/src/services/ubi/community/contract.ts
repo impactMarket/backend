@@ -1,8 +1,8 @@
 import { Transaction } from 'sequelize';
 
-import { models, sequelize } from '../../../database';
-import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
 import { ICommunityContractParams } from '../../../types';
+import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
+import { models, sequelize } from '../../../database';
 
 export default class CommunityContractService {
     public async add(
@@ -10,13 +10,7 @@ export default class CommunityContractService {
         contractParams: ICommunityContractParams,
         t: Transaction | undefined = undefined
     ): Promise<UbiCommunityContract> {
-        const {
-            claimAmount,
-            maxClaim,
-            decreaseStep,
-            baseInterval,
-            incrementInterval,
-        } = contractParams;
+        const { claimAmount, maxClaim, decreaseStep, baseInterval, incrementInterval } = contractParams;
 
         return models.ubiCommunityContract.create(
             {
@@ -25,37 +19,28 @@ export default class CommunityContractService {
                 maxClaim: maxClaim as number,
                 decreaseStep: decreaseStep as number,
                 baseInterval,
-                incrementInterval,
+                incrementInterval
             },
             { transaction: t }
         );
     }
 
-    public async update(
-        communityId: number,
-        contractParams: ICommunityContractParams
-    ): Promise<boolean> {
-        const {
-            claimAmount,
-            maxClaim,
-            decreaseStep,
-            baseInterval,
-            incrementInterval,
-        } = contractParams;
+    public async update(communityId: number, contractParams: ICommunityContractParams): Promise<boolean> {
+        const { claimAmount, maxClaim, decreaseStep, baseInterval, incrementInterval } = contractParams;
 
         try {
-            await sequelize.transaction(async (t) => {
+            await sequelize.transaction(async t => {
                 await models.ubiCommunityContract.update(
                     {
                         claimAmount: claimAmount as number,
                         maxClaim: maxClaim as number,
                         decreaseStep: decreaseStep as number,
                         baseInterval,
-                        incrementInterval,
+                        incrementInterval
                     },
                     {
                         where: { communityId },
-                        transaction: t,
+                        transaction: t
                     }
                 );
             });

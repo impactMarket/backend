@@ -1,15 +1,9 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    LearnAndEarnPayment,
-    LearnAndEarnPaymentCreation,
-} from '../../../interfaces/learnAndEarn/learnAndEarnPayment';
 import { DbModels } from '../../../database/db';
+import { LearnAndEarnPayment, LearnAndEarnPaymentCreation } from '../../../interfaces/learnAndEarn/learnAndEarnPayment';
 
-export class LearnAndEarnPaymentModel extends Model<
-    LearnAndEarnPayment,
-    LearnAndEarnPaymentCreation
-> {
+export class LearnAndEarnPaymentModel extends Model<LearnAndEarnPayment, LearnAndEarnPaymentCreation> {
     public id!: number;
     public userId!: number;
     public levelId!: number;
@@ -20,9 +14,7 @@ export class LearnAndEarnPaymentModel extends Model<
     public txAt!: Date | null;
 }
 
-export function initializeLearnAndEarnPayment(
-    sequelize: Sequelize
-): typeof LearnAndEarnPaymentModel {
+export function initializeLearnAndEarnPayment(sequelize: Sequelize): typeof LearnAndEarnPaymentModel {
     const { appUser, learnAndEarnLevel } = sequelize.models as DbModels;
     LearnAndEarnPaymentModel.init(
         {
@@ -30,54 +22,54 @@ export function initializeLearnAndEarnPayment(
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: appUser,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             levelId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: learnAndEarnLevel,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             amount: {
                 type: DataTypes.FLOAT,
                 defaultValue: 0,
-                allowNull: false,
+                allowNull: false
             },
             signature: {
                 type: DataTypes.STRING(68),
-                allowNull: false,
+                allowNull: false
             },
             status: {
                 type: DataTypes.ENUM('pending', 'paid'),
                 allowNull: false,
-                defaultValue: 'pending',
+                defaultValue: 'pending'
             },
             tx: {
                 type: DataTypes.STRING(68),
-                allowNull: true,
+                allowNull: true
             },
             txAt: {
                 type: DataTypes.DATE,
-                allowNull: true,
-            },
+                allowNull: true
+            }
         },
         {
             tableName: 'learn_and_earn_payment',
             modelName: 'learnAndEarnPayment',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return LearnAndEarnPaymentModel;

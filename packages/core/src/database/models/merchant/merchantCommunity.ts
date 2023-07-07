@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 export interface MerchantCommunity {
     id: number;
@@ -11,49 +11,44 @@ export interface MerchantCommunityCreationAttributes {
     communityId: number;
 }
 
-export class MerchantCommunityModel extends Model<
-    MerchantCommunity,
-    MerchantCommunityCreationAttributes
-> {
+export class MerchantCommunityModel extends Model<MerchantCommunity, MerchantCommunityCreationAttributes> {
     public id!: number;
     public merchantId!: number;
     public communityId!: number;
 }
 
-export function initializeMerchantCommunity(
-    sequelize: Sequelize
-): typeof MerchantCommunityModel {
+export function initializeMerchantCommunity(sequelize: Sequelize): typeof MerchantCommunityModel {
     MerchantCommunityModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             merchantId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'merchant_registry',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             communityId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'merchant_community',
             modelName: 'merchantCommunity',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return MerchantCommunityModel;

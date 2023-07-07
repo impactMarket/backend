@@ -1,5 +1,5 @@
-import dotenv from 'dotenv';
 import { bool, cleanEnv, num, port, str } from 'envalid';
+import dotenv from 'dotenv';
 
 if (process.env.NODE_ENV === 'development') {
     const envFound = dotenv.config();
@@ -27,16 +27,16 @@ function validateEnv() {
         PORT: port({ devDefault: onlyOnTestEnv(5000) }),
         DATABASE_URL: str(),
         CHAIN_JSON_RPC_URL: str({
-            devDefault: onlyOnTestEnv('http://localhost:8545'),
+            devDefault: onlyOnTestEnv('http://localhost:8545')
         }),
         CHAIN_JSON_RPC_URL_FALLBACK: str({
-            devDefault: onlyOnTestEnv('http://localhost:8545'),
+            devDefault: onlyOnTestEnv('http://localhost:8545')
         }),
         JWT_SECRET: str({ devDefault: onlyOnTestEnv('xyz') }),
         CUSD_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         REFERRAL_LINK_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         IMPACT_MARKET_CONTRACT_ADDRESS: str({
-            devDefault: onlyOnTestEnv('xyz'),
+            devDefault: onlyOnTestEnv('xyz')
         }),
         IMPACT_MARKET_CONTRACT_BLOCK: num({ devDefault: 0 }),
         ATTESTATION_PROXY_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
@@ -51,7 +51,7 @@ function validateEnv() {
         LOG_LEVEL: str({ default: 'warn' }),
         API_ENVIRONMENT: str({
             choices: ['development', 'test', 'production', 'staging'],
-            devDefault: 'test',
+            devDefault: 'test'
         }),
         CLOUDFRONT_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         REDIS_URL: str({ devDefault: 'redis://localhost:6379' }),
@@ -71,7 +71,7 @@ function validateEnv() {
         PACT_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AIRGRAB_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         DONATION_MINER_CONTRACT_ADDRESS: str({
-            devDefault: onlyOnTestEnv('xyz'),
+            devDefault: onlyOnTestEnv('xyz')
         }),
         IMPACTLABS_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         IDO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
@@ -83,7 +83,7 @@ function validateEnv() {
         SUBGRAPH_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         // attestation service (ASv2)
         ATTESTATION_ISSUER_PRIVATE_KEY: str({
-            devDefault: onlyOnTestEnv('xyz'),
+            devDefault: onlyOnTestEnv('xyz')
         }),
         ATTESTATION_DEK_PRIVATE_KEY: str({ devDefault: onlyOnTestEnv('xyz') }),
         ATTESTATION_ODIS_PROXY: str({ devDefault: onlyOnTestEnv('xyz') }),
@@ -97,7 +97,7 @@ function validateEnv() {
         // hot wallets
         HOT_WALLET_CHECK_BALANCE: str({ devDefault: onlyOnTestEnv('xyz') }),
         // signers
-        SIGNERS_REFERRAL_LINK: str({ devDefault: onlyOnTestEnv('xyz') }),
+        SIGNERS_REFERRAL_LINK: str({ devDefault: onlyOnTestEnv('xyz') })
     });
 }
 

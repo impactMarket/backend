@@ -1,4 +1,4 @@
-import { celebrate, Joi } from 'celebrate';
+import { Joi, celebrate } from 'celebrate';
 
 import { defaultSchema } from './defaultSchema';
 
@@ -14,7 +14,7 @@ const create = celebrate({
         country: Joi.string().required(),
         gps: Joi.object({
             latitude: Joi.number().required(),
-            longitude: Joi.number().required(),
+            longitude: Joi.number().required()
         }).required(),
         email: Joi.string().required(),
         coverMediaPath: Joi.string().optional(),
@@ -22,10 +22,10 @@ const create = celebrate({
         txReceipt: Joi.when('contractAddress', {
             not: undefined,
             then: Joi.object().required(),
-            otherwise: Joi.object().optional(),
+            otherwise: Joi.object().optional()
         }),
-        contractParams: Joi.object().required(),
-    }),
+        contractParams: Joi.object().required()
+    })
 });
 
 const edit = celebrate({
@@ -37,8 +37,8 @@ const edit = celebrate({
         city: Joi.string().optional(), // TODO: to remove
         country: Joi.string().optional(), // TODO: to remove
         email: Joi.string().optional(), // TODO: to remove
-        coverMediaPath: Joi.string().optional(),
-    }),
+        coverMediaPath: Joi.string().optional()
+    })
 });
 
 const editSubmission = celebrate({
@@ -51,26 +51,24 @@ const editSubmission = celebrate({
         country: Joi.string().optional(),
         gps: Joi.object({
             latitude: Joi.number().required(),
-            longitude: Joi.number().required(),
+            longitude: Joi.number().required()
         }).optional(),
         email: Joi.string().optional(),
         coverMediaPath: Joi.string().optional(),
         placeId: Joi.string().optional(),
-        contractParams: Joi.object().optional(),
-    }),
+        contractParams: Joi.object().optional()
+    })
 });
 
 const review = celebrate({
     body: defaultSchema.object({
-        review: Joi.string()
-            .required()
-            .valid('pending', 'claimed', 'declined', 'accepted'),
-    }),
+        review: Joi.string().required().valid('pending', 'claimed', 'declined', 'accepted')
+    })
 });
 
 export default {
     create,
     edit,
     editSubmission,
-    review,
+    review
 };

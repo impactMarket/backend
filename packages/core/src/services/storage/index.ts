@@ -1,6 +1,6 @@
+import { AWS } from './aws';
 import config from '../../config';
 import crypto from 'crypto';
-import { AWS } from './aws';
 
 type PreSignedUrlResponse = {
     uploadURL: string;

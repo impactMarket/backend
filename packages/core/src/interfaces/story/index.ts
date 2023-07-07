@@ -4,10 +4,4 @@ import * as storyEngagement from './storyEngagement';
 import * as storyUserEngagement from './storyUserEngagement';
 import * as storyUserReport from './storyUserReport';
 
-export {
-    storyCommunity,
-    storyContent,
-    storyEngagement,
-    storyUserEngagement,
-    storyUserReport,
-};
+export { storyCommunity, storyContent, storyEngagement, storyUserEngagement, storyUserReport };

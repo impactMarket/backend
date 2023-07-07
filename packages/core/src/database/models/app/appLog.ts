@@ -1,10 +1,6 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    AppLog,
-    AppLogCreation,
-    LogTypes,
-} from '../../../interfaces/app/appLog';
+import { AppLog, AppLogCreation, LogTypes } from '../../../interfaces/app/appLog';
 import { DbModels } from '../../../database/db';
 
 export class AppLogModel extends Model<AppLog, AppLogCreation> {
@@ -23,40 +19,40 @@ export function initializeAppLog(sequelize: Sequelize): void {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             userId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: appUser,
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             type: {
                 type: DataTypes.STRING(32),
-                allowNull: false,
+                allowNull: false
             },
             detail: {
                 type: DataTypes.JSON,
-                allowNull: false,
+                allowNull: false
             },
             communityId: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
+                allowNull: true
             },
             createdAt: {
                 type: DataTypes.DATE,
                 allowNull: false,
-                defaultValue: new Date(),
-            },
+                defaultValue: new Date()
+            }
         },
         {
             tableName: 'app_log',
             modelName: 'appLog',
             updatedAt: false,
-            sequelize,
+            sequelize
         }
     );
 }

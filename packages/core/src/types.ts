@@ -6,7 +6,7 @@ export const enum intervalsInSeconds {
     oneHour = 3600,
     sixHours = 21600,
     twelveHours = 43200,
-    oneDay = 86400,
+    oneDay = 86400
 }
 
 export interface ICommunityMetrics {

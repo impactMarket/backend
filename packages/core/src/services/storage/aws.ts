@@ -7,7 +7,7 @@ const aws = new AWS.Config({
     secretAccessKey: config.aws.secretAccessKey,
     region: config.aws.region,
     //
-    apiVersion: '2006-03-01',
+    apiVersion: '2006-03-01'
 });
 
 export { aws, AWS };

@@ -1,4 +1,4 @@
-import { celebrate, Joi } from 'celebrate';
+import { Joi, celebrate } from 'celebrate';
 
 // I wish this comes true https://github.com/hapijs/joi/issues/2864#issuecomment-1322736004
 
@@ -16,8 +16,8 @@ export const attestationValidator = celebrate({
         type: Joi.number().required(),
         code: Joi.when('service', {
             is: 'verify',
-            then: Joi.string().required(),
+            then: Joi.string().required()
         }),
-        service: Joi.string().required().valid('verify', 'send'),
-    }),
+        service: Joi.string().required().valid('verify', 'send')
+    })
 });

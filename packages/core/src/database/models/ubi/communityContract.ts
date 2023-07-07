@@ -1,9 +1,6 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    UbiCommunityContract,
-    UbiCommunityContractCreation,
-} from '../../../interfaces/ubi/ubiCommunityContract';
+import { UbiCommunityContract, UbiCommunityContractCreation } from '../../../interfaces/ubi/ubiCommunityContract';
 
 /**
  * @swagger
@@ -43,10 +40,7 @@ import {
  *            type: integer
  *            description: Increment interval after each claim
  */
-export class UbiCommunityContractModel extends Model<
-    UbiCommunityContract,
-    UbiCommunityContractCreation
-> {
+export class UbiCommunityContractModel extends Model<UbiCommunityContract, UbiCommunityContractCreation> {
     public communityId!: number;
     public claimAmount!: number;
     public maxClaim!: number;
@@ -71,60 +65,60 @@ export function initializeUbiCommunityContract(sequelize: Sequelize): void {
                 unique: true,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             claimAmount: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(22), // max 9,999 - plus 18 decimals
-                allowNull: false,
+                allowNull: false
             },
             maxClaim: {
                 // https://github.com/sequelize/sequelize/blob/2874c54915b2594225e939809ca9f8200b94f454/lib/dialects/postgres/data-types.js#L102
                 type: DataTypes.DECIMAL(24), // max 999,999 - plus 18 decimals
-                allowNull: false,
+                allowNull: false
             },
             baseInterval: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             incrementInterval: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             blocked: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
-                defaultValue: false,
+                defaultValue: false
             },
             decreaseStep: {
                 type: DataTypes.DECIMAL(22), // max 9,999 - plus 18 decimals
                 allowNull: false,
-                defaultValue: 0,
+                defaultValue: 0
             },
             minTranche: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
+                allowNull: true
             },
             maxTranche: {
                 type: DataTypes.INTEGER,
-                allowNull: true,
+                allowNull: true
             },
             createdAt: {
                 allowNull: false,
-                type: DataTypes.DATE,
+                type: DataTypes.DATE
             },
             updatedAt: {
                 allowNull: false,
-                type: DataTypes.DATE,
-            },
+                type: DataTypes.DATE
+            }
         },
         {
             tableName: 'ubi_community_contract',
             modelName: 'ubiCommunityContract',
-            sequelize,
+            sequelize
         }
     );
 }

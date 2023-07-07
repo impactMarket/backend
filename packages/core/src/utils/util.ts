@@ -42,7 +42,6 @@ export const getSearchInput = (searchInput: string) => {
         return {
             name: searchInput
         };
-    } else {
-        throw new BaseError('INVALID_SEARCH', 'Not valid search!');
     }
+    throw new BaseError('INVALID_SEARCH', 'Not valid search!');
 };

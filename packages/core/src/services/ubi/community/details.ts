@@ -1,39 +1,32 @@
+import { Op, Transaction, WhereOptions, col, fn, literal } from 'sequelize';
+import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import csv from 'csvtojson';
-import { ethers } from 'ethers';
 import fs from 'fs';
 import json2csv from 'json2csv';
-import { Op, WhereOptions, fn, col, literal, Transaction } from 'sequelize';
 
-import { models } from '../../../database';
-import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { AppUser } from '../../../interfaces/app/appUser';
+import { BaseError } from '../../../utils/baseError';
+import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
+import { CommunityContentStorage } from '../../storage';
+import { Logger } from '../../../utils/logger';
+import { ManagerAttributes } from '../../../database/models/ubi/manager';
+import { ManagerSubgraph } from '../../../subgraph/interfaces/manager';
 import { UbiCommunityCampaign } from '../../../interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
-import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
-import { ManagerSubgraph } from '../../../subgraph/interfaces/manager';
 import {
-    getBeneficiariesByAddress,
-    getBeneficiaries,
     countBeneficiaries,
     countInactiveBeneficiaries,
+    getBeneficiaries,
+    getBeneficiariesByAddress
 } from '../../../subgraph/queries/beneficiary';
-import {
-    getCommunityAmbassador,
-    getCommunityState,
-    getCommunityUBIParams,
-} from '../../../subgraph/queries/community';
-import {
-    getCommunityManagers,
-    countManagers,
-} from '../../../subgraph/queries/manager';
-import { getUserRoles } from '../../../subgraph/queries/user';
-import { BaseError } from '../../../utils/baseError';
-import { Logger } from '../../../utils/logger';
+import { countManagers, getCommunityManagers } from '../../../subgraph/queries/manager';
+import { getCommunityAmbassador, getCommunityState, getCommunityUBIParams } from '../../../subgraph/queries/community';
 import { getSearchInput } from '../../../utils/util';
-import { CommunityContentStorage } from '../../storage';
-const writeFile = fs.promises.writeFile;
+import { getUserRoles } from '../../../subgraph/queries/user';
+import { models } from '../../../database';
+const { writeFile } = fs.promises;
 
 export class CommunityDetailsService {
     private communityContentStorage = new CommunityContentStorage();
@@ -42,8 +35,8 @@ export class CommunityDetailsService {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         });
         if (!community || !community.contractAddress) {
             return null;
@@ -52,7 +45,7 @@ export class CommunityDetailsService {
         const state = await getCommunityState(community.contractAddress);
         return {
             ...state,
-            communityId,
+            communityId
         };
     }
 
@@ -65,25 +58,21 @@ export class CommunityDetailsService {
                     model: models.ubiCommunityDailyMetrics,
                     as: 'metrics',
                     order: [['date', 'desc']],
-                    limit: 1,
-                },
+                    limit: 1
+                }
             ],
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         })) as CommunityAttributes;
         if (!community || !community.contractAddress) {
             return null;
         }
 
         return {
-            ubiRate: community.metrics?.length
-                ? community.metrics[0].ubiRate
-                : 0,
-            estimatedDuration: community.metrics?.length
-                ? community.metrics[0].estimatedDuration
-                : 0,
-            communityId,
+            ubiRate: community.metrics?.length ? community.metrics[0].ubiRate : 0,
+            estimatedDuration: community.metrics?.length ? community.metrics[0].estimatedDuration : 0,
+            communityId
         };
     }
 
@@ -91,8 +80,8 @@ export class CommunityDetailsService {
         const community = await models.community.findOne({
             attributes: ['contractAddress', 'status'],
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         });
 
         if (!community) {
@@ -102,8 +91,8 @@ export class CommunityDetailsService {
         if (community.status === 'pending') {
             const result = await models.ubiCommunityContract.findOne({
                 where: {
-                    communityId,
-                },
+                    communityId
+                }
             });
 
             if (!result) {
@@ -111,25 +100,17 @@ export class CommunityDetailsService {
             }
 
             return result.toJSON() as UbiCommunityContract;
-        } else {
-            const subgraphResult = await getCommunityUBIParams(
-                community.contractAddress!
-            );
-            if (!subgraphResult) return null;
-            return {
-                ...subgraphResult,
-                communityId,
-            };
         }
+        const subgraphResult = await getCommunityUBIParams(community.contractAddress!);
+        if (!subgraphResult) return null;
+        return {
+            ...subgraphResult,
+            communityId
+        };
     }
 
     public async getAmbassador(communityId: number, userAddress?: string) {
-        const ambassadorAttributes: string[] = [
-            'address',
-            'firstName',
-            'lastName',
-            'avatarMediaPath',
-        ];
+        const ambassadorAttributes: string[] = ['address', 'firstName', 'lastName', 'avatarMediaPath'];
         if (userAddress) {
             const userRoles = await getUserRoles(userAddress);
             if (userRoles && userRoles.ambassador) {
@@ -140,23 +121,18 @@ export class CommunityDetailsService {
         const community = await models.community.findOne({
             attributes: ['ambassadorAddress', 'status', 'contractAddress'],
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         });
 
-        if (
-            !community ||
-            (community.status === 'pending' && !community.ambassadorAddress)
-        ) {
+        if (!community || (community.status === 'pending' && !community.ambassadorAddress)) {
             return null;
         }
 
         let address = '';
         let active = true;
         if (community.status === 'valid') {
-            const subgraphAmbassador = await getCommunityAmbassador(
-                community.contractAddress!
-            );
+            const subgraphAmbassador = await getCommunityAmbassador(community.contractAddress!);
             if (!subgraphAmbassador) {
                 return null;
             }
@@ -169,13 +145,13 @@ export class CommunityDetailsService {
 
         const ambassador = await models.appUser.findOne({
             attributes: ambassadorAttributes,
-            where: { address },
+            where: { address }
         });
 
         return {
             ...ambassador?.toJSON(),
             address,
-            active,
+            active
         };
     }
 
@@ -188,10 +164,10 @@ export class CommunityDetailsService {
                         model: models.merchantCommunity,
                         as: 'merchantCommunity',
                         where: {
-                            communityId,
-                        },
-                    },
-                ],
+                            communityId
+                        }
+                    }
+                ]
             });
             return merchant;
         } catch (error) {
@@ -203,19 +179,17 @@ export class CommunityDetailsService {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         });
         if (!community || !community.contractAddress) {
             return null;
         }
 
-        const ubiParams = await getCommunityUBIParams(
-            community.contractAddress
-        );
+        const ubiParams = await getCommunityUBIParams(community.contractAddress);
         return {
             ...ubiParams,
-            communityId,
+            communityId
         };
     }
 
@@ -227,24 +201,21 @@ export class CommunityDetailsService {
         // if user does not exist, add to pending list
         // otherwise update
         const manager = await models.manager.findOne({
-            where: { address, communityId },
+            where: { address, communityId }
         });
         if (manager === null) {
             const managerData = {
                 address,
-                communityId,
+                communityId
             };
             try {
                 const updated = await models.manager.create(managerData, {
-                    transaction: t,
+                    transaction: t
                 });
                 return updated[0] > 0;
             } catch (e) {
                 if (e.name !== 'SequelizeUniqueConstraintError') {
-                    Logger.error(
-                        'Error inserting new Manager. Data = ' +
-                            JSON.stringify(managerData)
-                    );
+                    Logger.error('Error inserting new Manager. Data = ' + JSON.stringify(managerData));
                     Logger.error(e);
                 }
                 return false;
@@ -307,12 +278,7 @@ export class CommunityDetailsService {
             until?: number;
         }[];
     }> {
-        const managerAttributes: string[] = [
-            'address',
-            'firstName',
-            'lastName',
-            'avatarMediaPath',
-        ];
+        const managerAttributes: string[] = ['address', 'firstName', 'lastName', 'avatarMediaPath'];
         if (userAddress) {
             const userRoles = await getUserRoles(userAddress);
             if (userRoles && userRoles.ambassador) {
@@ -321,8 +287,8 @@ export class CommunityDetailsService {
         }
         const community = (await models.community.findOne({
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         }))!;
 
         let addresses: string[] = [];
@@ -336,10 +302,7 @@ export class CommunityDetailsService {
 
         if (orderBy) {
             [orderKey, orderDirection] = orderBy.split(':');
-            orderDirection =
-                orderDirection?.toLowerCase() === 'desc'
-                    ? orderDirection
-                    : 'asc';
+            orderDirection = orderDirection?.toLowerCase() === 'desc' ? orderDirection : 'asc';
         }
 
         if (searchInput) {
@@ -347,9 +310,7 @@ export class CommunityDetailsService {
             if (input.address) {
                 addresses.push(input.address);
             } else if (input.name) {
-                appUserFilter = literal(
-                    `concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`
-                );
+                appUserFilter = literal(`concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`);
             }
         }
 
@@ -361,14 +322,14 @@ export class CommunityDetailsService {
             if (!!addresses[0] && community.requestByAddress !== addresses[0]) {
                 return {
                     count: 0,
-                    rows: [],
+                    rows: []
                 };
             }
             const user = await models.appUser.findOne({
                 attributes: managerAttributes,
                 where: {
-                    address: community.requestByAddress,
-                },
+                    address: community.requestByAddress
+                }
             });
             return {
                 count: user ? 1 : 0,
@@ -380,129 +341,108 @@ export class CommunityDetailsService {
                         added: 0,
                         removed: 0,
                         since: 0,
-                        until: 0,
-                    },
-                ],
-            };
-        } else {
-            if (appUserFilter) {
-                // filter by name
-                appUsers = await models.appUser.findAll({
-                    attributes: managerAttributes,
-                    where: {
-                        address: appUserFilter,
-                    },
-                });
-                addresses = appUsers.map((user) => user.address);
-                if (addresses.length === 0) {
-                    return {
-                        count: 0,
-                        rows: [],
-                    };
-                }
-                managersSubgraph = await getCommunityManagers(
-                    community.contractAddress!,
-                    managerState,
-                    addresses,
-                    orderKey ? `orderBy: ${orderKey}` : undefined,
-                    orderDirection
-                        ? `orderDirection: ${orderDirection}`
-                        : undefined
-                );
-                count = managersSubgraph.length;
-                if (count > limit) {
-                    managersSubgraph = managersSubgraph.slice(
-                        offset,
-                        offset + limit
-                    );
-                }
-            } else if (addresses.length > 0) {
-                // filter by address
-                managersSubgraph = await getCommunityManagers(
-                    community.contractAddress!,
-                    managerState,
-                    addresses,
-                    orderKey ? `orderBy: ${orderKey}` : undefined,
-                    orderDirection
-                        ? `orderDirection: ${orderDirection}`
-                        : undefined
-                );
-                count = managersSubgraph.length;
-                appUsers = await models.appUser.findAll({
-                    attributes: managerAttributes,
-                    where: {
-                        address: {
-                            [Op.in]: addresses,
-                        },
-                    },
-                });
-            } else {
-                managersSubgraph = await getCommunityManagers(
-                    community.contractAddress!,
-                    managerState,
-                    undefined,
-                    orderKey ? `orderBy: ${orderKey}` : undefined,
-                    orderDirection
-                        ? `orderDirection: ${orderDirection}`
-                        : undefined,
-                    limit,
-                    offset
-                );
-                count = await countManagers(
-                    community.contractAddress!,
-                    filter.state
-                );
-                addresses = managersSubgraph.map((manager) =>
-                    ethers.utils.getAddress(manager.address)
-                );
-                appUsers = await models.appUser.findAll({
-                    attributes: managerAttributes,
-                    where: {
-                        address: {
-                            [Op.in]: addresses,
-                        },
-                    },
-                });
-            }
-
-            if (!managersSubgraph || !managersSubgraph.length) {
-                count = 0;
-            }
-
-            const result = managersSubgraph.map((manager) => {
-                const user = appUsers.find(
-                    (user) =>
-                        user.address ===
-                        ethers.utils.getAddress(manager.address)
-                );
-                return {
-                    address: ethers.utils.getAddress(manager.address),
-                    firstName: user?.firstName,
-                    lastName: user?.lastName,
-                    email: user?.email,
-                    phone: user?.phone,
-                    avatarMediaPath: user?.avatarMediaPath,
-                    added: manager.added,
-                    removed: manager.removed,
-                    since: manager.since,
-                    until: manager.until,
-                    isDeleted: !user || !!user!.deletedAt,
-                    state: manager.state,
-                };
-            });
-
-            return {
-                count,
-                rows: result,
+                        until: 0
+                    }
+                ]
             };
         }
+        if (appUserFilter) {
+            // filter by name
+            appUsers = await models.appUser.findAll({
+                attributes: managerAttributes,
+                where: {
+                    address: appUserFilter
+                }
+            });
+            addresses = appUsers.map(user => user.address);
+            if (addresses.length === 0) {
+                return {
+                    count: 0,
+                    rows: []
+                };
+            }
+            managersSubgraph = await getCommunityManagers(
+                community.contractAddress!,
+                managerState,
+                addresses,
+                orderKey ? `orderBy: ${orderKey}` : undefined,
+                orderDirection ? `orderDirection: ${orderDirection}` : undefined
+            );
+            count = managersSubgraph.length;
+            if (count > limit) {
+                managersSubgraph = managersSubgraph.slice(offset, offset + limit);
+            }
+        } else if (addresses.length > 0) {
+            // filter by address
+            managersSubgraph = await getCommunityManagers(
+                community.contractAddress!,
+                managerState,
+                addresses,
+                orderKey ? `orderBy: ${orderKey}` : undefined,
+                orderDirection ? `orderDirection: ${orderDirection}` : undefined
+            );
+            count = managersSubgraph.length;
+            appUsers = await models.appUser.findAll({
+                attributes: managerAttributes,
+                where: {
+                    address: {
+                        [Op.in]: addresses
+                    }
+                }
+            });
+        } else {
+            managersSubgraph = await getCommunityManagers(
+                community.contractAddress!,
+                managerState,
+                undefined,
+                orderKey ? `orderBy: ${orderKey}` : undefined,
+                orderDirection ? `orderDirection: ${orderDirection}` : undefined,
+                limit,
+                offset
+            );
+            count = await countManagers(community.contractAddress!, filter.state);
+            addresses = managersSubgraph.map(manager => ethers.utils.getAddress(manager.address));
+            appUsers = await models.appUser.findAll({
+                attributes: managerAttributes,
+                where: {
+                    address: {
+                        [Op.in]: addresses
+                    }
+                }
+            });
+        }
+
+        if (!managersSubgraph || !managersSubgraph.length) {
+            count = 0;
+        }
+
+        const result = managersSubgraph.map(manager => {
+            const user = appUsers.find(user => user.address === ethers.utils.getAddress(manager.address));
+            return {
+                address: ethers.utils.getAddress(manager.address),
+                firstName: user?.firstName,
+                lastName: user?.lastName,
+                email: user?.email,
+                phone: user?.phone,
+                avatarMediaPath: user?.avatarMediaPath,
+                added: manager.added,
+                removed: manager.removed,
+                since: manager.since,
+                until: manager.until,
+                isDeleted: !user || !!user!.deletedAt,
+                state: manager.state
+            };
+        });
+
+        return {
+            count,
+            rows: result
+        };
     }
 
-    public async getManagerByAddress(
-        address: string
-    ): Promise<ManagerAttributes | null> {
+    public async getManagerByAddress(address: string): Promise<ManagerAttributes | null> {
         const r = await models.manager.findOne({
-            where: { address, active: true },
+            where: { address, active: true }
         });
         if (r) {
             return r.toJSON() as ManagerAttributes;
@@ -518,7 +458,7 @@ export class CommunityDetailsService {
         filter: any,
         searchInput?: string,
         orderBy?: string,
-        lastActivity_lt?: number,
+        lastActivity_lt?: number
     ): Promise<{
         count: number;
         rows: any[];
@@ -527,39 +467,24 @@ export class CommunityDetailsService {
         const community = await models.community.findOne({
             attributes: ['contractAddress'],
             where: {
-                id: communityId,
-            },
+                id: communityId
+            }
         });
         if (!community || !community.contractAddress) {
             throw new BaseError('COMMUNITY_NOT_FOUND', 'Community not found');
         }
 
         if (roles.ambassador) {
-            if (
-                roles.ambassador.communities.indexOf(
-                    community.contractAddress.toLowerCase()
-                ) === -1
-            ) {
-                throw new BaseError(
-                    'NOT_ALLOWED',
-                    'User should be an ambassador or manager'
-                );
+            if (roles.ambassador.communities.indexOf(community.contractAddress.toLowerCase()) === -1) {
+                throw new BaseError('NOT_ALLOWED', 'User should be an ambassador or manager');
             }
         } else if (roles.manager) {
-            const contractAddress = ethers.utils.getAddress(
-                roles.manager.community
-            );
+            const contractAddress = ethers.utils.getAddress(roles.manager.community);
             if (community.contractAddress !== contractAddress) {
-                throw new BaseError(
-                    'NOT_ALLOWED',
-                    'User should be an ambassador or manager'
-                );
+                throw new BaseError('NOT_ALLOWED', 'User should be an ambassador or manager');
             }
         } else {
-            throw new BaseError(
-                'NOT_ALLOWED',
-                'User should be an ambassador or manager'
-            );
+            throw new BaseError('NOT_ALLOWED', 'User should be an ambassador or manager');
         }
 
         let orderKey: string | null = null;
@@ -570,10 +495,7 @@ export class CommunityDetailsService {
 
         if (orderBy) {
             [orderKey, orderDirection] = orderBy.split(':');
-            orderDirection =
-                orderDirection?.toLowerCase() === 'desc'
-                    ? orderDirection
-                    : 'asc';
+            orderDirection = orderDirection?.toLowerCase() === 'desc' ? orderDirection : 'asc';
         }
 
         if (searchInput) {
@@ -581,9 +503,7 @@ export class CommunityDetailsService {
             if (input.address) {
                 addresses.push(input.address);
             } else if (input.name) {
-                appUserFilter = literal(
-                    `concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`
-                );
+                appUserFilter = literal(`concat("firstName", ' ', "lastName") ILIKE '%${input.name}%'`);
             }
         }
 
@@ -597,19 +517,14 @@ export class CommunityDetailsService {
         let count: number = 0;
         if (appUserFilter) {
             appUsers = await models.appUser.findAll({
-                attributes: [
-                    'address',
-                    'firstName',
-                    'lastName',
-                    'avatarMediaPath',
-                ],
-                where: appUserFilter,
+                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
+                where: appUserFilter
             });
-            addresses = appUsers.map((user) => user.address);
+            addresses = appUsers.map(user => user.address);
             if (addresses.length === 0) {
                 return {
                     count: 0,
-                    rows: [],
+                    rows: []
                 };
             }
             beneficiariesSubgraph = await getBeneficiariesByAddress(
@@ -619,15 +534,12 @@ export class CommunityDetailsService {
                 community.contractAddress,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined,
-                lastActivity_lt,
+                lastActivity_lt
             );
             count = beneficiariesSubgraph.length;
 
             if (count > limit) {
-                beneficiariesSubgraph = beneficiariesSubgraph.slice(
-                    offset,
-                    offset + limit
-                );
+                beneficiariesSubgraph = beneficiariesSubgraph.slice(offset, offset + limit);
             }
         } else if (addresses.length > 0) {
             beneficiariesSubgraph = await getBeneficiariesByAddress(
@@ -637,21 +549,16 @@ export class CommunityDetailsService {
                 community.contractAddress,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined,
-                lastActivity_lt,
+                lastActivity_lt
             );
             count = beneficiariesSubgraph.length;
             appUsers = await models.appUser.findAll({
-                attributes: [
-                    'address',
-                    'firstName',
-                    'lastName',
-                    'avatarMediaPath',
-                ],
+                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
                 where: {
                     address: {
-                        [Op.in]: addresses,
-                    },
-                },
+                        [Op.in]: addresses
+                    }
+                }
             });
         } else {
             beneficiariesSubgraph = await getBeneficiaries(
@@ -662,35 +569,25 @@ export class CommunityDetailsService {
                 beneficiaryState,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined,
-                lastActivity_lt,
+                lastActivity_lt
             );
 
             if (lastActivity_lt) {
-                count = await countInactiveBeneficiaries(
-                    community.contractAddress,
-                    lastActivity_lt,
-                )
+                count = await countInactiveBeneficiaries(community.contractAddress, lastActivity_lt);
             } else {
                 count = await countBeneficiaries(
                     community.contractAddress,
                     filter.state !== null ? (filter.state as number) : undefined
                 );
             }
-            addresses = beneficiariesSubgraph.map((beneficiary) =>
-                ethers.utils.getAddress(beneficiary.address)
-            );
+            addresses = beneficiariesSubgraph.map(beneficiary => ethers.utils.getAddress(beneficiary.address));
             appUsers = await models.appUser.findAll({
-                attributes: [
-                    'address',
-                    'firstName',
-                    'lastName',
-                    'avatarMediaPath',
-                ],
+                attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
                 where: {
                     address: {
-                        [Op.in]: addresses,
-                    },
-                },
+                        [Op.in]: addresses
+                    }
+                }
             });
         }
 
@@ -698,12 +595,8 @@ export class CommunityDetailsService {
             count = 0;
         }
 
-        const result: any[] = beneficiariesSubgraph.map((beneficiary) => {
-            const user = appUsers.find(
-                (user) =>
-                    user.address ===
-                    ethers.utils.getAddress(beneficiary.address)
-            );
+        const result: any[] = beneficiariesSubgraph.map(beneficiary => {
+            const user = appUsers.find(user => user.address === ethers.utils.getAddress(beneficiary.address));
             return {
                 address: beneficiary.address,
                 firstName: user?.firstName,
@@ -713,13 +606,13 @@ export class CommunityDetailsService {
                 claimed: beneficiary.claimed,
                 blocked: beneficiary.state === 2,
                 isDeleted: !user || !!user!.deletedAt,
-                state: beneficiary.state,
+                state: beneficiary.state
             };
         });
 
         return {
             count,
-            rows: result,
+            rows: result
         };
     }
 
@@ -740,11 +633,7 @@ export class CommunityDetailsService {
             state?: string | string[];
         }
     ): Promise<CommunityAttributes> {
-        return this._findCommunityBy(
-            { contractAddress },
-            userAddress,
-            query?.state
-        );
+        return this._findCommunityBy({ contractAddress }, userAddress, query?.state);
     }
 
     private async _findCommunityBy(
@@ -753,49 +642,41 @@ export class CommunityDetailsService {
         returnState?: string | string[]
     ): Promise<CommunityAttributes> {
         const community = await models.community.findOne({
-            where,
+            where
         });
         if (community === null) {
-            throw new BaseError(
-                'COMMUNITY_NOT_FOUND',
-                'Not found community ' + where
-            );
+            throw new BaseError('COMMUNITY_NOT_FOUND', 'Not found community ' + where);
         }
 
         let showEmail = false;
         if (userAddress) {
             // verify if user is the community creator, ambassador or manager
             if (
-                (community.status === 'pending' &&
-                    community.requestByAddress === userAddress) ||
+                (community.status === 'pending' && community.requestByAddress === userAddress) ||
                 community.ambassadorAddress === userAddress
             ) {
                 showEmail = true;
             } else {
                 const userRole = await getUserRoles(userAddress);
                 if (userRole.manager) {
-                    showEmail =
-                        ethers.utils.getAddress(userRole.manager.community) ===
-                        community.contractAddress;
+                    showEmail = ethers.utils.getAddress(userRole.manager.community) === community.contractAddress;
                 }
             }
         }
 
         const state = {
-            ...(!!returnState &&
-            (returnState === 'base' || returnState.indexOf('base') !== -1)
+            ...(!!returnState && (returnState === 'base' || returnState.indexOf('base') !== -1)
                 ? await this.getBaseState(community.id)
                 : null),
-            ...(!!returnState &&
-            (returnState === 'ubi' || returnState.indexOf('ubi') !== -1)
+            ...(!!returnState && (returnState === 'ubi' || returnState.indexOf('ubi') !== -1)
                 ? await this.getUbiState(community.id)
-                : null),
+                : null)
         } as any;
 
         return {
             ...community.toJSON(),
             state,
-            email: showEmail ? community.email : '',
+            email: showEmail ? community.email : ''
         };
     }
 
@@ -819,7 +700,7 @@ export class CommunityDetailsService {
         }
 
         let where: WhereOptions = {
-            visibility: 'public',
+            visibility: 'public'
         };
         if (groupName.length === 0) {
             throw new BaseError('INVALID_GROUP', 'invalid group');
@@ -827,13 +708,13 @@ export class CommunityDetailsService {
         if (status) {
             where = {
                 ...where,
-                status,
+                status
             };
         }
         if (ambassadorAddress) {
             where = {
                 ...where,
-                ambassadorAddress,
+                ambassadorAddress
             };
         }
 
@@ -842,8 +723,8 @@ export class CommunityDetailsService {
             where = {
                 ...where,
                 country: {
-                    [Op.notIn]: countries,
-                },
+                    [Op.notIn]: countries
+                }
             };
         }
 
@@ -852,37 +733,13 @@ export class CommunityDetailsService {
                 attributes: [
                     'country',
                     [fn('count', col('country')), 'count'],
-                    [
-                        fn(
-                            'count',
-                            literal("CASE WHEN review = 'pending' THEN 1 END")
-                        ),
-                        'pending',
-                    ],
-                    [
-                        fn(
-                            'count',
-                            literal("CASE WHEN review = 'claimed' THEN 1 END")
-                        ),
-                        'claimed',
-                    ],
-                    [
-                        fn(
-                            'count',
-                            literal("CASE WHEN review = 'declined' THEN 1 END")
-                        ),
-                        'declined',
-                    ],
-                    [
-                        fn(
-                            'count',
-                            literal("CASE WHEN review = 'accepted' THEN 1 END")
-                        ),
-                        'accepted',
-                    ],
+                    [fn('count', literal("CASE WHEN review = 'pending' THEN 1 END")), 'pending'],
+                    [fn('count', literal("CASE WHEN review = 'claimed' THEN 1 END")), 'claimed'],
+                    [fn('count', literal("CASE WHEN review = 'declined' THEN 1 END")), 'declined'],
+                    [fn('count', literal("CASE WHEN review = 'accepted' THEN 1 END")), 'accepted']
                 ],
                 where,
-                group: ['country'],
+                group: ['country']
             })) as any;
 
             return result;
@@ -892,7 +749,7 @@ export class CommunityDetailsService {
             attributes: [groupName, [fn('count', col(groupName)), 'count']],
             where,
             group: [groupName],
-            raw: true,
+            raw: true
         })) as any;
 
         return result;
@@ -913,14 +770,14 @@ export class CommunityDetailsService {
                     required: true,
                     attributes: [],
                     where: {
-                        id: communityId,
-                    },
+                        id: communityId
+                    }
                 },
                 {
                     model: models.ubiPromoterSocialMedia,
-                    as: 'socialMedia',
-                },
-            ],
+                    as: 'socialMedia'
+                }
+            ]
         });
 
         if (!result) return null;
@@ -942,9 +799,7 @@ export class CommunityDetailsService {
 
         // convert csv to json
         const string = file.buffer.toString().replace(/;/g, ',');
-        const beneficiaries = await csv({ ignoreEmpty: true }).fromString(
-            string
-        );
+        const beneficiaries = await csv({ ignoreEmpty: true }).fromString(string);
 
         // check valid address
         for (let i = 0; i < beneficiaries.length; i++) {
@@ -952,7 +807,7 @@ export class CommunityDetailsService {
             try {
                 const address = getAddress(beneficiary.address);
                 const user = await models.appUser.findOne({
-                    where: { address },
+                    where: { address }
                 });
 
                 if (!user) {
@@ -964,12 +819,12 @@ export class CommunityDetailsService {
                             firstName: beneficiary.firstName,
                             lastName: beneficiary.lastName,
                             age: beneficiary.yearOfBirth,
-                            gender: beneficiary.gender,
+                            gender: beneficiary.gender
                         });
                     } else {
                         failedAddress.push({
                             address: beneficiary.address,
-                            error: validate.error,
+                            error: validate.error
                         });
                     }
                 } else {
@@ -978,7 +833,7 @@ export class CommunityDetailsService {
             } catch (error) {
                 failedAddress.push({
                     address: beneficiary.address,
-                    error: 'invalid address',
+                    error: 'invalid address'
                 });
             }
         }
@@ -986,16 +841,14 @@ export class CommunityDetailsService {
         // create accounts
         if (usersToCreate.length > 0) {
             const users = await models.appUser.bulkCreate(usersToCreate);
-            users.forEach((user) => {
+            users.forEach(user => {
                 addressesToAdd.push(user.address);
             });
         }
 
         // check if it is already a beneficiary
-        const existingBeneficiaries = await this.verifyBeneficiaries(
-            addressesToAdd
-        );
-        existingBeneficiaries.forEach((address) => {
+        const existingBeneficiaries = await this.verifyBeneficiaries(addressesToAdd);
+        existingBeneficiaries.forEach(address => {
             addressesToAdd.splice(addressesToAdd.indexOf(address), 1);
         });
 
@@ -1003,7 +856,7 @@ export class CommunityDetailsService {
 
         if (failedAddress.length > 0) {
             // Write data into csv file named failed.csv
-            var fields = ['address', 'error'];
+            const fields = ['address', 'error'];
             const data = json2csv.parse(failedAddress, { fields });
             const filePath = './public/';
             const fileName = 'failed.csv';
@@ -1016,21 +869,20 @@ export class CommunityDetailsService {
             return {
                 success: false,
                 filePath,
-                fileName,
-            };
-        } else {
-            return {
-                success: true,
+                fileName
             };
         }
+        return {
+            success: true
+        };
     }
 
     private async verifyBeneficiaries(addresses: string[]) {
         const beneficiaries: string[] = [];
-        const promises = addresses.map((address) => getUserRoles(address));
+        const promises = addresses.map(address => getUserRoles(address));
         const results = await Promise.all(promises);
 
-        results.forEach((result) => {
+        results.forEach(result => {
             if (result.beneficiary) {
                 beneficiaries.push(getAddress(result.beneficiary.address));
             }
@@ -1042,12 +894,10 @@ export class CommunityDetailsService {
     public async getCampaign(communityId: number) {
         const result = await models.ubiCommunityCampaign.findOne({
             where: {
-                communityId,
-            },
+                communityId
+            }
         });
-        return result !== null
-            ? (result.toJSON() as UbiCommunityCampaign)
-            : null;
+        return result !== null ? (result.toJSON() as UbiCommunityCampaign) : null;
     }
 
     private validateUserRegistry(user: any) {
@@ -1055,7 +905,7 @@ export class CommunityDetailsService {
         if (!user.firstName || !user.lastName) {
             return {
                 valid: false,
-                error: 'invalid firstName/lastName',
+                error: 'invalid firstName/lastName'
             };
         }
 
@@ -1064,7 +914,7 @@ export class CommunityDetailsService {
         if (!year) {
             return {
                 valid: false,
-                error: 'invalid yearOfBirth',
+                error: 'invalid yearOfBirth'
             };
         }
 
@@ -1072,23 +922,20 @@ export class CommunityDetailsService {
         if (!user.phone || typeof user.phone !== 'string') {
             return {
                 valid: false,
-                error: 'invalid phone',
+                error: 'invalid phone'
             };
         }
 
         // validate gender
-        if (
-            !user.gender ||
-            ['m', 'f', 'u'].indexOf(user.gender.toLowerCase()) === -1
-        ) {
+        if (!user.gender || ['m', 'f', 'u'].indexOf(user.gender.toLowerCase()) === -1) {
             return {
                 valid: false,
-                error: 'invalid gender',
+                error: 'invalid gender'
             };
         }
 
         return {
-            valid: true,
+            valid: true
         };
     }
 }

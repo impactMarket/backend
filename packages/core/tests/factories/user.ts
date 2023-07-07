@@ -1,11 +1,8 @@
 import { ethers } from 'ethers';
 import { faker } from '@faker-js/faker';
 
+import { AppUser, AppUserCreationAttributes } from '../../src/interfaces/app/appUser';
 import { AppUserModel } from '../../src/database/models/app/appUser';
-import {
-    AppUser,
-    AppUserCreationAttributes,
-} from '../../src/interfaces/app/appUser';
 
 interface ICreateProps {
     phone?: string;
@@ -33,7 +30,7 @@ const data = async (props?: ICreateProps) => {
         gender: props?.gender ? props?.gender : 'u',
         phone: props?.phone ? props.phone : faker.phone.number(),
         active: props?.active,
-        year: props?.year,
+        year: props?.year
     };
     return defaultProps;
 };
@@ -44,9 +41,7 @@ const data = async (props?: ICreateProps) => {
  *
  * @return {Object}       A user instance
  */
-const UserFactory = async (
-    options: { n: number; props?: ICreateProps[] } = { n: 1 }
-) => {
+const UserFactory = async (options: { n: number; props?: ICreateProps[] } = { n: 1 }) => {
     const result: AppUser[] = [];
     for (let index = 0; index < options.n; index++) {
         const newUser = (await AppUserModel.create(

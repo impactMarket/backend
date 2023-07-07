@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    StoryContent,
-    StoryContentCreation,
-} from '../../../interfaces/story/storyContent';
+import { StoryContent, StoryContentCreation } from '../../../interfaces/story/storyContent';
 
-export class StoryContentModel extends Model<
-    StoryContent,
-    StoryContentCreation
-> {
+export class StoryContentModel extends Model<StoryContent, StoryContentCreation> {
     public id!: number;
     public mediaMediaId!: number;
     public storyMediaPath!: string;
@@ -19,61 +13,59 @@ export class StoryContentModel extends Model<
     public postedAt!: Date;
 }
 
-export function initializeStoryContent(
-    sequelize: Sequelize
-): typeof StoryContentModel {
+export function initializeStoryContent(sequelize: Sequelize): typeof StoryContentModel {
     StoryContentModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             mediaMediaId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'app_media_content',
-                    key: 'id',
+                    key: 'id'
                 },
                 // onDelete: 'SET NULL', // default
-                allowNull: true,
+                allowNull: true
             },
             storyMediaPath: {
                 type: DataTypes.STRING(44),
-                allowNull: true,
+                allowNull: true
             },
             storyMedia: {
                 type: DataTypes.ARRAY(DataTypes.STRING(44)),
-                allowNull: true,
+                allowNull: true
             },
             message: {
                 type: DataTypes.STRING(256),
-                allowNull: true,
+                allowNull: true
             },
             byAddress: {
                 type: DataTypes.STRING(44),
                 references: {
                     model: 'app_user',
-                    key: 'address',
+                    key: 'address'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             isPublic: {
                 type: DataTypes.BOOLEAN,
-                defaultValue: false,
+                defaultValue: false
             },
             postedAt: {
                 type: DataTypes.DATE,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'story_content',
             modelName: 'storyContent',
             sequelize,
-            timestamps: false,
+            timestamps: false
         }
     );
     return StoryContentModel;

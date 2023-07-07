@@ -1,21 +1,17 @@
+import * as MicroCredit from './microcredit';
 import * as app from './app';
 import * as global from './global';
-import { answer } from './learnAndEarn/answer';
-import { registerClaimRewards } from './learnAndEarn/claimRewards';
-import {
-    listLessons,
-    listLevels,
-    listLevelsByAdmin,
-} from './learnAndEarn/list';
-import { startLesson } from './learnAndEarn/start';
-import { webhook } from './learnAndEarn/syncRemote';
-import { total } from './learnAndEarn/userData';
-import { createLevel } from './learnAndEarn/create';
-import Protocol from './protocol';
-import * as MicroCredit from './microcredit';
 import * as storage from './storage';
-import StoryServiceV2 from './story/index';
 import * as ubi from './ubi';
+import { answer } from './learnAndEarn/answer';
+import { createLevel } from './learnAndEarn/create';
+import { listLessons, listLevels, listLevelsByAdmin } from './learnAndEarn/list';
+import { registerClaimRewards } from './learnAndEarn/claimRewards';
+import { startLesson } from './learnAndEarn/start';
+import { total } from './learnAndEarn/userData';
+import { webhook } from './learnAndEarn/syncRemote';
+import Protocol from './protocol';
+import StoryServiceV2 from './story/index';
 
 const learnAndEarn = {
     answer,
@@ -26,15 +22,6 @@ const learnAndEarn = {
     startLesson,
     webhook,
     total,
-    createLevel,
+    createLevel
 };
-export {
-    app,
-    global,
-    storage,
-    ubi,
-    StoryServiceV2,
-    learnAndEarn,
-    MicroCredit,
-    Protocol,
-};
+export { app, global, storage, ubi, StoryServiceV2, learnAndEarn, MicroCredit, Protocol };

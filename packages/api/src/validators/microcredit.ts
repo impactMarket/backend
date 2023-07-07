@@ -1,7 +1,7 @@
-import { celebrate, Joi } from 'celebrate';
+import { Joi, celebrate } from 'celebrate';
 
+import { ContainerTypes, ValidatedRequestSchema, createValidator } from '../utils/queryValidator';
 import { defaultSchema } from './defaultSchema';
-import { ContainerTypes, createValidator, ValidatedRequestSchema } from '../utils/queryValidator';
 
 const validator = createValidator();
 

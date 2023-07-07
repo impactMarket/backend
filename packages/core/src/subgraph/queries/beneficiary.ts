@@ -1,13 +1,11 @@
 import { utils } from 'ethers';
 
-import { axiosSubgraph,  } from '../config';
-import { redisClient } from '../../database';
 import { BeneficiarySubgraph } from '../interfaces/beneficiary';
+import { axiosSubgraph } from '../config';
 import { intervalsInSeconds } from '../../types';
+import { redisClient } from '../../database';
 
-export const getAllBeneficiaries = async (
-    community: string
-): Promise<BeneficiarySubgraph[]> => {
+export const getAllBeneficiaries = async (community: string): Promise<BeneficiarySubgraph[]> => {
     try {
         const aMonthAgo = new Date();
         aMonthAgo.setDate(aMonthAgo.getDate() - 30);
@@ -36,41 +34,36 @@ export const getAllBeneficiaries = async (
                             id
                         }
                     }
-                }`,
+                }`
             };
             const cacheResults = await redisClient.get(graphqlQuery.query);
-    
+
             if (cacheResults) {
                 return JSON.parse(cacheResults);
             }
-    
+
             const response = await axiosSubgraph.post<
                 any,
                 {
                     data: {
                         data: {
                             beneficiaryEntities: {
-                                address: string,
-                                lastClaimAt: number,
-                                preLastClaimAt: number,
-                                claims: number,
+                                address: string;
+                                lastClaimAt: number;
+                                preLastClaimAt: number;
+                                claims: number;
                                 community: {
-                                    id: string,
-                                }
+                                    id: string;
+                                };
                             }[];
                         };
                     };
                 }
             >('', graphqlQuery);
-    
+
             const beneficiaryEntities = response.data?.data.beneficiaryEntities;
-    
-            redisClient.set(
-                graphqlQuery.query,
-                JSON.stringify(beneficiaryEntities),
-                'EX',
-                intervalsInSeconds.oneHour
-            );
+
+            redisClient.set(graphqlQuery.query, JSON.stringify(beneficiaryEntities), 'EX', intervalsInSeconds.oneHour);
 
             result.push(...beneficiaryEntities);
 
@@ -91,10 +84,10 @@ export const getBeneficiariesByAddress = async (
     community?: string,
     orderBy?: string,
     orderDirection?: string,
-    lastActivity?: number,
+    lastActivity?: number
 ): Promise<BeneficiarySubgraph[]> => {
     try {
-        const idsFormated = addresses.map((el) => `"${el.toLowerCase()}"`);
+        const idsFormated = addresses.map(el => `"${el.toLowerCase()}"`);
         const graphqlQuery = {
             operationName: 'beneficiaryEntities',
             query: `query beneficiaryEntities {
@@ -106,11 +99,7 @@ export const getBeneficiariesByAddress = async (
                         address_in: [${idsFormated}]
                         ${state ? state : ''}
                         ${inactive ? inactive : ''}
-                        ${
-                            community
-                                ? `community: "${community.toLowerCase()}"`
-                                : ''
-                        }
+                        ${community ? `community: "${community.toLowerCase()}"` : ''}
                         ${lastActivity ? `lastActivity_lt: ${lastActivity}` : ''}
                     }
                 ) {
@@ -122,7 +111,7 @@ export const getBeneficiariesByAddress = async (
                         id
                     }
                 }
-            }`,
+            }`
         };
 
         const response = await axiosSubgraph.post<
@@ -131,13 +120,13 @@ export const getBeneficiariesByAddress = async (
                 data: {
                     data: {
                         beneficiaryEntities: {
-                            address: string,
-                            claimed: string,
-                            since: number,
-                            state: number,
+                            address: string;
+                            claimed: string;
+                            since: number;
+                            state: number;
                             community: {
-                                id: string,
-                            }
+                                id: string;
+                            };
                         }[];
                     };
                 };
@@ -160,7 +149,7 @@ export const getBeneficiaries = async (
     state?: string,
     orderBy?: string,
     orderDirection?: string,
-    lastActivity?: number,
+    lastActivity?: number
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const graphqlQuery = {
@@ -186,7 +175,7 @@ export const getBeneficiaries = async (
                         id
                     }
                 }
-            }`,
+            }`
         };
 
         const response = await axiosSubgraph.post<
@@ -195,13 +184,13 @@ export const getBeneficiaries = async (
                 data: {
                     data: {
                         beneficiaryEntities: {
-                            address: string,
-                            claimed: string,
-                            since: number,
-                            state: number,
+                            address: string;
+                            claimed: string;
+                            since: number;
+                            state: number;
                             community: {
-                                id: string,
-                            }
+                                id: string;
+                            };
                         }[];
                     };
                 };
@@ -216,9 +205,7 @@ export const getBeneficiaries = async (
     }
 };
 
-export const getBeneficiaryCommunity = async (
-    beneficiaryAddress: string
-): Promise<string> => {
+export const getBeneficiaryCommunity = async (beneficiaryAddress: string): Promise<string> => {
     try {
         const graphqlQuery = {
             operationName: 'beneficiaryEntity',
@@ -231,7 +218,7 @@ export const getBeneficiaryCommunity = async (
                         id
                     }
                 }
-            }`,
+            }`
         };
         const cacheResults = await redisClient.get(graphqlQuery.query);
 
@@ -246,8 +233,8 @@ export const getBeneficiaryCommunity = async (
                     data: {
                         beneficiaryEntity: {
                             community: {
-                                id: string,
-                            }
+                                id: string;
+                            };
                         };
                     };
                 };
@@ -256,25 +243,15 @@ export const getBeneficiaryCommunity = async (
 
         const beneficiaryEntity = response.data?.data.beneficiaryEntity;
 
-        redisClient.set(
-            graphqlQuery.query,
-            JSON.stringify(beneficiaryEntity),
-            'EX',
-            intervalsInSeconds.oneHour
-        );
+        redisClient.set(graphqlQuery.query, JSON.stringify(beneficiaryEntity), 'EX', intervalsInSeconds.oneHour);
 
-        return utils.getAddress(
-            beneficiaryEntity.community.id
-        );
+        return utils.getAddress(beneficiaryEntity.community.id);
     } catch (error) {
         throw new Error(error);
     }
 };
 
-export const countBeneficiaries = async (
-    community: string,
-    state?: number
-): Promise<number> => {
+export const countBeneficiaries = async (community: string, state?: number): Promise<number> => {
     try {
         const graphqlQuery = {
             operationName: 'communityEntity',
@@ -286,7 +263,7 @@ export const countBeneficiaries = async (
                     removedBeneficiaries
                     lockedBeneficiaries
                 }
-            }`,
+            }`
         };
 
         const response = await axiosSubgraph.post<
@@ -295,9 +272,9 @@ export const countBeneficiaries = async (
                 data: {
                     data: {
                         communityEntity: {
-                            beneficiaries: number,
-                            removedBeneficiaries: number,
-                            lockedBeneficiaries: number,
+                            beneficiaries: number;
+                            removedBeneficiaries: number;
+                            lockedBeneficiaries: number;
                         };
                     };
                 };
@@ -325,10 +302,7 @@ export const countBeneficiaries = async (
     }
 };
 
-export const countInactiveBeneficiaries = async (
-    community: string,
-    lastActivity: number
-): Promise<number> => {
+export const countInactiveBeneficiaries = async (community: string, lastActivity: number): Promise<number> => {
     try {
         const graphqlQuery = {
             operationName: 'beneficiaryEntities',
@@ -342,7 +316,7 @@ export const countInactiveBeneficiaries = async (
                 ) {
                     address
                 }
-            }`,
+            }`
         };
 
         const response = await axiosSubgraph.post<
@@ -351,13 +325,13 @@ export const countInactiveBeneficiaries = async (
                 data: {
                     data: {
                         beneficiaryEntities: {
-                            address: string,
-                            claimed: string,
-                            since: number,
-                            state: number,
+                            address: string;
+                            claimed: string;
+                            since: number;
+                            state: number;
                             community: {
-                                id: string,
-                            }
+                                id: string;
+                            };
                         }[];
                     };
                 };
@@ -370,4 +344,4 @@ export const countInactiveBeneficiaries = async (
     } catch (error) {
         throw new Error(error);
     }
-}
+};

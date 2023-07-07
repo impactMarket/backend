@@ -7,10 +7,10 @@ import generic from './generic';
 import global from './global';
 import learnAndEarn from './learnAndEarn';
 import microcredit from './microcredit';
+import protocol from './protocol';
 import referrals from './referrals';
 import story from './story';
 import user from './user';
-import protocol from './protocol';
 
 export default (): Router => {
     const app = Router();

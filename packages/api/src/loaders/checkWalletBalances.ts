@@ -1,9 +1,9 @@
 import { Contract } from '@ethersproject/contracts';
-import { parseEther, formatEther } from '@ethersproject/units';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import config from '../config';
+import { database, utils } from '@impactmarket/core';
+import { formatEther, parseEther } from '@ethersproject/units';
 import { sendEmail } from '../services/email';
-import { utils, database } from '@impactmarket/core';
+import config from '../config';
 
 const redisKeyStatus = 'lastWalletEmailTimestamp';
 

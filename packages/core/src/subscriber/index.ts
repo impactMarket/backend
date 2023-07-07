@@ -1,11 +1,10 @@
 import { ethers } from 'ethers';
 import schedule from 'node-schedule';
-import WebSocket from 'ws';
 
 import { ChainSubscribers } from './chainSubscribers';
-import { utils, config } from '../../';
-import { models } from '../database';
 import { Community } from '../database/models/ubi/community';
+import { config, utils } from '../../';
+import { models } from '../database';
 
 let subscribers: ChainSubscribers;
 let usingFallbackUrl = false;
@@ -25,7 +24,7 @@ export const start = async (): Promise<void> => {
 
     availableCommunities = await models.community.findAll({
         attributes: ['id', 'contractAddress'],
-        where: { status: 'valid', visibility: 'public' },
+        where: { status: 'valid', visibility: 'public' }
     });
     subscribers = startChainSubscriber();
 
@@ -35,8 +34,7 @@ export const start = async (): Promise<void> => {
         utils.Logger.error('uncaughtException: ', strError);
         if (
             strError.indexOf('eth_') !== -1 && // any eth_ surely is related to the RPC
-            (strError.indexOf('figment') !== -1 ||
-                strError.indexOf('celo') !== -1) &&
+            (strError.indexOf('figment') !== -1 || strError.indexOf('celo') !== -1) &&
             !waitingForResponseAfterCrash &&
             !waitingForResponseAfterTxRegWarn
         ) {
@@ -68,9 +66,7 @@ function reconnectChainSubscriber() {
                                 '/5 sucessfull responses form json rpc provider (fallback)...'
                         );
                     } else {
-                        utils.Logger.error(
-                            'Reconnecting json rpc provider (fallback)...'
-                        );
+                        utils.Logger.error('Reconnecting json rpc provider (fallback)...');
                         subscribers.recover();
                         clearInterval(intervalWhenCrash!);
                         intervalWhenCrash = undefined;
@@ -78,9 +74,7 @@ function reconnectChainSubscriber() {
 
                         // After 30 min, try to connect with the principal provider again
                         schedule.scheduleJob(Date.now() + 60000 * 30, () => {
-                            utils.Logger.error(
-                                'Conecting with the principal provider'
-                            );
+                            utils.Logger.error('Conecting with the principal provider');
                             subscribers.stop();
                             subscribers = startChainSubscriber();
                             usingFallbackUrl = false;
@@ -97,9 +91,7 @@ function reconnectChainSubscriber() {
                         usingFallbackUrl = false;
                         failedAnswers = 0;
                     } else {
-                        utils.Logger.error(
-                            'Checking again if RPC (fallback) is available...'
-                        );
+                        utils.Logger.error('Checking again if RPC (fallback) is available...');
                         successfullAnswersAfterCrash = 0;
                         failedAnswers += 1;
                     }
@@ -112,9 +104,7 @@ function reconnectChainSubscriber() {
                     // require 5 successfull answers, to prevent two or more crashes in row
                     if (successfullAnswersAfterCrash < 5) {
                         utils.Logger.error(
-                            'Got ' +
-                                successfullAnswersAfterCrash +
-                                '/5 sucessfull responses form json rpc provider...'
+                            'Got ' + successfullAnswersAfterCrash + '/5 sucessfull responses form json rpc provider...'
                         );
                     } else {
                         utils.Logger.error('Reconnecting json rpc provider...');
@@ -131,9 +121,7 @@ function reconnectChainSubscriber() {
                         usingFallbackUrl = true;
                         failedAnswers = 0;
                     } else {
-                        utils.Logger.error(
-                            'Checking again if RPC is available...'
-                        );
+                        utils.Logger.error('Checking again if RPC is available...');
                         successfullAnswersAfterCrash = 0;
                         failedAnswers += 1;
                     }
@@ -146,6 +134,6 @@ function startChainSubscriber(fallback?: boolean): ChainSubscribers {
     return new ChainSubscribers(
         fallback ? providerFallback : provider,
         providerFallback,
-        new Map(availableCommunities.map((c) => [c.contractAddress!, c.id]))
+        new Map(availableCommunities.map(c => [c.contractAddress!, c.id]))
     );
 }

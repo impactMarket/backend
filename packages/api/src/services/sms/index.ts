@@ -10,7 +10,7 @@ export const sendSMS = (to: string, body: string) => {
         .create({
             body,
             from: fromNumber,
-            to,
+            to
         })
         .then(console.log)
         .catch(console.error);

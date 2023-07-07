@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import { AirgrabProof } from './airgrabProof';
 
@@ -19,44 +19,39 @@ export interface AirgrabUserCreationAttributes {
     proof?: AirgrabProof[];
 }
 
-export class AirgrabUserModel extends Model<
-    AirgrabUser,
-    AirgrabUserCreationAttributes
-> {
+export class AirgrabUserModel extends Model<AirgrabUser, AirgrabUserCreationAttributes> {
     public id!: number;
     public address!: string;
     public index!: number;
     public amount!: string;
 }
 
-export function initializeAirgrabUser(
-    sequelize: Sequelize
-): typeof AirgrabUserModel {
+export function initializeAirgrabUser(sequelize: Sequelize): typeof AirgrabUserModel {
     AirgrabUserModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             address: {
                 type: DataTypes.STRING(44),
-                allowNull: false,
+                allowNull: false
             },
             index: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
+                allowNull: false
             },
             amount: {
                 type: DataTypes.STRING(32),
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'airgrab_user',
             modelName: 'airgrabUser',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return AirgrabUserModel;

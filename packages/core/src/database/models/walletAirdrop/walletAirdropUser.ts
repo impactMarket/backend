@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import { WalletAirdropProof } from './walletAirdropProof';
 
@@ -17,39 +17,34 @@ export interface WalletAirdropUserCreationAttributes {
     proof?: WalletAirdropProof[];
 }
 
-export class WalletAirdropUserModel extends Model<
-    WalletAirdropUser,
-    WalletAirdropUserCreationAttributes
-> {
+export class WalletAirdropUserModel extends Model<WalletAirdropUser, WalletAirdropUserCreationAttributes> {
     public id!: number;
     public address!: string;
     public index!: number;
 }
 
-export function initializeWalletAirdropUser(
-    sequelize: Sequelize
-): typeof WalletAirdropUserModel {
+export function initializeWalletAirdropUser(sequelize: Sequelize): typeof WalletAirdropUserModel {
     WalletAirdropUserModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
                 autoIncrement: true,
-                primaryKey: true,
+                primaryKey: true
             },
             address: {
                 type: DataTypes.STRING(44),
-                allowNull: false,
+                allowNull: false
             },
             index: {
                 type: DataTypes.INTEGER,
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'wallet_airdrop_user',
             modelName: 'walletAirdropUser',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
     return WalletAirdropUserModel;

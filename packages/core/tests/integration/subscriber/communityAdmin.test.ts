@@ -1,13 +1,7 @@
-import {
-    database,
-    tests,
-    config,
-    contracts,
-    services,
-} from '../../../';
+import { SinonStub, assert, match, restore, stub } from 'sinon';
+import { config, contracts, database, services, tests } from '../../../';
 import { ethers } from 'ethers';
 import ganache from 'ganache';
-import { assert, SinonStub, stub, match, restore } from 'sinon';
 
 import { ChainSubscribers } from '../../../src/subscriber/chainSubscribers';
 import CommunityAdminContractJSON from './CommunityAdmin.json';
@@ -24,8 +18,7 @@ describe('communityAdmin', () => {
     let CommunityAdminFactory: ethers.ContractFactory;
     const ganacheProvider = ganache.provider({
         quiet: true,
-        mnemonic:
-            'alter toy tortoise hard lava aunt second lamp sister galaxy parent bargain',
+        mnemonic: 'alter toy tortoise hard lava aunt second lamp sister galaxy parent bargain'
     });
     let getLastBlockStub: SinonStub<any, any>;
     let getRecoverBlockStub: SinonStub<any, any>;
@@ -41,20 +34,12 @@ describe('communityAdmin', () => {
         let lastBlock = 0;
 
         stub(services.ubi.ManagerService, 'add').returns(Promise.resolve(true));
-        stub(services.app.ImMetadataService, 'setLastBlock').callsFake(
-            async (v) => {
-                lastBlock = v;
-            }
-        );
-        stub(
-            services.app.ImMetadataService,
-            'setRecoverBlockUsingLastBlock'
-        ).returns(Promise.resolve());
+        stub(services.app.ImMetadataService, 'setLastBlock').callsFake(async v => {
+            lastBlock = v;
+        });
+        stub(services.app.ImMetadataService, 'setRecoverBlockUsingLastBlock').returns(Promise.resolve());
         getLastBlockStub = stub(services.app.ImMetadataService, 'getLastBlock');
-        getRecoverBlockStub = stub(
-            services.app.ImMetadataService,
-            'getRecoverBlock'
-        );
+        getRecoverBlockStub = stub(services.app.ImMetadataService, 'getRecoverBlock');
         getLastBlockStub.returns(Promise.resolve(lastBlock));
         getRecoverBlockStub.returns(Promise.resolve(lastBlock));
 
@@ -72,26 +57,15 @@ describe('communityAdmin', () => {
             provider.getSigner(0)
         );
 
-        CommunityAdminContract = await CommunityAdminFactory.deploy(
-            cUSD.address
-        );
+        CommunityAdminContract = await CommunityAdminFactory.deploy(cUSD.address);
 
-        stub(config, 'communityAdminAddress').value(
-            CommunityAdminContract.address
-        );
+        stub(config, 'communityAdminAddress').value(CommunityAdminContract.address);
 
-        stub(
-            database,
-            'redisClient'
-        ).value({
+        stub(database, 'redisClient').value({
             set: async () => null
         });
 
-        subscribers = new ChainSubscribers(
-            provider as any,
-            provider,
-            new Map([]),
-        );
+        subscribers = new ChainSubscribers(provider as any, provider, new Map([]));
     });
 
     after(() => {
@@ -107,9 +81,7 @@ describe('communityAdmin', () => {
     });
 
     it('add community', async () => {
-        const newCommunityAddress = await CommunityAdminContract.connect(
-            provider.getSigner(0)
-        ).addCommunity(
+        const newCommunityAddress = await CommunityAdminContract.connect(provider.getSigner(0)).addCommunity(
             [accounts[1]],
             '2000000000000000000',
             '1500000000000000000000',
@@ -126,21 +98,19 @@ describe('communityAdmin', () => {
             communityUpdated.getCall(0),
             {
                 contractAddress: txResult.events[0].args[0],
-                status: 'valid',
+                status: 'valid'
             },
             {
                 where: {
-                    requestByAddress: accounts[1],
+                    requestByAddress: accounts[1]
                 },
-                returning: true,
+                returning: true
             }
         );
     });
 
     it('remove community', async () => {
-        const newCommunityAddress = await CommunityAdminContract.connect(
-            provider.getSigner(0)
-        ).addCommunity(
+        const newCommunityAddress = await CommunityAdminContract.connect(provider.getSigner(0)).addCommunity(
             [accounts[1]],
             '2000000000000000000',
             '1500000000000000000000',
@@ -155,9 +125,9 @@ describe('communityAdmin', () => {
         communityUpdated.reset();
 
         const contractAddress = txResult.events[0].args[0];
-        const removedCommunity = await CommunityAdminContract.connect(
-            provider.getSigner(0)
-        ).removeCommunity(contractAddress);
+        const removedCommunity = await CommunityAdminContract.connect(provider.getSigner(0)).removeCommunity(
+            contractAddress
+        );
         await removedCommunity.wait();
 
         await tests.config.utils.waitForStubCall(communityUpdated, 1);
@@ -166,12 +136,12 @@ describe('communityAdmin', () => {
             communityUpdated.getCall(0),
             {
                 status: 'removed',
-                deletedAt: match.any,
+                deletedAt: match.any
             },
             {
                 where: {
-                    contractAddress,
-                },
+                    contractAddress
+                }
             }
         );
     });

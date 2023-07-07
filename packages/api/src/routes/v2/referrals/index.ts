@@ -1,10 +1,10 @@
 import { Router } from 'express';
 
-import ReferralController from '~controllers/v2/referral';
-import { cache } from '~middlewares/cache-redis';
 import { authenticateToken, verifyTypedSignature } from '~middlewares/index';
+import { cache } from '~middlewares/cache-redis';
 import { cacheIntervals } from '~utils/api';
 import { referralPostValidator } from '~validators/referral';
+import ReferralController from '~controllers/v2/referral';
 
 export default (app: Router): void => {
     const controller = new ReferralController();

@@ -9,7 +9,7 @@ export const communityIds = [
     // running for less that 30 days, fully running
     3, 4,
     // no beneficiaries
-    5,
+    5
 ];
 
 export const totalClaimedLast30Days = new Map<number, string>();
@@ -36,7 +36,7 @@ communitiesContract.set(
         claimAmount: 2,
         maxClaim: 1500,
         baseInterval: 86400,
-        incrementInterval: 600,
+        incrementInterval: 600
     })
 );
 communitiesContract.set(
@@ -46,7 +46,7 @@ communitiesContract.set(
         claimAmount: 1,
         maxClaim: 600,
         baseInterval: 86400,
-        incrementInterval: 300,
+        incrementInterval: 300
     })
 );
 communitiesContract.set(
@@ -56,7 +56,7 @@ communitiesContract.set(
         claimAmount: 1.5,
         maxClaim: 300,
         baseInterval: 86400,
-        incrementInterval: 900,
+        incrementInterval: 900
     })
 );
 communitiesContract.set(
@@ -66,7 +66,7 @@ communitiesContract.set(
         claimAmount: 1.5,
         maxClaim: 300,
         baseInterval: 86400,
-        incrementInterval: 600,
+        incrementInterval: 600
     })
 );
 communitiesContract.set(
@@ -76,7 +76,7 @@ communitiesContract.set(
         claimAmount: 1,
         maxClaim: 300,
         baseInterval: 86400,
-        incrementInterval: 600,
+        incrementInterval: 600
     })
 );
 communitiesContract.set(
@@ -86,7 +86,7 @@ communitiesContract.set(
         claimAmount: 1,
         maxClaim: 300,
         baseInterval: 86400,
-        incrementInterval: 600,
+        incrementInterval: 600
     })
 );
 
@@ -97,31 +97,31 @@ export const validNonEmptyMonthLongCommunities: any[] = [
         contractAddress: '0xFdd8bD58115FfBf04e47411c1d228eCC45E93075',
         state: {
             claimed: '3946000000000000000000',
-            raised: '4340003115106414976421',
+            raised: '4340003115106414976421'
         },
         contract: communitiesContract.get(communityIds[0])!,
-        started: new Date(nowTimestamp - 4752000000), // 55×24×60×60×1000
+        started: new Date(nowTimestamp - 4752000000) // 55×24×60×60×1000
     },
     {
         id: communityIds[1],
         contractAddress: '0x510Bf5D8feBCA69fCfe73d391783be01B3324c69',
         state: {
             claimed: '163000000000000000000',
-            raised: '200000000000000000000',
+            raised: '200000000000000000000'
         },
         contract: communitiesContract.get(communityIds[1])!,
-        started: new Date(nowTimestamp - 3888000000), // 45×24×60×60×1000
+        started: new Date(nowTimestamp - 3888000000) // 45×24×60×60×1000
     },
     {
         id: communityIds[2],
         contractAddress: '0x473a3be7C2A42452Ed0b521614B3b76BC59D2D1D',
         state: {
             claimed: '2068500000000000000000',
-            raised: '2780008138099262974802',
+            raised: '2780008138099262974802'
         },
         contract: communitiesContract.get(communityIds[2])!,
-        started: new Date(nowTimestamp - 3542400000), // 41×24×60×60×1000
-    },
+        started: new Date(nowTimestamp - 3542400000) // 41×24×60×60×1000
+    }
 ];
 
 // TODO: fix type
@@ -131,21 +131,21 @@ export const validNonEmptyLessThanMonthLongCommunities: any[] = [
         contractAddress: '0xD7C06AfE310baCD786BA2929088298b9e60322ec',
         state: {
             claimed: '20500000000000000000',
-            raised: '37000813809929748020',
+            raised: '37000813809929748020'
         },
         contract: communitiesContract.get(communityIds[3])!,
-        started: new Date(nowTimestamp - 2160000000), // 25×24×60×60×1000
+        started: new Date(nowTimestamp - 2160000000) // 25×24×60×60×1000
     },
     {
         id: communityIds[4],
         contractAddress: '0xFdd8bD58115FfBf04e47411c1d228eCC45E93075',
         state: {
             claimed: '3200000000000000000',
-            raised: '5600081380992970020',
+            raised: '5600081380992970020'
         },
         contract: communitiesContract.get(communityIds[4])!,
-        started: new Date(nowTimestamp - 1296000000), // 15×24×60×60×1000
-    },
+        started: new Date(nowTimestamp - 1296000000) // 15×24×60×60×1000
+    }
 ];
 
 // TODO: fix type
@@ -155,16 +155,16 @@ export const validEmptyCommunities: any[] = [
         contractAddress: '0x473a3be7C2A42452Ed0b521614B3b76BC59D2D1D',
         state: {
             claimed: '0',
-            raised: '1000000000000000000',
+            raised: '1000000000000000000'
         },
         contract: communitiesContract.get(communityIds[5])!,
-        started: new Date(nowTimestamp - 518400000), // 6×24×60×60×1000
-    },
+        started: new Date(nowTimestamp - 518400000) // 6×24×60×60×1000
+    }
 ];
 
 export const communityAddressesAndIds = new Map(
     validNonEmptyMonthLongCommunities
         .concat(validNonEmptyLessThanMonthLongCommunities)
         .concat(validEmptyCommunities)
-        .map((c) => [c.contractAddress, c.id])
+        .map(c => [c.contractAddress, c.id])
 );

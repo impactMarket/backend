@@ -1,4 +1,4 @@
-import { celebrate, Joi } from 'celebrate';
+import { Joi, celebrate } from 'celebrate';
 
 import { defaultSchema } from './defaultSchema';
 
@@ -17,15 +17,12 @@ const create = celebrate({
         children: Joi.number().optional(),
         avatarMediaPath: Joi.string().optional(),
         bio: Joi.string().optional(),
-        email: Joi.alternatives(
-            Joi.string().email({ tlds: { allow: false } }),
-            null
-        ).optional(),
+        email: Joi.alternatives(Joi.string().email({ tlds: { allow: false } }), null).optional(),
         overwrite: Joi.boolean().optional(),
         recover: Joi.boolean().optional(),
         clientId: Joi.string().optional(),
-        country: Joi.string().optional(),
-    }),
+        country: Joi.string().optional()
+    })
 });
 
 const update = celebrate({
@@ -42,26 +39,23 @@ const update = celebrate({
         children: Joi.alternatives(Joi.number(), null).optional(),
         avatarMediaPath: Joi.alternatives(Joi.string(), null).optional(),
         bio: Joi.alternatives(Joi.string(), null).optional(),
-        email: Joi.alternatives(
-            Joi.string().email({ tlds: { allow: false } }),
-            null
-        ).optional(),
-        country: Joi.string().optional(),
-    }),
+        email: Joi.alternatives(Joi.string().email({ tlds: { allow: false } }), null).optional(),
+        country: Joi.string().optional()
+    })
 });
 
 const report = celebrate({
     body: defaultSchema.object({
         communityId: Joi.any().required(),
         message: Joi.string().required(),
-        category: Joi.string().required(),
-    }),
+        category: Joi.string().required()
+    })
 });
 
 const readNotifications = celebrate({
     body: defaultSchema.object({
-        notifications: Joi.array().items(Joi.number()).required(),
-    }),
+        notifications: Joi.array().items(Joi.number()).required()
+    })
 });
 
 const sendPushNotifications = celebrate({
@@ -70,8 +64,8 @@ const sendPushNotifications = celebrate({
         communities: Joi.array().items(Joi.number().required()).optional(),
         title: Joi.string().required(),
         body: Joi.string().required(),
-        data: Joi.object().optional(),
-    }),
+        data: Joi.object().optional()
+    })
 });
 
 export default {
@@ -79,5 +73,5 @@ export default {
     update,
     report,
     readNotifications,
-    sendPushNotifications,
+    sendPushNotifications
 };

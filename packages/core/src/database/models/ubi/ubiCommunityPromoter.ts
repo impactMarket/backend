@@ -1,14 +1,8 @@
-import { Sequelize, DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Sequelize } from 'sequelize';
 
-import {
-    UbiCommunityPromoter,
-    UbiCommunityPromoterCreation,
-} from '../../../interfaces/ubi/ubiCommunityPromoter';
+import { UbiCommunityPromoter, UbiCommunityPromoterCreation } from '../../../interfaces/ubi/ubiCommunityPromoter';
 
-export class UbiCommunityPromoterModel extends Model<
-    UbiCommunityPromoter,
-    UbiCommunityPromoterCreation
-> {
+export class UbiCommunityPromoterModel extends Model<UbiCommunityPromoter, UbiCommunityPromoterCreation> {
     public promoterId!: number;
     public communityId!: number;
 }
@@ -20,26 +14,26 @@ export function initializeUbiCommunityPromoter(sequelize: Sequelize): void {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'ubi_promoter',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
+                allowNull: false
             },
             communityId: {
                 type: DataTypes.INTEGER,
                 references: {
                     model: 'community',
-                    key: 'id',
+                    key: 'id'
                 },
                 onDelete: 'CASCADE',
-                allowNull: false,
-            },
+                allowNull: false
+            }
         },
         {
             tableName: 'ubi_community_promoter',
             modelName: 'ubiCommunityPromoter',
             timestamps: false,
-            sequelize,
+            sequelize
         }
     );
 }

@@ -1,5 +1,5 @@
-import dotenv from 'dotenv';
 import { bool, cleanEnv, num, port, str } from 'envalid';
+import dotenv from 'dotenv';
 
 // TODO: api uses instead of the package validation.
 // This need to be refactoed
@@ -37,21 +37,21 @@ function validateEnv() {
         PORT: port({ devDefault: onlyOnTestEnv(5000) }),
         DATABASE_URL: str(),
         CHAIN_JSON_RPC_URL: str({
-            devDefault: onlyOnTestEnv('http://localhost:8545'),
+            devDefault: onlyOnTestEnv('http://localhost:8545')
         }),
         CHAIN_WEB_SOCKET_URL: str({
-            devDefault: onlyOnTestEnv('ws://localhost:8545'),
+            devDefault: onlyOnTestEnv('ws://localhost:8545')
         }),
         CHAIN_JSON_RPC_URL_FALLBACK: str({
-            devDefault: onlyOnTestEnv('http://localhost:8545'),
+            devDefault: onlyOnTestEnv('http://localhost:8545')
         }),
         CHAIN_WEB_SOCKET_URL_FALLBACK: str({
-            devDefault: onlyOnTestEnv('ws://localhost:8545'),
+            devDefault: onlyOnTestEnv('ws://localhost:8545')
         }),
         JWT_SECRET: str({ devDefault: onlyOnTestEnv('xyz') }),
         CUSD_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         IMPACT_MARKET_CONTRACT_ADDRESS: str({
-            devDefault: onlyOnTestEnv('xyz'),
+            devDefault: onlyOnTestEnv('xyz')
         }),
         IMPACT_MARKET_CONTRACT_BLOCK: num({ devDefault: 0 }),
         ATTESTATION_PROXY_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
@@ -68,7 +68,7 @@ function validateEnv() {
         LOG_LEVEL: str({ default: 'warn' }),
         API_ENVIRONMENT: str({
             choices: ['development', 'test', 'production', 'staging'],
-            devDefault: 'test',
+            devDefault: 'test'
         }),
         CLOUDFRONT_URL: str({ devDefault: onlyOnTestEnv('xyz') }),
         REDIS_URL: str({ devDefault: 'redis://localhost:6379' }),
@@ -90,7 +90,7 @@ function validateEnv() {
         PACT_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         AIRGRAB_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         DONATION_MINER_CONTRACT_ADDRESS: str({
-            devDefault: onlyOnTestEnv('xyz'),
+            devDefault: onlyOnTestEnv('xyz')
         }),
         IMPACTLABS_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
         IDO_CONTRACT_ADDRESS: str({ devDefault: onlyOnTestEnv('xyz') }),
@@ -105,7 +105,7 @@ function validateEnv() {
         DAYS_TO_LIMIT_USERS: num({ default: 30 }),
         CRON_JOB_BATCH_SIZE: num({ default: 20 }),
         MAX_DATABASE_POOL_CONNECTIONS: num({ default: 20 }),
-        COMMUNITY_RESPONSE_TIMEOUT: num({ default: 50000 }),
+        COMMUNITY_RESPONSE_TIMEOUT: num({ default: 50000 })
     });
 }
 
