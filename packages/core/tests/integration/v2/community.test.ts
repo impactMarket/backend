@@ -667,7 +667,7 @@ describe('community service v2', () => {
                 });
                 await BeneficiaryFactory(
                     await UserFactory({
-                        n: Math.floor(crypto.randomInt(22) * 20)
+                        n: crypto.randomInt(20)
                     }),
                     community.id
                 );

@@ -17,7 +17,7 @@ export function randomTx() {
     const characters = 'ABCDEFabcdef0123456789';
     const charactersLength = characters.length;
     for (let i = 0; i < 64; i++) {
-        result.push(characters.charAt(Math.floor(crypto.randomInt(22) * charactersLength)));
+        result.push(characters.charAt(crypto.randomInt(charactersLength)));
     }
     return '0x' + result.join('');
 }
