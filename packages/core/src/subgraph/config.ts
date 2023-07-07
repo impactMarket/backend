@@ -7,23 +7,24 @@ const axiosSubgraph = axios.create({
     headers: {
         'content-type': 'application/json',
     },
-    timeout: 4000,
+    timeout: 15000,
 });
 const axiosCouncilSubgraph = axios.create({
     baseURL: config.councilSubgraphUrl,
     headers: {
         'content-type': 'application/json',
     },
-    timeout: 4000,
+    timeout: 15000,
 });
 const axiosMicrocreditSubgraph = axios.create({
     baseURL: config.microcreditSubgraphUrl,
     headers: {
         'content-type': 'application/json',
     },
-    timeout: 4000,
+    timeout: 15000,
 });
 // TODO: " as any" is a temporary solution to deploy to heroku
+// TODO: test this works as expected to reduce timeout
 axiosRetry(axiosSubgraph as any, {
     retries: 3,
     retryDelay: axiosRetry.exponentialDelay,
