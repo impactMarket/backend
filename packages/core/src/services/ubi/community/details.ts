@@ -17,6 +17,7 @@ import {
     getBeneficiariesByAddress,
     getBeneficiaries,
     countBeneficiaries,
+    countInactiveBeneficiaries,
 } from '../../../subgraph/queries/beneficiary';
 import {
     getCommunityAmbassador,
@@ -516,7 +517,8 @@ export class CommunityDetailsService {
         limit: number,
         filter: any,
         searchInput?: string,
-        orderBy?: string
+        orderBy?: string,
+        lastActivity_lt?: number,
     ): Promise<{
         count: number;
         rows: any[];
@@ -616,7 +618,8 @@ export class CommunityDetailsService {
                 undefined,
                 community.contractAddress,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
-                orderDirection ? `orderDirection: ${orderDirection}` : undefined
+                orderDirection ? `orderDirection: ${orderDirection}` : undefined,
+                lastActivity_lt,
             );
             count = beneficiariesSubgraph.length;
 
@@ -633,7 +636,8 @@ export class CommunityDetailsService {
                 undefined,
                 community.contractAddress,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
-                orderDirection ? `orderDirection: ${orderDirection}` : undefined
+                orderDirection ? `orderDirection: ${orderDirection}` : undefined,
+                lastActivity_lt,
             );
             count = beneficiariesSubgraph.length;
             appUsers = await models.appUser.findAll({
@@ -657,12 +661,21 @@ export class CommunityDetailsService {
                 undefined,
                 beneficiaryState,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
-                orderDirection ? `orderDirection: ${orderDirection}` : undefined
+                orderDirection ? `orderDirection: ${orderDirection}` : undefined,
+                lastActivity_lt,
             );
-            count = await countBeneficiaries(
-                community.contractAddress,
-                filter.state !== null ? (filter.state as number) : undefined
-            );
+
+            if (lastActivity_lt) {
+                count = await countInactiveBeneficiaries(
+                    community.contractAddress,
+                    lastActivity_lt,
+                )
+            } else {
+                count = await countBeneficiaries(
+                    community.contractAddress,
+                    filter.state !== null ? (filter.state as number) : undefined
+                );
+            }
             addresses = beneficiariesSubgraph.map((beneficiary) =>
                 ethers.utils.getAddress(beneficiary.address)
             );
