@@ -84,7 +84,7 @@ export const getBeneficiariesByAddress = async (
     community?: string,
     orderBy?: string,
     orderDirection?: string,
-    lastActivity?: number,
+    lastActivity?: number
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const idsFormated = addresses.map(el => `"${el.toLowerCase()}"`);
@@ -99,11 +99,7 @@ export const getBeneficiariesByAddress = async (
                         address_in: [${idsFormated}]
                         ${state ? state : ''}
                         ${inactive ? inactive : ''}
-                        ${
-                            community
-                                ? `community: "${community.toLowerCase()}"`
-                                : ''
-                        }
+                        ${community ? `community: "${community.toLowerCase()}"` : ''}
                         ${lastActivity ? `lastActivity_lt: ${lastActivity}` : ''}
                     }
                 ) {
@@ -153,7 +149,7 @@ export const getBeneficiaries = async (
     state?: string,
     orderBy?: string,
     orderDirection?: string,
-    lastActivity?: number,
+    lastActivity?: number
 ): Promise<BeneficiarySubgraph[]> => {
     try {
         const graphqlQuery = {
@@ -306,10 +302,7 @@ export const countBeneficiaries = async (community: string, state?: number): Pro
     }
 };
 
-export const countInactiveBeneficiaries = async (
-    community: string,
-    lastActivity: number
-): Promise<number> => {
+export const countInactiveBeneficiaries = async (community: string, lastActivity: number): Promise<number> => {
     try {
         const graphqlQuery = {
             operationName: 'beneficiaryEntities',
@@ -323,7 +316,7 @@ export const countInactiveBeneficiaries = async (
                 ) {
                     address
                 }
-            }`,
+            }`
         };
 
         const response = await axiosSubgraph.post<
@@ -332,13 +325,13 @@ export const countInactiveBeneficiaries = async (
                 data: {
                     data: {
                         beneficiaryEntities: {
-                            address: string,
-                            claimed: string,
-                            since: number,
-                            state: number,
+                            address: string;
+                            claimed: string;
+                            since: number;
+                            state: number;
                             community: {
-                                id: string,
-                            }
+                                id: string;
+                            };
                         }[];
                     };
                 };
@@ -351,4 +344,4 @@ export const countInactiveBeneficiaries = async (
     } catch (error) {
         throw new Error(error);
     }
-}
+};

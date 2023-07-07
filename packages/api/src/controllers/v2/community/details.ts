@@ -83,13 +83,9 @@ class CommunityController {
                     unidentified: unidentified ? unidentified === 'true' : undefined,
                     loginInactivity: loginInactivity ? loginInactivity === 'true' : undefined
                 },
-                search !== undefined && typeof search === 'string'
-                    ? search
-                    : undefined,
+                search !== undefined && typeof search === 'string' ? search : undefined,
                 orderBy,
-                lastActivity_lt && typeof lastActivity_lt === 'string'
-                    ? parseInt(lastActivity_lt, 10)
-                    : undefined,
+                lastActivity_lt && typeof lastActivity_lt === 'string' ? parseInt(lastActivity_lt, 10) : undefined
             )
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));

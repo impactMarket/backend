@@ -15,7 +15,12 @@ import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { ManagerSubgraph } from '../../../subgraph/interfaces/manager';
 import { UbiCommunityCampaign } from '../../../interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
-import { countBeneficiaries, countInactiveBeneficiaries, getBeneficiaries, getBeneficiariesByAddress } from '../../../subgraph/queries/beneficiary';
+import {
+    countBeneficiaries,
+    countInactiveBeneficiaries,
+    getBeneficiaries,
+    getBeneficiariesByAddress
+} from '../../../subgraph/queries/beneficiary';
 import { countManagers, getCommunityManagers } from '../../../subgraph/queries/manager';
 import { getCommunityAmbassador, getCommunityState, getCommunityUBIParams } from '../../../subgraph/queries/community';
 import { getSearchInput } from '../../../utils/util';
@@ -453,7 +458,7 @@ export class CommunityDetailsService {
         filter: any,
         searchInput?: string,
         orderBy?: string,
-        lastActivity_lt?: number,
+        lastActivity_lt?: number
     ): Promise<{
         count: number;
         rows: any[];
@@ -529,7 +534,7 @@ export class CommunityDetailsService {
                 community.contractAddress,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined,
-                lastActivity_lt,
+                lastActivity_lt
             );
             count = beneficiariesSubgraph.length;
 
@@ -544,7 +549,7 @@ export class CommunityDetailsService {
                 community.contractAddress,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined,
-                lastActivity_lt,
+                lastActivity_lt
             );
             count = beneficiariesSubgraph.length;
             appUsers = await models.appUser.findAll({
@@ -564,23 +569,18 @@ export class CommunityDetailsService {
                 beneficiaryState,
                 orderKey ? `orderBy: ${orderKey}` : undefined,
                 orderDirection ? `orderDirection: ${orderDirection}` : undefined,
-                lastActivity_lt,
+                lastActivity_lt
             );
 
             if (lastActivity_lt) {
-                count = await countInactiveBeneficiaries(
-                    community.contractAddress,
-                    lastActivity_lt,
-                )
+                count = await countInactiveBeneficiaries(community.contractAddress, lastActivity_lt);
             } else {
                 count = await countBeneficiaries(
                     community.contractAddress,
                     filter.state !== null ? (filter.state as number) : undefined
                 );
             }
-            addresses = beneficiariesSubgraph.map((beneficiary) =>
-                ethers.utils.getAddress(beneficiary.address)
-            );
+            addresses = beneficiariesSubgraph.map(beneficiary => ethers.utils.getAddress(beneficiary.address));
             appUsers = await models.appUser.findAll({
                 attributes: ['address', 'firstName', 'lastName', 'avatarMediaPath'],
                 where: {
