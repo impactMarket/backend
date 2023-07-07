@@ -3,6 +3,7 @@ import { calcuateCommunitiesMetrics, calcuateCommunitiesDemographics } from './s
 import { calcuateGlobalMetrics } from './src/calcuateGlobalMetrics';
 import { services } from '@impactmarket/core';
 import { updateExchangeRates } from './src/updateExchangeRates';
+import { calculateBorrowersPerformance } from './src/calculateBorrowersPerformance';
 
 global.btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
 global.atob = (str: string) => Buffer.from(str, 'base64').toString('binary');
@@ -40,6 +41,12 @@ export const calculate = async (event, context) => {
         await updateExchangeRates();
     } catch (error) {
         console.error('Error updateExchangeRates: ', error);
+        throw error;
+    }
+    try {
+        await calculateBorrowersPerformance();
+    } catch (error) {
+        console.error('Error calculateBorrowersPerformance: ', error);
         throw error;
     }
 };
