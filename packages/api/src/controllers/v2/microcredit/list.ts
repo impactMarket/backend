@@ -79,7 +79,10 @@ class MicroCreditController {
             return;
         }
         this.microCreditService
-            .getBorrower(req.query)
+            .getBorrower({
+                ...req.query,
+                include: req.query.include instanceof Array ? req.query.include : [req.query.include]
+            })
             .then(r => standardResponse(res, 200, true, r))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };

@@ -82,6 +82,16 @@ export default (route: Router): void => {
      *           type: string
      *         required: true
      *         description: borrower address
+     *       - in: query
+     *         name: include
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: string
+     *         required: false
+     *         enum: [docs, forms]
+     *         example: [docs, forms]
+     *         description: what to include in the response
      *     responses:
      *       "200":
      *         description: OK

@@ -296,6 +296,32 @@ const countGetBorrowers = async (query: SubgraphGetBorrowersQuery): Promise<numb
     return borrowers;
 };
 
+export const getUserLastLoanStatusFromSubgraph = async (userAddress: string): Promise<LoanStatus> => {
+    const graphqlQuery = {
+        operationName: 'borrowers',
+        query: `query borrowers {
+                borrower(id: "${userAddress.toLowerCase()}") {
+                    lastLoanStatus
+                }
+            }`
+    };
+
+    const response = await axiosMicrocreditSubgraph.post<
+        any,
+        {
+            data: {
+                data: {
+                    borrower: {
+                        lastLoanStatus: LoanStatus;
+                    };
+                };
+            };
+        }
+    >('', graphqlQuery);
+
+    return response.data?.data.borrower.lastLoanStatus;
+};
+
 export const getBorrowers = async (
     query: SubgraphGetBorrowersQuery
 ): Promise<{
