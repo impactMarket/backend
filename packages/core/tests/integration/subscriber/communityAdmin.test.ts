@@ -33,7 +33,6 @@ describe('communityAdmin', () => {
         findCommunity.returns(Promise.resolve({ id: 1 }));
         let lastBlock = 0;
 
-        stub(services.ubi.ManagerService, 'add').returns(Promise.resolve(true));
         stub(services.app.ImMetadataService, 'setLastBlock').callsFake(async v => {
             lastBlock = v;
         });

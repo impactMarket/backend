@@ -8,7 +8,7 @@ import { CommunityAttributes } from '../../src/interfaces/ubi/community';
 import { models } from '../../src/database';
 import { sequelizeSetup, truncate } from '../config/sequelizeSetup';
 import BeneficiaryFactory from '../factories/beneficiary';
-import ClaimLocationService from '../../src/services/ubi/claimLocation';
+import ClaimLocationService from '../../src/services/ubi/claimLocation/index';
 import CommunityFactory from '../factories/community';
 import UserFactory from '../factories/user';
 
@@ -18,6 +18,7 @@ describe('claim location service', () => {
     let communities: CommunityAttributes[];
     let spyClaimLocationAdd: SinonSpy;
     let returnGetBeneficiaryByAddressSubgraph: SinonStub;
+    const claimLocationService = new ClaimLocationService();
 
     before(async () => {
         sequelize = sequelizeSetup();
@@ -116,7 +117,7 @@ describe('claim location service', () => {
                 }
             ]);
 
-            await ClaimLocationService.add(
+            await claimLocationService.add(
                 communities[0].id,
                 {
                     latitude: -22.2375236,
@@ -136,14 +137,15 @@ describe('claim location service', () => {
         });
 
         it('should return an error when a user is claiming from a location different of the community', async () => {
-            ClaimLocationService.add(
-                communities[2].id,
-                {
-                    latitude: -22.2375236,
-                    longitude: -49.9819737
-                },
-                users[0].address
-            )
+            claimLocationService
+                .add(
+                    communities[2].id,
+                    {
+                        latitude: -22.2375236,
+                        longitude: -49.9819737
+                    },
+                    users[0].address
+                )
                 .catch(e => expect(e.name).to.be.equal('INVALID_LOCATION'))
                 .then(() => {
                     throw new Error('expected to fail');
@@ -166,7 +168,7 @@ describe('claim location service', () => {
                     state: 0
                 }
             ]);
-            await ClaimLocationService.add(
+            await claimLocationService.add(
                 communities[3].id,
                 {
                     latitude: -22.2375236,
@@ -185,14 +187,15 @@ describe('claim location service', () => {
         });
 
         it('should return an error when a user is not a beneficiary', async () => {
-            ClaimLocationService.add(
-                communities[0].id,
-                {
-                    latitude: -22.2375236,
-                    longitude: -49.9819737
-                },
-                users[2].address
-            )
+            claimLocationService
+                .add(
+                    communities[0].id,
+                    {
+                        latitude: -22.2375236,
+                        longitude: -49.9819737
+                    },
+                    users[2].address
+                )
                 .catch(e => expect(e.name).to.be.equal('NOT_BENEFICIARY'))
                 .then(() => {
                     throw new Error('expected to fail');
@@ -200,14 +203,15 @@ describe('claim location service', () => {
         });
 
         it('should return an error when a user does not belong to the community', async () => {
-            ClaimLocationService.add(
-                communities[0].id,
-                {
-                    latitude: -22.2375236,
-                    longitude: -49.9819737
-                },
-                users[2].address
-            )
+            claimLocationService
+                .add(
+                    communities[0].id,
+                    {
+                        latitude: -22.2375236,
+                        longitude: -49.9819737
+                    },
+                    users[2].address
+                )
                 .catch(e => {
                     expect(e.name).to.be.equal('NOT_ALLOWED');
                 })

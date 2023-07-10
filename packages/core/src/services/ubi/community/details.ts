@@ -1,4 +1,4 @@
-import { Op, Transaction, WhereOptions, col, fn, literal } from 'sequelize';
+import { Op, WhereOptions, col, fn, literal } from 'sequelize';
 import { ethers } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import csv from 'csvtojson';
@@ -10,8 +10,6 @@ import { BaseError } from '../../../utils/baseError';
 import { BeneficiarySubgraph } from '../../../subgraph/interfaces/beneficiary';
 import { CommunityAttributes } from '../../../interfaces/ubi/community';
 import { CommunityContentStorage } from '../../storage';
-import { Logger } from '../../../utils/logger';
-import { ManagerAttributes } from '../../../database/models/ubi/manager';
 import { ManagerSubgraph } from '../../../subgraph/interfaces/manager';
 import { UbiCommunityCampaign } from '../../../interfaces/ubi/ubiCommunityCampaign';
 import { UbiCommunityContract } from '../../../interfaces/ubi/ubiCommunityContract';
@@ -173,55 +171,6 @@ export class CommunityDetailsService {
         } catch (error) {
             throw new BaseError('UNEXPECTED_ERROR', error);
         }
-    }
-
-    public async getUBIParams(communityId: number) {
-        const community = await models.community.findOne({
-            attributes: ['contractAddress'],
-            where: {
-                id: communityId
-            }
-        });
-        if (!community || !community.contractAddress) {
-            return null;
-        }
-
-        const ubiParams = await getCommunityUBIParams(community.contractAddress);
-        return {
-            ...ubiParams,
-            communityId
-        };
-    }
-
-    public async addManager(
-        address: string,
-        communityId: number,
-        t: Transaction | undefined = undefined
-    ): Promise<boolean> {
-        // if user does not exist, add to pending list
-        // otherwise update
-        const manager = await models.manager.findOne({
-            where: { address, communityId }
-        });
-        if (manager === null) {
-            const managerData = {
-                address,
-                communityId
-            };
-            try {
-                const updated = await models.manager.create(managerData, {
-                    transaction: t
-                });
-                return updated[0] > 0;
-            } catch (e) {
-                if (e.name !== 'SequelizeUniqueConstraintError') {
-                    Logger.error('Error inserting new Manager. Data = ' + JSON.stringify(managerData));
-                    Logger.error(e);
-                }
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -438,16 +387,6 @@ export class CommunityDetailsService {
             count,
             rows: result
         };
-    }
-
-    public async getManagerByAddress(address: string): Promise<ManagerAttributes | null> {
-        const r = await models.manager.findOne({
-            where: { address, active: true }
-        });
-        if (r) {
-            return r.toJSON() as ManagerAttributes;
-        }
-        return null;
     }
 
     public async listBeneficiaries(
