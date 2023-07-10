@@ -65,7 +65,7 @@
         "multer": "1.4.5-lts.1",
         "rate-limit-redis": "3.0.2",
         "swagger-jsdoc": "6.2.8",
-        "swagger-ui-express": "4.6.3",
+        "swagger-ui-express": "5.0.0",
         "ts-node": "10.9.1",
         "tsconfig-paths": "4.2.0",
         "twilio": "4.13.0",
