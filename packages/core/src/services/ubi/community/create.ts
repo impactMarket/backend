@@ -1,5 +1,3 @@
-import { ethers } from 'ethers';
-
 import { BaseError } from '../../../utils/baseError';
 import {
     CommunityAttributes,
@@ -10,20 +8,16 @@ import { CommunityDetailsService } from './details';
 import { LogTypes } from '../../../interfaces/app/appLog';
 import { getUserRoles } from '../../../subgraph/queries/user';
 import { models, sequelize } from '../../../database';
-import CommunityContractABI from '../../../contracts/CommunityABI.json';
-import CommunityContractService from './contract';
 import UserLogService from '../../app/user/log';
 
 export class CommunityCreateService {
     sequelize = sequelize;
-    communityContractService = new CommunityContractService();
     communityDetailsService = new CommunityDetailsService();
     userLogService = new UserLogService();
 
     public async create({
         requestByAddress,
         name,
-        contractAddress,
         description,
         language,
         currency,
@@ -31,13 +25,11 @@ export class CommunityCreateService {
         country,
         gps,
         email,
-        txReceipt,
         contractParams,
         coverMediaPath,
         placeId
     }: ICommunityCreationAttributes): Promise<CommunityAttributes> {
-        let managerAddress: string = '';
-        let createObject: ICommunityCreationAttributes = {
+        const createObject: ICommunityCreationAttributes = {
             requestByAddress,
             name,
             description,
@@ -54,40 +46,25 @@ export class CommunityCreateService {
             started: new Date()
         };
 
-        // if it was submitted as private, validate the transaction first.
-        if (txReceipt !== undefined) {
-            const ifaceCommunity = new ethers.utils.Interface(CommunityContractABI);
-            const eventsCoomunity: ethers.utils.LogDescription[] = [];
-            for (let index = 0; index < txReceipt.logs.length; index++) {
-                try {
-                    const parsedLog = ifaceCommunity.parseLog(txReceipt.logs[index]);
-                    eventsCoomunity.push(parsedLog);
-                } catch (e) {}
-            }
-            const index = eventsCoomunity.findIndex(event => event !== null && event.name === 'ManagerAdded');
-            if (index !== -1) {
-                managerAddress = eventsCoomunity[index].args[0];
-            } else {
-                throw new BaseError('EVENT_NOT_FOUND', 'Event not found!');
-            }
-            createObject = {
-                ...createObject,
-                contractAddress: contractAddress!,
-                visibility: 'private',
-                status: 'valid'
-            };
-        }
-
         const t = await this.sequelize.transaction();
         try {
             const community = await models.community.create(createObject, {
-                transaction: t
+                transaction: t,
+                returning: true
             });
-            await this.communityContractService.add(community.id, contractParams!, t);
-            // await CommunityStateService.add
-            if (txReceipt !== undefined) {
-                await this.communityDetailsService.addManager(managerAddress, community.id, t);
-            }
+            const { claimAmount, maxClaim, decreaseStep, baseInterval, incrementInterval } = contractParams!;
+
+            await models.ubiCommunityContract.create(
+                {
+                    communityId: community.id,
+                    claimAmount: claimAmount as number,
+                    maxClaim: maxClaim as number,
+                    decreaseStep: decreaseStep as number,
+                    baseInterval,
+                    incrementInterval
+                },
+                { transaction: t }
+            );
             // If the execution reaches this line, no errors were thrown.
             // We commit the transaction.
             await t.commit();
@@ -164,7 +141,21 @@ export class CommunityCreateService {
             );
 
             if (contractParams) {
-                await this.communityContractService.update(community.id, contractParams);
+                const { claimAmount, maxClaim, decreaseStep, baseInterval, incrementInterval } = contractParams;
+
+                await models.ubiCommunityContract.update(
+                    {
+                        claimAmount: claimAmount as number,
+                        maxClaim: maxClaim as number,
+                        decreaseStep: decreaseStep as number,
+                        baseInterval,
+                        incrementInterval
+                    },
+                    {
+                        where: { communityId },
+                        transaction: t
+                    }
+                );
             }
 
             await t.commit();
