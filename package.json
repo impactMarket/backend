@@ -22,7 +22,7 @@
     ],
     "devDependencies": {
         "lerna": "^7.0.2",
-        "eslint-config-impact-market": "2.2.0"
+        "eslint-config-impact-market": "2.3.0"
     },
     "scripts": {
         "dev": "lerna exec --scope @impactmarket/api yarn dev",
