@@ -1,5 +1,5 @@
-import { database } from '@impactmarket/core';
 import { Op, WhereOptions } from 'sequelize';
+import { database } from '@impactmarket/core';
 
 export async function verifyDeletedAccounts(): Promise<void> {
     const t = await database.sequelize.transaction();
@@ -28,6 +28,6 @@ export async function verifyDeletedAccounts(): Promise<void> {
         await t.commit();
     } catch (error) {
         await t.rollback();
-        throw error;
+        console.error('Error verifyDeletedAccounts: ', error);
     }
 }

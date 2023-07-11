@@ -1,12 +1,19 @@
-import { getAddress } from '@ethersproject/address';
-import { interfaces, config, database, subgraph } from '@impactmarket/core';
 import { CommunityAttributes } from '@impactmarket/core/src/interfaces/ubi/community';
-import BigNumber from 'bignumber.js';
 import { Op, literal } from 'sequelize';
+import { config, database, interfaces, services, subgraph } from '@impactmarket/core';
+import { getAddress } from '@ethersproject/address';
+import BigNumber from 'bignumber.js';
 
 const communitiesMap: Map<string, string[]> = new Map([]);
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
+    try {
+        await communitiesMetrics();
+    } catch (error) {
+        console.error('Error calcuateCommunitiesMetrics: ', error);
+    }
+}
+async function communitiesMetrics(): Promise<void> {
     const aMonthAgo = new Date();
     aMonthAgo.setDate(aMonthAgo.getDate() - 30);
     aMonthAgo.setUTCHours(0, 0, 0, 0);
@@ -20,76 +27,62 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     const whereCommunity = {
         [Op.or]: [
             {
-                status: 'valid',
+                status: 'valid'
             },
             {
-                [Op.and]: [
-                    { status: 'removed' },
-                    { deletedAt: { [Op.between]: [yesterday, today] } },
-                ],
-            },
-        ],
+                [Op.and]: [{ status: 'removed' }, { deletedAt: { [Op.between]: [yesterday, today] } }]
+            }
+        ]
     };
 
     const communitiesStatePre = await database.models.community.findAll({
         attributes: ['id', 'started', 'contractAddress'],
         where: {
             ...whereCommunity,
-            visibility: 'public',
+            visibility: 'public'
         },
-        order: [['id', 'DESC']],
+        order: [['id', 'DESC']]
     });
 
     // build communities object
-    const communitiesState = communitiesStatePre.map(
-        (c) => c.toJSON() as interfaces.ubi.community.CommunityAttributes
-    );
+    const communitiesState = communitiesStatePre.map(c => c.toJSON() as interfaces.ubi.community.CommunityAttributes);
 
     const aMonthAgoId = (aMonthAgo.getTime() / 1000 / 86400) | 0;
 
     const calculateMetrics = async (communities: CommunityAttributes[]) => {
-        const communityEntity =
-            await subgraph.queries.community.getCommunityStateByAddresses(
-                communities.map((el) => el.contractAddress!)
-            );
+        const communityEntity = await subgraph.queries.community.getCommunityStateByAddresses(
+            communities.map(el => el.contractAddress!)
+        );
 
         // community monthly
-        const promises = communities.map(async (community) => {
-            const dailyState =
-                await subgraph.queries.community.getCommunityDailyState(
-                    `dayId_gte: ${aMonthAgoId}, community: "${community.contractAddress!.toLowerCase()}"`
-                );
-            const allBeneficiaries =
-                await subgraph.queries.beneficiary.getAllBeneficiaries(
-                    community.contractAddress!
-                );
+        const promises = communities.map(async community => {
+            const dailyState = await subgraph.queries.community.getCommunityDailyState(
+                `dayId_gte: ${aMonthAgoId}, community: "${community.contractAddress!.toLowerCase()}"`
+            );
+            const allBeneficiaries = await subgraph.queries.beneficiary.getAllBeneficiaries(community.contractAddress!);
 
             if (allBeneficiaries.length)
-                communitiesMap.set(community.contractAddress!, allBeneficiaries.map(beneficiary => beneficiary.address));
+                communitiesMap.set(
+                    community.contractAddress!,
+                    allBeneficiaries.map(beneficiary => beneficiary.address)
+                );
 
             return {
                 address: community.contractAddress,
                 dailyState,
-                allBeneficiaries,
+                allBeneficiaries
             };
         });
 
         const result = await Promise.all(promises);
         const dailyMetricsPromises: Promise<any>[] = [];
-        communities.forEach((community) => {
-            const communityMonth = result.find(
-                (el) => el.address === community.contractAddress
-            );
-            const communityContract = communityEntity.find(
-                (el) => getAddress(el.id) === community.contractAddress
-            );
+        communities.forEach(community => {
+            const communityMonth = result.find(el => el.address === community.contractAddress);
+            const communityContract = communityEntity.find(el => getAddress(el.id) === community.contractAddress);
 
             let ubiRate: number = 0;
             let estimatedDuration: number = 0;
-            let daysSinceStart = Math.round(
-                (new Date().getTime() - new Date(community.started).getTime()) /
-                    86400000
-            ); // 86400000 1 days in ms
+            let daysSinceStart = Math.round((new Date().getTime() - new Date(community.started).getTime()) / 86400000); // 86400000 1 days in ms
             if (daysSinceStart > 30) {
                 daysSinceStart = 30;
             }
@@ -103,8 +96,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                 { claimed: 0 }
             );
             ubiRate =
-                communityMonthReduced?.claimed &&
-                communityMonth?.allBeneficiaries.length
+                communityMonthReduced?.claimed && communityMonth?.allBeneficiaries.length
                     ? parseFloat(
                           new BigNumber(communityMonthReduced.claimed)
                               .dividedBy(communityMonth.allBeneficiaries.length)
@@ -117,10 +109,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
             estimatedDuration =
                 communityContract?.maxClaim && ubiRate
                     ? parseFloat(
-                          new BigNumber(communityContract?.maxClaim)
-                              .dividedBy(ubiRate)
-                              .dividedBy(30)
-                              .toFixed(4, 1)
+                          new BigNumber(communityContract?.maxClaim).dividedBy(ubiRate).dividedBy(30).toFixed(4, 1)
                       )
                     : 0;
             dailyMetricsPromises.push(
@@ -130,7 +119,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
                     ssi: 0,
                     ubiRate,
                     estimatedDuration,
-                    date: yesterday,
+                    date: yesterday
                 })
             );
         });
@@ -140,7 +129,7 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
 
     const batch = config.cronJobBatchSize;
     // for each community
-    for (let i = 0; ; i = i + batch) {
+    for (let i = 0; ; i += batch) {
         await calculateMetrics(communitiesState.slice(i, i + batch));
         if (i + batch > communitiesState.length) {
             break;
@@ -148,7 +137,24 @@ export async function calcuateCommunitiesMetrics(): Promise<void> {
     }
 }
 
+export async function calculateGlobalDemographics() {
+    try {
+        const globalDemographicsService = new services.global.GlobalDemographicsService();
+
+        await globalDemographicsService.calculate();
+    } catch (error) {
+        console.error('Error calculateGlobalDemographics: ', error);
+    }
+}
+
 export async function calcuateCommunitiesDemographics() {
+    try {
+        await communitiesDemographics();
+    } catch (error) {
+        console.error('Error calcuateCommunitiesDemographics: ', error);
+    }
+}
+async function communitiesDemographics() {
     const yesterdayDateOnly = new Date();
     yesterdayDateOnly.setDate(yesterdayDateOnly.getDate() - 1);
     const yesterdayDate = yesterdayDateOnly.toISOString().split('T')[0];
@@ -166,68 +172,23 @@ export async function calcuateCommunitiesDemographics() {
 
     const year = new Date().getUTCFullYear();
     const batch = config.cronJobBatchSize;
-    for (let i = 0; ; i = i + batch) {
+    for (let i = 0; ; i += batch) {
         const arrayTmp = Array.from(communitiesMap).slice(i, i + batch);
 
         // for each community
-        const promises = arrayTmp.map(async (el) => {
+        const promises = arrayTmp.map(async el => {
             const users = await database.models.appUser.findOne({
                 attributes: [
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-year BETWEEN 18 AND 24)`
-                        ),
-                        'ageRange1',
-                    ],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-year BETWEEN 25 AND 34)`
-                        ),
-                        'ageRange2',
-                    ],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-year BETWEEN 35 AND 44)`
-                        ),
-                        'ageRange3',
-                    ],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-year BETWEEN 45 AND 54)`
-                        ),
-                        'ageRange4',
-                    ],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-year BETWEEN 55 AND 64)`
-                        ),
-                        'ageRange5',
-                    ],
-                    [
-                        literal(
-                            `count(*) FILTER (WHERE ${year}-year BETWEEN 65 AND 120)`
-                        ),
-                        'ageRange6',
-                    ],
-                    [
-                        literal(
-                            'count(*) FILTER (WHERE gender = \'m\')'
-                        ),
-                        'male',
-                    ],
-                    [
-                        literal(
-                            'count(*) FILTER (WHERE gender = \'f\')'
-                        ),
-                        'female',
-                    ],
-                    [
-                        literal(
-                            'count(*) FILTER (WHERE gender = \'u\'  OR gender is null)'
-                        ),
-                        'undisclosed',
-                    ],
-                    [literal('count(*)'), 'totalGender'],
+                    [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 18 AND 24)`), 'ageRange1'],
+                    [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 25 AND 34)`), 'ageRange2'],
+                    [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 35 AND 44)`), 'ageRange3'],
+                    [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 45 AND 54)`), 'ageRange4'],
+                    [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 55 AND 64)`), 'ageRange5'],
+                    [literal(`count(*) FILTER (WHERE ${year}-year BETWEEN 65 AND 120)`), 'ageRange6'],
+                    [literal("count(*) FILTER (WHERE gender = 'm')"), 'male'],
+                    [literal("count(*) FILTER (WHERE gender = 'f')"), 'female'],
+                    [literal("count(*) FILTER (WHERE gender = 'u'  OR gender is null)"), 'undisclosed'],
+                    [literal('count(*)'), 'totalGender']
                 ],
                 where: {
                     address: {
@@ -236,17 +197,19 @@ export async function calcuateCommunitiesDemographics() {
                 }
             });
 
-            const community = communities.find(community => community.contractAddress?.toLowerCase() === el[0].toLowerCase());
-            
+            const community = communities.find(
+                community => community.contractAddress?.toLowerCase() === el[0].toLowerCase()
+            );
+
             await database.models.ubiCommunityDemographics.create({
                 communityId: community!.id,
                 date: yesterdayDate,
-                ...users?.toJSON() as any
+                ...(users?.toJSON() as any)
             });
         });
 
         await Promise.all(promises);
-    
+
         if (i + batch > communitiesMap.size) {
             break;
         }

@@ -1,14 +1,21 @@
+import { Op, col, fn } from 'sequelize';
 import {
     config,
     database,
-    subgraph,
     services,
+    subgraph,
     utils,
 } from '@impactmarket/core';
 import BigNumber from 'bignumber.js';
-import { Op, fn, col } from 'sequelize';
 
 export async function calcuateGlobalMetrics(): Promise<void> {
+    try {
+        await globalMetrics();
+    } catch (error) {
+        console.error('Error calcuateGlobalMetrics: ', error);
+    }
+}
+async function globalMetrics(): Promise<void> {
     const globalDailyStateService =
         new services.global.GlobalDailyStateService();
     const todayMidnightTime = new Date();
