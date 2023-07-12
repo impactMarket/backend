@@ -27,15 +27,18 @@ const axiosMicrocreditSubgraph = axios.create({
 // TODO: test this works as expected to reduce timeout
 axiosRetry(axiosSubgraph as any, {
     retries: 3,
-    retryDelay: axiosRetry.exponentialDelay
+    retryDelay: axiosRetry.exponentialDelay,
+    retryCondition: _error => true // retry regardless of the error
 });
 axiosRetry(axiosCouncilSubgraph as any, {
     retries: 3,
-    retryDelay: axiosRetry.exponentialDelay
+    retryDelay: axiosRetry.exponentialDelay,
+    retryCondition: _error => true
 });
 axiosRetry(axiosMicrocreditSubgraph as any, {
     retries: 3,
-    retryDelay: axiosRetry.exponentialDelay
+    retryDelay: axiosRetry.exponentialDelay,
+    retryCondition: _error => true
 });
 
 export { axiosSubgraph, axiosCouncilSubgraph, axiosMicrocreditSubgraph };

@@ -384,7 +384,7 @@ export const getBorrowers = async (
     const cacheResults = await redisClient.get(graphqlQuery.query);
 
     if (cacheResults) {
-        return JSON.parse(cacheResults);
+        return { count, borrowers: JSON.parse(cacheResults) };
     }
 
     const response = await axiosMicrocreditSubgraph.post<
