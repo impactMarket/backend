@@ -4,10 +4,16 @@ import { JsonRpcProvider } from '@ethersproject/providers';
 import { MicrocreditABI as MicroCreditABI } from '../../contracts';
 import { MicroCreditApplications } from '../../interfaces/microCredit/applications';
 import { MicroCreditBorrowers } from '../../interfaces/microCredit/borrowers';
+import { MicroCreditFormStatus } from '../../interfaces/microCredit/form';
 import { Op, Order, WhereOptions, literal } from 'sequelize';
 import { config } from '../../..';
 import { getAddress } from '@ethersproject/address';
-import { getBorrowerLoansCount, getBorrowers, getLoanRepayments } from '../../subgraph/queries/microcredit';
+import {
+    getBorrowerLoansCount,
+    getBorrowers,
+    getLoanRepayments,
+    getUserLastLoanStatusFromSubgraph
+} from '../../subgraph/queries/microcredit';
 import { getUserRoles } from '../../subgraph/queries/user';
 import { models } from '../../database';
 import { utils } from '@impactmarket/core';
@@ -59,6 +65,57 @@ function mergeArraysByOrder<T1 extends Record<string, any>, T2 extends Record<st
     }
 
     return merged;
+}
+
+export enum LoanStatus {
+    NO_LOAN = 0,
+    FORM_DRAFT = 1,
+    PENDING_REVIEW = 2,
+    REQUEST_CHANGES = 3,
+    APPROVED = 4,
+    REJECTED = 5,
+    PENDING_CLAIM = 6,
+    CLAIMED = 7,
+    FULL_REPAID = 8,
+    CANCELED = 9
+}
+
+// verify if the user has any pending loan, from microcreditForm or microcreditApplications
+// and if so, but accepted, fetch the subgraph for status, otherwise, return
+async function getLastLoanStatus(user: { id: number; address: string }): Promise<number> {
+    // only the most recent
+    const form = await models.microCreditForm.findOne({
+        where: {
+            userId: user.id
+        },
+        order: [['createdAt', 'DESC']],
+        limit: 1
+    });
+
+    if (!form) {
+        return LoanStatus.NO_LOAN;
+    }
+
+    if (form.status === MicroCreditFormStatus.APPROVED) {
+        try {
+            const status = await getUserLastLoanStatusFromSubgraph(user.address);
+            return status + 6;
+        } catch (e) {
+            return LoanStatus.NO_LOAN;
+        }
+    }
+
+    switch (form.status) {
+        case MicroCreditFormStatus.PENDING:
+            return LoanStatus.FORM_DRAFT;
+        case MicroCreditFormStatus.SUBMITTED:
+        case MicroCreditFormStatus.INREVIEW:
+            return LoanStatus.PENDING_REVIEW;
+        case MicroCreditFormStatus.REJECTED:
+            return LoanStatus.REJECTED;
+        default:
+            return LoanStatus.NO_LOAN;
+    }
 }
 
 export type GetBorrowersQuery = {
@@ -371,41 +428,46 @@ export default class MicroCreditList {
      * Get borrower profile, including docs and loans
      * @param address borrower address
      */
-    public getBorrower = async (query: { address: string }) => {
-        const { address } = query;
-        const borrower = await models.appUser.findOne({
+    public getBorrower = async (query: { address: string; include: string[] }) => {
+        const { address, include } = query;
+        const user = await models.appUser.findOne({
             attributes: ['id', 'address', 'firstName', 'lastName', 'avatarMediaPath'],
             where: {
                 address
             }
         });
 
-        if (!borrower) {
+        if (!user) {
             throw new utils.BaseError('USER_NOT_FOUND', 'Borrower not found');
         }
 
         const [docs, forms] = await Promise.all([
-            models.microCreditDocs.findAll({
-                attributes: ['filepath', 'category'],
-                where: {
-                    userId: borrower.id
-                },
-                order: [['createdAt', 'desc']]
-            }),
-            models.microCreditForm.findAll({
-                attributes: ['id', 'status', 'createdAt'],
-                where: {
-                    userId: borrower.id
-                },
-                order: [['createdAt', 'desc']]
-            })
+            include.includes('docs')
+                ? models.microCreditDocs.findAll({
+                      attributes: ['filepath', 'category'],
+                      where: {
+                          userId: user.id
+                      },
+                      order: [['createdAt', 'desc']]
+                  })
+                : Promise.resolve([]),
+            include.includes('forms')
+                ? models.microCreditForm.findAll({
+                      attributes: ['id', 'status', 'createdAt'],
+                      where: {
+                          userId: user.id
+                      },
+                      order: [['createdAt', 'desc']]
+                  })
+                : Promise.resolve([])
         ]);
-
         const loans = await getBorrowerLoansCount(address);
+        const lastLoanStatus = await getLastLoanStatus({ id: user.id, address: user.address });
 
         return {
-            ...borrower.toJSON(),
+            ...user.toJSON(),
             loans,
+            lastLoanStatus,
             docs: docs.map(d => d.toJSON()),
             forms: forms.map(f => f.toJSON())
         };

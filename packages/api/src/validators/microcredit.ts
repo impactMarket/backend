@@ -77,8 +77,9 @@ const queryPreSignerUrlFromAWSSchema = defaultSchema.object({
     mime: Joi.string().required()
 });
 
-const queryGetBorrowerSchema = defaultSchema.object<{ address: string }>({
-    address: Joi.string().required()
+const queryGetBorrowerSchema = defaultSchema.object<{ address: string; include: string | string[] }>({
+    address: Joi.string().required(),
+    include: Joi.alternatives(Joi.string(), Joi.array<string[]>()).optional().default([])
 });
 
 interface ListBorrowersRequestSchema extends ValidatedRequestSchema {
@@ -107,6 +108,7 @@ interface PreSignerUrlFromAWSRequestSchema extends ValidatedRequestSchema {
 interface GetBorrowerRequestSchema extends ValidatedRequestSchema {
     [ContainerTypes.Query]: {
         address: string;
+        include: string | string[];
     };
 }
 

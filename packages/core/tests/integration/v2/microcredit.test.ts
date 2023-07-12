@@ -39,7 +39,7 @@ describe('microCredit', () => {
                 }
             ]);
 
-            const res = await microCreditList.getBorrower({ address: users[0].address });
+            const res = await microCreditList.getBorrower({ address: users[0].address, include: ['docs'] });
 
             expect(res.docs.length).to.be.equals(1);
             expect(res.docs[0]).to.include({
