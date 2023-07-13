@@ -1,6 +1,5 @@
-import { CommunityAttributes } from '@impactmarket/core/src/interfaces/ubi/community';
 import { Op, literal } from 'sequelize';
-import { config, database, interfaces, services, subgraph } from '@impactmarket/core';
+import { config, database, interfaces, services, subgraph, utils } from '@impactmarket/core';
 import { getAddress } from '@ethersproject/address';
 import BigNumber from 'bignumber.js';
 
@@ -8,9 +7,12 @@ const communitiesMap: Map<string, string[]> = new Map([]);
 
 export async function calcuateCommunitiesMetrics(): Promise<void> {
     try {
+        utils.Logger.info('Updating community metrics...');
         await communitiesMetrics();
+        utils.Logger.info('Updated community metrics!');
     } catch (error) {
-        console.error('Error calcuateCommunitiesMetrics: ', error);
+        // TODO: add error alert
+        utils.Logger.error('Error calcuateCommunitiesMetrics: ', error);
     }
 }
 async function communitiesMetrics(): Promise<void> {
@@ -49,7 +51,7 @@ async function communitiesMetrics(): Promise<void> {
 
     const aMonthAgoId = (aMonthAgo.getTime() / 1000 / 86400) | 0;
 
-    const calculateMetrics = async (communities: CommunityAttributes[]) => {
+    const calculateMetrics = async (communities: interfaces.ubi.community.CommunityAttributes[]) => {
         const communityEntity = await subgraph.queries.community.getCommunityStateByAddresses(
             communities.map(el => el.contractAddress!)
         );
@@ -139,19 +141,25 @@ async function communitiesMetrics(): Promise<void> {
 
 export async function calculateGlobalDemographics() {
     try {
+        utils.Logger.info('Updating global demographics...');
         const globalDemographicsService = new services.global.GlobalDemographicsService();
-
+        
         await globalDemographicsService.calculate();
+        utils.Logger.info('Updated global demographics!');
     } catch (error) {
-        console.error('Error calculateGlobalDemographics: ', error);
+        // TODO: add error alert
+        utils.Logger.error('Error calculateGlobalDemographics: ', error);
     }
 }
 
 export async function calcuateCommunitiesDemographics() {
     try {
+        utils.Logger.info('Updating community demographics...');
         await communitiesDemographics();
+        utils.Logger.info('Updated community demographics!');
     } catch (error) {
-        console.error('Error calcuateCommunitiesDemographics: ', error);
+        // TODO: add error alert
+        utils.Logger.error('Error calcuateCommunitiesDemographics: ', error);
     }
 }
 async function communitiesDemographics() {

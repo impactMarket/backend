@@ -15,8 +15,10 @@ async function updateExchangeRates(): Promise<void> {
                 { where: { currency } }
             );
         }
+        utils.Logger.info('Updated exchange rates!');
     } catch (error) {
-        console.error('Error updateExchangeRates: ', error);
+        // TODO: add error alert
+        utils.Logger.error('Error updateExchangeRates: ', error);
     }
 }
 

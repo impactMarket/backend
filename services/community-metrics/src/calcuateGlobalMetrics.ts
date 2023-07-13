@@ -10,9 +10,12 @@ import BigNumber from 'bignumber.js';
 
 export async function calcuateGlobalMetrics(): Promise<void> {
     try {
+        utils.Logger.info('Updating global metrics...');
         await globalMetrics();
+        utils.Logger.info('Updated global metrics!');
     } catch (error) {
-        console.error('Error calcuateGlobalMetrics: ', error);
+        // TODO: add error alert
+        utils.Logger.error('Error calcuateGlobalMetrics: ', error);
     }
 }
 async function globalMetrics(): Promise<void> {
@@ -139,7 +142,7 @@ async function globalMetrics(): Promise<void> {
             totalReachOut: BigInt(0),
         });
     } catch (error) {
-        console.error('Calculate Global Metrics Failed: ', error);
+        utils.Logger.error('Calculate Global Metrics Failed: ', error);
     }
 
     if ((await globalDailyStateService.count()) > 60) {
@@ -416,6 +419,6 @@ async function calculateMetricsGrowth(
         };
         await globalGrowthService.add(growthToAdd);
     } catch (error) {
-        console.error('Calculate Metrics Growth Failed: ', error);
+        utils.Logger.error('Calculate Metrics Growth Failed: ', error);
     }
 }

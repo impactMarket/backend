@@ -36,8 +36,10 @@ async function calculateBorrowersPerformance(): Promise<void> {
         } catch (error) {
             utils.Logger.error(error);
         }
+        utils.Logger.info('Updated borrowers performance!');
     } catch (error) {
-        console.error('Error calculateBorrowersPerformance: ', error);
+        // TODO: add error alert
+        utils.Logger.error('Error calculateBorrowersPerformance: ', error);
     }
 }
 

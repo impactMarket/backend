@@ -21,9 +21,9 @@ export const calculate = async (event, context) => {
             calcuateCommunitiesDemographics(),
             calculateGlobalDemographics()
         ]);
-    } else if (today.getHours() < 4) {
+    } else if (today.getHours() <= 2) {
         await Promise.all([verifyDeletedAccounts(), updateExchangeRates()]);
-    } else if (today.getHours() < 6) {
+    } else if (today.getHours() <= 4) {
         await calculateBorrowersPerformance();
     }
 };
