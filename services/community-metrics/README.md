@@ -14,7 +14,7 @@ cd packages/core
 yarn build
 ```
 
-Invoke Local
+Invoke Local (to run locally)
 ```
 sls invoke local -f function-name
 ```
@@ -24,3 +24,5 @@ Deploy lambda
 cd services/proposals
 sls deploy --stage STAGE --aws-profile PROFILE
 ```
+
+If you get an "heap out of memory" on the previous command, append `NODE_OPTIONS=--max_old_space_size=4096` to it at the beginning.

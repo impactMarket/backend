@@ -1,14 +1,24 @@
+import { Op, col, fn } from 'sequelize';
 import {
     config,
     database,
-    subgraph,
     services,
+    subgraph,
     utils,
 } from '@impactmarket/core';
 import BigNumber from 'bignumber.js';
-import { Op, fn, col } from 'sequelize';
 
 export async function calcuateGlobalMetrics(): Promise<void> {
+    try {
+        utils.Logger.info('Updating global metrics...');
+        await globalMetrics();
+        utils.Logger.info('Updated global metrics!');
+    } catch (error) {
+        // TODO: add error alert
+        utils.Logger.error('Error calcuateGlobalMetrics: ', error);
+    }
+}
+async function globalMetrics(): Promise<void> {
     const globalDailyStateService =
         new services.global.GlobalDailyStateService();
     const todayMidnightTime = new Date();
@@ -132,7 +142,7 @@ export async function calcuateGlobalMetrics(): Promise<void> {
             totalReachOut: BigInt(0),
         });
     } catch (error) {
-        console.error('Calculate Global Metrics Failed: ', error);
+        utils.Logger.error('Calculate Global Metrics Failed: ', error);
     }
 
     if ((await globalDailyStateService.count()) > 60) {
@@ -409,6 +419,6 @@ async function calculateMetricsGrowth(
         };
         await globalGrowthService.add(growthToAdd);
     } catch (error) {
-        console.error('Calculate Metrics Growth Failed: ', error);
+        utils.Logger.error('Calculate Metrics Growth Failed: ', error);
     }
 }

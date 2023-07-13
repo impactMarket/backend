@@ -1,52 +1,29 @@
-import { verifyDeletedAccounts } from './src/user';
-import { calcuateCommunitiesMetrics, calcuateCommunitiesDemographics } from './src/calcuateCommunitiesMetrics';
+import {
+    calcuateCommunitiesDemographics,
+    calcuateCommunitiesMetrics,
+    calculateGlobalDemographics
+} from './src/calcuateCommunitiesMetrics';
 import { calcuateGlobalMetrics } from './src/calcuateGlobalMetrics';
-import { services } from '@impactmarket/core';
-import { updateExchangeRates } from './src/updateExchangeRates';
 import { calculateBorrowersPerformance } from './src/calculateBorrowersPerformance';
+import { updateExchangeRates } from './src/updateExchangeRates';
+import { verifyDeletedAccounts } from './src/user';
 
 global.btoa = (str: string) => Buffer.from(str, 'binary').toString('base64');
 global.atob = (str: string) => Buffer.from(str, 'base64').toString('binary');
 
 export const calculate = async (event, context) => {
-    try {
-        await calcuateCommunitiesMetrics();
-    } catch (error) {
-        console.error('Error calcuateCommunitiesMetrics: ', error);
-        throw error;
-    }
-    try {
-        await calcuateGlobalMetrics();
-    } catch (error) {
-        console.error('Error calcuateGlobalMetrics: ', error);
-        throw error;
-    }
-    try {
-        await verifyDeletedAccounts();
-    } catch (error) {
-        console.error('Error verifyDeletedAccounts: ', error);
-        throw error;
-    }
-    try {
-        const globalDemographicsService =
-            new services.global.GlobalDemographicsService();
+    const today = new Date();
 
-        await calcuateCommunitiesDemographics();
-        await globalDemographicsService.calculate();
-    } catch (error) {
-        console.error('Error communityDemographicsService/globalDemographicsService: ', error);
-        throw error;
-    }
-    try {
-        await updateExchangeRates();
-    } catch (error) {
-        console.error('Error updateExchangeRates: ', error);
-        throw error;
-    }
-    try {
+    if (today.getHours() <= 1) {
+        await Promise.all([
+            calcuateCommunitiesMetrics(),
+            calcuateGlobalMetrics(),
+            calcuateCommunitiesDemographics(),
+            calculateGlobalDemographics()
+        ]);
+    } else if (today.getHours() <= 2) {
+        await Promise.all([verifyDeletedAccounts(), updateExchangeRates()]);
+    } else if (today.getHours() <= 4) {
         await calculateBorrowersPerformance();
-    } catch (error) {
-        console.error('Error calculateBorrowersPerformance: ', error);
-        throw error;
     }
 };

@@ -346,7 +346,6 @@ export const getBorrowers = async (
     // date 3 months ago
     const date = new Date();
     date.setMonth(date.getMonth() - 3);
-    const count = await countGetBorrowers(query);
     const [orderKey, orderDirection] = orderBy ? orderBy.split(':') : [undefined, undefined];
 
     const graphqlQuery = {
@@ -387,26 +386,29 @@ export const getBorrowers = async (
         return JSON.parse(cacheResults);
     }
 
-    const response = await axiosMicrocreditSubgraph.post<
-        any,
-        {
-            data: {
+    const [count, response] = await Promise.all([
+        countGetBorrowers(query),
+        axiosMicrocreditSubgraph.post<
+            any,
+            {
                 data: {
-                    borrowers: {
-                        id: string;
-                        lastLoanAmount: string;
-                        lastLoanPeriod: number;
-                        lastLoanDailyInterest: number;
-                        lastLoanClaimed: number;
-                        lastLoanRepaid: string;
-                        lastLoanLastRepayment: number;
-                        lastLoanLastRepaymentAmount: string;
-                        lastLoanLastDebt: string;
-                    }[];
+                    data: {
+                        borrowers: {
+                            id: string;
+                            lastLoanAmount: string;
+                            lastLoanPeriod: number;
+                            lastLoanDailyInterest: number;
+                            lastLoanClaimed: number;
+                            lastLoanRepaid: string;
+                            lastLoanLastRepayment: number;
+                            lastLoanLastRepaymentAmount: string;
+                            lastLoanLastDebt: string;
+                        }[];
+                    };
                 };
-            };
-        }
-    >('', graphqlQuery);
+            }
+        >('', graphqlQuery)
+    ]);
 
     const borrowers = response.data?.data.borrowers.map(borrower => ({
         loan: {
@@ -421,7 +423,7 @@ export const getBorrowers = async (
         },
         id: borrower.id
     }));
-    redisClient.set(graphqlQuery.query, JSON.stringify(borrowers), 'EX', intervalsInSeconds.twoMins);
+    redisClient.set(graphqlQuery.query, JSON.stringify({ count, borrowers }), 'EX', intervalsInSeconds.twoMins);
 
     return { count, borrowers };
 };

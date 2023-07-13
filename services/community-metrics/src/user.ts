@@ -1,7 +1,8 @@
-import { database } from '@impactmarket/core';
 import { Op, WhereOptions } from 'sequelize';
+import { database, utils } from '@impactmarket/core';
 
 export async function verifyDeletedAccounts(): Promise<void> {
+    utils.Logger.info('Verifying user accounts to delete...');
     const t = await database.sequelize.transaction();
     try {
         const date = new Date();
@@ -26,8 +27,10 @@ export async function verifyDeletedAccounts(): Promise<void> {
         });
 
         await t.commit();
+        utils.Logger.info('User accounts to delete verified!');
     } catch (error) {
         await t.rollback();
-        throw error;
+        // TODO: add error alert
+        utils.Logger.error('Error verifyDeletedAccounts: ', error);
     }
 }
