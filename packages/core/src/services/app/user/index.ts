@@ -552,8 +552,8 @@ export default class UserService {
                 where: { address },
                 include: [
                     {
-                        model: models.microCreditForm,
-                        as: 'microCreditForm',
+                        model: models.microCreditApplications,
+                        as: 'microCreditApplications',
                         required: false
                     }
                 ]
@@ -598,7 +598,12 @@ export default class UserService {
 
         // pending borrowers also need to be listed as borrower
         // so that the loan manager can see their profile and applications
-        if (userRoles.borrower === null && user && user.microCreditForm) {
+        if (
+            userRoles.borrower === null &&
+            user &&
+            user.microCreditApplications &&
+            user.microCreditApplications.length > 0
+        ) {
             roles.push('borrower');
         }
 

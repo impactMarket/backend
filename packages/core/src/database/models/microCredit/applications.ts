@@ -2,11 +2,13 @@ import { DataTypes, Model, Sequelize } from 'sequelize';
 
 import { AppUserModel } from '../app/appUser';
 import { DbModels } from '../../../database/db';
-import { MicroCreditApplications, MicroCreditApplicationsCreation } from '../../../interfaces/microCredit/applications';
+import { MicroCreditApplication, MicroCreditApplicationCreation } from '../../../interfaces/microCredit/applications';
 
-export class MicroCreditApplicationsModel extends Model<MicroCreditApplications, MicroCreditApplicationsCreation> {
+export class MicroCreditApplicationModel extends Model<MicroCreditApplication, MicroCreditApplicationCreation> {
     public id!: number;
     public userId!: number;
+    public form!: object;
+    public prismicId!: string;
     public amount!: number;
     public period!: number;
     public status!: number;
@@ -19,9 +21,9 @@ export class MicroCreditApplicationsModel extends Model<MicroCreditApplications,
     public readonly user?: AppUserModel;
 }
 
-export function initializeMicroCreditApplications(sequelize: Sequelize): typeof MicroCreditApplicationsModel {
+export function initializeMicroCreditApplication(sequelize: Sequelize): typeof MicroCreditApplicationModel {
     const { appUser } = sequelize.models as DbModels;
-    MicroCreditApplicationsModel.init(
+    MicroCreditApplicationModel.init(
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -37,12 +39,20 @@ export function initializeMicroCreditApplications(sequelize: Sequelize): typeof 
                 onDelete: 'CASCADE',
                 allowNull: false
             },
+            form: {
+                type: DataTypes.JSONB,
+                allowNull: false
+            },
+            prismicId: {
+                type: DataTypes.STRING(32),
+                allowNull: false
+            },
             amount: {
-                allowNull: false,
+                allowNull: true,
                 type: DataTypes.INTEGER
             },
             period: {
-                allowNull: false,
+                allowNull: true,
                 type: DataTypes.INTEGER
             },
             status: {
@@ -68,5 +78,5 @@ export function initializeMicroCreditApplications(sequelize: Sequelize): typeof 
             sequelize
         }
     );
-    return MicroCreditApplicationsModel;
+    return MicroCreditApplicationModel;
 }

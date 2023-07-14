@@ -33,10 +33,9 @@ import { LearnAndEarnUserLevelModel } from './models/learnAndEarn/learnAndEarnUs
 import { Manager } from './models/ubi/manager';
 import { MerchantCommunityModel } from './models/merchant/merchantCommunity';
 import { MerchantRegistryModel } from './models/merchant/merchantRegistry';
-import { MicroCreditApplicationsModel } from './models/microCredit/applications';
+import { MicroCreditApplicationModel } from './models/microCredit/applications';
 import { MicroCreditBorrowersModel } from './models/microCredit/borrowers';
 import { MicroCreditDocsModel } from './models/microCredit/docs';
-import { MicroCreditFormModel } from './models/microCredit/form';
 import { StoryCommentModel } from './models/story/storyComment';
 import { StoryCommunityModel } from './models/story/storyCommunity';
 import { StoryContentModel } from './models/story/storyContent';
@@ -116,8 +115,7 @@ export type DbModels = {
     merchantCommunity: ModelStatic<MerchantCommunityModel>;
     //
     microCreditDocs: ModelStatic<MicroCreditDocsModel>;
-    microCreditApplications: ModelStatic<MicroCreditApplicationsModel>;
-    microCreditForm: ModelStatic<MicroCreditFormModel>;
+    microCreditApplications: ModelStatic<MicroCreditApplicationModel>;
     microCreditBorrowers: ModelStatic<MicroCreditBorrowersModel>;
     //
     exchangeRegistry: ModelStatic<ExchangeRegistryModel>;

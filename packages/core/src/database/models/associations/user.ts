@@ -9,7 +9,6 @@ export function userAssociation(sequelize: Sequelize) {
         community,
         appLog,
         microCreditApplications,
-        microCreditForm,
         microCreditBorrowers,
         appReferralCode
     } = sequelize.models as DbModels;
@@ -65,10 +64,10 @@ export function userAssociation(sequelize: Sequelize) {
         as: 'borrower'
     });
 
-    appUser.hasOne(microCreditForm, {
+    appUser.hasMany(microCreditApplications, {
         foreignKey: 'userId',
         sourceKey: 'id',
-        as: 'microCreditForm'
+        as: 'microCreditApplications'
     });
 
     appReferralCode.belongsTo(appUser, {

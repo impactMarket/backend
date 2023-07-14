@@ -33,10 +33,9 @@ import { initializeLearnAndEarnUserLevel } from './learnAndEarn/learnAndEarnUser
 import { initializeManager } from './ubi/manager';
 import { initializeMerchantCommunity } from './merchant/merchantCommunity';
 import { initializeMerchantRegistry } from './merchant/merchantRegistry';
-import { initializeMicroCreditApplications } from './microCredit/applications';
+import { initializeMicroCreditApplication } from './microCredit/applications';
 import { initializeMicroCreditBorrowers } from './microCredit/borrowers';
 import { initializeMicroCreditDocs } from './microCredit/docs';
-import { initializeMicroCreditForm } from './microCredit/form';
 import { initializeStoryComment } from './story/storyComment';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryContent } from './story/storyContent';
@@ -130,8 +129,7 @@ export default function initModels(sequelize: Sequelize): void {
 
     // MicroCredit
     initializeMicroCreditDocs(sequelize);
-    initializeMicroCreditApplications(sequelize);
-    initializeMicroCreditForm(sequelize);
+    initializeMicroCreditApplication(sequelize);
     initializeMicroCreditBorrowers(sequelize);
 
     // Exchange
