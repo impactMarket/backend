@@ -145,4 +145,12 @@ export default class MicroCreditCreate {
             throw new BaseError('SAVE_FORM_ERROR', error.message);
         }
     };
+
+    public addNote = async (managerId: number, userId: number, note: string) => {
+        return models.microCreditNote.create({
+            managerId,
+            userId,
+            note
+        });
+    };
 }

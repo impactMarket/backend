@@ -37,6 +37,7 @@ import { initializeMicroCreditApplications } from './microCredit/applications';
 import { initializeMicroCreditBorrowers } from './microCredit/borrowers';
 import { initializeMicroCreditDocs } from './microCredit/docs';
 import { initializeMicroCreditForm } from './microCredit/form';
+import { initializeMicroCreditNote } from './microCredit/note';
 import { initializeStoryComment } from './story/storyComment';
 import { initializeStoryCommunity } from './story/storyCommunity';
 import { initializeStoryContent } from './story/storyContent';
@@ -57,6 +58,7 @@ import { initializeUbiPromoterSocialMedia } from './ubi/ubiPromoterSocialMedia';
 import { initializeWalletAirdropProof } from './walletAirdrop/walletAirdropProof';
 import { initializeWalletAirdropUser } from './walletAirdrop/walletAirdropUser';
 import { learnAndEarnAssociation } from './associations/learnAndEarn';
+import { microcreditNoteAssociation } from './associations/microcredit';
 import { storyAssociation } from './associations/story';
 import { userAssociation } from './associations/user';
 import { walletAidropAssociation } from './associations/walletAirdrop';
@@ -133,6 +135,7 @@ export default function initModels(sequelize: Sequelize): void {
     initializeMicroCreditApplications(sequelize);
     initializeMicroCreditForm(sequelize);
     initializeMicroCreditBorrowers(sequelize);
+    initializeMicroCreditNote(sequelize);
 
     // Exchange
     initializeExchangeRegistry(sequelize);
@@ -143,4 +146,5 @@ export default function initModels(sequelize: Sequelize): void {
     storyAssociation(sequelize);
     walletAidropAssociation(sequelize);
     learnAndEarnAssociation(sequelize);
+    microcreditNoteAssociation(sequelize);
 }

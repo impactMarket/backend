@@ -2,13 +2,14 @@ import { Router } from 'express';
 import timeout from 'connect-timeout';
 
 import { MicroCreditController } from '../../../controllers/v2/microcredit/create';
-import { authenticateToken, onlyAuthorizedRoles, verifySignature } from '../../../middlewares';
 import {
+    addNote,
     postDocsValidator,
     preSignerUrlFromAWSValidator,
     putApplicationsValidator,
     saveForm
 } from '../../../validators/microcredit';
+import { authenticateToken, onlyAuthorizedRoles, verifySignature } from '../../../middlewares';
 
 export default (route: Router): void => {
     const controller = new MicroCreditController();
@@ -150,4 +151,33 @@ export default (route: Router): void => {
      *     - BearerToken: []
      */
     route.post('/form', authenticateToken, saveForm, controller.saveForm);
+
+    /**
+     * @swagger
+     *
+     * /microcredit/note:
+     *   post:
+     *     tags:
+     *       - "microcredit"
+     *     summary: "Add a note to a Microcredit Application"
+     *     requestBody:
+     *      required: true
+     *      content:
+     *        application/json:
+     *          schema:
+     *            type: object
+     *            properties:
+     *              applicationId:
+     *                type: number
+     *                required: true
+     *              note:
+     *                type: boolean
+     *                required: false
+     *     responses:
+     *       "200":
+     *         description: OK
+     *     security:
+     *     - BearerToken: []
+     */
+    route.post('/notes', authenticateToken, onlyAuthorizedRoles(['loanManager']), addNote, controller.addNote);
 };

@@ -101,6 +101,25 @@ class MicroCreditController {
             .then(community => standardResponse(res, 201, true, community))
             .catch(e => standardResponse(res, 400, false, '', { error: e }));
     };
+
+    addNote = async (req: RequestWithUser, res: Response): Promise<void> => {
+        if (req.user === undefined) {
+            standardResponse(res, 401, false, '', {
+                error: {
+                    name: 'USER_NOT_FOUND',
+                    message: 'User not identified!'
+                }
+            });
+            return;
+        }
+
+        const { userId, note } = req.body;
+
+        this.microCreditService
+            .addNote(req.user.userId, userId, note)
+            .then(note => standardResponse(res, 201, true, note))
+            .catch(e => standardResponse(res, 400, false, '', { error: e }));
+    };
 }
 
 export { MicroCreditController };
